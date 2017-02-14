@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.functional;
 
@@ -43,31 +41,28 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  */
 @Category(IntegrationTest.class)
-public class NonDistinctOrderByPartitionedJUnitTest extends
-    NonDistinctOrderByTestImplementation {
+public class NonDistinctOrderByPartitionedJUnitTest extends NonDistinctOrderByTestImplementation {
 
   @Override
-  public  Index createIndex(String indexName, IndexType indexType,
-      String indexedExpression, String fromClause)
-      throws IndexInvalidException, IndexNameConflictException,
+  public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
+      String fromClause) throws IndexInvalidException, IndexNameConflictException,
       IndexExistsException, RegionNotFoundException, UnsupportedOperationException {
-    return CacheUtils.getQueryService().createIndex(indexName, indexType, indexedExpression, 
+    return CacheUtils.getQueryService().createIndex(indexName, indexType, indexedExpression,
         fromClause);
   }
 
   @Override
-  public Index createIndex(String indexName, String indexedExpression,
-      String regionPath) throws IndexInvalidException,
-      IndexNameConflictException, IndexExistsException,
+  public Index createIndex(String indexName, String indexedExpression, String regionPath)
+      throws IndexInvalidException, IndexNameConflictException, IndexExistsException,
       RegionNotFoundException, UnsupportedOperationException {
-    return CacheUtils.getQueryService().createIndex(indexName, indexedExpression, regionPath); 
+    return CacheUtils.getQueryService().createIndex(indexName, indexedExpression, regionPath);
   }
-  
+
   @Override
-  public  boolean assertIndexUsedOnQueryNode() {
+  public boolean assertIndexUsedOnQueryNode() {
     return true;
   }
-  
+
   @Override
   public Region createRegion(String regionName, Class valueConstraint) {
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -78,10 +73,9 @@ public class NonDistinctOrderByPartitionedJUnitTest extends
     return r1;
 
   }
-  
+
   @Test
-  public void testOrderedResultsPartitionedRegion_Bug43514_1()
-      throws Exception {
+  public void testOrderedResultsPartitionedRegion_Bug43514_1() throws Exception {
     String queries[] = {
         // Test case No. IUMR021
         "select  * from /portfolio1 p order by status, ID desc",
@@ -146,11 +140,9 @@ public class NonDistinctOrderByPartitionedJUnitTest extends
     // Create Indexes
     qs.createIndex("i1", IndexType.FUNCTIONAL, "p.status", "/portfolio1 p");
     qs.createIndex("i2", IndexType.FUNCTIONAL, "p.ID", "/portfolio1 p");
-    qs.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId",
-        "/portfolio1 p");
+    qs.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", "/portfolio1 p");
     qs.createIndex("i4", IndexType.FUNCTIONAL, "key.ID", "/portfolio1.keys key");
-    qs.createIndex("i5", IndexType.FUNCTIONAL, "key.status",
-        "/portfolio1.keys key");
+    qs.createIndex("i5", IndexType.FUNCTIONAL, "key.status", "/portfolio1.keys key");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -167,14 +159,12 @@ public class NonDistinctOrderByPartitionedJUnitTest extends
       }
     }
     StructSetOrResultsSet ssOrrs = new StructSetOrResultsSet();
-    ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true,
-        queries);
+    ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true, queries);
     ssOrrs.compareExternallySortedQueriesWithOrderBy(queries, r);
   }
 
   @Test
-  public void testOrderedResultsPartitionedRegion_Bug43514_2()
-      throws Exception {
+  public void testOrderedResultsPartitionedRegion_Bug43514_2() throws Exception {
     String queries[] = {
         // Test case No. IUMR021
         "select  status as st from /portfolio1 where ID > 0 order by status",
@@ -201,7 +191,7 @@ public class NonDistinctOrderByPartitionedJUnitTest extends
         "select  status from /portfolio1 where ID > 0 order by status",
         "select  p.status as st from /portfolio1 p where ID > 0 and status = 'inactive' order by p.status",
         "select  p.position1.secId as st from /portfolio1 p where p.ID > 0 and p.position1.secId != 'IBM' order by p.position1.secId"
-      
+
     };
     Object r[][] = new Object[queries.length][2];
     QueryService qs;
@@ -232,8 +222,7 @@ public class NonDistinctOrderByPartitionedJUnitTest extends
     // Create Indexes
     qs.createIndex("i1", IndexType.FUNCTIONAL, "p.status", "/portfolio1 p");
     qs.createIndex("i2", IndexType.FUNCTIONAL, "p.ID", "/portfolio1 p");
-    qs.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId",
-        "/portfolio1 p");
+    qs.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", "/portfolio1 p");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -251,8 +240,7 @@ public class NonDistinctOrderByPartitionedJUnitTest extends
       }
     }
     StructSetOrResultsSet ssOrrs = new StructSetOrResultsSet();
-    ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true,
-        queries);
+    ssOrrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true, queries);
     ssOrrs.compareExternallySortedQueriesWithOrderBy(queries, r);
   }
 

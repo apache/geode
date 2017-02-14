@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client;
 
@@ -24,6 +22,7 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Rule;
@@ -42,24 +41,25 @@ import static org.junit.Assert.*;
 
 /**
  * Unit test for the ClientRegionFactory class
+ * 
  * @since GemFire 6.5
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class ClientRegionFactoryJUnitTest {
 
   @Rule
   public TestName testName = new TestName();
-  
+
   private static final String key = "key";
   private static final Integer val = new Integer(1);
   private final String r1Name = "r1";
   private final String sr1Name = "sr1";
   private final String r2Name = "r2";
   private final String r3Name = "r3";
-  
+
   private Cache cache;
   private DistributedSystem distSys;
-  
+
   private Region r1;
   private Region r2;
   private Region r3;
@@ -97,7 +97,7 @@ public class ClientRegionFactoryJUnitTest {
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(null, ra.getPoolName());
   }
-  
+
   @Test
   public void testLOCAL_HEAP_LRU() throws Exception {
     ClientCache c = new ClientCacheFactory().create();
@@ -109,10 +109,9 @@ public class ClientRegionFactoryJUnitTest {
     assertEquals(null, ra.getPoolName());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testLOCAL_OVERFLOW() throws Exception {
     ClientCache c = new ClientCacheFactory().create();
@@ -122,12 +121,12 @@ public class ClientRegionFactoryJUnitTest {
     assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(null, ra.getPoolName());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK), ra.getEvictionAttributes());
+    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
+        ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testLOCAL_PERSISTENT() throws Exception {
     ClientCache c = new ClientCacheFactory().create();
@@ -138,7 +137,7 @@ public class ClientRegionFactoryJUnitTest {
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(null, ra.getPoolName());
   }
-  
+
   @Test
   public void testLOCAL_PERSISTENT_OVERFLOW() throws Exception {
     ClientCache c = new ClientCacheFactory().create();
@@ -148,12 +147,12 @@ public class ClientRegionFactoryJUnitTest {
     assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(null, ra.getPoolName());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK), ra.getEvictionAttributes());
+    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
+        ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testPROXY() throws Exception {
     ClientCache c = new ClientCacheFactory().create();
@@ -164,7 +163,7 @@ public class ClientRegionFactoryJUnitTest {
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals("DEFAULT", ra.getPoolName());
   }
-  
+
   @Test
   public void testCACHING_PROXY() throws Exception {
     ClientCache c = new ClientCacheFactory().create();
@@ -174,10 +173,9 @@ public class ClientRegionFactoryJUnitTest {
     assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals("DEFAULT", ra.getPoolName());
-    assertEquals(0,
-                 (int)c.getResourceManager().getEvictionHeapPercentage());
+    assertEquals(0, (int) c.getResourceManager().getEvictionHeapPercentage());
   }
-  
+
   @Test
   public void testCACHING_PROXY_LRU() throws Exception {
     ClientCache c = new ClientCacheFactory().create();
@@ -189,10 +187,9 @@ public class ClientRegionFactoryJUnitTest {
     assertEquals("DEFAULT", ra.getPoolName());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testCACHING_PROXY_OVERFLOW() throws Exception {
     ClientCache c = new ClientCacheFactory().create();
@@ -202,10 +199,10 @@ public class ClientRegionFactoryJUnitTest {
     assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals("DEFAULT", ra.getPoolName());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK), ra.getEvictionAttributes());
+    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
+        ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
 
   @Test
@@ -233,7 +230,8 @@ public class ClientRegionFactoryJUnitTest {
   public void testSetEvictionAttributes() throws Exception {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
-    r1 = factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(77)).create(this.r1Name);
+    r1 = factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(77))
+        .create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertEquals(EvictionAttributes.createLRUEntryAttributes(77), ra.getEvictionAttributes());
   }
@@ -392,8 +390,10 @@ public class ClientRegionFactoryJUnitTest {
   @Test
   public void testMultiUserRootRegions() throws Exception {
     DistributedSystem ds = DistributedSystem.connect(createGemFireProperties());
-    PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777).setMultiuserAuthentication(true).create("muPool");
-    PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 6666).create("suPool");
+    PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777)
+        .setMultiuserAuthentication(true).create("muPool");
+    PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 6666)
+        .create("suPool");
     ClientCache cc = new ClientCacheFactory().create();
     cc.createClientRegionFactory(PROXY).setPoolName("muPool").create("p");
     cc.createClientRegionFactory(CACHING_PROXY).setPoolName("suPool").create("cp");
@@ -433,7 +433,7 @@ public class ClientRegionFactoryJUnitTest {
     Query q = qs.newQuery("SELECT * from /localRegion");
     q.execute();
   }
-  
+
   @Test
   public void testSubregionCreate() throws Exception {
     ClientCache c = new ClientCacheFactory().create();
@@ -443,13 +443,13 @@ public class ClientRegionFactoryJUnitTest {
     assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(null, ra.getPoolName());
-    
+
     sr1 = factory.createSubregion(r1, sr1Name);
     RegionAttributes sr1ra = sr1.getAttributes();
     assertEquals(DataPolicy.NORMAL, sr1ra.getDataPolicy());
     assertEquals(Scope.LOCAL, sr1ra.getScope());
     assertEquals(null, sr1ra.getPoolName());
-    
+
     try {
       factory.createSubregion(r1, sr1Name);
       fail("Expected RegionExistsException");
@@ -463,18 +463,18 @@ public class ClientRegionFactoryJUnitTest {
     } catch (RegionDestroyedException expected) {
     }
   }
-  
+
   private String getName() {
     return getClass().getSimpleName() + "_" + this.testName.getMethodName();
   }
-  
+
   private Properties createGemFireProperties() {
     Properties props = new Properties();
     props.put(MCAST_PORT, "0");
     props.put(LOCATORS, "");
     return props;
   }
-  
+
   private void cleanUpRegion(Region r) {
     if (r != null && !r.getCache().isClosed() && !r.isDestroyed()
         && r.getCache().getDistributedSystem().isConnected()) {
@@ -513,7 +513,7 @@ public class ClientRegionFactoryJUnitTest {
     public ExpirationAttributes getExpiry(Region.Entry entry) {
       return null;
     }
-    public void close() {
-    }
+
+    public void close() {}
   }
 }

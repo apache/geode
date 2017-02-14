@@ -43,11 +43,17 @@ For Tomcat 6.0:
                          Tomcat6DeltaSessionManager"/> 
 ```
 
-For Tomcat 7.0 and above:
+For Tomcat 7.0:
 
 ``` pre
 <Manager className="org.apache.geode.modules.session.catalina.
                          Tomcat7DeltaSessionManager"/> 
+```
+For Tomcat 8.0 and 8.5:
+
+``` pre
+<Manager className="org.apache.geode.modules.session.catalina.
+                         Tomcat8DeltaSessionManager"/> 
 ```
 
 ## <a id="tomcat_setting_up_the_module__section_B0CEBE93564540DBA165E0F7A10FDC0B" class="no-quick-link"></a>Client/Server Setup
@@ -70,11 +76,18 @@ For Tomcat 6.0:
                          Tomcat6DeltaSessionManager"/> 
 ```
 
-For Tomcat 7.0 and above:
+For Tomcat 7.0:
 
 ``` pre
 <Manager className="org.apache.geode.modules.session.catalina.
                          Tomcat7DeltaSessionManager"/> 
+```
+
+For Tomcat 8.0 and 8.5:
+
+``` pre
+<Manager className="org.apache.geode.modules.session.catalina.
+                         Tomcat8DeltaSessionManager"/> 
 ```
 
 The application server operates as a Geode client in this configuration. With a similar environment to this example that is for a client/server set up,
@@ -82,8 +95,8 @@ The application server operates as a Geode client in this configuration. With a 
 ``` pre
 TC_VER=tomcat-8.0.30.C.RELEASE
 INSTANCE=geode-cs
-CLASSPATH=$PWD/$INSTANCE/lib/geode-modules-1.0.0-incubating.M2-SNAPSHOT.jar:\
-$PWD/$INSTANCE/lib/geode-modules-tomcat7-1.0.0-incubating.M2-SNAPSHOT.jar:\
+CLASSPATH=$PWD/$INSTANCE/lib/geode-modules-1.0.0.jar:\
+$PWD/$INSTANCE/lib/geode-modules-tomcat8-1.0.0.jar:\
 $PWD/$TC_VER/lib/servlet-api.jar:\
 $PWD/$TC_VER/lib/catalina.jar:\
 $PWD/$TC_VER/lib/tomcat-util.jar:\

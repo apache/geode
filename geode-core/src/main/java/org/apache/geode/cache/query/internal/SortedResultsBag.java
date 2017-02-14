@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -29,11 +27,10 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.CachePerfStats;
 
 /**
- * This results set is used to sort the data allowing duplicates. If the data
- * being added is already sorted, than the underlying Map is a LinkedHashMap ,
- * else a TreeMap is created. For index results expecting duplicates, the
- * constructor used is the one which creates LinkedHashMap
- * This class is used to store ordered data of Structs too, obtained from index lookup
+ * This results set is used to sort the data allowing duplicates. If the data being added is already
+ * sorted, than the underlying Map is a LinkedHashMap , else a TreeMap is created. For index results
+ * expecting duplicates, the constructor used is the one which creates LinkedHashMap This class is
+ * used to store ordered data of Structs too, obtained from index lookup
  * 
  *
  * @param <E>
@@ -42,14 +39,14 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   private final Map<E, Integer> sortedMap;
   private final boolean orderedDataAddition;
-  private final boolean emitNullAtStart; 
+  private final boolean emitNullAtStart;
 
   /**
    * Constructor for unordered input
    * 
    * @param comparator
-   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null 
-   * order by column value need to be emitted at start, else if desc, then emit at last
+   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
+   *        order by column value need to be emitted at start, else if desc, then emit at last
    */
   public SortedResultsBag(Comparator<E> comparator, boolean nullAtStart) {
     super();
@@ -57,16 +54,16 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
     this.emitNullAtStart = nullAtStart;
     this.orderedDataAddition = false;
   }
-  
+
   /**
    * Constructor for unordered input
+   * 
    * @param comparator
    * @param elementType
-   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null 
-   * order by column value need to be emitted at start, else if desc, then emit at last
+   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
+   *        order by column value need to be emitted at start, else if desc, then emit at last
    */
-  public SortedResultsBag(Comparator<E> comparator,
-      ObjectType elementType, boolean nullAtStart) {
+  public SortedResultsBag(Comparator<E> comparator, ObjectType elementType, boolean nullAtStart) {
     super();
     this.sortedMap = new TreeMap<E, Integer>(comparator);
     this.setElementType(elementType);
@@ -80,11 +77,11 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    * @param comparator
    * @param elementType
    * @param stats
-   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null 
-   * order by column value need to be emitted at start, else if desc, then emit at last
+   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
+   *        order by column value need to be emitted at start, else if desc, then emit at last
    */
-  public SortedResultsBag(Comparator<E> comparator, ObjectType elementType,
-      CachePerfStats stats, boolean nullAtStart) {
+  public SortedResultsBag(Comparator<E> comparator, ObjectType elementType, CachePerfStats stats,
+      boolean nullAtStart) {
     super(elementType, stats);
     this.sortedMap = new TreeMap<E, Integer>(comparator);
     this.emitNullAtStart = nullAtStart;
@@ -96,8 +93,8 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    * 
    * @param comparator
    * @param stats
-   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null 
-   * order by column value need to be emitted at start, else if desc, then emit at last
+   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
+   *        order by column value need to be emitted at start, else if desc, then emit at last
    */
   public SortedResultsBag(Comparator<E> comparator, CachePerfStats stats, boolean nullAtStart) {
     super(stats);
@@ -110,8 +107,8 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    * Constructor for ordered input. Creates underlying Map as LinkedHashMap
    * 
    * @param stats
-   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null 
-   * order by column value need to be emitted at start, else if desc, then emit at last
+   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
+   *        order by column value need to be emitted at start, else if desc, then emit at last
    */
   public SortedResultsBag(CachePerfStats stats, boolean nullAtStart) {
     super(stats);
@@ -122,8 +119,9 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   /**
    * Constructor for ordered input. Creates underlying Map as LinkedHashMap
-   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null 
-   * order by column value need to be emitted at start, else if desc, then emit at last
+   * 
+   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
+   *        order by column value need to be emitted at start, else if desc, then emit at last
    */
   public SortedResultsBag(boolean nullAtStart) {
     super();
@@ -136,8 +134,8 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
    * Constructor for ordered input. Creates underlying Map as LinkedHashMap
    * 
    * @param elementType
-   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null 
-   * order by column value need to be emitted at start, else if desc, then emit at last
+   * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
+   *        order by column value need to be emitted at start, else if desc, then emit at last
    */
   public SortedResultsBag(ObjectType elementType, boolean nullAtStart) {
     super();
@@ -236,21 +234,20 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   @Override
   public Comparator comparator() {
-    return this.orderedDataAddition ? null : ((SortedMap) this.sortedMap)
-        .comparator();
+    return this.orderedDataAddition ? null : ((SortedMap) this.sortedMap).comparator();
   }
-  
+
   @Override
-  public void setElementType(ObjectType elementType) {   
+  public void setElementType(ObjectType elementType) {
     this.elementType = elementType;
   }
 
 
   @Override
-  public boolean dataPreordered() {    
+  public boolean dataPreordered() {
     return this.orderedDataAddition;
   }
-  
+
   @Override
   protected boolean nullOutputAtBegining() {
     return this.emitNullAtStart;

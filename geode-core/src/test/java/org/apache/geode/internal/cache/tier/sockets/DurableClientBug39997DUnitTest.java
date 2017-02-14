@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -22,6 +20,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -44,11 +43,11 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
 
   public final void postTearDownCacheTestCase() {
-    Host.getHost(0) .getVM(0).invoke(() -> disconnectFromDS());
+    Host.getHost(0).getVM(0).invoke(() -> disconnectFromDS());
   }
 
   @Test
@@ -62,11 +61,9 @@ public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(new SerializableRunnable("create cache") {
       public void run() {
         getSystem(getClientProperties());
-        PoolImpl p = (PoolImpl)PoolManager.createFactory()
-                .addServer(hostName, port)
-                .setSubscriptionEnabled(true)
-                .setSubscriptionRedundancy(0)
-                .create("DurableClientReconnectDUnitTestPool");
+        PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(hostName, port)
+            .setSubscriptionEnabled(true).setSubscriptionRedundancy(0)
+            .create("DurableClientReconnectDUnitTestPool");
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.LOCAL);
         factory.setPoolName(p.getName());
@@ -77,8 +74,8 @@ public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
         try {
           region1.registerInterest("ALL_KEYS");
           fail("Should have received an exception trying to register interest");
-        } catch(NoSubscriptionServersAvailableException expected) {
-          //this is expected
+        } catch (NoSubscriptionServersAvailableException expected) {
+          // this is expected
         }
       }
     });

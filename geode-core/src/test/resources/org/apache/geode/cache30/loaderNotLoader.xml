@@ -17,8 +17,8 @@
 -->
 
 <!DOCTYPE cache PUBLIC
-    "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.0//EN"
-    "http://www.gemstone.com/dtd/cache4_0.dtd">
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+    "http://www.gemstone.com/dtd/cache7_0.dtd">
 
 <!-- Specifies a cache loader that is not a cache loader -->
 
@@ -26,7 +26,7 @@
   <vm-root-region name="root">
     <region-attributes>
       <cache-loader>
-        <class-name>org.apache.geode.cache30.CacheXml30DUnitTest$MyTestCacheWriter</class-name>
+        <class-name>org.apache.geode.cache30.CacheXml66DUnitTest$MyTestCacheWriter</class-name>
       </cache-loader>
     </region-attributes>
   </vm-root-region>

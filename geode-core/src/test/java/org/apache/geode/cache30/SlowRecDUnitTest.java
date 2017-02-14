@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -72,7 +70,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   public final void preSetUp() throws Exception {
     disconnectAllFromDS();
   }
-  
+
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
@@ -86,167 +84,190 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   private void doCreateOtherVm(final Properties p, final boolean addListener) {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("create root") {
-        public void run2() throws CacheException {
-          getSystem(p);
-          createAckRegion(true, false);
-          AttributesFactory af = new AttributesFactory();
-          af.setScope(Scope.DISTRIBUTED_NO_ACK);
-          af.setDataPolicy(DataPolicy.REPLICATE);
-          if (addListener) {
-            CacheListener cl = new CacheListenerAdapter() {
-                public void afterUpdate(EntryEvent event) {
-                  // make the slow receiver event slower!
-                  try {Thread.sleep(500);} catch (InterruptedException shuttingDown) {fail("interrupted");}
+      public void run2() throws CacheException {
+        getSystem(p);
+        createAckRegion(true, false);
+        AttributesFactory af = new AttributesFactory();
+        af.setScope(Scope.DISTRIBUTED_NO_ACK);
+        af.setDataPolicy(DataPolicy.REPLICATE);
+        if (addListener) {
+          CacheListener cl = new CacheListenerAdapter() {
+            public void afterUpdate(EntryEvent event) {
+              // make the slow receiver event slower!
+              try {
+                Thread.sleep(500);
+              } catch (InterruptedException shuttingDown) {
+                fail("interrupted");
+              }
+            }
+          };
+          af.setCacheListener(cl);
+        } else {
+          CacheListener cl = new CacheListenerAdapter() {
+            public void afterCreate(EntryEvent event) {
+              if (event.getCallbackArgument() != null) {
+                lastCallback = event.getCallbackArgument();
+              }
+              if (event.getKey().equals("sleepkey")) {
+                int sleepMs = ((Integer) event.getNewValue()).intValue();
+                try {
+                  Thread.sleep(sleepMs);
+                } catch (InterruptedException ignore) {
+                  fail("interrupted");
                 }
-              };
-            af.setCacheListener(cl);
-          } else {
-            CacheListener cl = new CacheListenerAdapter() {
-                public void afterCreate(EntryEvent event) {
-                  if (event.getCallbackArgument() != null) {
-                    lastCallback = event.getCallbackArgument();
-                  }
-                  if (event.getKey().equals("sleepkey")) {
-                    int sleepMs = ((Integer)event.getNewValue()).intValue();
-                    try {Thread.sleep(sleepMs);} catch (InterruptedException ignore) {fail("interrupted");}
-                  }
+              }
+            }
+
+            public void afterUpdate(EntryEvent event) {
+              if (event.getCallbackArgument() != null) {
+                lastCallback = event.getCallbackArgument();
+              }
+              if (event.getKey().equals("sleepkey")) {
+                int sleepMs = ((Integer) event.getNewValue()).intValue();
+                try {
+                  Thread.sleep(sleepMs);
+                } catch (InterruptedException ignore) {
+                  fail("interrupted");
                 }
-                public void afterUpdate(EntryEvent event) {
-                  if (event.getCallbackArgument() != null) {
-                    lastCallback = event.getCallbackArgument();
-                  }
-                  if (event.getKey().equals("sleepkey")) {
-                    int sleepMs = ((Integer)event.getNewValue()).intValue();
-                    try {Thread.sleep(sleepMs);} catch (InterruptedException ignore) {fail("interrupted");}
-                  }
-                }
-                public void afterInvalidate(EntryEvent event) {
-                  if (event.getCallbackArgument() != null) {
-                    lastCallback = event.getCallbackArgument();
-                  }
-                }
-                public void afterDestroy(EntryEvent event) {
-                  if (event.getCallbackArgument() != null) {
-                    lastCallback = event.getCallbackArgument();
-                  }
-                }
-              };
-            af.setCacheListener(cl);
-          }
-          Region r1 = createRootRegion("slowrec", af.create());
-          // place holder so we receive updates
-          r1.create("key", "value");
+              }
+            }
+
+            public void afterInvalidate(EntryEvent event) {
+              if (event.getCallbackArgument() != null) {
+                lastCallback = event.getCallbackArgument();
+              }
+            }
+
+            public void afterDestroy(EntryEvent event) {
+              if (event.getCallbackArgument() != null) {
+                lastCallback = event.getCallbackArgument();
+              }
+            }
+          };
+          af.setCacheListener(cl);
         }
-      });
+        Region r1 = createRootRegion("slowrec", af.create());
+        // place holder so we receive updates
+        r1.create("key", "value");
+      }
+    });
   }
 
   protected static final String CHECK_INVALID = "CHECK_INVALID";
-  
+
   private void checkLastValueInOtherVm(final String lastValue, final Object lcb) {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("check last value") {
-        public void run2() throws CacheException {
-          Region r1 = getRootRegion("slowrec");
-          if (lcb != null) {
-            WaitCriterion ev = new WaitCriterion() {
-              public boolean done() {
-                return lcb.equals(lastCallback);
-              }
-              public String description() {
-                return "waiting for callback";
-              }
-            };
-            Wait.waitForCriterion(ev, 50 * 1000, 200, true);
-            assertEquals(lcb, lastCallback);
-          }
-          if (lastValue == null) {
+      public void run2() throws CacheException {
+        Region r1 = getRootRegion("slowrec");
+        if (lcb != null) {
+          WaitCriterion ev = new WaitCriterion() {
+            public boolean done() {
+              return lcb.equals(lastCallback);
+            }
+
+            public String description() {
+              return "waiting for callback";
+            }
+          };
+          Wait.waitForCriterion(ev, 50 * 1000, 200, true);
+          assertEquals(lcb, lastCallback);
+        }
+        if (lastValue == null) {
+          final Region r = r1;
+          WaitCriterion ev = new WaitCriterion() {
+            public boolean done() {
+              return r.getEntry("key") == null;
+            }
+
+            public String description() {
+              return "waiting for key to become null";
+            }
+          };
+          Wait.waitForCriterion(ev, 50 * 1000, 200, true);
+          assertEquals(null, r1.getEntry("key"));
+        } else if (CHECK_INVALID.equals(lastValue)) {
+          // should be invalid
+          {
             final Region r = r1;
             WaitCriterion ev = new WaitCriterion() {
               public boolean done() {
-                return r.getEntry("key") == null;
+                Entry e = r.getEntry("key");
+                if (e == null) {
+                  return false;
+                }
+                return e.getValue() == null;
               }
+
               public String description() {
-                return "waiting for key to become null";
+                return "waiting for invalidate";
               }
             };
             Wait.waitForCriterion(ev, 50 * 1000, 200, true);
-            assertEquals(null, r1.getEntry("key"));
-          } else if (CHECK_INVALID.equals(lastValue)) {
-            // should be invalid
-            {
-              final Region r = r1;
-              WaitCriterion ev = new WaitCriterion() {
-                public boolean done() {
-                  Entry e = r.getEntry("key");
-                  if (e == null) {
-                    return false;
-                  }
-                  return e.getValue() == null;
+          }
+        } else {
+          {
+            int retryCount = 1000;
+            Region.Entry re = null;
+            Object value = null;
+            while (retryCount-- > 0) {
+              re = r1.getEntry("key");
+              if (re != null) {
+                value = re.getValue();
+                if (value != null && value.equals(lastValue)) {
+                  break;
                 }
-                public String description() {
-                  return "waiting for invalidate";
-                }
-              };
-              Wait.waitForCriterion(ev, 50 * 1000, 200, true);
-            }
-          } else {
-            {
-              int retryCount = 1000;
-              Region.Entry re = null;
-              Object value = null;
-              while (retryCount-- > 0) {
-                re = r1.getEntry("key");
-                if (re != null) {
-                  value = re.getValue();
-                  if (value != null && value.equals(lastValue)) {
-                    break;
-                  }
-                }
-                try {Thread.sleep(50);} catch (InterruptedException ignore) {fail("interrupted");}
               }
-              assertNotNull(re);
-              assertNotNull(value);
-              assertEquals(lastValue, value);
+              try {
+                Thread.sleep(50);
+              } catch (InterruptedException ignore) {
+                fail("interrupted");
+              }
             }
+            assertNotNull(re);
+            assertNotNull(value);
+            assertEquals(lastValue, value);
           }
         }
-      });
+      }
+    });
   }
 
   private void forceQueueFlush() {
-    Connection.FORCE_ASYNC_QUEUE=false;
+    Connection.FORCE_ASYNC_QUEUE = false;
     final DMStats stats = getSystem().getDistributionManager().getStats();
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         return stats.getAsyncThreads() == 0;
       }
+
       public String description() {
         return "Waiting for async threads to disappear";
       }
     };
     Wait.waitForCriterion(ev, 10 * 1000, 200, true);
   }
-  
+
   private void forceQueuing(final Region r) throws CacheException {
-    Connection.FORCE_ASYNC_QUEUE=true;
+    Connection.FORCE_ASYNC_QUEUE = true;
     final DMStats stats = getSystem().getDistributionManager().getStats();
     r.put("forcekey", "forcevalue");
-    
+
     // wait for the flusher to get its first flush in progress
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         return stats.getAsyncQueueFlushesInProgress() != 0;
       }
+
       public String description() {
         return "waiting for flushes to start";
       }
     };
     Wait.waitForCriterion(ev, 2 * 1000, 200, true);
   }
-  
+
   /**
-   * Make sure that noack puts to a receiver
-   * will eventually queue and then catch up.
+   * Make sure that noack puts to a receiver will eventually queue and then catch up.
    */
   @Test
   public void testNoAck() throws Exception {
@@ -278,13 +299,15 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           String value = "count=" + count;
           lastValue = value;
           r.put(key, value);
-          count ++;
+          count++;
           queueSize = stats.getAsyncQueueSize();
           queuedMsgs = stats.getAsyncQueuedMsgs();
           dequeuedMsgs = stats.getAsyncDequeuedMsgs();
           curQueuedMsgs = queuedMsgs - dequeuedMsgs;
         }
-        LogWriterUtils.getLogWriter().info("After " + count + " " + " puts slowrec mode kicked in by queuing " + queuedMsgs + " for a total size of " + queueSize);
+        LogWriterUtils.getLogWriter()
+            .info("After " + count + " " + " puts slowrec mode kicked in by queuing " + queuedMsgs
+                + " for a total size of " + queueSize);
       } finally {
         forceQueueFlush();
       }
@@ -292,6 +315,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
         public boolean done() {
           return stats.getAsyncQueueSize() == 0;
         }
+
         public String description() {
           return "Waiting for queues to empty";
         }
@@ -299,8 +323,10 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       final long start = System.currentTimeMillis();
       Wait.waitForCriterion(ev, 30 * 1000, 200, true);
       final long finish = System.currentTimeMillis();
-      LogWriterUtils.getLogWriter().info("After " + (finish - start) + " ms async msgs where flushed. A total of " + stats.getAsyncDequeuedMsgs() + " were flushed. lastValue=" + lastValue);
-    
+      LogWriterUtils.getLogWriter()
+          .info("After " + (finish - start) + " ms async msgs where flushed. A total of "
+              + stats.getAsyncDequeuedMsgs() + " were flushed. lastValue=" + lastValue);
+
       checkLastValueInOtherVm(lastValue, null);
     }
   }
@@ -322,8 +348,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Make sure that noack puts to a receiver
-   * will eventually queue and then catch up with conflation
+   * Make sure that noack puts to a receiver will eventually queue and then catch up with conflation
    */
   @Test
   public void testNoAckConflation() throws Exception {
@@ -346,25 +371,28 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     final long intialDeQueuedMsgs = stats.getAsyncDequeuedMsgs();
     long start = 0;
     try {
-      while ((stats.getAsyncConflatedMsgs()-initialConflatedMsgs) < 1000) {
+      while ((stats.getAsyncConflatedMsgs() - initialConflatedMsgs) < 1000) {
         String value = "count=" + count;
         lastValue = value;
         r.put(key, value);
-        count ++;
+        count++;
       }
       start = System.currentTimeMillis();
     } finally {
       forceQueueFlush();
     }
     final long finish = System.currentTimeMillis();
-    LogWriterUtils.getLogWriter().info("After " + (finish - start) + " ms async msgs where flushed. A total of " + (stats.getAsyncDequeuedMsgs()-intialDeQueuedMsgs) + " were flushed. Leaving a queue size of " + stats.getAsyncQueueSize() + ". The lastValue was " + lastValue);
-    
+    LogWriterUtils.getLogWriter()
+        .info("After " + (finish - start) + " ms async msgs where flushed. A total of "
+            + (stats.getAsyncDequeuedMsgs() - intialDeQueuedMsgs)
+            + " were flushed. Leaving a queue size of " + stats.getAsyncQueueSize()
+            + ". The lastValue was " + lastValue);
+
     checkLastValueInOtherVm(lastValue, null);
   }
 
   /**
-   * make sure ack does not hang
-   * make sure two ack updates do not conflate but are both queued
+   * make sure ack does not hang make sure two ack updates do not conflate but are both queued
    */
   @Test
   public void testAckConflation() throws Exception {
@@ -374,7 +402,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     final Region r = createRootRegion("slowrec", factory.create());
     final Region ar = createAckRegion(false, true);
     ar.create("ackKey", "ackValue");
-    
+
     final DMStats stats = getSystem().getDistributionManager().getStats();
 
     // create receiver in vm0 with queuing enabled
@@ -389,19 +417,23 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       long startQueuedMsgs = stats.getAsyncQueuedMsgs();
       long startConflatedMsgs = stats.getAsyncConflatedMsgs();
       Thread t = new Thread(new Runnable() {
-          public void run() {
-            ar.put("ackKey", "ackValue");
-          }
-        });
+        public void run() {
+          ar.put("ackKey", "ackValue");
+        }
+      });
       t.start();
       Thread t2 = new Thread(new Runnable() {
-          public void run() {
-            ar.put("ackKey", "ackValue");
-          }
-        });
+        public void run() {
+          ar.put("ackKey", "ackValue");
+        }
+      });
       t2.start();
       // give threads a chance to get queued
-      try {Thread.sleep(100);} catch (InterruptedException ignore) {fail("interrupted");}
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ignore) {
+        fail("interrupted");
+      }
       forceQueueFlush();
       ThreadUtils.join(t, 2 * 1000);
       ThreadUtils.join(t2, 2 * 1000);
@@ -410,16 +442,15 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       assertEquals(startConflatedMsgs, endConflatedMsgs);
       // queue should be flushed by the time we get an ack
       assertEquals(endQueuedMsgs, stats.getAsyncDequeuedMsgs());
-      assertEquals(startQueuedMsgs+2, endQueuedMsgs);
+      assertEquals(startQueuedMsgs + 2, endQueuedMsgs);
     }
   }
 
   /**
-   * Make sure that only sequences of updates are conflated
-   * Also checks that sending to a conflating region and non-conflating region
-   * does the correct thing.
-   * Test disabled because it intermittently fails due to race conditions
-   * in test. This has been fixed in congo's tests. See bug 35357.
+   * Make sure that only sequences of updates are conflated Also checks that sending to a conflating
+   * region and non-conflating region does the correct thing. Test disabled because it
+   * intermittently fails due to race conditions in test. This has been fixed in congo's tests. See
+   * bug 35357.
    */
   @Test
   public void testConflationSequence() throws Exception {
@@ -438,17 +469,17 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     {
       VM vm = getOtherVm();
       vm.invoke(new CacheSerializableRunnable("create noConflate") {
-          public void run2() throws CacheException {
-            AttributesFactory af = new AttributesFactory();
-            af.setScope(Scope.DISTRIBUTED_NO_ACK);
-            af.setDataPolicy(DataPolicy.REPLICATE);
-            createRootRegion("noConflate", af.create());
-          }
-        });
+        public void run2() throws CacheException {
+          AttributesFactory af = new AttributesFactory();
+          af.setScope(Scope.DISTRIBUTED_NO_ACK);
+          af.setDataPolicy(DataPolicy.REPLICATE);
+          createRootRegion("noConflate", af.create());
+        }
+      });
     }
 
     // now make sure update+destroy does not conflate
-    final Object key = "key";      
+    final Object key = "key";
     LogWriterUtils.getLogWriter().info("[testConflationSequence] about to force queuing");
     forceQueuing(r);
 
@@ -457,7 +488,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     String lastValue = value;
     Object mylcb = null;
     long initialConflatedMsgs = stats.getAsyncConflatedMsgs();
-    int endCount = count+60;
+    int endCount = count + 60;
 
     LogWriterUtils.getLogWriter().info("[testConflationSequence] about to build up queue");
     long begin = System.currentTimeMillis();
@@ -465,27 +496,28 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       value = "count=" + count;
       lastValue = value;
       r.create(key, value);
-      count ++;
+      count++;
       value = "count=" + count;
       lastValue = value;
       r.put(key, value);
-      count ++;
+      count++;
       mylcb = value;
       r.destroy(key, mylcb);
-      count ++;
+      count++;
       lastValue = null;
-      assertTrue(System.currentTimeMillis() < begin+1000*60*2);
+      assertTrue(System.currentTimeMillis() < begin + 1000 * 60 * 2);
     }
     assertEquals(initialConflatedMsgs, stats.getAsyncConflatedMsgs());
     forceQueueFlush();
     checkLastValueInOtherVm(lastValue, mylcb);
 
     // now make sure create+update+localDestroy does not conflate
-    LogWriterUtils.getLogWriter().info("[testConflationSequence] force queuing create-update-destroy");
+    LogWriterUtils.getLogWriter()
+        .info("[testConflationSequence] force queuing create-update-destroy");
     forceQueuing(r);
     initialConflatedMsgs = stats.getAsyncConflatedMsgs();
     endCount = count + 40;
-    
+
     LogWriterUtils.getLogWriter().info("[testConflationSequence] create-update-destroy");
     begin = System.currentTimeMillis();
     while (count < endCount) {
@@ -496,9 +528,9 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       value = "count=" + count;
       lastValue = value;
       r.put(key, value);
-      count ++;
+      count++;
       r.localDestroy(key);
-      assertTrue(System.currentTimeMillis() < begin+1000*60*2);
+      assertTrue(System.currentTimeMillis() < begin + 1000 * 60 * 2);
     }
     assertEquals(initialConflatedMsgs, stats.getAsyncConflatedMsgs());
     forceQueueFlush();
@@ -520,11 +552,11 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       value = "count=" + count;
       lastValue = value;
       r.put(key, value);
-      count ++;
+      count++;
       r.invalidate(key);
-      count ++;
+      count++;
       lastValue = CHECK_INVALID;
-      assertTrue(System.currentTimeMillis() < begin+1000*60*2);
+      assertTrue(System.currentTimeMillis() < begin + 1000 * 60 * 2);
     }
     assertEquals(initialConflatedMsgs, stats.getAsyncConflatedMsgs());
     forceQueueFlush();
@@ -563,12 +595,11 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     endCount = count + 80;
 
     begin = System.currentTimeMillis();
-    LogWriterUtils.getLogWriter().info("[testConflationSequence:DEBUG] count=" + count
-                        + " queuedMsgs=" + stats.getAsyncQueuedMsgs()
-                        + " conflatedMsgs=" + stats.getAsyncConflatedMsgs()
-                        + " dequeuedMsgs=" + stats.getAsyncDequeuedMsgs()
-                        + " asyncSocketWrites=" + stats.getAsyncSocketWrites()
-                        );
+    LogWriterUtils.getLogWriter()
+        .info("[testConflationSequence:DEBUG] count=" + count + " queuedMsgs="
+            + stats.getAsyncQueuedMsgs() + " conflatedMsgs=" + stats.getAsyncConflatedMsgs()
+            + " dequeuedMsgs=" + stats.getAsyncDequeuedMsgs() + " asyncSocketWrites="
+            + stats.getAsyncSocketWrites());
     while (count < endCount) {
       // make sure we continue to have a flush in progress
       assertEquals(1, stats.getAsyncThreads());
@@ -579,7 +610,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       value = "count=" + count;
       lastValue = value;
       r.put(key, value);
-      count ++;
+      count++;
       // make sure it was conflated and not queued
       assertEquals(queuedMsgs, stats.getAsyncQueuedMsgs());
       conflatedMsgs++;
@@ -589,7 +620,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       queuedMsgs++;
       assertEquals(queuedMsgs, stats.getAsyncQueuedMsgs());
       assertEquals(conflatedMsgs, stats.getAsyncConflatedMsgs());
-      assertTrue(System.currentTimeMillis() < begin+1000*60*2);
+      assertTrue(System.currentTimeMillis() < begin + 1000 * 60 * 2);
     }
 
     forceQueueFlush();
@@ -602,13 +633,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testSizeDisconnect() throws Exception {
-    final String expected = 
-      "org.apache.geode.internal.tcp.ConnectionException: Forced disconnect sent to" +
-      "||java.io.IOException: Broken pipe";
-    final String addExpected = 
-      "<ExpectedException action=add>" + expected + "</ExpectedException>";
-    final String removeExpected = 
-      "<ExpectedException action=remove>" + expected + "</ExpectedException>";
+    final String expected =
+        "org.apache.geode.internal.tcp.ConnectionException: Forced disconnect sent to"
+            + "||java.io.IOException: Broken pipe";
+    final String addExpected = "<ExpectedException action=add>" + expected + "</ExpectedException>";
+    final String removeExpected =
+        "<ExpectedException action=remove>" + expected + "</ExpectedException>";
 
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
@@ -625,18 +655,19 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     doCreateOtherVm(p, false);
 
     final Object key = "key";
-    final int VALUE_SIZE = 1024 * 100; // .1M async-max-queue-size should give us 10 of these 100K msgs before queue full
+    final int VALUE_SIZE = 1024 * 100; // .1M async-max-queue-size should give us 10 of these 100K
+                                       // msgs before queue full
     final byte[] value = new byte[VALUE_SIZE];
     int count = 0;
     forceQueuing(r);
     long queuedMsgs = stats.getAsyncQueuedMsgs();
     long queueSize = stats.getAsyncQueueSize();
-    
+
     getCache().getLogger().info(addExpected);
-    try {    
+    try {
       while (stats.getAsyncQueueSizeExceeded() == 0 && stats.getAsyncQueueTimeouts() == 0) {
         r.put(key, value);
-        count ++;
+        count++;
         if (stats.getAsyncQueueSize() > 0) {
           queuedMsgs = stats.getAsyncQueuedMsgs();
           queueSize = stats.getAsyncQueueSize();
@@ -645,20 +676,23 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           fail("should have exceeded max-queue-size by now");
         }
       }
-      LogWriterUtils.getLogWriter().info("After " + count + " " + VALUE_SIZE + " byte puts slowrec mode kicked in but the queue filled when its size reached " + queueSize + " with " + queuedMsgs + " msgs");
+      LogWriterUtils.getLogWriter()
+          .info("After " + count + " " + VALUE_SIZE
+              + " byte puts slowrec mode kicked in but the queue filled when its size reached "
+              + queueSize + " with " + queuedMsgs + " msgs");
       // make sure we lost a connection to vm0
       WaitCriterion ev = new WaitCriterion() {
         public boolean done() {
           return dm.getOtherDistributionManagerIds().size() <= others.size()
               && stats.getAsyncQueueSize() == 0;
         }
+
         public String description() {
           return "waiting for connection loss";
         }
       };
       Wait.waitForCriterion(ev, 30 * 1000, 200, true);
-    }
-    finally {
+    } finally {
       forceQueueFlush();
       getCache().getLogger().info(removeExpected);
     }
@@ -667,22 +701,21 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Make sure that exceeding the async-queue-timeout causes a disconnect.<p>
-   * [bruce] This test was disabled when the SlowRecDUnitTest was re-enabled
-   * in build.xml in the splitbrainNov07 branch.  It had been disabled since
-   * June 2006 due to hangs.  Some of the tests, like this one, still need
-   * work because the periodically (some quite often) fail.
+   * Make sure that exceeding the async-queue-timeout causes a disconnect.
+   * <p>
+   * [bruce] This test was disabled when the SlowRecDUnitTest was re-enabled in build.xml in the
+   * splitbrainNov07 branch. It had been disabled since June 2006 due to hangs. Some of the tests,
+   * like this one, still need work because the periodically (some quite often) fail.
    */
   @Test
   public void testTimeoutDisconnect() throws Exception {
-    final String expected = 
-      "org.apache.geode.internal.tcp.ConnectionException: Forced disconnect sent to" +
-      "||java.io.IOException: Broken pipe";
-    final String addExpected = 
-      "<ExpectedException action=add>" + expected + "</ExpectedException>";
-    final String removeExpected = 
-      "<ExpectedException action=remove>" + expected + "</ExpectedException>";
-      
+    final String expected =
+        "org.apache.geode.internal.tcp.ConnectionException: Forced disconnect sent to"
+            + "||java.io.IOException: Broken pipe";
+    final String addExpected = "<ExpectedException action=add>" + expected + "</ExpectedException>";
+    final String removeExpected =
+        "<ExpectedException action=remove>" + expected + "</ExpectedException>";
+
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     final Region r = createRootRegion("slowrec", factory.create());
@@ -697,7 +730,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     p.setProperty(ASYNC_QUEUE_TIMEOUT, "500"); // 500 ms
     doCreateOtherVm(p, true);
 
-    
+
     final Object key = "key";
     final int VALUE_SIZE = 1024; // 1k
     final byte[] value = new byte[VALUE_SIZE];
@@ -707,10 +740,10 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     final long timeoutLimit = System.currentTimeMillis() + 5000;
 
     getCache().getLogger().info(addExpected);
-    try {    
+    try {
       while (stats.getAsyncQueueTimeouts() == 0) {
         r.put(key, value);
-        count ++;
+        count++;
         if (stats.getAsyncQueueSize() > 0) {
           queuedMsgs = stats.getAsyncQueuedMsgs();
           queueSize = stats.getAsyncQueueSize();
@@ -719,7 +752,10 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           fail("should have exceeded async-queue-timeout by now");
         }
       }
-      LogWriterUtils.getLogWriter().info("After " + count + " " + VALUE_SIZE + " byte puts slowrec mode kicked in but the queue filled when its size reached " + queueSize + " with " + queuedMsgs + " msgs");
+      LogWriterUtils.getLogWriter()
+          .info("After " + count + " " + VALUE_SIZE
+              + " byte puts slowrec mode kicked in but the queue filled when its size reached "
+              + queueSize + " with " + queuedMsgs + " msgs");
       // make sure we lost a connection to vm0
       WaitCriterion ev = new WaitCriterion() {
         public boolean done() {
@@ -728,13 +764,13 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           }
           return stats.getAsyncQueueSize() == 0;
         }
+
         public String description() {
           return "waiting for departure";
         }
       };
       Wait.waitForCriterion(ev, 2 * 1000, 200, true);
-    }
-    finally {
+    } finally {
       getCache().getLogger().info(removeExpected);
     }
     assertEquals(others, dm.getOtherDistributionManagerIds());
@@ -744,117 +780,132 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   private static final String KEY_SLEEP = "KEY_SLEEP";
   private static final String KEY_WAIT = "KEY_WAIT";
   private static final String KEY_DISCONNECT = "KEY_DISCONNECT";
-  
+
   protected final static int CALLBACK_CREATE = 0;
   protected final static int CALLBACK_UPDATE = 1;
   protected final static int CALLBACK_INVALIDATE = 2;
   protected final static int CALLBACK_DESTROY = 3;
   protected final static int CALLBACK_REGION_INVALIDATE = 4;
-  
+
   protected final static Integer CALLBACK_CREATE_INTEGER = new Integer(CALLBACK_CREATE);
   protected final static Integer CALLBACK_UPDATE_INTEGER = new Integer(CALLBACK_UPDATE);
   protected final static Integer CALLBACK_INVALIDATE_INTEGER = new Integer(CALLBACK_INVALIDATE);
   protected final static Integer CALLBACK_DESTROY_INTEGER = new Integer(CALLBACK_DESTROY);
-  protected final static Integer CALLBACK_REGION_INVALIDATE_INTEGER = new Integer(CALLBACK_REGION_INVALIDATE);
+  protected final static Integer CALLBACK_REGION_INVALIDATE_INTEGER =
+      new Integer(CALLBACK_REGION_INVALIDATE);
 
   private static class CallbackWrapper {
     public final Object callbackArgument;
-    public final  int callbackType;
+    public final int callbackType;
+
     public CallbackWrapper(Object callbackArgument, int callbackType) {
       this.callbackArgument = callbackArgument;
       this.callbackType = callbackType;
     }
+
     public String toString() {
       return "CallbackWrapper: " + callbackArgument.toString() + " of type " + callbackType;
     }
   }
-  
+
   protected static class ControlListener extends CacheListenerAdapter {
     public final LinkedList callbackArguments = new LinkedList();
     public final LinkedList callbackTypes = new LinkedList();
     public final Object CONTROL_LOCK = new Object();
-    
+
     public void afterCreate(EntryEvent event) {
-      LogWriterUtils.getLogWriter().info(event.getRegion().getName() + " afterCreate " + event.getKey());
-      synchronized(this.CONTROL_LOCK) {
+      LogWriterUtils.getLogWriter()
+          .info(event.getRegion().getName() + " afterCreate " + event.getKey());
+      synchronized (this.CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments.add(
-            new CallbackWrapper(event.getCallbackArgument(), CALLBACK_CREATE));
+          this.callbackArguments
+              .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_CREATE));
           this.callbackTypes.add(CALLBACK_CREATE_INTEGER);
           this.CONTROL_LOCK.notifyAll();
         }
       }
       processEvent(event);
     }
+
     public void afterUpdate(EntryEvent event) {
-      LogWriterUtils.getLogWriter().info(event.getRegion().getName() + " afterUpdate " + event.getKey());
-      synchronized(this.CONTROL_LOCK) {
+      LogWriterUtils.getLogWriter()
+          .info(event.getRegion().getName() + " afterUpdate " + event.getKey());
+      synchronized (this.CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments.add(
-            new CallbackWrapper(event.getCallbackArgument(), CALLBACK_UPDATE));
+          this.callbackArguments
+              .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_UPDATE));
           this.callbackTypes.add(CALLBACK_UPDATE_INTEGER);
           this.CONTROL_LOCK.notifyAll();
         }
       }
       processEvent(event);
     }
+
     public void afterInvalidate(EntryEvent event) {
-      synchronized(this.CONTROL_LOCK) {
+      synchronized (this.CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments.add(
-            new CallbackWrapper(event.getCallbackArgument(), CALLBACK_INVALIDATE));
+          this.callbackArguments
+              .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_INVALIDATE));
           this.callbackTypes.add(CALLBACK_INVALIDATE_INTEGER);
           this.CONTROL_LOCK.notifyAll();
         }
       }
     }
+
     public void afterDestroy(EntryEvent event) {
-      synchronized(this.CONTROL_LOCK) {
+      synchronized (this.CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments.add(
-            new CallbackWrapper(event.getCallbackArgument(), CALLBACK_DESTROY));
+          this.callbackArguments
+              .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_DESTROY));
           this.callbackTypes.add(CALLBACK_DESTROY_INTEGER);
           this.CONTROL_LOCK.notifyAll();
         }
       }
     }
+
     public void afterRegionInvalidate(RegionEvent event) {
-      synchronized(this.CONTROL_LOCK) {
+      synchronized (this.CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments.add(
-            new CallbackWrapper(event.getCallbackArgument(), CALLBACK_REGION_INVALIDATE));
+          this.callbackArguments
+              .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_REGION_INVALIDATE));
           this.callbackTypes.add(CALLBACK_REGION_INVALIDATE_INTEGER);
           this.CONTROL_LOCK.notifyAll();
         }
       }
     }
+
     private void processEvent(EntryEvent event) {
       if (event.getKey().equals(KEY_SLEEP)) {
         processSleep(event);
-      }
-      else if (event.getKey().equals(KEY_WAIT)) {
+      } else if (event.getKey().equals(KEY_WAIT)) {
         processWait(event);
-      }
-      else if (event.getKey().equals(KEY_DISCONNECT)) {
+      } else if (event.getKey().equals(KEY_DISCONNECT)) {
         processDisconnect(event);
       }
     }
+
     private void processSleep(EntryEvent event) {
-      int sleepMs = ((Integer)event.getNewValue()).intValue();
+      int sleepMs = ((Integer) event.getNewValue()).intValue();
       LogWriterUtils.getLogWriter().info("[processSleep] sleeping for " + sleepMs);
       try {
         Thread.sleep(sleepMs);
-      } catch (InterruptedException ignore) {fail("interrupted");}
-    }
-    private void processWait(EntryEvent event) {
-      int sleepMs = ((Integer)event.getNewValue()).intValue();
-      LogWriterUtils.getLogWriter().info("[processWait] waiting for " + sleepMs);
-      synchronized(this.CONTROL_LOCK) {
-        try {
-          this.CONTROL_LOCK.wait(sleepMs);
-        } catch (InterruptedException ignore) {return;}
+      } catch (InterruptedException ignore) {
+        fail("interrupted");
       }
     }
+
+    private void processWait(EntryEvent event) {
+      int sleepMs = ((Integer) event.getNewValue()).intValue();
+      LogWriterUtils.getLogWriter().info("[processWait] waiting for " + sleepMs);
+      synchronized (this.CONTROL_LOCK) {
+        try {
+          this.CONTROL_LOCK.wait(sleepMs);
+        } catch (InterruptedException ignore) {
+          return;
+        }
+      }
+    }
+
     private void processDisconnect(EntryEvent event) {
       LogWriterUtils.getLogWriter().info("[processDisconnect] disconnecting");
       disconnectFromDS();
@@ -862,22 +913,20 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   };
 
   /**
-   * Make sure a multiple no ack regions conflate properly.
-   * [bruce] disabled when use of this dunit test class was reenabled in
-   * the splitbrainNov07 branch.  The class had been disabled since
-   * June 2006 r13222 in the trunk.  This test is failing because conflation
-   * isn't kicking in for some reason.
+   * Make sure a multiple no ack regions conflate properly. [bruce] disabled when use of this dunit
+   * test class was reenabled in the splitbrainNov07 branch. The class had been disabled since June
+   * 2006 r13222 in the trunk. This test is failing because conflation isn't kicking in for some
+   * reason.
    */
   @Test
   public void testMultipleRegionConflation() throws Exception {
     try {
       doTestMultipleRegionConflation();
-    }
-    finally {
+    } finally {
       // make sure other vm was notified even if test failed
       getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
         public void run() {
-          synchronized(doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
+          synchronized (doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
             doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK.notifyAll();
           }
         }
@@ -887,13 +936,14 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
 
   protected static ControlListener doTestMultipleRegionConflation_R1_Listener;
   protected static ControlListener doTestMultipleRegionConflation_R2_Listener;
+
   private void doTestMultipleRegionConflation() throws Exception {
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     factory.setEnableAsyncConflation(true);
     final Region r1 = createRootRegion("slowrec1", factory.create());
     final Region r2 = createRootRegion("slowrec2", factory.create());
-    
+
     assertTrue(getSystem().isConnected());
     assertNotNull(r1);
     assertFalse(r1.isDestroyed());
@@ -903,12 +953,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     assertFalse(r2.isDestroyed());
     assertNotNull(getCache());
     assertNotNull(getCache().getRegion("slowrec2"));
-    
+
     final DM dm = getSystem().getDistributionManager();
     final Serializable controllerVM = dm.getDistributionManagerId();
     final DMStats stats = dm.getStats();
     final int millisToWait = 1000 * 60 * 5; // 5 minutes
-    
+
     // set others before vm0 connects
     long initialQueuedMsgs = stats.getAsyncQueuedMsgs();
 
@@ -921,34 +971,36 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     getOtherVm().invoke(new CacheSerializableRunnable("Create other vm") {
       public void run2() throws CacheException {
         getSystem(p);
-        
+
         DM dm = getSystem().getDistributionManager();
         assertTrue(dm.getDistributionManagerIds().contains(controllerVM));
-        
+
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_NO_ACK);
         af.setDataPolicy(DataPolicy.REPLICATE);
-        
+
         doTestMultipleRegionConflation_R1_Listener = new ControlListener();
         af.setCacheListener(doTestMultipleRegionConflation_R1_Listener);
         createRootRegion("slowrec1", af.create());
-        
+
         doTestMultipleRegionConflation_R2_Listener = new ControlListener();
         af.setCacheListener(doTestMultipleRegionConflation_R2_Listener);
         createRootRegion("slowrec2", af.create());
       }
     });
-    
+
     // put vm0 cache listener into wait
-    LogWriterUtils.getLogWriter().info("[doTestMultipleRegionConflation] about to put vm0 into wait");
+    LogWriterUtils.getLogWriter()
+        .info("[doTestMultipleRegionConflation] about to put vm0 into wait");
     r1.put(KEY_WAIT, new Integer(millisToWait));
 
     // build up queue size
-    LogWriterUtils.getLogWriter().info("[doTestMultipleRegionConflation] building up queue size...");
+    LogWriterUtils.getLogWriter()
+        .info("[doTestMultipleRegionConflation] building up queue size...");
     final Object key = "key";
     final int socketBufferSize = getSystem().getConfig().getSocketBufferSize();
-    final int VALUE_SIZE = socketBufferSize*3;
-    //final int VALUE_SIZE = 1024 * 1024  ; // 1 MB
+    final int VALUE_SIZE = socketBufferSize * 3;
+    // final int VALUE_SIZE = 1024 * 1024 ; // 1 MB
     final byte[] value = new byte[VALUE_SIZE];
 
     int count = 0;
@@ -956,10 +1008,10 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       count++;
       r1.put(key, value);
     }
-    
-    LogWriterUtils.getLogWriter().info("[doTestMultipleRegionConflation] After " + 
-      count + " puts of size " + VALUE_SIZE + 
-      " slowrec mode kicked in with queue size=" + stats.getAsyncQueueSize());
+
+    LogWriterUtils.getLogWriter()
+        .info("[doTestMultipleRegionConflation] After " + count + " puts of size " + VALUE_SIZE
+            + " slowrec mode kicked in with queue size=" + stats.getAsyncQueueSize());
 
     // put values that will be asserted
     final Object key1 = "key1";
@@ -967,7 +1019,8 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     Object putKey = key1;
     boolean flag = true;
     for (int i = 0; i < 30; i++) {
-      if (i == 10) putKey = key2;
+      if (i == 10)
+        putKey = key2;
       if (flag) {
         if (i == 6) {
           r1.invalidate(putKey, new Integer(i));
@@ -985,95 +1038,109 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       }
       flag = !flag;
     }
-    
+
     // r1: key1, 0, create
     // r1: key1, 4, update
     // r1: key1, 6, invalidate
     // r1: key1, 8, update
-    
+
     // r1: key2, 10, create
-    // r1:       24, invalidateRegion
+    // r1: 24, invalidateRegion
     // r1: key2, 28, update
 
     // r2: key1, 1, create
     // r2: key1, 9, update
-    
+
     // r2: key2, 11, create
     // r2: key2, 13, update
     // r2: key2, 15, destroy
     // r2: key2, 17, create
     // r2: key2, 29, update
-    
-    final int[] r1ExpectedArgs = new int[] { 0, 4, 6, 8, 10, 24, 28 }; 
+
+    final int[] r1ExpectedArgs = new int[] {0, 4, 6, 8, 10, 24, 28};
     final int[] r1ExpectedTypes = new int[] /* 0, 1, 2, 1, 0, 4, 1 */
-      { CALLBACK_CREATE, CALLBACK_UPDATE, CALLBACK_INVALIDATE, CALLBACK_UPDATE,
-        CALLBACK_CREATE, CALLBACK_REGION_INVALIDATE, CALLBACK_UPDATE }; 
-    
-    final int[] r2ExpectedArgs = new int[] { 1, 9, 11, 13, 15, 17, 29 };
-    final int[] r2ExpectedTypes = new int[] 
-      { CALLBACK_CREATE, CALLBACK_UPDATE, CALLBACK_CREATE, CALLBACK_UPDATE,
-        CALLBACK_DESTROY, CALLBACK_CREATE, CALLBACK_UPDATE }; 
+    {CALLBACK_CREATE, CALLBACK_UPDATE, CALLBACK_INVALIDATE, CALLBACK_UPDATE, CALLBACK_CREATE,
+        CALLBACK_REGION_INVALIDATE, CALLBACK_UPDATE};
+
+    final int[] r2ExpectedArgs = new int[] {1, 9, 11, 13, 15, 17, 29};
+    final int[] r2ExpectedTypes = new int[] {CALLBACK_CREATE, CALLBACK_UPDATE, CALLBACK_CREATE,
+        CALLBACK_UPDATE, CALLBACK_DESTROY, CALLBACK_CREATE, CALLBACK_UPDATE};
 
     // send notify to vm0
     LogWriterUtils.getLogWriter().info("[doTestMultipleRegionConflation] wake up vm0");
     getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
       public void run() {
-        synchronized(doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
+        synchronized (doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
           doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK.notifyAll();
         }
       }
     });
-    
+
     // wait for queue to be flushed
     LogWriterUtils.getLogWriter().info("[doTestMultipleRegionConflation] wait for vm0");
     getOtherVm().invoke(new SerializableRunnable("Wait for other vm") {
       public void run() {
         try {
-          synchronized(doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
-            while (doTestMultipleRegionConflation_R1_Listener.callbackArguments.size() < r1ExpectedArgs.length) {
+          synchronized (doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
+            while (doTestMultipleRegionConflation_R1_Listener.callbackArguments
+                .size() < r1ExpectedArgs.length) {
               doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK.wait(millisToWait);
             }
           }
-          synchronized(doTestMultipleRegionConflation_R2_Listener.CONTROL_LOCK) {
-            while (doTestMultipleRegionConflation_R2_Listener.callbackArguments.size() < r2ExpectedArgs.length) {
+          synchronized (doTestMultipleRegionConflation_R2_Listener.CONTROL_LOCK) {
+            while (doTestMultipleRegionConflation_R2_Listener.callbackArguments
+                .size() < r2ExpectedArgs.length) {
               doTestMultipleRegionConflation_R2_Listener.CONTROL_LOCK.wait(millisToWait);
             }
           }
-        } catch (InterruptedException ignore) {fail("interrupted");}
+        } catch (InterruptedException ignore) {
+          fail("interrupted");
+        }
       }
     });
-    
+
     // assert values on both listeners
-    LogWriterUtils.getLogWriter().info("[doTestMultipleRegionConflation] assert callback arguments");
+    LogWriterUtils.getLogWriter()
+        .info("[doTestMultipleRegionConflation] assert callback arguments");
     getOtherVm().invoke(new SerializableRunnable("Assert callback arguments") {
       public void run() {
-        synchronized(doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
-          LogWriterUtils.getLogWriter().info("doTestMultipleRegionConflation_R1_Listener.callbackArguments=" + doTestMultipleRegionConflation_R1_Listener.callbackArguments);
-          LogWriterUtils.getLogWriter().info("doTestMultipleRegionConflation_R1_Listener.callbackTypes=" + doTestMultipleRegionConflation_R1_Listener.callbackTypes);
+        synchronized (doTestMultipleRegionConflation_R1_Listener.CONTROL_LOCK) {
+          LogWriterUtils.getLogWriter()
+              .info("doTestMultipleRegionConflation_R1_Listener.callbackArguments="
+                  + doTestMultipleRegionConflation_R1_Listener.callbackArguments);
+          LogWriterUtils.getLogWriter()
+              .info("doTestMultipleRegionConflation_R1_Listener.callbackTypes="
+                  + doTestMultipleRegionConflation_R1_Listener.callbackTypes);
           assertEquals(doTestMultipleRegionConflation_R1_Listener.callbackArguments.size(),
-                       doTestMultipleRegionConflation_R1_Listener.callbackTypes.size());
+              doTestMultipleRegionConflation_R1_Listener.callbackTypes.size());
           int i = 0;
-          for (Iterator iter = doTestMultipleRegionConflation_R1_Listener.callbackArguments.iterator(); iter.hasNext();) {
+          for (Iterator iter =
+              doTestMultipleRegionConflation_R1_Listener.callbackArguments.iterator(); iter
+                  .hasNext();) {
             CallbackWrapper wrapper = (CallbackWrapper) iter.next();
-            assertEquals(new Integer(r1ExpectedArgs[i]), 
-              wrapper.callbackArgument);
-            assertEquals(new Integer(r1ExpectedTypes[i]), 
-              doTestMultipleRegionConflation_R1_Listener.callbackTypes.get(i));
+            assertEquals(new Integer(r1ExpectedArgs[i]), wrapper.callbackArgument);
+            assertEquals(new Integer(r1ExpectedTypes[i]),
+                doTestMultipleRegionConflation_R1_Listener.callbackTypes.get(i));
             i++;
           }
         }
-        synchronized(doTestMultipleRegionConflation_R2_Listener.CONTROL_LOCK) {
-          LogWriterUtils.getLogWriter().info("doTestMultipleRegionConflation_R2_Listener.callbackArguments=" + doTestMultipleRegionConflation_R2_Listener.callbackArguments);
-          LogWriterUtils.getLogWriter().info("doTestMultipleRegionConflation_R2_Listener.callbackTypes=" + doTestMultipleRegionConflation_R2_Listener.callbackTypes);
+        synchronized (doTestMultipleRegionConflation_R2_Listener.CONTROL_LOCK) {
+          LogWriterUtils.getLogWriter()
+              .info("doTestMultipleRegionConflation_R2_Listener.callbackArguments="
+                  + doTestMultipleRegionConflation_R2_Listener.callbackArguments);
+          LogWriterUtils.getLogWriter()
+              .info("doTestMultipleRegionConflation_R2_Listener.callbackTypes="
+                  + doTestMultipleRegionConflation_R2_Listener.callbackTypes);
           assertEquals(doTestMultipleRegionConflation_R2_Listener.callbackArguments.size(),
-                       doTestMultipleRegionConflation_R2_Listener.callbackTypes.size());
+              doTestMultipleRegionConflation_R2_Listener.callbackTypes.size());
           int i = 0;
-          for (Iterator iter = doTestMultipleRegionConflation_R2_Listener.callbackArguments.iterator(); iter.hasNext();) {
+          for (Iterator iter =
+              doTestMultipleRegionConflation_R2_Listener.callbackArguments.iterator(); iter
+                  .hasNext();) {
             CallbackWrapper wrapper = (CallbackWrapper) iter.next();
-            assertEquals(new Integer(r2ExpectedArgs[i]), 
-              wrapper.callbackArgument);
-            assertEquals(new Integer(r2ExpectedTypes[i]), 
-              doTestMultipleRegionConflation_R2_Listener.callbackTypes.get(i));
+            assertEquals(new Integer(r2ExpectedArgs[i]), wrapper.callbackArgument);
+            assertEquals(new Integer(r2ExpectedTypes[i]),
+                doTestMultipleRegionConflation_R2_Listener.callbackTypes.get(i));
             i++;
           }
         }
@@ -1088,12 +1155,11 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   public void testDisconnectCleanup() throws Exception {
     try {
       doTestDisconnectCleanup();
-    }
-    finally {
+    } finally {
       // make sure other vm was notified even if test failed
       getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
         public void run() {
-          synchronized(doTestDisconnectCleanup_Listener.CONTROL_LOCK) {
+          synchronized (doTestDisconnectCleanup_Listener.CONTROL_LOCK) {
             doTestDisconnectCleanup_Listener.CONTROL_LOCK.notifyAll();
           }
         }
@@ -1102,6 +1168,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected static ControlListener doTestDisconnectCleanup_Listener;
+
   private void doTestDisconnectCleanup() throws Exception {
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
@@ -1118,14 +1185,14 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     p.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, "5");
     p.setProperty(ASYNC_QUEUE_TIMEOUT, "86400000"); // max value
     p.setProperty(ASYNC_MAX_QUEUE_SIZE, "1024"); // max value
-    
+
     getOtherVm().invoke(new CacheSerializableRunnable("Create other vm") {
       public void run2() throws CacheException {
         getSystem(p);
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_NO_ACK);
         af.setDataPolicy(DataPolicy.REPLICATE);
-        
+
         doTestDisconnectCleanup_Listener = new ControlListener();
         af.setCacheListener(doTestDisconnectCleanup_Listener);
         createRootRegion("slowrec", af.create());
@@ -1142,8 +1209,8 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] building up queue size...");
     final Object key = "key";
     final int socketBufferSize = getSystem().getConfig().getSocketBufferSize();
-    final int VALUE_SIZE = socketBufferSize*3;
-    //final int VALUE_SIZE = 1024 * 1024  ; // 1 MB
+    final int VALUE_SIZE = socketBufferSize * 3;
+    // final int VALUE_SIZE = 1024 * 1024 ; // 1 MB
     final byte[] value = new byte[VALUE_SIZE];
 
     int count = 0;
@@ -1153,13 +1220,11 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       r.put(key, value);
       assertFalse(System.currentTimeMillis() >= abortMillis);
     }
-    
-    LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] After " + 
-      count + " puts of size " + VALUE_SIZE + 
-      " slowrec mode kicked in with queue size=" + stats.getAsyncQueueSize());
 
-    while (stats.getAsyncQueuedMsgs() < 10 ||
-           stats.getAsyncQueueSize() < VALUE_SIZE*10) {
+    LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] After " + count + " puts of size "
+        + VALUE_SIZE + " slowrec mode kicked in with queue size=" + stats.getAsyncQueueSize());
+
+    while (stats.getAsyncQueuedMsgs() < 10 || stats.getAsyncQueueSize() < VALUE_SIZE * 10) {
       count++;
       r.put(key, value);
       assertFalse(System.currentTimeMillis() >= abortMillis);
@@ -1170,41 +1235,42 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       Wait.pause(100);
       assertFalse(System.currentTimeMillis() >= abortMillis);
     }
-    
-    LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] After " + 
-      count + " puts of size " + VALUE_SIZE + " queue size has reached " + 
-      stats.getAsyncQueueSize() + " bytes and number of queues is " + 
-      stats.getAsyncQueues() + ".");
 
-    assertTrue(stats.getAsyncQueueSize() >= (VALUE_SIZE*5));
-    assertEquals(initialQueues+1, stats.getAsyncQueues());
+    LogWriterUtils.getLogWriter()
+        .info("[testDisconnectCleanup] After " + count + " puts of size " + VALUE_SIZE
+            + " queue size has reached " + stats.getAsyncQueueSize()
+            + " bytes and number of queues is " + stats.getAsyncQueues() + ".");
+
+    assertTrue(stats.getAsyncQueueSize() >= (VALUE_SIZE * 5));
+    assertEquals(initialQueues + 1, stats.getAsyncQueues());
 
     // assert vm0 is still connected
     assertTrue(dm.getOtherDistributionManagerIds().size() > others.size());
-    
+
     // send notify to vm0
     LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] wake up vm0");
     getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
       public void run() {
-        synchronized(doTestDisconnectCleanup_Listener.CONTROL_LOCK) {
+        synchronized (doTestDisconnectCleanup_Listener.CONTROL_LOCK) {
           doTestDisconnectCleanup_Listener.CONTROL_LOCK.notifyAll();
         }
       }
     });
-    
+
     // make sure we lost a connection to vm0
     LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] wait for vm0 to disconnect");
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         return dm.getOtherDistributionManagerIds().size() <= others.size();
       }
+
       public String description() {
         return "waiting for disconnect";
       }
     };
     Wait.waitForCriterion(ev, 2 * 1000, 200, true);
     assertEquals(others, dm.getOtherDistributionManagerIds());
-    
+
     // check free memory... perform wait loop with System.gc
     LogWriterUtils.getLogWriter().info("[testDisconnectCleanup] wait for queue cleanup");
     ev = new WaitCriterion() {
@@ -1215,6 +1281,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
         Runtime.getRuntime().gc();
         return false;
       }
+
       public String description() {
         return "waiting for queue cleanup";
       }
@@ -1224,22 +1291,21 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Make sure a disconnect causes queue memory to be released.<p>
-   * [bruce] This test was disabled when the SlowRecDUnitTest was re-enabled
-   * in build.xml in the splitbrainNov07 branch.  It had been disabled since
-   * June 2006 due to hangs.  Some of the tests, like this one, still need
-   * work because the periodically (some quite often) fail.
+   * Make sure a disconnect causes queue memory to be released.
+   * <p>
+   * [bruce] This test was disabled when the SlowRecDUnitTest was re-enabled in build.xml in the
+   * splitbrainNov07 branch. It had been disabled since June 2006 due to hangs. Some of the tests,
+   * like this one, still need work because the periodically (some quite often) fail.
    */
   @Test
   public void testPartialMessage() throws Exception {
     try {
       doTestPartialMessage();
-    }
-    finally {
+    } finally {
       // make sure other vm was notified even if test failed
       getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
         public void run() {
-          synchronized(doTestPartialMessage_Listener.CONTROL_LOCK) {
+          synchronized (doTestPartialMessage_Listener.CONTROL_LOCK) {
             doTestPartialMessage_Listener.CONTROL_LOCK.notifyAll();
           }
         }
@@ -1248,6 +1314,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected static ControlListener doTestPartialMessage_Listener;
+
   private void doTestPartialMessage() throws Exception {
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
@@ -1255,7 +1322,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     final Region r = createRootRegion("slowrec", factory.create());
     final DM dm = getSystem().getDistributionManager();
     final DMStats stats = dm.getStats();
-    
+
     // set others before vm0 connects
     long initialQueuedMsgs = stats.getAsyncQueuedMsgs();
 
@@ -1264,14 +1331,14 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     p.setProperty(ASYNC_DISTRIBUTION_TIMEOUT, String.valueOf(1000 * 4)); // 4 sec
     p.setProperty(ASYNC_QUEUE_TIMEOUT, "86400000"); // max value
     p.setProperty(ASYNC_MAX_QUEUE_SIZE, "1024"); // max value
-    
+
     getOtherVm().invoke(new CacheSerializableRunnable("Create other vm") {
       public void run2() throws CacheException {
         getSystem(p);
         AttributesFactory af = new AttributesFactory();
         af.setScope(Scope.DISTRIBUTED_NO_ACK);
         af.setDataPolicy(DataPolicy.REPLICATE);
-        
+
         doTestPartialMessage_Listener = new ControlListener();
         af.setCacheListener(doTestPartialMessage_Listener);
         createRootRegion("slowrec", af.create());
@@ -1287,8 +1354,8 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     LogWriterUtils.getLogWriter().info("[testPartialMessage] building up queue size...");
     final Object key = "key";
     final int socketBufferSize = getSystem().getConfig().getSocketBufferSize();
-    final int VALUE_SIZE = socketBufferSize*3;
-    //1024 * 20; // 20 KB
+    final int VALUE_SIZE = socketBufferSize * 3;
+    // 1024 * 20; // 20 KB
     final byte[] value = new byte[VALUE_SIZE];
 
     int count = 0;
@@ -1296,54 +1363,53 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       count++;
       r.put(key, value, new Integer(count));
     }
-    
+
     final int partialId = count;
     assertEquals(0, stats.getAsyncConflatedMsgs());
-    
-    LogWriterUtils.getLogWriter().info("[testPartialMessage] After " + 
-      count + " puts of size " + VALUE_SIZE + 
-      " slowrec mode kicked in with queue size=" + stats.getAsyncQueueSize());
+
+    LogWriterUtils.getLogWriter().info("[testPartialMessage] After " + count + " puts of size "
+        + VALUE_SIZE + " slowrec mode kicked in with queue size=" + stats.getAsyncQueueSize());
 
     Wait.pause(2000);
-      
+
     // conflate 10 times
     while (stats.getAsyncConflatedMsgs() < 10) {
       count++;
       r.put(key, value, new Integer(count));
-      if (count == partialId+1) {
-        assertEquals(initialQueuedMsgs+2, stats.getAsyncQueuedMsgs());
+      if (count == partialId + 1) {
+        assertEquals(initialQueuedMsgs + 2, stats.getAsyncQueuedMsgs());
         assertEquals(0, stats.getAsyncConflatedMsgs());
-      } else if (count == partialId+2) {
-        assertEquals(initialQueuedMsgs+2, stats.getAsyncQueuedMsgs());
+      } else if (count == partialId + 2) {
+        assertEquals(initialQueuedMsgs + 2, stats.getAsyncQueuedMsgs());
         assertEquals(1, stats.getAsyncConflatedMsgs());
       }
     }
-    
+
     final int conflateId = count;
-    
-    final int[] expectedArgs = { partialId, conflateId };
+
+    final int[] expectedArgs = {partialId, conflateId};
 
     // send notify to vm0
     LogWriterUtils.getLogWriter().info("[testPartialMessage] wake up vm0");
     getOtherVm().invoke(new SerializableRunnable("Wake up other vm") {
       public void run() {
-        synchronized(doTestPartialMessage_Listener.CONTROL_LOCK) {
+        synchronized (doTestPartialMessage_Listener.CONTROL_LOCK) {
           doTestPartialMessage_Listener.CONTROL_LOCK.notify();
         }
       }
     });
-    
+
     // wait for queue to be flushed
     LogWriterUtils.getLogWriter().info("[testPartialMessage] wait for vm0");
     getOtherVm().invoke(new SerializableRunnable("Wait for other vm") {
       public void run() {
         try {
-          synchronized(doTestPartialMessage_Listener.CONTROL_LOCK) {
+          synchronized (doTestPartialMessage_Listener.CONTROL_LOCK) {
             boolean done = false;
             while (!done) {
-              if (doTestPartialMessage_Listener.callbackArguments.size()> 0) {
-                CallbackWrapper last = (CallbackWrapper)
-                  doTestPartialMessage_Listener.callbackArguments.getLast();
+              if (doTestPartialMessage_Listener.callbackArguments.size() > 0) {
+                CallbackWrapper last =
+                    (CallbackWrapper) doTestPartialMessage_Listener.callbackArguments.getLast();
                 Integer lastId = (Integer) last.callbackArgument;
                 if (lastId.intValue() == conflateId) {
                   done = true;
@@ -1355,28 +1421,28 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
               }
             }
           }
-        } catch (InterruptedException ignore) {fail("interrupted");}
+        } catch (InterruptedException ignore) {
+          fail("interrupted");
+        }
       }
     });
-    
+
     // assert values on both listeners
     LogWriterUtils.getLogWriter().info("[testPartialMessage] assert callback arguments");
     getOtherVm().invoke(new SerializableRunnable("Assert callback arguments") {
       public void run() {
-        synchronized(doTestPartialMessage_Listener.CONTROL_LOCK) {
-          LogWriterUtils.getLogWriter().info("[testPartialMessage] " +
-              "doTestPartialMessage_Listener.callbackArguments=" + 
-              doTestPartialMessage_Listener.callbackArguments);
-              
+        synchronized (doTestPartialMessage_Listener.CONTROL_LOCK) {
+          LogWriterUtils.getLogWriter()
+              .info("[testPartialMessage] " + "doTestPartialMessage_Listener.callbackArguments="
+                  + doTestPartialMessage_Listener.callbackArguments);
+
           assertEquals(doTestPartialMessage_Listener.callbackArguments.size(),
-                       doTestPartialMessage_Listener.callbackTypes.size());
-                       
+              doTestPartialMessage_Listener.callbackTypes.size());
+
           int i = 0;
-          Iterator argIter = 
-            doTestPartialMessage_Listener.callbackArguments.iterator();
-          Iterator typeIter = 
-            doTestPartialMessage_Listener.callbackTypes.iterator();
-            
+          Iterator argIter = doTestPartialMessage_Listener.callbackArguments.iterator();
+          Iterator typeIter = doTestPartialMessage_Listener.callbackTypes.iterator();
+
           while (argIter.hasNext()) {
             CallbackWrapper wrapper = (CallbackWrapper) argIter.next();
             Integer arg = (Integer) wrapper.callbackArgument;
@@ -1385,13 +1451,13 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
               continue;
             }
             assertEquals(new Integer(expectedArgs[i]), arg);
-            //assertIndexDetailsEquals(CALLBACK_UPDATE_INTEGER, type);
+            // assertIndexDetailsEquals(CALLBACK_UPDATE_INTEGER, type);
             i++;
           }
         }
       }
     });
-    
+
   }
 }
 

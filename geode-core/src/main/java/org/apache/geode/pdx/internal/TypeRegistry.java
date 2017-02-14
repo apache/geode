@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.pdx.internal;
 
@@ -40,24 +38,27 @@ import java.util.concurrent.atomic.AtomicReference;
 public class TypeRegistry {
   private static final Logger logger = LogService.getLogger();
 
-  private static final boolean DISABLE_TYPE_REGISTRY
-      = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "TypeRegistry.DISABLE_PDX_REGISTRY");
+  private static final boolean DISABLE_TYPE_REGISTRY =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "TypeRegistry.DISABLE_PDX_REGISTRY");
 
   private final Map<Integer, PdxType> idToType = new CopyOnWriteHashMap<Integer, PdxType>();
   private final Map<PdxType, Integer> typeToId = new CopyOnWriteHashMap<PdxType, Integer>();
-  private final Map<Class<?>, PdxType> localTypeIds = new CopyOnWriteWeakHashMap<Class<?>, PdxType>();
-  private final Map<Class<?>, Map<Integer, UnreadPdxType>> localTypeIdMaps = new CopyOnWriteWeakHashMap<Class<?>, Map<Integer, UnreadPdxType>>();
-  private final WeakConcurrentIdentityHashMap<Object, PdxUnreadData> unreadDataMap = WeakConcurrentIdentityHashMap.make();
+  private final Map<Class<?>, PdxType> localTypeIds =
+      new CopyOnWriteWeakHashMap<Class<?>, PdxType>();
+  private final Map<Class<?>, Map<Integer, UnreadPdxType>> localTypeIdMaps =
+      new CopyOnWriteWeakHashMap<Class<?>, Map<Integer, UnreadPdxType>>();
+  private final WeakConcurrentIdentityHashMap<Object, PdxUnreadData> unreadDataMap =
+      WeakConcurrentIdentityHashMap.make();
   private final Map<Integer, EnumInfo> idToEnum = new CopyOnWriteHashMap<Integer, EnumInfo>();
   private final Map<EnumInfo, Integer> enumInfoToId = new CopyOnWriteHashMap<EnumInfo, Integer>();
   private final Map<Enum<?>, Integer> localEnumIds = new CopyOnWriteWeakHashMap<Enum<?>, Integer>();
   private final TypeRegistration distributedTypeRegistry;
   private final GemFireCacheImpl cache;
-  
+
   public TypeRegistry(GemFireCacheImpl cache, boolean disableTypeRegistry) {
     this.cache = cache;
 
-    if(DISABLE_TYPE_REGISTRY || disableTypeRegistry) {
+    if (DISABLE_TYPE_REGISTRY || disableTypeRegistry) {
       distributedTypeRegistry = new NullTypeRegistration();
     } else if (cache.hasPool()) {
       distributedTypeRegistry = new ClientTypeRegistration(cache);
@@ -67,23 +68,24 @@ public class TypeRegistry {
       distributedTypeRegistry = new PeerTypeRegistration(cache);
     }
   }
- 
+
   /*
    * Test Hook to clear the type registry
    */
-  public void testClearTypeRegistry(){
+  public void testClearTypeRegistry() {
     this.typeToId.clear();
     this.idToType.clear();
     this.idToEnum.clear();
     this.enumInfoToId.clear();
     distributedTypeRegistry.testClearRegistry();
   }
+
   public void testClearLocalTypeRegistry() {
     this.localTypeIds.clear();
     this.localTypeIdMaps.clear();
     this.localEnumIds.clear();
   }
- 
+
   public static boolean mayNeedDiskStore(GemFireCacheImpl cache) {
     if (DISABLE_TYPE_REGISTRY) {
       return false;
@@ -93,6 +95,7 @@ public class TypeRegistry {
       return cache.getPdxPersistent();
     }
   }
+
   public static String getPdxDiskStoreName(GemFireCacheImpl cache) {
     if (!mayNeedDiskStore(cache)) {
       return null;
@@ -104,10 +107,9 @@ public class TypeRegistry {
       return result;
     }
   }
-  
+
   public void initialize() {
-    if(!cache.getPdxPersistent() 
-        || cache.getPdxDiskStore() == null 
+    if (!cache.getPdxPersistent() || cache.getPdxDiskStore() == null
         || cache.findDiskStore(cache.getPdxDiskStore()) != null) {
       distributedTypeRegistry.initialize();
     }
@@ -115,20 +117,20 @@ public class TypeRegistry {
 
   public void flushCache() {
     InternalDataSerializer.flushClassCache();
-    for (EnumInfo ei: this.idToEnum.values()) {
+    for (EnumInfo ei : this.idToEnum.values()) {
       ei.flushCache();
     }
   }
-  
+
   public PdxType getType(int typeId) {
     PdxType pdxType = this.idToType.get(typeId);
-    if(pdxType != null) {
+    if (pdxType != null) {
       return pdxType;
     }
-    
+
     synchronized (this) {
       pdxType = this.distributedTypeRegistry.getType(typeId);
-      if(pdxType != null) {
+      if (pdxType != null) {
         this.idToType.put(typeId, pdxType);
         this.typeToId.put(pdxType, typeId);
         if (logger.isInfoEnabled()) {
@@ -140,7 +142,7 @@ public class TypeRegistry {
         return pdxType;
       }
     }
-    
+
     return null;
   }
 
@@ -150,13 +152,12 @@ public class TypeRegistry {
   }
 
   public PdxType getExistingTypeForClass(Class<?> c) {
-      return this.localTypeIds.get(c);
+    return this.localTypeIds.get(c);
   }
-  
+
   /**
-   * Returns the local type that should be used for deserializing
-   * blobs of the given typeId for the given local class.
-   * Returns null if no such local type exists.
+   * Returns the local type that should be used for deserializing blobs of the given typeId for the
+   * given local class. Returns null if no such local type exists.
    */
   public UnreadPdxType getExistingTypeForClass(Class<?> c, int typeId) {
     Map<Integer, UnreadPdxType> m = this.localTypeIdMaps.get(c);
@@ -166,6 +167,7 @@ public class TypeRegistry {
       return null;
     }
   }
+
   public void defineUnreadType(Class<?> c, UnreadPdxType unreadPdxType) {
     int typeId = unreadPdxType.getTypeId();
     // even though localTypeIdMaps is copy on write we need to sync it
@@ -182,8 +184,7 @@ public class TypeRegistry {
   }
 
   /**
-   * Create a type id for a type that may come locally, or
-   * from a remote member.
+   * Create a type id for a type that may come locally, or from a remote member.
    */
   public int defineType(PdxType newType) {
     Integer existingId = this.typeToId.get(newType);
@@ -195,30 +196,32 @@ public class TypeRegistry {
     int id = distributedTypeRegistry.defineType(newType);
     newType.setTypeId(id);
     PdxType oldType = this.idToType.get(id);
-    if(oldType == null) {
+    if (oldType == null) {
       this.idToType.put(id, newType);
       this.typeToId.put(newType, id);
       if (logger.isInfoEnabled()) {
-        logger.info("Defining: {}", newType.toFormattedString());
+        logger.info("Caching {}", newType.toFormattedString());
       }
-    } else if ( !oldType.equals(newType) ) {
-      Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType + " new type=" + newType);
+    } else if (!oldType.equals(newType)) {
+      Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType
+          + " new type=" + newType);
     }
-    
+
     return id;
   }
-  
+
   public void addRemoteType(int typeId, PdxType newType) {
     PdxType oldType = this.idToType.get(typeId);
-    if(oldType == null) {
+    if (oldType == null) {
       this.distributedTypeRegistry.addRemoteType(typeId, newType);
       this.idToType.put(typeId, newType);
       this.typeToId.put(newType, typeId);
       if (logger.isInfoEnabled()) {
         logger.info("Adding, from remote WAN: {}", newType.toFormattedString());
       }
-    } else if ( !oldType.equals(newType) ) {
-      Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType + " new type=" + newType);
+    } else if (!oldType.equals(newType)) {
+      Assert.fail("Old type does not equal new type for the same id. oldType=" + oldType
+          + " new type=" + newType);
     }
   }
 
@@ -237,7 +240,7 @@ public class TypeRegistry {
       // Defining a type for PdxInstanceFactory.
       defineType(newType);
     }
-    
+
     return newType;
   }
 
@@ -252,31 +255,31 @@ public class TypeRegistry {
   public int getLastAllocatedTypeId() {
     return distributedTypeRegistry.getLastAllocatedTypeId();
   }
-  
+
   public TypeRegistration getTypeRegistration() {
     return distributedTypeRegistry;
   }
 
   public void gatewaySenderStarted(GatewaySender gatewaySender) {
-    if(distributedTypeRegistry != null) {
+    if (distributedTypeRegistry != null) {
       distributedTypeRegistry.gatewaySenderStarted(gatewaySender);
     }
   }
-  
+
   public void creatingDiskStore(DiskStore dsi) {
-    if(cache.getPdxDiskStore() != null && dsi.getName().equals(cache.getPdxDiskStore())) {
+    if (cache.getPdxDiskStore() != null && dsi.getName().equals(cache.getPdxDiskStore())) {
       distributedTypeRegistry.initialize();
     }
   }
-  
+
   public void creatingPersistentRegion() {
     distributedTypeRegistry.creatingPersistentRegion();
   }
-  
+
   public void creatingPool() {
     distributedTypeRegistry.creatingPool();
   }
-  
+
   // test hook
   public void removeLocal(Object o) {
     this.localTypeIds.remove(o.getClass());
@@ -289,30 +292,34 @@ public class TypeRegistry {
   public void putUnreadData(Object o, PdxUnreadData ud) {
     this.unreadDataMap.put(o, ud);
   }
-  
-  private static final AtomicReference<PdxSerializer> pdxSerializer = new AtomicReference<PdxSerializer>(null);
-  private static final AtomicReference<AutoSerializableManager> asm = new AtomicReference<AutoSerializableManager>(null);
+
+  private static final AtomicReference<PdxSerializer> pdxSerializer =
+      new AtomicReference<PdxSerializer>(null);
+  private static final AtomicReference<AutoSerializableManager> asm =
+      new AtomicReference<AutoSerializableManager>(null);
   /**
-   * To fix bug 45116 we want any attempt to get the PdxSerializer after it has been closed to fail with an exception.
+   * To fix bug 45116 we want any attempt to get the PdxSerializer after it has been closed to fail
+   * with an exception.
    */
   private static volatile boolean open = false;
   /**
-   * If the pdxSerializer is ever set to a non-null value then set this to true.
-   * It gets reset to false when init() is called.
-   * This was added to fix bug 45116.
+   * If the pdxSerializer is ever set to a non-null value then set this to true. It gets reset to
+   * false when init() is called. This was added to fix bug 45116.
    */
   private static volatile boolean pdxSerializerWasSet = false;
-  
+
   public static void init() {
     pdxSerializerWasSet = false;
   }
+
   public static void open() {
     open = true;
   }
+
   public static void close() {
     open = false;
   }
-  
+
   public static PdxSerializer getPdxSerializer() {
     PdxSerializer result = pdxSerializer.get();
     if (result == null && !open && pdxSerializerWasSet) {
@@ -320,14 +327,18 @@ public class TypeRegistry {
     }
     return result;
   }
+
   public static AutoSerializableManager getAutoSerializableManager() {
     return asm.get();
   }
+
   public static void setPdxSerializer(PdxSerializer v) {
     if (v == null) {
       PdxSerializer oldValue = pdxSerializer.getAndSet(null);
       if (oldValue instanceof ReflectionBasedAutoSerializer) {
-        asm.compareAndSet((AutoSerializableManager) ((ReflectionBasedAutoSerializer) oldValue).getManager(), null);
+        asm.compareAndSet(
+            (AutoSerializableManager) ((ReflectionBasedAutoSerializer) oldValue).getManager(),
+            null);
       }
     } else {
       pdxSerializerWasSet = true;
@@ -361,12 +372,13 @@ public class TypeRegistry {
 
   public void addRemoteEnum(int enumId, EnumInfo newInfo) {
     EnumInfo oldInfo = this.idToEnum.get(enumId);
-    if(oldInfo == null) {
+    if (oldInfo == null) {
       this.distributedTypeRegistry.addRemoteEnum(enumId, newInfo);
       this.idToEnum.put(enumId, newInfo);
       this.enumInfoToId.put(newInfo, enumId);
-    } else if ( !oldInfo.equals(newInfo) ) {
-      Assert.fail("Old enum does not equal new enum for the same id. oldEnum=" + oldInfo + " new enum=" + newInfo);
+    } else if (!oldInfo.equals(newInfo)) {
+      Assert.fail("Old enum does not equal new enum for the same id. oldEnum=" + oldInfo
+          + " new enum=" + newInfo);
     }
   }
 
@@ -377,11 +389,15 @@ public class TypeRegistry {
     }
     int id = distributedTypeRegistry.defineEnum(newInfo);
     EnumInfo oldInfo = this.idToEnum.get(id);
-    if(oldInfo == null) {
+    if (oldInfo == null) {
       this.idToEnum.put(id, newInfo);
       this.enumInfoToId.put(newInfo, id);
-    } else if ( !oldInfo.equals(newInfo) ) {
-      Assert.fail("Old enum does not equal new enum for the same id. oldEnum=" + oldInfo + " newEnum=" + newInfo);
+      if (logger.isInfoEnabled()) {
+        logger.info("Caching PDX Enum: {}, dsid={} typenum={}", newInfo, id >> 24, id & 0xFFFFFF);
+      }
+    } else if (!oldInfo.equals(newInfo)) {
+      Assert.fail("Old enum does not equal new enum for the same id. oldEnum=" + oldInfo
+          + " newEnum=" + newInfo);
     }
     return id;
   }
@@ -392,7 +408,8 @@ public class TypeRegistry {
     }
     EnumInfo ei = getEnumInfoById(enumId);
     if (ei == null) {
-      throw new PdxSerializationException("Could not find a PDX registration for the enum with id " + enumId);
+      throw new PdxSerializationException(
+          "Could not find a PDX registration for the enum with id " + enumId);
     }
     if (this.cache.getPdxReadSerializedByAnyGemFireServices()) {
       return ei.getPdxInstance(enumId);
@@ -400,15 +417,17 @@ public class TypeRegistry {
       try {
         return ei.getEnum();
       } catch (ClassNotFoundException ex) {
-        throw new PdxSerializationException("PDX enum field could not be read because the enum class could not be loaded", ex);
+        throw new PdxSerializationException(
+            "PDX enum field could not be read because the enum class could not be loaded", ex);
       }
     }
   }
+
   public EnumInfo getEnumInfoById(int enumId) {
     if (enumId == 0) {
       return null;
     }
-    
+
     EnumInfo ei = this.idToEnum.get(enumId);
     if (ei == null) {
       ei = this.distributedTypeRegistry.getEnumById(enumId);
@@ -419,14 +438,13 @@ public class TypeRegistry {
     }
     return ei;
   }
-  
+
   /**
-   * Clear all of the cached PDX types in this registry. This method
-   * is used on a client when the server side distributed system
-   * is cycled
+   * Clear all of the cached PDX types in this registry. This method is used on a client when the
+   * server side distributed system is cycled
    */
   public void clear() {
-    if(distributedTypeRegistry.isClient())  {
+    if (distributedTypeRegistry.isClient()) {
       idToType.clear();
       typeToId.clear();
       localTypeIds.clear();
@@ -436,50 +454,50 @@ public class TypeRegistry {
       enumInfoToId.clear();
       localEnumIds.clear();
       AutoSerializableManager autoSerializer = getAutoSerializableManager();
-      if(autoSerializer != null) {
+      if (autoSerializer != null) {
         autoSerializer.resetCachedTypes();
       }
     }
-    
+
   }
 
   /**
    * Returns the currently defined types.
+   * 
    * @return the types
    */
   public Map<Integer, PdxType> typeMap() {
     return distributedTypeRegistry.types();
   }
-  
+
   /**
    * Returns the currently defined enums.
+   * 
    * @return the enums
    */
   public Map<Integer, EnumInfo> enumMap() {
     return distributedTypeRegistry.enums();
   }
-  
+
   /**
-   * searches a field in different versions (PdxTypes) of a class in 
-   * the distributed type registry 
+   * searches a field in different versions (PdxTypes) of a class in the distributed type registry
    * 
-   * @param fieldName
-   *          the field to look for in the PdxTypes
-   * @param className
-   *          the PdxTypes for this class would be searched
+   * @param fieldName the field to look for in the PdxTypes
+   * @param className the PdxTypes for this class would be searched
    * @return PdxType having the field or null if not found
    * 
    */
   public PdxType getPdxTypeForField(String fieldName, String className) {
     return distributedTypeRegistry.getPdxTypeForField(fieldName, className);
   }
-  
+
   public void addImportedType(int typeId, PdxType importedType) {
     PdxType existing = getType(typeId);
     if (existing != null && !existing.equals(importedType)) {
-      throw new PdxSerializationException(LocalizedStrings.Snapshot_PDX_CONFLICT_0_1.toLocalizedString(importedType, existing));
+      throw new PdxSerializationException(
+          LocalizedStrings.Snapshot_PDX_CONFLICT_0_1.toLocalizedString(importedType, existing));
     }
-    
+
     this.distributedTypeRegistry.addImportedType(typeId, importedType);
     this.idToType.put(typeId, importedType);
     this.typeToId.put(importedType, typeId);
@@ -491,9 +509,10 @@ public class TypeRegistry {
   public void addImportedEnum(int enumId, EnumInfo importedEnum) {
     EnumInfo existing = getEnumInfoById(enumId);
     if (existing != null && !existing.equals(importedEnum)) {
-      throw new PdxSerializationException(LocalizedStrings.Snapshot_PDX_CONFLICT_0_1.toLocalizedString(importedEnum, existing));
+      throw new PdxSerializationException(
+          LocalizedStrings.Snapshot_PDX_CONFLICT_0_1.toLocalizedString(importedEnum, existing));
     }
-    
+
     this.distributedTypeRegistry.addImportedEnum(enumId, importedEnum);
     this.idToEnum.put(enumId, importedEnum);
     this.enumInfoToId.put(importedEnum, enumId);
@@ -504,8 +523,8 @@ public class TypeRegistry {
    */
   public int getLocalSize() {
     int result = distributedTypeRegistry.getLocalSize();
-    if(result == 0) {
-      //If this is the client, go ahead and return the number of cached types we have
+    if (result == 0) {
+      // If this is the client, go ahead and return the number of cached types we have
       return idToType.size();
     }
     return result;

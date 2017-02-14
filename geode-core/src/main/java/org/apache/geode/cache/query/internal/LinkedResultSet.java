@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -40,15 +38,14 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-public class LinkedResultSet extends java.util.LinkedHashSet implements Ordered,
-    SelectResults, DataSerializableFixedID {
+public class LinkedResultSet extends java.util.LinkedHashSet
+    implements Ordered, SelectResults, DataSerializableFixedID {
 
   private static final long serialVersionUID = 5184711453750319225L;
 
   private ObjectType elementType;
 
-  public LinkedResultSet() {
-  }
+  public LinkedResultSet() {}
 
   LinkedResultSet(Collection c) {
     super(c);
@@ -69,7 +66,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet implements Ordered,
     if (!(other instanceof LinkedResultSet)) {
       return false;
     }
-    if (!this.elementType.equals(((LinkedResultSet)other).elementType)) {
+    if (!this.elementType.equals(((LinkedResultSet) other).elementType)) {
       return false;
     }
     return super.equals(other);
@@ -102,18 +99,16 @@ public class LinkedResultSet extends java.util.LinkedHashSet implements Ordered,
   public int occurrences(Object element) {
     return contains(element) ? 1 : 0;
   }
-  
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException
-  {
+
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int size = in.readInt();
-    this.elementType = (ObjectType)DataSerializer.readObject(in);
+    this.elementType = (ObjectType) DataSerializer.readObject(in);
     for (int j = size; j > 0; j--) {
       this.add(DataSerializer.readObject(in));
     }
   }
-  
-  public void toData(DataOutput out) throws IOException
-  {    
+
+  public void toData(DataOutput out) throws IOException {
     // how do we serialize the comparator?
     out.writeInt(this.size());
     DataSerializer.writeObject(this.elementType, out);
@@ -123,7 +118,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet implements Ordered,
   }
 
   public int getDSFID() {
-    
+
     return LINKED_RESULTSET;
   }
 
@@ -133,7 +128,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet implements Ordered,
   }
 
   @Override
-  public Comparator comparator() {    
+  public Comparator comparator() {
     return null;
   }
 

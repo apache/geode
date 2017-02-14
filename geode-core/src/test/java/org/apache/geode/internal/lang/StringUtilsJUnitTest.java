@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.lang;
 
@@ -31,9 +29,10 @@ import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * The StringUtilsJUnitTest is a test suite containing test cases for testing the contract and functionality of
- * the StringUtils class.
+ * The StringUtilsJUnitTest is a test suite containing test cases for testing the contract and
+ * functionality of the StringUtils class.
  * <p/>
+ * 
  * @see org.apache.geode.internal.lang.StringUtils
  * @see org.junit.Assert
  * @see org.junit.Test
@@ -60,21 +59,21 @@ public class StringUtilsJUnitTest {
   public void testConcatWithDelimiter() {
     assertEquals("", StringUtils.concat(null, null));
     assertEquals("", StringUtils.concat(null, " "));
-    assertEquals("", StringUtils.concat(new Object[] { "" }, " "));
-    assertEquals(" ", StringUtils.concat(new Object[] { " " }, " "));
-    assertEquals("     ", StringUtils.concat(new Object[] { " ", " ", " " }, " "));
-    assertEquals(" | | ", StringUtils.concat(new Object[] { " ", " ", " " }, "|"));
-    assertEquals("abc", StringUtils.concat(new Object[] { "a", "b", "c" }, null));
-    assertEquals("abc", StringUtils.concat(new Object[] { "a", "b", "c" }, ""));
-    assertEquals("a b c", StringUtils.concat(new Object[] { "a", "b", "c" }, " "));
-    assertEquals("a   b   c", StringUtils.concat(new Object[] { "a", "b", "c" }, "   "));
-    assertEquals("a_b_c", StringUtils.concat(new Object[] { "a", "b", "c" }, "_"));
-    assertEquals("a|b|c", StringUtils.concat(new Object[] { "a", "b", "c" }, "|"));
-    assertEquals("a>b>c", StringUtils.concat(new Object[] { "a", "b", "c" }, ">"));
-    assertEquals("a&b&c", StringUtils.concat(new Object[] { "a", "b", "c" }, "&"));
-    assertEquals("*", StringUtils.concat(new Object[] { "*" }, "*"));
-    assertEquals("***", StringUtils.concat(new Object[] { "*", "*" }, "*"));
-    assertEquals("*-*", StringUtils.concat(new Object[] { "*", "*" }, "-"));
+    assertEquals("", StringUtils.concat(new Object[] {""}, " "));
+    assertEquals(" ", StringUtils.concat(new Object[] {" "}, " "));
+    assertEquals("     ", StringUtils.concat(new Object[] {" ", " ", " "}, " "));
+    assertEquals(" | | ", StringUtils.concat(new Object[] {" ", " ", " "}, "|"));
+    assertEquals("abc", StringUtils.concat(new Object[] {"a", "b", "c"}, null));
+    assertEquals("abc", StringUtils.concat(new Object[] {"a", "b", "c"}, ""));
+    assertEquals("a b c", StringUtils.concat(new Object[] {"a", "b", "c"}, " "));
+    assertEquals("a   b   c", StringUtils.concat(new Object[] {"a", "b", "c"}, "   "));
+    assertEquals("a_b_c", StringUtils.concat(new Object[] {"a", "b", "c"}, "_"));
+    assertEquals("a|b|c", StringUtils.concat(new Object[] {"a", "b", "c"}, "|"));
+    assertEquals("a>b>c", StringUtils.concat(new Object[] {"a", "b", "c"}, ">"));
+    assertEquals("a&b&c", StringUtils.concat(new Object[] {"a", "b", "c"}, "&"));
+    assertEquals("*", StringUtils.concat(new Object[] {"*"}, "*"));
+    assertEquals("***", StringUtils.concat(new Object[] {"*", "*"}, "*"));
+    assertEquals("*-*", StringUtils.concat(new Object[] {"*", "*"}, "-"));
   }
 
   @Test
@@ -204,8 +203,7 @@ public class StringUtilsJUnitTest {
   public void testPadEndingWithNull() {
     try {
       StringUtils.padEnding(null, 'X', 10);
-    }
-    catch (NullPointerException expected) {
+    } catch (NullPointerException expected) {
       assertEquals("The String value to pad cannot be null!", expected.getMessage());
       throw expected;
     }
@@ -267,8 +265,7 @@ public class StringUtilsJUnitTest {
   public void testTruncateWithNegativeLength() {
     try {
       StringUtils.truncate("XX", -1);
-    }
-    catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException expected) {
       assertEquals("Length must be greater than equal to 0!", expected.getMessage());
       throw expected;
     }
@@ -278,7 +275,7 @@ public class StringUtilsJUnitTest {
   public void testValueOf() {
     assertEquals("null", StringUtils.valueOf(null));
     assertEquals("null", StringUtils.valueOf(null, (String[]) null));
-    assertEquals("null", StringUtils.valueOf(null, new String[] { }));
+    assertEquals("null", StringUtils.valueOf(null, new String[] {}));
     assertEquals("test", StringUtils.valueOf(null, "test"));
     assertEquals("nil", StringUtils.valueOf(null, "nil", "test"));
     assertEquals("test", StringUtils.valueOf("test", (String[]) null));
@@ -296,9 +293,8 @@ public class StringUtilsJUnitTest {
     final String line = "The line of text to split for testing purposes!";
 
     final String expectedLine = "The line of".concat(StringUtils.LINE_SEPARATOR)
-      .concat("text to split").concat(StringUtils.LINE_SEPARATOR)
-      .concat("for testing").concat(StringUtils.LINE_SEPARATOR)
-      .concat("purposes!");
+        .concat("text to split").concat(StringUtils.LINE_SEPARATOR).concat("for testing")
+        .concat(StringUtils.LINE_SEPARATOR).concat("purposes!");
 
     final String actualLine = StringUtils.wrap(line, 15, null);
 
@@ -310,30 +306,35 @@ public class StringUtilsJUnitTest {
   public void testWrapWithIndent() {
     final String line = "The line of text to split for testing purposes!";
 
-    final String expectedLine = "The line of".concat(StringUtils.LINE_SEPARATOR)
-      .concat("\t").concat("text to split").concat(StringUtils.LINE_SEPARATOR)
-      .concat("\t").concat("for testing").concat(StringUtils.LINE_SEPARATOR)
-      .concat("\t").concat("purposes!");
+    final String expectedLine = "The line of".concat(StringUtils.LINE_SEPARATOR).concat("\t")
+        .concat("text to split").concat(StringUtils.LINE_SEPARATOR).concat("\t")
+        .concat("for testing").concat(StringUtils.LINE_SEPARATOR).concat("\t").concat("purposes!");
 
     final String actualLine = StringUtils.wrap(line, 15, "\t");
 
     assertNotNull(actualLine);
     assertEquals(expectedLine, actualLine);
   }
-  
+
   @Test
   public void testForceToString() throws IOException {
     assertEquals("null", StringUtils.forceToString(null));
     assertEquals("Object[][]", StringUtils.forceToString(new Object[0][0]));
-    assertEquals("byte[1, 2]", StringUtils.forceToString(new byte[]{1,2}));
-    assertEquals("int[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]", StringUtils.forceToString(new int[]{1,2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}));
-    assertEquals("long[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, and 1 more]", StringUtils.forceToString(new long[]{1,2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17}));
-    assertEquals("short[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, and 2 more]", StringUtils.forceToString(new short[]{1,2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}));
-    assertEquals("char[1, 2, 3]", StringUtils.forceToString(new char[]{'1','2','3'}));
-    assertEquals("boolean[true, false]", StringUtils.forceToString(new boolean[]{true, false}));
-    assertEquals("float[1.0]", StringUtils.forceToString(new float[]{1.0f}));
-    assertEquals("double[1.0, 2.0]", StringUtils.forceToString(new double[]{1.0, 2.0}));
-    assertEquals("String[start, middle, end]", StringUtils.forceToString(new String[]{"start", "middle", "end"}));
+    assertEquals("byte[1, 2]", StringUtils.forceToString(new byte[] {1, 2}));
+    assertEquals("int[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]", StringUtils
+        .forceToString(new int[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}));
+    assertEquals("long[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, and 1 more]",
+        StringUtils
+            .forceToString(new long[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17}));
+    assertEquals("short[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, and 2 more]",
+        StringUtils.forceToString(
+            new short[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}));
+    assertEquals("char[1, 2, 3]", StringUtils.forceToString(new char[] {'1', '2', '3'}));
+    assertEquals("boolean[true, false]", StringUtils.forceToString(new boolean[] {true, false}));
+    assertEquals("float[1.0]", StringUtils.forceToString(new float[] {1.0f}));
+    assertEquals("double[1.0, 2.0]", StringUtils.forceToString(new double[] {1.0, 2.0}));
+    assertEquals("String[start, middle, end]",
+        StringUtils.forceToString(new String[] {"start", "middle", "end"}));
     // make sure CacheDeserializables do not get deserialized when getting their string form
     Object v = "value";
     ByteArrayOutputStream baos = new ByteArrayOutputStream();

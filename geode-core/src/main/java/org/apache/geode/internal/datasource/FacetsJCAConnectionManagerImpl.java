@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.datasource;
 
@@ -44,18 +42,17 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
- * This class implements a connection pool manager for managed connections (JCA)
- * for transactional and non-transactional resource connection. Implements
- * ConnectionManager interface. QoS (Transaction, Security etc is taken into
- * account while allocating a connection). Security related features are
- * remaining.
+ * This class implements a connection pool manager for managed connections (JCA) for transactional
+ * and non-transactional resource connection. Implements ConnectionManager interface. QoS
+ * (Transaction, Security etc is taken into account while allocating a connection). Security related
+ * features are remaining.
  * 
  */
-public class FacetsJCAConnectionManagerImpl implements ConnectionManager,
-    ConnectionEventListener, Synchronization {
+public class FacetsJCAConnectionManagerImpl
+    implements ConnectionManager, ConnectionEventListener, Synchronization {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private static final long serialVersionUID = 2454746064736724758L;
 
   protected transient TransactionManager transManager;
@@ -73,7 +70,7 @@ public class FacetsJCAConnectionManagerImpl implements ConnectionManager,
 
   /*
    * Constructor.
-   *  
+   * 
    */
   public FacetsJCAConnectionManagerImpl(ManagedConnectionFactory mcf,
       ConfiguredDataSourceProperties configs) {
@@ -82,8 +79,7 @@ public class FacetsJCAConnectionManagerImpl implements ConnectionManager,
     try {
       isActive = true;
       mannPoolCache = new ManagedPoolCacheImpl(mcf, null, null, this, configs);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       logger.fatal(LocalizedMessage.create(
           LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_CONSTRUCTOR_AN_EXCEPTION_WAS_CAUGHT_WHILE_INITIALIZING_DUE_TO_0,
           ex.getMessage()), ex);
@@ -93,20 +89,27 @@ public class FacetsJCAConnectionManagerImpl implements ConnectionManager,
   /*
    * allocates a ManagedConnection from the ConnectionPool or creates a new
    * ManagedConnection. @param javax.resource.spi.ManagedConnectionFactory
+   * 
    * @param javax.resource.spi.ConnectionRequestInfo
    * 
    * @throws ResourceException
    */
-  public Object allocateConnection(ManagedConnectionFactory mcf,
-      ConnectionRequestInfo reqInfo) throws ResourceException {
-    if (!isActive) { throw new ResourceException(LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPLALLOCATECONNECTIONNO_VALID_CONNECTION_AVAILABLE.toLocalizedString()); }
+  public Object allocateConnection(ManagedConnectionFactory mcf, ConnectionRequestInfo reqInfo)
+      throws ResourceException {
+    if (!isActive) {
+      throw new ResourceException(
+          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPLALLOCATECONNECTIONNO_VALID_CONNECTION_AVAILABLE
+              .toLocalizedString());
+    }
     ManagedConnection conn = null;
     try {
       conn = (ManagedConnection) mannPoolCache.getPooledConnectionFromPool();
-    }
-    catch (PoolException ex) {
+    } catch (PoolException ex) {
       ex.printStackTrace();
-      throw new ResourceException(LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_IN_GETTING_CONNECTION_FROM_POOL_DUE_TO_0.toLocalizedString(ex.getMessage()), ex);
+      throw new ResourceException(
+          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_IN_GETTING_CONNECTION_FROM_POOL_DUE_TO_0
+              .toLocalizedString(ex.getMessage()),
+          ex);
     }
     // Check if a connection is having a transactional context
     // if a transactional context is used, get the XA Resource
@@ -118,7 +121,7 @@ public class FacetsJCAConnectionManagerImpl implements ConnectionManager,
           transManager = JNDIInvoker.getTransactionManager();
         }
       }
-      
+
       Transaction txn = transManager.getTransaction();
       if (txn != null) {
         // Check if Data Source provides XATransaction
@@ -132,18 +135,21 @@ public class FacetsJCAConnectionManagerImpl implements ConnectionManager,
           txn.registerSynchronization(this);
         }
         resList.add(conn);
-        //xalistThreadLocal.set(resList);
-        //Asif :Add in the Map after successful registration of XAResource
-        //xaResourcesMap.put(conn, xar);
+        // xalistThreadLocal.set(resList);
+        // Asif :Add in the Map after successful registration of XAResource
+        // xaResourcesMap.put(conn, xar);
         // else throw a resource exception
       }
-    }
-    catch (RollbackException ex) {
-      String exception = LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_AN_EXCEPTION_WAS_CAUGHT_WHILE_ALLOCATING_A_CONNECTION_DUE_TO_0.toLocalizedString(ex.getMessage());
+    } catch (RollbackException ex) {
+      String exception =
+          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_AN_EXCEPTION_WAS_CAUGHT_WHILE_ALLOCATING_A_CONNECTION_DUE_TO_0
+              .toLocalizedString(ex.getMessage());
       throw new ResourceException(exception, ex);
-    }
-    catch (SystemException ex) {
-      throw new ResourceException(LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_SYSTEM_EXCEPTION_DUE_TO_0.toLocalizedString(ex.getMessage()), ex);
+    } catch (SystemException ex) {
+      throw new ResourceException(
+          LocalizedStrings.FacetsJCAConnectionManagerImpl_FACETSJCACONNECTIONMANAGERIMPL_ALLOCATECONNECTION_SYSTEM_EXCEPTION_DUE_TO_0
+              .toLocalizedString(ex.getMessage()),
+          ex);
     }
     return conn.getConnection(subject, reqInfo);
   }
@@ -157,29 +163,26 @@ public class FacetsJCAConnectionManagerImpl implements ConnectionManager,
     if (isActive) {
       // If its an XAConnection
       ManagedConnection conn = (ManagedConnection) event.getSource();
-      //	        XAResource xar = (XAResource) xaResourcesMap.get(conn);
+      // XAResource xar = (XAResource) xaResourcesMap.get(conn);
       ((List) xalistThreadLocal.get()).remove(conn);
-      TransactionManagerImpl transManager = TransactionManagerImpl
-          .getTransactionManager();
+      TransactionManagerImpl transManager = TransactionManagerImpl.getTransactionManager();
       try {
         Transaction txn = transManager.getTransaction();
         if (txn == null) {
           mannPoolCache.returnPooledConnectionToPool(conn);
-        }
-        else {
+        } else {
           // do nothing.
         }
-      }
-      catch (Exception se) {
+      } catch (Exception se) {
         se.printStackTrace();
       }
       try {
         mannPoolCache.expirePooledConnection(conn);
-        //mannPoolCache.destroyPooledConnection(conn);
-      }
-      catch (Exception ex) {
-        String exception = "FacetsJCAConnectionManagerImpl::connectionErrorOccured: Exception occured due to "
-            + ex.getMessage();
+        // mannPoolCache.destroyPooledConnection(conn);
+      } catch (Exception ex) {
+        String exception =
+            "FacetsJCAConnectionManagerImpl::connectionErrorOccured: Exception occured due to "
+                + ex.getMessage();
         if (logger.isDebugEnabled()) {
           logger.debug(exception, ex);
         }
@@ -195,17 +198,16 @@ public class FacetsJCAConnectionManagerImpl implements ConnectionManager,
   public void connectionClosed(ConnectionEvent event) {
     if (isActive) {
       ManagedConnection conn = (ManagedConnection) event.getSource();
-      TransactionManagerImpl transManager = TransactionManagerImpl
-          .getTransactionManager();
+      TransactionManagerImpl transManager = TransactionManagerImpl.getTransactionManager();
       try {
         Transaction txn = transManager.getTransaction();
         if (txn == null) {
           mannPoolCache.returnPooledConnectionToPool(conn);
         }
-      }
-      catch (Exception se) {
-        String exception = "FacetsJCAConnectionManagerImpl::connectionClosed: Exception occured due to "
-            + se.getMessage();
+      } catch (Exception se) {
+        String exception =
+            "FacetsJCAConnectionManagerImpl::connectionClosed: Exception occured due to "
+                + se.getMessage();
         if (logger.isDebugEnabled()) {
           logger.debug(exception, se);
         }

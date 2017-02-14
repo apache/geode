@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -22,6 +20,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,7 +47,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Make sure max-connections on cache server is enforced
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class CacheServerMaxConnectionsJUnitTest {
 
   private static final int MAX_CNXS = 100;
@@ -87,7 +86,7 @@ public class CacheServerMaxConnectionsJUnitTest {
    * Initializes proxy object and creates region for client
    */
   private void createProxyAndRegionForClient() {
-    //props.setProperty("retryAttempts", "0");
+    // props.setProperty("retryAttempts", "0");
     PoolFactory pf = PoolManager.createFactory();
     pf.addServer("localhost", PORT);
     pf.setMinConnections(0);
@@ -95,7 +94,7 @@ public class CacheServerMaxConnectionsJUnitTest {
     pf.setThreadLocalConnections(true);
     pf.setReadTimeout(2000);
     pf.setSocketBufferSize(32768);
-    proxy = (PoolImpl)pf.create("junitPool");
+    proxy = (PoolImpl) pf.create("junitPool");
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setPoolName("junitPool");
@@ -128,11 +127,10 @@ public class CacheServerMaxConnectionsJUnitTest {
    * 1)create server<br>
    * 2)initialize proxy object and create region for client<br>
    * 3)perform a PUT on client by acquiring Connection through proxy<br>
-   * 4)stop server monitor threads in client to ensure that server treats this
-   * as dead client <br>
+   * 4)stop server monitor threads in client to ensure that server treats this as dead client <br>
    * 5)wait for some time to allow server to clean up the dead client artifacts<br>
-   * 6)again perform a PUT on client through same Connection and verify after
-   * the put that the Connection object used was new one.
+   * 6)again perform a PUT on client through same Connection and verify after the put that the
+   * Connection object used was new one.
    */
   @Test
   public void testMaxCnxLimit() throws Exception {
@@ -143,7 +141,7 @@ public class CacheServerMaxConnectionsJUnitTest {
     assertEquals(0, s.getInt("currentClients"));
     assertEquals(0, s.getInt("currentClientConnections"));
     Connection[] cnxs = new Connection[MAX_CNXS];
-    for (int i=0; i < MAX_CNXS; i++) {
+    for (int i = 0; i < MAX_CNXS; i++) {
       cnxs[i] = proxy.acquireConnection();
       this.system.getLogWriter().info("acquired connection[" + i + "]=" + cnxs[i]);
     }
@@ -151,6 +149,7 @@ public class CacheServerMaxConnectionsJUnitTest {
       public boolean done() {
         return s.getInt("currentClientConnections") == MAX_CNXS;
       }
+
       public String description() {
         return null;
       }
@@ -158,45 +157,44 @@ public class CacheServerMaxConnectionsJUnitTest {
     Wait.waitForCriterion(ev, 1000, 200, true);
     assertEquals(MAX_CNXS, s.getInt("currentClientConnections"));
     assertEquals(1, s.getInt("currentClients"));
-    this.system.getLogWriter().info("<ExpectedException action=add>" 
-        + "exceeded max-connections" + "</ExpectedException>");
+    this.system.getLogWriter().info(
+        "<ExpectedException action=add>" + "exceeded max-connections" + "</ExpectedException>");
     try {
       Connection cnx = proxy.acquireConnection();
       if (cnx != null) {
-        fail("should not have been able to connect more than " + MAX_CNXS + " times but was able to connect " + s.getInt("currentClientConnections") + " times. Last connection=" + cnx);
+        fail("should not have been able to connect more than " + MAX_CNXS
+            + " times but was able to connect " + s.getInt("currentClientConnections")
+            + " times. Last connection=" + cnx);
       }
       this.system.getLogWriter().info("acquire connection returned null which is ok");
-    }
-    catch (NoAvailableServersException expected) {
+    } catch (NoAvailableServersException expected) {
       // This is expected but due to race conditions in server handshake
       // we may get null back from acquireConnection instead.
       this.system.getLogWriter().info("received expected " + expected.getMessage());
-    }
-    catch (Exception ex) {
-      fail("expected acquireConnection to throw NoAvailableServersException but instead it threw " + ex);
-    }
-    finally {
-      this.system.getLogWriter().info("<ExpectedException action=remove>" 
+    } catch (Exception ex) {
+      fail("expected acquireConnection to throw NoAvailableServersException but instead it threw "
+          + ex);
+    } finally {
+      this.system.getLogWriter().info("<ExpectedException action=remove>"
           + "exceeded max-connections" + "</ExpectedException>");
     }
 
     // now lets see what happens we we close our connections
-    for (int i=0; i < MAX_CNXS; i++) {
+    for (int i = 0; i < MAX_CNXS; i++) {
       cnxs[i].close(false);
     }
     ev = new WaitCriterion() {
       public boolean done() {
         return s.getInt("currentClients") == 0;
       }
+
       public String description() {
         return null;
       }
     };
     Wait.waitForCriterion(ev, 3 * 1000, 200, true);
-    this.system.getLogWriter().info("currentClients="
-        + s.getInt("currentClients")
-        + " currentClientConnections="
-        + s.getInt("currentClientConnections"));
+    this.system.getLogWriter().info("currentClients=" + s.getInt("currentClients")
+        + " currentClientConnections=" + s.getInt("currentClientConnections"));
     assertEquals(0, s.getInt("currentClientConnections"));
     assertEquals(0, s.getInt("currentClients"));
   }

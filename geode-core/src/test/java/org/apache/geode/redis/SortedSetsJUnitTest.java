@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis;
 
@@ -49,7 +47,7 @@ public class SortedSetsJUnitTest {
   public static void setUp() throws IOException {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
-    //cf.set("log-file", "redis.log");
+    // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
@@ -72,12 +70,12 @@ public class SortedSetsJUnitTest {
 
     jedis.zadd(key, scoreMembers);
     int k = 0;
-    for (String entry: scoreMembers.keySet())
+    for (String entry : scoreMembers.keySet())
       assertNotNull(jedis.zscore(key, entry));
 
     Set<Tuple> results = jedis.zrangeWithScores(key, 0, -1);
     Map<String, Double> resultMap = new HashMap<String, Double>();
-    for (Tuple t: results) {
+    for (Tuple t : results) {
       resultMap.put(t.getElement(), t.getScore());
     }
 
@@ -92,9 +90,10 @@ public class SortedSetsJUnitTest {
       } while (start > stop);
       results = jedis.zrangeWithScores(key, start, stop);
       List<Entry<String, Double>> resultList = new ArrayList<Entry<String, Double>>();
-      for (Tuple t: results)
+      for (Tuple t : results)
         resultList.add(new AbstractMap.SimpleEntry<String, Double>(t.getElement(), t.getScore()));
-      List<Entry<String, Double>> list = new ArrayList<Entry<String, Double>>(scoreMembers.entrySet());
+      List<Entry<String, Double>> list =
+          new ArrayList<Entry<String, Double>>(scoreMembers.entrySet());
       Collections.sort(list, new EntryCmp());
       list = list.subList(start, stop + 1);
       assertEquals(list, resultList);
@@ -124,9 +123,10 @@ public class SortedSetsJUnitTest {
       } while (start > stop);
       results = jedis.zrevrangeWithScores(key, start, stop);
       List<Entry<String, Double>> resultList = new ArrayList<Entry<String, Double>>();
-      for (Tuple t: results)
+      for (Tuple t : results)
         resultList.add(new AbstractMap.SimpleEntry<String, Double>(t.getElement(), t.getScore()));
-      List<Entry<String, Double>> list = new ArrayList<Entry<String, Double>>(scoreMembers.entrySet());
+      List<Entry<String, Double>> list =
+          new ArrayList<Entry<String, Double>>(scoreMembers.entrySet());
       Collections.sort(list, new EntryRevCmp());
       list = list.subList(start, stop + 1);
       assertEquals(list, resultList);
@@ -174,7 +174,7 @@ public class SortedSetsJUnitTest {
       Double incr = rand.nextDouble();
       Double result = jedis.zincrby(key, incr, member);
       score += incr;
-      assertEquals(score, result, 1.0/100000000.0);
+      assertEquals(score, result, 1.0 / 100000000.0);
     }
 
 
@@ -207,7 +207,7 @@ public class SortedSetsJUnitTest {
       jedis.zadd(key, scoreMembers);
       Set<Tuple> results = jedis.zrangeByScoreWithScores(key, min, max);
       List<Entry<String, Double>> resultList = new ArrayList<Entry<String, Double>>();
-      for (Tuple t: results)
+      for (Tuple t : results)
         resultList.add(new AbstractMap.SimpleEntry<String, Double>(t.getElement(), t.getScore()));
       Collections.sort(expected, new EntryCmp());
 
@@ -238,7 +238,7 @@ public class SortedSetsJUnitTest {
       jedis.zadd(key, scoreMembers);
       Set<Tuple> results = jedis.zrevrangeByScoreWithScores(key, max, min);
       List<Entry<String, Double>> resultList = new ArrayList<Entry<String, Double>>();
-      for (Tuple t: results)
+      for (Tuple t : results)
         resultList.add(new AbstractMap.SimpleEntry<String, Double>(t.getElement(), t.getScore()));
       Collections.sort(expected, new EntryRevCmp());
 
@@ -270,7 +270,7 @@ public class SortedSetsJUnitTest {
       jedis.zadd(key, scoreMembers);
       Collections.sort(expected, new EntryCmp());
       for (int i = expected.size(); i > 0; i--) {
-        Entry<String, Double> remEntry = expected.remove(i-1);
+        Entry<String, Double> remEntry = expected.remove(i - 1);
         String rem = remEntry.getKey();
         Double val = remEntry.getValue();
         assertEquals(val, jedis.zscore(key, rem));
@@ -345,7 +345,7 @@ public class SortedSetsJUnitTest {
     @Override
     public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {
       Double diff = o1.getValue() - o2.getValue();
-      if (diff == 0) 
+      if (diff == 0)
         return o2.getKey().compareTo(o1.getKey());
       else
         return diff > 0 ? 1 : -1;
@@ -358,7 +358,7 @@ public class SortedSetsJUnitTest {
     @Override
     public int compare(Entry<String, Double> o1, Entry<String, Double> o2) {
       Double diff = o2.getValue() - o1.getValue();
-      if (diff == 0) 
+      if (diff == 0)
         return o1.getKey().compareTo(o2.getKey());
       else
         return diff > 0 ? 1 : -1;
@@ -395,7 +395,7 @@ public class SortedSetsJUnitTest {
       Collections.sort(expectedList, new EntryCmp());
       Set<Tuple> result = jedis.zrangeWithScores(key, 0, -1);
       List<Entry<String, Double>> resultList = new ArrayList<Entry<String, Double>>();
-      for (Tuple t: result)
+      for (Tuple t : result)
         resultList.add(new AbstractMap.SimpleEntry<String, Double>(t.getElement(), t.getScore()));
       assertEquals(expectedList, resultList);
       jedis.del(key);

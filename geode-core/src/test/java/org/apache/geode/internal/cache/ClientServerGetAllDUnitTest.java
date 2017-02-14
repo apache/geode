@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -26,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -59,7 +58,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 5.7
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
 
   @Override
@@ -73,7 +72,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int mcastPort = 0; /* loner is ok for this test*/ //AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
+    final int mcastPort = 0; /* loner is ok for this test */ // AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
@@ -87,12 +86,12 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       public void run2() throws CacheException {
         // Build collection of keys
         Collection keys = new ArrayList();
-        for (int i=0; i<5; i++) {
-          keys.add("key-"+i);
+        for (int i = 0; i < 5; i++) {
+          keys.add("key-" + i);
         }
-        
+
         keys.add(ClientServerTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
-        
+
         // Invoke getAll
         Region region = getRootRegion(regionName);
         Map result = region.getAll(keys);
@@ -107,12 +106,12 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if(!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
             assertEquals(key, value);
           else
             assertEquals(null, value);
         }
-        
+
         assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
       }
     });
@@ -129,7 +128,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
-    createBridgeServer(server, regionName, serverPort, false, false, true/*offheap*/);
+    createBridgeServer(server, regionName, serverPort, false, false, true/* offheap */);
 
     createBridgeClient(client, regionName, serverHost, new int[] {serverPort});
 
@@ -139,12 +138,12 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       public void run2() throws CacheException {
         // Build collection of keys
         Collection keys = new ArrayList();
-        for (int i=0; i<5; i++) {
-          keys.add("key-"+i);
+        for (int i = 0; i < 5; i++) {
+          keys.add("key-" + i);
         }
-        
+
         keys.add(ClientServerTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
-        
+
         // Invoke getAll
         Region region = getRootRegion(regionName);
         Map result = region.getAll(keys);
@@ -159,12 +158,12 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if(!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
             assertEquals(key, value);
           else
             assertEquals(null, value);
         }
-        
+
         assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
       }
     });
@@ -182,92 +181,98 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
-    createBridgeServer(server, regionName, serverPort, false, false, true/*offheap*/);
+    createBridgeServer(server, regionName, serverPort, false, false, true/* offheap */);
 
     createBridgeClient(client, regionName, serverHost, new int[] {serverPort}, true);
-    
-    final int VALUE_SIZE = 1024 * 2/* *1024*/;
+
+    final int VALUE_SIZE = 1024 * 2/* *1024 */;
 
     final int VALUE_COUNT = 100;
-    
+
     client.invoke(new CacheSerializableRunnable("put entries on server") {
       @Override
       public void run2() throws CacheException {
         final byte[] VALUE = new byte[VALUE_SIZE];
-        for (int i=0; i < VALUE_SIZE; i++) {
-          VALUE[i] = (byte)i;
+        for (int i = 0; i < VALUE_SIZE; i++) {
+          VALUE[i] = (byte) i;
         }
         Region region = getRootRegion(regionName);
-        for (int i=0; i < VALUE_COUNT; i++) {
-          region.put("k"+i, new UnitTestValueHolder(VALUE));
+        for (int i = 0; i < VALUE_COUNT; i++) {
+          region.put("k" + i, new UnitTestValueHolder(VALUE));
         }
       }
     });
 
-    CacheSerializableRunnable clientGetAll = new CacheSerializableRunnable("Get all entries from server") {
-      @Override
-      public void run2() throws CacheException {
-        // Build collection of keys
-        Collection keys = new ArrayList();
-        for (int i=0; i<VALUE_COUNT; i++) {
-          keys.add("k"+i);
-        }
-        
-        // Invoke getAll
-        Region region = getRootRegion(regionName);
-        final int GET_COUNT = 10/*0*/;
-        long start = System.currentTimeMillis();
-        Map result = null;
-        for (int i=0; i < GET_COUNT; i++) {
-          result = null; // allow gc to get rid of previous map before deserializing the next one
-          result = region.getAll(keys);
-        }
-        long end = System.currentTimeMillis();
-        long totalBytesRead = ((long)GET_COUNT * VALUE_COUNT * VALUE_SIZE);
-        long elapsedMillis = (end-start);
-        System.out.println("PERF: read " + totalBytesRead + " bytes in " + elapsedMillis + " millis. bps=" + (((double)totalBytesRead / elapsedMillis) * 1000));
-
-        // Verify result size is correct
-        assertEquals(VALUE_COUNT, result.size());
-
-        final byte[] EXPECTED = new byte[VALUE_SIZE];
-        for (int i=0; i < VALUE_SIZE; i++) {
-          EXPECTED[i] = (byte)i;
-        }
-        // Verify the result contains each key,
-        // and the value for each key is correct
-        // (the server has a loader that returns the key as the value)
-        for (Iterator i = keys.iterator(); i.hasNext();) {
-          String key = (String) i.next();
-          assertTrue(result.containsKey(key));
-          Object value = result.get(key);
-          if (value instanceof UnitTestValueHolder) {
-            Object v = ((UnitTestValueHolder) value).getValue();
-            if (v instanceof byte[]) {
-              byte[] bytes = (byte[]) v;
-              if (bytes.length != VALUE_SIZE) {
-                fail("expected value for key " + key + " to be an array of size " + (VALUE_SIZE) + " but it was: " + bytes.length);
-              }
-              if (!Arrays.equals(EXPECTED, bytes)) {
-                fail("expected bytes=" + Arrays.toString(bytes) + " to be expected=" + Arrays.toString(EXPECTED));
-              }
-            } else {
-              fail("expected v for key " + key + " to be a byte array but it was: " + v);
+    CacheSerializableRunnable clientGetAll =
+        new CacheSerializableRunnable("Get all entries from server") {
+          @Override
+          public void run2() throws CacheException {
+            // Build collection of keys
+            Collection keys = new ArrayList();
+            for (int i = 0; i < VALUE_COUNT; i++) {
+              keys.add("k" + i);
             }
-          } else {
-            fail("expected value for key " + key + " to be a UnitTestValueHolder but it was: " + value);
+
+            // Invoke getAll
+            Region region = getRootRegion(regionName);
+            final int GET_COUNT = 10/* 0 */;
+            long start = System.currentTimeMillis();
+            Map result = null;
+            for (int i = 0; i < GET_COUNT; i++) {
+              result = null; // allow gc to get rid of previous map before deserializing the next
+                             // one
+              result = region.getAll(keys);
+            }
+            long end = System.currentTimeMillis();
+            long totalBytesRead = ((long) GET_COUNT * VALUE_COUNT * VALUE_SIZE);
+            long elapsedMillis = (end - start);
+            System.out.println("PERF: read " + totalBytesRead + " bytes in " + elapsedMillis
+                + " millis. bps=" + (((double) totalBytesRead / elapsedMillis) * 1000));
+
+            // Verify result size is correct
+            assertEquals(VALUE_COUNT, result.size());
+
+            final byte[] EXPECTED = new byte[VALUE_SIZE];
+            for (int i = 0; i < VALUE_SIZE; i++) {
+              EXPECTED[i] = (byte) i;
+            }
+            // Verify the result contains each key,
+            // and the value for each key is correct
+            // (the server has a loader that returns the key as the value)
+            for (Iterator i = keys.iterator(); i.hasNext();) {
+              String key = (String) i.next();
+              assertTrue(result.containsKey(key));
+              Object value = result.get(key);
+              if (value instanceof UnitTestValueHolder) {
+                Object v = ((UnitTestValueHolder) value).getValue();
+                if (v instanceof byte[]) {
+                  byte[] bytes = (byte[]) v;
+                  if (bytes.length != VALUE_SIZE) {
+                    fail("expected value for key " + key + " to be an array of size " + (VALUE_SIZE)
+                        + " but it was: " + bytes.length);
+                  }
+                  if (!Arrays.equals(EXPECTED, bytes)) {
+                    fail("expected bytes=" + Arrays.toString(bytes) + " to be expected="
+                        + Arrays.toString(EXPECTED));
+                  }
+                } else {
+                  fail("expected v for key " + key + " to be a byte array but it was: " + v);
+                }
+              } else {
+                fail("expected value for key " + key + " to be a UnitTestValueHolder but it was: "
+                    + value);
+              }
+            }
           }
-        }
-      }
-    };
+        };
     // Run getAll
     {
       final int THREAD_COUNT = 4;
       AsyncInvocation[] ais = new AsyncInvocation[THREAD_COUNT];
-      for (int i=0; i < THREAD_COUNT; i++) {
+      for (int i = 0; i < THREAD_COUNT; i++) {
         ais[i] = client.invokeAsync(clientGetAll);
       }
-      for (int i=0; i < THREAD_COUNT; i++) {
+      for (int i = 0; i < THREAD_COUNT; i++) {
         ais[i].getResult();
       }
     }
@@ -276,7 +281,8 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       @Override
       public void run2() throws CacheException {
         MemoryAllocatorImpl ma = MemoryAllocatorImpl.getAllocator();
-        System.out.println("STATS: objects=" + ma.getStats().getObjects() + " usedMemory=" + ma.getStats().getUsedMemory() + " reads=" + ma.getStats().getReads());
+        System.out.println("STATS: objects=" + ma.getStats().getObjects() + " usedMemory="
+            + ma.getStats().getUsedMemory() + " reads=" + ma.getStats().getReads());
       }
     });
 
@@ -291,28 +297,28 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final VM server = host.getVM(0);
     final VM client = host.getVM(1);
     final String regionName = getUniqueName();
-    final int mcastPort = 0; /* loner is ok for this test*/ //AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
+    final int mcastPort = 0; /* loner is ok for this test */ // AvailablePort.getRandomAvailablePort(AvailablePort.JGROUPS);
     final int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
 
     createBridgeServer(server, regionName, serverPort, false, false);
 
     createBridgeClient(client, regionName, serverHost, new int[] {serverPort}, true);
-    
-    final int VALUE_SIZE = 1024 * 2/* *1024*/;
+
+    final int VALUE_SIZE = 1024 * 2/* *1024 */;
 
     final int VALUE_COUNT = 100;
-    
+
     client.invoke(new CacheSerializableRunnable("put entries on server") {
       @Override
       public void run2() throws CacheException {
         final byte[] VALUE = new byte[VALUE_SIZE];
-        for (int i=0; i < VALUE_SIZE; i++) {
-          VALUE[i] = (byte)i;
+        for (int i = 0; i < VALUE_SIZE; i++) {
+          VALUE[i] = (byte) i;
         }
         Region region = getRootRegion(regionName);
-        for (int i=0; i < VALUE_COUNT; i++) {
-          region.put("k"+i, new UnitTestValueHolder(VALUE));
+        for (int i = 0; i < VALUE_COUNT; i++) {
+          region.put("k" + i, new UnitTestValueHolder(VALUE));
         }
       }
     });
@@ -322,76 +328,82 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion(regionName);
-        for (int i=0; i < VALUE_COUNT; i++) {
-          region.get("k"+i);
+        for (int i = 0; i < VALUE_COUNT; i++) {
+          region.get("k" + i);
         }
       }
     });
 
-    CacheSerializableRunnable clientGetAll = new CacheSerializableRunnable("Get all entries from server") {
-      @Override
-      public void run2() throws CacheException {
-        // Build collection of keys
-        Collection keys = new ArrayList();
-        for (int i=0; i<VALUE_COUNT; i++) {
-          keys.add("k"+i);
-        }
-        
-        // Invoke getAll
-        Region region = getRootRegion(regionName);
-        final int GET_COUNT = 10/*0*/;
-        long start = System.currentTimeMillis();
-        Map result = null;
-        for (int i=0; i < GET_COUNT; i++) {
-          result = null; // allow gc to get rid of previous map before deserializing the next one
-          result = region.getAll(keys);
-        }
-        long end = System.currentTimeMillis();
-        long totalBytesRead = ((long)GET_COUNT * VALUE_COUNT * VALUE_SIZE);
-        long elapsedMillis = (end-start);
-        System.out.println("PERF: read " + totalBytesRead + " bytes in " + elapsedMillis + " millis. bps=" + (((double)totalBytesRead / elapsedMillis) * 1000));
-
-        // Verify result size is correct
-        assertEquals(VALUE_COUNT, result.size());
-
-        final byte[] EXPECTED = new byte[VALUE_SIZE];
-        for (int i=0; i < VALUE_SIZE; i++) {
-          EXPECTED[i] = (byte)i;
-        }
-        // Verify the result contains each key,
-        // and the value for each key is correct
-        // (the server has a loader that returns the key as the value)
-        for (Iterator i = keys.iterator(); i.hasNext();) {
-          String key = (String) i.next();
-          assertTrue(result.containsKey(key));
-          Object value = result.get(key);
-          if (value instanceof UnitTestValueHolder) {
-            Object v = ((UnitTestValueHolder) value).getValue();
-            if (v instanceof byte[]) {
-              byte[] bytes = (byte[]) v;
-              if (bytes.length != VALUE_SIZE) {
-                fail("expected value for key " + key + " to be an array of size " + (VALUE_SIZE) + " but it was: " + bytes.length);
-              }
-              if (!Arrays.equals(EXPECTED, bytes)) {
-                fail("expected bytes=" + Arrays.toString(bytes) + " to be expected=" + Arrays.toString(EXPECTED));
-              }
-            } else {
-              fail("expected v for key " + key + " to be a byte array but it was: " + v);
+    CacheSerializableRunnable clientGetAll =
+        new CacheSerializableRunnable("Get all entries from server") {
+          @Override
+          public void run2() throws CacheException {
+            // Build collection of keys
+            Collection keys = new ArrayList();
+            for (int i = 0; i < VALUE_COUNT; i++) {
+              keys.add("k" + i);
             }
-          } else {
-            fail("expected value for key " + key + " to be a UnitTestValueHolder but it was: " + value);
+
+            // Invoke getAll
+            Region region = getRootRegion(regionName);
+            final int GET_COUNT = 10/* 0 */;
+            long start = System.currentTimeMillis();
+            Map result = null;
+            for (int i = 0; i < GET_COUNT; i++) {
+              result = null; // allow gc to get rid of previous map before deserializing the next
+                             // one
+              result = region.getAll(keys);
+            }
+            long end = System.currentTimeMillis();
+            long totalBytesRead = ((long) GET_COUNT * VALUE_COUNT * VALUE_SIZE);
+            long elapsedMillis = (end - start);
+            System.out.println("PERF: read " + totalBytesRead + " bytes in " + elapsedMillis
+                + " millis. bps=" + (((double) totalBytesRead / elapsedMillis) * 1000));
+
+            // Verify result size is correct
+            assertEquals(VALUE_COUNT, result.size());
+
+            final byte[] EXPECTED = new byte[VALUE_SIZE];
+            for (int i = 0; i < VALUE_SIZE; i++) {
+              EXPECTED[i] = (byte) i;
+            }
+            // Verify the result contains each key,
+            // and the value for each key is correct
+            // (the server has a loader that returns the key as the value)
+            for (Iterator i = keys.iterator(); i.hasNext();) {
+              String key = (String) i.next();
+              assertTrue(result.containsKey(key));
+              Object value = result.get(key);
+              if (value instanceof UnitTestValueHolder) {
+                Object v = ((UnitTestValueHolder) value).getValue();
+                if (v instanceof byte[]) {
+                  byte[] bytes = (byte[]) v;
+                  if (bytes.length != VALUE_SIZE) {
+                    fail("expected value for key " + key + " to be an array of size " + (VALUE_SIZE)
+                        + " but it was: " + bytes.length);
+                  }
+                  if (!Arrays.equals(EXPECTED, bytes)) {
+                    fail("expected bytes=" + Arrays.toString(bytes) + " to be expected="
+                        + Arrays.toString(EXPECTED));
+                  }
+                } else {
+                  fail("expected v for key " + key + " to be a byte array but it was: " + v);
+                }
+              } else {
+                fail("expected value for key " + key + " to be a UnitTestValueHolder but it was: "
+                    + value);
+              }
+            }
           }
-        }
-      }
-    };
+        };
     // Run getAll
     {
       final int THREAD_COUNT = 4;
       AsyncInvocation[] ais = new AsyncInvocation[THREAD_COUNT];
-      for (int i=0; i < THREAD_COUNT; i++) {
+      for (int i = 0; i < THREAD_COUNT; i++) {
         ais[i] = client.invokeAsync(clientGetAll);
       }
-      for (int i=0; i < THREAD_COUNT; i++) {
+      for (int i = 0; i < THREAD_COUNT; i++) {
         ais[i].getResult();
       }
     }
@@ -417,12 +429,12 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       public void run2() throws CacheException {
         // Build collection of keys
         Collection keys = new ArrayList();
-        for (int i=0; i<5; i++) {
-          keys.add("key-"+i);
+        for (int i = 0; i < 5; i++) {
+          keys.add("key-" + i);
         }
-        
+
         keys.add(ClientServerTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
-        
+
         // Invoke getAll
         Region region = getRootRegion(regionName);
         Map result = region.getAll(keys, CALLBACK_ARG);
@@ -437,12 +449,12 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if(!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
             assertEquals(key, value);
           else
             assertEquals(null, value);
         }
-        
+
         assertEquals(null, region.get(ClientServerTestCase.NON_EXISTENT_KEY));
       }
     });
@@ -483,27 +495,27 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion(regionName);
-        for (int i=0; i<200; i++) {
+        for (int i = 0; i < 200; i++) {
           region.put(i, i);
         }
-        
+
         try {
           Thread.currentThread().sleep(1000);
         } catch (InterruptedException e) {
           // TODO Auto-generated catch block
-          e.printStackTrace();          
+          e.printStackTrace();
         }
         // Build collection of keys
         Collection keys = new ArrayList();
-        for (int i=0; i<5; i++) {
-          keys.add("key-"+i);
+        for (int i = 0; i < 5; i++) {
+          keys.add("key-" + i);
         }
         keys.add(ClientServerTestCase.NON_EXISTENT_KEY); // this will not be load CacheLoader
-        
+
         // Invoke getAll
-        
+
         Map result = region.getAll(keys);
-        
+
 
         // Verify result size is correct
         assertEquals(6, result.size());
@@ -515,7 +527,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           String key = (String) i.next();
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
-          if(!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
+          if (!key.equals(ClientServerTestCase.NON_EXISTENT_KEY))
             assertEquals(key, value);
           else
             assertEquals(null, value);
@@ -546,8 +558,8 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       @Override
       public void run2() throws CacheException {
         Region region = getRootRegion(regionName);
-        for (int i=0; i<numLocalValues; i++) {
-          region.put("key-"+i, "value-from-client-"+i);
+        for (int i = 0; i < numLocalValues; i++) {
+          region.put("key-" + i, "value-from-client-" + i);
         }
       }
     });
@@ -558,8 +570,8 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       public void run2() throws CacheException {
         // Build collection of keys
         Collection keys = new ArrayList();
-        for (int i=0; i<5; i++) {
-          keys.add("key-"+i);
+        for (int i = 0; i < 5; i++) {
+          keys.add("key-" + i);
         }
 
         // Invoke getAll
@@ -579,7 +591,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
           if (i < numLocalValues) {
-            assertEquals("value-from-client-"+i, value);
+            assertEquals("value-from-client-" + i, value);
           } else {
             assertEquals(key, value);
           }
@@ -601,7 +613,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     final int serverPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String serverHost = NetworkUtils.getServerHostName(server.getHost());
     final int numLocalValues = 101;
-    
+
     createBridgeServerWithoutLoader(server, regionName, serverPort, false);
 
     createBridgeClient(client, regionName, serverHost, new int[] {serverPort});
@@ -615,37 +627,39 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
         }
       }
     });
-    
+
     server.invoke(new CacheSerializableRunnable("Put entries from server") {
       public void run2() throws CacheException {
         Region region = getRootRegion(regionName);
-        for (int i = numLocalValues; i < numLocalValues*2; i++) {
+        for (int i = numLocalValues; i < numLocalValues * 2; i++) {
           region.put("key-" + i, "value-from-server-" + i);
         }
         region.getCache().getLogger().fine("The region entries in server " + region.entrySet());
       }
     });
-    
-    
+
+
     // Run getAll
     client.invoke(new CacheSerializableRunnable("Get all entries from server") {
       public void run2() throws CacheException {
         // Build collection of keys
         Collection keys = new ArrayList();
-        for (int i=0; i<numLocalValues*3; i++) {
-          keys.add("key-"+i);
+        for (int i = 0; i < numLocalValues * 3; i++) {
+          keys.add("key-" + i);
         }
 
         // Invoke getAll
         Region region = getRootRegion(regionName);
-        region.getCache().getLogger().fine("The region entries in client before getAll " + region.entrySet());
-        assertEquals(region.entrySet().size(),numLocalValues);
+        region.getCache().getLogger()
+            .fine("The region entries in client before getAll " + region.entrySet());
+        assertEquals(region.entrySet().size(), numLocalValues);
         Map result = region.getAll(keys);
-        assertEquals(region.entrySet().size(),2*numLocalValues);
-        region.getCache().getLogger().fine("The region entries in client after getAll " + region.entrySet());
-        
+        assertEquals(region.entrySet().size(), 2 * numLocalValues);
+        region.getCache().getLogger()
+            .fine("The region entries in client after getAll " + region.entrySet());
+
         // Verify result size is correct
-        assertEquals(3*numLocalValues, result.size());
+        assertEquals(3 * numLocalValues, result.size());
 
         // Verify the result contains each key,
         // and the value for each key is correct
@@ -655,11 +669,10 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
           assertTrue(result.containsKey(key));
           Object value = result.get(key);
           if (i < numLocalValues) {
-            assertEquals("value-from-client-"+i, value);
-          }else if(i < 2*numLocalValues) {
-            assertEquals("value-from-server-"+i, value);
-          }
-          else {
+            assertEquals("value-from-client-" + i, value);
+          } else if (i < 2 * numLocalValues) {
+            assertEquals("value-from-server-" + i, value);
+          } else {
             assertEquals(null, value);
           }
         }
@@ -669,18 +682,21 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     stopBridgeServer(server);
   }
 
-  private void createBridgeServer(VM server, final String regionName, final int serverPort, final boolean createPR, final boolean expectCallback) {
+  private void createBridgeServer(VM server, final String regionName, final int serverPort,
+      final boolean createPR, final boolean expectCallback) {
     createBridgeServer(server, regionName, serverPort, createPR, expectCallback, false);
   }
-  
 
-  private void createBridgeServer(VM server, final String regionName, final int serverPort, final boolean createPR, final boolean expectCallback, final boolean offheap) {
+
+  private void createBridgeServer(VM server, final String regionName, final int serverPort,
+      final boolean createPR, final boolean expectCallback, final boolean offheap) {
     server.invoke(new CacheSerializableRunnable("Create server") {
       @Override
       public void run2() throws CacheException {
         // Create DS
         Properties config = new Properties();
-        config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+        config.setProperty(LOCATORS,
+            "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
         if (offheap) {
           config.setProperty(OFF_HEAP_MEMORY_SIZE, "350m");
         }
@@ -720,7 +736,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       }
     });
   }
-  
+
   private static final String CALLBACK_ARG = "ClientServerGetAllDUnitTestCB";
 
   private static class CallbackCacheServerCacheLoader extends CacheServerCacheLoader {
@@ -739,12 +755,14 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
     }
   }
 
-  private void createBridgeServerWithoutLoader(VM server, final String regionName, final int serverPort, final boolean createPR) {
+  private void createBridgeServerWithoutLoader(VM server, final String regionName,
+      final int serverPort, final boolean createPR) {
     server.invoke(new CacheSerializableRunnable("Create server") {
       public void run2() throws CacheException {
         // Create DS
         Properties config = new Properties();
-        config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+        config.setProperty(LOCATORS,
+            "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
         getSystem(config);
 
         // Create Region
@@ -769,11 +787,14 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       }
     });
   }
-  private void createBridgeClient(VM client, final String regionName, final String serverHost, final int[] serverPorts) {
+
+  private void createBridgeClient(VM client, final String regionName, final String serverHost,
+      final int[] serverPorts) {
     createBridgeClient(client, regionName, serverHost, serverPorts, false);
   }
-  
-  private void createBridgeClient(VM client, final String regionName, final String serverHost, final int[] serverPorts, final boolean proxy) {
+
+  private void createBridgeClient(VM client, final String regionName, final String serverHost,
+      final int[] serverPorts, final boolean proxy) {
     client.invoke(new CacheSerializableRunnable("Create client") {
       @Override
       public void run2() throws CacheException {
@@ -791,7 +812,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
         }
         {
           PoolFactory pf = PoolManager.createFactory();
-          for (int i=0; i < serverPorts.length; i++) {
+          for (int i = 0; i < serverPorts.length; i++) {
             pf.addServer(serverHost, serverPorts[i]);
           }
           if (proxy) {
@@ -813,6 +834,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       }
     });
   }
+
   private void checkServerForOrphans(VM server, final String regionName) {
     server.invoke(new CacheSerializableRunnable("Stop Server") {
       @Override

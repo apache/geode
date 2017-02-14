@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache.partitioned;
@@ -34,16 +32,16 @@ public class ColocatedRegionDetails implements DataSerializable {
   private String parent;
   private String child;
 
-  public ColocatedRegionDetails(final String host, final String member, final String parent, final String child) {
+  public ColocatedRegionDetails(final String host, final String member, final String parent,
+      final String child) {
     this.host = host;
     this.member = member;
     this.parent = parent;
     this.child = child;
   }
 
-  //Used for deserialization only
-  public ColocatedRegionDetails() {
-  }
+  // Used for deserialization only
+  public ColocatedRegionDetails() {}
 
   /**
    * Returns the canonical name of the host machine
@@ -84,7 +82,7 @@ public class ColocatedRegionDetails implements DataSerializable {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     boolean hasHost = in.readBoolean();
-    if(hasHost) {
+    if (hasHost) {
       host = DataSerializer.readString(in);
     }
     boolean hasMember = in.readBoolean();
@@ -104,7 +102,7 @@ public class ColocatedRegionDetails implements DataSerializable {
   @Override
   public void toData(DataOutput out) throws IOException {
     out.writeBoolean(host != null);
-    if(host != null) {
+    if (host != null) {
       DataSerializer.writeString(host, out);
     }
     out.writeBoolean(member != null);
@@ -125,22 +123,22 @@ public class ColocatedRegionDetails implements DataSerializable {
   public String toString() {
     StringBuilder result = new StringBuilder();
     result.append("[");
-    if(host != null) {
+    if (host != null) {
       result.append("host:" + host.toString());
     } else {
       result.append("");
     }
-    if(member != null) {
+    if (member != null) {
       result.append(", member:" + member.toString());
     } else {
       result.append(",");
     }
-    if(parent != null) {
+    if (parent != null) {
       result.append(", parent:" + parent.toString());
     } else {
       result.append(",");
     }
-    if(child != null) {
+    if (child != null) {
       result.append(", child:" + child.toString());
     } else {
       result.append(",");

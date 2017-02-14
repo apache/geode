@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal.executor.string;
 
@@ -84,10 +82,10 @@ public class BitOpExecutor extends StringExecutor {
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), maxLength));
   }
 
-  private void and(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r, ByteArrayWrapper destKey, byte[][] values, int max) {
+  private void and(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r,
+      ByteArrayWrapper destKey, byte[][] values, int max) {
     byte[] dest = new byte[max];
-    outer:
-    for (int i = 0; i < max; i++) {
+    outer: for (int i = 0; i < max; i++) {
       byte b = values[0][i];
       for (int j = 1; j < values.length; j++) {
         if (values[j] == null) {
@@ -103,7 +101,8 @@ public class BitOpExecutor extends StringExecutor {
     r.put(destKey, new ByteArrayWrapper(dest));
   }
 
-  private void or(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r, ByteArrayWrapper destKey, byte[][] values, int max) {
+  private void or(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r,
+      ByteArrayWrapper destKey, byte[][] values, int max) {
     byte[] dest = new byte[max];
     for (int i = 0; i < max; i++) {
       byte b = values[0][i];
@@ -120,7 +119,8 @@ public class BitOpExecutor extends StringExecutor {
     r.put(destKey, new ByteArrayWrapper(dest));
   }
 
-  private void xor(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r, ByteArrayWrapper destKey, byte[][] values, int max) {
+  private void xor(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r,
+      ByteArrayWrapper destKey, byte[][] values, int max) {
     byte[] dest = new byte[max];
     for (int i = 0; i < max; i++) {
       byte b = values[0][i];
@@ -137,7 +137,8 @@ public class BitOpExecutor extends StringExecutor {
     r.put(destKey, new ByteArrayWrapper(dest));
   }
 
-  private void not(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r, ByteArrayWrapper destKey, byte[][] values, int max) {
+  private void not(ExecutionHandlerContext context, Region<ByteArrayWrapper, ByteArrayWrapper> r,
+      ByteArrayWrapper destKey, byte[][] values, int max) {
     byte[] dest = new byte[max];
     byte[] cA = values[0];
     for (int i = 0; i < max; i++) {

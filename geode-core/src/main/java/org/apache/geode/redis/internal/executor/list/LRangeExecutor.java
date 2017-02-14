@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal.executor.list;
 
@@ -67,7 +65,7 @@ public class LRangeExecutor extends ListExecutor {
 
     try {
       redisStart = Coder.bytesToInt(startArray);
-      redisStop =  Coder.bytesToInt(stopArray);
+      redisStop = Coder.bytesToInt(stopArray);
     } catch (NumberFormatException e) {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERIC));
       return;
@@ -82,8 +80,8 @@ public class LRangeExecutor extends ListExecutor {
     }
     redisStart = Math.min(redisStart, listSize - 1);
     redisStop = Math.min(redisStop, listSize - 1);
-   
-    
+
+
     List<Struct> range;
     try {
       range = getRange(context, key, redisStart, redisStop, keyRegion);
@@ -94,10 +92,12 @@ public class LRangeExecutor extends ListExecutor {
     if (range == null)
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
     else
-      command.setResponse(Coder.getBulkStringArrayResponseOfValues(context.getByteBufAllocator(), range));
+      command.setResponse(
+          Coder.getBulkStringArrayResponseOfValues(context.getByteBufAllocator(), range));
   }
 
-  private List<Struct> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, int start, int stop, Region r) throws Exception {
+  private List<Struct> getRange(ExecutionHandlerContext context, ByteArrayWrapper key, int start,
+      int stop, Region r) throws Exception {
 
     Query query = getQuery(key, ListQuery.LRANGE, context);
 

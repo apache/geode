@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal.executor.list;
 
@@ -33,7 +31,8 @@ public class LSetExecutor extends ListExecutor {
 
   private final String ERROR_NOT_NUMERIC = "The index provided is not numeric";
 
-  private final String ERROR_INDEX = "The index provided is not within range of this list or the key does not exist";
+  private final String ERROR_INDEX =
+      "The index provided is not within range of this list or the key does not exist";
 
   private final String SUCCESS = "OK";
 
@@ -92,11 +91,12 @@ public class LSetExecutor extends ListExecutor {
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
   }
 
-  private Integer getIndexKey(ExecutionHandlerContext context, ByteArrayWrapper key, int index) throws Exception {
+  private Integer getIndexKey(ExecutionHandlerContext context, ByteArrayWrapper key, int index)
+      throws Exception {
     Query query = getQuery(key, ListQuery.LSET, context);
 
     Object[] params = {Integer.valueOf(index + 1)};
-    
+
     SelectResults<Integer> results = (SelectResults<Integer>) query.execute(params);
     int size = results.size();
     if (results == null || size == 0) {

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal;
 
@@ -28,34 +26,34 @@ import java.net.InetSocketAddress;
 import java.util.*;
 
 /**
- * A connection source where the list of endpoints is specified explicitly. 
+ * A connection source where the list of endpoints is specified explicitly.
+ * 
  * @since GemFire 5.7
  * 
- * TODO - the UnusedServerMonitor basically will force the pool to
- * have at least one connection to each server. Maybe we need to have it
- * create connections that are outside the pool?
+ *        TODO - the UnusedServerMonitor basically will force the pool to have at least one
+ *        connection to each server. Maybe we need to have it create connections that are outside
+ *        the pool?
  *
  */
 public class ExplicitConnectionSourceImpl implements ConnectionSource {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private List serverList;
   private int nextServerIndex = 0;
   private int nextQueueIndex = 0;
   private InternalPool pool;
-  
-  /**
-   * A debug flag, which can be toggled by tests to disable/enable shuffling of
-   * the endpoints list
-   */
-  private boolean DISABLE_SHUFFLING = Boolean
-      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
 
-  public ExplicitConnectionSourceImpl(List/*<InetSocketAddress>*/contacts) {
+  /**
+   * A debug flag, which can be toggled by tests to disable/enable shuffling of the endpoints list
+   */
+  private boolean DISABLE_SHUFFLING =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints");
+
+  public ExplicitConnectionSourceImpl(List/* <InetSocketAddress> */ contacts) {
     ArrayList serverList = new ArrayList(contacts.size());
-    for(int i = 0; i < contacts.size(); i++) {
-      InetSocketAddress addr = (InetSocketAddress)contacts.get(i);
+    for (int i = 0; i < contacts.size(); i++) {
+      InetSocketAddress addr = (InetSocketAddress) contacts.get(i);
       serverList.add(new ServerLocation(addr.getHostName(), addr.getPort()));
     }
     shuffle(serverList);
@@ -67,14 +65,15 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     this.pool = pool;
     pool.getStats().setInitialContacts(serverList.size());
   }
-  
+
   @Override
   public void stop() {
-    //do nothing
+    // do nothing
   }
 
   @Override
-  public ServerLocation findReplacementServer(ServerLocation currentServer, Set/*<ServerLocation>*/ excludedServers) {
+  public ServerLocation findReplacementServer(ServerLocation currentServer,
+      Set/* <ServerLocation> */ excludedServers) {
     // at this time we always try to find a server other than currentServer
     // and if we do return it. Otherwise return null;
     // so that clients would attempt to keep the same number of connections
@@ -84,69 +83,67 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     excludedPlusCurrent.add(currentServer);
     return findServer(excludedPlusCurrent);
   }
-  
+
   @Override
   public synchronized ServerLocation findServer(Set excludedServers) {
-    if(PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
+    if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
       return null;
     }
     ServerLocation nextServer;
     int startIndex = nextServerIndex;
     do {
       nextServer = (ServerLocation) serverList.get(nextServerIndex);
-      if(++nextServerIndex >= serverList.size()) {
+      if (++nextServerIndex >= serverList.size()) {
         nextServerIndex = 0;
       }
-      if(!excludedServers.contains(nextServer)) {
+      if (!excludedServers.contains(nextServer)) {
         return nextServer;
       }
-    } while(nextServerIndex != startIndex);
-    
+    } while (nextServerIndex != startIndex);
+
     return null;
   }
-  
+
   /**
-   * TODO - this algorithm could be cleaned up. Right now we have to
-   * connect to every server in the system to find where our durable
-   * queue lives.
+   * TODO - this algorithm could be cleaned up. Right now we have to connect to every server in the
+   * system to find where our durable queue lives.
    */
   @Override
-  public synchronized List findServersForQueue(Set excludedServers,
-      int numServers, ClientProxyMembershipID proxyId, boolean findDurableQueue) {
-    if(PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
+  public synchronized List findServersForQueue(Set excludedServers, int numServers,
+      ClientProxyMembershipID proxyId, boolean findDurableQueue) {
+    if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
       return new ArrayList();
     }
-    if(numServers == -1) {
+    if (numServers == -1) {
       numServers = Integer.MAX_VALUE;
     }
-    if(findDurableQueue && proxyId.isDurable()) {
+    if (findDurableQueue && proxyId.isDurable()) {
       return findDurableQueues(excludedServers, numServers);
     } else {
       return pickQueueServers(excludedServers, numServers);
     }
   }
-  
+
   @Override
   public boolean isBalanced() {
     return false;
   }
-  
-  private List pickQueueServers(Set excludedServers,
-      int numServers) {
-    
+
+  private List pickQueueServers(Set excludedServers, int numServers) {
+
     ArrayList result = new ArrayList();
     ServerLocation nextQueue;
     int startIndex = nextQueueIndex;
     do {
-      nextQueue= (ServerLocation) serverList.get(nextQueueIndex);
-      if(++nextQueueIndex >= serverList.size()) {
+      nextQueue = (ServerLocation) serverList.get(nextQueueIndex);
+      if (++nextQueueIndex >= serverList.size()) {
         nextQueueIndex = 0;
       }
-      if(!excludedServers.contains(nextQueue)) {
+      if (!excludedServers.contains(nextQueue)) {
         result.add(nextQueue);
       }
-    } while(nextQueueIndex != startIndex && result.size() < numServers);
-    
+    } while (nextQueueIndex != startIndex && result.size() < numServers);
+
     return result;
   }
 
@@ -155,53 +152,54 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
    */
   private static class HasQueueOp implements Op {
     public static final HasQueueOp SINGLETON = new HasQueueOp();
+
     public Object attempt(Connection cnx) throws Exception {
       ServerQueueStatus status = cnx.getQueueStatus();
       return status.isNonRedundant() ? Boolean.FALSE : Boolean.TRUE;
     }
+
     @Override
     public boolean useThreadLocalConnection() {
       return false;
     }
   }
-  
-  private List findDurableQueues(Set excludedServers,
-      int numServers) {
+
+  private List findDurableQueues(Set excludedServers, int numServers) {
     ArrayList durableServers = new ArrayList();
     ArrayList otherServers = new ArrayList();
-    
+
     logger.debug("ExplicitConnectionSource - looking for durable queue");
-    
-    for(Iterator itr = serverList.iterator(); itr.hasNext(); ) {
+
+    for (Iterator itr = serverList.iterator(); itr.hasNext();) {
       ServerLocation server = (ServerLocation) itr.next();
-      if(excludedServers.contains(server)) {
+      if (excludedServers.contains(server)) {
         continue;
       }
-      
-      //the pool will automatically create a connection to this server
-      //and store it for future use.
+
+      // the pool will automatically create a connection to this server
+      // and store it for future use.
       Boolean hasQueue;
       try {
         hasQueue = (Boolean) pool.executeOn(server, HasQueueOp.SINGLETON);
-      } catch(GemFireSecurityException e) {
+      } catch (GemFireSecurityException e) {
         throw e;
-      } catch(Exception e) {
-        if(e.getCause() instanceof GemFireSecurityException) {
-          throw (GemFireSecurityException)e.getCause();
+      } catch (Exception e) {
+        if (e.getCause() instanceof GemFireSecurityException) {
+          throw (GemFireSecurityException) e.getCause();
         }
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
           logger.debug("Unabled to check for durable queue on server {}: {}", server, e);
         }
         continue;
       }
-      if(hasQueue != null) {
-        if(hasQueue.booleanValue()) {
-          if(logger.isDebugEnabled()) {
+      if (hasQueue != null) {
+        if (hasQueue.booleanValue()) {
+          if (logger.isDebugEnabled()) {
             logger.debug("Durable queue found on {}", server);
           }
           durableServers.add(server);
         } else {
-          if(logger.isDebugEnabled()) {
+          if (logger.isDebugEnabled()) {
             logger.debug("Durable queue was not found on {}", server);
           }
           otherServers.add(server);
@@ -210,50 +208,47 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     }
 
     int remainingServers = numServers - durableServers.size();
-    if(remainingServers > otherServers.size()) {
+    if (remainingServers > otherServers.size()) {
       remainingServers = otherServers.size();
     }
-    //note, we're always prefering the servers in the beginning of the list
-    //but that's ok because we already shuffled the list in our constructor.
-    if(remainingServers > 0) {
+    // note, we're always prefering the servers in the beginning of the list
+    // but that's ok because we already shuffled the list in our constructor.
+    if (remainingServers > 0) {
       durableServers.addAll(otherServers.subList(0, remainingServers));
       nextQueueIndex = remainingServers % serverList.size();
     }
-    
-    if(logger.isDebugEnabled()) {
+
+    if (logger.isDebugEnabled()) {
       logger.debug("found {} servers out of {}", durableServers.size(), numServers);
     }
-    
+
     return durableServers;
   }
-  
-  private void shuffle(List endpoints)
-  {
-    //this check was copied from ConnectionProxyImpl
+
+  private void shuffle(List endpoints) {
+    // this check was copied from ConnectionProxyImpl
     if (endpoints.size() < 2 || DISABLE_SHUFFLING) {
       /*
-       * It is not safe to shuffle an ArrayList of size 1
-       * java.lang.IndexOutOfBoundsException: Index: 1, Size: 1 at
-       * java.util.ArrayList.RangeCheck(Unknown Source) at
-       * java.util.ArrayList.get(Unknown Source) at
-       * java.util.Collections.swap(Unknown Source) at
+       * It is not safe to shuffle an ArrayList of size 1 java.lang.IndexOutOfBoundsException:
+       * Index: 1, Size: 1 at java.util.ArrayList.RangeCheck(Unknown Source) at
+       * java.util.ArrayList.get(Unknown Source) at java.util.Collections.swap(Unknown Source) at
        * java.util.Collections.shuffle(Unknown Source)
        */
       return;
     }
     Collections.shuffle(endpoints);
   }
-  
+
   @Override
   public String toString() {
     StringBuffer sb = new StringBuffer();
     sb.append("EndPoints[");
-    synchronized(this) {
+    synchronized (this) {
       Iterator it = serverList.iterator();
-      while(it.hasNext()) {
-        ServerLocation loc = (ServerLocation)it.next();
-        sb.append(loc.getHostName()+":"+loc.getPort());
-        if(it.hasNext()) {
+      while (it.hasNext()) {
+        ServerLocation loc = (ServerLocation) it.next();
+        sb.append(loc.getHostName() + ":" + loc.getPort());
+        if (it.hasNext()) {
           sb.append(",");
         }
       }
@@ -261,8 +256,9 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     sb.append("]");
     return sb.toString();
   }
-  
-  ArrayList<ServerLocation> getAllServers() {
+
+  @Override
+  public ArrayList<ServerLocation> getAllServers() {
     ArrayList<ServerLocation> list = new ArrayList<ServerLocation>();
     list.addAll(this.serverList);
     return list;

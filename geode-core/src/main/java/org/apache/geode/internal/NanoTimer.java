@@ -1,50 +1,47 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal;
 
 /**
- * A timer class that reports current or elapsed time in nanonseconds.
- * The static method {@link #getTime} reports the current time.
- * The instance methods support basic
- * stop-watch-style functions that are convenient for simple performance
- * measurements. For example:
+ * A timer class that reports current or elapsed time in nanonseconds. The static method
+ * {@link #getTime} reports the current time. The instance methods support basic stop-watch-style
+ * functions that are convenient for simple performance measurements. For example:
+ * 
  * <pre>
-  class Example {
-     void example() {
-       NanoTimer timer = new NanoTimer();
-       for (int i = 0; i < n; ++i) {
-	  someComputationThatYouAreMeasuring();
-	  long duration = timer.reset();
-	  System.out.println("Duration: " + duration);
-	  // To avoid contaminating timing with printing times,
-	  // you could call reset again here.
-       }
-       long average = timer.getTimeSinceConstruction() / n;
-       System.out.println("Average: " + average);
-     }
-   }
+ * class Example {
+ *   void example() {
+ *     NanoTimer timer = new NanoTimer();
+ *     for (int i = 0; i < n; ++i) {
+ *       someComputationThatYouAreMeasuring();
+ *       long duration = timer.reset();
+ *       System.out.println("Duration: " + duration);
+ *       // To avoid contaminating timing with printing times,
+ *       // you could call reset again here.
+ *     }
+ *     long average = timer.getTimeSinceConstruction() / n;
+ *     System.out.println("Average: " + average);
+ *   }
+ * }
  * </pre>
  * 
  */
-public final class NanoTimer {
+public class NanoTimer {
 
   public static final long NANOS_PER_MILLISECOND = 1000000;
-  
+
   /**
    * The timestamp taken when this timer was constructed.
    */
@@ -54,16 +51,16 @@ public final class NanoTimer {
    * The timestamp taken when this timer was last reset or constructed.
    */
   private long lastResetTime;
-  
+
   private final TimeService timeService;
-  
+
   private final static TimeService systemTimeService = new TimeService() {
     @Override
     public long getTime() {
       return java.lang.System.nanoTime();
     }
   };
-  
+
   /**
    * Create a NanoTimer.
    */
@@ -72,19 +69,18 @@ public final class NanoTimer {
     this.lastResetTime = systemTimeService.getTime();
     this.constructionTime = this.lastResetTime;
   }
-  
+
   /**
    * For unit testing
    */
-  NanoTimer(TimeService ts) {
+  protected NanoTimer(TimeService ts) {
     this.timeService = ts;
     this.lastResetTime = ts.getTime();
     this.constructionTime = this.lastResetTime;
   }
 
   /**
-   * Converts nanoseconds to milliseconds by dividing nanos by 
-   * {@link #NANOS_PER_MILLISECOND}.
+   * Converts nanoseconds to milliseconds by dividing nanos by {@link #NANOS_PER_MILLISECOND}.
    * 
    * @param nanos value in nanoseconds
    * @return value converted to milliseconds
@@ -92,10 +88,9 @@ public final class NanoTimer {
   public static long nanosToMillis(long nanos) {
     return nanos / NANOS_PER_MILLISECOND;
   }
-  
+
   /**
-   * Converts milliseconds to nanoseconds by multiplying millis by 
-   * {@link #NANOS_PER_MILLISECOND}.
+   * Converts milliseconds to nanoseconds by multiplying millis by {@link #NANOS_PER_MILLISECOND}.
    * 
    * @param millis value in milliseconds
    * @return value converted to nanoseconds
@@ -105,32 +100,29 @@ public final class NanoTimer {
   }
 
   /**
-   * Return the time in nanoseconds since some arbitrary time in the past.
-   * The time rolls over to zero every 2^64 nanosecs (approx 584 years).
-   * Interval computations spanning periods longer than this will be wrong. 
+   * Return the time in nanoseconds since some arbitrary time in the past. The time rolls over to
+   * zero every 2^64 nanosecs (approx 584 years). Interval computations spanning periods longer than
+   * this will be wrong.
    */
   public static long getTime() {
     return java.lang.System.nanoTime();
   }
 
   /**
-   * Return the construction time in nanoseconds since some arbitrary time
-   * in the past.
+   * Return the construction time in nanoseconds since some arbitrary time in the past.
    * 
    * @return timestamp in nanoseconds since construction.
    */
   public long getConstructionTime() {
     return this.constructionTime;
   }
-  
+
   /**
-   * Return the last reset time in naonseconds since some arbitrary time
-   * in the past.
+   * Return the last reset time in naonseconds since some arbitrary time in the past.
    * <p/>
-   * The time rolls over to zero every 2^64 nanosecs (approx 584 years).
-   * Interval computations spanning periods longer than this will be wrong.
-   * If the timer has not yet been reset then the construction time
-   * is returned.
+   * The time rolls over to zero every 2^64 nanosecs (approx 584 years). Interval computations
+   * spanning periods longer than this will be wrong. If the timer has not yet been reset then the
+   * construction time is returned.
    * 
    * @return timestamp in nanoseconds of construction or the last reset.
    */
@@ -139,9 +131,8 @@ public final class NanoTimer {
   }
 
   /**
-   * Compute and return the time in nanoseconds since the last reset or
-   * construction of this timer, and reset the timer to the current
-   * {@link #getTime}.
+   * Compute and return the time in nanoseconds since the last reset or construction of this timer,
+   * and reset the timer to the current {@link #getTime}.
    * 
    * @return time in nanoseconds since construction or last reset.
    */
@@ -152,8 +143,8 @@ public final class NanoTimer {
   }
 
   /**
-   * Compute and return the time in nanoseconds since the last reset or
-   * construction of this Timer, but does not reset this timer. 
+   * Compute and return the time in nanoseconds since the last reset or construction of this Timer,
+   * but does not reset this timer.
    * 
    * @return time in nanoseconds since construction or last reset.
    */
@@ -162,19 +153,18 @@ public final class NanoTimer {
   }
 
   /**
-   * Compute and return the time in nanoseconds since this timer was
-   * constructed. 
+   * Compute and return the time in nanoseconds since this timer was constructed.
    * 
    * @return time in nanoseconds since construction.
    */
   public long getTimeSinceConstruction() {
     return this.timeService.getTime() - this.constructionTime;
   }
-  
+
   /**
    * Allows unit tests to insert a deterministic clock for testing.
    */
-  interface TimeService {
+  public interface TimeService {
     /**
      * Returns the current time.
      */

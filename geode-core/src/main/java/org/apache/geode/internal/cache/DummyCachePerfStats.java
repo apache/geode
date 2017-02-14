@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -29,8 +27,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   /**
    * Creates a new <code>DummyCachePerfStats</code>
    */
-  public DummyCachePerfStats() {
-  }
+  public DummyCachePerfStats() {}
 
   // //////////////////// Accessing Stats //////////////////////
 
@@ -155,8 +152,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incReliableQueuedOps(int inc) {
-  }
+  public void incReliableQueuedOps(int inc) {}
 
   @Override
   public int getReliableQueueSize() {
@@ -164,8 +160,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incReliableQueueSize(int inc) {
-  }
+  public void incReliableQueueSize(int inc) {}
 
   @Override
   public int getReliableQueueMax() {
@@ -173,8 +168,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incReliableQueueMax(int inc) {
-  }
+  public void incReliableQueueMax(int inc) {}
 
   @Override
   public int getReliableRegions() {
@@ -182,8 +176,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incReliableRegions(int inc) {
-  }
+  public void incReliableRegions(int inc) {}
 
   @Override
   public int getReliableRegionsMissing() {
@@ -191,8 +184,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incReliableRegionsMissing(int inc) {
-  }
+  public void incReliableRegionsMissing(int inc) {}
 
   @Override
   public int getReliableRegionsQueuing() {
@@ -200,8 +192,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incReliableRegionsQueuing(int inc) {
-  }
+  public void incReliableRegionsQueuing(int inc) {}
 
   @Override
   public int getReliableRegionsMissingFullAccess() {
@@ -209,8 +200,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incReliableRegionsMissingFullAccess(int inc) {
-  }
+  public void incReliableRegionsMissingFullAccess(int inc) {}
 
   @Override
   public int getReliableRegionsMissingLimitedAccess() {
@@ -218,8 +208,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incReliableRegionsMissingLimitedAccess(int inc) {
-  }
+  public void incReliableRegionsMissingLimitedAccess(int inc) {}
 
   @Override
   public int getReliableRegionsMissingNoAccess() {
@@ -227,12 +216,10 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incReliableRegionsMissingNoAccess(int inc) {
-  }
+  public void incReliableRegionsMissingNoAccess(int inc) {}
 
   @Override
-  public void incQueuedEvents(int inc) {
-  }
+  public void incQueuedEvents(int inc) {}
 
   @Override
   public long getQueuedEvents() {
@@ -247,8 +234,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void endLoad(long start) {
-  }
+  public void endLoad(long start) {}
 
   @Override
   public long startNetload() {
@@ -256,8 +242,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void endNetload(long start) {
-  }
+  public void endNetload(long start) {}
 
   @Override
   public long startNetsearch() {
@@ -265,8 +250,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void endNetsearch(long start) {
-  }
+  public void endNetsearch(long start) {}
 
   @Override
   public long startCacheWriterCall() {
@@ -274,8 +258,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void endCacheWriterCall(long start) {
-  }
+  public void endCacheWriterCall(long start) {}
 
   @Override
   public long startCacheListenerCall() {
@@ -291,36 +274,28 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void endGetInitialImage(long start) {
-  }
+  public void endGetInitialImage(long start) {}
 
   @Override
-  public void endNoGIIDone(long start) {
-  }
+  public void endNoGIIDone(long start) {}
 
   @Override
-  public void incGetInitialImageKeysReceived() {
-  }
+  public void incGetInitialImageKeysReceived() {}
 
   @Override
-  public void incRegions(int inc) {
-  }
+  public void incRegions(int inc) {}
 
   @Override
-  public void incPartitionedRegions(int inc) {
-  }
+  public void incPartitionedRegions(int inc) {}
 
   @Override
-  public void incDestroys() {
-  }
+  public void incDestroys() {}
 
   @Override
-  public void incCreates() {
-  }
+  public void incCreates() {}
 
   @Override
-  public void incInvalidates() {
-  }
+  public void incInvalidates() {}
 
   @Override
   public long startGet() {
@@ -328,8 +303,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void endGet(long start, boolean miss) {
-  }
+  public void endGet(long start, boolean miss) {}
 
   @Override
   public long endPut(long start, boolean isUpdate) {
@@ -337,12 +311,10 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void endPutAll(long start) {
-  }
+  public void endPutAll(long start) {}
 
   @Override
-  public void endQueryExecution(long executionTime) {
-  }
+  public void endQueryExecution(long executionTime) {}
 
   @Override
   public int getTxCommits() {
@@ -380,7 +352,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
- public long getTxFailedLifeTime() {
+  public long getTxFailedLifeTime() {
     return 0;
   }
 
@@ -405,26 +377,21 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incTxConflictCheckTime(long delta) {
-  }
+  public void incTxConflictCheckTime(long delta) {}
 
   @Override
-  public void txSuccess(long opTime, long txLifeTime, int txChanges) {
-  }
+  public void txSuccess(long opTime, long txLifeTime, int txChanges) {}
 
   @Override
-  public void txFailure(long opTime, long txLifeTime, int txChanges) {
-  }
+  public void txFailure(long opTime, long txLifeTime, int txChanges) {}
 
   @Override
-  public void txRollback(long opTime, long txLifeTime, int txChanges) {
-  }
+  public void txRollback(long opTime, long txLifeTime, int txChanges) {}
 
   // //// Special Instance Methods /////
 
   @Override
-  void close() {
-  }
+  void close() {}
 
   @Override
   public boolean isClosed() {
@@ -437,24 +404,19 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incEventQueueSize(int items) {
-  }
+  public void incEventQueueSize(int items) {}
 
   @Override
-  public void incEventQueueThrottleCount(int items) {
-  }
+  public void incEventQueueThrottleCount(int items) {}
 
   @Override
-  protected void incEventQueueThrottleTime(long nanos) {
-  }
+  protected void incEventQueueThrottleTime(long nanos) {}
 
   @Override
-  protected void incEventThreads(int items) {
-  }
+  protected void incEventThreads(int items) {}
 
   @Override
-  public void incEntryCount(int delta) {
-  }
+  public void incEntryCount(int delta) {}
 
   @Override
   public long getEntries() {
@@ -462,8 +424,7 @@ public class DummyCachePerfStats extends CachePerfStats {
   }
 
   @Override
-  public void incRetries() {
-  }
+  public void incRetries() {}
 
   @Override
   public Statistics getStats() {
@@ -473,11 +434,9 @@ public class DummyCachePerfStats extends CachePerfStats {
   @Override
   public PoolStatHelper getEventPoolHelper() {
     return new PoolStatHelper() {
-      public void startJob() {
-      }
+      public void startJob() {}
 
-      public void endJob() {
-      }
+      public void endJob() {}
     };
   }
 

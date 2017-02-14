@@ -1,39 +1,37 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.statistics;
 
-import static org.junit.Assert.*;
-import static org.junit.Assume.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.statistics.StatMonitorHandler.StatMonitorNotifier;
-import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.test.junit.categories.UnitTest;
-
 /**
  * Unit tests for {@link StatMonitorHandler}.
- *   
+ * 
  * @since GemFire 7.0
  */
 @Category(UnitTest.class)
@@ -48,10 +46,10 @@ public class StatMonitorHandlerTest {
     assertFalse(handler.getMonitorsSnapshot().isEmpty());
     assertTrue(handler.getMonitorsSnapshot().contains(monitor));
     handler.sampled(NanoTimer.getTime(), Collections.<ResourceInstance>emptyList());
-    waitForNotificationCount(monitor, 1, 2*1000, 10, false);
+    waitForNotificationCount(monitor, 1, 2 * 1000, 10, false);
     assertEquals(1, monitor.getNotificationCount());
   }
-  
+
   @Test
   public void testAddExistingMonitorReturnsFalse() throws Exception {
     StatMonitorHandler handler = new StatMonitorHandler();
@@ -62,7 +60,7 @@ public class StatMonitorHandlerTest {
     assertTrue(handler.getMonitorsSnapshot().contains(monitor));
     assertFalse(handler.addMonitor(monitor));
   }
-  
+
   @Test
   public void testRemoveExistingMonitor() throws Exception {
     StatMonitorHandler handler = new StatMonitorHandler();
@@ -77,7 +75,7 @@ public class StatMonitorHandlerTest {
     handler.sampled(NanoTimer.getTime(), Collections.<ResourceInstance>emptyList());
     assertEquals(0, monitor.getNotificationCount());
   }
-  
+
   @Test
   public void testRemoveMissingMonitorReturnsFalse() throws Exception {
     StatMonitorHandler handler = new StatMonitorHandler();
@@ -87,7 +85,7 @@ public class StatMonitorHandlerTest {
     assertFalse(handler.removeMonitor(monitor));
     assertTrue(handler.getMonitorsSnapshot().isEmpty());
   }
-  
+
   @Test
   public void testNotificationSampleFrequencyDefault() throws Exception {
     final int sampleFrequency = 1;
@@ -97,11 +95,11 @@ public class StatMonitorHandlerTest {
     final int sampleCount = 100;
     for (int i = 0; i < sampleCount; i++) {
       handler.sampled(NanoTimer.getTime(), Collections.<ResourceInstance>emptyList());
-      waitForNotificationCount(monitor, 1+i, 2*1000, 10, false);
+      waitForNotificationCount(monitor, 1 + i, 2 * 1000, 10, false);
     }
-    assertEquals(sampleCount/sampleFrequency, monitor.getNotificationCount());
+    assertEquals(sampleCount / sampleFrequency, monitor.getNotificationCount());
   }
-  
+
   @Test
   public void testNotificationSampleTimeMillis() throws Exception {
     final long currentTime = System.currentTimeMillis();
@@ -110,11 +108,11 @@ public class StatMonitorHandlerTest {
     handler.addMonitor(monitor);
     long nanoTimeStamp = NanoTimer.getTime();
     handler.sampled(nanoTimeStamp, Collections.<ResourceInstance>emptyList());
-    waitForNotificationCount(monitor, 1, 2*1000, 10, false);
+    waitForNotificationCount(monitor, 1, 2 * 1000, 10, false);
     assertTrue(monitor.getTimeStamp() != nanoTimeStamp);
     assertTrue(monitor.getTimeStamp() >= currentTime);
   }
-  
+
   @Test
   public void testNotificationResourceInstances() throws Exception {
     final int resourceInstanceCount = 100;
@@ -122,85 +120,39 @@ public class StatMonitorHandlerTest {
     for (int i = 0; i < resourceInstanceCount; i++) {
       resourceInstances.add(new ResourceInstance(i, null, null));
     }
-    
+
     StatMonitorHandler handler = new StatMonitorHandler();
     TestStatisticsMonitor monitor = new TestStatisticsMonitor();
     handler.addMonitor(monitor);
     handler.sampled(NanoTimer.getTime(), Collections.unmodifiableList(resourceInstances));
 
-    waitForNotificationCount(monitor, 1, 2*1000, 10, false);
-    
+    waitForNotificationCount(monitor, 1, 2 * 1000, 10, false);
+
     final List<ResourceInstance> notificationResourceInstances = monitor.getResourceInstances();
     assertNotNull(notificationResourceInstances);
     assertEquals(resourceInstances, notificationResourceInstances);
     assertEquals(resourceInstanceCount, notificationResourceInstances.size());
-    
+
     int i = 0;
     for (ResourceInstance resourceInstance : notificationResourceInstances) {
       assertEquals(i, resourceInstance.getId());
       i++;
     }
   }
-  
-  @Test
-  public void testStatMonitorNotifierAliveButWaiting() throws Exception {
-    assumeTrue(StatMonitorHandler.enableMonitorThread);
-    StatMonitorHandler handler = new StatMonitorHandler();
-    TestStatisticsMonitor monitor = new TestStatisticsMonitor();
-    handler.addMonitor(monitor);
-    
-    final StatMonitorNotifier notifier = handler.getStatMonitorNotifier();
-    assertTrue(notifier.isAlive());
-    
-    waitUntilWaiting(notifier);
-    
-    for (int i = 0; i < 20; i++) {
-      assert(notifier.isWaiting());
-      Thread.sleep(10);
-    }
-  }
-  
-  @Test
-  public void testStatMonitorNotifierWakesUpForWork() throws Exception {
-    assumeTrue(StatMonitorHandler.enableMonitorThread);
-    StatMonitorHandler handler = new StatMonitorHandler();
-    TestStatisticsMonitor monitor = new TestStatisticsMonitor();
-    handler.addMonitor(monitor);
-    
-    final StatMonitorNotifier notifier = handler.getStatMonitorNotifier();
-    assertTrue(notifier.isAlive());
-    
-    waitUntilWaiting(notifier);
-    
-    // if notification occurs then notifier woke up...
-    assertEquals(0, monitor.getNotificationCount());
-    handler.sampled(NanoTimer.getTime(), Collections.<ResourceInstance>emptyList());
-    
-    waitForNotificationCount(monitor, 1, 2*1000, 10, false);
-    assertEquals(1, monitor.getNotificationCount());
 
-    // and goes back to waiting...
-    waitUntilWaiting(notifier);
-  }
-
-  private static void waitUntilWaiting(StatMonitorNotifier notifier) throws InterruptedException {
+  private static void waitForNotificationCount(final TestStatisticsMonitor monitor,
+      final int expected, long ms, long interval, boolean throwOnTimeout)
+      throws InterruptedException {
     boolean done = false;
-    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 2000; done = (notifier.isWaiting())) {
-      Thread.sleep(10);
-    }
-    assertTrue("waiting for notifier to be waiting", done);
-  }
-  
-  private static void waitForNotificationCount(final TestStatisticsMonitor monitor, final int expected, long ms, long interval, boolean throwOnTimeout) throws InterruptedException {
-    boolean done = false;
-    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < ms; done = (monitor.getNotificationCount() >= expected)) {
+    for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < ms; done =
+        (monitor.getNotificationCount() >= expected)) {
       Thread.sleep(interval);
     }
     if (throwOnTimeout) {
       assertTrue("waiting for notification count to be " + expected, done);
     }
   }
-  
+
   /**
    * @since GemFire 7.0
    */
@@ -208,26 +160,26 @@ public class StatMonitorHandlerTest {
     private volatile long timeStamp;
     private volatile List<ResourceInstance> resourceInstances;
     private volatile int notificationCount;
-    
+
     public TestStatisticsMonitor() {
       super();
     }
-    
+
     @Override
     protected void monitor(long timeStamp, List<ResourceInstance> resourceInstances) {
       this.timeStamp = timeStamp;
       this.resourceInstances = resourceInstances;
       this.notificationCount++;
     }
-    
+
     long getTimeStamp() {
       return this.timeStamp;
     }
-    
+
     List<ResourceInstance> getResourceInstances() {
       return this.resourceInstances;
     }
-    
+
     int getNotificationCount() {
       return this.notificationCount;
     }

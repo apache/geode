@@ -1,21 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -24,7 +23,7 @@ import static org.junit.Assert.*;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -35,7 +34,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 @SuppressWarnings({"rawtypes", "serial"})
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HAInterestPart2DUnitTest extends HAInterestTestCase {
 
   public HAInterestPart2DUnitTest() {
@@ -43,8 +42,8 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests if Primary fails during interest un registration should initiate
-   * failover should pick new primary
+   * Tests if Primary fails during interest un registration should initiate failover should pick new
+   * primary
    */
   @Test
   public void testPrimaryFailureInUNregisterInterest() throws Exception {
@@ -70,8 +69,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests if Secondary fails during interest un registration should add to dead
-   * Ep list
+   * Tests if Secondary fails during interest un registration should add to dead Ep list
    */
   @Test
   public void testSecondaryFailureInUNRegisterInterest() throws Exception {
@@ -92,9 +90,8 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests a scenario in which Dead Server Monitor detects Server Live Just
-   * before interest registration then interest should be registered on the newly
-   * detected live server as well
+   * Tests a scenario in which Dead Server Monitor detects Server Live Just before interest
+   * registration then interest should be registered on the newly detected live server as well
    */
   @Test
   public void testDSMDetectsServerLiveJustBeforeInterestRegistration() throws Exception {
@@ -119,9 +116,8 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests a scenario in which Dead Server Monitor detects Server Live Just
-   * After interest registration then interest should be registered on the newly
-   * detected live server as well
+   * Tests a scenario in which Dead Server Monitor detects Server Live Just After interest
+   * registration then interest should be registered on the newly detected live server as well
    */
   @Test
   public void testDSMDetectsServerLiveJustAfterInterestRegistration() throws Exception {
@@ -150,19 +146,19 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests a Scenario: Only one server, register interest on the server stop
-   * server , and update the registered entries on the server start the server ,
-   * DSM will recover interest list on this live server and verify that as a
-   * part of recovery it refreshes registered entries from the server, because it
-   * is primary
+   * Tests a Scenario: Only one server, register interest on the server stop server , and update the
+   * registered entries on the server start the server , DSM will recover interest list on this live
+   * server and verify that as a part of recovery it refreshes registered entries from the server,
+   * because it is primary
    */
   @Test
   public void testRefreshEntriesFromPrimaryWhenDSMDetectsServerLive() throws Exception {
     IgnoredException.addIgnoredException(ServerConnectivityException.class.getName());
-    
+
     PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
-    createClientPoolCacheConnectionToSingleServer(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
+    createClientPoolCacheConnectionToSingleServer(this.getName(),
+        NetworkUtils.getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
 
@@ -224,10 +220,10 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests a Scenario: stop a secondary server and update the registered entries
-   * on the stopped server start the server , DSM will recover interest list on
-   * this live server and verify that as a part of recovery it does not
-   * refreshes registered entries from the server, because it is secondary
+   * Tests a Scenario: stop a secondary server and update the registered entries on the stopped
+   * server start the server , DSM will recover interest list on this live server and verify that as
+   * a part of recovery it does not refreshes registered entries from the server, because it is
+   * secondary
    */
   @Test
   public void testGIIFromSecondaryWhenDSMDetectsServerLive() throws Exception {
@@ -235,9 +231,12 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
     server2.invoke(() -> HAInterestTestCase.closeCache());
     server3.invoke(() -> HAInterestTestCase.closeCache());
 
-    PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCacheWithLocalRegion())).intValue();
-    PORT2 = ((Integer) server2.invoke(() -> HAInterestTestCase.createServerCacheWithLocalRegion())).intValue();
-    PORT3 = ((Integer) server3.invoke(() -> HAInterestTestCase.createServerCacheWithLocalRegion())).intValue();
+    PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCacheWithLocalRegion()))
+        .intValue();
+    PORT2 = ((Integer) server2.invoke(() -> HAInterestTestCase.createServerCacheWithLocalRegion()))
+        .intValue();
+    PORT3 = ((Integer) server3.invoke(() -> HAInterestTestCase.createServerCacheWithLocalRegion()))
+        .intValue();
 
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
@@ -259,9 +258,8 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Bug Test for Bug # 35945 A java level Deadlock between acquireConnection
-   * and RegionEntry during processRecoveredEndpoint by Dead Server Monitor
-   * Thread.
+   * Bug Test for Bug # 35945 A java level Deadlock between acquireConnection and RegionEntry during
+   * processRecoveredEndpoint by Dead Server Monitor Thread.
    *
    * @throws Exception
    */
@@ -269,7 +267,8 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   public void testBug35945() throws Exception {
     PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
-    createClientPoolCacheConnectionToSingleServer(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
+    createClientPoolCacheConnectionToSingleServer(this.getName(),
+        NetworkUtils.getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
 
@@ -329,18 +328,20 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
   }
 
   /**
-   * Tests if failure occurred in Interest recovery thread, then it should select
-   * new endpoint to register interest
+   * Tests if failure occurred in Interest recovery thread, then it should select new endpoint to
+   * register interest
    */
+  @Category(FlakyTest.class) // GEODE-108
   @Test
   public void testInterestRecoveryFailure() throws Exception {
     IgnoredException.addIgnoredException("Server unreachable");
-    
+
     PORT1 = ((Integer) server1.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
     server1.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
     PORT2 = ((Integer) server2.invoke(() -> HAInterestTestCase.createServerCache())).intValue();
     server2.invoke(() -> HAInterestTestCase.createEntriesK1andK2());
-    createClientPoolCacheWithSmallRetryInterval(this.getName(), NetworkUtils.getServerHostName(server1.getHost()));
+    createClientPoolCacheWithSmallRetryInterval(this.getName(),
+        NetworkUtils.getServerHostName(server1.getHost()));
     registerK1AndK2();
     verifyRefreshedEntriesFromServer();
     VM backup = getBackupVM();
@@ -359,7 +360,7 @@ public class HAInterestPart2DUnitTest extends HAInterestTestCase {
     }
     final Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     assertNotNull(r1);
-    
+
     WaitCriterion wc = new WaitCriterion() {
       private String excuse;
 

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -66,19 +64,17 @@ public class DistTXState extends TXState {
   }
 
   /*
-   * If this is a primary member,
-   * for each entry in TXState, generate next region version
-   * and store in the entry.
+   * If this is a primary member, for each entry in TXState, generate next region version and store
+   * in the entry.
    */
   public void updateRegionVersions() {
 
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions
-        .entrySet().iterator();
+    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry<LocalRegion, TXRegionState> me = it.next();
       LocalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
-      
+
       // Generate next region version only on the primary
       if (!txrs.isCreatedDuringCommit()) {
         try {
@@ -91,10 +87,11 @@ public class DistTXState extends TXState {
               RegionVersionVector rvv = r.getVersionVector();
               if (rvv != null) {
                 long v = rvv.getNextVersion();
-                //txes.setNextRegionVersion(v);
+                // txes.setNextRegionVersion(v);
                 txes.getDistTxEntryStates().setRegionVersion(v);
                 if (logger.isDebugEnabled()) {
-                  logger.debug("Set next region version to "+ v + " for region="+r.getName() + "in TXEntryState for key"+key );  
+                  logger.debug("Set next region version to " + v + " for region=" + r.getName()
+                      + "in TXEntryState for key" + key);
                 }
               }
             }
@@ -105,87 +102,81 @@ public class DistTXState extends TXState {
         }
       }
     }
-  }  
-  
+  }
+
   /*
-   * Iterate through all changes and for those changes for which
-   * this member hosts a primary bucket, generate a tail key and store in
-   * the TXEntryState.  From there it is expected to be carried over
-   * to the secondaries in phase-2 commit.
-   * In phase-2 commit, the both the primary and secondaries should
-   * use this tail key to enqueue into parallel queues.
+   * Iterate through all changes and for those changes for which this member hosts a primary bucket,
+   * generate a tail key and store in the TXEntryState. From there it is expected to be carried over
+   * to the secondaries in phase-2 commit. In phase-2 commit, the both the primary and secondaries
+   * should use this tail key to enqueue into parallel queues.
    */
   public void generateTailKeysForParallelDispatcherEvents() {
-    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions
-        .entrySet().iterator();
+    Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
 
     while (it.hasNext()) {
       Map.Entry<LocalRegion, TXRegionState> me = it.next();
       LocalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
-  
+
       LocalRegion region = txrs.getRegion();
       // Check if it is a bucket region
       if (region.isUsedForPartitionedRegionBucket()) {
         // Check if it is a primary bucket
-        BucketRegion bRegion = (BucketRegion)region;
+        BucketRegion bRegion = (BucketRegion) region;
         if (!(bRegion instanceof AbstractBucketRegionQueue)) {
           if (bRegion.getBucketAdvisor().isPrimary()) {
-            
-            // Generate a tail key for each entry 
+
+            // Generate a tail key for each entry
             Set entries = txrs.getEntryKeys();
             if (!entries.isEmpty()) {
               Iterator entryIt = entries.iterator();
               while (entryIt.hasNext()) {
                 Object key = entryIt.next();
                 TXEntryState txes = txrs.getTXEntryState(key);
-                
-                long tailKey = ((BucketRegion)region).generateTailKey();    
+
+                long tailKey = ((BucketRegion) region).generateTailKey();
                 txes.getDistTxEntryStates().setTailKey(tailKey);
-              } 
-            } 
+              }
+            }
           } // end if primary
         }
       }
     }
   }
 
-  
+
   /*
    * (non-Javadoc)
    * 
    * @see org.apache.geode.internal.cache.TXStateInterface#commit()
    * 
-   * Take Locks Does conflict check on primary ([DISTTX] TODO on primary only)
-   * Invoke TxWriter
+   * Take Locks Does conflict check on primary ([DISTTX] TODO on primary only) Invoke TxWriter
    */
   @Override
-  public void precommit() throws CommitConflictException,
-      UnsupportedOperationInTransactionException {
+  public void precommit()
+      throws CommitConflictException, UnsupportedOperationInTransactionException {
     if (logger.isDebugEnabled()) {
-      logger.debug("DistTXState.precommit transaction {} is closed {} ",
-          getTransactionId(), this.closed, new Throwable());
+      logger.debug("DistTXState.precommit transaction {} is closed {} ", getTransactionId(),
+          this.closed, new Throwable());
     }
 
     if (this.closed) {
       return;
     }
-    
+
     synchronized (this.completionGuard) {
       this.completionStarted = true;
     }
 
     if (onBehalfOfRemoteStub && !proxy.isCommitOnBehalfOfRemoteStub()) {
       throw new UnsupportedOperationInTransactionException(
-          LocalizedStrings.TXState_CANNOT_COMMIT_REMOTED_TRANSACTION
-              .toLocalizedString());
+          LocalizedStrings.TXState_CANNOT_COMMIT_REMOTED_TRANSACTION.toLocalizedString());
     }
 
     cleanupNonDirtyRegions();
 
     /*
-     * Lock buckets so they can't be rebalanced then perform the conflict check
-     * to fix #43489
+     * Lock buckets so they can't be rebalanced then perform the conflict check to fix #43489
      */
     try {
       lockBucketRegions();
@@ -206,14 +197,14 @@ public class DistTXState extends TXState {
     if (this.internalAfterConflictCheck != null) {
       this.internalAfterConflictCheck.run();
     }
-    
+
     updateRegionVersions();
-    
+
     generateTailKeysForParallelDispatcherEvents();
-    
+
     /*
-     * If there is a TransactionWriter plugged in, we need to to give it an
-     * opportunity to abort the transaction.
+     * If there is a TransactionWriter plugged in, we need to to give it an opportunity to abort the
+     * transaction.
      */
     TransactionWriter writer = this.proxy.getTxMgr().getWriter();
     if (!firedWriter && writer != null) {
@@ -255,9 +246,8 @@ public class DistTXState extends TXState {
   @Override
   public void commit() throws CommitConflictException {
     if (logger.isDebugEnabled()) {
-      logger.debug(
-          "DistTXState.commit transaction {} is closed {} ",
-          getTransactionId(), this.closed, new Throwable());
+      logger.debug("DistTXState.commit transaction {} is closed {} ", getTransactionId(),
+          this.closed, new Throwable());
     }
 
     if (this.closed) {
@@ -265,7 +255,7 @@ public class DistTXState extends TXState {
     }
 
     try {
-      List/* <TXEntryStateWithRegionAndKey> */entries = generateEventOffsets();
+      List/* <TXEntryStateWithRegionAndKey> */ entries = generateEventOffsets();
       if (logger.isDebugEnabled()) {
         logger.debug("commit entries " + entries);
       }
@@ -276,10 +266,10 @@ public class DistTXState extends TXState {
         if (GemFireCacheImpl.internalBeforeApplyChanges != null) {
           GemFireCacheImpl.internalBeforeApplyChanges.run();
         }
-        
+
         // apply changes to the cache
         applyChanges(entries);
-        
+
         // For internal testing
         if (this.internalAfterApplyChanges != null) {
           this.internalAfterApplyChanges.run();
@@ -289,18 +279,18 @@ public class DistTXState extends TXState {
         // Build a message specifically for those nodes who
         // hold gateway senders and listeners but not a copy of the buckets
         // on which changes in this tx are done.
-        // This is applicable only for partitioned regions and 
+        // This is applicable only for partitioned regions and
         // serial gateway senders.
         // This works only if the coordinator and sender are not the same node.
         // For same sender as coordinator, this results in a hang, which needs to be addressed.
-        // If an another method of notifying adjunct receivers is implemented, 
+        // If an another method of notifying adjunct receivers is implemented,
         // the following two lines should be commented out.
         msg = buildMessageForAdjunctReceivers();
         msg.send(this.locks.getDistributedLockId());
 
         // Fire callbacks collected in the local txApply* executions
         firePendingCallbacks();
-        
+
         this.commitMessage = buildCompleteMessage();
 
       } finally {
@@ -317,22 +307,24 @@ public class DistTXState extends TXState {
       cleanup();
     }
   }
-  
+
   /**
    * this builds a new DistTXAdjunctCommitMessage and returns it
+   * 
    * @return the new message
    */
   protected TXCommitMessage buildMessageForAdjunctReceivers() {
-    TXCommitMessage msg = new DistTXAdjunctCommitMessage(this.proxy.getTxId(), this.proxy.getTxMgr().getDM(), this);
+    TXCommitMessage msg =
+        new DistTXAdjunctCommitMessage(this.proxy.getTxId(), this.proxy.getTxMgr().getDM(), this);
     Iterator<Map.Entry<LocalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     while (it.hasNext()) {
       Map.Entry<LocalRegion, TXRegionState> me = it.next();
       LocalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
-      
+
       // only on the primary
       if (r.isUsedForPartitionedRegionBucket() && !txrs.isCreatedDuringCommit()) {
-        txrs.buildMessageForAdjunctReceivers(r, msg);  
+        txrs.buildMessageForAdjunctReceivers(r, msg);
       }
     }
     return msg;
@@ -350,48 +342,44 @@ public class DistTXState extends TXState {
     boolean returnValue = true;
     try {
       boolean result = true;
-      
+
       // Start TxState Update During PreCommit phase
-      setUpdatingTxStateDuringPreCommit(true); 
-      
+      setUpdatingTxStateDuringPreCommit(true);
+
       if (logger.isDebugEnabled()) {
         logger.debug("DistTXState.applyOpOnRedundantCopy: size of "
-            + "secondaryTransactionalOperations = {}",
-            secondaryTransactionalOperations.size());
+            + "secondaryTransactionalOperations = {}", secondaryTransactionalOperations.size());
       }
       /*
        * Handle Put Operations meant for secondary.
        * 
        * @see org.apache.geode.internal.cache.partitioned.PutMessage.
-       * operateOnPartitionedRegion(DistributionManager, PartitionedRegion,
-       * long)
+       * operateOnPartitionedRegion(DistributionManager, PartitionedRegion, long)
        * 
        * [DISTTX] TODO need to handle other operations
        */
       for (DistTxEntryEvent dtop : secondaryTransactionalOperations) {
         if (logger.isDebugEnabled()) {
-          logger.debug("DistTXState.applyOpOnRedundantCopy: processing dist "
-              + "tx operation {}", dtop);
+          logger.debug("DistTXState.applyOpOnRedundantCopy: processing dist " + "tx operation {}",
+              dtop);
         }
         dtop.setDistributedMember(sender);
         dtop.setOriginRemote(false);
         /*
-         * [DISTTX} TODO handle call back argument version tag and other
-         * settings in PutMessage
+         * [DISTTX} TODO handle call back argument version tag and other settings in PutMessage
          */
         String failureReason = null;
         try {
           if (dtop.getKeyInfo().isDistKeyInfo()) {
-            dtop.getKeyInfo().setCheckPrimary(false); 
-          }
-          else {
+            dtop.getKeyInfo().setCheckPrimary(false);
+          } else {
             dtop.setKeyInfo(new DistTxKeyInfo(dtop.getKeyInfo()));
-            dtop.getKeyInfo().setCheckPrimary(false); 
+            dtop.getKeyInfo().setCheckPrimary(false);
           }
 
-          //apply the op
+          // apply the op
           result = applyIndividualOp(dtop);
-          
+
           if (!result) { // make sure the region hasn't gone away
             dtop.getRegion().checkReadiness();
           }
@@ -409,9 +397,8 @@ public class DistTXState extends TXState {
           failureReason = "DataLocationException";
         }
         if (logger.isDebugEnabled()) {
-          logger.debug("DistTXState.applyOpOnRedundantCopy {} ##op {},  "
-              + "##region {}, ##key {}", 
-              (result ? " sucessfully applied op " : " failed to apply op due to "+ failureReason), 
+          logger.debug("DistTXState.applyOpOnRedundantCopy {} ##op {},  " + "##region {}, ##key {}",
+              (result ? " sucessfully applied op " : " failed to apply op due to " + failureReason),
               dtop.getOperation(), dtop.getRegion().getName(), dtop.getKey());
         }
         if (!result) {
@@ -429,58 +416,51 @@ public class DistTXState extends TXState {
   /**
    * Apply the individual tx op on secondary
    * 
-   * Calls local function such as putEntry instead of putEntryOnRemote as for
-   * this {@link DistTXStateOnCoordinator} as events will always be local. In
-   * parent {@link DistTXState} class will call remote version of functions
+   * Calls local function such as putEntry instead of putEntryOnRemote as for this
+   * {@link DistTXStateOnCoordinator} as events will always be local. In parent {@link DistTXState}
+   * class will call remote version of functions
    * 
    */
-  protected boolean applyIndividualOp(DistTxEntryEvent dtop)
-      throws DataLocationException {
+  protected boolean applyIndividualOp(DistTxEntryEvent dtop) throws DataLocationException {
     boolean result = true;
-    if (dtop.op.isUpdate() || dtop.op.isCreate()) { 
+    if (dtop.op.isUpdate() || dtop.op.isCreate()) {
       if (dtop.op.isPutAll()) {
-        assert(dtop.getPutAllOperation() != null);
-        //[DISTTX] TODO what do with versions next?
+        assert (dtop.getPutAllOperation() != null);
+        // [DISTTX] TODO what do with versions next?
         final VersionedObjectList versions = new VersionedObjectList(
-            dtop.getPutAllOperation().putAllDataSize, true,
-            dtop.region.concurrencyChecksEnabled);
+            dtop.getPutAllOperation().putAllDataSize, true, dtop.region.concurrencyChecksEnabled);
         postPutAll(dtop.getPutAllOperation(), versions, dtop.region);
       } else {
-        result = putEntryOnRemote(dtop, false/* ifNew */,
-          false/* ifOld */, null/* expectedOldValue */,
-          false/* requireOldValue */, 0L/* lastModified */, true/*
-                                                                 * overwriteDestroyed
-                                                                 * *not*
-                                                                 * used
-                                                                 */);
+        result = putEntryOnRemote(dtop, false/* ifNew */, false/* ifOld */,
+            null/* expectedOldValue */, false/* requireOldValue */, 0L/* lastModified */,
+            true/*
+                 * overwriteDestroyed *not* used
+                 */);
       }
     } else if (dtop.op.isDestroy()) {
       if (dtop.op.isRemoveAll()) {
         assert (dtop.getRemoveAllOperation() != null);
         // [DISTTX] TODO what do with versions next?
-        final VersionedObjectList versions = new VersionedObjectList(
-            dtop.getRemoveAllOperation().removeAllDataSize, true,
-            dtop.region.concurrencyChecksEnabled);
+        final VersionedObjectList versions =
+            new VersionedObjectList(dtop.getRemoveAllOperation().removeAllDataSize, true,
+                dtop.region.concurrencyChecksEnabled);
         postRemoveAll(dtop.getRemoveAllOperation(), versions, dtop.region);
       } else {
         destroyOnRemote(dtop, false/* TODO [DISTTX] */, null/*
-                                                             * TODO
-                                                             * [DISTTX]
+                                                             * TODO [DISTTX]
                                                              */);
       }
     } else if (dtop.op.isInvalidate()) {
       invalidateOnRemote(dtop, true/* TODO [DISTTX] */, false/*
-                                                              * TODO
-                                                              * [DISTTX]
+                                                              * TODO [DISTTX]
                                                               */);
     } else {
-      logger.debug("DistTXCommitPhaseOneMessage: unsupported TX operation {}",
-          dtop);
+      logger.debug("DistTXCommitPhaseOneMessage: unsupported TX operation {}", dtop);
       assert (false);
     }
     return result;
   }
-  
+
 
   public boolean isUpdatingTxStateDuringPreCommit() {
     return updatingTxStateDuringPreCommit;
@@ -489,18 +469,16 @@ public class DistTXState extends TXState {
   /**
    * For Dist Tx
    * 
-   * @param updatingTxState
-   *          if updating TxState during Commit Phase
+   * @param updatingTxState if updating TxState during Commit Phase
    */
   private void setUpdatingTxStateDuringPreCommit(boolean updatingTxState)
       throws UnsupportedOperationInTransactionException {
     this.updatingTxStateDuringPreCommit = updatingTxState;
     if (logger.isDebugEnabled()) {
-      logger
-          .debug(
-              "DistTXState setUpdatingTxStateDuringPreCommit incoming {} final {} ",
-              updatingTxState, this.updatingTxStateDuringPreCommit,
-              new Throwable()); // [DISTTX] TODO: Remove throwable
+      logger.debug("DistTXState setUpdatingTxStateDuringPreCommit incoming {} final {} ",
+          updatingTxState, this.updatingTxStateDuringPreCommit, new Throwable()); // [DISTTX] TODO:
+                                                                                  // Remove
+                                                                                  // throwable
     }
   }
 
@@ -528,18 +506,17 @@ public class DistTXState extends TXState {
 
     return result;
   }
-  
-  
+
+
   /*
-   * [DISTTX] Note: This has been overridden here to associate DistKeyInfo
-   * with event to disable primary check(see DistKeyInfo.setCheckPrimary(false)) 
-   * when this gets called on secondary of a PR 
+   * [DISTTX] Note: This has been overridden here to associate DistKeyInfo with event to disable
+   * primary check(see DistKeyInfo.setCheckPrimary(false)) when this gets called on secondary of a
+   * PR
    * 
    * For TX this needs to be a PR passed in as region
    * 
    * 
-   * @see
-   * org.apache.geode.internal.cache.InternalDataView#postPutAll(org.apache
+   * @see org.apache.geode.internal.cache.InternalDataView#postPutAll(org.apache
    * .gemfire.internal.cache.DistributedPutAllOperation, java.util.Map,
    * org.apache.geode.internal.cache.LocalRegion)
    */
@@ -556,8 +533,7 @@ public class DistTXState extends TXState {
      * Don't fire events here.
      */
     /*
-     * We are on the data store, we don't need to do anything here. Commit will
-     * push them out.
+     * We are on the data store, we don't need to do anything here. Commit will push them out.
      */
     /*
      * We need to put this into the tx state.
@@ -566,16 +542,16 @@ public class DistTXState extends TXState {
       public void run() {
         // final boolean requiresRegionContext =
         // theRegion.keyRequiresRegionContext();
-        InternalDistributedMember myId = theRegion.getDistributionManager()
-            .getDistributionManagerId();
+        InternalDistributedMember myId =
+            theRegion.getDistributionManager().getDistributionManagerId();
         for (int i = 0; i < putallOp.putAllDataSize; ++i) {
-          @Released EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion,
-              myId, myId, i, putallOp.putAllData, false, putallOp
-                  .getBaseEvent().getContext(), false, !putallOp.getBaseEvent()
-                  .isGenerateCallbacks());
+          @Released
+          EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
+              putallOp.putAllData, false, putallOp.getBaseEvent().getContext(), false,
+              !putallOp.getBaseEvent().isGenerateCallbacks());
           try {
-//            ev.setPutAllOperation(putallOp);
-            
+            // ev.setPutAllOperation(putallOp);
+
             // below if condition returns true on secondary when TXState is
             // updated in preCommit only on secondary
             // In this case disable the primary check by calling
@@ -587,16 +563,14 @@ public class DistTXState extends TXState {
               ev.setKeyInfo(distKeyInfo);
             }
             /*
-             * Whenever commit is called, especially when its a
-             * DistTxStateOnCoordinator the txState is set to null in @see
-             * TXManagerImpl.commit() and thus when @see LocalRegion.basicPut
-             * will be called as in this function, they will not found a TxState
-             * with call for getDataView()
+             * Whenever commit is called, especially when its a DistTxStateOnCoordinator the txState
+             * is set to null in @see TXManagerImpl.commit() and thus when @see LocalRegion.basicPut
+             * will be called as in this function, they will not found a TxState with call for
+             * getDataView()
              */
             if (!(theRegion.getDataView() instanceof TXStateInterface)) {
               if (putEntry(ev, false, false, null, false, 0L, false)) {
-                successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key,
-                    null);
+                successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key, null);
               }
             } else if (theRegion.basicPut(ev, false, false, null, false)) {
               successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key, null);
@@ -609,7 +583,7 @@ public class DistTXState extends TXState {
     }, putallOp.getBaseEvent().getEventId());
 
   }
-  
+
   @Override
   public void postRemoveAll(final DistributedRemoveAllOperation op,
       final VersionedObjectList successfulOps, LocalRegion reg) {
@@ -620,52 +594,47 @@ public class DistTXState extends TXState {
       theRegion = reg;
     }
     /*
-     * Don't fire events here. We are on the data store, we don't need to do
-     * anything here. Commit will push them out. We need to put this into the tx
-     * state.
+     * Don't fire events here. We are on the data store, we don't need to do anything here. Commit
+     * will push them out. We need to put this into the tx state.
      */
     theRegion.syncBulkOp(new Runnable() {
       public void run() {
-        InternalDistributedMember myId = theRegion.getDistributionManager()
-            .getDistributionManagerId();
+        InternalDistributedMember myId =
+            theRegion.getDistributionManager().getDistributionManagerId();
         for (int i = 0; i < op.removeAllDataSize; ++i) {
-          @Released EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion,
-              myId, myId, i, op.removeAllData, false, op.getBaseEvent()
-                  .getContext(), false, !op.getBaseEvent()
-                  .isGenerateCallbacks());
+          @Released
+          EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
+              op.removeAllData, false, op.getBaseEvent().getContext(), false,
+              !op.getBaseEvent().isGenerateCallbacks());
           try {
-          ev.setRemoveAllOperation(op);
-          // below if condition returns true on secondary when TXState is
-          // updated in preCommit only on secondary
-          // In this case disable the primary check by calling
-          // distKeyInfo.setCheckPrimary(false);
-          if (isUpdatingTxStateDuringPreCommit()) {
-            KeyInfo keyInfo = ev.getKeyInfo();
-            DistTxKeyInfo distKeyInfo = new DistTxKeyInfo(keyInfo);
-            distKeyInfo.setCheckPrimary(false);
-            ev.setKeyInfo(distKeyInfo);
-          }
-          /*
-           * Whenever commit is called, especially when its a
-           * DistTxStateOnCoordinator the txState is set to null in @see
-           * TXManagerImpl.commit() and thus when basicDestroy will be called
-           * will be called as in i.e. @see LocalRegion.basicDestroy, they will
-           * not found a TxState with call for getDataView()
-           * 
-           * [DISTTX] TODO verify if this is correct to call
-           * destroyExistingEntry directly?
-           */
-          try {
-            if (!(theRegion.getDataView() instanceof TXStateInterface)) {
-              destroyExistingEntry(ev, true/* should we invoke cacheWriter? */,
-                  null);
-            } else {
-              theRegion.basicDestroy(ev,
-                  true/* should we invoke cacheWriter? */, null);
+            ev.setRemoveAllOperation(op);
+            // below if condition returns true on secondary when TXState is
+            // updated in preCommit only on secondary
+            // In this case disable the primary check by calling
+            // distKeyInfo.setCheckPrimary(false);
+            if (isUpdatingTxStateDuringPreCommit()) {
+              KeyInfo keyInfo = ev.getKeyInfo();
+              DistTxKeyInfo distKeyInfo = new DistTxKeyInfo(keyInfo);
+              distKeyInfo.setCheckPrimary(false);
+              ev.setKeyInfo(distKeyInfo);
             }
-          } catch (EntryNotFoundException ignore) {
-          }
-          successfulOps.addKeyAndVersion(op.removeAllData[i].key, null);
+            /*
+             * Whenever commit is called, especially when its a DistTxStateOnCoordinator the txState
+             * is set to null in @see TXManagerImpl.commit() and thus when basicDestroy will be
+             * called will be called as in i.e. @see LocalRegion.basicDestroy, they will not found a
+             * TxState with call for getDataView()
+             * 
+             * [DISTTX] TODO verify if this is correct to call destroyExistingEntry directly?
+             */
+            try {
+              if (!(theRegion.getDataView() instanceof TXStateInterface)) {
+                destroyExistingEntry(ev, true/* should we invoke cacheWriter? */, null);
+              } else {
+                theRegion.basicDestroy(ev, true/* should we invoke cacheWriter? */, null);
+              }
+            } catch (EntryNotFoundException ignore) {
+            }
+            successfulOps.addKeyAndVersion(op.removeAllData[i].key, null);
           } finally {
             ev.release();
           }
@@ -674,12 +643,12 @@ public class DistTXState extends TXState {
     }, op.getBaseEvent().getEventId());
 
   }
-  
+
   @Override
   public boolean isDistTx() {
     return true;
   }
-  
+
   /*
    * Populate list of entry states for each region while replying precommit
    */
@@ -694,38 +663,32 @@ public class DistTXState extends TXState {
         boolean returnValue = txrs.populateDistTxEntryStateList(entryStateList);
         if (returnValue) {
           if (logger.isDebugEnabled()) {
-            logger
-                .debug("DistTxState.populateDistTxEntryStateList Adding entries "
-                    + " with count="
-                    + entryStateList.size()
-                    + " for region "
-                    + regionFullPath + " . Added list=" + entryStateList);
+            logger.debug("DistTxState.populateDistTxEntryStateList Adding entries " + " with count="
+                + entryStateList.size() + " for region " + regionFullPath + " . Added list="
+                + entryStateList);
           }
           entryStateSortedMap.put(regionFullPath, entryStateList);
         } else {
           if (logger.isDebugEnabled()) {
-            logger
-                .debug("DistTxState.populateDistTxEntryStateList Got exception for region "
-                    + regionFullPath);
+            logger.debug("DistTxState.populateDistTxEntryStateList Got exception for region "
+                + regionFullPath);
           }
           return false;
         }
       } else {
         if (logger.isDebugEnabled()) {
-          logger
-              .debug("DistTxState.populateDistTxEntryStateList Not adding entries for region "
-                  + regionFullPath);
+          logger.debug("DistTxState.populateDistTxEntryStateList Not adding entries for region "
+              + regionFullPath);
         }
       }
     }
     return true;
   }
-  
+
   /*
    * Set list of entry states for each region while applying commit
    */
-  public void setDistTxEntryStates(
-      ArrayList<ArrayList<DistTxThinEntryState>> entryEventList) {
+  public void setDistTxEntryStates(ArrayList<ArrayList<DistTxThinEntryState>> entryEventList) {
     TreeMap<String, TXRegionState> regionSortedMap = new TreeMap<>();
     for (TXRegionState txrs : this.regions.values()) {
       if (txrs.isCreatedDuringCommit()) {
@@ -739,10 +702,9 @@ public class DistTXState extends TXState {
       TXRegionState txrs = me.getValue();
       ArrayList<DistTxThinEntryState> entryEvents = entryEventList.get(index++);
       if (logger.isDebugEnabled()) {
-        logger.debug("DistTxState.setDistTxEntryStates For region="
-            + regionFullPath + " ,index=" + index + " ,entryEvents=("
-            + entryEvents.size() + ")=" + entryEvents + " ,regionSortedMap="
-            + regionSortedMap.keySet());
+        logger.debug("DistTxState.setDistTxEntryStates For region=" + regionFullPath + " ,index="
+            + index + " ,entryEvents=(" + entryEvents.size() + ")=" + entryEvents
+            + " ,regionSortedMap=" + regionSortedMap.keySet());
       }
       txrs.setDistTxEntryStates(entryEvents);
     }

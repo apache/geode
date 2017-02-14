@@ -1,50 +1,47 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/** UniqueIdGenerator is factory that will produce unique ids that fall
- * in a range between 0 and numIds-1 inclusive.
- * Obtained ids will not be reissued until they are released and until every
+/**
+ * UniqueIdGenerator is factory that will produce unique ids that fall in a range between 0 and
+ * numIds-1 inclusive. Obtained ids will not be reissued until they are released and until every
  * other non-obtained id has been obtained first.
  * <p>
- * Memory Use: this implementation allocates numIds/64 8-byte longs at construction
- * time and keeps them allocated.
+ * Memory Use: this implementation allocates numIds/64 8-byte longs at construction time and keeps
+ * them allocated.
  * <p>
  * Instances of this class are thread safe.
  *
  * @since GemFire 5.0.2
-   
-*/
+ * 
+ */
 public class UniqueIdGenerator {
   /*
-   * BitSets are packed into arrays of "units."  Currently a unit is a long,
-   * which consists of 64 bits, requiring 6 address bits.  The choice of unit
-   * is determined purely by performance concerns.
+   * BitSets are packed into arrays of "units." Currently a unit is a long, which consists of 64
+   * bits, requiring 6 address bits. The choice of unit is determined purely by performance
+   * concerns.
    */
   private final static int ADDRESS_BITS_PER_UNIT = 6;
   private final static int BITS_PER_UNIT = 1 << ADDRESS_BITS_PER_UNIT;
   private final static int BIT_INDEX_MASK = BITS_PER_UNIT - 1;
 
   /**
-   * The units in this BitSet.  The ith bit is stored in units[i/64] at
-   * bit position i % 64 (where bit position 0 refers to the least
-   * significant bit and 63 refers to the most significant bit).
+   * The units in this BitSet. The ith bit is stored in units[i/64] at bit position i % 64 (where
+   * bit position 0 refers to the least significant bit and 63 refers to the most significant bit).
    */
   private final long units[];
   /**
@@ -59,7 +56,7 @@ public class UniqueIdGenerator {
   /**
    * Given a bit index return unit index containing it.
    */
-    private static int unitIndex(int bitIndex) {
+  private static int unitIndex(int bitIndex) {
     return bitIndex >> ADDRESS_BITS_PER_UNIT;
   }
 
@@ -71,8 +68,8 @@ public class UniqueIdGenerator {
   }
 
   /**
-   * Sets the bit at the specified index to <code>true</code> if it is not
-   * already in the set. Otherwise does nothing.
+   * Sets the bit at the specified index to <code>true</code> if it is not already in the set.
+   * Otherwise does nothing.
    *
    * @param bitIndex a bit index.
    * @exception IndexOutOfBoundsException if the specified index is negative.
@@ -86,7 +83,7 @@ public class UniqueIdGenerator {
   /**
    * Sets the bit specified by the index to <code>false</code>.
    *
-   * @param     bitIndex   the index of the bit to be cleared.
+   * @param bitIndex the index of the bit to be cleared.
    */
   private void clearBit(int bitIndex) {
     int unitIndex = unitIndex(bitIndex);
@@ -95,76 +92,67 @@ public class UniqueIdGenerator {
   }
 
   /*
-   * trailingZeroTable[i] is the number of trailing zero bits in the binary
-   * representation of i.
+   * trailingZeroTable[i] is the number of trailing zero bits in the binary representation of i.
    */
-  private final static byte trailingZeroTable[] = {
-    -25, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
-    4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0};
+  private final static byte trailingZeroTable[] = {-25, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+      4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1,
+      0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0,
+      1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2,
+      0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 7, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0,
+      2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1,
+      0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0,
+      1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3,
+      0, 1, 0, 2, 0, 1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0};
 
   private static int trailingZeroCnt(long val) {
     // Loop unrolled for performance
-    int byteVal = (int)val & 0xff;
+    int byteVal = (int) val & 0xff;
     if (byteVal != 0) {
       return trailingZeroTable[byteVal];
     }
 
-    byteVal = (int)(val >>> 8) & 0xff;
+    byteVal = (int) (val >>> 8) & 0xff;
     if (byteVal != 0) {
       return trailingZeroTable[byteVal] + 8;
     }
 
-    byteVal = (int)(val >>> 16) & 0xff;
+    byteVal = (int) (val >>> 16) & 0xff;
     if (byteVal != 0) {
       return trailingZeroTable[byteVal] + 16;
     }
 
-    byteVal = (int)(val >>> 24) & 0xff;
+    byteVal = (int) (val >>> 24) & 0xff;
     if (byteVal != 0) {
       return trailingZeroTable[byteVal] + 24;
     }
 
-    byteVal = (int)(val >>> 32) & 0xff;
+    byteVal = (int) (val >>> 32) & 0xff;
     if (byteVal != 0) {
       return trailingZeroTable[byteVal] + 32;
     }
 
-    byteVal = (int)(val >>> 40) & 0xff;
+    byteVal = (int) (val >>> 40) & 0xff;
     if (byteVal != 0) {
       return trailingZeroTable[byteVal] + 40;
     }
 
-    byteVal = (int)(val >>> 48) & 0xff;
+    byteVal = (int) (val >>> 48) & 0xff;
     if (byteVal != 0) {
       return trailingZeroTable[byteVal] + 48;
     }
 
-    byteVal = (int)(val >>> 56) & 0xff;
+    byteVal = (int) (val >>> 56) & 0xff;
     return trailingZeroTable[byteVal] + 56;
   }
-  
+
   private static final long WORD_MASK = 0xffffffffffffffffL;
 
   /**
-   * Returns the index of the first bit that is set to <code>false</code>
-   * that occurs on or after the specified starting index.
+   * Returns the index of the first bit that is set to <code>false</code> that occurs on or after
+   * the specified starting index.
    * 
-   * @param   fromIndex the index to start checking from (inclusive).
-   * @return  the index of the next clear bit.
+   * @param fromIndex the index to start checking from (inclusive).
+   * @return the index of the next clear bit.
    */
   private int nextClearBit(int fromIndex) {
     int u = unitIndex(fromIndex);
@@ -175,7 +163,7 @@ public class UniqueIdGenerator {
       testIndex = 0;
     }
 
-    while((unit==WORD_MASK) && (u < this.units.length-1)) {
+    while ((unit == WORD_MASK) && (u < this.units.length - 1)) {
       unit = this.units[++u];
     }
 
@@ -204,15 +192,17 @@ public class UniqueIdGenerator {
    */
   public UniqueIdGenerator(int numIds) {
     if (numIds <= 0) {
-      throw new IllegalArgumentException(LocalizedStrings.UniqueIdGenerator_NUMIDS_0.toLocalizedString());
+      throw new IllegalArgumentException(
+          LocalizedStrings.UniqueIdGenerator_NUMIDS_0.toLocalizedString());
     }
-    this.units = new long[(unitIndex(numIds-1) + 1)];
-    this.MAX_ID = numIds-1;
+    this.units = new long[(unitIndex(numIds - 1) + 1)];
+    this.MAX_ID = numIds - 1;
     this.ctr = 0;
   }
 
   /**
    * Obtain an id form the pool of available ids and return it.
+   * 
    * @throws IllegalStateException if all ids have been obtained
    */
   public int obtain() {
@@ -227,13 +217,14 @@ public class UniqueIdGenerator {
         result = nextClearBit(0);
       }
       if (result == -1) {
-        throw new IllegalStateException(LocalizedStrings.UniqueIdGenerator_RAN_OUT_OF_MESSAGE_IDS.toLocalizedString());
+        throw new IllegalStateException(
+            LocalizedStrings.UniqueIdGenerator_RAN_OUT_OF_MESSAGE_IDS.toLocalizedString());
       } else {
         setBit(result);
         if (result == MAX_ID) {
           this.ctr = 0;
         } else {
-          this.ctr = result+1;
+          this.ctr = result + 1;
         }
         return result;
       }
@@ -245,9 +236,11 @@ public class UniqueIdGenerator {
    */
   public void release(int id) {
     if (id < 0) {
-      throw new IllegalArgumentException(LocalizedStrings.UniqueIdGenerator_NEGATIVE_ID_0.toLocalizedString(Integer.valueOf(id)));
+      throw new IllegalArgumentException(
+          LocalizedStrings.UniqueIdGenerator_NEGATIVE_ID_0.toLocalizedString(Integer.valueOf(id)));
     } else if (id > this.MAX_ID) {
-      throw new IllegalArgumentException(LocalizedStrings.UniqueIdGenerator_ID_MAX_ID_0.toLocalizedString(Integer.valueOf(id)));
+      throw new IllegalArgumentException(
+          LocalizedStrings.UniqueIdGenerator_ID_MAX_ID_0.toLocalizedString(Integer.valueOf(id)));
     }
     synchronized (this) {
       clearBit(id);

@@ -45,18 +45,14 @@ $(document).ready(function() {
   // Load Notification HTML  
   generateNotificationsPanel();
 
-  if (CONST_BACKEND_PRODUCT_SQLFIRE == productname.toLowerCase()) {
-    alterHtmlContainer(CONST_BACKEND_PRODUCT_SQLFIRE);
-  } else {
-    alterHtmlContainer(CONST_BACKEND_PRODUCT_GEMFIRE);
-  }
+  alterHtmlContainer(CONST_BACKEND_PRODUCT_GEMFIRE);
 
   scanPageForWidgets();
   $.ajaxSetup({ cache: false });
   
   var requestData = {};
   getRequestParams();
-  $.getJSON("pulse/authenticateUser", requestData, function(data) {
+  $.getJSON("authenticateUser", requestData, function(data) {
     
     // return isUserLoggedIn
     if(!data.isUserLoggedIn){
@@ -133,14 +129,8 @@ var queryHistoryIconOnClick = function(event) {
  * is sqlfire or gemfire 
  */
 function alterHtmlContainer(prodname){
-  if(CONST_BACKEND_PRODUCT_SQLFIRE == prodname.toLowerCase()){
-    // Show HTML for following
-    $('#subTabQueryStatistics').show();
-  }else{
-    // Hide HTML for following
-    $('#subTabQueryStatistics').hide();
-  }
-  
+  // Hide HTML for following
+  $('#subTabQueryStatistics').hide();
 }
 
 
@@ -182,7 +172,7 @@ function initClusterRegions(){
 
 function updateDataBrowserRegionsData(){
   requestData = {};
-  $.getJSON("pulse/dataBrowserRegions", requestData, function(data) {
+  $.getJSON("dataBrowserRegions", requestData, function(data) {
     
     // set cluster name on tab link to cluster page
     if(data.clusterName != undefined && data.clusterName != null){
@@ -603,7 +593,7 @@ function dynamicSort(property, passedSortOrder) {
  * Function to get basic details on Data Browser Page
  */
 function getClusterBasicDetails(){
-  $.getJSON("pulse/dataBrowserBasicDetails", function(data) { 
+  $.getJSON("dataBrowserBasicDetails", function(data) {
 
     $('#userName').html(data.userName);
     

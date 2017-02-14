@@ -1,27 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.test.dunit;
 
 /**
- * Extends <code>org.junit.Assert</code> with additional assertion and fail
- * methods. 
+ * Extends <code>org.junit.Assert</code> with additional assertion and fail methods.
  * 
- * These methods can be used directly: <code>Assert.assertIndexDetailsEquals(...)</code>,
- * however, they are intended to be referenced through static import:
+ * These methods can be used directly: <code>Assert.assertIndexDetailsEquals(...)</code>, however,
+ * they are intended to be referenced through static import:
  *
  * <pre>
  * import static org.apache.geode.test.dunit.Assert.*;
@@ -35,26 +32,25 @@ package org.apache.geode.test.dunit;
  */
 public class Assert extends org.junit.Assert {
 
-  protected Assert() {
-  }
+  protected Assert() {}
 
   /**
-   * Fails a test by throwing a new {@code AssertionError} with the specified
-   * detail message and cause.
+   * Fails a test by throwing a new {@code AssertionError} with the specified detail message and
+   * cause.
    *
-   * <p>Note that the detail message associated with
-   * {@code cause} is <i>not</i> automatically incorporated in
-   * this error's detail message.
+   * <p>
+   * Note that the detail message associated with {@code cause} is <i>not</i> automatically
+   * incorporated in this error's detail message.
    *
-   * @param  message the detail message, may be {@code null}
-   * @param  cause the cause, may be {@code null}
+   * @param message the detail message, may be {@code null}
+   * @param cause the cause, may be {@code null}
    *
    * @see java.lang.AssertionError
    */
   public static void fail(final String message, final Throwable cause) {
     if (message == null && cause == null) {
       throw new AssertionError();
-    }    
+    }
     if (message == null) {
       throw new AssertionError(cause);
     }

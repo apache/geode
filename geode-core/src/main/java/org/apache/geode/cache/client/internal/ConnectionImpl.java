@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal;
 
@@ -47,32 +45,33 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 /**
  * A single client to server connection.
  * 
- * The execute  method of this class is synchronized to
- * prevent two ops from using the client to server connection
- *  at the same time.
+ * The execute method of this class is synchronized to prevent two ops from using the client to
+ * server connection at the same time.
+ * 
  * @since GemFire 5.7
  *
  */
 public class ConnectionImpl implements Connection {
-  
+
   private static Logger logger = LogService.getLogger();
-  
-  /**Test hook to simulate a client crashing. If true, we will
-   * not notify the server when we close the connection.
+
+  /**
+   * Test hook to simulate a client crashing. If true, we will not notify the server when we close
+   * the connection.
    */
   private static boolean TEST_DURABLE_CLIENT_CRASH = false;
-  
+
   private Socket theSocket;
   private ByteBuffer commBuffer;
   private ByteBuffer commBufferForAsyncRead;
-//  private int handShakeTimeout = AcceptorImpl.DEFAULT_HANDSHAKE_TIMEOUT_MS;
+  // private int handShakeTimeout = AcceptorImpl.DEFAULT_HANDSHAKE_TIMEOUT_MS;
   private ServerQueueStatus status;
   private volatile boolean connectFinished;
   private final AtomicBoolean destroyed = new AtomicBoolean();
   private Endpoint endpoint;
-  private short wanSiteVersion = -1;//In Gateway communication version of connected wan site
-                                   //will be stored after successful handshake
-//  private final CancelCriterion cancelCriterion;
+  private short wanSiteVersion = -1;// In Gateway communication version of connected wan site
+                                    // will be stored after successful handshake
+  // private final CancelCriterion cancelCriterion;
   private final InternalDistributedSystem ds;
 
   private OutputStream out;
@@ -83,52 +82,50 @@ public class ConnectionImpl implements Connection {
   private HandShake handShake;
 
   public ConnectionImpl(InternalDistributedSystem ds, CancelCriterion cancelCriterion) {
-//    this.cancelCriterion = cancelCriterion;
+    // this.cancelCriterion = cancelCriterion;
     this.ds = ds;
   }
-  
-  public ServerQueueStatus connect(EndpointManager endpointManager,
-      ServerLocation location, HandShake handShake, int socketBufferSize,
-      int handShakeTimeout, int readTimeout, byte communicationMode, GatewaySender sender, SocketCreator sc)
-      throws IOException {
-    theSocket = sc.connectForClient(
-        location.getHostName(), location.getPort(), handShakeTimeout, socketBufferSize);
+
+  public ServerQueueStatus connect(EndpointManager endpointManager, ServerLocation location,
+      HandShake handShake, int socketBufferSize, int handShakeTimeout, int readTimeout,
+      byte communicationMode, GatewaySender sender, SocketCreator sc) throws IOException {
+    theSocket = sc.connectForClient(location.getHostName(), location.getPort(), handShakeTimeout,
+        socketBufferSize);
     theSocket.setTcpNoDelay(true);
-    //System.out.println("ConnectionImpl setting buffer sizes: " +
+    // System.out.println("ConnectionImpl setting buffer sizes: " +
     // socketBufferSize);
     theSocket.setSendBufferSize(socketBufferSize);
 
     // Verify buffer sizes
     verifySocketBufferSize(socketBufferSize, theSocket.getReceiveBufferSize(), "receive");
     verifySocketBufferSize(socketBufferSize, theSocket.getSendBufferSize(), "send");
-    
+
     theSocket.setSoTimeout(handShakeTimeout);
     out = theSocket.getOutputStream();
     in = theSocket.getInputStream();
-    this.status = handShake.greet(this, location, communicationMode);
+    this.status = handShake.handshakeWithServer(this, location, communicationMode);
     commBuffer = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
     if (sender != null) {
-      commBufferForAsyncRead = ServerConnection
-          .allocateCommBuffer(socketBufferSize, theSocket);
+      commBufferForAsyncRead = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
     }
     theSocket.setSoTimeout(readTimeout);
     endpoint = endpointManager.referenceEndpoint(location, this.status.getMemberId());
-    //logger.warning("ESTABLISHING ENDPOINT:"+location+" MEMBERID:"+endpoint.getMemberId(),new Exception());
+    // logger.warning("ESTABLISHING ENDPOINT:"+location+" MEMBERID:"+endpoint.getMemberId(),new
+    // Exception());
     this.connectFinished = true;
     this.endpoint.getStats().incConnections(1);
     return status;
   }
-  
+
   public void close(boolean keepAlive) throws Exception {
-    
+
     try {
       // if a forced-disconnect has occurred, we can't send messages to anyone
       boolean sendCloseMsg = !TEST_DURABLE_CLIENT_CRASH;
       if (sendCloseMsg) {
         try {
-          ((InternalDistributedSystem)ds).getDistributionManager();
-        }
-        catch (CancelException e) { // distribution has stopped
+          ((InternalDistributedSystem) ds).getDistributionManager();
+        } catch (CancelException e) { // distribution has stopped
           Throwable t = e.getCause();
           if (t instanceof ForcedDisconnectException) {
             // we're crashing - don't attempt to send a message (bug 39317)
@@ -136,34 +133,33 @@ public class ConnectionImpl implements Connection {
           }
         }
       }
-      
+
       if (sendCloseMsg) {
         if (logger.isDebugEnabled()) {
           logger.debug("Closing connection {} with keepAlive: {}", this, keepAlive);
         }
         CloseConnectionOp.execute(this, keepAlive);
       }
-    }
-    finally {
+    } finally {
       destroy();
     }
   }
-  
+
   public void emergencyClose() {
     commBuffer = null;
     try {
       theSocket.close();
     } catch (IOException e) {
-      //ignore
+      // ignore
     } catch (RuntimeException e) {
-      //ignore
+      // ignore
     }
   }
 
   public boolean isDestroyed() {
     return this.destroyed.get();
   }
-  
+
   public void destroy() {
     if (!this.destroyed.compareAndSet(false, true)) {
       // was already set to true so someone else did the destroy
@@ -182,15 +178,14 @@ public class ConnectionImpl implements Connection {
         theSocket.shutdownOutput();
         theSocket.close();
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug(e.getMessage(), e);
       }
     }
     releaseCommBuffers();
   }
-  
+
   private void releaseCommBuffers() {
     ByteBuffer bb = this.commBuffer;
     if (bb != null) {
@@ -221,20 +216,20 @@ public class ConnectionImpl implements Connection {
   public Socket getSocket() {
     return theSocket;
   }
-  
+
   public OutputStream getOutputStream() {
     return out;
   }
-  
+
   public InputStream getInputStream() {
     return in;
   }
-  
+
 
   public ConnectionStats getStats() {
     return endpoint.getStats();
   }
-  
+
   @Override
   public String toString() {
     return "Connection[" + endpoint + "]@" + this.hashCode();
@@ -251,15 +246,14 @@ public class ConnectionImpl implements Connection {
   public Object execute(Op op) throws Exception {
     Object result;
     // Do not synchronize when used for GatewaySender
-    // as the same connection is being used 
-    if ((op instanceof AbstractOp) && ((AbstractOp)op).isGatewaySenderOp()) {
+    // as the same connection is being used
+    if ((op instanceof AbstractOp) && ((AbstractOp) op).isGatewaySenderOp()) {
       result = op.attempt(this);
       endpoint.updateLastExecute();
       return result;
     }
     synchronized (this) {
-      if (op instanceof ExecuteFunctionOpImpl
-          || op instanceof ExecuteRegionFunctionOpImpl
+      if (op instanceof ExecuteFunctionOpImpl || op instanceof ExecuteRegionFunctionOpImpl
           || op instanceof ExecuteRegionFunctionSingleHopOpImpl) {
         int earliertimeout = this.getSocket().getSoTimeout();
         this.getSocket().setSoTimeout(GemFireCacheImpl.getClientFunctionTimeout());
@@ -276,23 +270,24 @@ public class ConnectionImpl implements Connection {
     return result;
 
   }
-  
-  
+
+
   public static void loadEmergencyClasses() {
-    //do nothing
+    // do nothing
   }
-  public short getWanSiteVersion(){
+
+  public short getWanSiteVersion() {
     return wanSiteVersion;
   }
-  
-  public void setWanSiteVersion(short wanSiteVersion){
+
+  public void setWanSiteVersion(short wanSiteVersion) {
     this.wanSiteVersion = wanSiteVersion;
   }
-  
+
   public int getDistributedSystemId() {
-    return ((InternalDistributedSystem)this.ds).getDistributionManager().getDistributedSystemId();
+    return ((InternalDistributedSystem) this.ds).getDistributionManager().getDistributedSystemId();
   }
-  
+
   public void setConnectionID(long id) {
     this.connectionID = id;
   }
@@ -325,11 +320,13 @@ public class ConnectionImpl implements Connection {
     }
     return commBufferForAsyncRead;
   }
-  
+
   private void verifySocketBufferSize(int requestedBufferSize, int actualBufferSize, String type) {
     if (actualBufferSize < requestedBufferSize) {
-      logger.info(LocalizedMessage.create(LocalizedStrings.Connection_SOCKET_0_IS_1_INSTEAD_OF_THE_REQUESTED_2,
-          new Object[] { new StringBuilder(type).append(" buffer size").toString(), actualBufferSize, requestedBufferSize }));
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.Connection_SOCKET_0_IS_1_INSTEAD_OF_THE_REQUESTED_2,
+          new Object[] {new StringBuilder(type).append(" buffer size").toString(), actualBufferSize,
+              requestedBufferSize}));
     }
   }
 }

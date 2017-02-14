@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.util;
@@ -32,9 +30,10 @@ import java.util.Set;
 import org.apache.geode.internal.lang.Filter;
 
 /**
- * The CollectionUtils class is a utility class for working with the Java Collections framework of classes, data
- * structures and algorithms.
+ * The CollectionUtils class is a utility class for working with the Java Collections framework of
+ * classes, data structures and algorithms.
  * <p/>
+ * 
  * @see org.apache.geode.internal.lang.Filter
  * @see java.util.Arrays
  * @see java.util.Collection
@@ -50,6 +49,7 @@ public abstract class CollectionUtils {
   /**
    * Returns the specified array as a List of elements.
    * <p/>
+   * 
    * @param <T> the class type of the elements in the array.
    * @param array the object array of elements to convert to a List.
    * @return a List of elements contained in the specified array.
@@ -65,6 +65,7 @@ public abstract class CollectionUtils {
   /**
    * Returns the specified array as a Set of elements.
    * <p/>
+   * 
    * @param <T> the class type of the elements in the array.
    * @param array the object array of elements to convert to a Set.
    * @return a Set of elements contained in the specified array.
@@ -80,6 +81,7 @@ public abstract class CollectionUtils {
   /**
    * Creates an Properties object initialized with the value from the given Map.
    * <p>
+   * 
    * @param map the Map supply the keys and value for the Properties object.
    * @return a Properties object initialized with the key and value from the Map.
    * @see java.util.Map
@@ -98,9 +100,10 @@ public abstract class CollectionUtils {
   }
 
   /**
-   * Null-safe implementation for method invocations that return a List Collection.  If the returned List is null,
-   * then this method will return an empty List in it's place.
+   * Null-safe implementation for method invocations that return a List Collection. If the returned
+   * List is null, then this method will return an empty List in it's place.
    * <p/>
+   * 
    * @param <T> the class type of the List's elements.
    * @param list the target List to verify as not null.
    * @return the specified List if not null otherwise return an empty List.
@@ -110,9 +113,10 @@ public abstract class CollectionUtils {
   }
 
   /**
-   * Null-safe implementation for method invocations that return a Set Collection.  If the returned Set is null,
-   * then this method will return an empty Set in it's place.
+   * Null-safe implementation for method invocations that return a Set Collection. If the returned
+   * Set is null, then this method will return an empty Set in it's place.
    * <p/>
+   * 
    * @param <T> the class type of the Set's elements.
    * @param set the target Set to verify as not null.
    * @return the specified Set if not null otherwise return an empty Set.
@@ -124,11 +128,14 @@ public abstract class CollectionUtils {
   /**
    * Iterates the Collection and finds all object elements that match the Filter criteria.
    * <p/>
+   * 
    * @param <T> the class type of the Collection elements.
    * @param collection the Collection of elements to iterate and filter.
-   * @param filter the Filter applied to the Collection of elements in search of all matching elements.
-   * @return a List of elements from the Collection matching the criteria of the Filter in the order in which they were
-   * found.  If no elements match the Filter criteria, then an empty List is returned.
+   * @param filter the Filter applied to the Collection of elements in search of all matching
+   *        elements.
+   * @return a List of elements from the Collection matching the criteria of the Filter in the order
+   *         in which they were found. If no elements match the Filter criteria, then an empty List
+   *         is returned.
    */
   public static <T> List<T> findAll(final Collection<T> collection, final Filter<T> filter) {
     final List<T> matches = new ArrayList<T>(collection.size());
@@ -145,12 +152,15 @@ public abstract class CollectionUtils {
   /**
    * Iterates the Collection and finds all object elements that match the Filter criteria.
    * <p/>
+   * 
    * @param <T> the class type of the Collection elements.
    * @param collection the Collection of elements to iterate and filter.
-   * @param filter the Filter applied to the Collection of elements in search of the matching element.
-   * @return a single element from the Collection that match the criteria of the Filter.  If multiple elements match
-   * the Filter criteria, then this method will return the first one.  If no element of the Collection matches
-   * the criteria of the Filter, then this method returns null.
+   * @param filter the Filter applied to the Collection of elements in search of the matching
+   *        element.
+   * @return a single element from the Collection that match the criteria of the Filter. If multiple
+   *         elements match the Filter criteria, then this method will return the first one. If no
+   *         element of the Collection matches the criteria of the Filter, then this method returns
+   *         null.
    */
   public static <T> T findBy(final Collection<T> collection, final Filter<T> filter) {
     for (T element : collection) {
@@ -165,6 +175,7 @@ public abstract class CollectionUtils {
   /**
    * Removes keys from the Map based on a Filter.
    * <p/>
+   * 
    * @param <K> the Class type of the key.
    * @param <V> the Class type of the value.
    * @param map the Map from which to remove key-value pairs based on a Filter.
@@ -174,8 +185,10 @@ public abstract class CollectionUtils {
    * @see java.util.Map.Entry
    * @see org.apache.geode.internal.lang.Filter
    */
-  public static <K, V> Map<K, V> removeKeys(final Map<K, V> map, final Filter<Map.Entry<K, V>> filter) {
-    for (final Iterator<Map.Entry<K, V>> mapEntries = map.entrySet().iterator(); mapEntries.hasNext(); ) {
+  public static <K, V> Map<K, V> removeKeys(final Map<K, V> map,
+      final Filter<Map.Entry<K, V>> filter) {
+    for (final Iterator<Map.Entry<K, V>> mapEntries = map.entrySet().iterator(); mapEntries
+        .hasNext();) {
       if (!filter.accept(mapEntries.next())) {
         mapEntries.remove();
       }
@@ -187,6 +200,7 @@ public abstract class CollectionUtils {
   /**
    * Removes keys with null values in the Map.
    * <p/>
+   * 
    * @param map the Map from which to remove null key-value pairs.
    * @return the Map without any null keys or values.
    * @see #removeKeys
@@ -194,7 +208,8 @@ public abstract class CollectionUtils {
    */
   public static <K, V> Map<K, V> removeKeysWithNullValues(final Map<K, V> map) {
     return removeKeys(map, new Filter<Map.Entry<K, V>>() {
-      @Override public boolean accept(final Map.Entry<K, V> entry) {
+      @Override
+      public boolean accept(final Map.Entry<K, V> entry) {
         return (entry.getValue() != null);
       }
     });
@@ -203,15 +218,14 @@ public abstract class CollectionUtils {
   /**
    * Add all elements of an {@link Enumeration} to a {@link Collection}.
    * 
-   * @param collection
-   *          to add from enumeration.
-   * @param enumeration
-   *          to add to collection.
+   * @param collection to add from enumeration.
+   * @param enumeration to add to collection.
    * @return true if collection is modified, otherwise false.
    * @since GemFire 8.1
    * @see Collection#addAll(Collection)
    */
-  public static final <T> boolean addAll(final Collection<T> collection, final Enumeration<T> enumeration) {
+  public static final <T> boolean addAll(final Collection<T> collection,
+      final Enumeration<T> enumeration) {
     if (null == enumeration) {
       return false;
     }
@@ -224,15 +238,12 @@ public abstract class CollectionUtils {
   }
 
   /**
-   * Construct a new unmodifiable {@link Iterable} backed by the supplied
-   * <code>iterable</code>.
+   * Construct a new unmodifiable {@link Iterable} backed by the supplied <code>iterable</code>.
    *
-   * {@link Iterable#iterator()} will return an umodifiable {@link Iterator} on
-   * which calling {@link Iterator#remove()} will throw
-   * {@link UnsupportedOperationException}.
+   * {@link Iterable#iterator()} will return an umodifiable {@link Iterator} on which calling
+   * {@link Iterator#remove()} will throw {@link UnsupportedOperationException}.
    * 
-   * @param iterable
-   *          to wrap as unmodifiable
+   * @param iterable to wrap as unmodifiable
    * @return unmodifiable {@link Iterable}
    * @since GemFire 8.1
    */

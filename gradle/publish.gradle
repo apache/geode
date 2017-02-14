@@ -73,14 +73,14 @@ subprojects {
     }
 
     project {
-      name 'Apache Geode (incubating)'
-      description 'Apache Geode (incubating) provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
-      url 'http://geode.incubator.apache.org'
+      name 'Apache Geode'
+      description 'Apache Geode provides a database-like consistency model, reliable transaction processing and a shared-nothing architecture to maintain very low latency performance with high concurrency processing'
+      url 'http://geode.apache.org'
   
       scm {
-        url 'https://git-wip-us.apache.org/repos/asf?p=incubator-geode.git;a=tree'
-        connection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
-        developerConnection 'scm:https://git-wip-us.apache.org/repos/asf/incubator-geode.git'
+        url 'https://git-wip-us.apache.org/repos/asf?p=geode.git;a=tree'
+        connection 'scm:https://git-wip-us.apache.org/repos/asf/geode.git'
+        developerConnection 'scm:https://git-wip-us.apache.org/repos/asf/geode.git'
       }
   
       licenses {

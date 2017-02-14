@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis;
 
@@ -54,16 +52,16 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
 
   private int server1Port;
   private int server2Port;
-  
+
   private String localHost;
-  
+
   private static final int JEDIS_TIMEOUT = 20 * 1000;
 
   private abstract class ClientTestBase extends SerializableCallable {
 
     int port;
 
-    protected ClientTestBase (int port) {
+    protected ClientTestBase(int port) {
       this.port = port;
     }
   }
@@ -78,7 +76,7 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
     server1 = host.getVM(0);
     server2 = host.getVM(1);
     client1 = host.getVM(2);
-    client2 = host.getVM(3);  
+    client2 = host.getVM(3);
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     final int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
     final SerializableCallable<Object> startRedisAdapter = new SerializableCallable<Object>() {
@@ -107,7 +105,9 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
     disconnectAllFromDS();
   }
 
-  @Category(FlakyTest.class) // GEODE-1092: random ports, failure stack involves TCPTransport ConnectionHandler (are we eating BindExceptions somewhere?), uses Random, async actions
+  @Category(FlakyTest.class) // GEODE-1092: random ports, failure stack involves TCPTransport
+                             // ConnectionHandler (are we eating BindExceptions somewhere?), uses
+                             // Random, async actions
   @Test
   public void testConcListOps() throws Exception {
     final Jedis jedis1 = new Jedis(localHost, server1Port, JEDIS_TIMEOUT);
@@ -143,18 +143,19 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
     assertEquals(result1, result2);
   }
 
-  @Category(FlakyTest.class) // GEODE-717: random ports, BindException in failure stack, async actions
+  @Category(FlakyTest.class) // GEODE-717: random ports, BindException in failure stack, async
+                             // actions
   @Test
   public void testConcCreateDestroy() throws Exception {
     IgnoredException.addIgnoredException("RegionDestroyedException");
     IgnoredException.addIgnoredException("IndexInvalidException");
     final int ops = 40;
-    final String hKey = TEST_KEY+"hash";
-    final String lKey = TEST_KEY+"list";
-    final String zKey = TEST_KEY+"zset";
-    final String sKey = TEST_KEY+"set";
+    final String hKey = TEST_KEY + "hash";
+    final String lKey = TEST_KEY + "list";
+    final String zKey = TEST_KEY + "zset";
+    final String sKey = TEST_KEY + "set";
 
-    class ConcCreateDestroy extends ClientTestBase{
+    class ConcCreateDestroy extends ClientTestBase {
       protected ConcCreateDestroy(int port) {
         super(port);
       }
@@ -204,14 +205,15 @@ public class RedisDistDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Just make sure there are no unexpected server crashes
    */
+  @Category(FlakyTest.class) // GEODE-1697
   @Test
   public void testConcOps() throws Exception {
 
     final int ops = 100;
-    final String hKey = TEST_KEY+"hash";
-    final String lKey = TEST_KEY+"list";
-    final String zKey = TEST_KEY+"zset";
-    final String sKey = TEST_KEY+"set";
+    final String hKey = TEST_KEY + "hash";
+    final String lKey = TEST_KEY + "list";
+    final String zKey = TEST_KEY + "zset";
+    final String sKey = TEST_KEY + "set";
 
     class ConcOps extends ClientTestBase {
 

@@ -1,25 +1,23 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-   
-   
+
+
 package org.apache.geode.internal.admin.remote;
 
 import java.io.DataInput;
-//import org.apache.geode.internal.*;
+// import org.apache.geode.internal.*;
 import java.io.DataOutput;
 import java.io.IOException;
 
@@ -30,29 +28,29 @@ import org.apache.geode.admin.RuntimeAdminException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
-//import java.util.*;
-//import java.net.*;
+// import java.util.*;
+// import java.net.*;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
- * A message that is sent to a particular distribution manager to
- * make an administration request.
+ * A message that is sent to a particular distribution manager to make an administration request.
  */
-public abstract class AdminRequest extends PooledDistributionMessage  {
+public abstract class AdminRequest extends PooledDistributionMessage {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private String modifiedClasspath = "";
   protected transient String friendlyName = "";
 
 
   // instance variables
 
-  /** The reply procesor used to gathering replies to an
-   * AdminRequest.  See bug 31562. */
+  /**
+   * The reply procesor used to gathering replies to an AdminRequest. See bug 31562.
+   */
   private transient AdminReplyProcessor processor;
 
   /** The (reply processor) id of this message */
@@ -71,7 +69,7 @@ public abstract class AdminRequest extends PooledDistributionMessage  {
     return this.msgId;
   }
 
- 
+
   /**
    * Sends this request, waits for the AdminReponse, and returns it
    */
@@ -79,13 +77,12 @@ public abstract class AdminRequest extends PooledDistributionMessage  {
     InternalDistributedMember recipient = this.getRecipient();
     if (dm.getId().equals(recipient)) {
       // We're sending this message to ourselves, we won't need a
-      // reply process.  Besides, if we try to create one, we'll get
+      // reply process. Besides, if we try to create one, we'll get
       // an assertion failure.
       this.msgId = -1;
 
     } else {
-      this.processor =
-        new AdminReplyProcessor(dm.getSystem(), recipient);
+      this.processor = new AdminReplyProcessor(dm.getSystem(), recipient);
       this.msgId = this.processor.getProcessorId();
     }
 
@@ -93,27 +90,29 @@ public abstract class AdminRequest extends PooledDistributionMessage  {
   }
 
   /**
-   * Waits a given number of milliseconds for the reply to this
-   * request. 
+   * Waits a given number of milliseconds for the reply to this request.
    *
    * @return Whether or not a reply was received.
    *
    * @see #getResponse
    */
   boolean waitForResponse(long timeout) throws InterruptedException {
-//    if (Thread.interrupted()) throw new InterruptedException(); not necessary waitForReplies does this?
+    // if (Thread.interrupted()) throw new InterruptedException(); not necessary waitForReplies does
+    // this?
     try {
       return this.processor.waitForReplies(timeout);
 
     } catch (ReplyException ex) {
-      for (Throwable cause = ex.getCause(); cause != null;
-           cause = cause.getCause()) {
+      for (Throwable cause = ex.getCause(); cause != null; cause = cause.getCause()) {
         if (cause instanceof RuntimeAdminException) {
           throw (RuntimeAdminException) cause;
         }
       }
 
-      throw new RuntimeAdminException(LocalizedStrings.AdminRequest_A_REPLYEXCEPTION_WAS_THROWN_WHILE_WAITING_FOR_A_REPLY.toLocalizedString(), ex);
+      throw new RuntimeAdminException(
+          LocalizedStrings.AdminRequest_A_REPLYEXCEPTION_WAS_THROWN_WHILE_WAITING_FOR_A_REPLY
+              .toLocalizedString(),
+          ex);
     }
   }
 
@@ -127,8 +126,8 @@ public abstract class AdminRequest extends PooledDistributionMessage  {
   }
 
   /**
-   * This method is invoked on the receiver side. It creates a response
-   * message and puts it on the outgoing queue.
+   * This method is invoked on the receiver side. It creates a response message and puts it on the
+   * outgoing queue.
    */
   @Override
   protected void process(DistributionManager dm) {
@@ -142,13 +141,15 @@ public abstract class AdminRequest extends PooledDistributionMessage  {
     } finally {
       cpMgr.revertToOldClassLoader();
     }
-    if (response != null) { //cancellations result in null response
+    if (response != null) { // cancellations result in null response
       response.setMsgId(this.getMsgId());
       dm.putOutgoing(response);
     } else {
-      logger.info(LocalizedMessage.create(LocalizedStrings.AdminRequest_RESPONSE_TO__0__WAS_CANCELLED, this.getClass().getName()));
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.AdminRequest_RESPONSE_TO__0__WAS_CANCELLED, this.getClass().getName()));
     }
   }
+
   /**
    * Must return a proper response to this request.
    */
@@ -162,8 +163,7 @@ public abstract class AdminRequest extends PooledDistributionMessage  {
   }
 
   @Override
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.msgId = in.readInt();
     this.modifiedClasspath = DataSerializer.readString(in);
@@ -183,8 +183,9 @@ public abstract class AdminRequest extends PooledDistributionMessage  {
     if (size == 0) {
       return null;
     } else if (size > 1) {
-      throw new
-        IllegalStateException(LocalizedStrings.AdminRequest_COULD_NOT_RETURN_ONE_RECIPIENT_BECAUSE_THIS_MESSAGE_HAS_0_RECIPIENTS.toLocalizedString(Integer.valueOf(size)));
+      throw new IllegalStateException(
+          LocalizedStrings.AdminRequest_COULD_NOT_RETURN_ONE_RECIPIENT_BECAUSE_THIS_MESSAGE_HAS_0_RECIPIENTS
+              .toLocalizedString(Integer.valueOf(size)));
     } else {
       return recipients[0];
     }

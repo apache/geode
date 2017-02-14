@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -21,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -39,7 +38,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
 
   private VM serverVM;
@@ -66,13 +65,14 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
 
     final int durableClientTimeout = 600; // keep the client alive for 600
 
-    PORT = ((Integer)this.serverVM.invoke(() -> CacheServerTestUtil.createCacheServer( "DUMMY_REGION", new Boolean(true)
-          ))).intValue();
+    PORT = ((Integer) this.serverVM
+        .invoke(() -> CacheServerTestUtil.createCacheServer("DUMMY_REGION", new Boolean(true))))
+            .intValue();
 
     this.ClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
-            getClientPool(NetworkUtils.getServerHostName(ClientVM.getHost()), PORT, true, 0), REGION_NAME,
-            getClientDistributedSystemProperties(durableClientId,
-                durableClientTimeout), Boolean.TRUE ));
+        getClientPool(NetworkUtils.getServerHostName(ClientVM.getHost()), PORT, true, 0),
+        REGION_NAME, getClientDistributedSystemProperties(durableClientId, durableClientTimeout),
+        Boolean.TRUE));
 
     // Send clientReady message
     this.ClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
@@ -83,12 +83,14 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
 
     // We expect in registerKey() that the RegionNotFoundException is thrown.
     // If exception is not thrown then the test fails.
-    this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKey( "Key1" ));
+    this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKey("Key1"));
 
     // creating Region on the Server
-/*    this.serverVM.invoke(() -> CacheServerTestUtil.createRegion( REGION_NAME ));
-     // should be successful.
-    this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKeyAfterRegionCreation( "Key1" ));*/
+    /*
+     * this.serverVM.invoke(() -> CacheServerTestUtil.createRegion( REGION_NAME )); // should be
+     * successful. this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKeyAfterRegionCreation(
+     * "Key1" ));
+     */
 
     // Stop the durable client
     this.ClientVM.invoke(() -> CacheServerTestUtil.closeCache());
@@ -104,8 +106,7 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
     try {
       region.registerInterest(key, InterestResultPolicy.NONE);
       fail("expected ServerOperationException");
-    }
-    catch (ServerOperationException expected) {
+    } catch (ServerOperationException expected) {
     }
   }
 
@@ -117,27 +118,24 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
     region.registerInterest(key, InterestResultPolicy.NONE);
   }
 
-  private Pool getClientPool(String host, int server1Port,
-      boolean establishCallbackConnection, int redundancyLevel) {
+  private Pool getClientPool(String host, int server1Port, boolean establishCallbackConnection,
+      int redundancyLevel) {
     PoolFactory pf = PoolManager.createFactory();
-    pf.addServer(host, server1Port)
-      .setSubscriptionEnabled(establishCallbackConnection)
-      .setSubscriptionRedundancy(redundancyLevel);
-    return ((PoolFactoryImpl)pf).getPoolAttributes();
+    pf.addServer(host, server1Port).setSubscriptionEnabled(establishCallbackConnection)
+        .setSubscriptionRedundancy(redundancyLevel);
+    return ((PoolFactoryImpl) pf).getPoolAttributes();
   }
 
-  private Properties getClientDistributedSystemProperties(
-      String durableClientId, int durableClientTimeout) {
+  private Properties getClientDistributedSystemProperties(String durableClientId,
+      int durableClientTimeout) {
     Properties properties = new Properties();
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
-    properties.setProperty(DURABLE_CLIENT_ID,
-        durableClientId);
-    properties.setProperty(DURABLE_CLIENT_TIMEOUT,
-        String.valueOf(durableClientTimeout));
+    properties.setProperty(DURABLE_CLIENT_ID, durableClientId);
+    properties.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(durableClientTimeout));
     return properties;
   }
-  
+
   @Override
   public final void preTearDown() throws Exception {
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();

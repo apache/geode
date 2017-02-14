@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -35,6 +33,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import com.jayway.awaitility.Awaitility;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -72,7 +73,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 4.2.1
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
   protected static final boolean CLIENT = true;
@@ -84,6 +85,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
   private static Properties properties;
 
+  ServerLocation serverLocation = new ServerLocation("127.0.0.1", 0);
+
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     Invoke.invokeInEveryVM((() -> cleanup()));
@@ -94,10 +97,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     InternalClientMembership.unregisterAllListeners();
   }
 
-  private void waitForAcceptsInProgressToBe(final int target)
-      throws Exception {
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+  private void waitForAcceptsInProgressToBe(final int target) throws Exception {
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           int actual = getAcceptsInProgress();
           if (actual == getAcceptsInProgress()) {
             return true;
@@ -115,8 +117,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   protected static Socket meanSocket;
 
   /**
-   * test that a server times out waiting for a handshake that
-   * never arrives.
+   * test that a server times out waiting for a handshake that never arrives.
    */
   @Test
   public void testConnectionTimeout() throws Exception {
@@ -127,21 +128,22 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     System.setProperty(AcceptorImpl.ACCEPT_TIMEOUT_PROPERTY_NAME, "1000");
     try {
       final int port = startBridgeServer(0);
-      //    AsyncInvocation ai = null;
+      // AsyncInvocation ai = null;
       try {
         assertTrue(port != 0);
-        SerializableRunnable createMeanSocket = new CacheSerializableRunnable("Connect to server with socket") {
-          public void run2() throws CacheException {
-            getCache(); // create a cache so we have stats
-            System.out.println("connecting to cache server with socket");
-            try {
-              InetAddress addr = InetAddress.getByName(hostName);
-              meanSocket = new Socket(addr, port);
-            } catch (Exception e) {
-              throw new RuntimeException("Test failed to connect or was interrupted", e);
-            }
-          }
-        };
+        SerializableRunnable createMeanSocket =
+            new CacheSerializableRunnable("Connect to server with socket") {
+              public void run2() throws CacheException {
+                getCache(); // create a cache so we have stats
+                System.out.println("connecting to cache server with socket");
+                try {
+                  InetAddress addr = InetAddress.getByName(hostName);
+                  meanSocket = new Socket(addr, port);
+                } catch (Exception e) {
+                  throw new RuntimeException("Test failed to connect or was interrupted", e);
+                }
+              }
+            };
         SerializableRunnable closeMeanSocket = new CacheSerializableRunnable("close mean socket") {
           public void run2() throws CacheException {
             System.out.println("closing mean socket");
@@ -179,40 +181,41 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           vm0.invoke("close mean socket", () -> closeMeanSocket);
         }
 
-        //       SerializableRunnable denialOfService = new CacheSerializableRunnable("Do lots of connects") {
-        //         public void run2() throws CacheException {
-        //           int connectionCount = 0;
-        //           ArrayList al = new ArrayList(60000);
-        //           try {
-        //             InetAddress addr = InetAddress.getLocalHost();
-        //             for (;;) {
-        //               Socket s = new Socket(addr, port);
-        //               al.add(s);
-        //               connectionCount++;
-        //               getLogWriter().info("connected # " + connectionCount + " s=" + s);
-        // //               try {
-        // //                 s.close();
-        // //               } catch (IOException ignore) {}
-        //             }
-        //           }
-        //           catch (Exception e) {
-        //             getLogWriter().info("connected # " + connectionCount
-        //                                 + " stopped because of exception " + e);
-        //             Iterator it = al.iterator();
-        //             while (it.hasNext()) {
-        //               Socket s = (Socket)it.next();
-        //               try {
-        //                 s.close();
-        //               } catch (IOException ignore) {}
-        //             }
-        //           }
-        //         }
-        //       };
-        //       // now pretend to do a denial of service attack by doing a bunch of connects
-        //       // really fast and see what that does to the server's fds.
-        //       getLogWriter().info("doing denial of service attach");
-        //       vm0.invoke(denialOfService);
-        //       // @todo darrel: check fd limit?
+        // SerializableRunnable denialOfService = new CacheSerializableRunnable("Do lots of
+        // connects") {
+        // public void run2() throws CacheException {
+        // int connectionCount = 0;
+        // ArrayList al = new ArrayList(60000);
+        // try {
+        // InetAddress addr = InetAddress.getLocalHost();
+        // for (;;) {
+        // Socket s = new Socket(addr, port);
+        // al.add(s);
+        // connectionCount++;
+        // getLogWriter().info("connected # " + connectionCount + " s=" + s);
+        // // try {
+        // // s.close();
+        // // } catch (IOException ignore) {}
+        // }
+        // }
+        // catch (Exception e) {
+        // getLogWriter().info("connected # " + connectionCount
+        // + " stopped because of exception " + e);
+        // Iterator it = al.iterator();
+        // while (it.hasNext()) {
+        // Socket s = (Socket)it.next();
+        // try {
+        // s.close();
+        // } catch (IOException ignore) {}
+        // }
+        // }
+        // }
+        // };
+        // // now pretend to do a denial of service attack by doing a bunch of connects
+        // // really fast and see what that does to the server's fds.
+        // getLogWriter().info("doing denial of service attach");
+        // vm0.invoke(denialOfService);
+        // // @todo darrel: check fd limit?
       } finally {
         stopBridgeServers(getCache());
       }
@@ -272,17 +275,15 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     ClientMembership.registerClientMembershipListener(listener);
 
     // test JOIN for server
-    DistributedMember serverJoined = new TestDistributedMember("serverJoined");
-    InternalClientMembership.notifyJoined(serverJoined, SERVER);
+    InternalClientMembership.notifyServerJoined(serverLocation);
 
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED];
         });
 
     assertTrue(fired[JOINED]);
-    assertEquals(serverJoined, member[JOINED]);
-    assertEquals(serverJoined.getId(), memberId[JOINED]);
+    assertNotNull(member[JOINED]);
     assertFalse(isClient[JOINED]);
     assertFalse(fired[LEFT]);
     assertNull(memberId[LEFT]);
@@ -294,9 +295,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // test JOIN for client
     DistributedMember clientJoined = new TestDistributedMember("clientJoined");
-    InternalClientMembership.notifyJoined(clientJoined, CLIENT);
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    InternalClientMembership.notifyClientJoined(clientJoined);
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED];
         });
 
@@ -313,10 +314,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     resetArraysForTesting(fired, member, memberId, isClient);
 
     // test LEFT for server
-    DistributedMember serverLeft = new TestDistributedMember("serverLeft");
-    InternalClientMembership.notifyLeft(serverLeft, SERVER);
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    InternalClientMembership.notifyServerLeft(serverLocation);
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[LEFT];
         });
 
@@ -324,8 +324,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertNull(memberId[JOINED]);
     assertFalse(isClient[JOINED]);
     assertTrue(fired[LEFT]);
-    assertEquals(serverLeft, member[LEFT]);
-    assertEquals(serverLeft.getId(), memberId[LEFT]);
+    assertNotNull(member[LEFT]);
     assertFalse(isClient[LEFT]);
     assertFalse(fired[CRASHED]);
     assertNull(memberId[CRASHED]);
@@ -334,9 +333,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // test LEFT for client
     DistributedMember clientLeft = new TestDistributedMember("clientLeft");
-    InternalClientMembership.notifyLeft(clientLeft, CLIENT);
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    InternalClientMembership.notifyClientLeft(clientLeft);
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[LEFT];
         });
 
@@ -353,10 +352,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     resetArraysForTesting(fired, member, memberId, isClient);
 
     // test CRASHED for server
-    DistributedMember serverCrashed = new TestDistributedMember("serverCrashed");
-    InternalClientMembership.notifyCrashed(serverCrashed, SERVER);
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    InternalClientMembership.notifyServerCrashed(serverLocation);
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[CRASHED];
         });
 
@@ -367,16 +365,15 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertNull(memberId[LEFT]);
     assertFalse(isClient[LEFT]);
     assertTrue(fired[CRASHED]);
-    assertEquals(serverCrashed, member[CRASHED]);
-    assertEquals(serverCrashed.getId(), memberId[CRASHED]);
+    assertNotNull(member[CRASHED]);
     assertFalse(isClient[CRASHED]);
     resetArraysForTesting(fired, member, memberId, isClient);
 
     // test CRASHED for client
     DistributedMember clientCrashed = new TestDistributedMember("clientCrashed");
-    InternalClientMembership.notifyCrashed(clientCrashed, CLIENT);
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    InternalClientMembership.notifyClientCrashed(clientCrashed);
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[CRASHED];
         });
 
@@ -394,12 +391,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   }
 
   /**
-   * Resets all elements of arrays used for listener testing. Boolean values
-   * are reset to false. String values are reset to null.
+   * Resets all elements of arrays used for listener testing. Boolean values are reset to false.
+   * String values are reset to null.
    */
-  private void resetArraysForTesting(boolean[] fired,
-      DistributedMember[] member,
-      String[] memberId,
+  private void resetArraysForTesting(boolean[] fired, DistributedMember[] member, String[] memberId,
       boolean[] isClient) {
     for (int i = 0; i < fired.length; i++) {
       fired[i] = false;
@@ -410,8 +405,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   }
 
   /**
-   * Tests unregisterClientMembershipListener to ensure that no further events
-   * are delivered to unregistered listeners.
+   * Tests unregisterClientMembershipListener to ensure that no further events are delivered to
+   * unregistered listeners.
    */
   @Test
   public void testUnregisterClientMembershipListener() throws Exception {
@@ -430,19 +425,17 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         isClient[0] = event.isClient();
       }
 
-      public void memberLeft(ClientMembershipEvent event) {
-      }
+      public void memberLeft(ClientMembershipEvent event) {}
 
-      public void memberCrashed(ClientMembershipEvent event) {
-      }
+      public void memberCrashed(ClientMembershipEvent event) {}
     };
     ClientMembership.registerClientMembershipListener(listener);
 
     // fire event to make sure listener is registered
     DistributedMember clientJoined = new TestDistributedMember("clientJoined");
-    InternalClientMembership.notifyJoined(clientJoined, true);
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    InternalClientMembership.notifyClientJoined(clientJoined);
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED];
         });
 
@@ -458,9 +451,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // unregister and verify listener is not notified
     ClientMembership.unregisterClientMembershipListener(listener);
-    InternalClientMembership.notifyJoined(clientJoined, true);
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS)
-        .until(() -> {
+    InternalClientMembership.notifyClientJoined(clientJoined);
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).until(() -> {
           return true;
         });
 
@@ -495,16 +488,14 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           isClient[whichListener] = event.isClient();
         }
 
-        public void memberLeft(ClientMembershipEvent event) {
-        }
+        public void memberLeft(ClientMembershipEvent event) {}
 
-        public void memberCrashed(ClientMembershipEvent event) {
-        }
+        public void memberCrashed(ClientMembershipEvent event) {}
       };
     }
 
     final DistributedMember clientJoined = new TestDistributedMember("clientJoined");
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     for (int i = 0; i < NUM_LISTENERS; i++) {
       synchronized (listeners[i]) {
         listeners[i].wait(20);
@@ -531,7 +522,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(listeners[0], registeredListeners[0]);
     assertEquals(listeners[1], registeredListeners[1]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[1]) {
       if (!fired[1]) {
         listeners[1].wait(2000);
@@ -557,7 +548,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(1, registeredListeners.length);
     assertEquals(listeners[1], registeredListeners[0]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[1]) {
       if (!fired[1]) {
         listeners[1].wait(2000);
@@ -586,7 +577,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(listeners[2], registeredListeners[1]);
     assertEquals(listeners[3], registeredListeners[2]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[3]) {
       if (!fired[3]) {
         listeners[3].wait(2000);
@@ -615,7 +606,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(listeners[3], registeredListeners[2]);
     assertEquals(listeners[0], registeredListeners[3]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[0]) {
       if (!fired[0]) {
         listeners[0].wait(2000);
@@ -636,7 +627,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(listeners[2], registeredListeners[1]);
     assertEquals(listeners[0], registeredListeners[2]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[0]) {
       if (!fired[0]) {
         listeners[0].wait(2000);
@@ -663,7 +654,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(listeners[1], registeredListeners[0]);
     assertEquals(listeners[0], registeredListeners[1]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[0]) {
       if (!fired[0]) {
         listeners[0].wait(2000);
@@ -689,7 +680,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     registeredListeners = ClientMembership.getClientMembershipListeners();
     assertEquals(0, registeredListeners.length);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     for (int i = 0; i < NUM_LISTENERS; i++) {
       synchronized (listeners[i]) {
         listeners[i].wait(20);
@@ -706,7 +697,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(1, registeredListeners.length);
     assertEquals(listeners[1], registeredListeners[0]);
 
-    InternalClientMembership.notifyJoined(clientJoined, true);
+    InternalClientMembership.notifyClientJoined(clientJoined);
     synchronized (listeners[1]) {
       if (!fired[1]) {
         listeners[1].wait(2000);
@@ -734,9 +725,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   }
 
   /**
-   * Tests notification of events in client process. Bridge clients detect
-   * server joins when the client connects to the server. If the server
-   * crashes or departs gracefully, the client will detect this as a crash.
+   * Tests notification of events in client process. Bridge clients detect server joins when the
+   * client connects to the server. If the server crashes or departs gracefully, the client will
+   * detect this as a crash.
    */
   @Test
   public void testClientMembershipEventsInClient() throws Exception {
@@ -798,8 +789,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         () -> ClientMembershipDUnitTest.getTestClientMembershipEventsInClient_port());
     assertTrue(ports[0] != 0);
 
-    DistributedMember serverMember = (DistributedMember) vm0.invoke("get distributed member", () ->
-        ClientMembershipDUnitTest.getDistributedMember());
+    DistributedMember serverMember = (DistributedMember) vm0.invoke("get distributed member",
+        () -> ClientMembershipDUnitTest.getDistributedMember());
 
     String serverMemberId = serverMember.toString();
 
@@ -822,15 +813,13 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // sanity check...
     System.out.println("[testClientMembershipEventsInClient] sanity check");
-    DistributedMember test = new TestDistributedMember("test");
-    InternalClientMembership.notifyJoined(test, SERVER);
+    InternalClientMembership.notifyServerJoined(serverLocation);
 
     Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
         .pollDelay(50, TimeUnit.MILLISECONDS).until(() -> fired[JOINED] || fired[CRASHED]);
 
     assertTrue(fired[JOINED]);
-    assertEquals(test, member[JOINED]);
-    assertEquals(test.getId(), memberId[JOINED]);
+    assertNotNull(member[JOINED]);
     assertFalse(isClient[JOINED]);
     assertFalse(fired[LEFT]);
     assertNull(member[LEFT]);
@@ -854,7 +843,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       getCache();
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(Scope.LOCAL);
-      ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(Host.getHost(0)), ports, true, -1, -1, null);
+      ClientServerTestCase.configureConnectionPool(factory,
+          NetworkUtils.getServerHostName(Host.getHost(0)), ports, true, -1, -1, null);
       createRegion(name, factory.create());
       assertNotNull(getRootRegion().getSubregion(name));
     } catch (CacheException ex) {
@@ -878,8 +868,6 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertTrue(fired[JOINED]);
     assertNotNull(member[JOINED]);
     assertNotNull(memberId[JOINED]);
-    assertEquals(serverMember, member[JOINED]);
-    assertEquals(serverMemberId, memberId[JOINED]);
     assertFalse(isClient[JOINED]);
     assertFalse(fired[LEFT]);
     assertNull(member[LEFT]);
@@ -896,7 +884,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
         .pollDelay(50, TimeUnit.MILLISECONDS).until(() -> fired[JOINED] || fired[CRASHED]);
 
-    System.out.println("[testClientMembershipEventsInClient] assert client detected server departure");
+    System.out
+        .println("[testClientMembershipEventsInClient] assert client detected server departure");
     assertFalse(fired[JOINED]);
     assertNull(member[JOINED]);
     assertNull(memberId[JOINED]);
@@ -908,12 +897,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertTrue(fired[CRASHED]);
     assertNotNull(member[CRASHED]);
     assertNotNull(memberId[CRASHED]);
-    assertEquals(serverMember, member[CRASHED]);
-    assertEquals(serverMemberId, memberId[CRASHED]);
     assertFalse(isClient[CRASHED]);
     resetArraysForTesting(fired, member, memberId, isClient);
 
-    //now test that we redisover the bridge server
+    // now test that we redisover the bridge server
     vm0.invoke("Recreate BridgeServer", () -> {
       try {
         System.out.println("[testClientMembershipEventsInClient] restarting BridgeServer");
@@ -927,13 +914,12 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     Awaitility.await().pollInterval(50, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
         .pollDelay(50, TimeUnit.MILLISECONDS).until(() -> fired[JOINED] || fired[CRASHED]);
 
-    System.out.println("[testClientMembershipEventsInClient] assert client detected server recovery");
+    System.out
+        .println("[testClientMembershipEventsInClient] assert client detected server recovery");
     assertTrue(fired[JOINED]);
     assertNotNull(member[JOINED]);
     assertNotNull(memberId[JOINED]);
     assertFalse(isClient[JOINED]);
-    assertEquals(serverMember, member[JOINED]);
-    assertEquals(serverMemberId, memberId[JOINED]);
     assertFalse(fired[LEFT]);
     assertNull(member[LEFT]);
     assertNull(memberId[LEFT]);
@@ -944,8 +930,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   }
 
   /**
-   * Tests notification of events in server process. Bridge servers detect
-   * client joins when the client connects to the server.
+   * Tests notification of events in server process. Bridge servers detect client joins when the
+   * client connects to the server.
    */
   @Test
   public void testClientMembershipEventsInServer() throws Exception {
@@ -1023,9 +1009,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     // sanity check...
     System.out.println("[testClientMembershipEventsInServer] sanity check");
     DistributedMember test = new TestDistributedMember("test");
-    InternalClientMembership.notifyJoined(test, CLIENT);
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    InternalClientMembership.notifyClientJoined(test);
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED] || fired[LEFT] || fired[CRASHED];
         });
 
@@ -1044,40 +1030,39 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     resetArraysForTesting(fired, member, memberId, isClient);
 
     final Host host = Host.getHost(0);
-    SerializableCallable createConnectionPool =
-        new SerializableCallable("Create connectionPool") {
-          public Object call() {
-            System.out.println("[testClientMembershipEventsInServer] create bridge client");
-            Properties config = new Properties();
-            config.setProperty(MCAST_PORT, "0");
-            config.setProperty(LOCATORS, "");
-            config.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-            properties = config;
-            DistributedSystem s = getSystem(config);
-            AttributesFactory factory = new AttributesFactory();
-            Pool pool = ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(host), ports, true, -1, 2, null);
-            createRegion(name, factory.create());
-            assertNotNull(getRootRegion().getSubregion(name));
-            assertTrue(s == basicGetSystem()); // see geode-1078
-            return getMemberId();
-          }
-        };
+    SerializableCallable createConnectionPool = new SerializableCallable("Create connectionPool") {
+      public Object call() {
+        System.out.println("[testClientMembershipEventsInServer] create bridge client");
+        Properties config = new Properties();
+        config.setProperty(MCAST_PORT, "0");
+        config.setProperty(LOCATORS, "");
+        config.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
+        properties = config;
+        DistributedSystem s = getSystem(config);
+        AttributesFactory factory = new AttributesFactory();
+        Pool pool = ClientServerTestCase.configureConnectionPool(factory,
+            NetworkUtils.getServerHostName(host), ports, true, -1, 2, null);
+        createRegion(name, factory.create());
+        assertNotNull(getRootRegion().getSubregion(name));
+        assertTrue(s == basicGetSystem()); // see geode-1078
+        return getMemberId();
+      }
+    };
 
     // create bridge client in vm0...
     DistributedMember clientMember = (DistributedMember) vm0.invoke(createConnectionPool);
     String clientMemberId = clientMember.toString();
 
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED] || fired[LEFT] || fired[CRASHED];
         });
 
     System.out.println("[testClientMembershipEventsInServer] assert server detected client join");
     assertTrue(fired[JOINED]);
-    assertEquals(member[JOINED] + " should equal " + clientMember,
-        clientMember, member[JOINED]);
-    assertEquals(memberId[JOINED] + " should equal " + clientMemberId,
-        clientMemberId, memberId[JOINED]);
+    assertEquals(member[JOINED] + " should equal " + clientMember, clientMember, member[JOINED]);
+    assertEquals(memberId[JOINED] + " should equal " + clientMemberId, clientMemberId,
+        memberId[JOINED]);
     assertTrue(isClient[JOINED]);
     assertFalse(fired[LEFT]);
     assertNull(member[LEFT]);
@@ -1104,8 +1089,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       }
     });
 
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED] || fired[LEFT] || fired[CRASHED];
         });
 
@@ -1127,12 +1112,13 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     // reconnect bridge client to test for crashed event
     clientMemberId = vm0.invoke(createConnectionPool).toString();
 
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED] || fired[LEFT] || fired[CRASHED];
         });
 
-    System.out.println("[testClientMembershipEventsInServer] assert server detected client re-join");
+    System.out
+        .println("[testClientMembershipEventsInServer] assert server detected client re-join");
     assertTrue(fired[JOINED]);
     assertEquals(clientMember, member[JOINED]);
     assertEquals(clientMemberId, memberId[JOINED]);
@@ -1164,12 +1150,13 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         }
       });
 
-      Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-          .until(() -> {
+      Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+          .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
             return fired[JOINED] || fired[LEFT] || fired[CRASHED];
           });
 
-      System.out.println("[testClientMembershipEventsInServer] assert server detected client crashed");
+      System.out
+          .println("[testClientMembershipEventsInServer] assert server detected client crashed");
       assertFalse(fired[JOINED]);
       assertNull(member[JOINED]);
       assertNull(memberId[JOINED]);
@@ -1188,21 +1175,19 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   }
 
   /**
-   * The joined event fires when the first client handshake is processed.
-   * This pauses long enough to allow the rest of the client sockets to
-   * complete handshaking before making the client leave. Without doing this
-   * subsequent socket handshakes that are processed could fire join events
-   * after departure events and then a departure event again. If you see
-   * failures in testClientMembershipEventsInServer, try increasing this
-   * timeout.
+   * The joined event fires when the first client handshake is processed. This pauses long enough to
+   * allow the rest of the client sockets to complete handshaking before making the client leave.
+   * Without doing this subsequent socket handshakes that are processed could fire join events after
+   * departure events and then a departure event again. If you see failures in
+   * testClientMembershipEventsInServer, try increasing this timeout.
    */
   private void pauseForClientToJoin() {
     Wait.pause(2000);
   }
 
   /**
-   * Tests registration and event notification in conjunction with
-   * disconnecting and reconnecting to DistributedSystem.
+   * Tests registration and event notification in conjunction with disconnecting and reconnecting to
+   * DistributedSystem.
    */
   @Test
   public void testLifecycle() throws Exception {
@@ -1224,11 +1209,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         isClient[JOINED] = event.isClient();
       }
 
-      public void memberLeft(ClientMembershipEvent event) {
-      }
+      public void memberLeft(ClientMembershipEvent event) {}
 
-      public void memberCrashed(ClientMembershipEvent event) {
-      }
+      public void memberCrashed(ClientMembershipEvent event) {}
     };
     ClientMembership.registerClientMembershipListener(listener);
 
@@ -1240,24 +1223,22 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     getSystem(config);
 
     // assert that event is fired while connected
-    DistributedMember serverJoined = new TestDistributedMember("serverJoined");
-    InternalClientMembership.notifyJoined(serverJoined, SERVER);
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    InternalClientMembership.notifyServerJoined(serverLocation);
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED];
         });
     assertTrue(fired[JOINED]);
-    assertEquals(serverJoined, member[JOINED]);
-    assertEquals(serverJoined.getId(), memberId[JOINED]);
+    assertNotNull(member[JOINED]);
     assertFalse(isClient[JOINED]);
     resetArraysForTesting(fired, member, memberId, isClient);
 
     // assert that event is NOT fired while disconnected
     disconnectFromDS();
 
-    InternalClientMembership.notifyJoined(serverJoined, SERVER);
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS)
-        .until(() -> {
+    InternalClientMembership.notifyServerJoined(serverLocation);
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).until(() -> {
           return true;
         });
 
@@ -1272,15 +1253,14 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     InternalDistributedSystem sys = getSystem(config);
     assertTrue(sys.isConnected());
 
-    InternalClientMembership.notifyJoined(serverJoined, SERVER);
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    InternalClientMembership.notifyServerJoined(serverLocation);
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           return fired[JOINED];
         });
 
     assertTrue(fired[JOINED]);
-    assertEquals(serverJoined, member[JOINED]);
-    assertEquals(serverJoined.getId(), memberId[JOINED]);
+    assertNotNull(member[JOINED]);
     assertFalse(isClient[JOINED]);
   }
 
@@ -1312,23 +1292,23 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     System.out.println("[testGetConnectedClients] serverMemberId=" + serverMemberId);
 
     final Host host = Host.getHost(0);
-    SerializableCallable createPool =
-        new SerializableCallable("Create connection pool") {
-          public Object call() {
-            System.out.println("[testGetConnectedClients] create bridge client");
-            properties = new Properties();
-            properties.setProperty(MCAST_PORT, "0");
-            properties.setProperty(LOCATORS, "");
-            getSystem(properties);
-            AttributesFactory factory = new AttributesFactory();
-            factory.setScope(Scope.LOCAL);
-            Pool p = ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(host), ports, true, -1, -1, null);
-            createRegion(name, factory.create());
-            assertNotNull(getRootRegion().getSubregion(name));
-            assertTrue(p.getServers().size() > 0);
-            return getMemberId();
-          }
-        };
+    SerializableCallable createPool = new SerializableCallable("Create connection pool") {
+      public Object call() {
+        System.out.println("[testGetConnectedClients] create bridge client");
+        properties = new Properties();
+        properties.setProperty(MCAST_PORT, "0");
+        properties.setProperty(LOCATORS, "");
+        getSystem(properties);
+        AttributesFactory factory = new AttributesFactory();
+        factory.setScope(Scope.LOCAL);
+        Pool p = ClientServerTestCase.configureConnectionPool(factory,
+            NetworkUtils.getServerHostName(host), ports, true, -1, -1, null);
+        createRegion(name, factory.create());
+        assertNotNull(getRootRegion().getSubregion(name));
+        assertTrue(p.getServers().size() > 0);
+        return getMemberId();
+      }
+    };
 
     // create bridge client in vm0...
     final String[] clientMemberIdArray = new String[host.getVMCount()];
@@ -1342,8 +1322,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     {
       final int expectedClientCount = clientMemberIds.size();
-      Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-          .until(() -> {
+      Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+          .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
             Map connectedClients = InternalClientMembership.getConnectedClients(false);
             if (connectedClients == null) {
               return false;
@@ -1358,15 +1338,15 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     Map connectedClients = InternalClientMembership.getConnectedClients(false);
     assertNotNull(connectedClients);
     assertEquals(clientMemberIds.size(), connectedClients.size());
-    System.out.println("connectedClients: " + connectedClients + "; clientMemberIds: " + clientMemberIds);
-    for (Iterator iter = connectedClients.keySet().iterator(); iter.hasNext(); ) {
+    System.out
+        .println("connectedClients: " + connectedClients + "; clientMemberIds: " + clientMemberIds);
+    for (Iterator iter = connectedClients.keySet().iterator(); iter.hasNext();) {
       String connectedClient = (String) iter.next();
       System.out.println("[testGetConnectedClients] checking for client " + connectedClient);
       assertTrue(clientMemberIds.contains(connectedClient));
       Object[] result = (Object[]) connectedClients.get(connectedClient);
-      System.out.println("[testGetConnectedClients] result: " +
-          (result == null ? "none"
-              : String.valueOf(result[0]) + "; connections=" + result[1]));
+      System.out.println("[testGetConnectedClients] result: "
+          + (result == null ? "none" : String.valueOf(result[0]) + "; connections=" + result[1]));
     }
   }
 
@@ -1397,16 +1377,15 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         try {
           testGetConnectedServers_port = startBridgeServer(0);
         } catch (IOException e) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error("startBridgeServer threw IOException", e);
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+              .error("startBridgeServer threw IOException", e);
           fail("startBridgeServer threw IOException " + e.getMessage());
         }
 
         assertTrue(testGetConnectedServers_port != 0);
 
-        System.out.println("[testGetConnectedServers] port=" +
-            ports[whichVM]);
-        System.out.println("[testGetConnectedServers] serverMemberId=" +
-            getDistributedMember());
+        System.out.println("[testGetConnectedServers] port=" + ports[whichVM]);
+        System.out.println("[testGetConnectedServers] serverMemberId=" + getDistributedMember());
       });
       ports[whichVM] = vm.invoke("getTestGetConnectedServers_port",
           () -> ClientMembershipDUnitTest.getTestGetConnectedServers_port());
@@ -1425,18 +1404,19 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     factory.setScope(Scope.LOCAL);
 
     for (int i = 0; i < ports.length; i++) {
-      System.out.println("[testGetConnectedServers] creating connectionpool for " +
-          NetworkUtils.getServerHostName(host) + " " + ports[i]);
-      int[] thisServerPorts = new int[] { ports[i] };
-      ClientServerTestCase.configureConnectionPoolWithName(factory, NetworkUtils.getServerHostName(host), thisServerPorts, false, -1, -1, null, "pooly" + i);
+      System.out.println("[testGetConnectedServers] creating connectionpool for "
+          + NetworkUtils.getServerHostName(host) + " " + ports[i]);
+      int[] thisServerPorts = new int[] {ports[i]};
+      ClientServerTestCase.configureConnectionPoolWithName(factory,
+          NetworkUtils.getServerHostName(host), thisServerPorts, false, -1, -1, null, "pooly" + i);
       Region region = createRegion(name + "_" + i, factory.create());
       assertNotNull(getRootRegion().getSubregion(name + "_" + i));
       region.get("KEY-1");
     }
 
     final int expectedVMCount = host.getVMCount();
-    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS)
-        .until(() -> {
+    Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
+        .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
           if (PoolManager.getAll().size() != expectedVMCount) {
             return false;
           }
@@ -1455,10 +1435,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     Map connectedServers = InternalClientMembership.getConnectedServers();
     assertNotNull(connectedServers);
     assertEquals(host.getVMCount(), connectedServers.size());
-    for (Iterator iter = connectedServers.keySet().iterator(); iter.hasNext(); ) {
+    for (Iterator iter = connectedServers.keySet().iterator(); iter.hasNext();) {
       String connectedServer = (String) iter.next();
-      System.out.println("[testGetConnectedServers]  value for connectedServer: " +
-          connectedServers.get(connectedServer));
+      System.out.println("[testGetConnectedServers]  value for connectedServer: "
+          + connectedServers.get(connectedServer));
     }
   }
 
@@ -1503,16 +1483,15 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           try {
             testGetNotifiedClients_port = startBridgeServer(0);
           } catch (IOException e) {
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error("startBridgeServer threw IOException", e);
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+                .error("startBridgeServer threw IOException", e);
             fail("startBridgeServer threw IOException " + e.getMessage());
           }
 
           assertTrue(testGetNotifiedClients_port != 0);
 
-          System.out.println("[testGetNotifiedClients] port=" +
-              ports[whichVM]);
-          System.out.println("[testGetNotifiedClients] serverMemberId=" +
-              getMemberId());
+          System.out.println("[testGetNotifiedClients] port=" + ports[whichVM]);
+          System.out.println("[testGetNotifiedClients] serverMemberId=" + getMemberId());
         }
       });
       ports[whichVM] = vm.invoke("getTestGetNotifiedClients_port",
@@ -1532,7 +1511,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     factory.setScope(Scope.LOCAL);
 
     System.out.println("[testGetNotifiedClients] creating connection pool");
-    ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(host), ports, true, -1, -1, null);
+    ClientServerTestCase.configureConnectionPool(factory, NetworkUtils.getServerHostName(host),
+        ports, true, -1, -1, null);
     Region region = createRegion(name, factory.create());
     assertNotNull(getRootRegion().getSubregion(name));
     region.registerInterest("KEY-1");
@@ -1555,12 +1535,12 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         testGetNotifiedClients_clientCount = clients.size();
         // [bruce] this is not a valid assertion - the server may not use
         // fully qualified host names while clients always use them in
-        // forming their member ID.  The test needs to check InetAddresses,
+        // forming their member ID. The test needs to check InetAddresses,
         // not strings
-//        if (testGetNotifiedClients_clientCount > 0) {
-//          // assert that the clientMemberId matches
-//          assertEquals(clientMemberId, clients.keySet().iterator().next());
-//        }
+        // if (testGetNotifiedClients_clientCount > 0) {
+        // // assert that the clientMemberId matches
+        // assertEquals(clientMemberId, clients.keySet().iterator().next());
+        // }
       });
       clientCounts[whichVM] = vm.invoke("getTestGetNotifiedClients_clientCount",
           () -> ClientMembershipDUnitTest.getTestGetNotifiedClients_clientCount());
@@ -1572,7 +1552,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       totalClientCounts += clientCounts[i];
     }
     // this assertion fails because the count is 4
-    //assertIndexDetailsEquals(1, totalClientCounts);
+    // assertIndexDetailsEquals(1, totalClientCounts);
   }
 
   protected static int testGetNotifiedClients_port;

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -21,6 +19,7 @@ import static com.jayway.awaitility.Awaitility.*;
 import static com.jayway.awaitility.Duration.*;
 import static org.junit.Assert.*;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -43,16 +42,13 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * This is the bugtest for bug no. 36738. When Object of class
- * ClientUpdateMessage gets deserialized it thows NPE if region mentioned in the
- * ClientUpdateMessage is not present on the node. The test performs following
- * operations 
- * 1. Create server1 and HARegion. 
- * 2. Perform put operations on HARegion with the value as ClientUpdateMessage. 
- * 3. Create server2 and HARegion in it so that GII will happen. 
- * 4. Perform get operations from server2.
+ * This is the bugtest for bug no. 36738. When Object of class ClientUpdateMessage gets deserialized
+ * it thows NPE if region mentioned in the ClientUpdateMessage is not present on the node. The test
+ * performs following operations 1. Create server1 and HARegion. 2. Perform put operations on
+ * HARegion with the value as ClientUpdateMessage. 3. Create server2 and HARegion in it so that GII
+ * will happen. 4. Perform get operations from server2.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME = "HABug36738DUnitTest_Region";
@@ -70,7 +66,7 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     disconnectAllFromDS();
-    invokeInEveryVM( () -> cache = null );
+    invokeInEveryVM(() -> cache = null);
   }
 
   @Test
@@ -79,7 +75,7 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
     final VM server2 = Host.getHost(0).getVM(1);
 
     server1.invoke(() -> createServerCacheWithHAAndRegion());
-    await().atMost(TEN_SECONDS).until( () -> regionExists(server1, HAREGION_NAME) );
+    await().atMost(TEN_SECONDS).until(() -> regionExists(server1, HAREGION_NAME));
     server1.invoke(() -> checkRegionQueueSize());
 
     server2.invoke(() -> createServerCacheWithHA());
@@ -101,14 +97,9 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
     cache.createVMRegion(REGION_NAME, factory.createRegionAttributes());
 
     for (int i = 0; i < COUNT; i++) {
-      ClientUpdateMessage clientMessage = new ClientUpdateMessageImpl(
-              EnumListenerEvent.AFTER_UPDATE,
-              (LocalRegion)this.haRegion,
-              null,
-              ("value" + i).getBytes(),
-              (byte)0x01,
-              null,
-              new ClientProxyMembershipID(),
+      ClientUpdateMessage clientMessage =
+          new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE, (LocalRegion) this.haRegion,
+              null, ("value" + i).getBytes(), (byte) 0x01, null, new ClientProxyMembershipID(),
               new EventID(("memberID" + i).getBytes(), i, i));
 
       this.haRegion.put(i, clientMessage);
@@ -122,11 +113,13 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
     factory.setMirrorType(MirrorType.KEYS_VALUES);
     factory.setScope(Scope.DISTRIBUTED_ACK);
 
-    haRegion = HARegion.getInstance(HAREGION_NAME, (GemFireCacheImpl) cache, null, factory.createRegionAttributes());
+    haRegion = HARegion.getInstance(HAREGION_NAME, (GemFireCacheImpl) cache, null,
+        factory.createRegionAttributes());
   }
 
   private void checkRegionQueueSize() {
-    final HARegion region = (HARegion) cache.getRegion(Region.SEPARATOR + HAHelper.getRegionQueueName(HAREGION_NAME));
+    final HARegion region =
+        (HARegion) cache.getRegion(Region.SEPARATOR + HAHelper.getRegionQueueName(HAREGION_NAME));
     assertNotNull(region);
     assertEquals(COUNT, region.size());
   }

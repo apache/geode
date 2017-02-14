@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.deadlock;
 
@@ -34,7 +32,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class DeadlockDetectorTest {
-  
+
   private volatile Set<Thread> stuckThreads;
 
   @Before
@@ -44,7 +42,7 @@ public class DeadlockDetectorTest {
 
   @After
   public void tearDown() throws Exception {
-    for (Thread thread: stuckThreads) {
+    for (Thread thread : stuckThreads) {
       thread.interrupt();
       thread.join(20 * 1000);
       if (thread.isAlive()) {
@@ -54,7 +52,7 @@ public class DeadlockDetectorTest {
 
     stuckThreads.clear();
   }
-  
+
   @Test
   public void testNoDeadlocks() {
     DeadlockDetector detector = new DeadlockDetector();
@@ -63,21 +61,21 @@ public class DeadlockDetectorTest {
   }
 
   /**
-   * Test that the deadlock detector will find deadlocks
-   * that are reported by the {@link DependencyMonitorManager}
+   * Test that the deadlock detector will find deadlocks that are reported by the
+   * {@link DependencyMonitorManager}
    */
   @Test
   public void testProgrammaticDependencies() throws Exception {
     final CountDownLatch latch = new CountDownLatch(1);
     MockDependencyMonitor mockDependencyMonitor = new MockDependencyMonitor();
     DependencyMonitorManager.addMonitor(mockDependencyMonitor);
-    
+
     Thread thread1 = startAThread(latch);
     Thread thread2 = startAThread(latch);
-    
+
     String resource1 = "one";
     String resource2 = "two";
-    
+
     mockDependencyMonitor.addDependency(thread1, resource1);
     mockDependencyMonitor.addDependency(resource1, thread2);
     mockDependencyMonitor.addDependency(thread2, resource2);
@@ -107,15 +105,15 @@ public class DeadlockDetectorTest {
     };
 
     thread.start();
-    
+
     return thread;
   }
-  
+
   /**
    * A fake dependency monitor.
    */
   private static class MockDependencyMonitor implements DependencyMonitor {
-    
+
     Set<Dependency<Thread, Serializable>> blockedThreads = new HashSet<>();
     Set<Dependency<Serializable, Thread>> held = new HashSet<>();
 

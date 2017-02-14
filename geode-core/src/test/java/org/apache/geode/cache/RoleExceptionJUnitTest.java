@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache;
 
@@ -32,7 +30,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 public class RoleExceptionJUnitTest {
-  
+
   /**
    * Assert that RegionAccessException is serializable.
    */
@@ -42,14 +40,14 @@ public class RoleExceptionJUnitTest {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(100);
     ObjectOutputStream oos = new ObjectOutputStream(baos);
     oos.writeObject(out);
-    
+
     byte[] data = baos.toByteArray();
-    
+
     ByteArrayInputStream bais = new ByteArrayInputStream(data);
     ObjectInputStream ois = new ObjectInputStream(bais);
     RegionAccessException in = (RegionAccessException) ois.readObject();
     assertEquals(createSetOfRoles(), in.getMissingRoles());
-    
+
     assertEquals(out.getMessage(), in.getMessage());
     assertEquals(out.getRegionFullPath(), in.getRegionFullPath());
   }
@@ -63,9 +61,9 @@ public class RoleExceptionJUnitTest {
     ByteArrayOutputStream baos = new ByteArrayOutputStream(100);
     ObjectOutputStream oos = new ObjectOutputStream(baos);
     oos.writeObject(out);
-    
+
     byte[] data = baos.toByteArray();
-    
+
     ByteArrayInputStream bais = new ByteArrayInputStream(data);
     ObjectInputStream ois = new ObjectInputStream(bais);
     RegionDistributionException in = (RegionDistributionException) ois.readObject();
@@ -83,19 +81,18 @@ public class RoleExceptionJUnitTest {
     String s = "MyString";
     Set outExceptions = new HashSet();
     outExceptions.add(createRegionDistributionException());
-    
-    CommitDistributionException out = new CommitDistributionException(
-        s, outExceptions);
+
+    CommitDistributionException out = new CommitDistributionException(s, outExceptions);
     ByteArrayOutputStream baos = new ByteArrayOutputStream(100);
     ObjectOutputStream oos = new ObjectOutputStream(baos);
     oos.writeObject(out);
-    
+
     byte[] data = baos.toByteArray();
-    
+
     ByteArrayInputStream bais = new ByteArrayInputStream(data);
     ObjectInputStream ois = new ObjectInputStream(bais);
     CommitDistributionException in = (CommitDistributionException) ois.readObject();
-    
+
     Set inExceptions = in.getRegionDistributionExceptions();
     assertNotNull(inExceptions);
     Iterator iter = inExceptions.iterator();
@@ -114,20 +111,20 @@ public class RoleExceptionJUnitTest {
     set.add(InternalRole.getRole("RoleD"));
     return set;
   }
-  
+
   private RegionAccessException createRegionAccessException() {
     String s = "MyString";
-    String regionFullPath = "MyPath"; 
+    String regionFullPath = "MyPath";
     Set missingRoles = createSetOfRoles();
     return new RegionAccessException(s, regionFullPath, missingRoles);
   }
-  
+
   private RegionDistributionException createRegionDistributionException() {
     String s = "MyString";
-    String regionFullPath = "MyPath"; 
+    String regionFullPath = "MyPath";
     Set missingRoles = createSetOfRoles();
     return new RegionDistributionException(s, regionFullPath, missingRoles);
   }
-  
+
 }
 

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  *
@@ -46,7 +44,7 @@ public class SelectToDateJUnitTest {
   private static int numElem = 120;
   private static String format = "MMddyyyyHHmmss";
   private static String mayDate = "05202012100559";
-  private static int numMonthsBeforeMay = 4; 
+  private static int numMonthsBeforeMay = 4;
   private static int numMonthsAfterMay = 7;
   private static int numElementsExpectedPerMonth = numElem * 2 / 12;
 
@@ -62,39 +60,33 @@ public class SelectToDateJUnitTest {
   }
 
   private static String[] toDateQueries = new String[] {
-      "select * from /test p where p.createDate = to_date('" + mayDate + "', '"
-          + format + "')",
-      "select * from /test p where p.createDate < to_date('" + mayDate + "', '"
-          + format + "')",
-      "select * from /test p where p.createDate > to_date('" + mayDate + "', '"
-          + format + "')",
-      "select * from /test p where p.createDate <= to_date('" + mayDate
-          + "', '" + format + "')",
-      "select * from /test p where p.createDate >= to_date('" + mayDate
-          + "', '" + format + "')" };
-  
-  //the test will be validating against the May date, so expected values revolve around month of May
-  private static int[] toDateExpectedResults = new int[] {
-      numElementsExpectedPerMonth,
-      numMonthsBeforeMay * numElementsExpectedPerMonth,
-      numMonthsAfterMay * numElementsExpectedPerMonth,
-      (numMonthsBeforeMay + 1) * numElementsExpectedPerMonth,
-      (numMonthsAfterMay + 1) * numElementsExpectedPerMonth };
+      "select * from /test p where p.createDate = to_date('" + mayDate + "', '" + format + "')",
+      "select * from /test p where p.createDate < to_date('" + mayDate + "', '" + format + "')",
+      "select * from /test p where p.createDate > to_date('" + mayDate + "', '" + format + "')",
+      "select * from /test p where p.createDate <= to_date('" + mayDate + "', '" + format + "')",
+      "select * from /test p where p.createDate >= to_date('" + mayDate + "', '" + format + "')"};
+
+  // the test will be validating against the May date, so expected values revolve around month of
+  // May
+  private static int[] toDateExpectedResults =
+      new int[] {numElementsExpectedPerMonth, numMonthsBeforeMay * numElementsExpectedPerMonth,
+          numMonthsAfterMay * numElementsExpectedPerMonth,
+          (numMonthsBeforeMay + 1) * numElementsExpectedPerMonth,
+          (numMonthsAfterMay + 1) * numElementsExpectedPerMonth};
 
   private static String[] projectionQueries = new String[] {
-      "select p.createDate from /test p where p.createDate = to_date('"
-          + mayDate + "', '" + format + "')",
-      "select p.createDate from /test p where p.createDate < to_date('"
-          + mayDate + "', '" + format + "')",
-      "select p.createDate from /test p where p.createDate > to_date('"
-          + mayDate + "', '" + format + "')",
-      "select p.createDate from /test p where p.createDate <= to_date('"
-          + mayDate + "', '" + format + "')",
-      "select p.createDate from /test p where p.createDate >= to_date('"
-          + mayDate + "', '" + format + "')", };
+      "select p.createDate from /test p where p.createDate = to_date('" + mayDate + "', '" + format
+          + "')",
+      "select p.createDate from /test p where p.createDate < to_date('" + mayDate + "', '" + format
+          + "')",
+      "select p.createDate from /test p where p.createDate > to_date('" + mayDate + "', '" + format
+          + "')",
+      "select p.createDate from /test p where p.createDate <= to_date('" + mayDate + "', '" + format
+          + "')",
+      "select p.createDate from /test p where p.createDate >= to_date('" + mayDate + "', '" + format
+          + "')",};
 
-  private void executeQueryTest(Cache cache, String[] queries,
-      int[] expectedResults) {
+  private void executeQueryTest(Cache cache, String[] queries, int[] expectedResults) {
     CacheUtils.log("********Execute Query Test********");
     QueryService queryService = cache.getQueryService();
     Query query = null;
@@ -187,8 +179,7 @@ public class SelectToDateJUnitTest {
 
   /******** Region Creation Helper Methods *********/
   /**
-   * Each month will have exactly 20 entries with a matching date Code borrowed
-   * from shobhit's test
+   * Each month will have exactly 20 entries with a matching date Code borrowed from shobhit's test
    * 
    * @throws ParseException
    */
@@ -229,7 +220,7 @@ public class SelectToDateJUnitTest {
     }
   }
 
-  //creates a portfolio object and puts it into the specified region
+  // creates a portfolio object and puts it into the specified region
   private void putData(int id, Region region) throws ParseException {
     Portfolio obj = new Portfolio(id);
     obj.createDate = getCreateDate(id);
@@ -238,7 +229,7 @@ public class SelectToDateJUnitTest {
     CacheUtils.log("Added object " + obj.createDate);
   }
 
-  //creates a date object
+  // creates a date object
   private Date getCreateDate(int i) throws ParseException {
     int month = (i % 12) + 1;
     String format = "MMddyyyyHHmmss";

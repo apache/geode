@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal;
 
@@ -42,8 +40,7 @@ public class ProxyCacheCloseOp {
 
   static class ProxyCacheCloseOpImpl extends AbstractOp {
 
-    public ProxyCacheCloseOpImpl(ExecutablePool pool, Properties securityProps,
-        boolean keepAlive) {
+    public ProxyCacheCloseOpImpl(ExecutablePool pool, Properties securityProps, boolean keepAlive) {
       super(MessageType.REMOVE_USER_AUTH, 1);
       getMessage().setMessageHasSecurePartFlag();
       getMessage().addBytesPart(keepAlive ? new byte[] {1} : new byte[] {0});
@@ -63,13 +60,11 @@ public class ProxyCacheCloseOp {
       if (userId == null) {
         // This will ensure that this op is retried on another server, unless
         // the retryCount is exhausted. Fix for Bug 41501
-        throw new ServerConnectivityException(
-            "Connection error while authenticating user");
+        throw new ServerConnectivityException("Connection error while authenticating user");
       }
-      hdos.writeLong((Long)userId);
+      hdos.writeLong((Long) userId);
       try {
-        secureBytes = ((ConnectionImpl)cnx).getHandShake().encryptBytes(
-            hdos.toByteArray());
+        secureBytes = ((ConnectionImpl) cnx).getHandShake().encryptBytes(hdos.toByteArray());
       } finally {
         hdos.close();
       }
@@ -83,20 +78,16 @@ public class ProxyCacheCloseOp {
       final int msgType = msg.getMessageType();
       if (msgType == MessageType.REPLY) {
         return part.getObject();
-      }
-      else if (msgType == MessageType.EXCEPTION) {
+      } else if (msgType == MessageType.EXCEPTION) {
         String s = "While performing a remote proxy cache close";
-        throw new ServerOperationException(s, (Throwable)part.getObject());
+        throw new ServerOperationException(s, (Throwable) part.getObject());
         // Get the exception toString part.
         // This was added for c++ thin client and not used in java
         // Part exceptionToStringPart = msg.getPart(1);
-      }
-      else if (isErrorResponse(msgType)) {
+      } else if (isErrorResponse(msgType)) {
         throw new ServerOperationException(part.getString());
-      }
-      else {
-        throw new InternalGemFireError("Unexpected message type "
-            + MessageType.getString(msgType));
+      } else {
+        throw new InternalGemFireError("Unexpected message type " + MessageType.getString(msgType));
       }
     }
 

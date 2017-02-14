@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -51,11 +49,12 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
   }
 
   protected CommandResult connectToLocator(final int locatorPort) {
-    return executeCommand(new CommandStringBuilder(CliStrings.CONNECT).addOption(CliStrings.CONNECT__LOCATOR,
-        "localhost[" + locatorPort + "]").toString());
+    return executeCommand(new CommandStringBuilder(CliStrings.CONNECT)
+        .addOption(CliStrings.CONNECT__LOCATOR, "localhost[" + locatorPort + "]").toString());
   }
 
-  @Category(FlakyTest.class) // GEODE-989: random ports, suspect string: DiskAccessException, disk pollution, HeadlessGfsh, time sensitive
+  @Category(FlakyTest.class) // GEODE-989: random ports, suspect string: DiskAccessException, disk
+                             // pollution, HeadlessGfsh, time sensitive
   @Test
   public void testConnectToLocatorBecomesManager() {
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
@@ -63,11 +62,14 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     final int jmxManagerPort = ports[0];
     final int locatorPort = ports[1];
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port", String.valueOf(jmxManagerPort));
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port",
+        String.valueOf(jmxManagerPort));
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-http-port", "0");
 
-    assertEquals(String.valueOf(jmxManagerPort), System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port"));
-    assertEquals("0", System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-http-port"));
+    assertEquals(String.valueOf(jmxManagerPort),
+        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-port"));
+    assertEquals("0",
+        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "jmx-manager-http-port"));
 
     final String pathname = (getClass().getSimpleName() + "_" + getTestMethodName());
     final File workingDirectory = new File(pathname);
@@ -76,9 +78,10 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
 
     assertTrue(workingDirectory.isDirectory());
 
-    final LocatorLauncher locatorLauncher = new LocatorLauncher.Builder().setBindAddress(null).setForce(
-        true).setMemberName(pathname).setPort(locatorPort).setWorkingDirectory(
-        IOUtils.tryGetCanonicalPathElseGetAbsolutePath(workingDirectory)).build();
+    final LocatorLauncher locatorLauncher = new LocatorLauncher.Builder().setBindAddress(null)
+        .setForce(true).setMemberName(pathname).setPort(locatorPort)
+        .setWorkingDirectory(IOUtils.tryGetCanonicalPathElseGetAbsolutePath(workingDirectory))
+        .build();
 
     assertNotNull(locatorLauncher);
     assertEquals(locatorPort, locatorLauncher.getPort().intValue());
@@ -87,7 +90,8 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
       // fix for bug 46729
       locatorLauncher.start();
 
-      final LocatorState locatorState = locatorLauncher.waitOnStatusResponse(60, 10, TimeUnit.SECONDS);
+      final LocatorState locatorState =
+          locatorLauncher.waitOnStatusResponse(60, 10, TimeUnit.SECONDS);
 
       assertNotNull(locatorState);
       assertEquals(Status.ONLINE, locatorState.getStatus());
@@ -355,7 +359,8 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
     File historyFile = new File(historyFileName);
     historyFile.deleteOnExit();
     String fileName = historyFile.getParent();
-    fileName = fileName + File.separator + getClass().getSimpleName() + "_" + getName() + "-exported.history";
+    fileName = fileName + File.separator + getClass().getSimpleName() + "_" + getName()
+        + "-exported.history";
 
     String command = "history --file=" + fileName;
     CommandResult cmdResult = executeCommand(command);
@@ -393,7 +398,7 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
       String resultString = commandResultToString(cmdResult);
       getLogWriter().info("testClearHistory resultString=" + resultString);
       assertTrue(resultString.contains(CliStrings.HISTORY__MSG__CLEARED_HISTORY));
-      assertTrue(gfshInstance.getGfshHistory().size()<= 1);
+      assertTrue(gfshInstance.getGfshHistory().size() <= 1);
     } else {
       fail("testClearHistory failed");
     }
@@ -415,7 +420,9 @@ public class ShellCommandsDUnitTest extends CliCommandTestBase {
   private void printAllEnvs(Gfsh gfsh) {
     getLogWriter().info("printAllEnvs : " + StringUtils.objectToString(gfsh.getEnv(), false, 0));
     /*
-    getLogWriter().info("Gfsh printAllEnvs : " + HydraUtil.ObjectToString(getDefaultShell().getEnv()));    
-    getLogWriter().info("gfsh " + gfsh + " default shell " + getDefaultShell());*/
+     * getLogWriter().info("Gfsh printAllEnvs : " +
+     * HydraUtil.ObjectToString(getDefaultShell().getEnv())); getLogWriter().info("gfsh " + gfsh +
+     * " default shell " + getDefaultShell());
+     */
   }
 }

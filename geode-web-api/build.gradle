@@ -20,7 +20,7 @@ apply plugin: 'war'
 dependencies {
 
   compile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile ('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
+  compile('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
     exclude module: 'commons-io'
   }
   compile 'com.fasterxml:classmate:' + project.'classmate.version'
@@ -29,27 +29,12 @@ dependencies {
   compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
   compile 'com.fasterxml.jackson.module:jackson-module-scala_2.10:' + project.'jackson-module-scala_2.10.version'
   compile 'com.google.guava:guava:' + project.'guava.version'
-  compile ('com.mangofactory:swagger-springmvc:' + project.'swagger-springmvc.version') {
-    exclude module: 'aopalliance'
-    exclude module: 'asm'
-    exclude module: 'cglib'
-    exclude module: 'commons-logging'
-    exclude module: 'jackson-jaxrs-json-provider'
-    exclude module: 'jackson-jaxrs-json-provider'
-    exclude module: 'jackson-module-jsonSchema'
-    exclude module: 'joda-convert'
-    exclude module: 'joda-time'
-    exclude module: 'scalap'
+  compile('io.springfox:springfox-swagger2:' + project.'springfox.version') {
     exclude module: 'slf4j-api'
-    exclude module: 'spring-aop'
-    exclude module: 'spring-beans'
-    exclude module: 'spring-context'
-    exclude module: 'spring-core'
-    exclude module: 'spring-expression'
-    exclude module: 'spring-webmvc'
-    exclude module: 'spring-web'
   }
-  compile 'com.wordnik:swagger-annotations:' + project.'swagger.version'
+  compile('io.springfox:springfox-swagger-ui:' + project.'springfox.version') {
+    exclude module: 'slf4j-api'
+  }
   compile 'org.json4s:json4s-ast_2.10:' + project.'json4s.version'
   compile 'org.scala-lang:scala-library:' + project.'scala.version'
   compile 'org.scala-lang:scala-reflect:' + project.'scala.version'
@@ -57,19 +42,20 @@ dependencies {
   compile 'org.springframework.security:spring-security-core:' + project.'spring-security.version'
   compile 'org.springframework.security:spring-security-web:' + project.'spring-security.version'
   compile 'org.springframework.security:spring-security-config:' + project.'spring-security.version'
+  compile 'org.springframework:spring-web:' + project.'springframework.version'
   compile 'org.springframework:spring-webmvc:' + project.'springframework.version'
-  compile ('org.springframework.hateoas:spring-hateoas:' + project.'spring-hateoas.version') {
+  compile('org.springframework.hateoas:spring-hateoas:' + project.'spring-hateoas.version') {
     exclude module: 'aopalliance'
     exclude module: 'commons-logging'
     exclude module: 'objenesis'
     exclude module: 'slf4j-api'
     exclude module: 'spring-core'
   }
-  compile ('org.springframework:spring-aspects:' + project.'springframework.version') {
+  compile('org.springframework:spring-aspects:' + project.'springframework.version') {
     exclude module: 'aopalliance'
     exclude module: 'aspectjweaver'
   }
-  compile ('org.springframework:spring-oxm:' + project.'springframework.version') {
+  compile('org.springframework:spring-oxm:' + project.'springframework.version') {
     exclude module: 'commons-logging'
     exclude module: 'spring-core'
     exclude module: 'spring-beans'

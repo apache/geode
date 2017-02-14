@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.partitioned.rebalance;
 
@@ -60,10 +58,10 @@ public class BucketOperatorImplTest {
     region = mock(PartitionedRegion.class);
     rebalanceOp = mock(PartitionedRegionRebalanceOp.class);
     completion = mock(Completion.class);
-    
+
     resourceObserver = spy(new InternalResourceManager.ResourceObserverAdapter());
     InternalResourceManager.setResourceObserver(resourceObserver);
-    
+
     doReturn(region).when(rebalanceOp).getLeaderRegion();
 
     operator = new BucketOperatorImpl(rebalanceOp);
@@ -78,7 +76,8 @@ public class BucketOperatorImplTest {
   }
 
   @Test
-  public void moveBucketShouldDelegateToParRegRebalanceOpMoveBucketForRegion() throws UnknownHostException {
+  public void moveBucketShouldDelegateToParRegRebalanceOpMoveBucketForRegion()
+      throws UnknownHostException {
     doReturn(true).when(rebalanceOp).moveBucketForRegion(sourceMember, targetMember, bucketId);
 
     operator.moveBucket(sourceMember, targetMember, bucketId, colocatedRegionBytes);
@@ -88,7 +87,8 @@ public class BucketOperatorImplTest {
   }
 
   @Test
-  public void movePrimaryShouldDelegateToParRegRebalanceOpMovePrimaryBucketForRegion() throws UnknownHostException {
+  public void movePrimaryShouldDelegateToParRegRebalanceOpMovePrimaryBucketForRegion()
+      throws UnknownHostException {
     doReturn(true).when(rebalanceOp).movePrimaryBucketForRegion(targetMember, bucketId);
 
     operator.movePrimary(sourceMember, targetMember, bucketId);
@@ -98,7 +98,8 @@ public class BucketOperatorImplTest {
   }
 
   @Test
-  public void createBucketShouldDelegateToParRegRebalanceOpCreateRedundantBucketForRegion() throws UnknownHostException {
+  public void createBucketShouldDelegateToParRegRebalanceOpCreateRedundantBucketForRegion()
+      throws UnknownHostException {
     doReturn(true).when(rebalanceOp).createRedundantBucketForRegion(targetMember, bucketId);
 
     operator.createRedundantBucket(targetMember, bucketId, colocatedRegionBytes, completion);
@@ -118,7 +119,11 @@ public class BucketOperatorImplTest {
 
   @Test
   public void createBucketShouldInvokeOnFailureIfCreateBucketFails() {
-    doReturn(false).when(rebalanceOp).createRedundantBucketForRegion(targetMember, bucketId); //return false for create fail
+    doReturn(false).when(rebalanceOp).createRedundantBucketForRegion(targetMember, bucketId); // return
+                                                                                              // false
+                                                                                              // for
+                                                                                              // create
+                                                                                              // fail
 
     operator.createRedundantBucket(targetMember, bucketId, colocatedRegionBytes, completion);
 

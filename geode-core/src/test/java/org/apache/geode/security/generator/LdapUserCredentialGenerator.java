@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.security.generator;
 
@@ -37,7 +35,7 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
 
   private static final String USER_PREFIX = "gemfire";
   private static final Random RANDOM = new Random();
-  private static final String[] CIPHERS = new String[] { "", "DESede", "AES:128", "Blowfish:128" };
+  private static final String[] CIPHERS = new String[] {"", "DESede", "AES:128", "Blowfish:128"};
 
   private static boolean enableServerAuthentication = false;
 
@@ -54,7 +52,8 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
   @Override
   protected Properties initialize() throws IllegalArgumentException {
     final String ldapServer = System.getProperty("gf.ldap.server", "ldap");
-    final String ldapBaseDN = System.getProperty("gf.ldap.basedn", "ou=ldapTesting,dc=pune,dc=gemstone,dc=com");
+    final String ldapBaseDN =
+        System.getProperty("gf.ldap.basedn", "ou=ldapTesting,dc=pune,dc=gemstone,dc=com");
     final String ldapUseSSL = System.getProperty("gf.ldap.usessl");
 
     final Properties extraProps = new Properties();
@@ -66,7 +65,8 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
     }
 
     if (serverAuthEnabled) {
-      String keyStoreFile = TestUtil.getResourcePath(LdapUserCredentialGenerator.class, PKCSCredentialGenerator.keyStoreDir + "/gemfire1.keystore");
+      String keyStoreFile = TestUtil.getResourcePath(LdapUserCredentialGenerator.class,
+          PKCSCredentialGenerator.keyStoreDir + "/gemfire1.keystore");
       extraProps.setProperty(HandShake.PRIVATE_KEY_FILE_PROP, keyStoreFile);
       extraProps.setProperty(HandShake.PRIVATE_KEY_ALIAS_PROP, DistributionConfig.GEMFIRE_PREFIX);
       extraProps.setProperty(HandShake.PRIVATE_KEY_PASSWD_PROP, "gemfire");
@@ -102,7 +102,8 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
     props.setProperty(SECURITY_CLIENT_DHALGO, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
 
     if (serverAuthEnabled) {
-      final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class, PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");
+      final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class,
+          PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");
       props.setProperty(HandShake.PUBLIC_KEY_FILE_PROP, keyStoreFile);
       props.setProperty(HandShake.PUBLIC_KEY_PASSWD_PROP, "gemfire");
     }
@@ -139,7 +140,8 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
     props.setProperty(SECURITY_CLIENT_DHALGO, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
 
     if (serverAuthEnabled) {
-      final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class, PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");
+      final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class,
+          PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");
       props.setProperty(HandShake.PUBLIC_KEY_FILE_PROP, keyStoreFile);
       props.setProperty(HandShake.PUBLIC_KEY_PASSWD_PROP, "gemfire");
     }
@@ -155,7 +157,8 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
     props.setProperty(SECURITY_CLIENT_DHALGO, CIPHERS[RANDOM.nextInt(CIPHERS.length)]);
 
     if (serverAuthEnabled) {
-      final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class, PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");
+      final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class,
+          PKCSCredentialGenerator.keyStoreDir + "/publickeyfile");
       props.setProperty(HandShake.PUBLIC_KEY_FILE_PROP, keyStoreFile);
       props.setProperty(HandShake.PUBLIC_KEY_PASSWD_PROP, "gemfire");
     }

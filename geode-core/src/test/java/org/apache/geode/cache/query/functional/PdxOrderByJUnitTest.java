@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.functional;
 
@@ -57,52 +55,41 @@ public class PdxOrderByJUnitTest {
   private final String regName = "/" + rootRegionName + "/" + regionName;
 
   private final String[] queryString = new String[] {
-      "SELECT pos.secId FROM " + regName
-          + " p, p.positions.values pos WHERE pos.secId LIKE '%L'",// 0
-      "SELECT pos.secId FROM " + regName
-          + " p, p.positions.values pos where pos.secId = 'IBM'",// 1
+      "SELECT pos.secId FROM " + regName + " p, p.positions.values pos WHERE pos.secId LIKE '%L'", // 0
+      "SELECT pos.secId FROM " + regName + " p, p.positions.values pos where pos.secId = 'IBM'", // 1
       "SELECT pos.secId, p.status FROM " + regName
-          + " p, p.positions.values pos where pos.secId > 'APPL'",// 2
-      "SELECT pos.secId FROM "
-          + regName
-          + " p, p.positions.values pos WHERE pos.secId > 'APPL' and pos.secId < 'SUN'",// 3
-      "select pos.secId from "
-          + regName
-          + " p, p.positions.values pos where pos.secId  IN SET ('YHOO', 'VMW')",// 4
+          + " p, p.positions.values pos where pos.secId > 'APPL'", // 2
+      "SELECT pos.secId FROM " + regName
+          + " p, p.positions.values pos WHERE pos.secId > 'APPL' and pos.secId < 'SUN'", // 3
       "select pos.secId from " + regName
-          + " p, p.positions.values pos where NOT (pos.secId = 'VMW')",// 5
-      "select pos.secId from "
-          + regName
-          + " p, p.positions.values pos where NOT (pos.secId IN SET('SUN', 'ORCL')) ",// 6
+          + " p, p.positions.values pos where pos.secId  IN SET ('YHOO', 'VMW')", // 4
+      "select pos.secId from " + regName
+          + " p, p.positions.values pos where NOT (pos.secId = 'VMW')", // 5
+      "select pos.secId from " + regName
+          + " p, p.positions.values pos where NOT (pos.secId IN SET('SUN', 'ORCL')) ", // 6
+      "SELECT distinct pos.secId FROM " + regName + " p, p.positions.values pos order by pos.secId", // 7
       "SELECT distinct pos.secId FROM " + regName
-          + " p, p.positions.values pos order by pos.secId",// 7
-      "SELECT distinct pos.secId FROM "
-          + regName
           + " p, p.positions.values pos WHERE p.ID > 1 order by pos.secId limit 5",// 58
   };
 
   private final String[] queryString2 = new String[] {
       "SELECT pos.secIdIndexed FROM " + regName
-          + " p, p.positions.values pos WHERE pos.secIdIndexed LIKE '%L'",// 0
+          + " p, p.positions.values pos WHERE pos.secIdIndexed LIKE '%L'", // 0
       "SELECT pos.secIdIndexed FROM " + regName
-          + " p, p.positions.values pos where pos.secIdIndexed = 'IBM'",// 1
+          + " p, p.positions.values pos where pos.secIdIndexed = 'IBM'", // 1
       "SELECT pos.secIdIndexed, p.status FROM " + regName
-          + " p, p.positions.values pos where pos.secIdIndexed > 'APPL'",// 2
-      "SELECT pos.secIdIndexed FROM "
-          + regName
-          + " p, p.positions.values pos WHERE pos.secIdIndexed > 'APPL' and pos.secIdIndexed < 'SUN'",// 3
-      "select pos.secIdIndexed from "
-          + regName
-          + " p, p.positions.values pos where pos.secIdIndexed  IN SET ('YHOO', 'VMW')",// 4
+          + " p, p.positions.values pos where pos.secIdIndexed > 'APPL'", // 2
+      "SELECT pos.secIdIndexed FROM " + regName
+          + " p, p.positions.values pos WHERE pos.secIdIndexed > 'APPL' and pos.secIdIndexed < 'SUN'", // 3
       "select pos.secIdIndexed from " + regName
-          + " p, p.positions.values pos where NOT (pos.secIdIndexed = 'VMW')",// 5
-      "select pos.secIdIndexed from "
-          + regName
-          + " p, p.positions.values pos where NOT (pos.secIdIndexed IN SET('SUN', 'ORCL')) ",// 6
+          + " p, p.positions.values pos where pos.secIdIndexed  IN SET ('YHOO', 'VMW')", // 4
+      "select pos.secIdIndexed from " + regName
+          + " p, p.positions.values pos where NOT (pos.secIdIndexed = 'VMW')", // 5
+      "select pos.secIdIndexed from " + regName
+          + " p, p.positions.values pos where NOT (pos.secIdIndexed IN SET('SUN', 'ORCL')) ", // 6
       "SELECT distinct pos.secIdIndexed FROM " + regName
-          + " p, p.positions.values pos order by pos.secIdIndexed",// 7
-      "SELECT distinct pos.secIdIndexed FROM "
-          + regName
+          + " p, p.positions.values pos order by pos.secIdIndexed", // 7
+      "SELECT distinct pos.secIdIndexed FROM " + regName
           + " p, p.positions.values pos WHERE p.ID > 1 order by pos.secIdIndexed limit 5",// 8
   };
 
@@ -128,7 +115,7 @@ public class PdxOrderByJUnitTest {
       fail(e.toString());
     }
     // Verify the type of index created
-    
+
     for (int i = 0; i < numberOfEntries; i++) {
       pr.put("key-" + i, new PortfolioPdx(i));
     }
@@ -139,20 +126,19 @@ public class PdxOrderByJUnitTest {
       try {
         Query query = localQueryService.newQuery(queryString[i]);
         rs[i][0] = (SelectResults) query.execute();
-        checkForPdxString(rs[i][0].asList(), queryString[i]);       
+        checkForPdxString(rs[i][0].asList(), queryString[i]);
       } catch (Exception e) {
         fail("Failed executing " + queryString[i]);
       }
     }
     Index index = null;
     try {
-      index = localQueryService.createIndex("secIdIndex", "pos.secId", regName
-          + " p, p.positions.values pos");
+      index = localQueryService.createIndex("secIdIndex", "pos.secId",
+          regName + " p, p.positions.values pos");
       if (index instanceof PartitionedIndex) {
         for (Object o : ((PartitionedIndex) index).getBucketIndexes()) {
           if (!(o instanceof RangeIndex)) {
-            fail("Range Index should have been created instead of "
-                + index.getClass());
+            fail("Range Index should have been created instead of " + index.getClass());
           }
         }
       } else {
@@ -162,30 +148,29 @@ public class PdxOrderByJUnitTest {
       fail("Failed to create index." + ex.getMessage());
     }
 
-   
+
 
     for (int i = 0; i < queryString.length; i++) {
       try {
         Query query = localQueryService.newQuery(queryString[i]);
-        
+
         rs[i][1] = (SelectResults) query.execute();
         checkForPdxString(rs[i][1].asList(), queryString[i]);
 
-        
+
       } catch (Exception e) {
         fail("Failed executing " + queryString[i]);
       }
     }
-    
-    
+
+
     for (int i = 0; i < queryString.length; i++) {
       try {
-        
+
         if (i < 7) {
           // Compare local and remote query results.
           if (!compareResultsOfWithAndWithoutIndex(rs[i])) {
-            fail("Local and Remote Query Results are not matching for query :"
-                + queryString[i]);
+            fail("Local and Remote Query Results are not matching for query :" + queryString[i]);
           }
         } else {
           // compare the order of results returned
@@ -203,16 +188,15 @@ public class PdxOrderByJUnitTest {
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     // factory.setDataPolicy(DataPolicy.PARTITION);
 
-    PartitionAttributes prAttr = paf.setTotalNumBuckets(20)
-        .setRedundantCopies(0).create();
+    PartitionAttributes prAttr = paf.setTotalNumBuckets(20).setRedundantCopies(0).create();
     factory.setPartitionAttributes(prAttr);
 
     return createRegion(this.regionName, this.rootRegionName, factory.create());
 
   }
 
-  final public Region createRegion(String name, String rootName,
-      RegionAttributes attrs) throws CacheException {
+  final public Region createRegion(String name, String rootName, RegionAttributes attrs)
+      throws CacheException {
     Region root = getRootRegion(rootName);
     if (root == null) {
       // don't put listeners on root region
@@ -242,8 +226,7 @@ public class PdxOrderByJUnitTest {
 
   public final Region createRootRegion(String rootName, RegionAttributes attrs)
       throws RegionExistsException, TimeoutException {
-    return ((GemFireCacheImpl) CacheUtils.getCache()).createRegion(rootName,
-        attrs);
+    return ((GemFireCacheImpl) CacheUtils.getCache()).createRegion(rootName, attrs);
   }
 
   private void checkForPdxString(List results, String query) {
@@ -252,17 +235,14 @@ public class PdxOrderByJUnitTest {
         Object o1 = ((Struct) o).getFieldValues()[0];
         Object o2 = ((Struct) o).getFieldValues()[1];
         if (!(o1 instanceof String)) {
-          fail("Returned instance of " + o1.getClass()
-              + " instead of String for query: " + query);
+          fail("Returned instance of " + o1.getClass() + " instead of String for query: " + query);
         }
         if (!(o2 instanceof String)) {
-          fail("Returned instance of " + o2.getClass()
-              + " instead of String for query: " + query);
+          fail("Returned instance of " + o2.getClass() + " instead of String for query: " + query);
         }
       } else {
         if (!(o instanceof String)) {
-          fail("Returned instance of " + o.getClass()
-              + " instead of String for query: " + query);
+          fail("Returned instance of " + o.getClass() + " instead of String for query: " + query);
         }
       }
     }
@@ -275,23 +255,21 @@ public class PdxOrderByJUnitTest {
     Iterator itert1 = null;
     Iterator itert2 = null;
     ObjectType type1, type2;
-    //outer: for (int j = 0; j < r.length; j++) {
-      CollectionType collType1 = r[0].getCollectionType();
-      CollectionType collType2 = r[1].getCollectionType();
-      type1 = collType1.getElementType();
-      type2 = collType2.getElementType();
+    // outer: for (int j = 0; j < r.length; j++) {
+    CollectionType collType1 = r[0].getCollectionType();
+    CollectionType collType2 = r[1].getCollectionType();
+    type1 = collType1.getElementType();
+    type2 = collType2.getElementType();
 
-      if (r[0].size() == r[1].size()) {
-        System.out.println("Both SelectResults are of Same Size i.e.  Size= "
-            + r[1].size());
-      } else {
-        System.out
-            .println("FAILED4: SelectResults size is different in both the cases. Size1="
-                + r[0].size() + " Size2 = " + r[1].size());
-        ok = false;
-        
-      }
-      if(ok) {
+    if (r[0].size() == r[1].size()) {
+      System.out.println("Both SelectResults are of Same Size i.e.  Size= " + r[1].size());
+    } else {
+      System.out.println("FAILED4: SelectResults size is different in both the cases. Size1="
+          + r[0].size() + " Size2 = " + r[1].size());
+      ok = false;
+
+    }
+    if (ok) {
       set2 = (((SelectResults) r[1]).asSet());
       set1 = (((SelectResults) r[0]).asSet());
       boolean pass = true;
@@ -309,13 +287,12 @@ public class PdxOrderByJUnitTest {
             // test.assertIndexDetailsEquals(values1.length, values2.length);
             if (values1.length != values2.length) {
               ok = false;
-              break ;
+              break;
             }
             boolean elementEqual = true;
             for (int i = 0; i < values1.length; ++i) {
-              elementEqual = elementEqual
-                  && ((values1[i] == values2[i]) || values1[i]
-                      .equals(values2[i]));
+              elementEqual =
+                  elementEqual && ((values1[i] == values2[i]) || values1[i].equals(values2[i]));
             }
             exactMatch = elementEqual;
           } else {
@@ -326,10 +303,10 @@ public class PdxOrderByJUnitTest {
           }
         }
         if (!exactMatch) {
-          System.out
-              .println("FAILED5: Atleast one element in the pair of SelectResults supposedly identical, is not equal ");
+          System.out.println(
+              "FAILED5: Atleast one element in the pair of SelectResults supposedly identical, is not equal ");
           ok = false;
-          break ;
+          break;
         }
       }
     }
@@ -337,21 +314,20 @@ public class PdxOrderByJUnitTest {
   }
 
   private void compareResultsOrder(SelectResults[] r, boolean isPr) {
-    //for (int j = 0; j < r.length; j++) {
-      Object[] r1 = (r[0]).toArray();
-      Object[] r2 = (r[1]).toArray();
-      if (r1.length != r2.length) {
-        fail("Size of results not equal: " + r1.length + " vs " + r2.length);
-      }else {
-        System.out.println("Both ordered SelectResults are of Same Size i.e.  Size= "
-            + r[1].size());
+    // for (int j = 0; j < r.length; j++) {
+    Object[] r1 = (r[0]).toArray();
+    Object[] r2 = (r[1]).toArray();
+    if (r1.length != r2.length) {
+      fail("Size of results not equal: " + r1.length + " vs " + r2.length);
+    } else {
+      System.out.println("Both ordered SelectResults are of Same Size i.e.  Size= " + r[1].size());
+    }
+    for (int i = 0, k = 0; i < r1.length && k < r2.length; i++, k++) {
+      System.out.println("r1: " + r1[i] + " r2: " + r2[k]);
+      if (!r1[i].equals(r2[k])) {
+        fail("Order not equal: " + r1[i] + " : " + r2[k] + " isPR: " + isPr);
       }
-      for (int i = 0, k = 0; i < r1.length && k < r2.length; i++, k++) {
-        System.out.println("r1: " + r1[i] + " r2: " + r2[k]);
-        if (!r1[i].equals(r2[k])) {
-          fail("Order not equal: " + r1[i] + " : " + r2[k] + " isPR: " + isPr);
-        }
-      }
-   // }
+    }
+    // }
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -21,7 +19,6 @@ import java.util.regex.Pattern;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
-import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
@@ -31,29 +28,27 @@ import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.PrimaryKeyIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
  * 
  *
  */
-public class CompiledLike extends CompiledComparison
-{
+public class CompiledLike extends CompiledComparison {
 
   final static int WILDCARD_PERCENT = 0;
 
   final static int WILDCARD_UNDERSCORE = 1;
-  
+
   private Object wildcardTypeKey = new Object();
-  
+
   private Object wildcardPositionKey = new Object();
-  
+
   private Object patternLengthKey = new Object();
-  
+
   final static String LOWEST_STRING = "";
 
-  final static char BOUNDARY_CHAR = (char)255;
+  final static char BOUNDARY_CHAR = (char) 255;
 
   final static char UNDERSCORE = '_';
 
@@ -64,10 +59,10 @@ public class CompiledLike extends CompiledComparison
   private final CompiledValue var;
 
   private Object isIndexEvaluatedKey = new Object();
-  
-  //private final CompiledBindArgument bindArg;
+
+  // private final CompiledBindArgument bindArg;
   private final CompiledValue bindArg;
-  
+
   public CompiledLike(CompiledValue var, CompiledValue pattern) {
     super(var, pattern, OQLLexerTokenTypes.TOK_EQ);
     this.var = var;
@@ -75,24 +70,23 @@ public class CompiledLike extends CompiledComparison
   }
 
   private int getWildcardPosition(ExecutionContext context) {
-    return (Integer)context.cacheGet(wildcardPositionKey, -1);
+    return (Integer) context.cacheGet(wildcardPositionKey, -1);
   }
-  
+
   private int getWildcardType(ExecutionContext context) {
-    return (Integer)context.cacheGet(wildcardTypeKey, -1);
+    return (Integer) context.cacheGet(wildcardTypeKey, -1);
   }
-  
+
   private int getPatternLength(ExecutionContext context) {
     return (Integer) context.cacheGet(patternLengthKey, 0);
   }
-  
+
   private boolean getIsIndexEvaluated(ExecutionContext context) {
     return (Boolean) context.cacheGet(isIndexEvaluatedKey, false);
   }
-  
-  OrganizedOperands organizeOperands(ExecutionContext context,
-      boolean completeExpansionNeeded, RuntimeIterator[] indpndntItrs)
-      throws FunctionDomainException, TypeMismatchException,
+
+  OrganizedOperands organizeOperands(ExecutionContext context, boolean completeExpansionNeeded,
+      RuntimeIterator[] indpndntItrs) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
     CompiledComparison[] cvs = getExpandedOperandsWithIndexInfoSetIfAny(context);
     Filter filter = null;
@@ -114,20 +108,20 @@ public class CompiledLike extends CompiledComparison
             completeExpansionNeeded, cvs);
 
       } else {
-        filter = new RangeJunction(OQLLexerTokenTypes.LITERAL_and,
-            indpndntItrs, completeExpansionNeeded, cvs);
+        filter = new RangeJunction(OQLLexerTokenTypes.LITERAL_and, indpndntItrs,
+            completeExpansionNeeded, cvs);
       }
     }
- 
+
     OrganizedOperands result = new OrganizedOperands();
     result.isSingleFilter = true;
     result.filterOperand = filter;
     return result;
   }
-  
+
   /**
-   * Expands the CompiledLike operands based on sargability into 
-   * multiple CompiledComparisons
+   * Expands the CompiledLike operands based on sargability into multiple CompiledComparisons
+   * 
    * @param context
    * @return The generated CompiledComparisons
    * @throws AmbiguousNameException
@@ -136,10 +130,9 @@ public class CompiledLike extends CompiledComparison
    * @throws FunctionDomainException
    * @throws QueryInvocationTargetException
    */
-  CompiledComparison[] getExpandedOperandsWithIndexInfoSetIfAny(
-      ExecutionContext context) throws AmbiguousNameException,
-      TypeMismatchException, NameResolutionException, FunctionDomainException,
-      QueryInvocationTargetException {
+  CompiledComparison[] getExpandedOperandsWithIndexInfoSetIfAny(ExecutionContext context)
+      throws AmbiguousNameException, TypeMismatchException, NameResolutionException,
+      FunctionDomainException, QueryInvocationTargetException {
     String pattern = (String) this.bindArg.evaluate(context);
     // check if it is filter evaluatable
     CompiledComparison[] cvs = getRangeIfSargable(context, this.var, pattern);
@@ -156,14 +149,13 @@ public class CompiledLike extends CompiledComparison
       // CompiledLike object
       IndexInfo[] thisIndexInfo = ((IndexInfo[]) context.cacheGet(this));
       if (thisIndexInfo != null && thisIndexInfo.length > 0) {
-        // set the index key in the indexinfo of the CC since the index key 
+        // set the index key in the indexinfo of the CC since the index key
         // in the indexinfo of this object might have been modified in the
         // checkIfSargableAndRemoveEscapeChars method
-        IndexInfo indexInfo = new IndexInfo(cc.getKey(context),
-            thisIndexInfo[0]._path, thisIndexInfo[0]._index,
-            thisIndexInfo[0]._matchLevel, thisIndexInfo[0].mapping,
-            cc.getOperator());
-        context.cachePut(cc, new IndexInfo[] { indexInfo });
+        IndexInfo indexInfo =
+            new IndexInfo(cc.getKey(context), thisIndexInfo[0]._path, thisIndexInfo[0]._index,
+                thisIndexInfo[0]._matchLevel, thisIndexInfo[0].mapping, cc.getOperator());
+        context.cachePut(cc, new IndexInfo[] {indexInfo});
       }
     }
     if (IndexManager.testHook != null) {
@@ -176,47 +168,48 @@ public class CompiledLike extends CompiledComparison
 
     return cvs;
   }
-  
-  @Override
-  public SelectResults filterEvaluate(ExecutionContext context,
-      SelectResults intermediateResults, boolean completeExpansionNeeded,
-      CompiledValue iterOperands, RuntimeIterator[] indpndntItrs, boolean isIntersection, boolean conditioningNeeded,
-      boolean evaluateProjection)
-      throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException {
-    OrganizedOperands newOperands = organizeOperands(context, completeExpansionNeeded,  indpndntItrs);
-    assert newOperands.iterateOperand == null;
-    SelectResults result = intermediateResults;
-    result =  (newOperands.filterOperand) .filterEvaluate(context,intermediateResults,  completeExpansionNeeded,
-    iterOperands,indpndntItrs,isIntersection, conditioningNeeded, evaluateProjection) ;
-    
-    return result;
-  } 
 
   @Override
-  public SelectResults filterEvaluate(ExecutionContext context,
-      SelectResults intermediateResults) throws FunctionDomainException,
-      TypeMismatchException, NameResolutionException,
-      QueryInvocationTargetException
-  {
-    RuntimeIterator grpItr = (RuntimeIterator)QueryUtils.getCurrentScopeUltimateRuntimeIteratorsIfAny(this, context).iterator().next();
-    OrganizedOperands newOperands = organizeOperands(context,true,new RuntimeIterator[]{grpItr});
+  public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults,
+      boolean completeExpansionNeeded, CompiledValue iterOperands, RuntimeIterator[] indpndntItrs,
+      boolean isIntersection, boolean conditioningNeeded, boolean evaluateProjection)
+      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException {
+    OrganizedOperands newOperands =
+        organizeOperands(context, completeExpansionNeeded, indpndntItrs);
     assert newOperands.iterateOperand == null;
     SelectResults result = intermediateResults;
-    result =  (newOperands.filterOperand) .filterEvaluate(context, intermediateResults) ;   
+    result = (newOperands.filterOperand).filterEvaluate(context, intermediateResults,
+        completeExpansionNeeded, iterOperands, indpndntItrs, isIntersection, conditioningNeeded,
+        evaluateProjection);
+
     return result;
   }
-  
+
+  @Override
+  public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults)
+      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException {
+    RuntimeIterator grpItr = (RuntimeIterator) QueryUtils
+        .getCurrentScopeUltimateRuntimeIteratorsIfAny(this, context).iterator().next();
+    OrganizedOperands newOperands = organizeOperands(context, true, new RuntimeIterator[] {grpItr});
+    assert newOperands.iterateOperand == null;
+    SelectResults result = intermediateResults;
+    result = (newOperands.filterOperand).filterEvaluate(context, intermediateResults);
+    return result;
+  }
+
 
   /**
-   * Breaks down the like predicate (if sargable) into 2 or 3
-   * CompiledComparisons based on the presence of wildcard
+   * Breaks down the like predicate (if sargable) into 2 or 3 CompiledComparisons based on the
+   * presence of wildcard
    * 
    * @param var
    * @param pattern
    * @return The generated CompiledComparisons
    */
-  CompiledComparison[] getRangeIfSargable(ExecutionContext context, CompiledValue var, String pattern) {
+  CompiledComparison[] getRangeIfSargable(ExecutionContext context, CompiledValue var,
+      String pattern) {
     CompiledComparison[] cv = null;
     StringBuffer buffer = new StringBuffer(pattern);
     // check if the string has a % or _ anywhere
@@ -231,9 +224,8 @@ public class CompiledLike extends CompiledComparison
       if (wildcardPosition == 0) {
         // wildcard is the leading char
         // change the like predicate to >= "" and like
-        cv = new CompiledComparison[] {
-            new CompiledComparison(var, new CompiledLiteral(LOWEST_STRING),
-                OQLLexerTokenTypes.TOK_GE), this };
+        cv = new CompiledComparison[] {new CompiledComparison(var,
+            new CompiledLiteral(LOWEST_STRING), OQLLexerTokenTypes.TOK_GE), this};
 
       } else {
         // the wildcard is not the first char
@@ -258,36 +250,35 @@ public class CompiledLike extends CompiledComparison
         buffer.delete(upperBoundPosition, len);
         buffer.append(upperBoundChar);
         String upperBound = buffer.toString();
-        CompiledComparison c1 = new CompiledComparison(var,
-            new CompiledLiteral(lowerBound), OQLLexerTokenTypes.TOK_GE);
-        CompiledComparison c2 = new CompiledComparison(var,
-            new CompiledLiteral(upperBound), OQLLexerTokenTypes.TOK_LT);
-        
+        CompiledComparison c1 =
+            new CompiledComparison(var, new CompiledLiteral(lowerBound), OQLLexerTokenTypes.TOK_GE);
+        CompiledComparison c2 =
+            new CompiledComparison(var, new CompiledLiteral(upperBound), OQLLexerTokenTypes.TOK_LT);
+
         // if % is not the last char in the string.
         // or the wildchar is _ which could be anywhere
         if (len < (patternLength - 1) || getWildcardType(context) == WILDCARD_UNDERSCORE) {
           // negation not supported if % is not the last char and also for a _
           // anywhere
           if (getOperator() == OQLLexerTokenTypes.TOK_NE) {
-            cv = new CompiledComparison[] {
-                new CompiledComparison(var, new CompiledLiteral(LOWEST_STRING),
-                    OQLLexerTokenTypes.TOK_GE), this };
+            cv = new CompiledComparison[] {new CompiledComparison(var,
+                new CompiledLiteral(LOWEST_STRING), OQLLexerTokenTypes.TOK_GE), this};
           } else {
             // the like predicate is broken into 3 compiled comparisons
-            cv = new CompiledComparison[] { c1, c2, this };
+            cv = new CompiledComparison[] {c1, c2, this};
           }
 
         } else {
           // % is at the end of the string
           // the like predicate is broken down to 2 compile comparisons
-          cv = new CompiledComparison[] { c1, c2 };
+          cv = new CompiledComparison[] {c1, c2};
         }
       }
     } else {
       // not sargable
       // Change the like predicate to equality
-      cv = new CompiledComparison[] { new CompiledComparison(var,
-          new CompiledLiteral(buffer.toString()), getOperator()) };
+      cv = new CompiledComparison[] {
+          new CompiledComparison(var, new CompiledLiteral(buffer.toString()), getOperator())};
     }
 
     return cv;
@@ -298,32 +289,33 @@ public class CompiledLike extends CompiledComparison
     boolean prevMetaChar = false;
     int len = pattern.length();
 
-    for (int i = 0; i < len;i++) {
+    for (int i = 0; i < len; i++) {
       char ch = pattern.charAt(i);
       switch (ch) {
         // meta chars: \ ^ * . + ? ( ) | [ ]
-        case ']' :
-        case '[' :
-        case '^' :
-        case '*' :
-        case '.' :
-        case '+' :
-        case '?' :
-        case '(' :
-        case ')' :
-        case '|' :
-        case '{' :
-        case '}' :
-        case '\\' :
-          //if ((ch == '\\') && (i+1) < len && (pattern.charAt(i+1) == '_' || pattern.charAt(i+1) == '%')) {
+        case ']':
+        case '[':
+        case '^':
+        case '*':
+        case '.':
+        case '+':
+        case '?':
+        case '(':
+        case ')':
+        case '|':
+        case '{':
+        case '}':
+        case '\\':
+          // if ((ch == '\\') && (i+1) < len && (pattern.charAt(i+1) == '_' || pattern.charAt(i+1)
+          // == '%')) {
           if ((ch == '\\')) {
-            if (!((i+1) < len && (pattern.charAt(i+1) == '\\'))) {
+            if (!((i + 1) < len && (pattern.charAt(i + 1) == '\\'))) {
               break;
             }
             i++;
-          } 
+          }
           // Check if subsequent chars are meta chars.
-          // \Q is used for start of string literal 
+          // \Q is used for start of string literal
           // \E for end of string literal. E.g. \Q+*\E to escape +*
           if (!prevMetaChar) {
             sb.append('\\');
@@ -333,7 +325,7 @@ public class CompiledLike extends CompiledComparison
           sb.append(ch);
           break;
         case '_': // replace with .
-        case '%':  // replace with .*
+        case '%': // replace with .*
           if (prevMetaChar) {
             sb.append('\\');
             sb.append('E');
@@ -355,15 +347,13 @@ public class CompiledLike extends CompiledComparison
             if (ch == '%') {
               sb.append(".*");
               // ignore successive '%'
-              while ((i+1) < len && pattern.charAt(i + 1) == '%') {
+              while ((i + 1) < len && pattern.charAt(i + 1) == '%') {
                 i++;
               }
-            }
-            else {
+            } else {
               sb.append(".");
             }
-          }
-          else {
+          } else {
             // The percentage or underscore sign is escaped. Hence it is to be un-escaped now
             // So remove the backslash
             // sb.deleteCharAt(sb.length() - 1);
@@ -383,9 +373,8 @@ public class CompiledLike extends CompiledComparison
   }
 
   /**
-   * Checks if index can be used for Strings with wildcards. Two wild cards are
-   * supported % and _. The wildcard could be at any index position of the
-   * string.
+   * Checks if index can be used for Strings with wildcards. Two wild cards are supported % and _.
+   * The wildcard could be at any index position of the string.
    * 
    * @param buffer
    * @return position of wildcard if sargable otherwise -1
@@ -405,8 +394,7 @@ public class CompiledLike extends CompiledComparison
         break;
       } else if (ch == BACKSLASH) {
         if (i + 1 < len) {
-          if (buffer.charAt(i + 1) == PERCENT
-              || buffer.charAt(i + 1) == UNDERSCORE) {
+          if (buffer.charAt(i + 1) == PERCENT || buffer.charAt(i + 1) == UNDERSCORE) {
             wildcardPosition = -1; // escape the wildcard
           }
           buffer.deleteCharAt(i); // one \ escapes next
@@ -418,48 +406,38 @@ public class CompiledLike extends CompiledComparison
   }
 
   /*
-  @Override
-  public Object evaluate(ExecutionContext context)
-      throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException
-  {
-    CompiledValue iterEvaluator = (CompiledValue)context.cacheGet(this.bindArg);
-    if(iterEvaluator == null) {
-      String pattern = (String)this.bindArg.evaluate(context);
-      CompiledComparison[] cvs = getRangeIfSargable(this.var, pattern);
+   * @Override public Object evaluate(ExecutionContext context) throws FunctionDomainException,
+   * TypeMismatchException, NameResolutionException, QueryInvocationTargetException { CompiledValue
+   * iterEvaluator = (CompiledValue)context.cacheGet(this.bindArg); if(iterEvaluator == null) {
+   * String pattern = (String)this.bindArg.evaluate(context); CompiledComparison[] cvs =
+   * getRangeIfSargable(this.var, pattern);
+   * 
+   * for (CompiledComparison cp : cvs) { cp.computeDependencies(context);
+   * 
+   * } if(cvs.length ==2 ) { iterEvaluator = new CompiledJunction(cvs,
+   * OQLLexerTokenTypes.LITERAL_and); }else { iterEvaluator = cvs[0]; }
+   * context.cachePut(this.bindArg, iterEvaluator);
+   * 
+   * } return iterEvaluator.evaluate(context); }
+   */
 
-      for (CompiledComparison cp : cvs) {
-        cp.computeDependencies(context);
-
-      }
-      if(cvs.length ==2 ) {
-        iterEvaluator = new CompiledJunction(cvs, OQLLexerTokenTypes.LITERAL_and);   
-      }else {
-        iterEvaluator = cvs[0];
-      }
-      context.cachePut(this.bindArg, iterEvaluator);
-      
-    }
-    return iterEvaluator.evaluate(context);   
-  }
-  */
-  
   @Override
-  public Object evaluate(ExecutionContext context)
-      throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException
-  {
-    //reset the isIndexEvaluated flag here since index is not being used here
+  public Object evaluate(ExecutionContext context) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
+    // reset the isIndexEvaluated flag here since index is not being used here
     context.cachePut(isIndexEvaluatedKey, false);
 
-    Pattern pattern = (Pattern)context.cacheGet(this.bindArg);
-    if(pattern == null) {
-      String strPattern = this.bindArg.evaluate(context).toString(); // handles both Strings and PdxStrings
+    Pattern pattern = (Pattern) context.cacheGet(this.bindArg);
+    if (pattern == null) {
+      String strPattern = this.bindArg.evaluate(context).toString(); // handles both Strings and
+                                                                     // PdxStrings
       if (strPattern == null) {
-        throw new UnsupportedOperationException("Null values are not supported with LIKE predicate.");
+        throw new UnsupportedOperationException(
+            "Null values are not supported with LIKE predicate.");
       }
-      pattern = Pattern.compile(getRegexPattern(strPattern),Pattern.MULTILINE|Pattern.DOTALL);
-      //GemFireCacheImpl.getInstance().getLogger().fine("### DEBUG : string :" + strPattern + " pattern :" + pattern.toString());
+      pattern = Pattern.compile(getRegexPattern(strPattern), Pattern.MULTILINE | Pattern.DOTALL);
+      // GemFireCacheImpl.getInstance().getLogger().fine("### DEBUG : string :" + strPattern + "
+      // pattern :" + pattern.toString());
       context.cachePut(this.bindArg, pattern);
     }
     Object value = this.var.evaluate(context);
@@ -467,10 +445,11 @@ public class CompiledLike extends CompiledComparison
       return null;
     }
 
-    if (!((value instanceof String)  || (value instanceof PdxString) || (value == QueryService.UNDEFINED))) {
-//      throw new TypeMismatchException(
-//          LocalizedStrings.TypeUtils_UNABLE_TO_COMPARE_OBJECT_OF_TYPE_0_WITH_OBJECT_OF_TYPE_1
-//              .toLocalizedString("java.lang.String", value.getClass().getName()));
+    if (!((value instanceof String) || (value instanceof PdxString)
+        || (value == QueryService.UNDEFINED))) {
+      // throw new TypeMismatchException(
+      // LocalizedStrings.TypeUtils_UNABLE_TO_COMPARE_OBJECT_OF_TYPE_0_WITH_OBJECT_OF_TYPE_1
+      // .toLocalizedString("java.lang.String", value.getClass().getName()));
       if (getOperator() == TOK_NE) {
         return true;
       }
@@ -478,13 +457,13 @@ public class CompiledLike extends CompiledComparison
     }
 
     // Check if LIKE clause is negated (_operator == TOK_NE) in query.
-    boolean isMatched = pattern.matcher(value.toString()).matches(); 
+    boolean isMatched = pattern.matcher(value.toString()).matches();
     if (getOperator() == TOK_NE) {
       isMatched = !isMatched;
     }
     return isMatched;
   }
-  
+
   /**
    * @since GemFire 6.6
    */
@@ -492,12 +471,11 @@ public class CompiledLike extends CompiledComparison
   protected PlanInfo protGetPlanInfo(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
     /*
-     * During filterevaluation, CompiledLike is converted to 2 or 3
-     * CompiledComparisons. One of the CCs could be a CompiledLike itself. For
-     * example If the wildcard is _ or the % is anywhere except at the end in
-     * the pattern, a GroupJunction is created. For 'ab%cd', the GroupJunction
-     * would be ">=ab AND < ac AND LIKE ab%cd". The check avoids the
-     * re-filterevaluation of this CompiledLike.
+     * During filterevaluation, CompiledLike is converted to 2 or 3 CompiledComparisons. One of the
+     * CCs could be a CompiledLike itself. For example If the wildcard is _ or the % is anywhere
+     * except at the end in the pattern, a GroupJunction is created. For 'ab%cd', the GroupJunction
+     * would be ">=ab AND < ac AND LIKE ab%cd". The check avoids the re-filterevaluation of this
+     * CompiledLike.
      */
     PlanInfo result = null;
     if (getIsIndexEvaluated(context)) {
@@ -507,35 +485,33 @@ public class CompiledLike extends CompiledComparison
       result = super.protGetPlanInfo(context);
       // CCs created have range conditions which are not supported by PrimaryKey
       // index. So disabling filter when PrimaryKey index is used
-      if (result.indexes.size() > 0
-          && result.indexes.get(0) instanceof PrimaryKeyIndex) {
+      if (result.indexes.size() > 0 && result.indexes.get(0) instanceof PrimaryKeyIndex) {
         result.evalAsFilter = false;
       }
     }
     return result;
   }
-  
+
   @Override
   public int getType() {
     return LIKE;
   }
+
   @Override
-  public boolean isLimitApplicableAtIndexLevel(ExecutionContext context)  {
+  public boolean isLimitApplicableAtIndexLevel(ExecutionContext context) {
     return true;
   }
-  
+
   @Override
   public boolean isOrderByApplicableAtIndexLevel(ExecutionContext context,
-      String canonicalizedOrderByClause) throws FunctionDomainException,
-      TypeMismatchException, NameResolutionException,
-      QueryInvocationTargetException {
+      String canonicalizedOrderByClause) throws FunctionDomainException, TypeMismatchException,
+      NameResolutionException, QueryInvocationTargetException {
 
     if (this.getPlanInfo(context).evalAsFilter) {
       PlanInfo pi = this.getPlanInfo(context);
       if (pi.indexes.size() == 1) {
-        IndexProtocol ip = (IndexProtocol)pi.indexes.get(0);
-        if (ip.getCanonicalizedIndexedExpression().equals(
-            canonicalizedOrderByClause)) {
+        IndexProtocol ip = (IndexProtocol) pi.indexes.get(0);
+        if (ip.getCanonicalizedIndexedExpression().equals(canonicalizedOrderByClause)) {
           return true;
         }
       }

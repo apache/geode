@@ -21,7 +21,7 @@
 #
 # JAVA_ARGS - java arguments, i.e., -Xms1024m -Xmx1024m ...
 #
-# GEMFIRE - GemFire product directory  
+# GEODE_HOME - Geode product directory
 #
 #
 
@@ -43,8 +43,8 @@ else
     GFPATH=$( cd $(dirname $0)/..; pwd )
 fi
 
-# Set GEMFIRE to the product toplevel directory
-GEMFIRE=$GFPATH
+# Set GEODE_HOME to the product toplevel directory
+GEODE_HOME=$GFPATH
 
 UNAME=$( uname )
 if [[ "$UNAME" == CYGWIN* ]]; then
@@ -65,17 +65,17 @@ if [ "x$WINDIR" != "x" ]; then
   fi
 fi
 
-if [ ! -f $GEMFIRE/lib/geode-dependencies.jar ]; then
-  echo "ERROR: Could not determine GEMFIRE location."
+if [ ! -f $GEODE_HOME/lib/geode-dependencies.jar ]; then
+  echo "ERROR: Could not determine GEODE_HOME location."
   exit 1
 fi
-export GEMFIRE
+export GEODE_HOME
 
-GEMFIRE_JARS=$GEMFIRE/lib/gfsh-dependencies.jar
+GEODE_JARS=$GEODE_HOME/lib/gfsh-dependencies.jar
 if [ "x$CLASSPATH" != "x" ]; then
-  GEMFIRE_JARS=$GEMFIRE_JARS:$CLASSPATH
+  GEODE_JARS=$GEODE_JARS:$CLASSPATH
 fi
-CLASSPATH=$GEMFIRE_JARS
+CLASSPATH=$GEODE_JARS
 
 #
 # Copy default .gfshrc to the home directory. Uncomment if needed.

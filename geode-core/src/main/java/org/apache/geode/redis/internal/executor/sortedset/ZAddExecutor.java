@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal.executor.sortedset;
 
@@ -56,14 +54,16 @@ public class ZAddExecutor extends SortedSetExecutor {
         try {
           score = Coder.bytesToDouble(scoreArray);
         } catch (NumberFormatException e) {
-          command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERICAL));
+          command.setResponse(
+              Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERICAL));
           return;
         }
 
         map.put(new ByteArrayWrapper(memberArray), new DoubleWrapper(score));
         numberOfAdds++;
       }
-      Region<ByteArrayWrapper, DoubleWrapper> keyRegion = getOrCreateRegion(context, key, RedisDataType.REDIS_SORTEDSET);
+      Region<ByteArrayWrapper, DoubleWrapper> keyRegion =
+          getOrCreateRegion(context, key, RedisDataType.REDIS_SORTEDSET);
       keyRegion.putAll(map);
     } else {
       byte[] scoreArray = commandElems.get(2);
@@ -72,10 +72,12 @@ public class ZAddExecutor extends SortedSetExecutor {
       try {
         score = Coder.bytesToDouble(scoreArray);
       } catch (NumberFormatException e) {
-        command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERICAL));
+        command.setResponse(
+            Coder.getErrorResponse(context.getByteBufAllocator(), ERROR_NOT_NUMERICAL));
         return;
       }
-      Region<ByteArrayWrapper, DoubleWrapper> keyRegion = getOrCreateRegion(context, key, RedisDataType.REDIS_SORTEDSET);
+      Region<ByteArrayWrapper, DoubleWrapper> keyRegion =
+          getOrCreateRegion(context, key, RedisDataType.REDIS_SORTEDSET);
       Object oldVal = keyRegion.put(new ByteArrayWrapper(memberArray), new DoubleWrapper(score));
 
       if (oldVal == null)

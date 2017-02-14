@@ -27,26 +27,17 @@ In this section you download, install, and set up the HTTP Session Management mo
 
     | Supported Application Server | Version                     | Download Location                                                                                                                                                                                                    |
     |------------------------------|-----------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-    | tc Server                    | 2.9 (Deprecated)            | [https://my.vmware.com/web/vmware/info/slug/application_platform/vmware_vfabric_tc_server/2_9](https://my.vmware.com/web/vmware/info/slug/application_platform/vmware_vfabric_tc_server/2_9) |
-    | tc Server                    | 3.0 and 3.1                 | [https://network.pivotal.io/products/pivotal-tcserver](https://network.pivotal.io/products/pivotal-tcserver)                                                                     |
-    | Tomcat                       | 7.0                         | [http://tomcat.apache.org/download-70.cgi](http://tomcat.apache.org/download-70.cgi)                                                                                             |
-    | Tomcat                       | 8.0                         | [http://tomcat.apache.org/download-80.cgi](http://tomcat.apache.org/download-80.cgi)                                                                                             |
-    | WebLogic                     | 11g (10.3.x)                | [http://www.oracle.com/technetwork/middleware/weblogic/overview/index.html](http://www.oracle.com/technetwork/middleware/weblogic/overview/index.html)                           |
-    | WebSphere                    | 7, 8                        | [http://www.ibm.com/developerworks/downloads/ws/was/](http://www.ibm.com/developerworks/downloads/ws/was/)                                                                       |
-    | JBoss                        | 5, 6, 7                     | [http://www.jboss.org/jbossas/downloads/](http://www.jboss.org/jbossas/downloads/)                                                                                               |
+    | tc Server                    | 3.2           | [https://network.pivotal.io/products/pivotal-tcserver](https://network.pivotal.io/products/pivotal-tcserver)                                                                     |
+    | Tomcat                       | 8.5                    | [http://tomcat.apache.org/download-80.cgi](http://tomcat.apache.org/download-80.cgi)                                                                                             |
 
     The generic HTTP Session Management Module for AppServers is implemented as a servlet filter and should work on any application server platform that supports the Java Servlet 2.4 specification.
 
-2.  The HTTP Session Management Modules installation .zip files are located in the `tools/Modules` directory of the Geode product installation directory. Locate the .zip file for the HTTP Session Management Module that you wish to install. Unzip the appropriate HTTP Session Management Module into the specified directory for your application server:
+2.  The HTTP Session Management Modules installation .zip files are located in the `tools/Modules` directory of the product installation directory. Locate the .zip file for the HTTP Session Management Module that you wish to install. Unzip the appropriate HTTP Session Management Module into the specified directory for your application server:
 
     | Supported Application Server | Version                     | Module                                                   | Target Location for Module                                                       |
     |------------------------------|-----------------------------|----------------------------------------------------------|----------------------------------------------------------------------------------|
-    | tc Server                    | 2.9 (Deprecated)            | HTTP Session Management Module for Pivotal tc Server     | `<tc Server root                                                 dir>/templates` |
-    | tc Server                    | 3.0 and 3.1                 | HTTP Session Management Module for Pivotal tc Server     | `<tc Server root                                                 dir>/templates` |
-    | Tomcat                       | 7.0 and 8.0                 | HTTP Session Management Module for Tomcat                | `$CATALINA_HOME`                                                                 |
-    | WebLogic                     | 11g (10.3.x)                | HTTP Session Management Module for AppServers            | *any directory*                                                                  |
-    | WebSphere                    | 7, 8                        | HTTP Session Management Module for AppServers            | *any directory*                                                                  |
-    | JBoss                        | 5, 6, 7                     | HTTP Session Management Module for AppServers            | *any directory*                                                                  |
+    | tc Server                    | 3.2           | HTTP Session Management Module for Pivotal tc Server     | `<tc Server root                                                 dir>/templates` |
+    | Tomcat                       | 8.5            | HTTP Session Management Module for Tomcat                | `$CATALINA_HOME`                                                                 |
 
 3.  Complete the appropriate set up instructions for your application server described in the following sections:
     -   [Additional Quick Start Instructions for tc Server Module](quick_start.html#quick_start__section_EE60463F524A46B7B83CE74C1C3E8E0E)

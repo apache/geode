@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli;
 
@@ -36,10 +34,8 @@ import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 
 /**
- * NOTE: Should be used only in
- * 1. gfsh process
- * 2. on a Manager "if" log is required to be sent back to gfsh too. For
- *    logging only on manager use, cache.getLogger()
+ * NOTE: Should be used only in 1. gfsh process 2. on a Manager "if" log is required to be sent back
+ * to gfsh too. For logging only on manager use, cache.getLogger()
  *
  * @since GemFire 7.0
  */
@@ -54,7 +50,7 @@ public class LogWrapper {
 
     Cache cache = CliUtil.getCacheIfExists();
     if (cache != null && !cache.isClosed()) {
-      //TODO - Abhishek how to set different log levels for different handlers???
+      // TODO - Abhishek how to set different log levels for different handlers???
       logger.addHandler(cache.getLogger().getHandler());
       CommandResponseWriterHandler handler = new CommandResponseWriterHandler();
       handler.setFilter(new Filter() {
@@ -85,9 +81,7 @@ public class LogWrapper {
     if (config.isLoggingEnabled()) {
       try {
         FileHandler fileHandler = new FileHandler(config.getLogFilePath(),
-                                                  config.getLogFileSizeLimit(),
-                                                  config.getLogFileCount(),
-                                                  true /*append*/);
+            config.getLogFileSizeLimit(), config.getLogFileCount(), true /* append */);
         fileHandler.setFormatter(new GemFireFormatter());
         fileHandler.setLevel(config.getLogLevel());
         logger.addHandler(fileHandler);
@@ -100,16 +94,19 @@ public class LogWrapper {
     }
   }
 
-  private static void addDefaultConsoleHandler(Logger logger, String errorMessage, String logFilePath) {
+  private static void addDefaultConsoleHandler(Logger logger, String errorMessage,
+      String logFilePath) {
     ConsoleHandler consoleHandler = new ConsoleHandler();
     consoleHandler.setFormatter(new GemFireFormatter());
     logger.addHandler(consoleHandler);
 
-    System.err.println("ERROR: Could not log to file: " + logFilePath + ". Reason: " + errorMessage);
+    System.err
+        .println("ERROR: Could not log to file: " + logFilePath + ". Reason: " + errorMessage);
     System.err.println("Logs will be written on Console.");
     try {
-      Thread.sleep(3000); //sleep for 3 secs for the message to appear
-    } catch (InterruptedException ignore) {}
+      Thread.sleep(3000); // sleep for 3 secs for the message to appear
+    } catch (InterruptedException ignore) {
+    }
   }
 
   /**
@@ -143,9 +140,8 @@ public class LogWrapper {
   }
 
   /**
-   * Make logger null when the singleton (which was referred by INSTANCE) gets
-   * garbage collected. Makes an attempt at removing associated {@link Handler}s
-   * of the {@link Logger}.
+   * Make logger null when the singleton (which was referred by INSTANCE) gets garbage collected.
+   * Makes an attempt at removing associated {@link Handler}s of the {@link Logger}.
    */
   protected void finalize() throws Throwable {
     cleanupLogger(this.logger);
@@ -163,12 +159,13 @@ public class LogWrapper {
       logger.setLevel(newLevel);
     }
   }
+
   public Level getLogLevel() {
-      return logger.getLevel();
+    return logger.getLevel();
   }
 
-  //TODO - Abhishek - ideally shouldn't be exposed outside.
-  /*package*/ Logger getLogger() {
+  // TODO - Abhishek - ideally shouldn't be exposed outside.
+  /* package */ Logger getLogger() {
     return logger;
   }
 
@@ -188,18 +185,18 @@ public class LogWrapper {
     }
   }
 
-  //TODO - Abhishek - Check whether we can use GemFireLevel.ERROR
-//  public boolean errorEnabled() {
-//    return severeEnabled();
-//  }
-//
-//  public void error(String message) {
-//    logger.severe(message);
-//  }
-//
-//  public void error(String message, Throwable t) {
-//    logger.log(Level.SEVERE, message, t);
-//  }
+  // TODO - Abhishek - Check whether we can use GemFireLevel.ERROR
+  // public boolean errorEnabled() {
+  // return severeEnabled();
+  // }
+  //
+  // public void error(String message) {
+  // logger.severe(message);
+  // }
+  //
+  // public void error(String message, Throwable t) {
+  // logger.log(Level.SEVERE, message, t);
+  // }
 
   public boolean warningEnabled() {
     return logger.isLoggable(Level.WARNING);
@@ -338,7 +335,8 @@ public class LogWrapper {
           formatText(pw, msg, 40);
         } catch (RuntimeException e) {
           pw.println(msg);
-          pw.println(LocalizedStrings.GemFireFormatter_IGNORING_THE_FOLLOWING_EXCEPTION.toLocalizedString());
+          pw.println(LocalizedStrings.GemFireFormatter_IGNORING_THE_FOLLOWING_EXCEPTION
+              .toLocalizedString());
           e.printStackTrace(pw);
         }
       } else {
@@ -350,7 +348,8 @@ public class LogWrapper {
       pw.close();
       try {
         sw.close();
-      } catch (java.io.IOException ignore) {}
+      } catch (java.io.IOException ignore) {
+      }
       String result = sw.toString();
       return result;
     }
@@ -364,7 +363,7 @@ public class LogWrapper {
 
       while (end != BreakIterator.DONE) {
         // Look at the end and only accept whitespace breaks
-        char endChar = target.charAt(end-1);
+        char endChar = target.charAt(end - 1);
         while (!Character.isWhitespace(endChar)) {
           int lastEnd = end;
           end = boundary.next();
@@ -373,13 +372,13 @@ public class LogWrapper {
             end = lastEnd;
             break;
           }
-          endChar = target.charAt(end-1);
+          endChar = target.charAt(end - 1);
         }
         int wordEnd = end;
         if (endChar == '\n') {
           // trim off the \n since println will do it for us
           wordEnd--;
-          if (wordEnd > 0 && target.charAt(wordEnd-1) == '\r') {
+          if (wordEnd > 0 && target.charAt(wordEnd - 1) == '\r') {
             wordEnd--;
           }
         } else if (endChar == '\t') {
@@ -421,16 +420,15 @@ public class LogWrapper {
 
     @Override
     public void publish(LogRecord record) {
-      CommandResponseWriter responseWriter = CommandExecutionContext.getAndCreateIfAbsentCommandResponseWriter();
+      CommandResponseWriter responseWriter =
+          CommandExecutionContext.getAndCreateIfAbsentCommandResponseWriter();
       responseWriter.println(getFormatter().format(record));
     }
 
     @Override
-    public void flush() {
-    }
+    public void flush() {}
 
     @Override
-    public void close() throws SecurityException {
-    }
+    public void close() throws SecurityException {}
   }
 }

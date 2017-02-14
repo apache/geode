@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -30,17 +28,17 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 
 
 /**
- * Used to give advise to a connection controller.
- * Bridge server currently need to know about controller's
+ * Used to give advise to a connection controller. Bridge server currently need to know about
+ * controller's
  *
  */
 public class ControllerAdvisor extends GridAdvisor {
-  
+
   /** Creates a new instance of ControllerAdvisor */
   private ControllerAdvisor(DistributionAdvisee server) {
     super(server);
   }
-  
+
   public static ControllerAdvisor createControllerAdvisor(DistributionAdvisee server) {
     ControllerAdvisor advisor = new ControllerAdvisor(server);
     advisor.initialize();
@@ -52,7 +50,7 @@ public class ControllerAdvisor extends GridAdvisor {
     super.profileCreated(profile);
     ((ServerLocator) getAdvisee()).profileCreated(profile);
   }
-  
+
   @Override
   protected void profileRemoved(Profile profile) {
     super.profileRemoved(profile);
@@ -71,7 +69,7 @@ public class ControllerAdvisor extends GridAdvisor {
   protected void profilesChanged() {
     if (pollIsInitialized()) {
       super.profilesChanged();
-      ServerLocator sl = (ServerLocator)getAdvisee();
+      ServerLocator sl = (ServerLocator) getAdvisee();
       sl.setLocatorCount(getControllerCount());
       sl.setServerCount(getBridgeServerCount());
     }
@@ -84,19 +82,17 @@ public class ControllerAdvisor extends GridAdvisor {
 
   /** Instantiate new distribution profile for this member */
   @Override
-  protected Profile instantiateProfile(
-      InternalDistributedMember memberId, int version) {
+  protected Profile instantiateProfile(InternalDistributedMember memberId, int version) {
     return new ControllerProfile(memberId, version);
   }
-  
+
   /**
    * Describes a bridge server for distribution purposes.
    */
   public static class ControllerProfile extends GridAdvisor.GridProfile {
 
     /** for internal use, required for DataSerializer.readObject */
-    public ControllerProfile() {
-    }
+    public ControllerProfile() {}
 
     public ControllerProfile(InternalDistributedMember memberId, int version) {
       super(memberId, version);
@@ -107,17 +103,15 @@ public class ControllerAdvisor extends GridAdvisor {
     }
 
     /**
-     * Used to process an incoming connection controller profile. Any controller
-     * or bridge server in this vm needs to be told about this incoming new
-     * controller. The reply needs to contain any controller(s) that exist in
-     * this vm and any bridge servers that exist in this vm.
+     * Used to process an incoming connection controller profile. Any controller or bridge server in
+     * this vm needs to be told about this incoming new controller. The reply needs to contain any
+     * controller(s) that exist in this vm and any bridge servers that exist in this vm.
      * 
      * @since GemFire 5.7
      */
     @Override
-    public void processIncoming(DistributionManager dm, String adviseePath,
-        boolean removeProfile, boolean exchangeProfiles,
-        final List<Profile> replyProfiles) {
+    public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
+        boolean exchangeProfiles, final List<Profile> replyProfiles) {
       // tell local controllers about this remote controller
       tellLocalControllers(removeProfile, exchangeProfiles, replyProfiles);
       // tell local bridge servers about this remote controller
@@ -130,8 +124,7 @@ public class ControllerAdvisor extends GridAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
     }
 

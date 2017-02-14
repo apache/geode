@@ -1,24 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.functions;
 
 /**
- * Function used by the 'create async-event-queue' gfsh command to create an
- * asynchronous event queue on a member.
+ * Function used by the 'create async-event-queue' gfsh command to create an asynchronous event
+ * queue on a member.
  * 
  * @since GemFire 8.0
  */
@@ -52,7 +50,7 @@ import joptsimple.internal.Strings;
 
 public class CreateAsyncEventQueueFunction extends FunctionAdapter implements InternalEntity {
   private static final Logger logger = LogService.getLogger();
-  
+
   private static final long serialVersionUID = 1L;
 
   @SuppressWarnings("deprecation")
@@ -62,7 +60,7 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
     String memberId = "";
 
     try {
-      AsyncEventQueueFunctionArgs aeqArgs =  (AsyncEventQueueFunctionArgs)context.getArguments();
+      AsyncEventQueueFunctionArgs aeqArgs = (AsyncEventQueueFunctionArgs) context.getArguments();
 
       GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
 
@@ -77,10 +75,8 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
       AsyncEventQueueFactory asyncEventQueueFactory = cache.createAsyncEventQueueFactory()
           .setParallel(aeqArgs.isParallel())
           .setBatchConflationEnabled(aeqArgs.isEnableBatchConflation())
-          .setBatchSize(aeqArgs.getBatchSize())
-          .setBatchTimeInterval(aeqArgs.getBatchTimeInterval())
-          .setPersistent(aeqArgs.isPersistent())
-          .setDiskStoreName(aeqArgs.getDiskStoreName())
+          .setBatchSize(aeqArgs.getBatchSize()).setBatchTimeInterval(aeqArgs.getBatchTimeInterval())
+          .setPersistent(aeqArgs.isPersistent()).setDiskStoreName(aeqArgs.getDiskStoreName())
           .setDiskSynchronous(aeqArgs.isDiskSynchronous())
           .setForwardExpirationDestroy(aeqArgs.isForwardExpirationDestroy())
           .setMaximumQueueMemory(aeqArgs.getMaxQueueMemory())
@@ -90,15 +86,21 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
       String[] gatewayEventFilters = aeqArgs.getGatewayEventFilters();
       if (gatewayEventFilters != null) {
         for (String gatewayEventFilter : gatewayEventFilters) {
-          Class<?> gatewayEventFilterKlass = forName(gatewayEventFilter, CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER);
-          asyncEventQueueFactory.addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilterKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER));
+          Class<?> gatewayEventFilterKlass =
+              forName(gatewayEventFilter, CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER);
+          asyncEventQueueFactory
+              .addGatewayEventFilter((GatewayEventFilter) newInstance(gatewayEventFilterKlass,
+                  CliStrings.CREATE_ASYNC_EVENT_QUEUE__GATEWAYEVENTFILTER));
         }
       }
 
       String gatewaySubstitutionFilter = aeqArgs.getGatewaySubstitutionFilter();
       if (gatewaySubstitutionFilter != null) {
-        Class<?> gatewayEventSubstitutionFilterKlass = forName(gatewaySubstitutionFilter, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER);
-        asyncEventQueueFactory.setGatewayEventSubstitutionListener((GatewayEventSubstitutionFilter<?,?>) newInstance(gatewayEventSubstitutionFilterKlass, CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER));
+        Class<?> gatewayEventSubstitutionFilterKlass = forName(gatewaySubstitutionFilter,
+            CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER);
+        asyncEventQueueFactory.setGatewayEventSubstitutionListener(
+            (GatewayEventSubstitutionFilter<?, ?>) newInstance(gatewayEventSubstitutionFilterKlass,
+                CliStrings.CREATE_ASYNC_EVENT_QUEUE__SUBSTITUTION_FILTER));
       }
 
       String listenerClassName = aeqArgs.getListenerClassName();
@@ -109,7 +111,8 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
       Properties listenerProperties = aeqArgs.getListenerProperties();
       if (listenerProperties != null && !listenerProperties.isEmpty()) {
         if (!(listenerInstance instanceof Declarable)) {
-          throw new IllegalArgumentException("Listener properties were provided, but the listener specified does not implement Declarable.");
+          throw new IllegalArgumentException(
+              "Listener properties were provided, but the listener specified does not implement Declarable.");
         }
 
         ((Declarable) listenerInstance).init(listenerProperties);
@@ -119,9 +122,11 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
         cache.addDeclarableProperties(declarablesMap);
       }
 
-      asyncEventQueueFactory.create(aeqArgs.getAsyncEventQueueId(), (AsyncEventListener) listenerInstance);
+      asyncEventQueueFactory.create(aeqArgs.getAsyncEventQueueId(),
+          (AsyncEventListener) listenerInstance);
 
-      XmlEntity xmlEntity = new XmlEntity(CacheXml.ASYNC_EVENT_QUEUE, "id", aeqArgs.getAsyncEventQueueId());
+      XmlEntity xmlEntity =
+          new XmlEntity(CacheXml.ASYNC_EVENT_QUEUE, "id", aeqArgs.getAsyncEventQueueId());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, xmlEntity, "Success"));
 
     } catch (CacheClosedException cce) {
@@ -130,7 +135,7 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
-      
+
     } catch (Throwable th) {
       SystemFailure.checkFailure();
       logger.error("Could not create async event queue: {}", th.getMessage(), th);
@@ -142,31 +147,34 @@ public class CreateAsyncEventQueueFunction extends FunctionAdapter implements In
     if (Strings.isNullOrEmpty(className)) {
       return null;
     }
-    
+
     try {
       return ClassPathLoader.getLatest().forName(className);
     } catch (ClassNotFoundException e) {
-      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1,
-          new Object[] { className, neededFor }), e);
+      throw new RuntimeException(CliStrings.format(
+          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_FIND_CLASS_0_SPECIFIED_FOR_1,
+          new Object[] {className, neededFor}), e);
     } catch (ClassCastException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE, new Object[] { className,
-              neededFor }), e);
+          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__CLASS_0_SPECIFIED_FOR_1_IS_NOT_OF_EXPECTED_TYPE,
+          new Object[] {className, neededFor}), e);
     }
   }
-  
+
   private static Object newInstance(Class<?> klass, String neededFor) {
     try {
       return klass.newInstance();
     } catch (InstantiationException e) {
-      throw new RuntimeException(CliStrings.format(CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1, new Object[] { klass,
-              neededFor }), e);
+      throw new RuntimeException(CliStrings.format(
+          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_INSTANTIATE_CLASS_0_SPECIFIED_FOR_1,
+          new Object[] {klass, neededFor}), e);
     } catch (IllegalAccessException e) {
       throw new RuntimeException(CliStrings.format(
-          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1, new Object[] { klass, neededFor }), e);
+          CliStrings.CREATE_ASYNC_EVENT_QUEUE__MSG__COULDNOT_ACCESS_CLASS_0_SPECIFIED_FOR_1,
+          new Object[] {klass, neededFor}), e);
     }
   }
-  
+
   @Override
   public String getId() {
     return CreateDiskStoreFunction.class.getName();

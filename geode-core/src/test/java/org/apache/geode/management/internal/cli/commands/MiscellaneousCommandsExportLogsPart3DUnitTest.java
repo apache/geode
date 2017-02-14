@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -65,7 +63,8 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
         // no need to close cache as it will be closed as part of teardown2
         Cache cache = getCache();
 
-        RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            cache.createRegionFactory(RegionShortcut.PARTITION);
         Region region = dataRegionFactory.create("testRegion");
         for (int i = 0; i < 5; i++) {
           region.put("key" + (i + 200), "value" + (i + 200));
@@ -81,7 +80,8 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     return ("_" + formattedStartDate);
   }
 
-  @Category(FlakyTest.class) // GEODE-672: random ports, java.rmi.server.ExportException: Port already in use, HeadlessGfsh, disk IO
+  @Category(FlakyTest.class) // GEODE-672: random ports, java.rmi.server.ExportException: Port
+                             // already in use, HeadlessGfsh, disk IO
   @Test
   public void testExportLogsForGroup() throws IOException {
     Properties localProps = new Properties();
@@ -104,8 +104,8 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     String[] groups = new String[1];
     groups[0] = "Group1";
 
-    Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForGroup" + dir, groups, null, logLevel, false,
-        false, start, end, 1);
+    Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForGroup" + dir, groups, null,
+        logLevel, false, false, start, end, 1);
 
     getLogWriter().info("testExportLogsForGroup command result =" + cmdResult);
     if (cmdResult != null) {
@@ -138,8 +138,8 @@ public class MiscellaneousCommandsExportLogsPart3DUnitTest extends CliCommandTes
     MiscellaneousCommands misc = new MiscellaneousCommands();
     getCache();
 
-    Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForMember" + dir, null, vm1MemberId, logLevel,
-        false, false, start, end, 1);
+    Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForMember" + dir, null,
+        vm1MemberId, logLevel, false, false, start, end, 1);
 
     getLogWriter().info("testExportLogsForMember command result =" + cmdResult);
 

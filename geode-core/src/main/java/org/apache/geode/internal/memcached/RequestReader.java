@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.memcached;
 
@@ -31,24 +29,25 @@ import org.apache.geode.internal.memcached.commands.ClientError;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
- * Reads the first line from the request and interprets the {@link Command}
- * from the memcached client
+ * Reads the first line from the request and interprets the {@link Command} from the memcached
+ * client
  * 
  *
  */
 public class RequestReader {
 
   private static final Charset charsetASCII = Charset.forName("US-ASCII");
-  
-  private static final ThreadLocal<CharsetDecoder> asciiDecoder = new ThreadLocal<CharsetDecoder>() {
-    @Override
-    protected CharsetDecoder initialValue() {
-      return charsetASCII.newDecoder();
-    }
-  };
-  
+
+  private static final ThreadLocal<CharsetDecoder> asciiDecoder =
+      new ThreadLocal<CharsetDecoder>() {
+        @Override
+        protected CharsetDecoder initialValue() {
+          return charsetASCII.newDecoder();
+        }
+      };
+
   private ByteBuffer buffer;
-  
+
   private ByteBuffer response;
 
   private static final int RESPONSE_HEADER_LENGTH = 24;
@@ -64,15 +63,15 @@ public class RequestReader {
   private static final int POSITION_OPAQUE = 12;
 
   private Socket socket;
-  
+
   private final Protocol protocol;
 
-  private CharBuffer commandBuffer = CharBuffer.allocate(11);   // no command exceeds 9 chars
-  
+  private CharBuffer commandBuffer = CharBuffer.allocate(11); // no command exceeds 9 chars
+
   public RequestReader(Socket socket, Protocol protocol) {
     buffer = ByteBuffer.allocate(getBufferSize(socket.getChannel()));
     // set position to limit so that first read attempt
-    // returns hasRemaining() false 
+    // returns hasRemaining() false
     buffer.position(buffer.limit());
     this.socket = socket;
     this.protocol = protocol;
@@ -84,7 +83,7 @@ public class RequestReader {
     }
     return readBinaryCommand();
   }
-  
+
   private Command readBinaryCommand() throws IOException {
     SocketChannel channel = this.socket.getChannel();
     if (channel == null || !channel.isOpen()) {
@@ -127,12 +126,12 @@ public class RequestReader {
       byte opCode = buffer.get();
       if (ConnectionHandler.getLogger().finerEnabled()) {
         String str = Command.buffertoString(buffer);
-        ConnectionHandler.getLogger().finer("Request:"+buffer+str.toString());
+        ConnectionHandler.getLogger().finer("Request:" + buffer + str.toString());
       }
       int bodyLength = buffer.getInt(AbstractCommand.TOTAL_BODY_LENGTH_INDEX);
       if ((HEADER_LENGTH + bodyLength) > requestLength) {
         // set the position back to the start of the request
-        buffer.position(buffer.position() - 2 /*since we read two bytes*/);
+        buffer.position(buffer.position() - 2 /* since we read two bytes */);
         buffer.compact();
         // ensure that the buffer is big enough
         if (buffer.capacity() < (HEADER_LENGTH + bodyLength)) {
@@ -149,7 +148,7 @@ public class RequestReader {
       done = true;
     }
     if (ConnectionHandler.getLogger().fineEnabled()) {
-      ConnectionHandler.getLogger().fine("read command "+cmd);
+      ConnectionHandler.getLogger().fine("read command " + cmd);
     }
     return cmd;
   }
@@ -174,7 +173,7 @@ public class RequestReader {
     commandBuffer.flip();
     return trimCommand(commandBuffer.toString()).toUpperCase();
   }
-  
+
   private String trimCommand(String str) {
     int indexOfSpace = str.indexOf(' ');
     String retVal = str;
@@ -194,7 +193,7 @@ public class RequestReader {
     }
     return retVal;
   }
-  
+
   private int getBufferSize(SocketChannel channel) {
     int size = 1024;
     try {
@@ -204,7 +203,7 @@ public class RequestReader {
     }
     return size;
   }
-  
+
   public ByteBuffer getRequest() {
     this.buffer.rewind();
     return this.buffer;
@@ -216,6 +215,7 @@ public class RequestReader {
 
   /**
    * Returns an initialized byteBuffer for sending the reply
+   * 
    * @param size size of ByteBuffer
    * @return the initialized response buffer
    */
@@ -244,13 +244,13 @@ public class RequestReader {
   }
 
   private static byte[] cleanByteArray;
-  
+
   private byte[] getCleanByteArray() {
     if (cleanByteArray != null) {
       return cleanByteArray;
     }
     cleanByteArray = new byte[RESPONSE_HEADER_LENGTH];
-    for (int i=0; i<cleanByteArray.length; i++) {
+    for (int i = 0; i < cleanByteArray.length; i++) {
       cleanByteArray[i] = 0;
     }
     return cleanByteArray;
@@ -263,7 +263,8 @@ public class RequestReader {
       reply.put(POSITION_OPCODE, buffer.get(POSITION_OPCODE));
       reply.putInt(POSITION_OPAQUE, buffer.getInt(POSITION_OPAQUE));
       if (ConnectionHandler.getLogger().finerEnabled()) {
-        ConnectionHandler.getLogger().finer("sending reply:"+reply+" "+Command.buffertoString(reply));
+        ConnectionHandler.getLogger()
+            .finer("sending reply:" + reply + " " + Command.buffertoString(reply));
       }
     }
     SocketChannel channel = this.socket.getChannel();

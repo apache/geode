@@ -146,9 +146,21 @@ Content-Type: application/json
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
+<tr>
+<td>400 BAD REQUEST</td>
+<td>JSON document in the request body (specifying query bind params) is invalid</td>
+</tr>
+<td>401 UNAUTHORIZED</td>
+<td>Invalid Username or Password</td>
+</tr>
+<tr>
+<td>403 FORBIDDEN</td>
+<td>Insufficient privileges for operation</td>
+</tr>
+<tr>
 <td>404 NOT FOUND</td>
-<td>Query with specified ID could not be found.</td>
+<td>Query with specified ID could not be found</td>
 </tr>
 <tr class="even">
 <td>500 INTERNAL SERVER ERROR</td>
@@ -160,7 +172,7 @@ Content-Type: application/json
 <li>Name in the query cannot be resolved!&quot;</li>
 <li>The number of bound parameters does not match the number of placeholders!</li>
 <li>Query is not permitted on this type of region!</li>
-<li>Query execution time is exceeded max query execution time (gemfire.Cache.MAX_QUERY_EXECUTION_TIME) configured!</li>
+<li>Query execution time has exceeded max query execution time (gemfire.Cache.MAX_QUERY_EXECUTION_TIME) configured!</li>
 <li>Data referenced in from clause is not available for querying!&quot;</li>
 <li>Query execution gets canceled due to low memory conditions and the resource manager critical heap percentage has been set!&quot;</li>
 <li>Error encountered while executing named query!&quot;</li>

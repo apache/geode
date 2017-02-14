@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -62,8 +60,7 @@ public class MemberDetailsService implements PulseService {
     String memberName = requestDataJSON.get("MemberDetails").get("memberName").textValue();
     DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
 
-    Cluster.Member clusterMember = cluster.getMember(StringUtils
-        .makeCompliantName(memberName));
+    Cluster.Member clusterMember = cluster.getMember(StringUtils.makeCompliantName(memberName));
     if (clusterMember != null) {
       responseJSON.put("memberId", clusterMember.getId());
       responseJSON.put("name", clusterMember.getName());
@@ -80,12 +77,7 @@ public class MemberDetailsService implements PulseService {
       responseJSON.put("regionsCount", clusterMember.getMemberRegionsList().length);
 
       // Number of member clients
-      if (PulseController.getPulseProductSupport().equalsIgnoreCase(
-          PulseConstants.PRODUCT_NAME_SQLFIRE)){
-        responseJSON.put("numClients", clusterMember.getNumSqlfireClients());
-      } else {
-        responseJSON.put("numClients", clusterMember.getMemberClientsHMap().size());
-      }
+      responseJSON.put("numClients", clusterMember.getMemberClientsHMap().size());
 
       Long diskUsageVal = clusterMember.getTotalDiskUsage();
       Double diskUsage = diskUsageVal.doubleValue() / 1024;
@@ -112,8 +104,7 @@ public class MemberDetailsService implements PulseService {
       responseJSON.put("status", status);
 
     } else {
-      responseJSON.put("errorOnMember", "Member [" + memberName
-          + "] is not available");
+      responseJSON.put("errorOnMember", "Member [" + memberName + "] is not available");
     }
 
     // Send json response

@@ -19,8 +19,8 @@
 <!-- A sample client GemFire declarative caching XML File -->
 
 <!DOCTYPE client-cache PUBLIC
-  "-//GemStone Systems, Inc.//GemFire Declarative Cache 6.5//EN"
-  "http://www.gemstone.com/dtd/cache6_5.dtd">
+  "-//GemStone Systems, Inc.//GemFire Declarative Cache 7.0//EN"
+  "http://www.gemstone.com/dtd/cache7_0.dtd">
 <client-cache copy-on-read="false">
 
   <pool name="myPool">

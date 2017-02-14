@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.apache.geode.modules.session.internal.common;
 
@@ -43,8 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ClientServerSessionCache extends AbstractSessionCache {
 
-  private static final Logger LOG =
-      LoggerFactory.getLogger(PeerToPeerSessionCache.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(PeerToPeerSessionCache.class.getName());
 
   private ClientCache cache;
 
@@ -59,19 +56,15 @@ public class ClientServerSessionCache extends AbstractSessionCache {
    * @param cache
    * @param properties
    */
-  public ClientServerSessionCache(ClientCache cache,
-      Map<CacheProperty, Object> properties) {
+  public ClientServerSessionCache(ClientCache cache, Map<CacheProperty, Object> properties) {
     super();
     this.cache = cache;
 
     /**
-     * Set some default properties for this cache if they haven't already
-     * been set
+     * Set some default properties for this cache if they haven't already been set
      */
-    this.properties.put(CacheProperty.REGION_ATTRIBUTES_ID,
-        DEFAULT_REGION_ATTRIBUTES_ID);
-    this.properties.put(CacheProperty.ENABLE_LOCAL_CACHE,
-        DEFAULT_ENABLE_LOCAL_CACHE);
+    this.properties.put(CacheProperty.REGION_ATTRIBUTES_ID, DEFAULT_REGION_ATTRIBUTES_ID);
+    this.properties.put(CacheProperty.ENABLE_LOCAL_CACHE, DEFAULT_ENABLE_LOCAL_CACHE);
     this.properties.putAll(properties);
   }
 
@@ -119,9 +112,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
 
   private void createOrRetrieveRegion() {
     // Retrieve the local session region
-    this.sessionRegion =
-        this.cache.getRegion(
-            (String) properties.get(CacheProperty.REGION_NAME));
+    this.sessionRegion = this.cache.getRegion((String) properties.get(CacheProperty.REGION_NAME));
 
     // If necessary, create the regions on the server and client
     if (this.sessionRegion == null) {
@@ -141,8 +132,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     RegionConfiguration configuration = createRegionConfiguration();
 
     // Send it to the server tier
-    Execution execution = FunctionService.onServer(this.cache).withArgs(
-        configuration);
+    Execution execution = FunctionService.onServer(this.cache).withArgs(configuration);
     ResultCollector collector = execution.execute(CreateRegionFunction.ID);
 
     // Verify the region was successfully created on the servers
@@ -161,22 +151,18 @@ public class ClientServerSessionCache extends AbstractSessionCache {
 
   private Region<String, HttpSession> createLocalSessionRegion() {
     ClientRegionFactory<String, HttpSession> factory = null;
-    boolean enableLocalCache =
-        (Boolean) properties.get(CacheProperty.ENABLE_LOCAL_CACHE);
+    boolean enableLocalCache = (Boolean) properties.get(CacheProperty.ENABLE_LOCAL_CACHE);
 
     String regionName = (String) properties.get(CacheProperty.REGION_NAME);
     if (enableLocalCache) {
       // Create the region factory with caching and heap LRU enabled
-      factory = ((ClientCache) this.cache).
-          createClientRegionFactory(
-              ClientRegionShortcut.CACHING_PROXY_HEAP_LRU);
+      factory = ((ClientCache) this.cache)
+          .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY_HEAP_LRU);
       LOG.info("Created new local client session region: {}", regionName);
     } else {
       // Create the region factory without caching enabled
-      factory = ((ClientCache) this.cache).createClientRegionFactory(
-          ClientRegionShortcut.PROXY);
-      LOG.info(
-          "Created new local client (uncached) session region: {} without any session expiry",
+      factory = ((ClientCache) this.cache).createClientRegionFactory(ClientRegionShortcut.PROXY);
+      LOG.info("Created new local client (uncached) session region: {} without any session expiry",
           regionName);
     }
 

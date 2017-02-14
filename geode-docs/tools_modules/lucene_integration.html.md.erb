@@ -1,0 +1,136 @@
+---
+title: Apache Lucene&reg; Integration
+---
+<a id="topic_523F6DE33FE54307BBE8F83BB7D9355D"></a>
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Apache Lucene&reg; is a widely-used Java full-text search engine. This section describes how the system integrates with Apache Lucene.
+We assume that the reader is familiar with Apache Lucene's indexing and search functionalities.
+
+The Apache Lucene integration:
+
+- enables users to create Lucene indexes on data stored in Geode
+- provides high availability of indexes using Geode's HA capabilities to store the indexes in memory
+- optionally stores indexes on disk
+- updates the indexes asynchronously to minimize impacting write latency
+- provides scalability by partitioning index data
+- colocates indexes with data
+
+For more details, see Javadocs for the classes and interfaces that implement Apache Lucene indexes and searches, including
+`LuceneService`, `LuceneQueryFactory`, `LuceneQuery`, and `LuceneResultStruct`.
+
+## <a id="using-the-apache-lucene-integration" class="no-quick-link"></a>Using the Apache Lucene Integration
+
+You can create Apache Lucene indexes through a Java API, through the `gfsh` command-line utility, or by means of
+the `cache.xml` configuration file.
+
+To use Apache Lucene Integration, you will need two pieces of information:
+
+1.  The name of the region to be indexed or searched
+2.  The names of the fields you wish to index
+
+
+### Key Points ###
+
+- Only top level fields of objects stored in the region can be indexed.
+- Apache Lucene indexes are supported only on Partitioned regions.
+- A single index supports a single region. Indexes do not support multiple regions.
+- Heterogeneous objects in single region are supported.
+- Join queries between regions are not supported.
+- Nested objects are not supported.
+- The index needs to be created before the region is created.
+
+## <a id="java-api-example" class="no-quick-link"></a>Java API Example
+
+``` pre
+// Get LuceneService
+LuceneService luceneService = LuceneServiceProvider.get(cache);
+ 
+// Create Index on fields with default analyzer:
+luceneService.createIndex(indexName, regionName, "field1", "field2", "field3");
+ 
+Region region = cache.createRegionFactory(RegionShutcut.PARTITION).create(regionName);
+ 
+```
+
+## Search Example
+
+``` pre
+LuceneQuery<String, Person> query = luceneService.createLuceneQueryFactory()
+  .setResultLimit(10)
+  .create(indexName, regionName, "Main Street", "address");
+
+Collection<Person> results = query.findValues();
+```
+
+
+## <a id="gfsh-api" class="no-quick-link"></a>Gfsh API
+
+The gfsh command-line utility supports four Apache Lucene actions:
+
+<dt><b>create lucene index</b></dt>
+    <dd>Create a lucene index that can be used to execute queries.</dd>
+<dt><b>describe lucene index</b></dt>
+    <dd>Display the describe of lucene indexes created for all members.</dd>
+<dt><b>list lucene indexes [with-stats]</b></dt>
+    <dd>Display the list of lucene indexes created for all members. The optional `with-stats` qualifier shows activity on the indexes.</dd>
+<dt><b>search lucene</b></dt>
+    <dd>Search lucene index</dd>
+
+**Gfsh command-line examples:**
+
+``` pre
+// List Index
+gfsh> list lucene indexes [with-stats]
+
+// Create Index
+gfsh>create lucene index --name=indexName --region=/orders --field=customer,tags
+
+// Create Index, specifying a custom analyzer for the second field
+// Note: "null" in the first analyzer position means "use the default analyzer for the first field"
+gfsh>create lucene index --name=indexName --region=/orders --field=customer,tags --analyzer=null,org.apache.lucene.analysis.bg.BulgarianAnalyzer
+
+// Execute Lucene query
+gfsh> lucene search --regionName=/orders -queryStrings="John*" --defaultField=field1 --limit=100
+```
+
+
+## XML Configuration
+
+``` pre
+<cache
+    xmlns="http://geode.apache.org/schema/cache"
+    xmlns:lucene="http://geode.apache.org/schema/lucene"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache
+        http://geode.apache.org/schema/cache/cache-1.0.xsd
+        http://geode.apache.org/schema/lucene
+        http://geode.apache.org/schema/lucene/lucene-1.0.xsd"
+    version="1.0">
+ 
+    <region name="region" refid="PARTITION">
+        <lucene:index name="index">
+          <lucene:field name="a" analyzer="org.apache.lucene.analysis.core.KeywordAnalyzer"/>
+          <lucene:field name="b" analyzer="org.apache.lucene.analysis.core.SimpleAnalyzer"/>
+          <lucene:field name="c" analyzer="org.apache.lucene.analysis.standard.ClassicAnalyzer"/>
+        </lucene:index>
+    </region>
+</cache>
+```
+

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin;
 
@@ -30,16 +28,18 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
- * Class <code>RegionSubRegionSnapshot</code> provides information about
- * <code>Region</code>s. This also provides the information about sub regions
- * This class is used by the monitoring tool.
+ * Class <code>RegionSubRegionSnapshot</code> provides information about <code>Region</code>s. This
+ * also provides the information about sub regions This class is used by the monitoring tool.
  * 
  * 
  * @since GemFire 5.7
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href=
+ *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
+ *             package instead
  */
 public class RegionSubRegionSnapshot implements DataSerializable {
   private static final long serialVersionUID = -8052137675270041871L;
+
   public RegionSubRegionSnapshot() {
     this.parent = null;
     this.subRegionSnapshots = new HashSet();
@@ -49,25 +49,22 @@ public class RegionSubRegionSnapshot implements DataSerializable {
     this();
     this.name = reg.getName();
     if (reg instanceof PartitionedRegion) {
-      PartitionedRegion p_reg = (PartitionedRegion)reg;
+      PartitionedRegion p_reg = (PartitionedRegion) reg;
       this.entryCount = p_reg.entryCount(true);
-    }
-    else {
+    } else {
       this.entryCount = reg.entrySet().size();
     }
     final LogWriterI18n logger = reg.getCache().getLoggerI18n();
-    if((logger != null) && logger.fineEnabled()) {
-      logger.fine(
-        "RegionSubRegionSnapshot Region entry count =" + this.entryCount
-        + " for region =" + this.name);
+    if ((logger != null) && logger.fineEnabled()) {
+      logger.fine("RegionSubRegionSnapshot Region entry count =" + this.entryCount + " for region ="
+          + this.name);
     }
   }
 
   /**
    * add the snapshot of sub region
    * 
-   * @param snap
-   *                snapshot of sub region
+   * @param snap snapshot of sub region
    * @return true if operation is successful
    */
   public boolean addSubRegion(RegionSubRegionSnapshot snap) {
@@ -91,8 +88,7 @@ public class RegionSubRegionSnapshot implements DataSerializable {
   }
 
   /**
-   * @param entryCount
-   *                entry count of region
+   * @param entryCount entry count of region
    */
   public final void setEntryCount(int entryCount) {
     this.entryCount = entryCount;
@@ -106,8 +102,7 @@ public class RegionSubRegionSnapshot implements DataSerializable {
   }
 
   /**
-   * @param name
-   *                name of region
+   * @param name name of region
    */
   public final void setName(String name) {
     this.name = name;
@@ -121,8 +116,7 @@ public class RegionSubRegionSnapshot implements DataSerializable {
   }
 
   /**
-   * @param subRegionSnapshots
-   *                subRegionSnapshots of all the sub regions
+   * @param subRegionSnapshots subRegionSnapshots of all the sub regions
    */
   public final void setSubRegionSnapshots(Set subRegionSnapshots) {
     this.subRegionSnapshots = subRegionSnapshots;
@@ -136,8 +130,7 @@ public class RegionSubRegionSnapshot implements DataSerializable {
   }
 
   /**
-   * @param parent
-   *                snapshot of parent region
+   * @param parent snapshot of parent region
    */
   public final void setParent(RegionSubRegionSnapshot parent) {
     this.parent = parent;
@@ -148,14 +141,13 @@ public class RegionSubRegionSnapshot implements DataSerializable {
    * @return full path of region
    */
   public String getFullPath() {
-    return (getParent() == null ? "/" : getParent().getFullPath()) + getName()
-        + "/";
+    return (getParent() == null ? "/" : getParent().getFullPath()) + getName() + "/";
   }
 
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.name, out);
     out.writeInt(this.entryCount);
-    DataSerializer.writeHashSet((HashSet)this.subRegionSnapshots, out);
+    DataSerializer.writeHashSet((HashSet) this.subRegionSnapshots, out);
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -163,19 +155,18 @@ public class RegionSubRegionSnapshot implements DataSerializable {
     this.entryCount = in.readInt();
     this.subRegionSnapshots = DataSerializer.readHashSet(in);
     for (Iterator iter = this.subRegionSnapshots.iterator(); iter.hasNext();) {
-      ((RegionSubRegionSnapshot)iter.next()).setParent(this);
+      ((RegionSubRegionSnapshot) iter.next()).setParent(this);
     }
   }
 
   @Override
   public String toString() {
-    String toStr = "RegionSnapshot [" + "path=" + this.getFullPath()
-        + ",parent=" + (this.parent == null ? "null" : this.parent.name)
-        + ", entryCount=" + this.entryCount + ", subRegionCount="
-        + this.subRegionSnapshots.size() + "<<";
+    String toStr = "RegionSnapshot [" + "path=" + this.getFullPath() + ",parent="
+        + (this.parent == null ? "null" : this.parent.name) + ", entryCount=" + this.entryCount
+        + ", subRegionCount=" + this.subRegionSnapshots.size() + "<<";
 
     for (Iterator iter = subRegionSnapshots.iterator(); iter.hasNext();) {
-      toStr = toStr + ((RegionSubRegionSnapshot)iter.next()).getName() + ", ";
+      toStr = toStr + ((RegionSubRegionSnapshot) iter.next()).getName() + ", ";
     }
 
     toStr = toStr + ">>" + "]";

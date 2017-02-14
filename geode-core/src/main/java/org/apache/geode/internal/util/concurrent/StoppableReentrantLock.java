@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.util.concurrent;
 
@@ -23,8 +21,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.internal.Assert;
 
 /**
- * Instances of {@link java.util.concurrent.locks.Lock}
- * that respond to cancellations
+ * Instances of {@link java.util.concurrent.locks.Lock} that respond to cancellations
  * 
  */
 public class StoppableReentrantLock {
@@ -32,7 +29,7 @@ public class StoppableReentrantLock {
    * the underlying lock
    */
   private final ReentrantLock lock;
-  
+
   /**
    * This is how often waiters will wake up to check for cancellation
    */
@@ -42,19 +39,21 @@ public class StoppableReentrantLock {
    * the cancellation criterion
    */
   private final CancelCriterion stopper;
-  
+
   /**
    * Create a new instance with the given cancellation criterion
+   * 
    * @param stopper the cancellation criterion
    */
   public StoppableReentrantLock(CancelCriterion stopper) {
     Assert.assertTrue(stopper != null);
     this.lock = new ReentrantLock();
     this.stopper = stopper;
-    }
+  }
 
   /**
    * Create a new instance with given fairness and cancellation criterion
+   * 
    * @param fair whether to be fair
    * @param stopper the cancellation criterion
    */
@@ -62,7 +61,7 @@ public class StoppableReentrantLock {
     Assert.assertTrue(stopper != null);
     this.stopper = stopper;
     this.lock = new ReentrantLock();
-    }
+  }
 
 
   public void lock() {
@@ -71,12 +70,11 @@ public class StoppableReentrantLock {
       try {
         lockInterruptibly();
         break;
-      }
-      catch (InterruptedException e) {
+      } catch (InterruptedException e) {
         interrupted = true;
-      }
-      finally {
-        if (interrupted) Thread.currentThread().interrupt();
+      } finally {
+        if (interrupted)
+          Thread.currentThread().interrupt();
       }
     } // for
   }
@@ -120,7 +118,7 @@ public class StoppableReentrantLock {
   public StoppableCondition newCondition() {
     return new StoppableCondition(lock.newCondition(), stopper);
   }
-  
+
   /**
    * @return true if it is held
    */

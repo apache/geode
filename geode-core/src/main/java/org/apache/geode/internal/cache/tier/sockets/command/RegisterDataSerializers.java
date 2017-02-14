@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -37,28 +35,24 @@ public class RegisterDataSerializers extends BaseCommand {
     return singleton;
   }
 
-  private RegisterDataSerializers() {
-  }
+  private RegisterDataSerializers() {}
 
   public void cmdExecute(Message msg, ServerConnection servConn, long start)
       throws IOException, ClassNotFoundException {
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received register dataserializer request ({} parts) from {}", servConn.getName(), msg.getNumberOfParts(), servConn.getSocketString());
+      logger.debug("{}: Received register dataserializer request ({} parts) from {}",
+          servConn.getName(), msg.getNumberOfParts(), servConn.getSocketString());
     }
     int noOfParts = msg.getNumberOfParts();
-    
+
     // 2 parts per instantiator and one eventId part
     int noOfDataSerializers = (noOfParts - 1) / 2;
 
     // retrieve eventID from the last Part
-    ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(msg.getPart(noOfParts - 1)
-        .getSerializedForm());
-    long threadId = EventID
-        .readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    long sequenceId = EventID
-        .readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
-    EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId,
-        sequenceId);
+    ByteBuffer eventIdPartsBuffer = ByteBuffer.wrap(msg.getPart(noOfParts - 1).getSerializedForm());
+    long threadId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    long sequenceId = EventID.readEventIdPartsFromOptmizedByteArray(eventIdPartsBuffer);
+    EventID eventId = new EventID(servConn.getEventMemberIDByteArray(), threadId, sequenceId);
 
     byte[][] serializedDataSerializers = new byte[noOfDataSerializers * 2][];
     boolean caughtCNFE = false;
@@ -68,8 +62,8 @@ public class RegisterDataSerializers extends BaseCommand {
 
         Part dataSerializerClassNamePart = msg.getPart(i);
         serializedDataSerializers[i] = dataSerializerClassNamePart.getSerializedForm();
-        String dataSerializerClassName = (String)CacheServerHelper
-            .deserialize(serializedDataSerializers[i]);
+        String dataSerializerClassName =
+            (String) CacheServerHelper.deserialize(serializedDataSerializers[i]);
 
         Part idPart = msg.getPart(i + 1);
         serializedDataSerializers[i + 1] = idPart.getSerializedForm();
@@ -78,17 +72,16 @@ public class RegisterDataSerializers extends BaseCommand {
         Class dataSerializerClass = null;
         try {
           dataSerializerClass = InternalDataSerializer.getCachedClass(dataSerializerClassName);
-          InternalDataSerializer.register(dataSerializerClass, true, eventId, servConn.getProxyID());
-        }
-        catch (ClassNotFoundException e) {
+          InternalDataSerializer.register(dataSerializerClass, true, eventId,
+              servConn.getProxyID());
+        } catch (ClassNotFoundException e) {
           // If a ClassNotFoundException is caught, store it, but continue
           // processing other instantiators
           caughtCNFE = true;
           cnfe = e;
         }
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       writeException(msg, e, false, servConn);
       servConn.setAsTrue(RESPONDED);
     }

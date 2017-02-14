@@ -103,10 +103,22 @@ Content-Type: application/json
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>401 UNAUTHORIZED</td>
+<td>Invalid Username or Password</td>
+</tr>
+<tr>
+<td>403 FORBIDDEN</td>
+<td>Insufficient privileges for operation</td>
+</tr>
 <tr class="odd">
 <td>500 INTERNAL SERVER ERROR</td>
 <td>Error encountered at Geode server. Check the HTTP response body for a stack trace of the exception. Some possible exceptions include:
 <ul>
+<li>A function was applied to a parameter that is improper for that function!</li>
+<li>Bind parameter is not of the expected type!</li>
+<li>Name in the query cannot be resolved!</li>
+<li>The number of bound parameters does not match the number of placeholders!</li>
 <li>Query is not permitted on this type of region!</li>
 <li>Query execution time is exceeded max query execution time (gemfire.Cache.MAX_QUERY_EXECUTION_TIME) configured!</li>
 <li>Data referenced in from clause is not available for querying!</li>

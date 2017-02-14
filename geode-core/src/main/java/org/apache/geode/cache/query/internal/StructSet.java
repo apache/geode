@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -34,17 +32,15 @@ import org.apache.geode.cache.query.internal.types.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * A Set constrained to contain Structs of all the same type. To conserve on
- * objects, we store the StructType once and reuse it to generate Struct
- * instances on demand.
+ * A Set constrained to contain Structs of all the same type. To conserve on objects, we store the
+ * StructType once and reuse it to generate Struct instances on demand.
  * 
- * The values in this set are stored as Object[] and get wrapped in Structs as
- * necessary.
+ * The values in this set are stored as Object[] and get wrapped in Structs as necessary.
  * 
  * @since GemFire 4.0
  */
-public final class StructSet /*extends ObjectOpenCustomHashSet*/ implements Set, SelectResults, 
-DataSerializableFixedID, StructFields {
+public final class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, SelectResults,
+    DataSerializableFixedID, StructFields {
   private static final long serialVersionUID = -1228835506930611510L;
 
   protected StructType structType;
@@ -56,12 +52,11 @@ DataSerializableFixedID, StructFields {
    * Holds the actual contents of the StructSet
    */
   private ObjectOpenCustomHashSet contents;
-  
+
   /**
    * Empty constructor to satisfy <code>DataSerializer</code> requirements
    */
-  public StructSet() {  
-  }
+  public StructSet() {}
 
   /**
    * This implementation uses Arrays.equals(Object[]) as it hashing strategy.
@@ -76,17 +71,19 @@ DataSerializableFixedID, StructFields {
       int h = 0;
       for (int i = 0; i < oa.length; i++) {
         Object obj = oa[i];
-        if (obj != null) h += obj.hashCode();
+        if (obj != null)
+          h += obj.hashCode();
       }
       return h;
     }
 
     public final boolean equals(Object o1, Object o2) {
       // throws ClassCastException if not Object[]
-    	if (o1 == null) return o2 == null;
-        if (!(o1 instanceof Object[]) || !(o2 instanceof Object[])) {
-          return o1.equals(o2);
-        } 
+      if (o1 == null)
+        return o2 == null;
+      if (!(o1 instanceof Object[]) || !(o2 instanceof Object[])) {
+        return o1.equals(o2);
+      }
       return Arrays.equals((Object[]) o1, (Object[]) o2);
     }
   }
@@ -94,24 +91,31 @@ DataSerializableFixedID, StructFields {
   /** Creates a new instance of StructSet */
   public StructSet(StructType structType) {
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
-    if (structType == null) { throw new IllegalArgumentException(LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString()); }
+    if (structType == null) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+    }
     this.structType = structType;
   }
 
   /** takes collection of Object[] fieldValues *or* another StructSet */
   public StructSet(Collection c, StructType structType) {
     this.contents = new ObjectOpenCustomHashSet(c, new ObjectArrayHashingStrategy());
-    if (structType == null) { throw new IllegalArgumentException(LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString()); }
+    if (structType == null) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+    }
     this.structType = structType;
   }
 
-  /** Creates a StructSet directly from a StructBag;
-   *  (internal use) 
-   *  @since GemFire 5.1
+  /**
+   * Creates a StructSet directly from a StructBag; (internal use)
+   * 
+   * @since GemFire 5.1
    */
   StructSet(StructBag bag) {
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
-    this.structType = (StructType)bag.elementType;
+    this.structType = (StructType) bag.elementType;
     if (bag.hasLimitIterator) {
       // Asif: Since the number of unique keys which
       // will be returned by Bag with limit in place
@@ -120,27 +124,33 @@ DataSerializableFixedID, StructFields {
       // to equal to bag's size
       Iterator itr = bag.fieldValuesIterator();
       while (itr.hasNext()) {
-        addFieldValues((Object[])itr.next());
+        addFieldValues((Object[]) itr.next());
       }
-    }
-    else {
+    } else {
       Set keys = bag.map.keySet();
       for (Object key : keys) {
-        addFieldValues((Object[])key);
+        addFieldValues((Object[]) key);
       }
     }
   }
-    
+
 
   public StructSet(int initialCapacity, StructType structType) {
     this.contents = new ObjectOpenCustomHashSet(initialCapacity, new ObjectArrayHashingStrategy());
-    if (structType == null) { throw new IllegalArgumentException(LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString()); }
+    if (structType == null) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+    }
     this.structType = structType;
   }
 
   public StructSet(int initialCapacity, float loadFactor, StructType structType) {
-    this.contents = new ObjectOpenCustomHashSet(initialCapacity, loadFactor, new ObjectArrayHashingStrategy());
-    if (structType == null) { throw new IllegalArgumentException(LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString()); }
+    this.contents =
+        new ObjectOpenCustomHashSet(initialCapacity, loadFactor, new ObjectArrayHashingStrategy());
+    if (structType == null) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.StructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
+    }
     this.structType = structType;
   }
 
@@ -150,29 +160,34 @@ DataSerializableFixedID, StructFields {
     if (!(other instanceof StructSet)) {
       return false;
     }
-    if (!this.structType.equals(((StructSet)other).structType)) {
+    if (!this.structType.equals(((StructSet) other).structType)) {
       return false;
     }
     if (other.getClass() == StructSet.class) {
-      return this.contents.equals(((StructSet)other).contents);
+      return this.contents.equals(((StructSet) other).contents);
     } else {
       return false;
     }
   }
-  
+
   @Override
   public int hashCode() {
     return this.structType.hashCode();
   }
-  
-  
+
+
   /** Add a Struct */
   @Override
   public boolean add(Object obj) {
-    if (!(obj instanceof StructImpl)) { throw new IllegalArgumentException(LocalizedStrings.StructSet_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL.toLocalizedString()); }
+    if (!(obj instanceof StructImpl)) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.StructSet_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL.toLocalizedString());
+    }
     StructImpl s = (StructImpl) obj;
     if (!s.getStructType().equals(this.structType)) {
-      throw new IllegalArgumentException(LocalizedStrings.StructSet_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE_REQUIRED_0_ACTUAL_1.toLocalizedString(new Object[] {this.structType, s.getStructType()}));
+      throw new IllegalArgumentException(
+          LocalizedStrings.StructSet_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE_REQUIRED_0_ACTUAL_1
+              .toLocalizedString(new Object[] {this.structType, s.getStructType()}));
     }
     return addFieldValues(s.getFieldValues());
   }
@@ -187,15 +202,18 @@ DataSerializableFixedID, StructFields {
   /** Does this set contain specified struct? */
   @Override
   public boolean contains(Object obj) {
-    if (!(obj instanceof Struct)) { return false; }
+    if (!(obj instanceof Struct)) {
+      return false;
+    }
     Struct s = (Struct) obj;
-    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) { return false; }
+    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
+      return false;
+    }
     return containsFieldValues(s.getFieldValues());
   }
 
   /**
-   * Does this set contain a Struct of the correct type with the specified
-   * values?
+   * Does this set contain a Struct of the correct type with the specified values?
    */
   public boolean containsFieldValues(Object[] fieldValues) {
     return this.contents.contains(fieldValues);
@@ -203,9 +221,13 @@ DataSerializableFixedID, StructFields {
 
   /** Remove the specified Struct */
   public boolean removeEntry(Object o) {
-    if (!(o instanceof Struct)) { return false; }
+    if (!(o instanceof Struct)) {
+      return false;
+    }
     Struct s = (Struct) o;
-    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) { return false; }
+    if (!this.structType.equals(StructTypeImpl.typeFromStruct(s))) {
+      return false;
+    }
     return removeFieldValues(s.getFieldValues());
   }
 
@@ -216,23 +238,42 @@ DataSerializableFixedID, StructFields {
 
   // downcast StructSets to call more efficient methods
   public boolean addAll(Collection c) {
-    if (c instanceof StructSet) { return addAll((StructSet) c); }
-    return this.contents.addAll(c);
+    if (c instanceof StructSet) {
+      return addAll((StructSet) c);
+    } else {
+      boolean modified = false;
+      for (Object o : c) {
+        modified |= add(o);
+      }
+      return modified;
+    }
   }
 
   public boolean removeAll(Collection c) {
-    if (c instanceof StructSet) { return removeAll((StructSet) c); }
-    return this.contents.removeAll(c);
+    if (c instanceof StructSet) {
+      return removeAll((StructSet) c);
+    } else {
+      boolean modified = false;
+      for (Object o : c) {
+        modified |= remove(o);
+      }
+      return modified;
+    }
   }
 
   public boolean retainAll(Collection c) {
-    if (c instanceof StructSet) { return retainAll((StructSet) c); }
+    if (c instanceof StructSet) {
+      return retainAll((StructSet) c);
+    }
     return this.contents.retainAll(c);
   }
 
   public boolean addAll(StructSet ss) {
     boolean modified = false;
-    if (!this.structType.equals(ss.structType)) { throw new IllegalArgumentException(LocalizedStrings.StructSet_TYPES_DONT_MATCH.toLocalizedString()); }
+    if (!this.structType.equals(ss.structType)) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.StructSet_TYPES_DONT_MATCH.toLocalizedString());
+    }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
       Object[] vals = (Object[]) itr.next();
       if (this.contents.add(vals)) {
@@ -244,8 +285,9 @@ DataSerializableFixedID, StructFields {
 
   public boolean removeAll(StructSet ss) {
     boolean modified = false;
-    if (!this.structType.equals(ss.structType)) { return false; // nothing
-                                                                // modified
+    if (!this.structType.equals(ss.structType)) {
+      return false; // nothing
+                    // modified
     }
     for (Iterator itr = ss.fieldValuesIterator(); itr.hasNext();) {
       Object[] vals = (Object[]) itr.next();
@@ -260,8 +302,7 @@ DataSerializableFixedID, StructFields {
     if (!this.structType.equals(ss.structType)) {
       if (isEmpty()) {
         return false; // nothing modified
-      }
-      else {
+      } else {
         clear();
         return true; // nothing retained in receiver collection
       }
@@ -300,7 +341,10 @@ DataSerializableFixedID, StructFields {
   // For now just trust that the application knows what it is doing if it
   // is overriding the element type in a set of structs
   public void setElementType(ObjectType elementType) {
-    if (!(elementType instanceof StructTypeImpl)) { throw new IllegalArgumentException(LocalizedStrings.StructSet_ELEMENT_TYPE_MUST_BE_STRUCT.toLocalizedString()); }
+    if (!(elementType instanceof StructTypeImpl)) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.StructSet_ELEMENT_TYPE_MUST_BE_STRUCT.toLocalizedString());
+    }
     this.structType = (StructType) elementType;
   }
 
@@ -324,7 +368,7 @@ DataSerializableFixedID, StructFields {
   public int occurrences(Object element) {
     return contains(element) ? 1 : 0;
   }
-  
+
   /**
    * Setter for property modifiable.
    * 
@@ -344,7 +388,8 @@ DataSerializableFixedID, StructFields {
       Object o = i.next();
       buf.append(o == this ? "(this Collection)" : String.valueOf(o));
       hasNext = i.hasNext();
-      if (hasNext) buf.append(", ");
+      if (hasNext)
+        buf.append(", ");
     }
     buf.append("]");
     return buf.toString();
@@ -369,7 +414,7 @@ DataSerializableFixedID, StructFields {
     }
 
     public Object next() {
-      return new StructImpl((StructTypeImpl)StructSet.this.structType, (Object[]) this.itr.next());
+      return new StructImpl((StructTypeImpl) StructSet.this.structType, (Object[]) this.itr.next());
     }
 
     public void remove() {
@@ -377,23 +422,21 @@ DataSerializableFixedID, StructFields {
     }
 
   }
-  
+
   public int getDSFID() {
     return STRUCT_SET;
   }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException
-  {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     int size = in.readInt();
-    this.structType = (StructTypeImpl)DataSerializer.readObject(in);
+    this.structType = (StructTypeImpl) DataSerializer.readObject(in);
     for (int j = size; j > 0; j--) {
       this.add(DataSerializer.readObject(in));
     }
   }
 
-  public void toData(DataOutput out) throws IOException
-  {    
+  public void toData(DataOutput out) throws IOException {
     out.writeInt(this.size());
     DataSerializer.writeObject(this.structType, out);
     for (Iterator i = this.iterator(); i.hasNext();) {
@@ -420,33 +463,33 @@ DataSerializableFixedID, StructFields {
   public Object[] toArray() {
     Struct[] structs = new Struct[this.contents.size()];
     int i = 0;
-    for (Iterator iter = this.iterator(); iter.hasNext();) {      
-      structs[i++]  = (Struct)iter.next();
+    for (Iterator iter = this.iterator(); iter.hasNext();) {
+      structs[i++] = (Struct) iter.next();
     }
-    return structs;    
+    return structs;
   }
 
   @Override
-  public Object[] toArray(Object[] a) {    
+  public Object[] toArray(Object[] a) {
     Object[] array = this.contents.toArray(a);
     int i = 0;
-    for(Object o : array) {
-      array[i++] = new StructImpl((StructTypeImpl)this.structType, (Object[])o);
+    for (Object o : array) {
+      array[i++] = new StructImpl((StructTypeImpl) this.structType, (Object[]) o);
     }
     return array;
   }
 
   @Override
   public boolean remove(Object o) {
-    if(o instanceof Struct) {
-      o = ((Struct)o).getFieldValues();
+    if (o instanceof Struct) {
+      o = ((Struct) o).getFieldValues();
     }
     return this.contents.remove(o);
   }
 
   @Override
   public boolean containsAll(Collection c) {
-    //TODO: Asif : This is wrong ,we need to fix this.
+    // TODO: Asif : This is wrong ,we need to fix this.
     return this.contents.containsAll(c);
   }
 

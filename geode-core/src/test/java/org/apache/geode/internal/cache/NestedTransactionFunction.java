@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -31,19 +29,17 @@ import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * This function is used by {@link CommitFunction} to commit existing transaction.
- * A {@link TransactionId} corresponding to the transaction to be
- * committed must be provided as an argument while invoking this function.<br />
+ * This function is used by {@link CommitFunction} to commit existing transaction. A
+ * {@link TransactionId} corresponding to the transaction to be committed must be provided as an
+ * argument while invoking this function.<br />
  * 
  * When executed this function commits a transaction if it exists locally.<br />
  * 
- * This function returns a single Boolean as result, whose value is <code>Boolean.TRUE</code>
- * if the transaction committed successfully otherwise the return value is
- * <code>Boolean.FALSE</code><br />
+ * This function returns a single Boolean as result, whose value is <code>Boolean.TRUE</code> if the
+ * transaction committed successfully otherwise the return value is <code>Boolean.FALSE</code><br />
  * 
- * This function is <b>not</b> registered on the cache servers by default, and
- * it is the user's responsibility to register this function. see
- * {@link FunctionService#registerFunction(Function)}
+ * This function is <b>not</b> registered on the cache servers by default, and it is the user's
+ * responsibility to register this function. see {@link FunctionService#registerFunction(Function)}
  * 
  * @see CommitFunction
  * @since GemFire 6.6.1
@@ -54,7 +50,7 @@ public class NestedTransactionFunction implements Function {
 
   public static final int COMMIT = 1;
   public static final int ROLLBACK = 2;
-  
+
   private static final long serialVersionUID = 1400965724856341543L;
 
   public boolean hasResult() {
@@ -70,7 +66,8 @@ public class NestedTransactionFunction implements Function {
       txId = (TXId) args.get(0);
       action = (Integer) args.get(1);
     } catch (ClassCastException e) {
-      logger.info("CommitFunction should be invoked with a TransactionId as an argument i.e. withArgs(txId).execute(function)");
+      logger.info(
+          "CommitFunction should be invoked with a TransactionId as an argument i.e. withArgs(txId).execute(function)");
       throw e;
     }
     CacheTransactionManager txMgr = cache.getCacheTransactionManager();

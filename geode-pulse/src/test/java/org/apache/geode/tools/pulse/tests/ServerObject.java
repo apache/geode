@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 package org.apache.geode.tools.pulse.tests;
@@ -31,26 +29,24 @@ import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
-public class ServerObject extends NotificationBroadcasterSupport implements
-    ServerObjectMBean {
+public class ServerObject extends NotificationBroadcasterSupport implements ServerObjectMBean {
   private String name = null;
 
   private TabularDataSupport wanInfo;
-  private static String[] itemNames = { "key", "value" };
-  private static String[] itemDescriptions = { "Key", "Value" };
-  private static OpenType[] itemTypes = { SimpleType.STRING, SimpleType.BOOLEAN };
+  private static String[] itemNames = {"key", "value"};
+  private static String[] itemDescriptions = {"Key", "Value"};
+  private static OpenType[] itemTypes = {SimpleType.STRING, SimpleType.BOOLEAN};
   private static CompositeType wanInfoType = null;
 
-  private static String[] indexNames = { "key" };
+  private static String[] indexNames = {"key"};
   private static TabularType wanType = null;
 
   static {
     try {
-      wanInfoType = new CompositeType("wanInfo", "WAN Information", itemNames,
-          itemDescriptions, itemTypes);
+      wanInfoType =
+          new CompositeType("wanInfo", "WAN Information", itemNames, itemDescriptions, itemTypes);
 
-      wanType = new TabularType("wanInfo", "WAN Information", wanInfoType,
-          indexNames);
+      wanType = new TabularType("wanInfo", "WAN Information", wanInfoType, indexNames);
 
     } catch (OpenDataException e) {
       e.printStackTrace();
@@ -68,26 +64,22 @@ public class ServerObject extends NotificationBroadcasterSupport implements
 
   @Override
   public String[] listCacheServers() {
-    return JMXProperties.getInstance()
-        .getProperty(getKey("listCacheServers"), "").split(" ");
+    return JMXProperties.getInstance().getProperty(getKey("listCacheServers"), "").split(" ");
   }
 
   @Override
   public String[] listServers() {
-    return JMXProperties.getInstance()
-            .getProperty(getKey("listServers"), "").split(" ");
+    return JMXProperties.getInstance().getProperty(getKey("listServers"), "").split(" ");
   }
 
   @Override
   public TabularData viewRemoteClusterStatus() {
     wanInfo.clear();
-    String[] wan = JMXProperties.getInstance()
-        .getProperty(getKey("wanInfo"), "").split(" ");
+    String[] wan = JMXProperties.getInstance().getProperty(getKey("wanInfo"), "").split(" ");
     int cnt = 0;
     while (wan.length >= (cnt + 2)) {
       try {
-        wanInfo.put(buildWanInfoType(new String(wan[cnt]),
-            Boolean.parseBoolean(wan[cnt + 1])));
+        wanInfo.put(buildWanInfoType(new String(wan[cnt]), Boolean.parseBoolean(wan[cnt + 1])));
       } catch (OpenDataException e) {
         e.printStackTrace();
       }
@@ -99,112 +91,96 @@ public class ServerObject extends NotificationBroadcasterSupport implements
 
   @Override
   public int getMemberCount() {
-    return Integer.parseInt(JMXProperties.getInstance().getProperty(
-        getKey("memberCount")));
+    return Integer.parseInt(JMXProperties.getInstance().getProperty(getKey("memberCount")));
   }
 
   @Override
   public int getNumClients() {
-    return Integer.parseInt(JMXProperties.getInstance().getProperty(
-        getKey("numClients")));
+    return Integer.parseInt(JMXProperties.getInstance().getProperty(getKey("numClients")));
   }
 
   @Override
   public int getDistributedSystemId() {
-    return Integer.parseInt(JMXProperties.getInstance().getProperty(
-        getKey("distributedSystemId")));
+    return Integer.parseInt(JMXProperties.getInstance().getProperty(getKey("distributedSystemId")));
   }
 
   @Override
   public int getLocatorCount() {
-    return Integer.parseInt(JMXProperties.getInstance().getProperty(
-        getKey("locatorCount")));
+    return Integer.parseInt(JMXProperties.getInstance().getProperty(getKey("locatorCount")));
   }
 
   @Override
   public int getTotalRegionCount() {
-    return Integer.parseInt(JMXProperties.getInstance().getProperty(
-        getKey("totalRegionCount")));
+    return Integer.parseInt(JMXProperties.getInstance().getProperty(getKey("totalRegionCount")));
   }
 
   @Override
   public int getNumRunningFunctions() {
-    return Integer.parseInt(JMXProperties.getInstance().getProperty(
-        getKey("numRunningFunctions")));
+    return Integer.parseInt(JMXProperties.getInstance().getProperty(getKey("numRunningFunctions")));
   }
 
   @Override
   public long getRegisteredCQCount() {
-    return Long.parseLong(JMXProperties.getInstance().getProperty(
-        getKey("registeredCQCount")));
+    return Long.parseLong(JMXProperties.getInstance().getProperty(getKey("registeredCQCount")));
   }
 
   @Override
   public int getNumSubscriptions() {
-    return Integer.parseInt(JMXProperties.getInstance().getProperty(
-        getKey("numSubscriptions")));
+    return Integer.parseInt(JMXProperties.getInstance().getProperty(getKey("numSubscriptions")));
   }
 
   // For SQLFire/GemFireXD
   @Override
   public int getTransactionCommitted() {
-    return Integer.parseInt(JMXProperties.getInstance().getProperty(
-        getKey("TransactionCommitted")));
+    return Integer
+        .parseInt(JMXProperties.getInstance().getProperty(getKey("TransactionCommitted")));
   }
 
   // For SQLFire/GemFireXD
   @Override
   public int getTransactionRolledBack() {
-    return Integer.parseInt(JMXProperties.getInstance().getProperty(
-        getKey("TransactionRolledBack")));
+    return Integer
+        .parseInt(JMXProperties.getInstance().getProperty(getKey("TransactionRolledBack")));
   }
 
   @Override
   public long getTotalHeapSize() {
-    return Long.parseLong(JMXProperties.getInstance().getProperty(
-        getKey("totalHeapSize")));
+    return Long.parseLong(JMXProperties.getInstance().getProperty(getKey("totalHeapSize")));
   }
 
   @Override
   public long getUsedHeapSize() {
-    return Long.parseLong(JMXProperties.getInstance().getProperty(
-        getKey("usedHeapSize")));
+    return Long.parseLong(JMXProperties.getInstance().getProperty(getKey("usedHeapSize")));
   }
 
   @Override
   public long getMaxMemory() {
-    return Long.parseLong(JMXProperties.getInstance().getProperty(
-        getKey("MaxMemory")));
+    return Long.parseLong(JMXProperties.getInstance().getProperty(getKey("MaxMemory")));
   }
 
   @Override
   public long getUsedMemory() {
-    return Long.parseLong(JMXProperties.getInstance().getProperty(
-        getKey("UsedMemory")));
+    return Long.parseLong(JMXProperties.getInstance().getProperty(getKey("UsedMemory")));
   }
 
   @Override
   public long getTotalRegionEntryCount() {
-    return Long.parseLong(JMXProperties.getInstance().getProperty(
-        getKey("totalRegionEntryCount")));
+    return Long.parseLong(JMXProperties.getInstance().getProperty(getKey("totalRegionEntryCount")));
   }
 
   @Override
   public int getCurrentQueryCount() {
-    return Integer.parseInt(JMXProperties.getInstance().getProperty(
-        getKey("currentQueryCount")));
+    return Integer.parseInt(JMXProperties.getInstance().getProperty(getKey("currentQueryCount")));
   }
 
   @Override
   public long getTotalDiskUsage() {
-    return Long.parseLong(JMXProperties.getInstance().getProperty(
-        getKey("totalDiskUsage")));
+    return Long.parseLong(JMXProperties.getInstance().getProperty(getKey("totalDiskUsage")));
   }
 
   @Override
   public double getDiskWritesRate() {
-    return Double.parseDouble(JMXProperties.getInstance().getProperty(
-        getKey("diskWritesRate")));
+    return Double.parseDouble(JMXProperties.getInstance().getProperty(getKey("diskWritesRate")));
   }
 
   @Override
@@ -212,39 +188,34 @@ public class ServerObject extends NotificationBroadcasterSupport implements
     String val = JMXProperties.getInstance().getProperty(getKey("averageWrites"), "");
     double ret = Double.parseDouble(val);
     return ret;
-//    return Double.parseDouble(JMXProperties.getInstance().getProperty(
-//        getKey("averageWrites"), ""));
+    // return Double.parseDouble(JMXProperties.getInstance().getProperty(
+    // getKey("averageWrites"), ""));
   }
 
   @Override
   public double getAverageReads() {
-    return Double.parseDouble(JMXProperties.getInstance().getProperty(
-        getKey("averageReads"), ""));
+    return Double.parseDouble(JMXProperties.getInstance().getProperty(getKey("averageReads"), ""));
   }
 
   @Override
   public double getQueryRequestRate() {
-    return Double.parseDouble(JMXProperties.getInstance().getProperty(
-        getKey("queryRequestRate"), ""));
+    return Double
+        .parseDouble(JMXProperties.getInstance().getProperty(getKey("queryRequestRate"), ""));
   }
 
   @Override
   public double getDiskReadsRate() {
-    return Double.parseDouble(JMXProperties.getInstance().getProperty(
-        getKey("diskReadsRate"), ""));
+    return Double.parseDouble(JMXProperties.getInstance().getProperty(getKey("diskReadsRate"), ""));
   }
 
   @Override
   public long getJVMPauses() {
-    return Long.parseLong(JMXProperties.getInstance().getProperty(
-        getKey("jvmPauses"), ""));
+    return Long.parseLong(JMXProperties.getInstance().getProperty(getKey("jvmPauses"), ""));
   }
 
-  private CompositeData buildWanInfoType(String key, Boolean state)
-      throws OpenDataException {
-    Object[] itemValues = { key, state };
-    CompositeData result = new CompositeDataSupport(wanInfoType, itemNames,
-        itemValues);
+  private CompositeData buildWanInfoType(String key, Boolean state) throws OpenDataException {
+    Object[] itemValues = {key, state};
+    CompositeData result = new CompositeDataSupport(wanInfoType, itemNames, itemValues);
 
     return result;
   }
@@ -254,9 +225,9 @@ public class ServerObject extends NotificationBroadcasterSupport implements
     // p0 : query
     // p1 : comma separated members
     // p2 : limit
-    
+
     DataBrowserResultLoader dbrLoader = DataBrowserResultLoader.getInstance();
-    
+
     try {
       return dbrLoader.load(p0);
     } catch (IOException e) {

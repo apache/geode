@@ -1,22 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /*
- * ParameterBindingJUnitTest.java
- * JUnit based test
+ * ParameterBindingJUnitTest.java JUnit based test
  *
  * Created on March 10, 2005, 2:42 PM
  */
@@ -63,7 +60,8 @@ public class ParameterBindingJUnitTest {
     return CacheUtils.createRegion(regionName, Portfolio.class);
   }
 
-  private Index createIndex(String indexName, String indexedExpression, String regionPath) throws Exception {
+  private Index createIndex(String indexName, String indexedExpression, String regionPath)
+      throws Exception {
     QueryService qs = CacheUtils.getQueryService();
     return qs.createIndex(indexName, indexedExpression, regionPath);
   }
@@ -85,7 +83,8 @@ public class ParameterBindingJUnitTest {
     CacheUtils.closeCache();
   }
 
-  private void validateQueryWithBindParameter(String queryString, Object[] bindParameters, int expectedSize) throws Exception {
+  private void validateQueryWithBindParameter(String queryString, Object[] bindParameters,
+      int expectedSize) throws Exception {
     Query query = CacheUtils.getQueryService().newQuery(queryString);
     Object result = query.execute(bindParameters);
     assertEquals(expectedSize, ((Collection) result).size());
@@ -95,7 +94,7 @@ public class ParameterBindingJUnitTest {
   public void testBindCollectionInFromClause() throws Exception {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
-    Object params[] = new Object[] { region.values() };
+    Object params[] = new Object[] {region.values()};
     validateQueryWithBindParameter("SELECT DISTINCT * FROM $1 ", params, numEntries);
   }
 
@@ -103,7 +102,7 @@ public class ParameterBindingJUnitTest {
   public void testBindArrayInFromClause() throws Exception {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
-    Object params[] = new Object[] { region.values().toArray() };
+    Object params[] = new Object[] {region.values().toArray()};
     validateQueryWithBindParameter("SELECT DISTINCT * FROM $1 ", params, numEntries);
   }
 
@@ -117,7 +116,7 @@ public class ParameterBindingJUnitTest {
       Region.Entry entry = (Region.Entry) iter.next();
       map.put(entry.getKey(), entry.getValue());
     }
-    Object params[] = new Object[] { map };
+    Object params[] = new Object[] {map};
     validateQueryWithBindParameter("SELECT DISTINCT * FROM $1 ", params, numEntries);
   }
 
@@ -125,7 +124,7 @@ public class ParameterBindingJUnitTest {
   public void testBindRegionInFromClause() throws Exception {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
-    Object params[] = new Object[] { region };
+    Object params[] = new Object[] {region};
     validateQueryWithBindParameter("SELECT DISTINCT * FROM $1 ", params, numEntries);
   }
 
@@ -133,25 +132,29 @@ public class ParameterBindingJUnitTest {
   public void testStringBindValueAsMethodParameter() throws Exception {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
-    Query query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM /Portfolios where status.equals($1)");
-    Object params[] = new Object[] { "active" };
-    validateQueryWithBindParameter("SELECT DISTINCT * FROM /Portfolios where status.equals($1)", params, 2);
+    Query query = CacheUtils.getQueryService()
+        .newQuery("SELECT DISTINCT * FROM /Portfolios where status.equals($1)");
+    Object params[] = new Object[] {"active"};
+    validateQueryWithBindParameter("SELECT DISTINCT * FROM /Portfolios where status.equals($1)",
+        params, 2);
   }
 
   @Test
   public void testBindStringAsBindParameter() throws Exception {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
-    Query query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM /Portfolios where status = $1");
-    Object params[] = new Object[] { "active" };
-    validateQueryWithBindParameter("SELECT DISTINCT * FROM /Portfolios where status = $1", params, 2);
+    Query query = CacheUtils.getQueryService()
+        .newQuery("SELECT DISTINCT * FROM /Portfolios where status = $1");
+    Object params[] = new Object[] {"active"};
+    validateQueryWithBindParameter("SELECT DISTINCT * FROM /Portfolios where status = $1", params,
+        2);
   }
 
   @Test
   public void testBindInt() throws Exception {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
-    Object params[] = new Object[] { new Integer(1) };
+    Object params[] = new Object[] {new Integer(1)};
     validateQueryWithBindParameter("SELECT DISTINCT * FROM /Portfolios where ID = $1", params, 1);
   }
 
@@ -160,8 +163,9 @@ public class ParameterBindingJUnitTest {
     int numObjects = 10000;
     Region region = createAndPopulateRegion("Portfolios", numObjects);
     createIndex("Status Index", "status", "/Portfolios");
-    final Query query = CacheUtils.getQueryService().newQuery("SELECT * FROM /Portfolios where status like $1");
-    final Object[] bindParam = new Object[] { "%a%" };
+    final Query query =
+        CacheUtils.getQueryService().newQuery("SELECT * FROM /Portfolios where status like $1");
+    final Object[] bindParam = new Object[] {"%a%"};
     Collection<Callable> callables = new ConcurrentLinkedQueue<>();
     IntStream.range(0, 1000).parallel().forEach(i -> {
       callables.add(() -> {
@@ -170,8 +174,9 @@ public class ParameterBindingJUnitTest {
     });
     Collection<Object> results = MultithreadedTester.runMultithreaded(callables);
     results.forEach(result -> {
-      assertTrue(result.getClass().getName() + " was not an expected result", result instanceof Collection);
-      assertEquals(numObjects, ((Collection)result).size());
+      assertTrue(result.getClass().getName() + " was not an expected result",
+          result instanceof Collection);
+      assertEquals(numObjects, ((Collection) result).size());
     });
   }
 }

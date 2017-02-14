@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.auth;
 
@@ -98,17 +96,17 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     }
 
     @Override
-    public void init(LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
-    }
+    public void init(LogWriter systemLogger, LogWriter securityLogger)
+        throws AuthenticationFailedException {}
 
     @Override
-    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer) throws AuthenticationFailedException {
+    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer)
+        throws AuthenticationFailedException {
       throw new AuthenticationFailedException("expected get credential error");
     }
 
     @Override
-    public void close() {
-    }
+    public void close() {}
   }
 
   protected static final class SpyAuthInit implements AuthInitialize {
@@ -133,7 +131,8 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     }
 
     @Override
-    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer) throws AuthenticationFailedException {
+    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer)
+        throws AuthenticationFailedException {
       return props;
     }
 
@@ -151,8 +150,8 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     }
 
     @Override
-    public void init(LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
-    }
+    public void init(LogWriter systemLogger, LogWriter securityLogger)
+        throws AuthenticationFailedException {}
   }
 
   protected static final class AuthInitGetCredentialsAndInitThrow implements AuthInitialize {
@@ -162,18 +161,19 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     }
 
     @Override
-    public void init(LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
+    public void init(LogWriter systemLogger, LogWriter securityLogger)
+        throws AuthenticationFailedException {
       throw new AuthenticationFailedException("expected init error");
     }
 
     @Override
-    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer) throws AuthenticationFailedException {
+    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer)
+        throws AuthenticationFailedException {
       throw new AuthenticationFailedException("expected get credential error");
     }
 
     @Override
-    public void close() {
-    }
+    public void close() {}
   }
 
   protected static final class AuthInitGetCredentialsThrows implements AuthInitialize {
@@ -183,17 +183,17 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     }
 
     @Override
-    public void init(LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
-    }
+    public void init(LogWriter systemLogger, LogWriter securityLogger)
+        throws AuthenticationFailedException {}
 
     @Override
-    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer) throws AuthenticationFailedException {
+    public Properties getCredentials(Properties props, DistributedMember server, boolean isPeer)
+        throws AuthenticationFailedException {
       throw new AuthenticationFailedException("expected get credential error");
     }
 
     @Override
-    public void close() {
-    }
+    public void close() {}
   }
 
   protected static final class AuthenticatorReturnsNulls implements Authenticator {
@@ -203,17 +203,17 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     }
 
     @Override
-    public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
-    }
+    public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger)
+        throws AuthenticationFailedException {}
 
     @Override
-    public Principal authenticate(Properties props, DistributedMember member) throws AuthenticationFailedException {
+    public Principal authenticate(Properties props, DistributedMember member)
+        throws AuthenticationFailedException {
       return null;
     }
 
     @Override
-    public void close() {
-    }
+    public void close() {}
   }
 
   protected static final class AuthenticatorInitThrows implements Authenticator {
@@ -223,18 +223,19 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     }
 
     @Override
-    public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
+    public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger)
+        throws AuthenticationFailedException {
       throw new AuthenticationFailedException("expected init error");
     }
 
     @Override
-    public Principal authenticate(Properties props, DistributedMember member) throws AuthenticationFailedException {
+    public Principal authenticate(Properties props, DistributedMember member)
+        throws AuthenticationFailedException {
       return null;
     }
 
     @Override
-    public void close() {
-    }
+    public void close() {}
   }
 
   protected static final class AuthenticatorAuthenticateThrows implements Authenticator {
@@ -244,17 +245,17 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     }
 
     @Override
-    public Principal authenticate(Properties props, DistributedMember member) throws AuthenticationFailedException {
+    public Principal authenticate(Properties props, DistributedMember member)
+        throws AuthenticationFailedException {
       throw new AuthenticationFailedException("expected authenticate error");
     }
 
     @Override
-    public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
-    }
+    public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger)
+        throws AuthenticationFailedException {}
 
     @Override
-    public void close() {
-    }
+    public void close() {}
   }
 
   protected static final class SpyAuthenticator implements Authenticator {
@@ -279,7 +280,8 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     }
 
     @Override
-    public Principal authenticate(Properties props, DistributedMember member) throws AuthenticationFailedException {
+    public Principal authenticate(Properties props, DistributedMember member)
+        throws AuthenticationFailedException {
       return null;
     }
 
@@ -297,7 +299,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     }
 
     @Override
-    public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException {
-    }
+    public void init(Properties securityProps, LogWriter systemLogger, LogWriter securityLogger)
+        throws AuthenticationFailedException {}
   }
 }

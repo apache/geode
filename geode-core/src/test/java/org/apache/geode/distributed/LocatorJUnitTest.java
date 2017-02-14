@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed;
 
@@ -23,6 +21,7 @@ import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -31,7 +30,10 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
+import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
+import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -46,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
@@ -53,7 +56,9 @@ import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.junit.Assert.*;
 
-@Category(IntegrationTest.class)
+import com.jayway.awaitility.Awaitility;
+
+@Category({IntegrationTest.class, MembershipTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class LocatorJUnitTest {
@@ -66,10 +71,8 @@ public class LocatorJUnitTest {
 
   @Parameterized.Parameters
   public static Collection<Object> data() {
-    return Arrays.asList(new Object[] {
-        (IntSupplier) () -> 0,
-        (IntSupplier) () -> AvailablePortHelper.getRandomAvailableTCPPort()
-    });
+    return Arrays.asList(new Object[] {(IntSupplier) () -> 0,
+        (IntSupplier) () -> AvailablePortHelper.getRandomAvailableTCPPort()});
   }
 
   @Parameterized.Parameter
@@ -90,10 +93,10 @@ public class LocatorJUnitTest {
 
   @After
   public void tearDown() {
-    if(locator != null) {
+    if (locator != null) {
       locator.stop();
     }
-   assertEquals(false, Locator.hasLocator());
+    assertEquals(false, Locator.hasLocator());
   }
 
   /**
@@ -108,22 +111,49 @@ public class LocatorJUnitTest {
     dsprops.setProperty(JMX_MANAGER_START, "true");
     dsprops.setProperty(JMX_MANAGER_HTTP_PORT, "0");
     dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "disableManagement", "false"); // not needed
+    dsprops.setProperty(LOG_FILE, "");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "disableManagement", "false"); // not
+                                                                                          // needed
     try {
-      locator = Locator.startLocatorAndDS(port, new File("testJmxManager.log"), dsprops);
-      List<JmxManagerProfile> alreadyManaging = GemFireCacheImpl.getInstance().getJmxManagerAdvisor().adviseAlreadyManaging();
+      locator = Locator.startLocatorAndDS(port, null, dsprops);
+      List<JmxManagerProfile> alreadyManaging =
+          GemFireCacheImpl.getInstance().getJmxManagerAdvisor().adviseAlreadyManaging();
       assertEquals(1, alreadyManaging.size());
-      assertEquals(GemFireCacheImpl.getInstance().getMyId(), alreadyManaging.get(0).getDistributedMember());
+      assertEquals(GemFireCacheImpl.getInstance().getMyId(),
+          alreadyManaging.get(0).getDistributedMember());
     } finally {
       System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "enabledManagement");
     }
   }
 
+  /**
+   * GEODE-2253 - a locator should handle a SharedConfigurationStatusRequest regardless of whether
+   * it has the service or not
+   */
+  @Test
+  public void testHandlersAreWaitedOn() throws Exception {
+    Properties dsprops = new Properties();
+    int jmxPort = getRandomAvailablePort(SOCKET);
+    dsprops.setProperty(MCAST_PORT, "0");
+    dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    dsprops.setProperty(LOCATOR_WAIT_TIME, "1"); // seconds
+    dsprops.setProperty(LOG_FILE, "");
+    locator = Locator.startLocatorAndDS(port, null, dsprops);
+    InternalLocator internalLocator = (InternalLocator) locator;
+    // the locator should always install a SharedConfigurationStatusRequest handler
+    assertTrue(internalLocator.hasHandlerForClass(SharedConfigurationStatusRequest.class));
+    // the locator should wait if a handler isn't installed
+    assertFalse(internalLocator.hasHandlerForClass(ConfigurationRequest.class));
+    ConfigurationRequest request = new ConfigurationRequest();
+    Object result = internalLocator.getPrimaryHandler().processRequest(request);
+    assertNull(result);
+    assertTrue(internalLocator.getPrimaryHandler().hasWaitedForHandlerInitialization());
+  }
+
+
   @Test
   public void testBasicInfo() throws Exception {
     locator = Locator.startLocator(port, tmpFile);
-    assertTrue(locator.isPeerLocator());
-    assertFalse(locator.isServerLocator());
     int boundPort = (port == 0) ? locator.getPort() : port;
     TcpClient client = new TcpClient();
     String[] info = client.getInfo(InetAddress.getLocalHost(), boundPort);
@@ -145,8 +175,8 @@ public class LocatorJUnitTest {
       locator.stop();
       fail("expected an exception");
     } catch (SystemConnectException expected) {
-      
-      for (int i=0; i<10; i++) {
+
+      for (int i = 0; i < 10; i++) {
         if (threadCount < Thread.activeCount()) {
           Thread.sleep(1000);
         }
@@ -154,42 +184,18 @@ public class LocatorJUnitTest {
       if (threadCount < Thread.activeCount()) {
         OSProcess.printStacks(0);
         fail("expected " + threadCount + " threads or fewer but found " + Thread.activeCount()
-            +".  Check log file for a thread dump.");
-        }
+            + ".  Check log file for a thread dump.");
+      }
+    } finally {
+      JGroupsMessenger.THROW_EXCEPTION_ON_START_HOOK = false;
     }
   }
 
-  @Test
-  public void testServerOnly() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
-    locator = Locator.startLocatorAndDS(port, tmpFile, null, props, false, true, null);
-   assertFalse(locator.isPeerLocator());
-   assertTrue(locator.isServerLocator());
-    Thread.sleep(1000);
-    doServerLocation(locator.getPort());
-  }
-
-  @Test
-  public void testBothPeerAndServer() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
-
-    locator = Locator.startLocatorAndDS(port, tmpFile, null, props);
-    assertTrue(locator.isPeerLocator());
-    assertTrue(locator.isServerLocator());
-    Thread.sleep(1000);
-    doServerLocation(locator.getPort());
-    locator.stop();
-  }
-
   /**
-   * Make sure two ServerLocation objects on different hosts but with the same port
-   * are not equal
+   * Make sure two ServerLocation objects on different hosts but with the same port are not equal
    * <p/>
-   * TRAC #42040: LoadBalancing directs all traffic to a single cache server if all servers are started on the same port
+   * TRAC #42040: LoadBalancing directs all traffic to a single cache server if all servers are
+   * started on the same port
    */
   @Test
   public void testServerLocationOnDifferentHostsShouldNotTestEqual() {
@@ -200,18 +206,4 @@ public class LocatorJUnitTest {
     }
   }
 
-  private void doServerLocation(int realPort) throws Exception {
-    {
-      ClientConnectionRequest request = new ClientConnectionRequest(Collections.EMPTY_SET, "group1");
-      ClientConnectionResponse response = (ClientConnectionResponse) new TcpClient().requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
-      assertEquals(null, response.getServer());
-    }
-
-    {
-      QueueConnectionRequest request = new QueueConnectionRequest(ClientProxyMembershipID.getNewProxyMembership(InternalDistributedSystem.getAnyInstance()), 3, Collections.EMPTY_SET, "group1",true);
-      QueueConnectionResponse response = (QueueConnectionResponse) new TcpClient().requestToServer(InetAddress.getLocalHost(), realPort, request, REQUEST_TIMEOUT);
-      assertEquals(new ArrayList(), response.getServers());
-      assertFalse(response.isDurableQueueFound());
-    }
-  }
 }

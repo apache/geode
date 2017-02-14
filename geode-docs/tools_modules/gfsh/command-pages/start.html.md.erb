@@ -164,7 +164,7 @@ JConsole automatically connects to a running JMX Manager node if one is availabl
 
 Note that you must have a JDK installed (not just a JRE) and the correct PATH and JAVA\_HOME environment variables set.
 
-See [Browsing Geode MBeans through JConsole](../../../managing/management/mbeans_jconsole.html) for an example of using JConsole with the GeodeGeode management and monitoring system.
+See [Browsing Geode MBeans through JConsole](../../../managing/management/mbeans_jconsole.html) for an example of using JConsole with the Geode management and monitoring system.
 
 **Availability:** Online or offline.
 
@@ -297,7 +297,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 <tbody>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-name</span></td>
-<td><em>Required.</em> Name to be used for this GeodeGeode locator service.</td>
+<td>Name to be used for this Geode locator service. If not specified, gfsh generates a random name.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -322,7 +322,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-locators</span></td>
-<td>List of locators used by this locator to join the appropriate GeodeGeode cluster.</td>
+<td>List of locators used by this locator to join the appropriate Geode cluster.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -332,7 +332,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-mcast-address </span></td>
-<td>IP address or hostname used to bind the UPD socket for multi-cast networking so the locator can locate other members in the GeodeGeode cluster. If mcast-port is zero, then mcast-address is ignored.</td>
+<td>IP address or hostname used to bind the UPD socket for multi-cast networking so the locator can locate other members in the Geode cluster. If mcast-port is zero, then mcast-address is ignored.</td>
 <td> </td>
 </tr>
 <tr class="odd">
@@ -364,7 +364,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 <td><span class="keyword parmname">\-\-initial-heap</span></td>
 <td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options.
 <div class="note note">
-<b>Note:</b> If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then GeodeGeode does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+<b>Note:</b> If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then Geode does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
 </div></td>
 <td> </td>
 </tr>
@@ -372,7 +372,7 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
 <td><span class="keyword parmname">\-\-max-heap</span></td>
 <td>Size has the same format as the <code class="ph codeph">-Xmx</code>/<code class="ph codeph">-Xms</code> JVM options
 <div class="note note">
-<b>Note:</b> If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then GeodeGeode does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
+<b>Note:</b> If you use the <code class="ph codeph">-J-Xms</code> and <code class="ph codeph">-J-Xmx</code> JVM properties instead of <code class="ph codeph">-initial-heap</code> and <code class="ph codeph">-max-heap</code>, then Geode does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.
 </div></td>
 <td> </td>
 </tr>
@@ -499,6 +499,9 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
     [--hostname-for-clients=value] [--max-connections=value]
     [--message-time-to-live=value] [--max-message-count=value] [--max-threads=value]
     [--socket-buffer-size=value] [--lock-memory=value] [--off-heap-memory-size=value]
+    [--start-rest-api=value]
+    [--http-service-port=value] [--http-service-bind-address=value]
+    [--user=value] [--password=value]
 ```
 
 <a id="topic_3764EE2DB18B4AE4A625E0354471738A__table_at5_bwg_2w"></a>
@@ -520,7 +523,7 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 <tbody>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-name</span></td>
-<td><em>Required.</em> Member name for this Geode Cache Server service.</td>
+<td>Member name for this Geode Cache Server service. If not specified, gfsh generates a random name.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -745,10 +748,39 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <td>The integer quantity of off-heap memory to be used for storing region values. Specified in Gigabytes with a 'g' suffix, or Megabytes with an 'm' suffix. For example, allocate a 2 Gigabyte off-heap space with <code class="ph codeph">--off-heap-memory-size=2g</code>. The default value of 0 does not use any off-heap memory.</td>
 <td>0</td>
 </tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-start-rest-api</span></td>
+<td>When true, starts the REST API service.</td>
+<td>false</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-http-service-port</span></td>
+<td>Specifies the port on which the HTTP service will listen.</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-http-service-bind-address</span></td>
+<td>Specifies the IP address to which the HTTP service will be bound.
+</td>
+<td>all local addresses</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-user</span></td>
+<td>The user name of the credential to use in authenticating to the cluster.
+When specified, if the <code>--password</code> option is not also specified,
+then <code>gfsh</code> will prompt for the password.
+</td>
+<td></td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-password</span></td>
+<td>The password portion of the credential to use in authenticating to
+the cluster.
+</td>
+<td></td>
+</tr>
 </tbody>
 </table>
-
-<span class="tablecap">Table 7. Start Server Parameters</span>
 
 ### <a id="topic_3764EE2DB18B4AE4A625E0354471738A__section_A50120613D3C4A848463236C4EFF18C7" class="no-quick-link"></a>Examples
 

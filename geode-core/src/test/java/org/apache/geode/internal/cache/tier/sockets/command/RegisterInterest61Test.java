@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -85,7 +83,8 @@ public class RegisterInterest61Test {
     MockitoAnnotations.initMocks(this);
 
 
-    when(this.authzRequest.registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any())).thenReturn(this.registerInterestOperationContext);
+    when(this.authzRequest.registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any()))
+        .thenReturn(this.registerInterestOperationContext);
 
     when(this.cache.getRegion(isA(String.class))).thenReturn(mock(LocalRegion.class));
     when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
@@ -142,7 +141,8 @@ public class RegisterInterest61Test {
   public void integratedSecurityShouldThrowIfNotAuthorized() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService).authorizeRegionRead(eq(REGION_NAME), eq(KEY));
+    doThrow(new NotAuthorizedException("")).when(this.securityService)
+        .authorizeRegionRead(eq(REGION_NAME), eq(KEY));
 
     this.registerInterest61.cmdExecute(this.message, this.serverConnection, 0);
 
@@ -166,13 +166,15 @@ public class RegisterInterest61Test {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(false);
 
-    doThrow(new NotAuthorizedException("")).when(this.authzRequest).registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
+    doThrow(new NotAuthorizedException("")).when(this.authzRequest)
+        .registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
 
     this.registerInterest61.cmdExecute(this.message, this.serverConnection, 0);
 
     verify(this.authzRequest).registerInterestAuthorize(eq(REGION_NAME), eq(KEY), anyInt(), any());
 
-    ArgumentCaptor<NotAuthorizedException> argument = ArgumentCaptor.forClass(NotAuthorizedException.class);
+    ArgumentCaptor<NotAuthorizedException> argument =
+        ArgumentCaptor.forClass(NotAuthorizedException.class);
     verify(this.chunkedResponseMessage).addObjPart(argument.capture());
 
     assertThat(argument.getValue()).isExactlyInstanceOf(NotAuthorizedException.class);

@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.apache.geode.modules.session.filter;
 
@@ -36,51 +34,48 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Primary class which orchestrates everything. This is the class which gets
- * configured in the web.xml.
+ * Primary class which orchestrates everything. This is the class which gets configured in the
+ * web.xml.
  */
 public class SessionCachingFilter implements Filter {
 
   /**
    * Logger instance
    */
-  private static final Logger LOG =
-      LoggerFactory.getLogger(SessionCachingFilter.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(SessionCachingFilter.class.getName());
 
   /**
-   * The filter configuration object we are associated with.  If this value is
-   * null, this filter instance is not currently configured.
+   * The filter configuration object we are associated with. If this value is null, this filter
+   * instance is not currently configured.
    */
   private FilterConfig filterConfig = null;
 
   /**
-   * Some containers will want to instantiate multiple instances of this filter,
-   * but we only need one SessionManager
+   * Some containers will want to instantiate multiple instances of this filter, but we only need
+   * one SessionManager
    */
   private static SessionManager manager = null;
 
   /**
    * Can be overridden during testing.
    */
-  private static AtomicInteger started =
-      new AtomicInteger(
-          Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "override.session.manager.count", 1));
+  private static AtomicInteger started = new AtomicInteger(
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "override.session.manager.count", 1));
 
-  private static int percentInactiveTimeTriggerRebuild =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "session.inactive.trigger.rebuild", 80);
+  private static int percentInactiveTimeTriggerRebuild = Integer
+      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "session.inactive.trigger.rebuild", 80);
 
   /**
-   * This latch ensures that at least one thread/instance has fired up the
-   * session manager before any other threads complete the init method.
+   * This latch ensures that at least one thread/instance has fired up the session manager before
+   * any other threads complete the init method.
    */
   private static CountDownLatch startingLatch = new CountDownLatch(1);
 
   /**
-   * This request wrapper class extends the support class
-   * HttpServletRequestWrapper, which implements all the methods in the
-   * HttpServletRequest interface, as delegations to the wrapped request. You
-   * only need to override the methods that you need to change. You can get
-   * access to the wrapped request using the method getRequest()
+   * This request wrapper class extends the support class HttpServletRequestWrapper, which
+   * implements all the methods in the HttpServletRequest interface, as delegations to the wrapped
+   * request. You only need to override the methods that you need to change. You can get access to
+   * the wrapped request using the method getRequest()
    */
   public static class RequestWrapper extends HttpServletRequestWrapper {
 
@@ -105,8 +100,7 @@ public class SessionCachingFilter implements Filter {
      */
     private HttpServletRequest originalRequest;
 
-    public RequestWrapper(SessionManager manager,
-        HttpServletRequest request,
+    public RequestWrapper(SessionManager manager, HttpServletRequest request,
         ResponseWrapper response) {
 
       super(request);
@@ -117,14 +111,12 @@ public class SessionCachingFilter implements Filter {
       final Cookie[] cookies = request.getCookies();
       if (cookies != null) {
         for (final Cookie cookie : cookies) {
-          if (cookie.getName().equalsIgnoreCase(
-              manager.getSessionCookieName()) &&
-              cookie.getValue().endsWith("-GF")) {
+          if (cookie.getName().equalsIgnoreCase(manager.getSessionCookieName())
+              && cookie.getValue().endsWith("-GF")) {
             requestedSessionId = cookie.getValue();
             sessionFromCookie = true;
 
-            LOG.debug("Cookie contains sessionId: {}",
-                requestedSessionId);
+            LOG.debug("Cookie contains sessionId: {}", requestedSessionId);
           }
         }
       }
@@ -156,16 +148,16 @@ public class SessionCachingFilter implements Filter {
       if (session != null && session.isValid()) {
         session.setIsNew(false);
         session.updateAccessTime();
-                /*
-                 * This is a massively gross hack. Currently, there is no way
-                 * to actually update the last accessed time for a session, so
-                 * what we do here is once we're into X% of the session's TTL
-                 * we grab a new session from the container.
-                 *
-                 * (inactive * 1000) * (pct / 100) ==> (inactive * 10 * pct)
-                 */
-        if (session.getLastAccessedTime() - session.getCreationTime() >
-            (session.getMaxInactiveInterval() * 10 * percentInactiveTimeTriggerRebuild)) {
+        /*
+         * This is a massively gross hack. Currently, there is no way to actually update the last
+         * accessed time for a session, so what we do here is once we're into X% of the session's
+         * TTL we grab a new session from the container.
+         *
+         * (inactive * 1000) * (pct / 100) ==> (inactive * 10 * pct)
+         */
+        if (session.getLastAccessedTime()
+            - session.getCreationTime() > (session.getMaxInactiveInterval() * 10
+                * percentInactiveTimeTriggerRebuild)) {
           HttpSession nativeSession = super.getSession();
           session.failoverSession(nativeSession);
         }
@@ -173,8 +165,7 @@ public class SessionCachingFilter implements Filter {
       }
 
       if (requestedSessionId != null) {
-        session = (GemfireHttpSession) manager.getSession(
-            requestedSessionId);
+        session = (GemfireHttpSession) manager.getSession(requestedSessionId);
         if (session != null) {
           session.setIsNew(false);
           // This means we've failed over to another node
@@ -231,22 +222,9 @@ public class SessionCachingFilter implements Filter {
       // Get the existing cookies
       Cookie[] cookies = getCookies();
 
-      Cookie cookie = new Cookie(manager.getSessionCookieName(),
-          session.getId());
+      Cookie cookie = new Cookie(manager.getSessionCookieName(), session.getId());
       cookie.setPath("".equals(getContextPath()) ? "/" : getContextPath());
-      // Clear out all old cookies and just set ours
       response.addCookie(cookie);
-
-      // Replace all other cookies which aren't JSESSIONIDs
-      if (cookies != null) {
-        for (Cookie c : cookies) {
-          if (manager.getSessionCookieName().equals(c.getName())) {
-            continue;
-          }
-          response.addCookie(c);
-        }
-      }
-
     }
 
     private String getCookieString(Cookie c) {
@@ -296,16 +274,14 @@ public class SessionCachingFilter implements Filter {
       }
     }
 
-        /*
-         * Hmmm... not sure if this is right or even good to do. So, in some
-         * cases - for ex. using a Spring security filter, we have 3 possible
-         * wrappers to deal with - the original, this one and one created by
-         * Spring. When a servlet or JSP is forwarded to the original request
-         * is passed in, but then this (the wrapped) request is used by the JSP.
-         * In some cases, the outer wrapper also contains information relevant
-         * to the request - in this case security info. So here we allow access
-         * to that. There's probably a better way....
-         */
+    /*
+     * Hmmm... not sure if this is right or even good to do. So, in some cases - for ex. using a
+     * Spring security filter, we have 3 possible wrappers to deal with - the original, this one and
+     * one created by Spring. When a servlet or JSP is forwarded to the original request is passed
+     * in, but then this (the wrapped) request is used by the JSP. In some cases, the outer wrapper
+     * also contains information relevant to the request - in this case security info. So here we
+     * allow access to that. There's probably a better way....
+     */
 
     /**
      * {@inheritDoc}
@@ -370,11 +346,10 @@ public class SessionCachingFilter implements Filter {
   }
 
   /**
-   * This response wrapper class extends the support class
-   * HttpServletResponseWrapper, which implements all the methods in the
-   * HttpServletResponse interface, as delegations to the wrapped response. You
-   * only need to override the methods that you need to change. You can get
-   * access to the wrapped response using the method getResponse()
+   * This response wrapper class extends the support class HttpServletResponseWrapper, which
+   * implements all the methods in the HttpServletResponse interface, as delegations to the wrapped
+   * response. You only need to override the methods that you need to change. You can get access to
+   * the wrapped response using the method getResponse()
    */
   class ResponseWrapper extends HttpServletResponseWrapper {
 
@@ -401,27 +376,25 @@ public class SessionCachingFilter implements Filter {
   }
 
 
-  public SessionCachingFilter() {
-  }
+  public SessionCachingFilter() {}
 
   /**
-   * @param request  The servlet request we are processing
+   * @param request The servlet request we are processing
    * @param response The servlet response we are creating
-   * @param chain    The filter chain we are processing
-   * @throws IOException      if an input/output error occurs
+   * @param chain The filter chain we are processing
+   * @throws IOException if an input/output error occurs
    * @throws ServletException if a servlet error occurs
    */
   @Override
-  public void doFilter(ServletRequest request, ServletResponse response,
-      FilterChain chain)
+  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
 
     HttpServletRequest httpReq = (HttpServletRequest) request;
     HttpServletResponse httpResp = (HttpServletResponse) response;
 
     /**
-     * Early out if this isn't the right kind of request. We might see a
-     * RequestWrapper instance during a forward or include request.
+     * Early out if this isn't the right kind of request. We might see a RequestWrapper instance
+     * during a forward or include request.
      */
     if (alreadyWrapped(httpReq)) {
       LOG.debug("Handling already-wrapped request");
@@ -439,8 +412,7 @@ public class SessionCachingFilter implements Filter {
     // include requests.
 
     ResponseWrapper wrappedResponse = new ResponseWrapper(httpResp);
-    final RequestWrapper wrappedRequest =
-        new RequestWrapper(manager, httpReq, wrappedResponse);
+    final RequestWrapper wrappedRequest = new RequestWrapper(manager, httpReq, wrappedResponse);
 
     Throwable problem = null;
 
@@ -454,8 +426,7 @@ public class SessionCachingFilter implements Filter {
       LOG.error("Exception processing filter chain", t);
     }
 
-    GemfireHttpSession session =
-        (GemfireHttpSession) wrappedRequest.getSession(false);
+    GemfireHttpSession session = (GemfireHttpSession) wrappedRequest.getSession(false);
 
     // If there was a problem, we want to rethrow it if it is
     // a known type, otherwise log it.
@@ -470,8 +441,8 @@ public class SessionCachingFilter implements Filter {
     }
 
     /**
-     * Commit any updates. What actually happens at that point is
-     * dependent on the type of attributes defined for use by the sessions.
+     * Commit any updates. What actually happens at that point is dependent on the type of
+     * attributes defined for use by the sessions.
      */
     if (session != null) {
       session.commit();
@@ -479,21 +450,21 @@ public class SessionCachingFilter implements Filter {
   }
 
   /**
-   * Test if a request has been wrapped with RequestWrapper somewhere
-   * in the chain of wrapped requests.
+   * Test if a request has been wrapped with RequestWrapper somewhere in the chain of wrapped
+   * requests.
    */
   private boolean alreadyWrapped(final ServletRequest request) {
-    if(request instanceof RequestWrapper) {
+    if (request instanceof RequestWrapper) {
       return true;
     }
 
-    if(!(request instanceof ServletRequestWrapper)) {
+    if (!(request instanceof ServletRequestWrapper)) {
       return false;
     }
 
     final ServletRequest nestedRequest = ((ServletRequestWrapper) request).getRequest();
 
-    if(nestedRequest == request) {
+    if (nestedRequest == request) {
       return false;
     }
 
@@ -541,8 +512,7 @@ public class SessionCachingFilter implements Filter {
       /**
        * Allow override for testing purposes
        */
-      String managerClassStr =
-          config.getInitParameter("session-manager-class");
+      String managerClassStr = config.getInitParameter("session-manager-class");
 
       // Otherwise default
       if (managerClassStr == null) {
@@ -550,8 +520,7 @@ public class SessionCachingFilter implements Filter {
       }
 
       try {
-        manager = (SessionManager) Class.forName(
-            managerClassStr).newInstance();
+        manager = (SessionManager) Class.forName(managerClassStr).newInstance();
         manager.start(config, this.getClass().getClassLoader());
       } catch (Exception ex) {
         LOG.error("Exception creating Session Manager", ex);
@@ -564,8 +533,7 @@ public class SessionCachingFilter implements Filter {
       } catch (InterruptedException iex) {
       }
 
-      LOG.debug("SessionManager and listener initialization skipped - "
-          + "already done.");
+      LOG.debug("SessionManager and listener initialization skipped - " + "already done.");
     }
 
     LOG.info("Session Filter initialization complete");
@@ -596,13 +564,12 @@ public class SessionCachingFilter implements Filter {
         response.setContentType("text/html");
         PrintStream ps = new PrintStream(response.getOutputStream());
         PrintWriter pw = new PrintWriter(ps);
-        pw.print(
-            "<html>\n<head>\n<title>Error</title>\n</head>\n<body>\n"); //NOI18N
+        pw.print("<html>\n<head>\n<title>Error</title>\n</head>\n<body>\n"); // NOI18N
 
         // PENDING! Localize this for next official release
         pw.print("<h1>The resource did not process correctly</h1>\n<pre>\n");
         pw.print(stackTrace);
-        pw.print("</pre></body>\n</html>"); //NOI18N
+        pw.print("</pre></body>\n</html>"); // NOI18N
         pw.close();
         ps.close();
         response.getOutputStream().close();
@@ -634,8 +601,7 @@ public class SessionCachingFilter implements Filter {
   }
 
   /**
-   * Retrieve the SessionManager. This is only here so that tests can get access
-   * to the cache.
+   * Retrieve the SessionManager. This is only here so that tests can get access to the cache.
    */
   public static SessionManager getSessionManager() {
     return manager;
@@ -644,16 +610,15 @@ public class SessionCachingFilter implements Filter {
   /**
    * Return the GemFire session which wraps a native session
    *
-   * @param nativeSession the native session for which the corresponding GemFire
-   *                      session should be returned.
-   * @return the GemFire session or null if no session maps to the native
-   * session
+   * @param nativeSession the native session for which the corresponding GemFire session should be
+   *        returned.
+   * @return the GemFire session or null if no session maps to the native session
    */
   public static HttpSession getWrappingSession(HttpSession nativeSession) {
-        /*
-         * This is a special case where the GemFire session has been set as a
-         * ThreadLocal during session creation.
-         */
+    /*
+     * This is a special case where the GemFire session has been set as a ThreadLocal during session
+     * creation.
+     */
     GemfireHttpSession gemfireSession = (GemfireHttpSession) ThreadLocalSession.get();
     if (gemfireSession != null) {
       gemfireSession.setNativeSession(nativeSession);

@@ -1,50 +1,42 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * ConcurrentHashMap implementation adapted from JSR 166 backport
- * (http://backport-jsr166.sourceforge.net) JDK5 version release 3.1
- * with modifications to use generics where appropriate:
- * backport-util-concurrent-Java60-3.1-src.tar.gz 
+ * (http://backport-jsr166.sourceforge.net) JDK5 version release 3.1 with modifications to use
+ * generics where appropriate: backport-util-concurrent-Java60-3.1-src.tar.gz
  * 
- * Primary change is to allow HashEntry be an interface so that custom HashEntry
- * implementations can be plugged in. These HashEntry objects are now assumed to
- * be immutable in the sense that they cannot and should not be cloned in a
- * rehash, and the rehash mechanism has been recoded using locking for that. For
- * Geode, this is now used to plugin the RegionEntry implementation
- * directly as a HashEntry instead of having it as a value and then HashEntry as
- * a separate object having references to key/value which reduces the entry
- * overhead substantially. Other change is to add a "create" method that creates
- * a new object using the {@link MapCallback} interface only if required unlike
- * "putIfAbsent" that requires a pre-built object that may ultimately be thrown
- * away. Also added a "removeConditionally" method that allows for evaluation of
- * an arbitrary condition before removal from the map (unlike the normal
- * "remove" that can only check for equality with a provided object). In
- * addition, the segments are now locked using read-write locks. File has been
- * reformatted to conform to GemStone conventions.
- * GemStone additions have been marked with "GemStone addition".
- * GemStone changes have been marked with "GemStone change(s)".
+ * Primary change is to allow HashEntry be an interface so that custom HashEntry implementations can
+ * be plugged in. These HashEntry objects are now assumed to be immutable in the sense that they
+ * cannot and should not be cloned in a rehash, and the rehash mechanism has been recoded using
+ * locking for that. For Geode, this is now used to plugin the RegionEntry implementation directly
+ * as a HashEntry instead of having it as a value and then HashEntry as a separate object having
+ * references to key/value which reduces the entry overhead substantially. Other change is to add a
+ * "create" method that creates a new object using the {@link MapCallback} interface only if
+ * required unlike "putIfAbsent" that requires a pre-built object that may ultimately be thrown
+ * away. Also added a "removeConditionally" method that allows for evaluation of an arbitrary
+ * condition before removal from the map (unlike the normal "remove" that can only check for
+ * equality with a provided object). In addition, the segments are now locked using read-write
+ * locks. File has been reformatted to conform to GemStone conventions. GemStone additions have been
+ * marked with "GemStone addition". GemStone changes have been marked with "GemStone change(s)".
  * 
  * Original license follows below.
  */
 
 /*
- * Written by Doug Lea with assistance from members of JCP JSR-166
- * Expert Group and released to the public domain, as explained at
- * http://creativecommons.org/licenses/publicdomain
+ * Written by Doug Lea with assistance from members of JCP JSR-166 Expert Group and released to the
+ * public domain, as explained at http://creativecommons.org/licenses/publicdomain
  */
 
 package org.apache.geode.internal.util.concurrent;
@@ -77,129 +69,118 @@ import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.util.ArrayUtils;
 
 /**
- * A hash table supporting full concurrency of retrievals and adjustable
- * expected concurrency for updates. This class obeys the same functional
- * specification as {@link java.util.Hashtable}, and includes versions of
- * methods corresponding to each method of <tt>Hashtable</tt>. However, even
- * though all operations are thread-safe, retrieval operations do <em>not</em>
- * entail locking, and there is <em>not</em> any support for locking the entire
- * table in a way that prevents all access. This class is fully interoperable
- * with <tt>Hashtable</tt> in programs that rely on its thread safety but not on
- * its synchronization details.
+ * A hash table supporting full concurrency of retrievals and adjustable expected concurrency for
+ * updates. This class obeys the same functional specification as {@link java.util.Hashtable}, and
+ * includes versions of methods corresponding to each method of <tt>Hashtable</tt>. However, even
+ * though all operations are thread-safe, retrieval operations do <em>not</em> entail locking, and
+ * there is <em>not</em> any support for locking the entire table in a way that prevents all access.
+ * This class is fully interoperable with <tt>Hashtable</tt> in programs that rely on its thread
+ * safety but not on its synchronization details.
  * 
  * <p>
- * Retrieval operations (including <tt>get</tt>) generally do not block, so may
- * overlap with update operations (including <tt>put</tt> and <tt>remove</tt>).
- * Retrievals reflect the results of the most recently <em>completed</em> update
- * operations holding upon their onset. For aggregate operations such as
- * <tt>putAll</tt> and <tt>clear</tt>, concurrent retrievals may reflect
- * insertion or removal of only some entries. Similarly, Iterators and
- * Enumerations return elements reflecting the state of the hash table at some
- * point at or since the creation of the iterator/enumeration. They do
- * <em>not</em> throw {@link java.util.ConcurrentModificationException}.
- * However, iterators are designed to be used by only one thread at a time.
+ * Retrieval operations (including <tt>get</tt>) generally do not block, so may overlap with update
+ * operations (including <tt>put</tt> and <tt>remove</tt>). Retrievals reflect the results of the
+ * most recently <em>completed</em> update operations holding upon their onset. For aggregate
+ * operations such as <tt>putAll</tt> and <tt>clear</tt>, concurrent retrievals may reflect
+ * insertion or removal of only some entries. Similarly, Iterators and Enumerations return elements
+ * reflecting the state of the hash table at some point at or since the creation of the
+ * iterator/enumeration. They do <em>not</em> throw
+ * {@link java.util.ConcurrentModificationException}. However, iterators are designed to be used by
+ * only one thread at a time.
  * 
  * <p>
  * The allowed concurrency among update operations is guided by the optional
- * <tt>concurrencyLevel</tt> constructor argument (default <tt>16</tt>), which
- * is used as a hint for internal sizing. The table is internally partitioned to
- * try to permit the indicated number of concurrent updates without contention.
- * Because placement in hash tables is essentially random, the actual
- * concurrency will vary. Ideally, you should choose a value to accommodate as
- * many threads as will ever concurrently modify the table. Using a
- * significantly higher value than you need can waste space and time, and a
- * significantly lower value can lead to thread contention. But overestimates
- * and underestimates within an order of magnitude do not usually have much
- * noticeable impact. A value of one is appropriate when it is known that only
- * one thread will modify and all others will only read. Also, resizing this or
- * any other kind of hash table is a relatively slow operation, so, when
- * possible, it is a good idea to provide estimates of expected table sizes in
+ * <tt>concurrencyLevel</tt> constructor argument (default <tt>16</tt>), which is used as a hint for
+ * internal sizing. The table is internally partitioned to try to permit the indicated number of
+ * concurrent updates without contention. Because placement in hash tables is essentially random,
+ * the actual concurrency will vary. Ideally, you should choose a value to accommodate as many
+ * threads as will ever concurrently modify the table. Using a significantly higher value than you
+ * need can waste space and time, and a significantly lower value can lead to thread contention. But
+ * overestimates and underestimates within an order of magnitude do not usually have much noticeable
+ * impact. A value of one is appropriate when it is known that only one thread will modify and all
+ * others will only read. Also, resizing this or any other kind of hash table is a relatively slow
+ * operation, so, when possible, it is a good idea to provide estimates of expected table sizes in
  * constructors.
  * 
  * <p>
- * This class and its views and iterators implement all of the <em>optional</em>
- * methods of the {@link Map} and {@link Iterator} interfaces.
+ * This class and its views and iterators implement all of the <em>optional</em> methods of the
+ * {@link Map} and {@link Iterator} interfaces.
  * 
  * <p>
- * Like {@link java.util.Hashtable} but unlike {@link java.util.HashMap}, this
- * class does <em>not</em> allow <tt>null</tt> to be used as a key or value.
+ * Like {@link java.util.Hashtable} but unlike {@link java.util.HashMap}, this class does
+ * <em>not</em> allow <tt>null</tt> to be used as a key or value.
  * 
  * <p>
- * This class is a member of the <a href="{@docRoot}
- * /../technotes/guides/collections/index.html"> Java Collections Framework</a>.
+ * This class is a member of the <a href="{@docRoot} /../technotes/guides/collections/index.html">
+ * Java Collections Framework</a>.
  * 
  * @since GemFire 1.5
  * @author Doug Lea
- * @param <K>
- *          the type of keys maintained by this map
- * @param <V>
- *          the type of mapped values
+ * @param <K> the type of keys maintained by this map
+ * @param <V> the type of mapped values
  */
-public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implements
-    ConcurrentMap<K, V>, Serializable {
+public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
+    implements ConcurrentMap<K, V>, Serializable {
 
   private static final long serialVersionUID = -7056732555635108300L;
 
   /*
-   * The basic strategy is to subdivide the table among Segments,
-   * each of which itself is a concurrently readable hash table.
+   * The basic strategy is to subdivide the table among Segments, each of which itself is a
+   * concurrently readable hash table.
    */
 
   /* ---------------- Constants -------------- */
 
   /**
-   * The default initial capacity for this table, used when not otherwise
-   * specified in a constructor.
+   * The default initial capacity for this table, used when not otherwise specified in a
+   * constructor.
    */
   public static final int DEFAULT_INITIAL_CAPACITY = 16;
 
   /**
-   * The default load factor for this table, used when not otherwise specified
-   * in a constructor.
+   * The default load factor for this table, used when not otherwise specified in a constructor.
    */
   public static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
   /**
-   * The default concurrency level for this table, used when not otherwise
-   * specified in a constructor.
+   * The default concurrency level for this table, used when not otherwise specified in a
+   * constructor.
    */
   public static final int DEFAULT_CONCURRENCY_LEVEL = 16;
 
   /**
-   * The maximum capacity, used if a higher value is implicitly specified by
-   * either of the constructors with arguments. MUST be a power of two <= 1<<30
-   * to ensure that entries are indexable using ints.
+   * The maximum capacity, used if a higher value is implicitly specified by either of the
+   * constructors with arguments. MUST be a power of two <= 1<<30 to ensure that entries are
+   * indexable using ints.
    */
   static final int MAXIMUM_CAPACITY = 1 << 30;
 
   /**
-   * The maximum number of segments to allow; used to bound constructor
-   * arguments.
+   * The maximum number of segments to allow; used to bound constructor arguments.
    */
   static final int MAX_SEGMENTS = 1 << 16; // slightly conservative
 
   /**
-   * Number of unsynchronized retries in size and containsValue methods before
-   * resorting to locking. This is used to avoid unbounded retries if tables
-   * undergo continuous modification which would make it impossible to obtain an
-   * accurate result.
+   * Number of unsynchronized retries in size and containsValue methods before resorting to locking.
+   * This is used to avoid unbounded retries if tables undergo continuous modification which would
+   * make it impossible to obtain an accurate result.
    */
   static final int RETRIES_BEFORE_LOCK = 2;
 
-// GemStone addition
+  // GemStone addition
   /**
-   * Token object to indicate that {@link #remove(Object)} does not need to
-   * compare against provided value before removing from segment.
+   * Token object to indicate that {@link #remove(Object)} does not need to compare against provided
+   * value before removing from segment.
    */
   private static final Object NO_OBJECT_TOKEN = new Object();
 
-// End GemStone addition
+  // End GemStone addition
 
   /* ---------------- Fields -------------- */
 
   /**
-   * Mask value for indexing into segments. The upper bits of a key's hash code
-   * are used to choose the segment.
+   * Mask value for indexing into segments. The upper bits of a key's hash code are used to choose
+   * the segment.
    */
   final int segmentMask;
 
@@ -219,8 +200,8 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
   final HashEntryCreator<K, V> entryCreator;
 
   /**
-   * If true then use equals for comparing key and value equality else use
-   * reference-equality like an {@link IdentityHashMap}.
+   * If true then use equals for comparing key and value equality else use reference-equality like
+   * an {@link IdentityHashMap}.
    */
   final boolean compareValues;
 
@@ -232,10 +213,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
   /* ---------------- Small Utilities -------------- */
 
   /**
-   * Applies a supplemental hash function to a given hashCode, which defends
-   * against poor quality hash functions. This is critical because
-   * ConcurrentHashMap uses power-of-two length hash tables, that otherwise
-   * encounter collisions for hashCodes that do not differ in lower or upper
+   * Applies a supplemental hash function to a given hashCode, which defends against poor quality
+   * hash functions. This is critical because ConcurrentHashMap uses power-of-two length hash
+   * tables, that otherwise encounter collisions for hashCodes that do not differ in lower or upper
    * bits.
    */
   public static final int keyHash(final Object o, final boolean compareValues) {
@@ -253,8 +233,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
   /**
    * Returns the segment that should be used for key with given hash
    * 
-   * @param hash
-   *          the hash code for the key
+   * @param hash the hash code for the key
    * @return the segment
    */
   final Segment<K, V> segmentFor(final int hash) {
@@ -266,17 +245,18 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
 
   /* ---------------- Inner Classes -------------- */
 
-// GemStone addition
-// GemStone changed HashEntry to be an interface with original HashEntry
-// as the default implementation HashEntryImpl.
+  // GemStone addition
+  // GemStone changed HashEntry to be an interface with original HashEntry
+  // as the default implementation HashEntryImpl.
 
   /**
-   * [sumedh] Interface for ConcurrentHashMap list entry. Note that this is
-   * never exported out as a user-visible Map.Entry.
+   * [sumedh] Interface for ConcurrentHashMap list entry. Note that this is never exported out as a
+   * user-visible Map.Entry.
    * 
-   * Made this public so RegionEntries can directly implement this to reduce
-   * memory overhead of separate {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} objects for each entry in the
-   * map.
+   * Made this public so RegionEntries can directly implement this to reduce memory overhead of
+   * separate
+   * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}
+   * objects for each entry in the map.
    */
   public static interface HashEntry<K, V> {
 
@@ -284,10 +264,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
      * Get the key object for this entry.
      */
     K getKey();
-    
+
     /**
-     * Return true if the entry's key is equal to k.
-     * GemFire addition to deal with inline keys.
+     * Return true if the entry's key is equal to k. GemFire addition to deal with inline keys.
      */
     boolean isKeyEqual(Object k);
 
@@ -318,15 +297,13 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
   }
 
   /**
-   * ConcurrentHashMap list entry. Note that this is never exported out as a
-   * user-visible Map.Entry.
+   * ConcurrentHashMap list entry. Note that this is never exported out as a user-visible Map.Entry.
    * 
-   * Because the value field is volatile, not final, it is legal wrt the Java
-   * Memory Model for an unsynchronized reader to see null instead of initial
-   * value when read via a data race. Although a reordering leading to this is
-   * not likely to ever actually occur, the Segment.readValueUnderLock method is
-   * used as a backup in case a null (pre-initialized) value is ever seen in an
-   * unsynchronized access method.
+   * Because the value field is volatile, not final, it is legal wrt the Java Memory Model for an
+   * unsynchronized reader to see null instead of initial value when read via a data race. Although
+   * a reordering leading to this is not likely to ever actually occur, the
+   * Segment.readValueUnderLock method is used as a backup in case a null (pre-initialized) value is
+   * ever seen in an unsynchronized access method.
    */
   static final class HashEntryImpl<K, V> implements HashEntry<K, V> {
 
@@ -340,8 +317,8 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
 
     private final HashEntry<K, V> wrappedEntry;
 
-    HashEntryImpl(final K key, final int hash, final HashEntry<K, V> next,
-        final V value, final HashEntry<K, V> wrappedEntry) {
+    HashEntryImpl(final K key, final int hash, final HashEntry<K, V> next, final V value,
+        final HashEntry<K, V> wrappedEntry) {
       this.key = key;
       this.hash = hash;
       this.next = next;
@@ -398,17 +375,18 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
   }
 
   /**
-   * Interface to enable creation of new {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} objects by caller.
-   * This can be used, for example, to return GemFire RegionEntries directly.
+   * Interface to enable creation of new
+   * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}
+   * objects by caller. This can be used, for example, to return GemFire RegionEntries directly.
    */
   public static interface HashEntryCreator<K, V> {
 
     /**
-     * Create a new {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry} given the key, hash, value and next
-     * element.
+     * Create a new
+     * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}
+     * given the key, hash, value and next element.
      */
-    public HashEntry<K, V> newEntry(K key, int hash, HashEntry<K, V> next,
-        V value);
+    public HashEntry<K, V> newEntry(K key, int hash, HashEntry<K, V> next, V value);
 
     /**
      * Get the hashCode for given key object.
@@ -416,51 +394,40 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
     public int keyHashCode(Object key, boolean compareValues);
   }
 
-// End GemStone addition
+  // End GemStone addition
 
   /**
-   * Segments are specialized versions of hash tables. This subclasses from
-   * ReentrantLock opportunistically, just to simplify some locking and avoid
-   * separate construction.
+   * Segments are specialized versions of hash tables. This subclasses from ReentrantLock
+   * opportunistically, just to simplify some locking and avoid separate construction.
    */
-  static class Segment<K, V> extends ReentrantReadWriteLock implements
-      Serializable {
+  static class Segment<K, V> extends ReentrantReadWriteLock implements Serializable {
 
     /*
-     * Segments maintain a table of entry lists that are ALWAYS
-     * kept in a consistent state, so can be read without locking.
-     * Next fields of nodes are immutable (final).  All list
-     * additions are performed at the front of each bin. This
-     * makes it easy to check changes, and also fast to traverse.
-     * When nodes would otherwise be changed, new nodes are
-     * created to replace them. This works well for hash tables
-     * since the bin lists tend to be short. (The average length
-     * is less than two for the default load factor threshold.)
+     * Segments maintain a table of entry lists that are ALWAYS kept in a consistent state, so can
+     * be read without locking. Next fields of nodes are immutable (final). All list additions are
+     * performed at the front of each bin. This makes it easy to check changes, and also fast to
+     * traverse. When nodes would otherwise be changed, new nodes are created to replace them. This
+     * works well for hash tables since the bin lists tend to be short. (The average length is less
+     * than two for the default load factor threshold.)
      *
-     * Read operations can thus proceed without locking, but rely
-     * on selected uses of volatiles to ensure that completed
-     * write operations performed by other threads are
-     * noticed. For most purposes, the "count" field, tracking the
-     * number of elements, serves as that volatile variable
-     * ensuring visibility.  This is convenient because this field
-     * needs to be read in many read operations anyway:
+     * Read operations can thus proceed without locking, but rely on selected uses of volatiles to
+     * ensure that completed write operations performed by other threads are noticed. For most
+     * purposes, the "count" field, tracking the number of elements, serves as that volatile
+     * variable ensuring visibility. This is convenient because this field needs to be read in many
+     * read operations anyway:
      *
-     *   - All (unsynchronized) read operations must first read the
-     *     "count" field, and should not look at table entries if
-     *     it is 0.
+     * - All (unsynchronized) read operations must first read the "count" field, and should not look
+     * at table entries if it is 0.
      *
-     *   - All (synchronized) write operations should write to
-     *     the "count" field after structurally changing any bin.
-     *     The operations must not take any action that could even
-     *     momentarily cause a concurrent read operation to see
-     *     inconsistent data. This is made easier by the nature of
-     *     the read operations in Map. For example, no operation
-     *     can reveal that the table has grown but the threshold
-     *     has not yet been updated, so there are no atomicity
-     *     requirements for this with respect to reads.
+     * - All (synchronized) write operations should write to the "count" field after structurally
+     * changing any bin. The operations must not take any action that could even momentarily cause a
+     * concurrent read operation to see inconsistent data. This is made easier by the nature of the
+     * read operations in Map. For example, no operation can reveal that the table has grown but the
+     * threshold has not yet been updated, so there are no atomicity requirements for this with
+     * respect to reads.
      *
-     * As a guide, all critical volatile reads and writes to the
-     * count field are marked in code comments.
+     * As a guide, all critical volatile reads and writes to the count field are marked in code
+     * comments.
      */
 
     private static final long serialVersionUID = -6972364566212065192L;
@@ -471,17 +438,16 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
     transient volatile int count;
 
     /**
-     * Number of updates that alter the size of the table. This is used during
-     * bulk-read methods to make sure they see a consistent snapshot: If
-     * modCounts change during a traversal of segments computing size or
-     * checking containsValue, then we might have an inconsistent view of state
-     * so (usually) must retry.
+     * Number of updates that alter the size of the table. This is used during bulk-read methods to
+     * make sure they see a consistent snapshot: If modCounts change during a traversal of segments
+     * computing size or checking containsValue, then we might have an inconsistent view of state so
+     * (usually) must retry.
      */
     transient int modCount;
 
     /**
-     * The table is rehashed when its size exceeds this threshold. (The value of
-     * this field is always <tt>(int)(capacity *
+     * The table is rehashed when its size exceeds this threshold. (The value of this field is
+     * always <tt>(int)(capacity *
      * loadFactor)</tt>.)
      */
     transient int threshold;
@@ -492,34 +458,36 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
     transient volatile HashEntry<K, V>[] table;
 
     /**
-     * The load factor for the hash table. Even though this value is same for
-     * all segments, it is replicated to avoid needing links to outer object.
+     * The load factor for the hash table. Even though this value is same for all segments, it is
+     * replicated to avoid needing links to outer object.
      * 
      * @serial
      */
     final float loadFactor;
 
-// GemStone addition
+    // GemStone addition
 
     /**
-     * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntryCreator} for the map to create {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}s.
+     * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntryCreator}
+     * for the map to create
+     * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry}s.
      */
     final HashEntryCreator<K, V> entryCreator;
 
     /**
-     * Lock used when updating the {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry#getNextEntry()} link of an
-     * entry.
+     * Lock used when updating the
+     * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry#getNextEntry()}
+     * link of an entry.
      */
     final ReentrantReadWriteLock listUpdateLock;
 
-// End GemStone addition
+    // End GemStone addition
 
-    Segment(final int initialCapacity, final float lf,
-        final HashEntryCreator<K, V> entryCreator) {
+    Segment(final int initialCapacity, final float lf, final HashEntryCreator<K, V> entryCreator) {
       this.loadFactor = lf;
       this.entryCreator = entryCreator;
       this.listUpdateLock = new ReentrantReadWriteLock();
-      setTable(Segment.<K, V> newEntryArray(initialCapacity));
+      setTable(Segment.<K, V>newEntryArray(initialCapacity));
     }
 
     @SuppressWarnings("unchecked")
@@ -527,18 +495,17 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
       return new Segment[i];
     }
 
-// GemStone added the method below
+    // GemStone added the method below
     @SuppressWarnings("unchecked")
     static <K, V> HashEntry<K, V>[] newEntryArray(final int size) {
       return new HashEntry[size];
     }
 
     /**
-     * Sets table to new HashEntry array. Call only while holding lock or in
-     * constructor.
+     * Sets table to new HashEntry array. Call only while holding lock or in constructor.
      */
     final void setTable(final HashEntry<K, V>[] newTable) {
-      this.threshold = (int)(newTable.length * this.loadFactor);
+      this.threshold = (int) (newTable.length * this.loadFactor);
       this.table = newTable;
     }
 
@@ -551,10 +518,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
     }
 
     /**
-     * Reads value field of an entry under lock. Called if value field ever
-     * appears to be null. This is possible only if a compiler happens to
-     * reorder a HashEntry initialization with its table assignment, which is
-     * legal under memory model but is not known to ever occur.
+     * Reads value field of an entry under lock. Called if value field ever appears to be null. This
+     * is possible only if a compiler happens to reorder a HashEntry initialization with its table
+     * assignment, which is legal under memory model but is not known to ever occur.
      */
     final V readValueUnderLock(final HashEntry<K, V> e) {
       final ReentrantReadWriteLock.ReadLock readLock = super.readLock();
@@ -570,12 +536,12 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
     protected boolean equalityKeyCompare(final Object key, final HashEntry<K, V> mapEntry) {
       return mapEntry.isKeyEqual(key);
     }
+
     protected boolean equalityCompare(final Object v1, final Object v2) {
       return v1.equals(v2);
     }
 
-    protected boolean equalityCompareWithNulls(final Object key,
-        final Object mapKey) {
+    protected boolean equalityCompareWithNulls(final Object key, final Object mapKey) {
       if (key != mapKey) {
         if (key != null) {
           return key.equals(mapKey);
@@ -589,9 +555,8 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
 
     final V get(final Object key, final int hash) {
       if (this.count != 0) { // read-volatile
-// GemStone change to acquire the read lock on list updates
-        final ReentrantReadWriteLock.ReadLock listLock = this.listUpdateLock
-            .readLock();
+        // GemStone change to acquire the read lock on list updates
+        final ReentrantReadWriteLock.ReadLock listLock = this.listUpdateLock.readLock();
         listLock.lock();
         boolean lockAcquired = true;
         HashEntry<K, V> e = getFirst(hash);
@@ -617,10 +582,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
       return null;
     }
 
-    final V getNoLock(final Object key, final int hash,
-        final boolean lockListForRead) {
+    final V getNoLock(final Object key, final int hash, final boolean lockListForRead) {
       if (this.count != 0) { // read-volatile
-// GemStone change to acquire the read lock on list updates
+        // GemStone change to acquire the read lock on list updates
         ReentrantReadWriteLock.ReadLock listLock = null;
         if (lockListForRead) {
           listLock = this.listUpdateLock.readLock();
@@ -645,9 +609,8 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
 
     final boolean containsKey(final Object key, final int hash) {
       if (this.count != 0) { // read-volatile
-// GemStone change to acquire the read lock on list updates
-        final ReentrantReadWriteLock.ReadLock listLock = this.listUpdateLock
-            .readLock();
+        // GemStone change to acquire the read lock on list updates
+        final ReentrantReadWriteLock.ReadLock listLock = this.listUpdateLock.readLock();
         listLock.lock();
         HashEntry<K, V> e = getFirst(hash);
         try {
@@ -666,11 +629,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V> implem
 
     final boolean containsValue(final Object value) {
       if (this.count != 0) { // read-volatile
-// GemStone change to acquire the read lock on list updates
-        ReentrantReadWriteLock.ReadLock readLock = this.listUpdateLock
-            .readLock();
-RETRYLOOP:
-        for (;;) {
+        // GemStone change to acquire the read lock on list updates
+        ReentrantReadWriteLock.ReadLock readLock = this.listUpdateLock.readLock();
+        RETRYLOOP: for (;;) {
           readLock.lock();
           final HashEntry<K, V>[] tab = this.table;
           final int len = tab.length;
@@ -683,9 +644,9 @@ RETRYLOOP:
                 readLock.unlock();
                 readLock = super.readLock();
                 continue RETRYLOOP;
-                /* (original code)
-                v = readValueUnderLock(e);
-                */
+                /*
+                 * (original code) v = readValueUnderLock(e);
+                 */
                 // GemStone changes END
               }
               if (equalityCompare(value, v)) {
@@ -701,14 +662,12 @@ RETRYLOOP:
       return false;
     }
 
-    final boolean replace(final K key, final int hash, final V oldValue,
-        final V newValue) {
+    final boolean replace(final K key, final int hash, final V oldValue, final V newValue) {
       final ReentrantReadWriteLock.WriteLock writeLock = super.writeLock();
       writeLock.lock();
       try {
         HashEntry<K, V> e = getFirst(hash);
-        while (e != null && (e.getEntryHash() != hash
-            || !equalityKeyCompare(key, e))) {
+        while (e != null && (e.getEntryHash() != hash || !equalityKeyCompare(key, e))) {
           e = e.getNextEntry();
         }
 
@@ -728,8 +687,7 @@ RETRYLOOP:
       writeLock.lock();
       try {
         HashEntry<K, V> e = getFirst(hash);
-        while (e != null && (e.getEntryHash() != hash
-            || !equalityKeyCompare(key, e))) {
+        while (e != null && (e.getEntryHash() != hash || !equalityKeyCompare(key, e))) {
           e = e.getNextEntry();
         }
 
@@ -744,8 +702,7 @@ RETRYLOOP:
       }
     }
 
-    final V put(final K key, final int hash, final V value,
-        final boolean onlyIfAbsent) {
+    final V put(final K key, final int hash, final V value, final boolean onlyIfAbsent) {
       final ReentrantReadWriteLock.WriteLock writeLock = super.writeLock();
       writeLock.lock();
       try {
@@ -757,8 +714,7 @@ RETRYLOOP:
         final int index = hash & (tab.length - 1);
         final HashEntry<K, V> first = tab[index];
         HashEntry<K, V> e = first;
-        while (e != null && (e.getEntryHash() != hash
-            || !equalityKeyCompare(key, e))) {
+        while (e != null && (e.getEntryHash() != hash || !equalityKeyCompare(key, e))) {
           e = e.getNextEntry();
         }
 
@@ -768,8 +724,7 @@ RETRYLOOP:
           if (!onlyIfAbsent) {
             e.setMapValue(value);
           }
-        }
-        else {
+        } else {
           oldValue = null;
           ++this.modCount;
           tab[index] = this.entryCreator.newEntry(key, hash, first, value);
@@ -781,11 +736,10 @@ RETRYLOOP:
       }
     }
 
-// GemStone additions
+    // GemStone additions
 
-    final <C, P> V create(final K key, final int hash,
-        final MapCallback<K, V, C, P> valueCreator, final C context,
-        final P createParams, final boolean lockForRead) {
+    final <C, P> V create(final K key, final int hash, final MapCallback<K, V, C, P> valueCreator,
+        final C context, final P createParams, final boolean lockForRead) {
       // TODO: This can be optimized by having a special lock implementation
       // that will allow upgrade from read to write lock atomically. This can
       // cause a deadlock if two readers try to simultaneously upgrade, so the
@@ -800,8 +754,7 @@ RETRYLOOP:
         if (v != null) {
           return v;
         }
-      }
-      else {
+      } else {
         final ReentrantReadWriteLock.ReadLock readLock = super.readLock();
         readLock.lock();
         try {
@@ -827,8 +780,7 @@ RETRYLOOP:
         final int index = hash & (tab.length - 1);
         final HashEntry<K, V> first = tab[index];
         HashEntry<K, V> e = first;
-        while (e != null && (e.getEntryHash() != hash
-            || !equalityKeyCompare(key, e))) {
+        while (e != null && (e.getEntryHash() != hash || !equalityKeyCompare(key, e))) {
           e = e.getNextEntry();
         }
 
@@ -836,12 +788,10 @@ RETRYLOOP:
         if (e == null) {
           ++this.modCount;
           currentValue = valueCreator.newValue(key, context, createParams);
-          tab[index] = this.entryCreator.newEntry(key, hash, first,
-              currentValue);
+          tab[index] = this.entryCreator.newEntry(key, hash, first, currentValue);
           this.count = c; // write-volatile
           return currentValue;
-        }
-        else {
+        } else {
           currentValue = e.getMapValue();
           if (lockForRead) {
             // invoke the callback before returning an existing value
@@ -854,8 +804,7 @@ RETRYLOOP:
       }
     }
 
-    final V get(final Object key, final int hash,
-        final MapCallback<K, V, ?, ?> readCallback) {
+    final V get(final Object key, final int hash, final MapCallback<K, V, ?, ?> readCallback) {
       final ReentrantReadWriteLock.ReadLock readLock = super.readLock();
       readLock.lock();
       try {
@@ -880,7 +829,7 @@ RETRYLOOP:
       return null;
     }
 
-// End GemStone additions
+    // End GemStone additions
 
     final void rehash() {
       final HashEntry<K, V>[] oldTable = this.table;
@@ -890,21 +839,17 @@ RETRYLOOP:
       }
 
       /*
-       * Reclassify nodes in each list to new Map.  Because we are
-       * using power-of-two expansion, the elements from each bin
-       * must either stay at same index, or move with a power of two
-       * offset. We eliminate unnecessary node creation by catching
-       * cases where old nodes can be reused because their next
-       * fields won't change. Statistically, at the default
-       * threshold, only about one-sixth of them need cloning when
-       * a table doubles. The nodes they replace will be garbage
-       * collectable as soon as they are no longer referenced by any
-       * reader thread that may be in the midst of traversing table
-       * right now.
+       * Reclassify nodes in each list to new Map. Because we are using power-of-two expansion, the
+       * elements from each bin must either stay at same index, or move with a power of two offset.
+       * We eliminate unnecessary node creation by catching cases where old nodes can be reused
+       * because their next fields won't change. Statistically, at the default threshold, only about
+       * one-sixth of them need cloning when a table doubles. The nodes they replace will be garbage
+       * collectable as soon as they are no longer referenced by any reader thread that may be in
+       * the midst of traversing table right now.
        */
 
       final HashEntry<K, V>[] newTable = newEntryArray(oldCapacity << 1);
-      this.threshold = (int)(newTable.length * this.loadFactor);
+      this.threshold = (int) (newTable.length * this.loadFactor);
       final int sizeMask = newTable.length - 1;
       for (int i = 0; i < oldCapacity; i++) {
         // We need to guarantee that any existing reads of old Map can
@@ -918,13 +863,11 @@ RETRYLOOP:
           // Single node on list
           if (next == null) {
             newTable[idx] = e;
-          }
-          else {
+          } else {
             // Reuse trailing consecutive sequence at same slot
             HashEntry<K, V> lastRun = e;
             int lastIdx = idx;
-            for (HashEntry<K, V> last = next; last != null; last = last
-                .getNextEntry()) {
+            for (HashEntry<K, V> last = next; last != null; last = last.getNextEntry()) {
               final int k = last.getEntryHash() & sizeMask;
               if (k != lastIdx) {
                 lastIdx = k;
@@ -934,7 +877,7 @@ RETRYLOOP:
             newTable[lastIdx] = lastRun;
 
             // Clone all remaining nodes
-// GemStone changes BEGIN
+            // GemStone changes BEGIN
             // update the next entry instead of cloning the nodes in newTable;
             // this is primarily because we don't want to change
             // the underlying RegionEntry that may be used elsewhere;
@@ -943,24 +886,22 @@ RETRYLOOP:
             // for indefinite periods
             HashEntryImpl<K, V> newe, newp = null, newFirst = null;
             HashEntry<K, V> nextp;
-            //Bug 44155 - we need to clone all of the entries, not just
-            //the entries leading up to lastRun, because the entries
-            //in the last run may have their next pointers changed
-            //by a later rehash.
+            // Bug 44155 - we need to clone all of the entries, not just
+            // the entries leading up to lastRun, because the entries
+            // in the last run may have their next pointers changed
+            // by a later rehash.
             for (HashEntry<K, V> p = e; p != null; p = nextp) {
               newe = new HashEntryImpl<K, V>(p.getKey(), p.getEntryHash(),
                   (nextp = p.getNextEntry()), p.getMapValue(), p);
               if (newp != null) {
                 newp.setNextEntry(newe);
-              }
-              else {
+              } else {
                 newFirst = newe;
               }
               newp = newe;
             }
             // take the listUpdate write lock before updating the next refs
-            final ReentrantReadWriteLock.WriteLock listWriteLock =
-                this.listUpdateLock.writeLock();
+            final ReentrantReadWriteLock.WriteLock listWriteLock = this.listUpdateLock.writeLock();
             listWriteLock.lock();
             try {
               if (newFirst != null) {
@@ -976,15 +917,12 @@ RETRYLOOP:
             } finally {
               listWriteLock.unlock();
             }
-            /* (original code)
-            for (HashEntry<K, V> p = e; p != lastRun; p = p.next) {
-              final int k = p.hash & sizeMask;
-              final HashEntry<K, V> n = newTable[k];
-              newTable[k] = this.entryCreator.newEntry(p.key, p.hash, n,
-                  p.value);
-            }
-            */
-// GemStone changes END
+            /*
+             * (original code) for (HashEntry<K, V> p = e; p != lastRun; p = p.next) { final int k =
+             * p.hash & sizeMask; final HashEntry<K, V> n = newTable[k]; newTable[k] =
+             * this.entryCreator.newEntry(p.key, p.hash, n, p.value); }
+             */
+            // GemStone changes END
           }
         }
       }
@@ -994,12 +932,11 @@ RETRYLOOP:
     /**
      * Remove; match on key only if value null, else match both.
      */
-// GemStone change
+    // GemStone change
     // added "condition" and "removeParams" parameters
     final <C, P> V remove(final Object key, final int hash, final Object value,
-        final MapCallback<K, V, C, P> condition, final C context,
-        final P removeParams) {
-// End GemStone change
+        final MapCallback<K, V, C, P> condition, final C context, final P removeParams) {
+      // End GemStone change
       final ReentrantReadWriteLock.WriteLock writeLock = super.writeLock();
       writeLock.lock();
       try {
@@ -1008,16 +945,14 @@ RETRYLOOP:
         final int index = hash & (tab.length - 1);
         final HashEntry<K, V> first = tab[index];
         HashEntry<K, V> e = first;
-// GemStone change
+        // GemStone change
         // the entry previous to the matched one, if any
         HashEntry<K, V> p = null;
-        while (e != null && (e.getEntryHash() != hash
-            || !equalityKeyCompare(key, e))) {
+        while (e != null && (e.getEntryHash() != hash || !equalityKeyCompare(key, e))) {
           e = e.getNextEntry();
           if (p == null) {
             p = first;
-          }
-          else {
+          } else {
             p = p.getNextEntry();
           }
         }
@@ -1025,43 +960,37 @@ RETRYLOOP:
         V oldValue = null;
         if (e != null) {
           final V v = e.getMapValue();
-// GemStone change
+          // GemStone change
           // allow for passing in a null object for comparison during remove;
           // also invoke the provided condition to check for removal
           if ((value == NO_OBJECT_TOKEN || equalityCompareWithNulls(v, value))
-              && (condition == null || condition.doRemoveValue(v, context,
-                  removeParams))) {
-// End GemStone change
+              && (condition == null || condition.doRemoveValue(v, context, removeParams))) {
+            // End GemStone change
             oldValue = v;
             // All entries following removed node can stay in list,
             // but all preceding ones need to be cloned.
             ++this.modCount;
-// GemStone changes BEGIN
+            // GemStone changes BEGIN
             // update the next entry instead of cloning the nodes
             // this is primarily because we don't want to change
             // the underlying RegionEntry that may be used elsewhere
-            final ReentrantReadWriteLock.WriteLock listWriteLock =
-                this.listUpdateLock.writeLock();
+            final ReentrantReadWriteLock.WriteLock listWriteLock = this.listUpdateLock.writeLock();
             listWriteLock.lock();
             try {
               if (p == null) {
                 tab[index] = e.getNextEntry();
-              }
-              else {
+              } else {
                 p.setNextEntry(e.getNextEntry());
               }
             } finally {
               listWriteLock.unlock();
             }
-            /* (original code)
-            HashEntry<K, V> newFirst = e.next;
-            for (HashEntry<K, V> p = first; p != e; p = p.next) {
-              newFirst = this.entryCreator.newEntry(p.key, p.hash, newFirst,
-                  p.value);
-            }
-            tab[index] = newFirst;
-            */
-// GemStone changes END
+            /*
+             * (original code) HashEntry<K, V> newFirst = e.next; for (HashEntry<K, V> p = first; p
+             * != e; p = p.next) { newFirst = this.entryCreator.newEntry(p.key, p.hash, newFirst,
+             * p.value); } tab[index] = newFirst;
+             */
+            // GemStone changes END
             this.count = c; // write-volatile
           }
         }
@@ -1074,7 +1003,7 @@ RETRYLOOP:
     /**
      * GemStone added the clearedEntries param and the result
      */
-    final ArrayList<HashEntry<?,?>> clear(ArrayList<HashEntry<?,?>> clearedEntries) {
+    final ArrayList<HashEntry<?, ?>> clear(ArrayList<HashEntry<?, ?>> clearedEntries) {
       if (this.count != 0) {
         final ReentrantReadWriteLock.WriteLock writeLock = super.writeLock();
         writeLock.lock();
@@ -1095,14 +1024,16 @@ RETRYLOOP:
               }
             }
           }
-          final boolean checkForGatewaySenderEvent = OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap();
+          final boolean checkForGatewaySenderEvent =
+              OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap();
           final boolean skipProcessOffHeap = !collectEntries && !checkForGatewaySenderEvent;
           if (skipProcessOffHeap) {
             Arrays.fill(tab, null);
           } else {
             for (int i = 0; i < tab.length; i++) {
               HashEntry<K, V> he = tab[i];
-              if (he == null) continue;
+              if (he == null)
+                continue;
               tab[i] = null;
               if (collectEntries) {
                 clearedEntries.add(he);
@@ -1111,7 +1042,8 @@ RETRYLOOP:
                   if (p instanceof RegionEntry) {
                     // It is ok to call GatewaySenderEventImpl release without being synced
                     // on the region entry. It will not create an orphan.
-                    GatewaySenderEventImpl.release(((RegionEntry) p)._getValue()); // OFFHEAP _getValue ok
+                    GatewaySenderEventImpl.release(((RegionEntry) p)._getValue()); // OFFHEAP
+                                                                                   // _getValue ok
                   }
                 }
               }
@@ -1129,14 +1061,15 @@ RETRYLOOP:
   }
 
   /**
-   * Extension of {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Segment} using reference-equality comparison for key,
-   * value equality instead of equals method.
+   * Extension of
+   * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.Segment} using
+   * reference-equality comparison for key, value equality instead of equals method.
    * 
    * swale
+   * 
    * @since GemFire 7.0
    */
-  static final class IdentitySegment<K, V> extends Segment<K, V> implements
-      Serializable {
+  static final class IdentitySegment<K, V> extends Segment<K, V> implements Serializable {
 
     private static final long serialVersionUID = 3086228147110819882L;
 
@@ -1151,20 +1084,17 @@ RETRYLOOP:
     }
 
     @Override
-    protected final boolean equalityKeyCompare(final Object key,
-        final HashEntry<K, V> mapEntry) {
+    protected final boolean equalityKeyCompare(final Object key, final HashEntry<K, V> mapEntry) {
       return key == mapEntry.getKey();
     }
 
     @Override
-    protected final boolean equalityCompare(final Object key,
-        final Object mapKey) {
+    protected final boolean equalityCompare(final Object key, final Object mapKey) {
       return key == mapKey;
     }
 
     @Override
-    protected final boolean equalityCompareWithNulls(final Object key,
-        final Object mapKey) {
+    protected final boolean equalityCompareWithNulls(final Object key, final Object mapKey) {
       return key == mapKey;
     }
   }
@@ -1172,52 +1102,39 @@ RETRYLOOP:
   /* ---------------- Public operations -------------- */
 
   /**
-   * Creates a new, empty map with the specified initial capacity, load factor
-   * and concurrency level.
+   * Creates a new, empty map with the specified initial capacity, load factor and concurrency
+   * level.
    * 
-   * @param initialCapacity
-   *          the initial capacity. The implementation performs internal sizing
-   *          to accommodate this many elements.
-   * @param loadFactor
-   *          the load factor threshold, used to control resizing. Resizing may
-   *          be performed when the average number of elements per bin exceeds
-   *          this threshold.
-   * @param concurrencyLevel
-   *          the estimated number of concurrently updating threads. The
-   *          implementation performs internal sizing to try to accommodate this
-   *          many threads.
-   * @throws IllegalArgumentException
-   *           if the initial capacity is negative or the load factor or
-   *           concurrencyLevel are nonpositive.
+   * @param initialCapacity the initial capacity. The implementation performs internal sizing to
+   *        accommodate this many elements.
+   * @param loadFactor the load factor threshold, used to control resizing. Resizing may be
+   *        performed when the average number of elements per bin exceeds this threshold.
+   * @param concurrencyLevel the estimated number of concurrently updating threads. The
+   *        implementation performs internal sizing to try to accommodate this many threads.
+   * @throws IllegalArgumentException if the initial capacity is negative or the load factor or
+   *         concurrencyLevel are nonpositive.
    */
   public CustomEntryConcurrentHashMap(final int initialCapacity, final float loadFactor,
       final int concurrencyLevel) {
     this(initialCapacity, loadFactor, concurrencyLevel, false, null);
   }
 
-// GemStone addition
+  // GemStone addition
 
   /**
-   * Creates a new, empty map with the specified initial capacity, load factor
-   * and concurrency level.
+   * Creates a new, empty map with the specified initial capacity, load factor and concurrency
+   * level.
    * 
-   * @param initialCapacity
-   *          the initial capacity. The implementation performs internal sizing
-   *          to accommodate this many elements.
-   * @param loadFactor
-   *          the load factor threshold, used to control resizing. Resizing may
-   *          be performed when the average number of elements per bin exceeds
-   *          this threshold.
-   * @param concurrencyLevel
-   *          the estimated number of concurrently updating threads. The
-   *          implementation performs internal sizing to try to accommodate this
-   *          many threads.
-   * @param isIdentityMap
-   *          if true then this will use reference-equality instead of equals
-   *          like an {@link IdentityHashMap}
-   * @throws IllegalArgumentException
-   *           if the initial capacity is negative or the load factor or
-   *           concurrencyLevel are nonpositive.
+   * @param initialCapacity the initial capacity. The implementation performs internal sizing to
+   *        accommodate this many elements.
+   * @param loadFactor the load factor threshold, used to control resizing. Resizing may be
+   *        performed when the average number of elements per bin exceeds this threshold.
+   * @param concurrencyLevel the estimated number of concurrently updating threads. The
+   *        implementation performs internal sizing to try to accommodate this many threads.
+   * @param isIdentityMap if true then this will use reference-equality instead of equals like an
+   *        {@link IdentityHashMap}
+   * @throws IllegalArgumentException if the initial capacity is negative or the load factor or
+   *         concurrencyLevel are nonpositive.
    */
   public CustomEntryConcurrentHashMap(final int initialCapacity, final float loadFactor,
       final int concurrencyLevel, final boolean isIdentityMap) {
@@ -1225,33 +1142,24 @@ RETRYLOOP:
   }
 
   /**
-   * Creates a new, empty map with the specified initial capacity, load factor,
-   * concurrency level and custom {@link HashEntryCreator}.
+   * Creates a new, empty map with the specified initial capacity, load factor, concurrency level
+   * and custom {@link HashEntryCreator}.
    * 
-   * @param initialCapacity
-   *          the initial capacity. The implementation performs internal sizing
-   *          to accommodate this many elements.
-   * @param loadFactor
-   *          the load factor threshold, used to control resizing. Resizing may
-   *          be performed when the average number of elements per bin exceeds
-   *          this threshold.
-   * @param concurrencyLevel
-   *          the estimated number of concurrently updating threads. The
-   *          implementation performs internal sizing to try to accommodate this
-   *          many threads.
-   * @param isIdentityMap
-   *          if true then this will use reference-equality instead of equals
-   *          like an {@link IdentityHashMap}
-   * @param entryCreator
-   *          a custom {@link HashEntryCreator} for creating the map entries
+   * @param initialCapacity the initial capacity. The implementation performs internal sizing to
+   *        accommodate this many elements.
+   * @param loadFactor the load factor threshold, used to control resizing. Resizing may be
+   *        performed when the average number of elements per bin exceeds this threshold.
+   * @param concurrencyLevel the estimated number of concurrently updating threads. The
+   *        implementation performs internal sizing to try to accommodate this many threads.
+   * @param isIdentityMap if true then this will use reference-equality instead of equals like an
+   *        {@link IdentityHashMap}
+   * @param entryCreator a custom {@link HashEntryCreator} for creating the map entries
    * 
-   * @throws IllegalArgumentException
-   *           if the initial capacity is negative or the load factor or
-   *           concurrencyLevel are nonpositive.
+   * @throws IllegalArgumentException if the initial capacity is negative or the load factor or
+   *         concurrencyLevel are nonpositive.
    */
   public CustomEntryConcurrentHashMap(int initialCapacity, final float loadFactor,
-      int concurrencyLevel, final boolean isIdentityMap,
-      HashEntryCreator<K, V> entryCreator) {
+      int concurrencyLevel, final boolean isIdentityMap, HashEntryCreator<K, V> entryCreator) {
     if (!(loadFactor > 0) || initialCapacity < 0 || concurrencyLevel <= 0) {
       throw new IllegalArgumentException();
     }
@@ -1294,50 +1202,42 @@ RETRYLOOP:
       for (int i = 0; i < ssize; ++i) {
         this.segments[i] = new Segment<K, V>(cap, loadFactor, entryCreator);
       }
-    }
-    else {
+    } else {
       this.compareValues = false;
       this.segments = IdentitySegment.newArray(ssize);
       this.entryCreator = entryCreator;
       for (int i = 0; i < ssize; ++i) {
-        this.segments[i] = new IdentitySegment<K, V>(cap, loadFactor,
-            entryCreator);
+        this.segments[i] = new IdentitySegment<K, V>(cap, loadFactor, entryCreator);
       }
     }
   }
 
-  static final class DefaultHashEntryCreator<K, V> implements
-      HashEntryCreator<K, V>, Serializable {
+  static final class DefaultHashEntryCreator<K, V> implements HashEntryCreator<K, V>, Serializable {
 
     private static final long serialVersionUID = 3765680607280951726L;
 
-    public final HashEntry<K, V> newEntry(final K key, final int hash,
-        final HashEntry<K, V> next, final V value) {
+    public final HashEntry<K, V> newEntry(final K key, final int hash, final HashEntry<K, V> next,
+        final V value) {
       return new HashEntryImpl<K, V>(key, hash, next, value, null);
     }
 
-    public final int keyHashCode(final Object key,
-        final boolean compareValues) {
+    public final int keyHashCode(final Object key, final boolean compareValues) {
       return keyHash(key, compareValues);
     }
   }
 
-// End GemStone addition
+  // End GemStone addition
 
   /**
-   * Creates a new, empty map with the specified initial capacity and load
-   * factor and with the default concurrencyLevel (16).
+   * Creates a new, empty map with the specified initial capacity and load factor and with the
+   * default concurrencyLevel (16).
    * 
-   * @param initialCapacity
-   *          The implementation performs internal sizing to accommodate this
-   *          many elements.
-   * @param loadFactor
-   *          the load factor threshold, used to control resizing. Resizing may
-   *          be performed when the average number of elements per bin exceeds
-   *          this threshold.
-   * @throws IllegalArgumentException
-   *           if the initial capacity of elements is negative or the load
-   *           factor is nonpositive
+   * @param initialCapacity The implementation performs internal sizing to accommodate this many
+   *        elements.
+   * @param loadFactor the load factor threshold, used to control resizing. Resizing may be
+   *        performed when the average number of elements per bin exceeds this threshold.
+   * @throws IllegalArgumentException if the initial capacity of elements is negative or the load
+   *         factor is nonpositive
    * 
    * @since GemFire 1.6
    */
@@ -1346,41 +1246,35 @@ RETRYLOOP:
   }
 
   /**
-   * Creates a new, empty map with the specified initial capacity, and with
-   * default load factor (0.75) and concurrencyLevel (16).
+   * Creates a new, empty map with the specified initial capacity, and with default load factor
+   * (0.75) and concurrencyLevel (16).
    * 
-   * @param initialCapacity
-   *          the initial capacity. The implementation performs internal sizing
-   *          to accommodate this many elements.
-   * @throws IllegalArgumentException
-   *           if the initial capacity of elements is negative.
+   * @param initialCapacity the initial capacity. The implementation performs internal sizing to
+   *        accommodate this many elements.
+   * @throws IllegalArgumentException if the initial capacity of elements is negative.
    */
   public CustomEntryConcurrentHashMap(final int initialCapacity) {
     this(initialCapacity, DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL, false);
   }
 
   /**
-   * Creates a new, empty map with a default initial capacity (16), load factor
-   * (0.75) and concurrencyLevel (16).
+   * Creates a new, empty map with a default initial capacity (16), load factor (0.75) and
+   * concurrencyLevel (16).
    */
   public CustomEntryConcurrentHashMap() {
-    this(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR,
-        DEFAULT_CONCURRENCY_LEVEL, false);
+    this(DEFAULT_INITIAL_CAPACITY, DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL, false);
   }
 
   /**
-   * Creates a new map with the same mappings as the given map. The map is
-   * created with a capacity of 1.5 times the number of mappings in the given
-   * map or 16 (whichever is greater), and a default load factor (0.75) and
-   * concurrencyLevel (16).
+   * Creates a new map with the same mappings as the given map. The map is created with a capacity
+   * of 1.5 times the number of mappings in the given map or 16 (whichever is greater), and a
+   * default load factor (0.75) and concurrencyLevel (16).
    * 
-   * @param m
-   *          the map
+   * @param m the map
    */
   public CustomEntryConcurrentHashMap(final Map<? extends K, ? extends V> m) {
-    this(Math.max((int)(m.size() / DEFAULT_LOAD_FACTOR) + 1,
-        DEFAULT_INITIAL_CAPACITY), DEFAULT_LOAD_FACTOR,
-        DEFAULT_CONCURRENCY_LEVEL, false);
+    this(Math.max((int) (m.size() / DEFAULT_LOAD_FACTOR) + 1, DEFAULT_INITIAL_CAPACITY),
+        DEFAULT_LOAD_FACTOR, DEFAULT_CONCURRENCY_LEVEL, false);
     putAll(m);
   }
 
@@ -1393,21 +1287,17 @@ RETRYLOOP:
   public final boolean isEmpty() {
     final Segment<K, V>[] segments = this.segments;
     /*
-     * We keep track of per-segment modCounts to avoid ABA
-     * problems in which an element in one segment was added and
-     * in another removed during traversal, in which case the
-     * table was never actually empty at any point. Note the
-     * similar use of modCounts in the size() and containsValue()
-     * methods, which are the only other methods also susceptible
-     * to ABA problems.
+     * We keep track of per-segment modCounts to avoid ABA problems in which an element in one
+     * segment was added and in another removed during traversal, in which case the table was never
+     * actually empty at any point. Note the similar use of modCounts in the size() and
+     * containsValue() methods, which are the only other methods also susceptible to ABA problems.
      */
     final int[] mc = new int[segments.length];
     int mcsum = 0;
     for (int i = 0; i < segments.length; ++i) {
       if (segments[i].count != 0) {
         return false;
-      }
-      else {
+      } else {
         mcsum += mc[i] = segments[i].modCount;
       }
     }
@@ -1425,14 +1315,14 @@ RETRYLOOP:
   }
 
   /**
-   * Returns the number of key-value mappings in this map. If the map contains
-   * more than <tt>Integer.MAX_VALUE</tt> elements, returns
-   * <tt>Integer.MAX_VALUE</tt>.
+   * Returns the number of key-value mappings in this map. If the map contains more than
+   * <tt>Integer.MAX_VALUE</tt> elements, returns <tt>Integer.MAX_VALUE</tt>.
    * 
    * @return the number of key-value mappings in this map
    */
   @Override
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UL_UNRELEASED_LOCK", justification="The lock() calls are followed by unlock() calls without finally-block. Leaving this as is because it's lifted from JDK code and we want to minimize changes.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "UL_UNRELEASED_LOCK",
+      justification = "The lock() calls are followed by unlock() calls without finally-block. Leaving this as is because it's lifted from JDK code and we want to minimize changes.")
   public final int size() {
     final Segment<K, V>[] segments = this.segments;
     long sum = 0;
@@ -1475,24 +1365,21 @@ RETRYLOOP:
     }
     if (sum > Integer.MAX_VALUE) {
       return Integer.MAX_VALUE;
-    }
-    else {
-      return (int)sum;
+    } else {
+      return (int) sum;
     }
   }
 
   /**
-   * Returns the value to which the specified key is mapped, or {@code null} if
-   * this map contains no mapping for the key.
+   * Returns the value to which the specified key is mapped, or {@code null} if this map contains no
+   * mapping for the key.
    * 
    * <p>
-   * More formally, if this map contains a mapping from a key {@code k} to a
-   * value {@code v} such that {@code key.equals(k)}, then this method returns
-   * {@code v}; otherwise it returns {@code null}. (There can be at most one
-   * such mapping.)
+   * More formally, if this map contains a mapping from a key {@code k} to a value {@code v} such
+   * that {@code key.equals(k)}, then this method returns {@code v}; otherwise it returns
+   * {@code null}. (There can be at most one such mapping.)
    * 
-   * @throws NullPointerException
-   *           if the specified key is null
+   * @throws NullPointerException if the specified key is null
    */
   @Override
   public final V get(final Object key) {
@@ -1504,13 +1391,10 @@ RETRYLOOP:
   /**
    * Tests if the specified object is a key in this table.
    * 
-   * @param key
-   *          possible key
-   * @return <tt>true</tt> if and only if the specified object is a key in this
-   *         table, as determined by the <tt>equals</tt> method; <tt>false</tt>
-   *         otherwise.
-   * @throws NullPointerException
-   *           if the specified key is null
+   * @param key possible key
+   * @return <tt>true</tt> if and only if the specified object is a key in this table, as determined
+   *         by the <tt>equals</tt> method; <tt>false</tt> otherwise.
+   * @throws NullPointerException if the specified key is null
    */
   @Override
   public final boolean containsKey(final Object key) {
@@ -1520,19 +1404,17 @@ RETRYLOOP:
   }
 
   /**
-   * Returns <tt>true</tt> if this map maps one or more keys to the specified
-   * value. Note: This method requires a full internal traversal of the hash
-   * table, and so is much slower than method <tt>containsKey</tt>.
+   * Returns <tt>true</tt> if this map maps one or more keys to the specified value. Note: This
+   * method requires a full internal traversal of the hash table, and so is much slower than method
+   * <tt>containsKey</tt>.
    * 
-   * @param value
-   *          value whose presence in this map is to be tested
-   * @return <tt>true</tt> if this map maps one or more keys to the specified
-   *         value
-   * @throws NullPointerException
-   *           if the specified value is null
+   * @param value value whose presence in this map is to be tested
+   * @return <tt>true</tt> if this map maps one or more keys to the specified value
+   * @throws NullPointerException if the specified value is null
    */
   @Override
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value="UL_UNRELEASED_LOCK", justification="Leaving this as is because it's lifted from JDK code and we want to minimize changes.") 
+  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "UL_UNRELEASED_LOCK",
+      justification = "Leaving this as is because it's lifted from JDK code and we want to minimize changes.")
   public final boolean containsValue(final Object value) {
     if (value == null) {
       throw new NullPointerException();
@@ -1586,40 +1468,33 @@ RETRYLOOP:
   }
 
   /**
-   * Legacy method testing if some key maps into the specified value in this
-   * table. This method is identical in functionality to {@link #containsValue},
-   * and exists solely to ensure full compatibility with class
-   * {@link java.util.Hashtable}, which supported this method prior to
+   * Legacy method testing if some key maps into the specified value in this table. This method is
+   * identical in functionality to {@link #containsValue}, and exists solely to ensure full
+   * compatibility with class {@link java.util.Hashtable}, which supported this method prior to
    * introduction of the Java Collections framework.
    * 
-   * @param value
-   *          a value to search for
-   * @return <tt>true</tt> if and only if some key maps to the <tt>value</tt>
-   *         argument in this table as determined by the <tt>equals</tt> method;
-   *         <tt>false</tt> otherwise
-   * @throws NullPointerException
-   *           if the specified value is null
+   * @param value a value to search for
+   * @return <tt>true</tt> if and only if some key maps to the <tt>value</tt> argument in this table
+   *         as determined by the <tt>equals</tt> method; <tt>false</tt> otherwise
+   * @throws NullPointerException if the specified value is null
    */
   public final boolean contains(final Object value) {
     return containsValue(value);
   }
 
   /**
-   * Maps the specified key to the specified value in this table. Neither the
-   * key nor the value can be null.
+   * Maps the specified key to the specified value in this table. Neither the key nor the value can
+   * be null.
    * 
    * <p>
-   * The value can be retrieved by calling the <tt>get</tt> method with a key
-   * that is equal to the original key.
+   * The value can be retrieved by calling the <tt>get</tt> method with a key that is equal to the
+   * original key.
    * 
-   * @param key
-   *          key with which the specified value is to be associated
-   * @param value
-   *          value to be associated with the specified key
-   * @return the previous value associated with <tt>key</tt>, or <tt>null</tt>
-   *         if there was no mapping for <tt>key</tt>
-   * @throws NullPointerException
-   *           if the specified key or value is null
+   * @param key key with which the specified value is to be associated
+   * @param value value to be associated with the specified key
+   * @return the previous value associated with <tt>key</tt>, or <tt>null</tt> if there was no
+   *         mapping for <tt>key</tt>
+   * @throws NullPointerException if the specified key or value is null
    */
   @Override
   public final V put(final K key, final V value) {
@@ -1634,10 +1509,9 @@ RETRYLOOP:
   /**
    * {@inheritDoc}
    * 
-   * @return the previous value associated with the specified key, or
-   *         <tt>null</tt> if there was no mapping for the key
-   * @throws NullPointerException
-   *           if the specified key or value is null
+   * @return the previous value associated with the specified key, or <tt>null</tt> if there was no
+   *         mapping for the key
+   * @throws NullPointerException if the specified key or value is null
    */
   public final V putIfAbsent(final K key, final V value) {
     if (value == null) {
@@ -1648,21 +1522,19 @@ RETRYLOOP:
     return segmentFor(hash).put(key, hash, value, true);
   }
 
-// GemStone addition
+  // GemStone addition
 
   /**
-   * Create a given key, value mapping if the key does not exist in the map else
-   * do nothing. The difference between this method and
-   * {@link #putIfAbsent(Object, Object)} is that latter always acquires a write
-   * lock on the segment which this acquires a write lock only if entry was not
-   * found. In other words this method is more efficient for the case when
-   * number of entries is small and same entries are being updated repeatedly.
+   * Create a given key, value mapping if the key does not exist in the map else do nothing. The
+   * difference between this method and {@link #putIfAbsent(Object, Object)} is that latter always
+   * acquires a write lock on the segment which this acquires a write lock only if entry was not
+   * found. In other words this method is more efficient for the case when number of entries is
+   * small and same entries are being updated repeatedly.
    * 
-   * @return true if the key was successfully put in the map or false if there
-   *         was an existing mapping for the key in the map
+   * @return true if the key was successfully put in the map or false if there was an existing
+   *         mapping for the key in the map
    * 
-   * @throws NullPointerException
-   *           if the specified key is null
+   * @throws NullPointerException if the specified key is null
    */
   public final boolean create(final K key, final V value) {
     // throws NullPointerException if key null
@@ -1676,48 +1548,37 @@ RETRYLOOP:
 
   /**
    * Factory to create a value on demand for
-   * {@link #create(Object, MapCallback, Object, Object, boolean)} rather than
-   * requiring a pre-built object as in {@link #putIfAbsent(Object, Object)}
-   * that may be ultimately thrown away.
+   * {@link #create(Object, MapCallback, Object, Object, boolean)} rather than requiring a pre-built
+   * object as in {@link #putIfAbsent(Object, Object)} that may be ultimately thrown away.
    * <p>
    * Also allows invoking a method when removing from map by a call to
    * {@link #removeConditionally(Object, MapCallback, Object, Object)}.
    * 
    * @since GemFire 7.0
    * 
-   * @param <K>
-   *          the type of key of the map
-   * @param <V>
-   *          the type of value of the map
-   * @param <C>
-   *          the type of context parameter passed to the creation/removal
-   *          methods
-   * @param <P>
-   *          the type of extra parameter passed to the creation/removal methods
+   * @param <K> the type of key of the map
+   * @param <V> the type of value of the map
+   * @param <C> the type of context parameter passed to the creation/removal methods
+   * @param <P> the type of extra parameter passed to the creation/removal methods
    */
   public static interface MapCallback<K, V, C, P> {
 
     /**
-     * Create a new instance of the value object given the key and provided
-     * parameters for construction.
+     * Create a new instance of the value object given the key and provided parameters for
+     * construction.
      * 
-     * @param key
-     *          the key for which the value is being created
-     * @param context
-     *          any context in which this method has been invoked
-     * @param createParams
-     *          parameters, if any, required for construction of a new value
-     *          object
+     * @param key the key for which the value is being created
+     * @param context any context in which this method has been invoked
+     * @param createParams parameters, if any, required for construction of a new value object
      */
     public V newValue(K key, C context, P createParams);
 
     /**
      * Invoked when an existing value in map is read by the
-     * {@link #create(Object, MapCallback, Object, Object, boolean)} method in
-     * the segment when segment is locked for read, or by 
+     * {@link #create(Object, MapCallback, Object, Object, boolean)} method in the segment when
+     * segment is locked for read, or by
      * 
-     * @param value
-     *          the value read by create that will be returned
+     * @param value the value read by create that will be returned
      */
     public void oldValueRead(V value);
 
@@ -1725,12 +1586,9 @@ RETRYLOOP:
      * Check if the existing value should be removed by the
      * {@link CustomEntryConcurrentHashMap#removeConditionally} method.
      * 
-     * @param value
-     *          the value to be removed from the map
-     * @param context
-     *          any context in which this method has been invoked
-     * @param removeParams
-     *          parameters, if any, to be passed for cleanup of the object
+     * @param value the value to be removed from the map
+     * @param context any context in which this method has been invoked
+     * @param removeParams parameters, if any, to be passed for cleanup of the object
      */
     public boolean doRemoveValue(V value, C context, P removeParams);
   }
@@ -1739,8 +1597,7 @@ RETRYLOOP:
    * Simple adapter class providing empty default implementations for
    * {@link org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.MapCallback}.
    */
-  public static class MapCallbackAdapter<K, V, C, P> implements
-      MapCallback<K, V, C, P> {
+  public static class MapCallbackAdapter<K, V, C, P> implements MapCallback<K, V, C, P> {
 
     /**
      * @see MapCallback#newValue
@@ -1752,8 +1609,7 @@ RETRYLOOP:
     /**
      * @see MapCallback#oldValueRead
      */
-    public void oldValueRead(V value) {
-    }
+    public void oldValueRead(V value) {}
 
     /**
      * @see MapCallback#doRemoveValue
@@ -1764,132 +1620,104 @@ RETRYLOOP:
   }
 
   /**
-   * Like {@link #putIfAbsent(Object, Object)} but creates the value only if
-   * none present rather than requiring a passed in pre-created object that may
-   * ultimately be thrown away. Also takes read lock on the segment, if
-   * required, to provide better guarantees w.r.t. remove/replace that checks
-   * against old value when the value may be changed structurally by reading
-   * (e.g. a list as value changed after a call to this method).
+   * Like {@link #putIfAbsent(Object, Object)} but creates the value only if none present rather
+   * than requiring a passed in pre-created object that may ultimately be thrown away. Also takes
+   * read lock on the segment, if required, to provide better guarantees w.r.t. remove/replace that
+   * checks against old value when the value may be changed structurally by reading (e.g. a list as
+   * value changed after a call to this method).
    * 
-   * @param key
-   *          key with which the specified value is to be associated
-   * @param valueCreator
-   *          factory object to create the value to be associated with the
-   *          specified key, if required
-   * @param context
-   *          the context in which this method has been invoked and passed to
-   *          <code>valueCreator</code> {@link MapCallback#newValue} method to
-   *          create the new instance
-   * @param createParams
-   *          parameters to be passed to the <code>valueCreator</code>
-   *          {@link MapCallback#newValue} method to create the new instance
-   * @param lockForRead
-   *          if passed as true, then the read from the map prior to creation is
-   *          done under the segment read lock; this provides better guarantees
-   *          with respect to other threads that may be manipulating the value
-   *          object in place after reading from the map
+   * @param key key with which the specified value is to be associated
+   * @param valueCreator factory object to create the value to be associated with the specified key,
+   *        if required
+   * @param context the context in which this method has been invoked and passed to
+   *        <code>valueCreator</code> {@link MapCallback#newValue} method to create the new instance
+   * @param createParams parameters to be passed to the <code>valueCreator</code>
+   *        {@link MapCallback#newValue} method to create the new instance
+   * @param lockForRead if passed as true, then the read from the map prior to creation is done
+   *        under the segment read lock; this provides better guarantees with respect to other
+   *        threads that may be manipulating the value object in place after reading from the map
    * 
-   * @return the previous value associated with the specified key, or the new
-   *         value obtained by invoking {@link MapCallback#newValue} if there
-   *         was no mapping for the key; this is paired with the segment read
-   *         lock
+   * @return the previous value associated with the specified key, or the new value obtained by
+   *         invoking {@link MapCallback#newValue} if there was no mapping for the key; this is
+   *         paired with the segment read lock
    * 
-   * @throws NullPointerException
-   *           if the specified key or value is null
+   * @throws NullPointerException if the specified key or value is null
    */
-  public final <C, P> V create(final K key,
-      final MapCallback<K, V, C, P> valueCreator, final C context,
-      final P createParams, final boolean lockForRead) {
+  public final <C, P> V create(final K key, final MapCallback<K, V, C, P> valueCreator,
+      final C context, final P createParams, final boolean lockForRead) {
     // throws NullPointerException if key null
     final int hash = this.entryCreator.keyHashCode(key, this.compareValues);
-    return segmentFor(hash).create(key, hash, valueCreator, context,
-        createParams, lockForRead);
+    return segmentFor(hash).create(key, hash, valueCreator, context, createParams, lockForRead);
   }
 
   /**
-   * Returns the value to which the specified key is mapped, or {@code null} if
-   * this map contains no mapping for the key.
+   * Returns the value to which the specified key is mapped, or {@code null} if this map contains no
+   * mapping for the key.
    * 
    * <p>
-   * More formally, if this map contains a mapping from a key {@code k} to a
-   * value {@code v} such that {@code key.equals(k)}, then this method returns
-   * {@code v}; otherwise it returns {@code null}. (There can be at most one
-   * such mapping.)
+   * More formally, if this map contains a mapping from a key {@code k} to a value {@code v} such
+   * that {@code key.equals(k)}, then this method returns {@code v}; otherwise it returns
+   * {@code null}. (There can be at most one such mapping.)
    * 
    * <p>
-   * This variant locks the segment for reading and if the given
-   * {@link MapCallback} is non-null then its
-   * {@link MapCallback#oldValueRead(Object)} method is invoked in the lock.
+   * This variant locks the segment for reading and if the given {@link MapCallback} is non-null
+   * then its {@link MapCallback#oldValueRead(Object)} method is invoked in the lock.
    * 
-   * @throws NullPointerException
-   *           if the specified key is null
+   * @throws NullPointerException if the specified key is null
    */
-  public final V get(final Object key,
-      final MapCallback<K, V, ?, ?> readCallback) {
+  public final V get(final Object key, final MapCallback<K, V, ?, ?> readCallback) {
     // throws NullPointerException if key null
     final int hash = this.entryCreator.keyHashCode(key, this.compareValues);
     return segmentFor(hash).get(key, hash, readCallback);
   }
 
   /**
-   * Removes the entry for a key only if the given condition (
-   * {@link MapCallback#doRemoveValue} evaluates to true. This is equivalent to:
+   * Removes the entry for a key only if the given condition ( {@link MapCallback#doRemoveValue}
+   * evaluates to true. This is equivalent to:
    * 
    * <pre>
-   * if (map.containsKey(key)
-   *     &amp;&amp; condition.doRemoveInstance(map.get(key), removeParams)) {
+   * if (map.containsKey(key) &amp;&amp; condition.doRemoveInstance(map.get(key), removeParams)) {
    *   map.remove(key);
    *   return true;
-   * }
-   * else {
+   * } else {
    *   return false;
    * }
    * </pre>
    * 
    * except that the action is performed atomically.
    * 
-   * @param key
-   *          key with which the specified value is associated
-   * @param condition
-   *          {@link MapCallback#doRemoveValue} is invoked and checked inside
-   *          the segment lock if removal should be done
-   * @param context
-   *          the context in which this method has been invoked and passed to
-   *          <code>condition</code> {@link MapCallback#doRemoveValue} method to
-   *          create the new instance
-   * @param removeParams
-   *          parameters to be passed to the <code>onSuccess</code> parameter
+   * @param key key with which the specified value is associated
+   * @param condition {@link MapCallback#doRemoveValue} is invoked and checked inside the segment
+   *        lock if removal should be done
+   * @param context the context in which this method has been invoked and passed to
+   *        <code>condition</code> {@link MapCallback#doRemoveValue} method to create the new
+   *        instance
+   * @param removeParams parameters to be passed to the <code>onSuccess</code> parameter
    * 
-   * @return the previous value associated with <tt>key</tt>, or <tt>null</tt>
-   *         if there was no mapping for <tt>key</tt>
+   * @return the previous value associated with <tt>key</tt>, or <tt>null</tt> if there was no
+   *         mapping for <tt>key</tt>
    * 
-   * @throws UnsupportedOperationException
-   *           if the <tt>remove</tt> operation is not supported by this map
-   * @throws ClassCastException
-   *           if the key or value is of an inappropriate type for this map
-   *           (optional)
-   * @throws NullPointerException
-   *           if the specified key or value is null, and this map does not
-   *           permit null keys or values (optional)
+   * @throws UnsupportedOperationException if the <tt>remove</tt> operation is not supported by this
+   *         map
+   * @throws ClassCastException if the key or value is of an inappropriate type for this map
+   *         (optional)
+   * @throws NullPointerException if the specified key or value is null, and this map does not
+   *         permit null keys or values (optional)
    */
   public final <C, P> V removeConditionally(final Object key,
-      final MapCallback<K, V, C, P> condition, final C context,
-      final P removeParams) {
+      final MapCallback<K, V, C, P> condition, final C context, final P removeParams) {
     // throws NullPointerException if key null
     final int hash = this.entryCreator.keyHashCode(key, this.compareValues);
-    return segmentFor(hash).remove(key, hash, NO_OBJECT_TOKEN, condition,
-        context, removeParams);
+    return segmentFor(hash).remove(key, hash, NO_OBJECT_TOKEN, condition, context, removeParams);
   }
 
-// End GemStone addition
+  // End GemStone addition
 
   /**
-   * Copies all of the mappings from the specified map to this one. These
-   * mappings replace any mappings that this map had for any of the keys
-   * currently in the specified map.
+   * Copies all of the mappings from the specified map to this one. These mappings replace any
+   * mappings that this map had for any of the keys currently in the specified map.
    * 
-   * @param m
-   *          mappings to be stored in this map
+   * @param m mappings to be stored in this map
    */
   @Override
   public final void putAll(final Map<? extends K, ? extends V> m) {
@@ -1899,29 +1727,25 @@ RETRYLOOP:
   }
 
   /**
-   * Removes the key (and its corresponding value) from this map. This method
-   * does nothing if the key is not in the map.
+   * Removes the key (and its corresponding value) from this map. This method does nothing if the
+   * key is not in the map.
    * 
-   * @param key
-   *          the key that needs to be removed
-   * @return the previous value associated with <tt>key</tt>, or <tt>null</tt>
-   *         if there was no mapping for <tt>key</tt>
-   * @throws NullPointerException
-   *           if the specified key is null
+   * @param key the key that needs to be removed
+   * @return the previous value associated with <tt>key</tt>, or <tt>null</tt> if there was no
+   *         mapping for <tt>key</tt>
+   * @throws NullPointerException if the specified key is null
    */
   @Override
   public final V remove(final Object key) {
     // throws NullPointerException if key null
     final int hash = this.entryCreator.keyHashCode(key, this.compareValues);
-    return segmentFor(hash)
-        .remove(key, hash, NO_OBJECT_TOKEN, null, null, null);
+    return segmentFor(hash).remove(key, hash, NO_OBJECT_TOKEN, null, null, null);
   }
 
   /**
    * {@inheritDoc}
    * 
-   * @throws NullPointerException
-   *           if the specified key is null
+   * @throws NullPointerException if the specified key is null
    */
   public final boolean remove(final Object key, final Object value) {
     if (value == null) {
@@ -1935,8 +1759,7 @@ RETRYLOOP:
   /**
    * {@inheritDoc}
    * 
-   * @throws NullPointerException
-   *           if any of the arguments are null
+   * @throws NullPointerException if any of the arguments are null
    */
   public final boolean replace(final K key, final V oldValue, final V newValue) {
     if (oldValue == null || newValue == null) {
@@ -1950,10 +1773,9 @@ RETRYLOOP:
   /**
    * {@inheritDoc}
    * 
-   * @return the previous value associated with the specified key, or
-   *         <tt>null</tt> if there was no mapping for the key
-   * @throws NullPointerException
-   *           if the specified key or value is null
+   * @return the previous value associated with the specified key, or <tt>null</tt> if there was no
+   *         mapping for the key
+   * @throws NullPointerException if the specified key or value is null
    */
   public final V replace(final K key, final V value) {
     if (value == null) {
@@ -1969,20 +1791,20 @@ RETRYLOOP:
    */
   @Override
   public final void clear() {
-    ArrayList<HashEntry<?,?>> entries = null;
+    ArrayList<HashEntry<?, ?>> entries = null;
     try {
       for (int i = 0; i < this.segments.length; ++i) {
         entries = this.segments[i].clear(entries);
       }
     } finally {
       if (entries != null) {
-        final ArrayList<HashEntry<?,?>> clearedEntries = entries;
+        final ArrayList<HashEntry<?, ?>> clearedEntries = entries;
         final Runnable runnable = new Runnable() {
           public void run() {
-            for (HashEntry<?,?> he: clearedEntries) {
+            for (HashEntry<?, ?> he : clearedEntries) {
               for (HashEntry<?, ?> p = he; p != null; p = p.getNextEntry()) {
                 synchronized (p) {
-                  ((OffHeapRegionEntry)p).release();
+                  ((OffHeapRegionEntry) p).release();
                 }
               }
             }
@@ -1992,7 +1814,7 @@ RETRYLOOP:
         InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
         if (ids != null) {
           try {
-            ids.getDistributionManager().getWaitingThreadPool().submit(runnable);
+            ids.getDistributionManager().getWaitingThreadPool().execute(runnable);
             submitted = true;
           } catch (RejectedExecutionException e) {
             // fall through with submitted false
@@ -2003,7 +1825,7 @@ RETRYLOOP:
           }
         }
         if (!submitted) {
-          String name = this.getClass().getSimpleName()+"@"+this.hashCode()+" Clear Thread";
+          String name = this.getClass().getSimpleName() + "@" + this.hashCode() + " Clear Thread";
           Thread thread = new Thread(runnable, name);
           thread.setDaemon(true);
           thread.start();
@@ -2013,20 +1835,17 @@ RETRYLOOP:
   }
 
   /**
-   * Returns a {@link Set} view of the keys contained in this map. The set is
-   * backed by the map, so changes to the map are reflected in the set, and
-   * vice-versa. The set supports element removal, which removes the
-   * corresponding mapping from this map, via the <tt>Iterator.remove</tt>,
-   * <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and
-   * <tt>clear</tt> operations. It does not support the <tt>add</tt> or
-   * <tt>addAll</tt> operations.
+   * Returns a {@link Set} view of the keys contained in this map. The set is backed by the map, so
+   * changes to the map are reflected in the set, and vice-versa. The set supports element removal,
+   * which removes the corresponding mapping from this map, via the <tt>Iterator.remove</tt>,
+   * <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and <tt>clear</tt> operations. It
+   * does not support the <tt>add</tt> or <tt>addAll</tt> operations.
    * 
    * <p>
-   * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will
-   * never throw {@link java.util.ConcurrentModificationException}, and
-   * guarantees to traverse elements as they existed upon construction of the
-   * iterator, and may (but is not guaranteed to) reflect any modifications
-   * subsequent to construction.
+   * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will never throw
+   * {@link java.util.ConcurrentModificationException}, and guarantees to traverse elements as they
+   * existed upon construction of the iterator, and may (but is not guaranteed to) reflect any
+   * modifications subsequent to construction.
    */
   @Override
   public final Set<K> keySet() {
@@ -2035,20 +1854,18 @@ RETRYLOOP:
   }
 
   /**
-   * Returns a {@link Collection} view of the values contained in this map. The
-   * collection is backed by the map, so changes to the map are reflected in the
-   * collection, and vice-versa. The collection supports element removal, which
-   * removes the corresponding mapping from this map, via the
-   * <tt>Iterator.remove</tt>, <tt>Collection.remove</tt>, <tt>removeAll</tt>,
-   * <tt>retainAll</tt>, and <tt>clear</tt> operations. It does not support the
-   * <tt>add</tt> or <tt>addAll</tt> operations.
+   * Returns a {@link Collection} view of the values contained in this map. The collection is backed
+   * by the map, so changes to the map are reflected in the collection, and vice-versa. The
+   * collection supports element removal, which removes the corresponding mapping from this map, via
+   * the <tt>Iterator.remove</tt>, <tt>Collection.remove</tt>, <tt>removeAll</tt>,
+   * <tt>retainAll</tt>, and <tt>clear</tt> operations. It does not support the <tt>add</tt> or
+   * <tt>addAll</tt> operations.
    * 
    * <p>
-   * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will
-   * never throw {@link java.util.ConcurrentModificationException}, and
-   * guarantees to traverse elements as they existed upon construction of the
-   * iterator, and may (but is not guaranteed to) reflect any modifications
-   * subsequent to construction.
+   * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will never throw
+   * {@link java.util.ConcurrentModificationException}, and guarantees to traverse elements as they
+   * existed upon construction of the iterator, and may (but is not guaranteed to) reflect any
+   * modifications subsequent to construction.
    */
   @Override
   public final Collection<V> values() {
@@ -2057,20 +1874,17 @@ RETRYLOOP:
   }
 
   /**
-   * Returns a {@link Set} view of the mappings contained in this map. The set
-   * is backed by the map, so changes to the map are reflected in the set, and
-   * vice-versa. The set supports element removal, which removes the
-   * corresponding mapping from the map, via the <tt>Iterator.remove</tt>,
-   * <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and
-   * <tt>clear</tt> operations. It does not support the <tt>add</tt> or
-   * <tt>addAll</tt> operations.
+   * Returns a {@link Set} view of the mappings contained in this map. The set is backed by the map,
+   * so changes to the map are reflected in the set, and vice-versa. The set supports element
+   * removal, which removes the corresponding mapping from the map, via the
+   * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and
+   * <tt>clear</tt> operations. It does not support the <tt>add</tt> or <tt>addAll</tt> operations.
    * 
    * <p>
-   * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will
-   * never throw {@link java.util.ConcurrentModificationException}, and
-   * guarantees to traverse elements as they existed upon construction of the
-   * iterator, and may (but is not guaranteed to) reflect any modifications
-   * subsequent to construction.
+   * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will never throw
+   * {@link java.util.ConcurrentModificationException}, and guarantees to traverse elements as they
+   * existed upon construction of the iterator, and may (but is not guaranteed to) reflect any
+   * modifications subsequent to construction.
    */
   @Override
   public final Set<Map.Entry<K, V>> entrySet() {
@@ -2078,34 +1892,31 @@ RETRYLOOP:
     return (es != null) ? es : (this.entrySet = new EntrySet(false));
   }
 
-// GemStone addition
+  // GemStone addition
 
   /**
-   * Returns a {@link Set} view of the mappings contained in this map. The set
-   * is backed by the map, so changes to the map are reflected in the set, and
-   * vice-versa. The set supports element removal, which removes the
-   * corresponding mapping from the map, via the <tt>Iterator.remove</tt>,
-   * <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and
-   * <tt>clear</tt> operations. It does not support the <tt>add</tt> or
-   * <tt>addAll</tt> operations.
+   * Returns a {@link Set} view of the mappings contained in this map. The set is backed by the map,
+   * so changes to the map are reflected in the set, and vice-versa. The set supports element
+   * removal, which removes the corresponding mapping from the map, via the
+   * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and
+   * <tt>clear</tt> operations. It does not support the <tt>add</tt> or <tt>addAll</tt> operations.
    * 
    * <p>
-   * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will
-   * never throw {@link java.util.ConcurrentModificationException}, and
-   * guarantees to traverse elements as they existed upon construction of the
-   * iterator, and may (but is not guaranteed to) reflect any modifications
-   * subsequent to construction.
+   * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will never throw
+   * {@link java.util.ConcurrentModificationException}, and guarantees to traverse elements as they
+   * existed upon construction of the iterator, and may (but is not guaranteed to) reflect any
+   * modifications subsequent to construction.
    * 
    * <p>
-   * This set provides entries that are reused during iteration so caller cannot
-   * store the returned <code>Map.Entry</code> objects.
+   * This set provides entries that are reused during iteration so caller cannot store the returned
+   * <code>Map.Entry</code> objects.
    */
   public final Set<Map.Entry<K, V>> entrySetWithReusableEntries() {
     final Set<Map.Entry<K, V>> es = this.reusableEntrySet;
     return (es != null) ? es : (this.reusableEntrySet = new EntrySet(true));
   }
 
-// End GemStone addition
+  // End GemStone addition
 
   /**
    * Returns an enumeration of the keys in this table.
@@ -2135,7 +1946,7 @@ RETRYLOOP:
 
     int nextTableIndex;
 
-// GemStone changed HashEntry<K, V>[] currentTable to currentSegment
+    // GemStone changed HashEntry<K, V>[] currentTable to currentSegment
     HashEntry<K, V>[] currentTable;
 
     HashEntry<K, V> nextEntry;
@@ -2159,7 +1970,7 @@ RETRYLOOP:
     }
 
     final void advance() {
-// GemStone changes BEGIN
+      // GemStone changes BEGIN
       if (this.currentListIndex < this.currentList.size()) {
         this.nextEntry = this.currentList.get(this.currentListIndex++);
         return;
@@ -2167,10 +1978,9 @@ RETRYLOOP:
 
       this.nextEntry = null;
       if (this.nextTableIndex >= 0) {
-        final Segment<K, V> seg = CustomEntryConcurrentHashMap.this
-            .segments[this.currentSegmentIndex];
-        final ReentrantReadWriteLock.ReadLock listLock = seg.listUpdateLock
-            .readLock();
+        final Segment<K, V> seg =
+            CustomEntryConcurrentHashMap.this.segments[this.currentSegmentIndex];
+        final ReentrantReadWriteLock.ReadLock listLock = seg.listUpdateLock.readLock();
         listLock.lock();
         try {
           do {
@@ -2183,28 +1993,21 @@ RETRYLOOP:
           listLock.unlock();
         }
       }
-      /* (original code)
-      if (this.nextEntry != null
-          && (this.nextEntry = this.nextEntry.getNextEntry()) != null) {
-        return;
-      }
-
-      while (this.nextTableIndex >= 0) {
-        if ((this.nextEntry = this.currentTable[this.nextTableIndex--])
-            != null) {
-          return;
-        }
-      }
-      */
-// GemStone changes END
+      /*
+       * (original code) if (this.nextEntry != null && (this.nextEntry =
+       * this.nextEntry.getNextEntry()) != null) { return; }
+       * 
+       * while (this.nextTableIndex >= 0) { if ((this.nextEntry =
+       * this.currentTable[this.nextTableIndex--]) != null) { return; } }
+       */
+      // GemStone changes END
 
       while (this.currentSegmentIndex > 0) {
-        final Segment<K, V> seg = CustomEntryConcurrentHashMap.this
-            .segments[--this.currentSegmentIndex];
+        final Segment<K, V> seg =
+            CustomEntryConcurrentHashMap.this.segments[--this.currentSegmentIndex];
         if (seg.count != 0) {
           this.currentTable = seg.table;
-          final ReentrantReadWriteLock.ReadLock listLock = seg.listUpdateLock
-              .readLock();
+          final ReentrantReadWriteLock.ReadLock listLock = seg.listUpdateLock.readLock();
           listLock.lock();
           try {
             for (int j = currentTable.length - 1; j >= 0; --j) {
@@ -2221,22 +2024,20 @@ RETRYLOOP:
       }
     }
 
-// GemStone added the method below
+    // GemStone added the method below
     /**
-     * Copy the tail of list of current matched entry ({@link #nextEntry}) to a
-     * temporary list, so that the read lock can be released after the copy.
+     * Copy the tail of list of current matched entry ({@link #nextEntry}) to a temporary list, so
+     * that the read lock can be released after the copy.
      * 
-     * Read lock on {@link #currentSegmentIndex}'s listUpdateLock should already be
-     * acquired.
+     * Read lock on {@link #currentSegmentIndex}'s listUpdateLock should already be acquired.
      */
     private final void copyEntriesToList() {
-      assert segments[currentSegmentIndex] != null: "unexpected null currentSegment";
+      assert segments[currentSegmentIndex] != null : "unexpected null currentSegment";
       assert segments[currentSegmentIndex].listUpdateLock.getReadLockCount() > 0;
 
       this.currentList.clear();
       this.currentListIndex = 0;
-      for (HashEntry<K, V> p = this.nextEntry.getNextEntry(); p != null; p = p
-          .getNextEntry()) {
+      for (HashEntry<K, V> p = this.nextEntry.getNextEntry(); p != null; p = p.getNextEntry()) {
         this.currentList.add(p);
       }
     }
@@ -2263,8 +2064,7 @@ RETRYLOOP:
     }
   }
 
-  final class KeyIterator extends HashIterator implements Iterator<K>,
-      Enumeration<K> {
+  final class KeyIterator extends HashIterator implements Iterator<K>, Enumeration<K> {
 
     public K next() {
       return super.nextEntry().getKey();
@@ -2275,8 +2075,7 @@ RETRYLOOP:
     }
   }
 
-  final class ValueIterator extends HashIterator implements Iterator<V>,
-      Enumeration<V> {
+  final class ValueIterator extends HashIterator implements Iterator<V>, Enumeration<V> {
 
     public V next() {
       return super.nextEntry().getMapValue();
@@ -2288,10 +2087,9 @@ RETRYLOOP:
   }
 
   /**
-   * An Entry maintaining a key and a value. The value may be changed using the
-   * <tt>setValue</tt> method. This class facilitates the process of building
-   * custom map implementations. For example, it may be convenient to return
-   * arrays of <tt>SimpleEntry</tt> instances in method
+   * An Entry maintaining a key and a value. The value may be changed using the <tt>setValue</tt>
+   * method. This class facilitates the process of building custom map implementations. For example,
+   * it may be convenient to return arrays of <tt>SimpleEntry</tt> instances in method
    * <tt>Map.entrySet().toArray</tt>.
    */
   public class SimpleReusableEntry implements Map.Entry<K, V>, Serializable {
@@ -2303,13 +2101,10 @@ RETRYLOOP:
     private V value;
 
     /**
-     * Creates an entry representing a mapping from the specified key to the
-     * specified value.
+     * Creates an entry representing a mapping from the specified key to the specified value.
      * 
-     * @param key
-     *          the key represented by this entry
-     * @param value
-     *          the value represented by this entry
+     * @param key the key represented by this entry
+     * @param value the value represented by this entry
      */
     public SimpleReusableEntry(final K key, final V value) {
       this.key = key;
@@ -2319,8 +2114,7 @@ RETRYLOOP:
     /**
      * Creates an entry representing the same mapping as the specified entry.
      * 
-     * @param entry
-     *          the entry to copy
+     * @param entry the entry to copy
      */
     public SimpleReusableEntry(final Entry<? extends K, ? extends V> entry) {
       this.key = entry.getKey();
@@ -2348,8 +2142,7 @@ RETRYLOOP:
     /**
      * Replaces the value corresponding to this entry with the specified value.
      * 
-     * @param value
-     *          new value to be stored in this entry
+     * @param value new value to be stored in this entry
      * @return the old value corresponding to the entry
      */
     public V setValue(final V value) {
@@ -2359,22 +2152,19 @@ RETRYLOOP:
     }
 
     /**
-     * Compares the specified object with this entry for equality. Returns
-     * {@code true} if the given object is also a map entry and the two entries
-     * represent the same mapping. More formally, two entries {@code e1} and
-     * {@code e2} represent the same mapping if
+     * Compares the specified object with this entry for equality. Returns {@code true} if the given
+     * object is also a map entry and the two entries represent the same mapping. More formally, two
+     * entries {@code e1} and {@code e2} represent the same mapping if
      * 
      * <pre>
-     * (e1.getKey() == null ? e2.getKey() == null : e1.getKey().equals(
-     *     e2.getKey())) &amp;&amp; (e1.getValue() == null ?
-     *         e2.getValue() == null : e1.getValue().equals(e2.getValue()))
+     * (e1.getKey() == null ? e2.getKey() == null : e1.getKey().equals(e2.getKey()))
+     *     &amp;&amp; (e1.getValue() == null ? e2.getValue() == null : e1.getValue().equals(e2.getValue()))
      * </pre>
      * 
-     * This ensures that the {@code equals} method works properly across
-     * different implementations of the {@code Map.Entry} interface.
+     * This ensures that the {@code equals} method works properly across different implementations
+     * of the {@code Map.Entry} interface.
      * 
-     * @param o
-     *          object to be compared for equality with this map entry
+     * @param o object to be compared for equality with this map entry
      * @return {@code true} if the specified object is equal to this map entry
      * @see #hashCode
      */
@@ -2383,7 +2173,7 @@ RETRYLOOP:
       if (!(o instanceof Map.Entry<?, ?>)) {
         return false;
       }
-      final Map.Entry<?, ?> e = (Map.Entry<?, ?>)o;
+      final Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
       if (CustomEntryConcurrentHashMap.this.compareValues) {
         return ArrayUtils.objectEquals(this.key, e.getKey())
             && ArrayUtils.objectEquals(this.value, e.getValue());
@@ -2392,17 +2182,16 @@ RETRYLOOP:
     }
 
     /**
-     * Returns the hash code value for this map entry. The hash code of a map
-     * entry {@code e} is defined to be:
+     * Returns the hash code value for this map entry. The hash code of a map entry {@code e} is
+     * defined to be:
      * 
      * <pre>
      * (e.getKey() == null ? 0 : e.getKey().hashCode())
      *     &circ; (e.getValue() == null ? 0 : e.getValue().hashCode())
      * </pre>
      * 
-     * This ensures that {@code e1.equals(e2)} implies that
-     * {@code e1.hashCode()==e2.hashCode()} for any two Entries {@code e1} and
-     * {@code e2}, as required by the general contract of
+     * This ensures that {@code e1.equals(e2)} implies that {@code e1.hashCode()==e2.hashCode()} for
+     * any two Entries {@code e1} and {@code e2}, as required by the general contract of
      * {@link Object#hashCode}.
      * 
      * @return the hash code value for this map entry
@@ -2414,15 +2203,13 @@ RETRYLOOP:
         return (this.key != null ? this.key.hashCode() : 0)
             ^ (this.value != null ? this.value.hashCode() : 0);
       }
-      return System.identityHashCode(this.key)
-          ^ System.identityHashCode(this.value);
+      return System.identityHashCode(this.key) ^ System.identityHashCode(this.value);
     }
 
     /**
-     * Returns a String representation of this map entry. This implementation
-     * returns the string representation of this entry's key followed by the
-     * equals character ("<tt>=</tt>") followed by the string representation of
-     * this entry's value.
+     * Returns a String representation of this map entry. This implementation returns the string
+     * representation of this entry's key followed by the equals character ("<tt>=</tt>") followed
+     * by the string representation of this entry's value.
      * 
      * @return a String representation of this map entry
      */
@@ -2433,33 +2220,28 @@ RETRYLOOP:
   }
 
   /**
-   * Custom Entry class used by EntryIterator.next(), that relays setValue
-   * changes to the underlying map.
+   * Custom Entry class used by EntryIterator.next(), that relays setValue changes to the underlying
+   * map.
    */
   final class WriteThroughEntry extends SimpleReusableEntry {
 
     private static final long serialVersionUID = -6364816773849437756L;
 
     /**
-     * Creates an entry representing a mapping from the specified key to the
-     * specified value.
+     * Creates an entry representing a mapping from the specified key to the specified value.
      * 
-     * @param key
-     *          the key represented by this entry
-     * @param value
-     *          the value represented by this entry
+     * @param key the key represented by this entry
+     * @param value the value represented by this entry
      */
     WriteThroughEntry(final K key, final V value) {
       super(key, value);
     }
 
     /**
-     * Set our entry's value and write through to the map. The value to return
-     * is somewhat arbitrary here. Since a WriteThroughEntry does not
-     * necessarily track asynchronous changes, the most recent "previous" value
-     * could be different from what we return (or could even have been removed
-     * in which case the put will re-establish). We do not and cannot guarantee
-     * more.
+     * Set our entry's value and write through to the map. The value to return is somewhat arbitrary
+     * here. Since a WriteThroughEntry does not necessarily track asynchronous changes, the most
+     * recent "previous" value could be different from what we return (or could even have been
+     * removed in which case the put will re-establish). We do not and cannot guarantee more.
      */
     @Override
     public V setValue(final V value) {
@@ -2472,10 +2254,9 @@ RETRYLOOP:
     }
   }
 
-  final class EntryIterator extends HashIterator implements
-      Iterator<Map.Entry<K, V>> {
+  final class EntryIterator extends HashIterator implements Iterator<Map.Entry<K, V>> {
 
-// GemStone change
+    // GemStone change
     // added possibility to reuse a single Map.Entry for entire iteration
     final WriteThroughEntry reusableEntry;
 
@@ -2492,7 +2273,7 @@ RETRYLOOP:
       }
       return new WriteThroughEntry(e.getKey(), e.getMapValue());
     }
-// End GemStone change
+    // End GemStone change
   }
 
   final class KeySet extends AbstractSet<K> {
@@ -2548,15 +2329,14 @@ RETRYLOOP:
 
   final class EntrySet extends AbstractSet<Map.Entry<K, V>> {
 
-// GemStone change
+    // GemStone change
     // added possibility to reuse a single Map.Entry for entire iteration
     final WriteThroughEntry reusableEntry;
 
     EntrySet(final boolean useReusableEntry) {
       if (useReusableEntry) {
         this.reusableEntry = new WriteThroughEntry(null, null);
-      }
-      else {
+      } else {
         this.reusableEntry = null;
       }
     }
@@ -2566,14 +2346,14 @@ RETRYLOOP:
       return new EntryIterator(this.reusableEntry);
     }
 
-// End GemStone change
+    // End GemStone change
 
     @Override
     public boolean contains(final Object o) {
       if (!(o instanceof Map.Entry)) {
         return false;
       }
-      final Map.Entry<?, ?> e = (Map.Entry<?, ?>)o;
+      final Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
       final V v = CustomEntryConcurrentHashMap.this.get(e.getKey());
       if (CustomEntryConcurrentHashMap.this.compareValues) {
         return v != null && v.equals(e.getValue());
@@ -2586,7 +2366,7 @@ RETRYLOOP:
       if (!(o instanceof Map.Entry)) {
         return false;
       }
-      final Map.Entry<?, ?> e = (Map.Entry<?, ?>)o;
+      final Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
       return CustomEntryConcurrentHashMap.this.remove(e.getKey(), e.getValue());
     }
 
@@ -2604,17 +2384,13 @@ RETRYLOOP:
   /* ---------------- Serialization Support -------------- */
 
   /**
-   * Save the state of the <tt>ConcurrentHashMap</tt> instance to a stream
-   * (i.e., serialize it).
+   * Save the state of the <tt>ConcurrentHashMap</tt> instance to a stream (i.e., serialize it).
    * 
-   * @param s
-   *          the stream
-   * @serialData the key (Object) and value (Object) for each key-value mapping,
-   *             followed by a null pair. The key-value mappings are emitted in
-   *             no particular order.
+   * @param s the stream
+   * @serialData the key (Object) and value (Object) for each key-value mapping, followed by a null
+   *             pair. The key-value mappings are emitted in no particular order.
    */
-  private void writeObject(final java.io.ObjectOutputStream s)
-      throws IOException {
+  private void writeObject(final java.io.ObjectOutputStream s) throws IOException {
     s.defaultWriteObject();
 
     for (int k = 0; k < this.segments.length; ++k) {
@@ -2638,11 +2414,9 @@ RETRYLOOP:
   }
 
   /**
-   * Reconstitute the <tt>ConcurrentHashMap</tt> instance from a stream (i.e.,
-   * deserialize it).
+   * Reconstitute the <tt>ConcurrentHashMap</tt> instance from a stream (i.e., deserialize it).
    * 
-   * @param s
-   *          the stream
+   * @param s the stream
    */
   @SuppressWarnings("unchecked")
   private void readObject(final java.io.ObjectInputStream s)
@@ -2656,8 +2430,8 @@ RETRYLOOP:
 
     // Read the keys and values, and put the mappings in the table
     for (;;) {
-      final K key = (K)s.readObject();
-      final V value = (V)s.readObject();
+      final K key = (K) s.readObject();
+      final V value = (V) s.readObject();
       if (key == null) {
         break;
       }

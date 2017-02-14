@@ -1,29 +1,18 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.stream.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
@@ -31,11 +20,27 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
- * The NetView class represents a membership view. Note that
- * this class is not synchronized, so take that under advisement
- * if you decide to modify a view with add() or remove().
+ * The NetView class represents a membership view. Note that this class is not synchronized, so take
+ * that under advisement if you decide to modify a view with add() or remove().
  * 
  * @since GemFire 5.5
  */
@@ -44,7 +49,7 @@ public class NetView implements DataSerializableFixedID {
   private int viewId;
   private List<InternalDistributedMember> members;
   // TODO this should be a List
-  private Map<InternalDistributedMember, Object> publicKeys = new ConcurrentHashMap<>();
+  private final Map<InternalDistributedMember, Object> publicKeys = new ConcurrentHashMap<>();
   private int[] failureDetectionPorts = new int[10];
   private Set<InternalDistributedMember> shutdownMembers;
   private Set<InternalDistributedMember> crashedMembers;
@@ -53,7 +58,7 @@ public class NetView implements DataSerializableFixedID {
   private final Object membersLock = new Object();
   static public final Random RANDOM = new Random();
 
-  
+
   public NetView() {
     viewId = 0;
     members = new ArrayList<>(4);
@@ -75,7 +80,8 @@ public class NetView implements DataSerializableFixedID {
     Arrays.fill(failureDetectionPorts, -1);
   }
 
-  public NetView(InternalDistributedMember creator, int viewId, List<InternalDistributedMember> members) {
+  public NetView(InternalDistributedMember creator, int viewId,
+      List<InternalDistributedMember> members) {
     this.viewId = viewId;
     this.members = new ArrayList<>(members);
     hashedMembers = new HashSet<>(this.members);
@@ -88,7 +94,8 @@ public class NetView implements DataSerializableFixedID {
 
   /**
    * Test method
-   * @param size   size of the view, used for presizing collections
+   * 
+   * @param size size of the view, used for presizing collections
    * @param viewId the ID of the view
    */
   public NetView(int size, long viewId) {
@@ -102,8 +109,7 @@ public class NetView implements DataSerializableFixedID {
   }
 
   /**
-   * Create a new view with the contents of the given view and the
-   * specified view ID
+   * Create a new view with the contents of the given view and the specified view ID
    */
   public NetView(NetView other, int viewId) {
     this.creator = other.creator;
@@ -111,13 +117,15 @@ public class NetView implements DataSerializableFixedID {
     this.members = new ArrayList<>(other.members);
     this.hashedMembers = new HashSet<>(other.members);
     this.failureDetectionPorts = new int[other.failureDetectionPorts.length];
-    System.arraycopy(other.failureDetectionPorts, 0, this.failureDetectionPorts, 0, other.failureDetectionPorts.length);
+    System.arraycopy(other.failureDetectionPorts, 0, this.failureDetectionPorts, 0,
+        other.failureDetectionPorts.length);
     this.shutdownMembers = new HashSet<>(other.shutdownMembers);
     this.crashedMembers = new HashSet<>(other.crashedMembers);
-    this.publicKeys = new HashMap<>(other.publicKeys);
+    this.publicKeys.putAll(other.publicKeys);
   }
 
-  public NetView(InternalDistributedMember creator, int viewId, List<InternalDistributedMember> mbrs, Set<InternalDistributedMember> shutdowns,
+  public NetView(InternalDistributedMember creator, int viewId,
+      List<InternalDistributedMember> mbrs, Set<InternalDistributedMember> shutdowns,
       Set<InternalDistributedMember> crashes) {
     this.creator = creator;
     this.viewId = viewId;
@@ -125,7 +133,7 @@ public class NetView implements DataSerializableFixedID {
     this.hashedMembers = new HashSet<>(mbrs);
     this.shutdownMembers = shutdowns;
     this.crashedMembers = crashes;
-    this.failureDetectionPorts = new int[mbrs.size()+10];
+    this.failureDetectionPorts = new int[mbrs.size() + 10];
     Arrays.fill(this.failureDetectionPorts, -1);
   }
 
@@ -140,24 +148,29 @@ public class NetView implements DataSerializableFixedID {
   public void setCreator(InternalDistributedMember creator) {
     this.creator = creator;
   }
-  
+
   public Object getPublicKey(InternalDistributedMember mbr) {
     return publicKeys.get(mbr);
   }
 
   public void setPublicKey(InternalDistributedMember mbr, Object key) {
-    publicKeys.put(mbr, key);
+    if (mbr != null && key != null) {
+      publicKeys.put(mbr, key);
+    }
   }
 
   public void setPublicKeys(NetView otherView) {
-    this.publicKeys.putAll(otherView.publicKeys);
+    if (otherView.publicKeys != null) {
+      this.publicKeys.putAll(otherView.publicKeys);
+    }
   }
+
 
 
   public int[] getFailureDetectionPorts() {
     return this.failureDetectionPorts;
   }
-  
+
   public int getFailureDetectionPort(InternalDistributedMember mbr) {
     int idx = members.indexOf(mbr);
     if (idx < 0 || idx >= failureDetectionPorts.length) {
@@ -175,7 +188,7 @@ public class NetView implements DataSerializableFixedID {
     ensureFDCapacity(idx);
     failureDetectionPorts[idx] = port;
   }
-  
+
   /**
    * Transfer the failure-detection ports from another view to this one
    */
@@ -184,7 +197,7 @@ public class NetView implements DataSerializableFixedID {
     if (ports != null) {
       int idx = 0;
       int portsSize = ports.length;
-      for (InternalDistributedMember mbr: otherView.getMembers()) {
+      for (InternalDistributedMember mbr : otherView.getMembers()) {
         if (contains(mbr)) {
           // unit tests create views w/o failure detection ports, so we must check the length
           // of the array
@@ -204,19 +217,19 @@ public class NetView implements DataSerializableFixedID {
    */
   private void ensureFDCapacity(int idx) {
     if (idx >= failureDetectionPorts.length) {
-      int[] p = new int[idx+10];
+      int[] p = new int[idx + 10];
       if (failureDetectionPorts.length > 0) {
         System.arraycopy(failureDetectionPorts, 0, p, 0, failureDetectionPorts.length);
       }
-      Arrays.fill(p, idx, idx+9, -1);
+      Arrays.fill(p, idx, idx + 9, -1);
       failureDetectionPorts = p;
     }
   }
-  
+
   public List<InternalDistributedMember> getMembers() {
     return Collections.unmodifiableList(this.members);
   }
-  
+
   /**
    * return members that are i this view but not the given old view
    */
@@ -231,8 +244,8 @@ public class NetView implements DataSerializableFixedID {
    */
   public List<InternalDistributedMember> getNewMembers() {
     List<InternalDistributedMember> result = new ArrayList<>(5);
-    result.addAll(this.members.stream().filter(mbr -> mbr.getVmViewId() 
-                                                      == this.viewId).collect(Collectors.toList()));
+    result.addAll(this.members.stream().filter(mbr -> mbr.getVmViewId() == this.viewId)
+        .collect(Collectors.toList()));
     return result;
   }
 
@@ -243,11 +256,11 @@ public class NetView implements DataSerializableFixedID {
   public void add(InternalDistributedMember mbr) {
     this.hashedMembers.add(mbr);
     this.members.add(mbr);
-    int idx = members.size()-1;
+    int idx = members.size() - 1;
     ensureFDCapacity(idx);
     this.failureDetectionPorts[idx] = -1;
   }
-  
+
   public void addCrashedMembers(Set<InternalDistributedMember> mbr) {
     this.crashedMembers.addAll(mbr);
   }
@@ -256,12 +269,13 @@ public class NetView implements DataSerializableFixedID {
     this.hashedMembers.remove(mbr);
     int idx = this.members.indexOf(mbr);
     if (idx >= 0) {
-      System.arraycopy(failureDetectionPorts, idx+1, failureDetectionPorts, idx, failureDetectionPorts.length-idx-1);
-      failureDetectionPorts[failureDetectionPorts.length-1] = -1;
+      System.arraycopy(failureDetectionPorts, idx + 1, failureDetectionPorts, idx,
+          failureDetectionPorts.length - idx - 1);
+      failureDetectionPorts[failureDetectionPorts.length - 1] = -1;
     }
     return this.members.remove(mbr);
   }
-  
+
   public void removeAll(Collection<InternalDistributedMember> ids) {
     this.hashedMembers.removeAll(ids);
     ids.forEach(this::remove);
@@ -300,10 +314,10 @@ public class NetView implements DataSerializableFixedID {
   }
 
   /**
-   * Returns the coordinator of this view, rejecting any in the
-   * given collection of IDs
+   * Returns the coordinator of this view, rejecting any in the given collection of IDs
    */
-  public InternalDistributedMember getCoordinator(Collection<InternalDistributedMember> rejections) {
+  public InternalDistributedMember getCoordinator(
+      Collection<InternalDistributedMember> rejections) {
     if (rejections == null) {
       return getCoordinator();
     }
@@ -313,7 +327,7 @@ public class NetView implements DataSerializableFixedID {
           return addr;
         }
       }
-      for (InternalDistributedMember addr: members) {
+      for (InternalDistributedMember addr : members) {
         if (!rejections.contains(addr)) {
           return addr;
         }
@@ -323,17 +337,18 @@ public class NetView implements DataSerializableFixedID {
   }
 
   /***
-   * This functions returns the list of preferred coordinators.
-   * One random member from list of non-preferred member list. It make
-   * sure that random member is not in suspected Set.
-   * And local member.
+   * This functions returns the list of preferred coordinators. One random member from list of
+   * non-preferred member list. It make sure that random member is not in suspected Set. And local
+   * member.
    * 
    * @param filter Suspect member set.
    * @param localAddress the address of this member
    * @param maxNumberDesired number of preferred coordinators to return
    * @return list of preferred coordinators
    */
-  public List<InternalDistributedMember> getPreferredCoordinators(Set<InternalDistributedMember> filter, InternalDistributedMember localAddress, int maxNumberDesired) {
+  public List<InternalDistributedMember> getPreferredCoordinators(
+      Set<InternalDistributedMember> filter, InternalDistributedMember localAddress,
+      int maxNumberDesired) {
     List<InternalDistributedMember> results = new ArrayList<>();
     List<InternalDistributedMember> notPreferredCoordinatorList = new ArrayList<>();
 
@@ -397,27 +412,27 @@ public class NetView implements DataSerializableFixedID {
     for (InternalDistributedMember mbr : this.members) {
       result += mbr.getNetMember().getMemberWeight();
       switch (mbr.getVmKind()) {
-      case DistributionManager.NORMAL_DM_TYPE:
-        result += 10;
-        if (lead != null && mbr.equals(lead)) {
-          result += 5;
-        }
-        break;
-      case DistributionManager.LOCATOR_DM_TYPE:
-        result += 3;
-        break;
-      case DistributionManager.ADMIN_ONLY_DM_TYPE:
-        break;
-      default:
-        throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
+        case DistributionManager.NORMAL_DM_TYPE:
+          result += 10;
+          if (lead != null && mbr.equals(lead)) {
+            result += 5;
+          }
+          break;
+        case DistributionManager.LOCATOR_DM_TYPE:
+          result += 3;
+          break;
+        case DistributionManager.ADMIN_ONLY_DM_TYPE:
+          break;
+        default:
+          throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
       }
     }
     return result;
   }
 
   /**
-   * returns the weight of crashed members in this membership view
-   * with respect to the given previous view
+   * returns the weight of crashed members in this membership view with respect to the given
+   * previous view
    */
   public int getCrashedMemberWeight(NetView oldView) {
     int result = 0;
@@ -428,41 +443,38 @@ public class NetView implements DataSerializableFixedID {
       }
       result += mbr.getNetMember().getMemberWeight();
       switch (mbr.getVmKind()) {
-      case DistributionManager.NORMAL_DM_TYPE:
-        result += 10;
-        if (lead != null && mbr.equals(lead)) {
-          result += 5;
-        }
-        break;
-      case DistributionManager.LOCATOR_DM_TYPE:
-        result += 3;
-        break;
-      case DistributionManager.ADMIN_ONLY_DM_TYPE:
-        break;
-      default:
-        throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
+        case DistributionManager.NORMAL_DM_TYPE:
+          result += 10;
+          if (lead != null && mbr.equals(lead)) {
+            result += 5;
+          }
+          break;
+        case DistributionManager.LOCATOR_DM_TYPE:
+          result += 3;
+          break;
+        case DistributionManager.ADMIN_ONLY_DM_TYPE:
+          break;
+        default:
+          throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
       }
     }
     return result;
   }
 
   /**
-   * returns the members of this views crashedMembers collection
-   * that were members of the given view. Admin-only members are
-   * not counted
+   * returns the members of this views crashedMembers collection that were members of the given
+   * view. Admin-only members are not counted
    */
   public Set<InternalDistributedMember> getActualCrashedMembers(NetView oldView) {
     Set<InternalDistributedMember> result = new HashSet<>(this.crashedMembers.size());
     result.addAll(this.crashedMembers.stream()
-                                     .filter(mbr -> (mbr.getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE))
-                                     .filter(mbr -> oldView == null || oldView.contains(mbr))
-                                     .collect(Collectors.toList()));
+        .filter(mbr -> (mbr.getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE))
+        .filter(mbr -> oldView == null || oldView.contains(mbr)).collect(Collectors.toList()));
     return result;
   }
 
   /**
-   * logs the weight of failed members wrt the given previous
-   * view
+   * logs the weight of failed members wrt the given previous view
    */
   public void logCrashedMemberWeights(NetView oldView, Logger log) {
     InternalDistributedMember lead = oldView.getLeadMember();
@@ -472,20 +484,20 @@ public class NetView implements DataSerializableFixedID {
       }
       int mbrWeight = mbr.getNetMember().getMemberWeight();
       switch (mbr.getVmKind()) {
-      case DistributionManager.NORMAL_DM_TYPE:
-        if (lead != null && mbr.equals(lead)) {
-          mbrWeight += 15;
-        } else {
-          mbrWeight += 10;
-        }
-        break;
-      case DistributionManager.LOCATOR_DM_TYPE:
-        mbrWeight += 3;
-        break;
-      case DistributionManager.ADMIN_ONLY_DM_TYPE:
-        break;
-      default:
-        throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
+        case DistributionManager.NORMAL_DM_TYPE:
+          if (lead != null && mbr.equals(lead)) {
+            mbrWeight += 15;
+          } else {
+            mbrWeight += 10;
+          }
+          break;
+        case DistributionManager.LOCATOR_DM_TYPE:
+          mbrWeight += 3;
+          break;
+        case DistributionManager.ADMIN_ONLY_DM_TYPE:
+          break;
+        default:
+          throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
       }
       log.info("  " + mbr + " had a weight of " + mbrWeight);
     }
@@ -526,26 +538,26 @@ public class NetView implements DataSerializableFixedID {
         first = false;
       }
     }
-//    sb.append("] fd ports: [");
-//    int[] ports = getFailureDetectionPorts();
-//    int numMembers = size();
-//    for (int i=0; i<numMembers; i++) {
-//      if (i > 0) {
-//        sb.append(' ');
-//      }
-//      sb.append(ports[i]);
-//    }
+    // sb.append("] fd ports: [");
+    // int[] ports = getFailureDetectionPorts();
+    // int numMembers = size();
+    // for (int i=0; i<numMembers; i++) {
+    // if (i > 0) {
+    // sb.append(' ');
+    // }
+    // sb.append(ports[i]);
+    // }
     sb.append("]");
     return sb.toString();
   }
-  
+
   /**
-   * Returns the ID from this view that is equal to the argument.
-   * If no such ID exists the argument is returned.
+   * Returns the ID from this view that is equal to the argument. If no such ID exists the argument
+   * is returned.
    */
   public synchronized InternalDistributedMember getCanonicalID(InternalDistributedMember id) {
     if (hashedMembers.contains(id)) {
-      for (InternalDistributedMember m: this.members) {
+      for (InternalDistributedMember m : this.members) {
         if (id.equals(m)) {
           return m;
         }
@@ -559,10 +571,10 @@ public class NetView implements DataSerializableFixedID {
     if (other == this) {
       return true;
     }
-    if (!(other instanceof NetView)) {
-      return false;
+    if (other instanceof NetView) {
+      return this.members.equals(((NetView) other).getMembers());
     }
-    return this.members.equals(((NetView) other).getMembers());
+    return false;
   }
 
   @Override
@@ -592,7 +604,10 @@ public class NetView implements DataSerializableFixedID {
     shutdownMembers = InternalDataSerializer.readHashSet(in);
     crashedMembers = InternalDataSerializer.readHashSet(in);
     failureDetectionPorts = DataSerializer.readIntArray(in);
-    publicKeys = DataSerializer.readHashMap(in);
+    Map pubkeys = DataSerializer.readHashMap(in);
+    if (pubkeys != null) {
+      publicKeys.putAll(pubkeys);
+    }
   }
 
   /** this will deserialize as an ArrayList */

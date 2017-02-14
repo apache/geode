@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.security.generator;
 
@@ -33,27 +31,17 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
   private static final String pkcsXml = "authz-pkcs.xml";
   private static final String sslXml = "authz-ssl.xml";
 
-  private static final String[] QUERY_REGIONS = { "/Portfolios", "/Positions", "/AuthRegion" };
+  private static final String[] QUERY_REGIONS = {"/Portfolios", "/Positions", "/AuthRegion"};
 
-  public static OperationCode[] READER_OPS = {
-      OperationCode.GET,
-      OperationCode.REGISTER_INTEREST,
-      OperationCode.UNREGISTER_INTEREST,
-      OperationCode.KEY_SET,
-      OperationCode.CONTAINS_KEY,
-      OperationCode.EXECUTE_FUNCTION };
+  public static OperationCode[] READER_OPS =
+      {OperationCode.GET, OperationCode.REGISTER_INTEREST, OperationCode.UNREGISTER_INTEREST,
+          OperationCode.KEY_SET, OperationCode.CONTAINS_KEY, OperationCode.EXECUTE_FUNCTION};
 
-  public static OperationCode[] WRITER_OPS = {
-      OperationCode.PUT,
-      OperationCode.DESTROY,
-      OperationCode.INVALIDATE,
-      OperationCode.REGION_CLEAR };
+  public static OperationCode[] WRITER_OPS = {OperationCode.PUT, OperationCode.DESTROY,
+      OperationCode.INVALIDATE, OperationCode.REGION_CLEAR};
 
-  public static OperationCode[] QUERY_OPS = {
-      OperationCode.QUERY,
-      OperationCode.EXECUTE_CQ,
-      OperationCode.STOP_CQ,
-      OperationCode.CLOSE_CQ };
+  public static OperationCode[] QUERY_OPS = {OperationCode.QUERY, OperationCode.EXECUTE_CQ,
+      OperationCode.STOP_CQ, OperationCode.CLOSE_CQ};
 
   private static final byte READER_ROLE = 1;
   private static final byte WRITER_ROLE = 2;
@@ -93,22 +81,25 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
     final String dirName = "/org/apache/geode/security/generator/";
 
     if (this.generator.classCode().isDummy()) {
-      final String xmlFilename = TestUtil.getResourcePath(XmlAuthzCredentialGenerator.class, dirName + dummyXml);
+      final String xmlFilename =
+          TestUtil.getResourcePath(XmlAuthzCredentialGenerator.class, dirName + dummyXml);
       sysProps.setProperty(XmlAuthorization.DOC_URI_PROP_NAME, xmlFilename);
 
     } else if (this.generator.classCode().isLDAP()) {
-      final String xmlFilename = TestUtil.getResourcePath(XmlAuthzCredentialGenerator.class, dirName + ldapXml);
+      final String xmlFilename =
+          TestUtil.getResourcePath(XmlAuthzCredentialGenerator.class, dirName + ldapXml);
       sysProps.setProperty(XmlAuthorization.DOC_URI_PROP_NAME, xmlFilename);
 
       // } else if (this.generator.classCode().isPKCS()) {
-      //   sysProps.setProperty(XmlAuthorization.DOC_URI_PROP_NAME, dirName + pkcsXml);
+      // sysProps.setProperty(XmlAuthorization.DOC_URI_PROP_NAME, dirName + pkcsXml);
       // }
       // } else if (this.generator.classCode().isSSL()) {
-      //   sysProps.setProperty(XmlAuthorization.DOC_URI_PROP_NAME, dirName + sslXml);
+      // sysProps.setProperty(XmlAuthorization.DOC_URI_PROP_NAME, dirName + sslXml);
       // }
 
     } else {
-      throw new IllegalArgumentException("No XML defined for XmlAuthorization module to work with " + this.generator.getAuthenticator());
+      throw new IllegalArgumentException("No XML defined for XmlAuthorization module to work with "
+          + this.generator.getAuthenticator());
     }
     return sysProps;
   }
@@ -124,7 +115,7 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
   }
 
   private Principal getDummyPrincipal(final byte roleType, final int index) {
-    final String[] admins = new String[] { "root", "admin", "administrator" };
+    final String[] admins = new String[] {"root", "admin", "administrator"};
     final int numReaders = 3;
     final int numWriters = 3;
 
@@ -141,7 +132,8 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
   }
 
   @Override
-  protected Principal getAllowedPrincipal(final OperationCode[] opCodes, final String[] regionNames, final int index) {
+  protected Principal getAllowedPrincipal(final OperationCode[] opCodes, final String[] regionNames,
+      final int index) {
     if (this.generator.classCode().isDummy()) {
       final byte roleType = getRequiredRole(opCodes, regionNames);
       return getDummyPrincipal(roleType, index);
@@ -155,7 +147,8 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
   }
 
   @Override
-  protected Principal getDisallowedPrincipal(final OperationCode[] opCodes, final String[] regionNames, final int index) {
+  protected Principal getDisallowedPrincipal(final OperationCode[] opCodes,
+      final String[] regionNames, final int index) {
     final byte roleType = getRequiredRole(opCodes, regionNames);
 
     byte disallowedRoleType = READER_ROLE;
@@ -191,10 +184,10 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
 
   private Principal getLdapPrincipal(final byte roleType, final int index) {
     final String userPrefix = "gemfire";
-    final int[] readerIndices = { 3, 4, 5 };
-    final int[] writerIndices = { 6, 7, 8 };
-    final int[] queryIndices = { 9, 10 };
-    final int[] adminIndices = { 1, 2 };
+    final int[] readerIndices = {3, 4, 5};
+    final int[] writerIndices = {6, 7, 8};
+    final int[] queryIndices = {9, 10};
+    final int[] adminIndices = {1, 2};
 
     switch (roleType) {
       case READER_ROLE:

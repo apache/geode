@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.parser;
 
@@ -47,27 +45,27 @@ public class Option extends Parameter {
   public Option() {
     aggregate = new ArrayList<String>();
   }
-  
+
   public Option(char shortOption) {
-    this(shortOption, null , null);
+    this(shortOption, null, null);
   }
-  
+
   public Option(char shortOption, List<String> synonyms) {
-    this(shortOption,null,synonyms);
+    this(shortOption, null, synonyms);
   }
-  
+
   public Option(String longOption) {
-    this(SHORT_OPTION_DEFAULT,longOption,null);
+    this(SHORT_OPTION_DEFAULT, longOption, null);
   }
-  
+
   public Option(String longOption, List<String> synonyms) {
-    this(SHORT_OPTION_DEFAULT,longOption,synonyms);
+    this(SHORT_OPTION_DEFAULT, longOption, synonyms);
   }
-  
+
   public Option(char shortOption, String longOption) {
-    this(shortOption,longOption,null);
+    this(shortOption, longOption, null);
   }
-  
+
   public Option(char shortOption, String longOption, List<String> synonyms) {
     aggregate = new ArrayList<String>();
     this.shortOption = shortOption;
@@ -87,9 +85,8 @@ public class Option extends Parameter {
   @Override
   public String toString() {
     StringBuilder builder = new StringBuilder();
-    builder.append(Option.class.getSimpleName())
-        .append("[longOption=" + longOption).append(",help=" + help)
-        .append(",required=" + required + "]");
+    builder.append(Option.class.getSimpleName()).append("[longOption=" + longOption)
+        .append(",help=" + help).append(",required=" + required + "]");
     return builder.toString();
   }
 
@@ -97,8 +94,7 @@ public class Option extends Parameter {
   public int hashCode() {
     final int prime = 41;
     int result = 1;
-    result = prime * result
-        + ((longOption == null) ? 0 : longOption.hashCode());
+    result = prime * result + ((longOption == null) ? 0 : longOption.hashCode());
     return result;
   }
 
@@ -208,8 +204,7 @@ public class Option extends Parameter {
   }
 
   public void setSpecifiedDefaultValue(String specifiedDefaultValue) {
-    this.specifiedDefaultValue = PreprocessorUtils.trim(specifiedDefaultValue)
-        .getString();
+    this.specifiedDefaultValue = PreprocessorUtils.trim(specifiedDefaultValue).getString();
   }
 
   public String getValueSeparator() {

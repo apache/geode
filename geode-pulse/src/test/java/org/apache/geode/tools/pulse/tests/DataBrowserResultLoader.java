@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 package org.apache.geode.tools.pulse.tests;
@@ -27,6 +25,15 @@ import java.io.InputStreamReader;
 import java.net.URL;
 
 public class DataBrowserResultLoader {
+  /* Constants for executing Data Browser queries */
+  public static final String QUERY_TYPE_ONE = "query1";
+  public static final String QUERY_TYPE_TWO = "query2";
+  public static final String QUERY_TYPE_THREE = "query3";
+  public static final String QUERY_TYPE_FOUR = "query4";
+  public static final String QUERY_TYPE_FIVE = "query5";
+  public static final String QUERY_TYPE_SIX = "query6";
+  public static final String QUERY_TYPE_SEVENE = "query7";
+
   private static DataBrowserResultLoader dbResultLoader = new DataBrowserResultLoader();
 
   public static DataBrowserResultLoader getInstance() {
@@ -44,19 +51,19 @@ public class DataBrowserResultLoader {
     try {
       ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-      if (queryString.equals(PulseAbstractTest.QUERY_TYPE_ONE)) {
+      if (queryString.equals(QUERY_TYPE_ONE)) {
         url = classLoader.getResource("testQueryResultClusterSmall.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_TWO)) {
+      } else if (queryString.equals(QUERY_TYPE_TWO)) {
         url = classLoader.getResource("testQueryResultSmall.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_THREE)) {
+      } else if (queryString.equals(QUERY_TYPE_THREE)) {
         url = classLoader.getResource("testQueryResult.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_FOUR)) {
+      } else if (queryString.equals(QUERY_TYPE_FOUR)) {
         url = classLoader.getResource("testQueryResultWithStructSmall.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_FIVE)) {
+      } else if (queryString.equals(QUERY_TYPE_FIVE)) {
         url = classLoader.getResource("testQueryResultClusterWithStruct.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_SIX)) {
+      } else if (queryString.equals(QUERY_TYPE_SIX)) {
         url = classLoader.getResource("testQueryResultHashMapSmall.txt");
-      } else if (queryString.equals(PulseAbstractTest.QUERY_TYPE_SEVENE)) {
+      } else if (queryString.equals(QUERY_TYPE_SEVENE)) {
         url = classLoader.getResource("testQueryResult1000.txt");
       } else {
         url = classLoader.getResource("testQueryResult.txt");
@@ -64,8 +71,7 @@ public class DataBrowserResultLoader {
 
       File sampleQueryResultFile = new File(url.getPath());
       inputStream = new FileInputStream(sampleQueryResultFile);
-      streamReader = new BufferedReader(new InputStreamReader(inputStream,
-          "UTF-8"));
+      streamReader = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
       sampleQueryResultResponseStrBuilder = new StringBuilder();
 
       while ((inputStr = streamReader.readLine()) != null) {

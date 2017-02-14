@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -22,6 +20,8 @@ import static org.junit.Assert.*;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -48,21 +48,21 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * Test to verify that client side region.close() should unregister the client with the server.
- * It also checks that client region queue also gets removed properly.
+ * Test to verify that client side region.close() should unregister the client with the server. It
+ * also checks that client region queue also gets removed properly.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
 
   VM server1 = null;
 
   VM client1 = null;
 
-  private int PORT1 ;
+  private int PORT1;
 
   private static final String REGION_NAME = "RegionCloseDUnitTest_region";
 
-  protected static String  clientMembershipId;
+  protected static String clientMembershipId;
 
   private static Cache cache = null;
 
@@ -74,18 +74,17 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void postSetUp() throws Exception {
     final Host host = Host.getHost(0);
-    //Server1 VM
+    // Server1 VM
     server1 = host.getVM(0);
-    //Client 1 VM
+    // Client 1 VM
     client1 = host.getVM(1);
 
-    PORT1 =  ((Integer)server1.invoke(() -> RegionCloseDUnitTest.createServerCache())).intValue();
-    client1.invoke(() -> RegionCloseDUnitTest.createClientCache(
-      NetworkUtils.getServerHostName(host), new Integer(PORT1)));
+    PORT1 = ((Integer) server1.invoke(() -> RegionCloseDUnitTest.createServerCache())).intValue();
+    client1.invoke(() -> RegionCloseDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1)));
   }
 
-  private void createCache(Properties props) throws Exception
-  {
+  private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     assertNotNull(ds);
     ds.disconnect();
@@ -95,33 +94,27 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
   }
 
 
+  @Category(FlakyTest.class) // GEODE-2051
   @Test
-  public void testCloseRegionOnClient()
-  {
+  public void testCloseRegionOnClient() {
     server1.invoke(() -> RegionCloseDUnitTest.VerifyClientProxyOnServerBeforeClose());
     client1.invoke(() -> RegionCloseDUnitTest.closeRegion());
-   // pause(10000);
+    // pause(10000);
     server1.invoke(() -> RegionCloseDUnitTest.VerifyClientProxyOnServerAfterClose());
   }
 
-  public static void createClientCache(String host, Integer port1) throws Exception
-  {
-    int PORT1 = port1.intValue() ;
+  public static void createClientCache(String host, Integer port1) throws Exception {
+    int PORT1 = port1.intValue();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new RegionCloseDUnitTest().createCache(props);
-    Pool p = PoolManager.createFactory()
-      .addServer(host, PORT1)
-      .setSubscriptionEnabled(true)
-      .setSubscriptionRedundancy(-1)
-      .setReadTimeout(2000)
-      .setThreadLocalConnections(true)
-      .setSocketBufferSize(1000)
-      .setMinConnections(2)
-      // .setRetryAttempts(2)
-      // .setRetryInterval(250)
-      .create("RegionCloseDUnitTestPool");
+    Pool p = PoolManager.createFactory().addServer(host, PORT1).setSubscriptionEnabled(true)
+        .setSubscriptionRedundancy(-1).setReadTimeout(2000).setThreadLocalConnections(true)
+        .setSocketBufferSize(1000).setMinConnections(2)
+        // .setRetryAttempts(2)
+        // .setRetryInterval(250)
+        .create("RegionCloseDUnitTestPool");
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -131,8 +124,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
     cache.createRegion(REGION_NAME, attrs);
   }
 
-  public static Integer createServerCache() throws Exception
-  {
+  public static Integer createServerCache() throws Exception {
     new RegionCloseDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -148,8 +140,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
     return new Integer(server.getPort());
   }
 
-  public static void VerifyClientProxyOnServerBeforeClose()
-  {
+  public static void VerifyClientProxyOnServerBeforeClose() {
     Cache c = CacheFactory.getAnyInstance();
     assertEquals("More than one CacheServer", 1, c.getCacheServers().size());
 
@@ -159,6 +150,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
       public boolean done() {
         return bs.getAcceptor().getCacheClientNotifier().getClientProxies().size() == 1;
       }
+
       public String description() {
         return null;
       }
@@ -168,16 +160,15 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
 
     Iterator iter = bs.getAcceptor().getCacheClientNotifier().getClientProxies().iterator();
     if (iter.hasNext()) {
-      CacheClientProxy proxy = (CacheClientProxy)iter.next();
+      CacheClientProxy proxy = (CacheClientProxy) iter.next();
       clientMembershipId = proxy.getProxyID().toString();
       assertNotNull(proxy.getHARegion());
     }
   }
 
-  public static void closeRegion()
-  {
+  public static void closeRegion() {
     try {
-      Region r = cache.getRegion("/"+ REGION_NAME);
+      Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       String poolName = r.getAttributes().getPoolName();
       assertNotNull(poolName);
@@ -185,53 +176,51 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
       assertNotNull(pool);
       r.close();
       pool.destroy();
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("failed while region close", ex);
     }
   }
 
-  public static void VerifyClientProxyOnServerAfterClose()
-  {
+  public static void VerifyClientProxyOnServerAfterClose() {
     final Cache c = CacheFactory.getAnyInstance();
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         return c.getCacheServers().size() == 1;
       }
+
       public String description() {
         return null;
       }
     };
     Wait.waitForCriterion(ev, 40 * 1000, 200, true);
 
-    final CacheServerImpl bs = (CacheServerImpl)c.getCacheServers().iterator()
-        .next();
+    final CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
     ev = new WaitCriterion() {
       public boolean done() {
         return c.getRegion("/" + clientMembershipId) == null;
       }
+
       public String description() {
         return null;
       }
     };
     Wait.waitForCriterion(ev, 40 * 1000, 200, true);
-    
+
     ev = new WaitCriterion() {
       public boolean done() {
         return bs.getAcceptor().getCacheClientNotifier().getClientProxies().size() != 1;
       }
+
       public String description() {
         return null;
       }
     };
     Wait.waitForCriterion(ev, 40 * 1000, 200, true);
     // assertNull(c.getRegion("/"+clientMembershipId));
-    assertEquals(0, bs.getAcceptor().getCacheClientNotifier()
-        .getClientProxies().size());
+    assertEquals(0, bs.getAcceptor().getCacheClientNotifier().getClientProxies().size());
   }
 
-  public static void closeCache()
-  {
+  public static void closeCache() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
@@ -240,9 +229,9 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    //close client
+    // close client
     client1.invoke(() -> RegionCloseDUnitTest.closeCache());
-    //close server
+    // close server
     server1.invoke(() -> RegionCloseDUnitTest.closeCache());
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.deadlock;
 
@@ -23,26 +21,26 @@ import java.lang.management.MonitorInfo;
 import org.apache.geode.internal.concurrent.LI;
 
 /**
- * This class is serializable version of the java 1.6 lock info
- * class. It also holds a locality field to identify the VM
- * where the lock is held.
+ * This class is serializable version of the java 1.6 lock info class. It also holds a locality
+ * field to identify the VM where the lock is held.
  * 
  *
  */
 class LocalLockInfo implements Serializable {
   private static final long serialVersionUID = 1L;
-  
+
   private final Serializable locatility;
   private final LI info;
-  
+
   public LocalLockInfo(Serializable locatility, LockInfo sync) {
     super();
     this.locatility = locatility;
-    //LockInfo and Monitor info aren't serializable, so copy the information from
-    //them. For backwards compatibility, use the LI class which is used
-    //in older versions of gemfire.
-    if(sync instanceof MonitorInfo) {
-      this.info = new LI(sync.getClassName(), sync.getIdentityHashCode(), ((MonitorInfo) sync).getLockedStackFrame());
+    // LockInfo and Monitor info aren't serializable, so copy the information from
+    // them. For backwards compatibility, use the LI class which is used
+    // in older versions of gemfire.
+    if (sync instanceof MonitorInfo) {
+      this.info = new LI(sync.getClassName(), sync.getIdentityHashCode(),
+          ((MonitorInfo) sync).getLockedStackFrame());
     } else {
       this.info = new LI(sync.getClassName(), sync.getIdentityHashCode());
     }
@@ -62,8 +60,7 @@ class LocalLockInfo implements Serializable {
     int result = 1;
     result = prime * result + ((info == null) ? 0 : info.getClassName().hashCode());
     result = prime * result + ((info == null) ? 0 : info.getIdentityHashCode());
-    result = prime * result
-        + ((locatility == null) ? 0 : locatility.hashCode());
+    result = prime * result + ((locatility == null) ? 0 : locatility.hashCode());
     return result;
   }
 
@@ -91,10 +88,10 @@ class LocalLockInfo implements Serializable {
       return false;
     return true;
   }
-  
+
   @Override
   public String toString() {
-    return locatility + ":" + info; 
-    
+    return locatility + ":" + info;
+
   }
 }

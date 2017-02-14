@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.pdx;
 
@@ -36,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.geode.test.junit.categories.SerializationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -64,54 +63,60 @@ import org.apache.geode.pdx.internal.DataSize;
 import org.apache.geode.pdx.internal.PdxReaderImpl;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
+import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SerializationTest.class})
 public class PdxSerializableJUnitTest {
-  
+
   private GemFireCacheImpl c;
 
   @Before
   public void setUp() {
     // make it a loner
-    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
-        .create();
+    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
   }
 
   @After
   public void tearDown() {
     this.c.close();
   }
-  
+
   private int getLastPdxTypeId() {
     return this.c.getPdxRegistry().getLastAllocatedTypeId();
+  }
+
+  private int getPdxTypeIdForClass(Class c) {
+    // here we are assuming Dsid == 0
+    return this.c.getPdxRegistry().getExistingTypeForClass(c).hashCode()
+        & PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID;
+  }
+
+  private int getNumPdxTypes() {
+    return this.c.getPdxRegistry().typeMap().size();
   }
 
   @Test
   public void testNoDiskStore() throws Exception {
     this.c.close();
-    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
-    .setPdxPersistent(true)
-    .setPdxDiskStore("doesNotExist")
-    .create();
+    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+        .setPdxDiskStore("doesNotExist").create();
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
-    PdxSerializable object = new SimpleClass(1, (byte)5, null);
+    PdxSerializable object = new SimpleClass(1, (byte) 5, null);
     try {
       DataSerializer.writeObject(object, out);
       throw new Exception("expected PdxInitializationException");
     } catch (PdxInitializationException expected) {
     }
   }
-  
+
   // for bugs 44271 and 44914
   @Test
   public void testPdxPersistentKeys() throws Exception {
     this.c.close();
-    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
-    .setPdxPersistent(true)
-    .setPdxDiskStore("pdxDS")
-    .create();
+    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+        .setPdxDiskStore("pdxDS").create();
     try {
       DiskStoreFactory dsf = this.c.createDiskStoreFactory();
       dsf.create("pdxDS");
@@ -120,19 +125,19 @@ public class PdxSerializableJUnitTest {
       r1.put(new SimpleClass(1, (byte) 1), "1");
       r1.put(new SimpleClass(2, (byte) 2), "2");
       r1.put(new SimpleClass(1, (byte) 1), "1.2"); // so we have something to compact offline
-      Region r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS").create("r2");
+      Region r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
+          .setDiskStoreName("r2DS").create("r2");
       r2.put(new SimpleClass(1, (byte) 1), new SimpleClass(1, (byte) 1));
       r2.put(new SimpleClass(2, (byte) 2), new SimpleClass(2, (byte) 2));
       this.c.close();
-      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
-      .setPdxPersistent(true)
-      .setPdxDiskStore("pdxDS")
-      .create();
+      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+          .setPdxDiskStore("pdxDS").create();
       dsf = this.c.createDiskStoreFactory();
       dsf.create("pdxDS");
       this.c.createDiskStoreFactory().create("r2DS");
       r1 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).create("r1");
-      r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS").create("r2");
+      r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
+          .create("r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(true, r2.containsKey(new SimpleClass(1, (byte) 1)));
@@ -141,14 +146,13 @@ public class PdxSerializableJUnitTest {
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
       this.c.close();
       // use a cache.xml to recover
-      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
-      .create();
+      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos), true);
       pw.println("<?xml version=\"1.0\"?>");
       pw.println("<!DOCTYPE cache PUBLIC");
-      pw.println("  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 6.6//EN\"");
-      pw.println("  \"http://www.gemstone.com/dtd/cache6_6.dtd\">");
+      pw.println("  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN\"");
+      pw.println("  \"http://www.gemstone.com/dtd/cache7_0.dtd\">");
       pw.println("<cache>");
       pw.println("  <disk-store name=\"r2DS\"/>");
       pw.println("  <disk-store name=\"pdxDS\"/>");
@@ -184,32 +188,35 @@ public class PdxSerializableJUnitTest {
       try {
         this.c.close();
       } finally {
-      FileUtil.deleteMatching(new File("."), "BACKUP(DEFAULT|pdxDS|r2DS).*");
+        FileUtil.deleteMatching(new File("."), "BACKUP(DEFAULT|pdxDS|r2DS).*");
       }
     }
   }
+
   @Test
   public void testPdxPersistentKeysDefDS() throws Exception {
     this.c.close();
-    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
-    .setPdxPersistent(true)
-    .create();
+    this.c =
+        (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true).create();
     try {
       this.c.createDiskStoreFactory().create("r2DS");
-      Region r1 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS").create("r1");
+      Region r1 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
+          .setDiskStoreName("r2DS").create("r1");
       r1.put(new SimpleClass(1, (byte) 1), "1");
       r1.put(new SimpleClass(2, (byte) 2), "2");
       r1.put(new SimpleClass(1, (byte) 1), "1.2"); // so we have something to compact offline
-      Region r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS").create("r2");
+      Region r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT)
+          .setDiskStoreName("r2DS").create("r2");
       r2.put(new SimpleClass(1, (byte) 1), new SimpleClass(1, (byte) 1));
       r2.put(new SimpleClass(2, (byte) 2), new SimpleClass(2, (byte) 2));
       this.c.close();
-      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
-      .setPdxPersistent(true)
-      .create();
+      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxPersistent(true)
+          .create();
       this.c.createDiskStoreFactory().create("r2DS");
-      r1 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS").create("r1");
-      r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS").create("r2");
+      r1 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
+          .create("r1");
+      r2 = this.c.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT).setDiskStoreName("r2DS")
+          .create("r2");
       assertEquals(true, r1.containsKey(new SimpleClass(1, (byte) 1)));
       assertEquals(true, r1.containsKey(new SimpleClass(2, (byte) 2)));
       assertEquals(true, r2.containsKey(new SimpleClass(1, (byte) 1)));
@@ -218,14 +225,13 @@ public class PdxSerializableJUnitTest {
       assertEquals(new SimpleClass(2, (byte) 2), r2.get(new SimpleClass(2, (byte) 2)));
       this.c.close();
       // use a cache.xml to recover
-      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0")
-      .create();
+      this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos), true);
       pw.println("<?xml version=\"1.0\"?>");
       pw.println("<!DOCTYPE cache PUBLIC");
-      pw.println("  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 6.6//EN\"");
-      pw.println("  \"http://www.gemstone.com/dtd/cache6_6.dtd\">");
+      pw.println("  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN\"");
+      pw.println("  \"http://www.gemstone.com/dtd/cache7_0.dtd\">");
       pw.println("<cache>");
       pw.println("  <disk-store name=\"r2DS\"/>");
       pw.println("  <pdx persistent=\"true\"/>");
@@ -259,7 +265,7 @@ public class PdxSerializableJUnitTest {
       try {
         this.c.close();
       } finally {
-      FileUtil.deleteMatching(new File("."), "BACKUP(DEFAULT|r2DS).*");
+        FileUtil.deleteMatching(new File("."), "BACKUP(DEFAULT|r2DS).*");
       }
     }
   }
@@ -267,20 +273,17 @@ public class PdxSerializableJUnitTest {
   @Test
   public void testByteFormatForSimpleClass() throws Exception {
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
-    PdxSerializable object = new SimpleClass(1, (byte)5, null);
+    PdxSerializable object = new SimpleClass(1, (byte) 5, null);
     DataSerializer.writeObject(object, out);
-    int typeId = getLastPdxTypeId();
+    int typeId = getPdxTypeIdForClass(SimpleClass.class);
     byte[] actual = out.toByteArray();
-    byte[] expected = new byte[] {
-        DSCODE.PDX, // byte
-        0, 0, 0,
-        4+1+1, // int - length of byte stream = 4(myInt) + 1(myByte) + 1 (myEnum)
-        (byte) (typeId >> 24), (byte) (typeId >> 16), (byte) (typeId >> 8),
-        (byte) typeId, // int - typeId
+    byte[] expected = new byte[] {DSCODE.PDX, // byte
+        0, 0, 0, 4 + 1 + 1, // int - length of byte stream = 4(myInt) + 1(myByte) + 1 (myEnum)
+        (byte) (typeId >> 24), (byte) (typeId >> 16), (byte) (typeId >> 8), (byte) typeId, // int -
+                                                                                           // typeId
         0, 0, 0, 1, // int - myInt = 1
-        5, // byte - myByte = 5   
-        DSCODE.NULL
-    };
+        5, // byte - myByte = 5
+        DSCODE.NULL};
 
     StringBuffer msg = new StringBuffer("Actual output: ");
     for (byte val : actual) {
@@ -290,21 +293,23 @@ public class PdxSerializableJUnitTest {
     for (byte val : expected) {
       msg.append(val + ", ");
     }
-    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: " + expected.length, actual.length == expected.length);
-    for(int i = 0; i<actual.length; i++) {
+    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
+        + expected.length, actual.length == expected.length);
+    for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
         System.out.println(msg.toString());
       }
       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
     }
     System.out.println("\n");
-    
+
     DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
-    SimpleClass actualVal = (SimpleClass)DataSerializer.readObject(in);
-//    System.out.println("actualVal..."+actualVal);    
-    assertTrue("Mismatch in write and read value: Value Write..." + object
-        + " Value Read..." + actualVal, object.equals(actualVal));    
-    
+    SimpleClass actualVal = (SimpleClass) DataSerializer.readObject(in);
+    // System.out.println("actualVal..."+actualVal);
+    assertTrue(
+        "Mismatch in write and read value: Value Write..." + object + " Value Read..." + actualVal,
+        object.equals(actualVal));
+
   }
 
   @Test
@@ -317,11 +322,12 @@ public class PdxSerializableJUnitTest {
     String myString3 = "Class4_myString3";
     int myInt = 1420;
     float myFloat = 123.023f;
-    
+
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
-    SimpleClass1 pdx = new SimpleClass1(myFlag, myShort, myString1, myLong, myString2, myString3, myInt, myFloat);
+    SimpleClass1 pdx =
+        new SimpleClass1(myFlag, myShort, myString1, myLong, myString2, myString3, myInt, myFloat);
     DataSerializer.writeObject(pdx, out);
-    int typeId = getLastPdxTypeId();
+    int typeId = getPdxTypeIdForClass(SimpleClass1.class);
 
     HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
@@ -333,46 +339,60 @@ public class PdxSerializableJUnitTest {
     DataSerializer.writeString(myString3, hdos3);
     byte[] str3Bytes = hdos3.toByteArray();
 
-    int length = 1 /* myFlag */+ 2 /* myShort */
-        + 8 /* myLong */+ 4 /* myInt */+ 4 /* myFloat */+ str1Bytes.length
-        + str2Bytes.length + str3Bytes.length + 2 /* byte offset for 3 strings */;
+    int length = 1 /* myFlag */ + 2 /* myShort */
+        + 8 /* myLong */ + 4 /* myInt */ + 4 /* myFloat */ + str1Bytes.length + str2Bytes.length
+        + str3Bytes.length + 2 /* byte offset for 3 strings */;
 
     int offset1 = 1 + 2;
     int offset2 = offset1 + 8 + str1Bytes.length;
     int offset3 = offset1 + 8 + str1Bytes.length + str2Bytes.length;
     byte[] actual = out.toByteArray();
     int floatBytes = Float.floatToRawIntBits(myFloat);
-    Byte[] expected = new Byte[] {
-        DSCODE.PDX, // byte
-        (byte)(length >> 24), (byte)(length >> 16), (byte)(length >> 8), (byte)length, // int - length of byte stream
-        (byte) (typeId >> 24),
-        (byte) (typeId >> 16),
-        (byte) (typeId >> 8),
-        (byte) typeId, // int - typeId
+    Byte[] expected = new Byte[] {DSCODE.PDX, // byte
+        (byte) (length >> 24), (byte) (length >> 16), (byte) (length >> 8), (byte) length, // int -
+                                                                                           // length
+                                                                                           // of
+                                                                                           // byte
+                                                                                           // stream
+        (byte) (typeId >> 24), (byte) (typeId >> 16), (byte) (typeId >> 8), (byte) typeId, // int -
+                                                                                           // typeId
         1, // boolean - myFlag = true
-        (byte)(myShort >> 8), (byte)myShort, // short - myShort
-        (byte)(myLong >> 56), (byte)(myLong >> 48), (byte)(myLong >> 40), (byte)(myLong >> 32), (byte)(myLong >> 24), (byte)(myLong >> 16), (byte)(myLong >> 8), (byte)myLong, // long - myLong
-        (byte)(myInt >> 24), (byte)(myInt >> 16), (byte)(myInt >> 8), (byte)myInt, // int - myInt
-        (byte)(floatBytes >> 24), (byte)(floatBytes >> 16), (byte)(floatBytes >> 8), (byte)floatBytes, // float - myFloat
-        (byte)offset3, // offset of myString3
-        (byte)offset2, // offset of myString2
+        (byte) (myShort >> 8), (byte) myShort, // short - myShort
+        (byte) (myLong >> 56), (byte) (myLong >> 48), (byte) (myLong >> 40), (byte) (myLong >> 32),
+        (byte) (myLong >> 24), (byte) (myLong >> 16), (byte) (myLong >> 8), (byte) myLong, // long -
+                                                                                           // myLong
+        (byte) (myInt >> 24), (byte) (myInt >> 16), (byte) (myInt >> 8), (byte) myInt, // int -
+                                                                                       // myInt
+        (byte) (floatBytes >> 24), (byte) (floatBytes >> 16), (byte) (floatBytes >> 8),
+        (byte) floatBytes, // float - myFloat
+        (byte) offset3, // offset of myString3
+        (byte) offset2, // offset of myString2
     };
 
     for (int i = (str1Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset1
-          + PdxWriterImpl.HEADER_SIZE, str1Bytes[i]); // + 5 for: 1 for
-                                                      // DSCODE.PDX and 4 for
-                                                      // byte stream length
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset1 + PdxWriterImpl.HEADER_SIZE, str1Bytes[i]); // +
+                                                                                                   // 5
+                                                                                                   // for:
+                                                                                                   // 1
+                                                                                                   // for
+                                                                                                   // DSCODE.PDX
+                                                                                                   // and
+                                                                                                   // 4
+                                                                                                   // for
+                                                                                                   // byte
+                                                                                                   // stream
+                                                                                                   // length
     }
     for (int i = (str2Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset2
-          + PdxWriterImpl.HEADER_SIZE, str2Bytes[i]);
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset2 + PdxWriterImpl.HEADER_SIZE, str2Bytes[i]);
     }
     for (int i = (str3Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset3
-          + PdxWriterImpl.HEADER_SIZE, str3Bytes[i]);
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset3 + PdxWriterImpl.HEADER_SIZE, str3Bytes[i]);
     }
-    
+
     StringBuffer msg = new StringBuffer("Actual output: ");
     for (byte val : actual) {
       msg.append(val + ", ");
@@ -384,8 +404,9 @@ public class PdxSerializableJUnitTest {
     if (actual.length != expected.length) {
       System.out.println(msg.toString());
     }
-    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: " + expected.length, actual.length == expected.length);
-    for(int i = 0; i < actual.length; i++) {
+    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
+        + expected.length, actual.length == expected.length);
+    for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
         System.out.println(msg.toString());
       }
@@ -394,18 +415,20 @@ public class PdxSerializableJUnitTest {
     System.out.println("\n");
 
     DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
-    SimpleClass1 actualVal = (SimpleClass1)DataSerializer.readObject(in);
-    //System.out.println("actualVal..."+actualVal);    
-    assertTrue("Mismatch in write and read value: Value Write..." + pdx
-        + " Value Read..." + actualVal, pdx.equals(actualVal));    
-    
+    SimpleClass1 actualVal = (SimpleClass1) DataSerializer.readObject(in);
+    // System.out.println("actualVal..."+actualVal);
+    assertTrue(
+        "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
+        pdx.equals(actualVal));
+
     c.setReadSerialized(true);
     try {
       in = new DataInputStream(new ByteArrayInputStream(actual));
-      PdxInstance pi = (PdxInstance)DataSerializer.readObject(in);
-      actualVal = (SimpleClass1)pi.getObject();
-      assertTrue("Mismatch in write and read value: Value Write..." + pdx
-                 + " Value Read..." + actualVal, pdx.equals(actualVal)); 
+      PdxInstance pi = (PdxInstance) DataSerializer.readObject(in);
+      actualVal = (SimpleClass1) pi.getObject();
+      assertTrue(
+          "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
+          pdx.equals(actualVal));
       assertTrue(pi.hasField("myFlag"));
       assertTrue(pi.hasField("myShort"));
       assertTrue(pi.hasField("myString1"));
@@ -422,7 +445,7 @@ public class PdxSerializableJUnitTest {
       assertEquals(pdx.getMyString3(), pi.getField("myString3"));
       assertEquals(pdx.getMyInt(), pi.getField("myInt"));
       assertEquals(pdx.getMyFloat(), pi.getField("myFloat"));
-      PdxReaderImpl reader = (PdxReaderImpl)pi;
+      PdxReaderImpl reader = (PdxReaderImpl) pi;
       PdxType type = reader.getPdxType();
       assertEquals(SimpleClass1.class.getName(), type.getClassName());
       assertEquals(8, type.getFieldCount());
@@ -436,7 +459,7 @@ public class PdxSerializableJUnitTest {
       assertEquals(5, type.getPdxField("myString3").getFieldIndex());
       assertEquals(6, type.getPdxField("myInt").getFieldIndex());
       assertEquals(7, type.getPdxField("myFloat").getFieldIndex());
-      
+
       assertEquals(FieldType.BOOLEAN, type.getPdxField("myFlag").getFieldType());
       assertEquals(FieldType.SHORT, type.getPdxField("myShort").getFieldType());
       assertEquals(FieldType.STRING, type.getPdxField("myString1").getFieldType());
@@ -454,7 +477,7 @@ public class PdxSerializableJUnitTest {
       assertEquals("myString3", type.getPdxField("myString3").getFieldName());
       assertEquals("myInt", type.getPdxField("myInt").getFieldName());
       assertEquals("myFloat", type.getPdxField("myFloat").getFieldName());
-      
+
       assertEquals(0, type.getPdxField("myFlag").getVarLenFieldSeqId());
       assertEquals(0, type.getPdxField("myShort").getVarLenFieldSeqId());
       assertEquals(0, type.getPdxField("myString1").getVarLenFieldSeqId());
@@ -473,22 +496,27 @@ public class PdxSerializableJUnitTest {
       assertEquals(false, type.getPdxField("myInt").isVariableLengthType());
       assertEquals(false, type.getPdxField("myFloat").isVariableLengthType());
 
-      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte)(pdx.isMyFlag()?1:0)}), 
-                   reader.getRaw(0));
-      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte)(pdx.getMyShort() >> 8), (byte)pdx.getMyShort()}),
-                   reader.getRaw(1));
-      assertEquals(ByteSourceFactory.wrap(str1Bytes),
-                   reader.getRaw(2));
-      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte)(pdx.getMyLong() >> 56), (byte)(pdx.getMyLong() >> 48), (byte)(pdx.getMyLong() >> 40), (byte)(pdx.getMyLong() >> 32), (byte)(pdx.getMyLong() >> 24), (byte)(pdx.getMyLong() >> 16), (byte)(pdx.getMyLong() >> 8), (byte)pdx.getMyLong(),}), 
-                   reader.getRaw(3));
-      assertEquals(ByteSourceFactory.wrap(str2Bytes),
-                   reader.getRaw(4));
-      assertEquals(ByteSourceFactory.wrap(str3Bytes),
-                   reader.getRaw(5));
-      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte)(pdx.getMyInt() >> 24), (byte)(pdx.getMyInt() >> 16), (byte)(pdx.getMyInt() >> 8), (byte)pdx.getMyInt()}),
-                   reader.getRaw(6));
-      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte)(floatBytes >> 24), (byte)(floatBytes >> 16), (byte)(floatBytes >> 8), (byte)floatBytes}),
-                   reader.getRaw(7));
+      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte) (pdx.isMyFlag() ? 1 : 0)}),
+          reader.getRaw(0));
+      assertEquals(
+          ByteSourceFactory
+              .wrap(new byte[] {(byte) (pdx.getMyShort() >> 8), (byte) pdx.getMyShort()}),
+          reader.getRaw(1));
+      assertEquals(ByteSourceFactory.wrap(str1Bytes), reader.getRaw(2));
+      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte) (pdx.getMyLong() >> 56),
+          (byte) (pdx.getMyLong() >> 48), (byte) (pdx.getMyLong() >> 40),
+          (byte) (pdx.getMyLong() >> 32), (byte) (pdx.getMyLong() >> 24),
+          (byte) (pdx.getMyLong() >> 16), (byte) (pdx.getMyLong() >> 8), (byte) pdx.getMyLong(),}),
+          reader.getRaw(3));
+      assertEquals(ByteSourceFactory.wrap(str2Bytes), reader.getRaw(4));
+      assertEquals(ByteSourceFactory.wrap(str3Bytes), reader.getRaw(5));
+      assertEquals(
+          ByteSourceFactory.wrap(new byte[] {(byte) (pdx.getMyInt() >> 24),
+              (byte) (pdx.getMyInt() >> 16), (byte) (pdx.getMyInt() >> 8), (byte) pdx.getMyInt()}),
+          reader.getRaw(6));
+      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte) (floatBytes >> 24),
+          (byte) (floatBytes >> 16), (byte) (floatBytes >> 8), (byte) floatBytes}),
+          reader.getRaw(7));
     } finally {
       c.setReadSerialized(false);
     }
@@ -499,31 +527,34 @@ public class PdxSerializableJUnitTest {
   public void testByteFormatForLongStrings() throws Exception {
     boolean myFlag = true;
     short myShort = 25;
-    String myString1 = "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
-        + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
-        + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
-        + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
-        + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
-        + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
-        + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
-        + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
-        + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
-        + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.";
+    String myString1 =
+        "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
+            + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
+            + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
+            + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
+            + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
+            + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
+            + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
+            + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
+            + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1."
+            + "A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.A very long string1.";
     long myLong = 15654;
     String myString2 = "Class4_myString2";
-    String myString3 = "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. "
-        + "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. "
-        + "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. "
-        + "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. "
-        + "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. "
-        + "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. ";
+    String myString3 =
+        "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. "
+            + "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. "
+            + "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. "
+            + "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. "
+            + "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. "
+            + "Even longer string3. Even longer string3. Even longer string3. Even longer string3. Even longer string3. ";
     int myInt = 1420;
     float myFloat = 123.023f;
-    
+
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
-    SimpleClass1 pdx = new SimpleClass1(myFlag, myShort, myString1, myLong, myString2, myString3, myInt, myFloat);
+    SimpleClass1 pdx =
+        new SimpleClass1(myFlag, myShort, myString1, myLong, myString2, myString3, myInt, myFloat);
     DataSerializer.writeObject(pdx, out);
-    int typeId = getLastPdxTypeId();
+    int typeId = getPdxTypeIdForClass(SimpleClass1.class);
 
     HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
@@ -535,46 +566,60 @@ public class PdxSerializableJUnitTest {
     DataSerializer.writeString(myString3, hdos3);
     byte[] str3Bytes = hdos3.toByteArray();
 
-    int length = 1 /* myFlag */+ 2 /* myShort */
-        + 8 /* myLong */+ 4 /* myInt */+ 4 /* myFloat */+ str1Bytes.length
-        + str2Bytes.length + str3Bytes.length + (2*2) /* short offset for 3 strings */;
+    int length = 1 /* myFlag */ + 2 /* myShort */
+        + 8 /* myLong */ + 4 /* myInt */ + 4 /* myFloat */ + str1Bytes.length + str2Bytes.length
+        + str3Bytes.length + (2 * 2) /* short offset for 3 strings */;
 
     int offset1 = 1 + 2;
     int offset2 = offset1 + 8 + str1Bytes.length;
     int offset3 = offset1 + 8 + str1Bytes.length + str2Bytes.length;
     byte[] actual = out.toByteArray();
     int floatBytes = Float.floatToRawIntBits(myFloat);
-    Byte[] expected = new Byte[] {
-        DSCODE.PDX, // byte
-        (byte)(length >> 24), (byte)(length >> 16), (byte)(length >> 8), (byte)length, // int - length of byte stream
-        (byte) (typeId >> 24),
-        (byte) (typeId >> 16),
-        (byte) (typeId >> 8),
-        (byte) typeId, // int - typeId
+    Byte[] expected = new Byte[] {DSCODE.PDX, // byte
+        (byte) (length >> 24), (byte) (length >> 16), (byte) (length >> 8), (byte) length, // int -
+                                                                                           // length
+                                                                                           // of
+                                                                                           // byte
+                                                                                           // stream
+        (byte) (typeId >> 24), (byte) (typeId >> 16), (byte) (typeId >> 8), (byte) typeId, // int -
+                                                                                           // typeId
         1, // boolean - myFlag = true
-        (byte)(myShort >> 8), (byte)myShort, // short - myShort
-        (byte)(myLong >> 56), (byte)(myLong >> 48), (byte)(myLong >> 40), (byte)(myLong >> 32), (byte)(myLong >> 24), (byte)(myLong >> 16), (byte)(myLong >> 8), (byte)myLong, // long - myLong
-        (byte)(myInt >> 24), (byte)(myInt >> 16), (byte)(myInt >> 8), (byte)myInt, // int - myInt
-        (byte)(floatBytes >> 24), (byte)(floatBytes >> 16), (byte)(floatBytes >> 8), (byte)floatBytes, // float - myFloat
-        (byte)(offset3 >> 8), (byte)offset3, // offset of myString3
-        (byte)(offset2 >> 8), (byte)offset2, // offset of myString2
+        (byte) (myShort >> 8), (byte) myShort, // short - myShort
+        (byte) (myLong >> 56), (byte) (myLong >> 48), (byte) (myLong >> 40), (byte) (myLong >> 32),
+        (byte) (myLong >> 24), (byte) (myLong >> 16), (byte) (myLong >> 8), (byte) myLong, // long -
+                                                                                           // myLong
+        (byte) (myInt >> 24), (byte) (myInt >> 16), (byte) (myInt >> 8), (byte) myInt, // int -
+                                                                                       // myInt
+        (byte) (floatBytes >> 24), (byte) (floatBytes >> 16), (byte) (floatBytes >> 8),
+        (byte) floatBytes, // float - myFloat
+        (byte) (offset3 >> 8), (byte) offset3, // offset of myString3
+        (byte) (offset2 >> 8), (byte) offset2, // offset of myString2
     };
 
     for (int i = (str1Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset1
-          + PdxWriterImpl.HEADER_SIZE, str1Bytes[i]); // + 5 for: 1 for
-                                                      // DSCODE.PDX and 4 for
-                                                      // byte stream length
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset1 + PdxWriterImpl.HEADER_SIZE, str1Bytes[i]); // +
+                                                                                                   // 5
+                                                                                                   // for:
+                                                                                                   // 1
+                                                                                                   // for
+                                                                                                   // DSCODE.PDX
+                                                                                                   // and
+                                                                                                   // 4
+                                                                                                   // for
+                                                                                                   // byte
+                                                                                                   // stream
+                                                                                                   // length
     }
     for (int i = (str2Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset2
-          + PdxWriterImpl.HEADER_SIZE, str2Bytes[i]);
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset2 + PdxWriterImpl.HEADER_SIZE, str2Bytes[i]);
     }
     for (int i = (str3Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset3
-          + PdxWriterImpl.HEADER_SIZE, str3Bytes[i]);
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset3 + PdxWriterImpl.HEADER_SIZE, str3Bytes[i]);
     }
-    
+
     StringBuffer msg = new StringBuffer("Actual output: ");
     for (byte val : actual) {
       msg.append(val + ", ");
@@ -586,27 +631,30 @@ public class PdxSerializableJUnitTest {
     if (actual.length != expected.length) {
       System.out.println(msg.toString());
     }
-    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: " + expected.length, actual.length == expected.length);
-    for(int i = 0; i<actual.length; i++) {
+    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
+        + expected.length, actual.length == expected.length);
+    for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
         System.out.println(msg.toString());
       }
       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
     }
     System.out.println("\n");
-    
+
     DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
-    SimpleClass1 actualVal = (SimpleClass1)DataSerializer.readObject(in);
-    //System.out.println("actualVal..."+actualVal);
-    assertTrue("Mismatch in write and read value: Value Write..." + pdx
-        + " Value Read..." + actualVal, pdx.equals(actualVal));      
+    SimpleClass1 actualVal = (SimpleClass1) DataSerializer.readObject(in);
+    // System.out.println("actualVal..."+actualVal);
+    assertTrue(
+        "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
+        pdx.equals(actualVal));
     c.setReadSerialized(true);
     try {
       in = new DataInputStream(new ByteArrayInputStream(actual));
-      PdxInstance pi = (PdxInstance)DataSerializer.readObject(in);
-      actualVal = (SimpleClass1)pi.getObject();
-      assertTrue("Mismatch in write and read value: Value Write..." + pdx
-                 + " Value Read..." + actualVal, pdx.equals(actualVal)); 
+      PdxInstance pi = (PdxInstance) DataSerializer.readObject(in);
+      actualVal = (SimpleClass1) pi.getObject();
+      assertTrue(
+          "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
+          pdx.equals(actualVal));
       assertTrue(pi.hasField("myFlag"));
       assertTrue(pi.hasField("myShort"));
       assertTrue(pi.hasField("myString1"));
@@ -623,7 +671,7 @@ public class PdxSerializableJUnitTest {
       assertEquals(pdx.getMyString3(), pi.getField("myString3"));
       assertEquals(pdx.getMyInt(), pi.getField("myInt"));
       assertEquals(pdx.getMyFloat(), pi.getField("myFloat"));
-      PdxReaderImpl reader = (PdxReaderImpl)pi;
+      PdxReaderImpl reader = (PdxReaderImpl) pi;
       PdxType type = reader.getPdxType();
       assertEquals(SimpleClass1.class.getName(), type.getClassName());
       assertEquals(8, type.getFieldCount());
@@ -637,7 +685,7 @@ public class PdxSerializableJUnitTest {
       assertEquals(5, type.getPdxField("myString3").getFieldIndex());
       assertEquals(6, type.getPdxField("myInt").getFieldIndex());
       assertEquals(7, type.getPdxField("myFloat").getFieldIndex());
-      
+
       assertEquals(FieldType.BOOLEAN, type.getPdxField("myFlag").getFieldType());
       assertEquals(FieldType.SHORT, type.getPdxField("myShort").getFieldType());
       assertEquals(FieldType.STRING, type.getPdxField("myString1").getFieldType());
@@ -655,7 +703,7 @@ public class PdxSerializableJUnitTest {
       assertEquals("myString3", type.getPdxField("myString3").getFieldName());
       assertEquals("myInt", type.getPdxField("myInt").getFieldName());
       assertEquals("myFloat", type.getPdxField("myFloat").getFieldName());
-      
+
       assertEquals(0, type.getPdxField("myFlag").getVarLenFieldSeqId());
       assertEquals(0, type.getPdxField("myShort").getVarLenFieldSeqId());
       assertEquals(0, type.getPdxField("myString1").getVarLenFieldSeqId());
@@ -674,26 +722,31 @@ public class PdxSerializableJUnitTest {
       assertEquals(false, type.getPdxField("myInt").isVariableLengthType());
       assertEquals(false, type.getPdxField("myFloat").isVariableLengthType());
 
-      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte)(pdx.isMyFlag()?1:0)}), 
-                   reader.getRaw(0));
-      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte)(pdx.getMyShort() >> 8), (byte)pdx.getMyShort()}),
-                   reader.getRaw(1));
-      assertEquals(ByteSourceFactory.wrap(str1Bytes),
-                   reader.getRaw(2));
-      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte)(pdx.getMyLong() >> 56), (byte)(pdx.getMyLong() >> 48), (byte)(pdx.getMyLong() >> 40), (byte)(pdx.getMyLong() >> 32), (byte)(pdx.getMyLong() >> 24), (byte)(pdx.getMyLong() >> 16), (byte)(pdx.getMyLong() >> 8), (byte)pdx.getMyLong(),}), 
-                   reader.getRaw(3));
-      assertEquals(ByteSourceFactory.wrap(str2Bytes),
-                   reader.getRaw(4));
-      assertEquals(ByteSourceFactory.wrap(str3Bytes),
-                   reader.getRaw(5));
-      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte)(pdx.getMyInt() >> 24), (byte)(pdx.getMyInt() >> 16), (byte)(pdx.getMyInt() >> 8), (byte)pdx.getMyInt()}),
-                   reader.getRaw(6));
-      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte)(floatBytes >> 24), (byte)(floatBytes >> 16), (byte)(floatBytes >> 8), (byte)floatBytes}),
-                   reader.getRaw(7));
+      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte) (pdx.isMyFlag() ? 1 : 0)}),
+          reader.getRaw(0));
+      assertEquals(
+          ByteSourceFactory
+              .wrap(new byte[] {(byte) (pdx.getMyShort() >> 8), (byte) pdx.getMyShort()}),
+          reader.getRaw(1));
+      assertEquals(ByteSourceFactory.wrap(str1Bytes), reader.getRaw(2));
+      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte) (pdx.getMyLong() >> 56),
+          (byte) (pdx.getMyLong() >> 48), (byte) (pdx.getMyLong() >> 40),
+          (byte) (pdx.getMyLong() >> 32), (byte) (pdx.getMyLong() >> 24),
+          (byte) (pdx.getMyLong() >> 16), (byte) (pdx.getMyLong() >> 8), (byte) pdx.getMyLong(),}),
+          reader.getRaw(3));
+      assertEquals(ByteSourceFactory.wrap(str2Bytes), reader.getRaw(4));
+      assertEquals(ByteSourceFactory.wrap(str3Bytes), reader.getRaw(5));
+      assertEquals(
+          ByteSourceFactory.wrap(new byte[] {(byte) (pdx.getMyInt() >> 24),
+              (byte) (pdx.getMyInt() >> 16), (byte) (pdx.getMyInt() >> 8), (byte) pdx.getMyInt()}),
+          reader.getRaw(6));
+      assertEquals(ByteSourceFactory.wrap(new byte[] {(byte) (floatBytes >> 24),
+          (byte) (floatBytes >> 16), (byte) (floatBytes >> 8), (byte) floatBytes}),
+          reader.getRaw(7));
     } finally {
       c.setReadSerialized(false);
     }
-    }
+  }
 
 
   @Test
@@ -705,13 +758,13 @@ public class PdxSerializableJUnitTest {
     float myFloat = 123.023f;
 
     for (int i = 0; i < 5; i++) {
-      myHashMap.put("KEY_"+i, new SimpleClass(i, (byte)5));
+      myHashMap.put("KEY_" + i, new SimpleClass(i, (byte) 5));
     }
-    
+
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     PdxSerializable pdx = new NestedPdx(myString1, myLong, myHashMap, myString2, myFloat);
     DataSerializer.writeObject(pdx, out);
-    int typeId = getLastPdxTypeId();
+    int typeId = getPdxTypeIdForClass(NestedPdx.class);
 
     HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
@@ -724,70 +777,72 @@ public class PdxSerializableJUnitTest {
     byte[] str2Bytes = hdos2.toByteArray();
 
     int length = str1Bytes.length + 8 /* myLong */
-        + mapBytes.length + str2Bytes.length + 4 /* myFloat */+ (2*1) /*
-                                                                   * offset for
-                                                                   * 3
-                                                                   * var-length
-                                                                   * fields
-                                                                   */;
+        + mapBytes.length + str2Bytes.length + 4 /* myFloat */
+        + (2 * 1) /*
+                   * offset for 3 var-length fields
+                   */;
 
     int offset1 = 0;
     int offset2 = offset1 + 8 + str1Bytes.length;
     int offset3 = offset1 + 8 + str1Bytes.length + mapBytes.length;
     byte[] actual = out.toByteArray();
     int floatBytes = Float.floatToRawIntBits(myFloat);
-    Byte[] expected = new Byte[] {
-        DSCODE.PDX, // byte
-        (byte)(length >> 24), (byte)(length >> 16), (byte)(length >> 8), (byte)length, // int - length of byte stream
-        (byte) (typeId >> 24),
-        (byte) (typeId >> 16),
-        (byte) (typeId >> 8),
-        (byte) typeId, // int - typeId
-        (byte)(myLong >> 56), (byte)(myLong >> 48), (byte)(myLong >> 40), (byte)(myLong >> 32), (byte)(myLong >> 24), (byte)(myLong >> 16), (byte)(myLong >> 8), (byte)myLong, // long - myLong
-        (byte)(floatBytes >> 24), (byte)(floatBytes >> 16), (byte)(floatBytes >> 8), (byte)floatBytes, // float - myFloat
-        (byte)offset3, // offset of myString2
-        (byte)offset2, // offset of myHashMap
+    Byte[] expected = new Byte[] {DSCODE.PDX, // byte
+        (byte) (length >> 24), (byte) (length >> 16), (byte) (length >> 8), (byte) length, // int -
+                                                                                           // length
+                                                                                           // of
+                                                                                           // byte
+                                                                                           // stream
+        (byte) (typeId >> 24), (byte) (typeId >> 16), (byte) (typeId >> 8), (byte) typeId, // int -
+                                                                                           // typeId
+        (byte) (myLong >> 56), (byte) (myLong >> 48), (byte) (myLong >> 40), (byte) (myLong >> 32),
+        (byte) (myLong >> 24), (byte) (myLong >> 16), (byte) (myLong >> 8), (byte) myLong, // long -
+                                                                                           // myLong
+        (byte) (floatBytes >> 24), (byte) (floatBytes >> 16), (byte) (floatBytes >> 8),
+        (byte) floatBytes, // float - myFloat
+        (byte) offset3, // offset of myString2
+        (byte) offset2, // offset of myHashMap
     };
 
     for (int i = (str1Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset1
-          + PdxWriterImpl.HEADER_SIZE, str1Bytes[i]);
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset1 + PdxWriterImpl.HEADER_SIZE, str1Bytes[i]);
     }
     for (int i = (mapBytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset2
-          + PdxWriterImpl.HEADER_SIZE, mapBytes[i]);
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset2 + PdxWriterImpl.HEADER_SIZE, mapBytes[i]);
     }
     for (int i = (str2Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset3
-          + PdxWriterImpl.HEADER_SIZE, str2Bytes[i]);
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset3 + PdxWriterImpl.HEADER_SIZE, str2Bytes[i]);
     }
 
     StringBuffer msg = new StringBuffer("Actual output: ");
     for (byte val : actual) {
       msg.append(val + ", ");
     }
-      msg.append("\nExpected output: ");
-        for (byte val : expected) {
-          msg.append(val + ", ");
+    msg.append("\nExpected output: ");
+    for (byte val : expected) {
+      msg.append(val + ", ");
+    }
+    if (actual.length != expected.length) {
+      System.out.println(msg.toString());
+    }
+    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
+        + expected.length, actual.length == expected.length);
+    for (int i = 0; i < actual.length; i++) {
+      if (actual[i] != expected[i]) {
+        System.out.println(msg.toString());
       }
-        if (actual.length != expected.length) {
-          System.out.println(msg.toString());
-        }
-      assertTrue("Mismatch in length, actual.length: " + actual.length
-          + " and expected length: " + expected.length,
-          actual.length == expected.length);
-      for (int i = 0; i < actual.length; i++) {
-        if (actual[i] != expected[i]) {
-          System.out.println(msg.toString());
-        }
-       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
-      }
+      assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
+    }
     System.out.println("\n");
     DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
-    NestedPdx actualVal = (NestedPdx)DataSerializer.readObject(in);       
-    //System.out.println("actualVal..."+actualVal);
-    assertTrue("Mismatch in write and read value: Value Write..." + pdx
-        + " Value Read..." + actualVal, pdx.equals(actualVal));    
+    NestedPdx actualVal = (NestedPdx) DataSerializer.readObject(in);
+    // System.out.println("actualVal..."+actualVal);
+    assertTrue(
+        "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
+        pdx.equals(actualVal));
     System.out.println("\n");
   }
 
@@ -802,7 +857,7 @@ public class PdxSerializableJUnitTest {
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     PdxSerializable pdx = new DSInsidePdx(myString1, myLong, myDS, myString2, myFloat);
     DataSerializer.writeObject(pdx, out);
-    int typeId = getLastPdxTypeId();
+    int typeId = getPdxTypeIdForClass(DSInsidePdx.class);
 
     HeapDataOutputStream hdos1 = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeString(myString1, hdos1);
@@ -820,43 +875,55 @@ public class PdxSerializableJUnitTest {
     System.out.println("Length of string2: " + str2Bytes.length);
 
     int length = str1Bytes.length + 8 /* myLong */
-        + dsBytes.length + str2Bytes.length + 4 /* myFloat */+ (2*2) /*
-                                                                  * offset for 3
-                                                                  * car-length
-                                                                  * fields
-                                                                  */;
+        + dsBytes.length + str2Bytes.length + 4 /* myFloat */
+        + (2 * 2) /*
+                   * offset for 3 car-length fields
+                   */;
 
     int offset1 = 0;
     int offset2 = offset1 + 8 + str1Bytes.length;
     int offset3 = offset1 + 8 + str1Bytes.length + dsBytes.length;
     byte[] actual = out.toByteArray();
     int floatBytes = Float.floatToRawIntBits(myFloat);
-    Byte[] expected = new Byte[] {
-        DSCODE.PDX, // byte
-        (byte)(length >> 24), (byte)(length >> 16), (byte)(length >> 8), (byte)length, // int - length of byte stream
-        (byte) (typeId >> 24),
-        (byte) (typeId >> 16),
-        (byte) (typeId >> 8),
-        (byte) typeId, // int - typeId
-        (byte)(myLong >> 56), (byte)(myLong >> 48), (byte)(myLong >> 40), (byte)(myLong >> 32), (byte)(myLong >> 24), (byte)(myLong >> 16), (byte)(myLong >> 8), (byte)myLong, // long - myLong
-        (byte)(floatBytes >> 24), (byte)(floatBytes >> 16), (byte)(floatBytes >> 8), (byte)floatBytes, // float - myFloat
-        (byte)(offset3 >> 8), (byte)offset3, // offset of myString2
-        (byte)(offset2 >> 8), (byte)offset2, // offset of myHashMap
+    Byte[] expected = new Byte[] {DSCODE.PDX, // byte
+        (byte) (length >> 24), (byte) (length >> 16), (byte) (length >> 8), (byte) length, // int -
+                                                                                           // length
+                                                                                           // of
+                                                                                           // byte
+                                                                                           // stream
+        (byte) (typeId >> 24), (byte) (typeId >> 16), (byte) (typeId >> 8), (byte) typeId, // int -
+                                                                                           // typeId
+        (byte) (myLong >> 56), (byte) (myLong >> 48), (byte) (myLong >> 40), (byte) (myLong >> 32),
+        (byte) (myLong >> 24), (byte) (myLong >> 16), (byte) (myLong >> 8), (byte) myLong, // long -
+                                                                                           // myLong
+        (byte) (floatBytes >> 24), (byte) (floatBytes >> 16), (byte) (floatBytes >> 8),
+        (byte) floatBytes, // float - myFloat
+        (byte) (offset3 >> 8), (byte) offset3, // offset of myString2
+        (byte) (offset2 >> 8), (byte) offset2, // offset of myHashMap
     };
 
     for (int i = (str1Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset1
-          + PdxWriterImpl.HEADER_SIZE, str1Bytes[i]); // + 5 for: 1 for
-                                                      // DSCODE.PDX and 4 for
-                                                      // byte stream length
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset1 + PdxWriterImpl.HEADER_SIZE, str1Bytes[i]); // +
+                                                                                                   // 5
+                                                                                                   // for:
+                                                                                                   // 1
+                                                                                                   // for
+                                                                                                   // DSCODE.PDX
+                                                                                                   // and
+                                                                                                   // 4
+                                                                                                   // for
+                                                                                                   // byte
+                                                                                                   // stream
+                                                                                                   // length
     }
     for (int i = (dsBytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset2
-          + PdxWriterImpl.HEADER_SIZE, dsBytes[i]);
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset2 + PdxWriterImpl.HEADER_SIZE, dsBytes[i]);
     }
     for (int i = (str2Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[]) ArrayUtils.insert(expected, offset3
-          + PdxWriterImpl.HEADER_SIZE, str2Bytes[i]);
+      expected =
+          (Byte[]) ArrayUtils.insert(expected, offset3 + PdxWriterImpl.HEADER_SIZE, str2Bytes[i]);
     }
 
     StringBuffer msg = new StringBuffer("Actual output: ");
@@ -867,20 +934,22 @@ public class PdxSerializableJUnitTest {
     for (byte val : expected) {
       msg.append(val + ", ");
     }
-    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: " + expected.length, actual.length == expected.length);
-    for(int i = 0; i<actual.length; i++) {
+    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
+        + expected.length, actual.length == expected.length);
+    for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
         System.out.println(msg.toString());
       }
       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
     }
     System.out.println("\n");
-    
-    DataInput in = new DataInputStream(new ByteArrayInputStream(actual));    
-    DSInsidePdx actualVal = (DSInsidePdx)DataSerializer.readObject(in);
-//    System.out.println("actualVal..."+actualVal);
-    assertTrue("Mismatch in write and read value: Value Write..." + pdx
-        + " Value Read..." + actualVal, pdx.equals(actualVal));
+
+    DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
+    DSInsidePdx actualVal = (DSInsidePdx) DataSerializer.readObject(in);
+    // System.out.println("actualVal..."+actualVal);
+    assertTrue(
+        "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
+        pdx.equals(actualVal));
     System.out.println("\n");
   }
 
@@ -893,10 +962,10 @@ public class PdxSerializableJUnitTest {
 
     HashMap<String, PdxSerializable> myHashMap = new HashMap<String, PdxSerializable>();
     for (int i = 0; i < 2; i++) {
-      myHashMap.put("KEY_"+i, new SimpleClass(i,(byte)i));
+      myHashMap.put("KEY_" + i, new SimpleClass(i, (byte) i));
     }
     PdxSerializable myPDX = new NestedPdx(myString1, myLong, myHashMap, myString2, myFloat);
-    
+
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializable ds = new PdxInsideDS(myString1, myLong, myPDX, myString2);
     DataSerializer.writeObject(ds, out);
@@ -923,37 +992,39 @@ public class PdxSerializableJUnitTest {
 
     int offsetStr1 = 1 + dsInitBytes.length;
     int offsetPDX = 1 + dsInitBytes.length + str1Bytes.length + 8;
-    int offsetStr2 =  1 + dsInitBytes.length + str1Bytes.length + 8 + pdxBytes.length;
+    int offsetStr2 = 1 + dsInitBytes.length + str1Bytes.length + 8 + pdxBytes.length;
 
     byte[] actual = out.toByteArray();
     int floatBytes = Float.floatToRawIntBits(myFloat);
-    Byte[] expected = new Byte[] {
-        DSCODE.DATA_SERIALIZABLE, // byte
-        (byte)(myLong >> 56), (byte)(myLong >> 48), (byte)(myLong >> 40), (byte)(myLong >> 32), (byte)(myLong >> 24), (byte)(myLong >> 16), (byte)(myLong >> 8), (byte)myLong, // long - myLong
+    Byte[] expected = new Byte[] {DSCODE.DATA_SERIALIZABLE, // byte
+        (byte) (myLong >> 56), (byte) (myLong >> 48), (byte) (myLong >> 40), (byte) (myLong >> 32),
+        (byte) (myLong >> 24), (byte) (myLong >> 16), (byte) (myLong >> 8), (byte) myLong, // long -
+                                                                                           // myLong
     };
 
     for (int i = (dsInitBytes.length - 1); i >= 0; i--) {
-      expected = (Byte[])ArrayUtils.insert(expected, 1, dsInitBytes[i]);
+      expected = (Byte[]) ArrayUtils.insert(expected, 1, dsInitBytes[i]);
     }
     for (int i = (str1Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[])ArrayUtils.insert(expected, offsetStr1, str1Bytes[i]);
+      expected = (Byte[]) ArrayUtils.insert(expected, offsetStr1, str1Bytes[i]);
     }
     for (int i = (pdxBytes.length - 1); i >= 0; i--) {
-      expected = (Byte[])ArrayUtils.insert(expected, offsetPDX, pdxBytes[i]);
+      expected = (Byte[]) ArrayUtils.insert(expected, offsetPDX, pdxBytes[i]);
     }
     for (int i = (str2Bytes.length - 1); i >= 0; i--) {
-      expected = (Byte[])ArrayUtils.insert(expected, offsetStr2, str2Bytes[i]);
+      expected = (Byte[]) ArrayUtils.insert(expected, offsetStr2, str2Bytes[i]);
     }
 
     checkBytes(expected, actual);
 
-    DataInput in = new DataInputStream(new ByteArrayInputStream(actual));    
-    PdxInsideDS actualVal = (PdxInsideDS)DataSerializer.readObject(in);
-//    System.out.println("actualVal..."+actualVal);
-    assertTrue("Mismatch in write and read value: Value Write..." + ds
-        + " Value Read..." + actualVal, ds.equals(actualVal));
-  } 
- 
+    DataInput in = new DataInputStream(new ByteArrayInputStream(actual));
+    PdxInsideDS actualVal = (PdxInsideDS) DataSerializer.readObject(in);
+    // System.out.println("actualVal..."+actualVal);
+    assertTrue(
+        "Mismatch in write and read value: Value Write..." + ds + " Value Read..." + actualVal,
+        ds.equals(actualVal));
+  }
+
   private void checkBytes(Byte[] expected, byte[] actual) {
     StringBuffer msg = new StringBuffer("Actual output: ");
     for (byte val : actual) {
@@ -966,14 +1037,16 @@ public class PdxSerializableJUnitTest {
     if (actual.length != expected.length) {
       System.out.println(msg.toString());
     }
-    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: " + expected.length, actual.length == expected.length);
-    for(int i = 0; i<actual.length; i++) {
+    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
+        + expected.length, actual.length == expected.length);
+    for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
         System.out.println(msg.toString());
       }
       assertTrue("Mismatch at index " + i, actual[i] == expected[i]);
     }
   }
+
   private void checkBytes(byte[] expected, byte[] actual) {
     StringBuffer msg = new StringBuffer("Actual output: ");
     for (byte val : actual) {
@@ -986,8 +1059,9 @@ public class PdxSerializableJUnitTest {
     if (actual.length != expected.length) {
       System.out.println(msg.toString());
     }
-    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: " + expected.length, actual.length == expected.length);
-    for(int i = 0; i<actual.length; i++) {
+    assertTrue("Mismatch in length, actual.length: " + actual.length + " and expected length: "
+        + expected.length, actual.length == expected.length);
+    for (int i = 0; i < actual.length; i++) {
       if (actual[i] != expected[i]) {
         System.out.println(msg.toString());
       }
@@ -1000,58 +1074,63 @@ public class PdxSerializableJUnitTest {
     LongHolder v = (LongHolder) serializeAndDeserialize(new LongHolder(0x69));
     assertEquals(0x69, v.getLong());
   }
+
   // this method adds coverage for bug 43236
   @Test
   public void testObjectPdxInstance() throws IOException, ClassNotFoundException {
     DefaultQuery.setPdxReadSerialized(true);
     PdxReaderImpl.TESTHOOK_TRACKREADS = true;
     try {
-    PdxInstance pi = (PdxInstance) serializeAndDeserialize(new ObjectHolder("hello"));
-    ObjectHolder v3 = (ObjectHolder)pi.getObject();
-    WritablePdxInstance wpi = pi.createWriter();
-    wpi.setField("f1", "goodbye");
-    assertEquals("goodbye", wpi.getField("f1"));
-    ObjectHolder v = (ObjectHolder)wpi.getObject();
-    ObjectHolder v2 = (ObjectHolder)wpi.getObject();
-    assertEquals("goodbye", v.getObject());
-    assertEquals("goodbye", v2.getObject());
-    assertEquals("hello", v3.getObject());
-    assertEquals("goodbye", wpi.getField("f1"));
+      PdxInstance pi = (PdxInstance) serializeAndDeserialize(new ObjectHolder("hello"));
+      ObjectHolder v3 = (ObjectHolder) pi.getObject();
+      WritablePdxInstance wpi = pi.createWriter();
+      wpi.setField("f1", "goodbye");
+      assertEquals("goodbye", wpi.getField("f1"));
+      ObjectHolder v = (ObjectHolder) wpi.getObject();
+      ObjectHolder v2 = (ObjectHolder) wpi.getObject();
+      assertEquals("goodbye", v.getObject());
+      assertEquals("goodbye", v2.getObject());
+      assertEquals("hello", v3.getObject());
+      assertEquals("goodbye", wpi.getField("f1"));
     } finally {
       DefaultQuery.setPdxReadSerialized(false);
       PdxReaderImpl.TESTHOOK_TRACKREADS = false;
     }
   }
+
   @Test
   public void testObjectArrayPdxInstance() throws IOException, ClassNotFoundException {
     DefaultQuery.setPdxReadSerialized(true);
     PdxReaderImpl.TESTHOOK_TRACKREADS = true;
     try {
-      LongFieldHolder[] v = new LongFieldHolder[]{new LongFieldHolder(1), new LongFieldHolder(2)};
+      LongFieldHolder[] v = new LongFieldHolder[] {new LongFieldHolder(1), new LongFieldHolder(2)};
       PdxInstance pi = (PdxInstance) serializeAndDeserialize(new ObjectArrayHolder(v));
       ObjectArrayHolder oah = (ObjectArrayHolder) pi.getObject();
-      LongFieldHolder[] nv = (LongFieldHolder[])oah.getObjectArray();
+      LongFieldHolder[] nv = (LongFieldHolder[]) oah.getObjectArray();
       if (!Arrays.equals(v, nv)) {
-        throw new RuntimeException("expected " + Arrays.toString(v) + " but had " + Arrays.toString(nv));
+        throw new RuntimeException(
+            "expected " + Arrays.toString(v) + " but had " + Arrays.toString(nv));
       }
       Object[] oa = (Object[]) pi.getField("f1");
       assertTrue(oa[0] instanceof PdxInstance);
       assertTrue(oa[1] instanceof PdxInstance);
       LongFieldHolder[] nv2 = new LongFieldHolder[2];
-      nv2[0] = (LongFieldHolder)((PdxInstance)oa[0]).getObject();
-      nv2[1] = (LongFieldHolder)((PdxInstance)oa[1]).getObject();
+      nv2[0] = (LongFieldHolder) ((PdxInstance) oa[0]).getObject();
+      nv2[1] = (LongFieldHolder) ((PdxInstance) oa[1]).getObject();
       if (!Arrays.equals(v, nv2)) {
-        throw new RuntimeException("expected " + Arrays.toString(v) + " but had " + Arrays.toString(nv2));
+        throw new RuntimeException(
+            "expected " + Arrays.toString(v) + " but had " + Arrays.toString(nv2));
       }
     } finally {
       DefaultQuery.setPdxReadSerialized(false);
       PdxReaderImpl.TESTHOOK_TRACKREADS = false;
     }
   }
+
   @Test
   public void testLongField() throws IOException, ClassNotFoundException {
-    LongFieldHolder v = (LongFieldHolder) serializeAndDeserialize(new LongFieldHolder(
-        0x1020304050607080L));
+    LongFieldHolder v =
+        (LongFieldHolder) serializeAndDeserialize(new LongFieldHolder(0x1020304050607080L));
     assertEquals(0x1020304050607080L, v.getLong());
   }
 
@@ -1100,8 +1179,7 @@ public class PdxSerializableJUnitTest {
   }
 
   @Test
-  public void testBasicAllWithNulls() throws IOException,
-      ClassNotFoundException {
+  public void testBasicAllWithNulls() throws IOException, ClassNotFoundException {
     BasicAllFieldTypes v1 = new BasicAllFieldTypes(0x1020304050607080L, true);
     try {
       serializeAndDeserialize(v1);
@@ -1146,14 +1224,12 @@ public class PdxSerializableJUnitTest {
     assertEquals(v1, v2);
   }
 
-  private Object serializeAndDeserialize(Object in) throws IOException,
-      ClassNotFoundException {
+  private Object serializeAndDeserialize(Object in) throws IOException, ClassNotFoundException {
     HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(in, hdos);
     byte[] bytes = hdos.toByteArray();
     System.out.println("Serialized bytes = " + Arrays.toString(bytes));
-    return DataSerializer.readObject(new DataInputStream(
-        new ByteArrayInputStream(bytes)));
+    return DataSerializer.readObject(new DataInputStream(new ByteArrayInputStream(bytes)));
   }
 
   public static class LongHolder implements PdxSerializable {
@@ -1306,8 +1382,7 @@ public class PdxSerializableJUnitTest {
     public Object[] anObjectArray;
     public byte[][] anArrayOfByteArray;
 
-    public BasicAllFieldTypes() {
-    }
+    public BasicAllFieldTypes() {}
 
     public BasicAllFieldTypes(long base, boolean nulls) {
       fillInBaseValues(base, nulls);
@@ -1315,16 +1390,12 @@ public class PdxSerializableJUnitTest {
 
 
     /**
-     * Init fields using base as appropriate, but does not initialize
-     * aQueryObject field.
+     * Init fields using base as appropriate, but does not initialize aQueryObject field.
      * 
-     * @param base
-     *          The base value for all fields. Fields are all set to a value
-     *          using base as appropriate.
-     * @param useNulls
-     *          If true, fill in nulls for those fields that can be set to null
-     *          (to test null values), if false, then use a valid value (to test
-     *          non-null values).
+     * @param base The base value for all fields. Fields are all set to a value using base as
+     *        appropriate.
+     * @param useNulls If true, fill in nulls for those fields that can be set to null (to test null
+     *        values), if false, then use a valid value (to test non-null values).
      */
     public void fillInBaseValues(long base, boolean useNulls) {
       final int maxCollectionSize = 100;
@@ -1412,20 +1483,15 @@ public class PdxSerializableJUnitTest {
      */
     @Override
     public String toString() {
-      return getClass().getName() + " [aChar=" + this.aChar + ", aBoolean="
-          + this.aBoolean + ", aByte=" + this.aByte + ", aShort=" + this.aShort
-          + ", anInt=" + this.anInt + ", aLong=" + this.aLong + ", aFloat="
-          + this.aFloat + ", aDouble=" + this.aDouble + ", aDate=" + this.aDate
-          + ", aString=" + this.aString
-          + ", anObject=" + this.anObject + ", aMap=" + this.aMap
-          + ", aCollection=" + this.aCollection 
-          + ", aBooleanArray="
-          + Arrays.toString(this.aBooleanArray) + ", aCharArray="
-          + Arrays.toString(this.aCharArray) + ", aByteArray="
-          + Arrays.toString(this.aByteArray) + ", aShortArray="
-          + Arrays.toString(this.aShortArray) + ", anIntArray="
-          + Arrays.toString(this.anIntArray) + ", aLongArray="
-          + Arrays.toString(this.aLongArray) + ", aFloatArray="
+      return getClass().getName() + " [aChar=" + this.aChar + ", aBoolean=" + this.aBoolean
+          + ", aByte=" + this.aByte + ", aShort=" + this.aShort + ", anInt=" + this.anInt
+          + ", aLong=" + this.aLong + ", aFloat=" + this.aFloat + ", aDouble=" + this.aDouble
+          + ", aDate=" + this.aDate + ", aString=" + this.aString + ", anObject=" + this.anObject
+          + ", aMap=" + this.aMap + ", aCollection=" + this.aCollection + ", aBooleanArray="
+          + Arrays.toString(this.aBooleanArray) + ", aCharArray=" + Arrays.toString(this.aCharArray)
+          + ", aByteArray=" + Arrays.toString(this.aByteArray) + ", aShortArray="
+          + Arrays.toString(this.aShortArray) + ", anIntArray=" + Arrays.toString(this.anIntArray)
+          + ", aLongArray=" + Arrays.toString(this.aLongArray) + ", aFloatArray="
           + Arrays.toString(this.aFloatArray) + ", aDoubleArray="
           + Arrays.toString(this.aDoubleArray) + ", aStringArray="
           + Arrays.toString(this.aStringArray) + ", anObjectArray="
@@ -1539,8 +1605,7 @@ public class PdxSerializableJUnitTest {
         System.out.println("!= Object[]");
         return false;
       }
-      if (!byteArrayofArraysEqual(this.anArrayOfByteArray,
-          other.anArrayOfByteArray)) {
+      if (!byteArrayofArraysEqual(this.anArrayOfByteArray, other.anArrayOfByteArray)) {
         System.out.println("!= byte[][]");
         return false;
       }
@@ -1604,7 +1669,7 @@ public class PdxSerializableJUnitTest {
     }
     // TODO also test marking different identity fields.
   }
-  
+
   public static class VariableFields implements PdxSerializable {
 
     private Class fieldType = String.class;
@@ -1613,25 +1678,26 @@ public class PdxSerializableJUnitTest {
     public VariableFields(int fieldCount) {
       this.fieldCount = fieldCount;
     }
+
     public VariableFields(int fieldCount, Class fieldType) {
       this.fieldCount = fieldCount;
       this.fieldType = fieldType;
     }
+
     public void toData(PdxWriter writer) {
-      ((PdxWriterImpl)writer).setDoExtraValidation(true);
+      ((PdxWriterImpl) writer).setDoExtraValidation(true);
       writer.writeInt("fieldCount", this.fieldCount);
-      for (int i=0; i < this.fieldCount; i++) {
-        writer.writeField("f"+i, null, this.fieldType);
+      for (int i = 0; i < this.fieldCount; i++) {
+        writer.writeField("f" + i, null, this.fieldType);
       }
     }
 
     public void fromData(PdxReader reader) {
       throw new IllegalStateException("should never be called");
     }
-    
+
   }
-  public static class AllFieldTypes extends BasicAllFieldTypes implements
-      PdxSerializable {
+  public static class AllFieldTypes extends BasicAllFieldTypes implements PdxSerializable {
 
     public AllFieldTypes() {
       super();
@@ -1644,9 +1710,7 @@ public class PdxSerializableJUnitTest {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.apache.geode.pdx.PdxSerializable#toData(org.apache.geode.
-     * pdx.PdxWriter)
+     * @see org.apache.geode.pdx.PdxSerializable#toData(org.apache.geode. pdx.PdxWriter)
      */
     public void toData(PdxWriter out) {
       new BasicAllFieldTypesPdxSerializer().toData(this, out);
@@ -1655,9 +1719,7 @@ public class PdxSerializableJUnitTest {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.apache.geode.pdx.PdxSerializable#fromData(org.apache.geode
-     * .pdx.PdxReader)
+     * @see org.apache.geode.pdx.PdxSerializable#fromData(org.apache.geode .pdx.PdxReader)
      */
     public void fromData(PdxReader in) {
       new BasicAllFieldTypesPdxSerializer().fillInData(in, this);
@@ -1855,8 +1917,8 @@ public class PdxSerializableJUnitTest {
       pdx.aDate = in.readDate("aDate");
       pdx.aString = in.readString("aString");
       pdx.anObject = in.readObject("anObject");
-      pdx.aMap = (Map)in.readObject("aMap");
-      pdx.aCollection = (Collection)in.readObject("aCollection");
+      pdx.aMap = (Map) in.readObject("aMap");
+      pdx.aCollection = (Collection) in.readObject("aCollection");
       pdx.aBooleanArray = in.readBooleanArray("aBooleanArray");
       pdx.aCharArray = in.readCharArray("aCharArray");
       pdx.aByteArray = in.readByteArray("aByteArray");
@@ -1946,24 +2008,22 @@ public class PdxSerializableJUnitTest {
       out.writeField("aStringArray", this.aStringArray, String[].class);
       out.writeField("anObjectArray", this.anObjectArray, Object[].class);
       // TODO test other types of Object[] like SimpleClass[].
-      out.writeField("anArrayOfByteArray", this.anArrayOfByteArray,
-                     byte[][].class);
+      out.writeField("anArrayOfByteArray", this.anArrayOfByteArray, byte[][].class);
     }
   }
-  
+
   private byte[] createBlob(Object o) throws IOException {
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(o, out);
     return out.toByteArray();
   }
-  
+
   private <T> T deblob(byte[] blob) throws IOException, ClassNotFoundException {
-    return (T)DataSerializer.readObject(
-                new DataInputStream(new ByteArrayInputStream(blob)));
+    return (T) DataSerializer.readObject(new DataInputStream(new ByteArrayInputStream(blob)));
   }
+
   /**
-   * Make sure that if a class adds a field that pdx serialization will
-   * preserve the extra field.
+   * Make sure that if a class adds a field that pdx serialization will preserve the extra field.
    */
   @Test
   public void testFieldAppend() throws Exception {
@@ -1971,7 +2031,7 @@ public class PdxSerializableJUnitTest {
     MyEvolvablePdx pdx = new MyEvolvablePdx(7);
     assertEquals(7, pdx.f1);
     assertEquals(0, pdx.f2);
-    
+
     MyEvolvablePdx.setVersion(2);
     pdx = new MyEvolvablePdx(7);
     assertEquals(7, pdx.f1);
@@ -1984,7 +2044,7 @@ public class PdxSerializableJUnitTest {
     MyEvolvablePdx pdxv1 = deblob(v2actual);
     assertEquals(7, pdxv1.f1);
     assertEquals(0, pdxv1.f2);
-    
+
     // now reserialize and make sure f2 is preserved
     byte[] v1actual = createBlob(pdxv1);
     assertEquals(v2typeId, getBlobPdxTypeId(v1actual));
@@ -1998,7 +2058,7 @@ public class PdxSerializableJUnitTest {
     v1actual = createBlob(pdxv1copy);
     assertEquals(v2typeId, getBlobPdxTypeId(v1actual));
     checkBytes(v2actual, v1actual);
-    
+
     MyEvolvablePdx.setVersion(2);
     c.getPdxRegistry().removeLocal(pdx);
     MyEvolvablePdx pdxv2 = deblob(v1actual);
@@ -2008,15 +2068,15 @@ public class PdxSerializableJUnitTest {
     pdxv2 = deblob(v1actual);
     assertEquals(7, pdxv2.f1);
     assertEquals(8, pdxv2.f2);
-   }
-  
+  }
+
   @Test
   public void testFieldInsert() throws Exception {
     MyEvolvablePdx.setVersion(1);
     MyEvolvablePdx pdx = new MyEvolvablePdx(7);
     assertEquals(7, pdx.f1);
     assertEquals(0, pdx.f2);
-    
+
     MyEvolvablePdx.setVersion(3);
     pdx = new MyEvolvablePdx(7);
     assertEquals(7, pdx.f1);
@@ -2028,11 +2088,13 @@ public class PdxSerializableJUnitTest {
     MyEvolvablePdx pdxv1 = deblob(v3actual);
     assertEquals(7, pdxv1.f1);
     assertEquals(0, pdxv1.f2);
-    
+
+    int numPdxTypes = getNumPdxTypes();
     // now reserialize and make sure f2 is preserved
     byte[] v1actual = createBlob(pdxv1);
+
     int mergedTypeId = getBlobPdxTypeId(v1actual);
-    assertEquals(v3typeId+1, mergedTypeId);
+    assertEquals(numPdxTypes + 1, getNumPdxTypes());
     TypeRegistry tr = c.getPdxRegistry();
     PdxType v3Type = tr.getType(v3typeId);
     PdxType mergedType = tr.getType(mergedTypeId);
@@ -2045,7 +2107,7 @@ public class PdxSerializableJUnitTest {
     assertEquals(7, pdxv3.f1);
     assertEquals(8, pdxv3.f2);
   }
-  
+
   @Test
   public void testFieldRemove() throws Exception {
     // this test pretends that version 1 is newer than version2
@@ -2054,7 +2116,7 @@ public class PdxSerializableJUnitTest {
     MyEvolvablePdx pdx = new MyEvolvablePdx(7);
     assertEquals(7, pdx.f1);
     assertEquals(0, pdx.f2);
-    
+
     byte[] v1actual = createBlob(pdx);
     int v1typeId = getBlobPdxTypeId(v1actual);
 
@@ -2064,12 +2126,13 @@ public class PdxSerializableJUnitTest {
     assertEquals(7, pdxv2.f1);
     assertEquals(0, pdxv2.f2);
     pdxv2.f2 = 23;
-    
+
+    int numPdxTypes = getNumPdxTypes();
     // now reserialize and make sure it is version2 and not version1
     byte[] v2actual = createBlob(pdxv2);
     int v2typeId = getBlobPdxTypeId(v2actual);
-    assertEquals(v1typeId+1, v2typeId);
-    
+    assertEquals(numPdxTypes + 1, getNumPdxTypes());
+
     TypeRegistry tr = c.getPdxRegistry();
     PdxType v2Type = tr.getType(v2typeId);
     PdxType v1Type = tr.getType(v1typeId);
@@ -2086,7 +2149,7 @@ public class PdxSerializableJUnitTest {
     assertEquals(7, pdxv3.f1);
     assertEquals(0, pdxv3.f2);
   }
-   
+
   private int getBlobPdxTypeId(byte[] blob) {
     ByteBuffer bb = ByteBuffer.wrap(blob);
     // skip byte for PDX dscode and integer for pdx length
@@ -2095,17 +2158,18 @@ public class PdxSerializableJUnitTest {
 
   public static class MyEvolvablePdx implements PdxSerializable {
     private static int version = 1;
-    
+
     private static int getVersion() {
       return version;
     }
+
     private static void setVersion(int v) {
       version = v;
     }
-    
+
     public int f1;
     public int f2;
-    
+
     public MyEvolvablePdx(int base) {
       this.f1 = base;
       base++;
@@ -2114,15 +2178,16 @@ public class PdxSerializableJUnitTest {
         base++;
       }
     }
+
     public MyEvolvablePdx() {
       // need for pdx deserialization
     }
-    
+
     public void toData(PdxWriter writer) {
       if (getVersion() == 3) {
         writer.writeInt("f2", this.f2);
       }
-       writer.writeInt("f1", this.f1);
+      writer.writeInt("f1", this.f1);
       if (getVersion() == 2) {
         writer.writeInt("f2", this.f2);
       }
@@ -2138,21 +2203,26 @@ public class PdxSerializableJUnitTest {
       }
     }
   }
-  
+
 
   /** PlainOldSerializable */
   public static class POS implements java.io.Serializable {
     int f;
+
     public POS(int i) {
       this.f = i;
     }
+
     public int hashCode() {
       return f;
     }
+
     public boolean equals(Object obj) {
-      if (obj == null) return false;
-      if (!(obj instanceof POS)) return false;
-      POS other = (POS)obj;
+      if (obj == null)
+        return false;
+      if (!(obj instanceof POS))
+        return false;
+      POS other = (POS) obj;
       return this.f == other.f;
     }
   }

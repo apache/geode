@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.web.controllers;
 
@@ -24,9 +22,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * The DurableClientCommandsController class implements GemFire Management REST API web service endpoints for the
- * durable client/CQs Gfsh commands.
+ * The DurableClientCommandsController class implements GemFire Management REST API web service
+ * endpoints for the durable client/CQs Gfsh commands.
  * <p/>
+ * 
  * @see org.apache.geode.management.internal.cli.commands.DurableClientCommands
  * @see org.apache.geode.management.internal.web.controllers.AbstractCommandsController
  * @see org.springframework.stereotype.Controller
@@ -44,10 +43,12 @@ public class DurableClientCommandsController extends AbstractCommandsController 
 
   @RequestMapping(method = RequestMethod.GET, value = "/durable-clients/{durable-client-id}/cqs")
   @ResponseBody
-  public String listDurableClientContinuousQueries(@PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
-                                                   @RequestParam(value = CliStrings.LIST_DURABLE_CQS__MEMBER, required = false) final String memberNameId,
-                                                   @RequestParam(value = CliStrings.LIST_DURABLE_CQS__GROUP, required = false) final String[] groups)
-  {
+  public String listDurableClientContinuousQueries(
+      @PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
+      @RequestParam(value = CliStrings.LIST_DURABLE_CQS__MEMBER,
+          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.LIST_DURABLE_CQS__GROUP,
+          required = false) final String[] groups) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.LIST_DURABLE_CQS);
 
     command.addOption(CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, decode(durableClientId));
@@ -57,37 +58,44 @@ public class DurableClientCommandsController extends AbstractCommandsController 
     }
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.LIST_DURABLE_CQS__GROUP, StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.LIST_DURABLE_CQS__GROUP,
+          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
   }
 
-  @RequestMapping(method = RequestMethod.GET, value = "/durable-clients/{durable-client-id}/cqs/events")
+  @RequestMapping(method = RequestMethod.GET,
+      value = "/durable-clients/{durable-client-id}/cqs/events")
   @ResponseBody
-  public String countDurableClientContinuousQueryEvents(@PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
-                                                        @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER, required = false) final String memberNameId,
-                                                        @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP, required = false) final String[] groups)
-  {
-    return internalCountDurableClientContinuousQueryEvents(decode(durableClientId), null, memberNameId, groups);
+  public String countDurableClientContinuousQueryEvents(
+      @PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
+      @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER,
+          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP,
+          required = false) final String[] groups) {
+    return internalCountDurableClientContinuousQueryEvents(decode(durableClientId), null,
+        memberNameId, groups);
   }
 
-  @RequestMapping(method = RequestMethod.GET, value = "/durable-clients/{durable-client-id}/cqs/{durable-cq-name}/events")
+  @RequestMapping(method = RequestMethod.GET,
+      value = "/durable-clients/{durable-client-id}/cqs/{durable-cq-name}/events")
   @ResponseBody
-  public String countDurableClientContinuousQueryEvents(@PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
-                                                        @PathVariable("durable-cq-name") final String durableCqName,
-                                                        @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER, required = false) final String memberNameId,
-                                                        @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP, required = false) final String[] groups)
-  {
-    return internalCountDurableClientContinuousQueryEvents(decode(durableClientId), decode(durableCqName), memberNameId, groups);
+  public String countDurableClientContinuousQueryEvents(
+      @PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
+      @PathVariable("durable-cq-name") final String durableCqName,
+      @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__MEMBER,
+          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP,
+          required = false) final String[] groups) {
+    return internalCountDurableClientContinuousQueryEvents(decode(durableClientId),
+        decode(durableCqName), memberNameId, groups);
   }
 
   protected String internalCountDurableClientContinuousQueryEvents(final String durableClientId,
-                                                                   final String cqName,
-                                                                   final String memberNameId,
-                                                                   final String[] groups)
-  {
-    final CommandStringBuilder command = new CommandStringBuilder(CliStrings.COUNT_DURABLE_CQ_EVENTS);
+      final String cqName, final String memberNameId, final String[] groups) {
+    final CommandStringBuilder command =
+        new CommandStringBuilder(CliStrings.COUNT_DURABLE_CQ_EVENTS);
 
     command.addOption(CliStrings.COUNT_DURABLE_CQ_EVENTS__DURABLE__CLIENT__ID, durableClientId);
 
@@ -100,18 +108,22 @@ public class DurableClientCommandsController extends AbstractCommandsController 
     }
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP, StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.COUNT_DURABLE_CQ_EVENTS__GROUP,
+          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
   }
 
-  @RequestMapping(method = RequestMethod.POST, value = "/durable-clients/{durable-client-id}", params = "op=close")
+  @RequestMapping(method = RequestMethod.POST, value = "/durable-clients/{durable-client-id}",
+      params = "op=close")
   @ResponseBody
-  public String closeDurableClient(@PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
-                                   @RequestParam(value = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER, required = false) final String memberNameId,
-                                   @RequestParam(value = CliStrings.CLOSE_DURABLE_CLIENTS__GROUP, required = false) final String[] groups)
-  {
+  public String closeDurableClient(
+      @PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
+      @RequestParam(value = CliStrings.CLOSE_DURABLE_CLIENTS__MEMBER,
+          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.CLOSE_DURABLE_CLIENTS__GROUP,
+          required = false) final String[] groups) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CLOSE_DURABLE_CLIENTS);
 
     command.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__CLIENT__ID, decode(durableClientId));
@@ -121,19 +133,23 @@ public class DurableClientCommandsController extends AbstractCommandsController 
     }
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__GROUP, StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.CLOSE_DURABLE_CLIENTS__GROUP,
+          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());
   }
 
-  @RequestMapping(method = RequestMethod.POST, value = "/durable-clients/{durable-client-id}/cqs/{durable-cq-name}", params = "op=close")
+  @RequestMapping(method = RequestMethod.POST,
+      value = "/durable-clients/{durable-client-id}/cqs/{durable-cq-name}", params = "op=close")
   @ResponseBody
-  public String closeDurableContinuousQuery(@PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
-                                            @PathVariable("durable-cq-name")final String durableCqName,
-                                            @RequestParam(value = CliStrings.CLOSE_DURABLE_CQS__MEMBER, required = false) final String memberNameId,
-                                            @RequestParam(value = CliStrings.CLOSE_DURABLE_CQS__GROUP, required = false) final String[] groups)
-  {
+  public String closeDurableContinuousQuery(
+      @PathVariable(ConfigurationProperties.DURABLE_CLIENT_ID) final String durableClientId,
+      @PathVariable("durable-cq-name") final String durableCqName,
+      @RequestParam(value = CliStrings.CLOSE_DURABLE_CQS__MEMBER,
+          required = false) final String memberNameId,
+      @RequestParam(value = CliStrings.CLOSE_DURABLE_CQS__GROUP,
+          required = false) final String[] groups) {
     final CommandStringBuilder command = new CommandStringBuilder(CliStrings.CLOSE_DURABLE_CQS);
 
     command.addOption(CliStrings.CLOSE_DURABLE_CQS__DURABLE__CLIENT__ID, decode(durableClientId));
@@ -144,7 +160,8 @@ public class DurableClientCommandsController extends AbstractCommandsController 
     }
 
     if (hasValue(groups)) {
-      command.addOption(CliStrings.CLOSE_DURABLE_CQS__GROUP, StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
+      command.addOption(CliStrings.CLOSE_DURABLE_CQS__GROUP,
+          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
     }
 
     return processCommand(command.toString());

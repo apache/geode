@@ -1,35 +1,33 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-   
+
 package org.apache.geode;
 
 /**
- * This is the abstract superclass of exceptions that are thrown and
- * declared.
+ * This is the abstract superclass of exceptions that are thrown and declared.
  * <p>
- * This class ought to be called <em>GemFireException</em>, but that name
- * is reserved for an older class that extends {@link java.lang.RuntimeException}.
+ * This class ought to be called <em>GemFireException</em>, but that name is reserved for an older
+ * class that extends {@link java.lang.RuntimeException}.
  * 
  * @see org.apache.geode.GemFireException
  * @since GemFire 5.1
  */
 public abstract class GemFireCheckedException extends Exception {
+  private static final long serialVersionUID = -8659184576090173188L;
 
-  //////////////////////  Constructors  //////////////////////
+  ////////////////////// Constructors //////////////////////
 
   /**
    * Creates a new <code>GemFireException</code> with no detailed message.
@@ -39,52 +37,50 @@ public abstract class GemFireCheckedException extends Exception {
   }
 
   /**
-   * Creates a new <code>GemFireCheckedException</code> with the given detail
-   * message.
+   * Creates a new <code>GemFireCheckedException</code> with the given detail message.
    */
   public GemFireCheckedException(String message) {
     super(message);
   }
 
   /**
-   * Creates a new <code>GemFireException</code> with the given detail
-   * message and cause.
+   * Creates a new <code>GemFireException</code> with the given detail message and cause.
    */
   public GemFireCheckedException(String message, Throwable cause) {
     super(message);
     this.initCause(cause);
   }
-  
+
   /**
-   * Creates a new <code>GemFireCheckedException</code> with the given cause and
-   * no detail message
+   * Creates a new <code>GemFireCheckedException</code> with the given cause and no detail message
    */
   public GemFireCheckedException(Throwable cause) {
     super();
     this.initCause(cause);
   }
 
-  ////////////////////  Instance Methods  ////////////////////
+  //////////////////// Instance Methods ////////////////////
 
   /**
-   * Returns the root cause of this <code>GemFireCheckedException</code> or
-   * <code>null</code> if the cause is nonexistent or unknown.
+   * Returns the root cause of this <code>GemFireCheckedException</code> or <code>null</code> if the
+   * cause is nonexistent or unknown.
    */
   public Throwable getRootCause() {
-      if ( this.getCause() == null ) return null;
-      Throwable root = this.getCause();
-      while ( root != null ) {
-//          if ( ! ( root instanceof GemFireCheckedException )) {
-//              break;
-//          }
-//          GemFireCheckedException tmp = (GemFireCheckedException) root;
-          if ( root.getCause() == null ) {
-              break;
-          } else {
-              root = root.getCause();
-          }
+    if (this.getCause() == null)
+      return null;
+    Throwable root = this.getCause();
+    while (root != null) {
+      // if ( ! ( root instanceof GemFireCheckedException )) {
+      // break;
+      // }
+      // GemFireCheckedException tmp = (GemFireCheckedException) root;
+      if (root.getCause() == null) {
+        break;
+      } else {
+        root = root.getCause();
       }
-      return root;
+    }
+    return root;
   }
-  
+
 }

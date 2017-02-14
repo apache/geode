@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -47,7 +45,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase
 
       @Override
       public void run() {
-        if(hasCache()) {
+        if (hasCache()) {
           OffHeapTestUtil.checkOrphans();
         }
       }
@@ -57,9 +55,9 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase
   }
 
   /**
-   * Asserts that creating a region on two members, with one member having the
-   * region as on-heap and the other as having the region as off-heap, will
-   * cause an exception and the region will not be created.
+   * Asserts that creating a region on two members, with one member having the region as on-heap and
+   * the other as having the region as off-heap, will cause an exception and the region will not be
+   * created.
    */
   @Test
   public void testPartitionedRegionProfileWithConflict() throws Exception {
@@ -79,7 +77,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase
         RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
         regionFactory.setOffHeap(true);
         Region region = regionFactory.create(regionName);
-        
+
         assertNotNull("Region is null", region);
         assertNotNull("Cache does not contain region", cache.getRegion(regionName));
       }
@@ -105,7 +103,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase
         } finally {
           removeExceptionTag1("IllegalStateException");
         }
-        
+
         assertNull("Region is not null", region);
         assertNull("Cache contains region", cache.getRegion(regionName));
       }
@@ -113,9 +111,8 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase
   }
 
   /**
-   * Asserts that creating a region on two members, with both regions having the
-   * same off-heap status, will not cause an exception and the region will be
-   * created.
+   * Asserts that creating a region on two members, with both regions having the same off-heap
+   * status, will not cause an exception and the region will be created.
    */
   @Test
   public void testPartitionedRegionProfileWithoutConflict() throws Exception {
@@ -150,11 +147,10 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase
       });
     }
   }
-  
+
   /**
-   * Asserts that creating a region on two members, with one being off-heap with local
-   * storage and the other being on-heap without local storage, will not cause an
-   * exception.
+   * Asserts that creating a region on two members, with one being off-heap with local storage and
+   * the other being on-heap without local storage, will not cause an exception.
    */
   @Test
   public void testPartitionedRegionProfileWithAccessor() throws Exception {
@@ -175,7 +171,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase
         RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
         regionFactory.setOffHeap(true);
         Region region = regionFactory.create(regionName);
-        
+
         assertNotNull("Region is null", region);
         assertNotNull("Cache does not contain region", cache.getRegion(regionName));
       }
@@ -194,21 +190,22 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase
 
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
-        
-        PartitionAttributes partitionAttributes = new PartitionAttributesFactory().setLocalMaxMemory(0).create();
+
+        PartitionAttributes partitionAttributes =
+            new PartitionAttributesFactory().setLocalMaxMemory(0).create();
         regionFactory.setPartitionAttributes(partitionAttributes);
-        
+
         Region region = regionFactory.create(regionName);
-        
+
         assertNotNull("Region is null", region);
         assertNotNull("Cache does not contain region", cache.getRegion(regionName));
       }
     });
   }
-  
+
   /**
-   * Asserts that creating a region on two members, with one being off-heap with local
-   * storage and the other being a proxy will not cause an exception.
+   * Asserts that creating a region on two members, with one being off-heap with local storage and
+   * the other being a proxy will not cause an exception.
    */
   @Test
   public void testPartitionedRegionProfileWithProxy() throws Exception {
@@ -229,7 +226,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase
         RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
         regionFactory.setOffHeap(true);
         Region region = regionFactory.create(regionName);
-        
+
         assertNotNull("Region is null", region);
         assertNotNull("Cache does not contain region", cache.getRegion(regionName));
       }
@@ -249,7 +246,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION_PROXY);
         Region region = regionFactory.create(regionName);
-        
+
         assertNotNull("Region is null", region);
         assertNotNull("Cache does not contain region", cache.getRegion(regionName));
       }

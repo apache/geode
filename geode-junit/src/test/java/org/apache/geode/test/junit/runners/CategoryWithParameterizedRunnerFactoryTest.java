@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.test.junit.runners;
 
@@ -47,8 +45,10 @@ public class CategoryWithParameterizedRunnerFactoryTest {
   /**
    * So much hacking in order to expose JUnit internals. I have no words...
    */
-  public static class ExposedBlockJUnit4ClassRunnerWithParameters extends BlockJUnit4ClassRunnerWithParameters implements ExposedGetAnnotations {
-    public ExposedBlockJUnit4ClassRunnerWithParameters(TestWithParameters test) throws InitializationError {
+  public static class ExposedBlockJUnit4ClassRunnerWithParameters
+      extends BlockJUnit4ClassRunnerWithParameters implements ExposedGetAnnotations {
+    public ExposedBlockJUnit4ClassRunnerWithParameters(TestWithParameters test)
+        throws InitializationError {
       super(test);
     }
 
@@ -58,9 +58,10 @@ public class CategoryWithParameterizedRunnerFactoryTest {
     }
   }
 
-  public static class ExposedBlockJUnit4ClassRunnerWithParametersFactory extends
-      BlockJUnit4ClassRunnerWithParametersFactory {
-    public Runner createRunnerForTestWithParameters(TestWithParameters test) throws InitializationError {
+  public static class ExposedBlockJUnit4ClassRunnerWithParametersFactory
+      extends BlockJUnit4ClassRunnerWithParametersFactory {
+    public Runner createRunnerForTestWithParameters(TestWithParameters test)
+        throws InitializationError {
       return new ExposedBlockJUnit4ClassRunnerWithParameters(test);
     }
   }
@@ -116,16 +117,20 @@ public class CategoryWithParameterizedRunnerFactoryTest {
   public void testBrokenCategoryAndParameterized() {
     Request request = Request.aClass(BrokenCategoryClass.class);
     ExposedParameterized runner = (ExposedParameterized) request.getRunner();
-    request = request.filterWith(new CategoryFilter((ExposedBlockJUnit4ClassRunnerWithParameters) runner.getChildren().get(0)));
+    request = request.filterWith(new CategoryFilter(
+        (ExposedBlockJUnit4ClassRunnerWithParameters) runner.getChildren().get(0)));
     Result result = new JUnitCore().run(request);
-    assertEquals("Yeah!! This might actually mean we've upgraded to JUnit 4.13. Hurry up already and delete this hack.", 1, result.getRunCount());
+    assertEquals(
+        "Yeah!! This might actually mean we've upgraded to JUnit 4.13. Hurry up already and delete this hack.",
+        1, result.getRunCount());
   }
 
   @Test
   public void testWorkingCategoryAndParameterized() {
     Request request = Request.aClass(WorkingCategoryClass.class);
     ExposedParameterized runner = (ExposedParameterized) request.getRunner();
-    request = request.filterWith(new CategoryFilter((ExposedGetAnnotations) runner.getChildren().get(0)));
+    request =
+        request.filterWith(new CategoryFilter((ExposedGetAnnotations) runner.getChildren().get(0)));
     Result result = new JUnitCore().run(request);
     assertEquals(2, result.getRunCount());
   }

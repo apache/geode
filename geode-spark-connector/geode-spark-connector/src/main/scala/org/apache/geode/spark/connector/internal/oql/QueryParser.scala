@@ -36,7 +36,7 @@ class QueryParser extends RegexParsers {
 
   def PACKAGE: Parser[String] = """[\w.]+""".r
 
-  def projection: Parser[String] = "*" | repsep("""["\w]+[.\w"]*""".r, ",") ^^ {
+  def projection: Parser[String] = "*" | repsep(opt("""\([A-Za-z]+\)""".r) ~> """["\w]+[.\w"]*""".r, ",") ^^ {
     _.toString
   }
 

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -50,9 +48,8 @@ public class OpenMethod {
     try {
       return new OpenMethod(m);
     } catch (OpenDataException ode) {
-      final String msg = "Method " + m.getDeclaringClass().getName() + "."
-          + m.getName() + " has parameter or return type that "
-          + "cannot be translated into an open type";
+      final String msg = "Method " + m.getDeclaringClass().getName() + "." + m.getName()
+          + " has parameter or return type that " + "cannot be translated into an open type";
       throw new IllegalArgumentException(msg, ode);
     }
   }
@@ -128,8 +125,7 @@ public class OpenMethod {
     return oparams;
   }
 
-  final Object[] fromOpenParameters(Object[] params)
-      throws InvalidObjectException {
+  final Object[] fromOpenParameters(Object[] params) throws InvalidObjectException {
     if (paramConversionIsIdentity || params == null)
       return params;
     final Object[] jparams = new Object[params.length];
@@ -138,13 +134,11 @@ public class OpenMethod {
     return jparams;
   }
 
-  final Object toOpenParameter(Object param, int paramNo)
-      throws OpenDataException {
+  final Object toOpenParameter(Object param, int paramNo) throws OpenDataException {
     return paramTypeConverters[paramNo].toOpenValue(param);
   }
 
-  final Object fromOpenParameter(Object param, int paramNo)
-      throws InvalidObjectException {
+  final Object fromOpenParameter(Object param, int paramNo) throws InvalidObjectException {
     return paramTypeConverters[paramNo].fromOpenValue(param);
   }
 
@@ -154,16 +148,14 @@ public class OpenMethod {
     try {
       javaParams = fromOpenParameters(params);
     } catch (InvalidObjectException e) {
-      final String msg = methodName() + ": cannot convert parameters "
-          + "from open values: " + e;
+      final String msg = methodName() + ": cannot convert parameters " + "from open values: " + e;
       throw new MBeanException(e, msg);
     }
     final Object javaReturn = method.invoke(obj, javaParams);
     try {
       return returnTypeConverter.toOpenValue(javaReturn);
     } catch (OpenDataException e) {
-      final String msg = methodName() + ": cannot convert return "
-          + "value to open value: " + e;
+      final String msg = methodName() + ": cannot convert return " + "value to open value: " + e;
       throw new MBeanException(e, msg);
     }
   }
@@ -174,8 +166,7 @@ public class OpenMethod {
 
   private OpenMethod(Method m) throws OpenDataException {
     this.method = m;
-    returnTypeConverter = OpenTypeConverter.toConverter(m
-        .getGenericReturnType());
+    returnTypeConverter = OpenTypeConverter.toConverter(m.getGenericReturnType());
     Type[] params = m.getGenericParameterTypes();
     paramTypeConverters = new OpenTypeConverter[params.length];
     boolean identity = true;

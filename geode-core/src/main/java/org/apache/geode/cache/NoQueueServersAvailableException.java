@@ -1,27 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache;
 
 import org.apache.geode.cache.client.ServerConnectivityException;
 
 /**
- * Indicates that this client cannot contact any queue servers and
- * therefore cannot perform operations that require a queue, such as
- * registering interest.
+ * Indicates that this client cannot contact any queue servers and therefore cannot perform
+ * operations that require a queue, such as registering interest.
+ * 
  * @since GemFire 5.7
  */
 public class NoQueueServersAvailableException extends ServerConnectivityException {
@@ -31,12 +29,12 @@ public class NoQueueServersAvailableException extends ServerConnectivityExceptio
   /**
    * Create a new instance of NoPrimaryAvailableException without a detail message or cause.
    */
-  public NoQueueServersAvailableException() {
-  }
+  public NoQueueServersAvailableException() {}
 
   /**
    * 
    * Create a new instance of NoPrimaryAvailableException with a detail message
+   * 
    * @param message the detail message
    */
   public NoQueueServersAvailableException(String message) {
@@ -45,6 +43,7 @@ public class NoQueueServersAvailableException extends ServerConnectivityExceptio
 
   /**
    * Create a new instance of NoPrimaryAvailableException with a detail message and cause
+   * 
    * @param message the detail message
    * @param cause the cause
    */
@@ -54,6 +53,7 @@ public class NoQueueServersAvailableException extends ServerConnectivityExceptio
 
   /**
    * Create a new instance of NoPrimaryAvailableException with a cause
+   * 
    * @param cause the cause
    */
   public NoQueueServersAvailableException(Throwable cause) {

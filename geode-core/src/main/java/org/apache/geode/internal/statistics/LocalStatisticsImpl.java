@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.statistics;
 
@@ -21,12 +19,11 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.statistics.StatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsTypeImpl;
-//import org.apache.geode.util.IntArray;
-//import org.apache.geode.util.LongArray;
+// import org.apache.geode.util.IntArray;
+// import org.apache.geode.util.LongArray;
 
 /**
- * An implementation of {@link Statistics} that stores its statistics
- * in local java memory.
+ * An implementation of {@link Statistics} that stores its statistics in local java memory.
  *
  * @see <A href="package-summary.html#statistics">Package introduction</A>
  *
@@ -45,57 +42,48 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   /** In JOM Statistics, the values of the double statistics */
   private final double[] doubleStorage;
 
-  /** An array containing the JOM object used to lock a int statistic when
-   * it is incremented. */
+  /**
+   * An array containing the JOM object used to lock a int statistic when it is incremented.
+   */
   private transient final Object[] intLocks;
 
-  /** An array containing the JOM object used to lock a long statistic when
-   * it is incremented. */
+  /**
+   * An array containing the JOM object used to lock a long statistic when it is incremented.
+   */
   private transient final Object[] longLocks;
 
-  /** An array containing the JOM object used to lock a double statistic when
-   * it is incremented. */
+  /**
+   * An array containing the JOM object used to lock a double statistic when it is incremented.
+   */
   private transient final Object[] doubleLocks;
 
   /** The StatisticsFactory that created this instance */
   private final StatisticsManager dSystem;
-  
-  ///////////////////////  Constructors  ///////////////////////
+
+  /////////////////////// Constructors ///////////////////////
 
   /**
    * Creates a new statistics instance of the given type
    *
-   * @param type
-   *        A description of the statistics
-   * @param textId
-   *        Text that identifies this statistic when it is monitored
-   * @param numericId
-   *        A number that displayed when this statistic is monitored
-   * @param uniqueId
-   *        A number that uniquely identifies this instance
-   * @param atomicIncrements
-   *        Are increment operations atomic?  If only one application
-   *        thread increments a statistic, then a <code>false</code>
-   *        value may yield better performance.
-   * @param osStatFlags
-   *        Non-zero if stats require system calls to collect them; for internal use only
-   * @param system
-   *        The distributed system that determines whether or not these
-   *        statistics are stored (and collected) in GemFire shared
-   *        memory or in the local VM
+   * @param type A description of the statistics
+   * @param textId Text that identifies this statistic when it is monitored
+   * @param numericId A number that displayed when this statistic is monitored
+   * @param uniqueId A number that uniquely identifies this instance
+   * @param atomicIncrements Are increment operations atomic? If only one application thread
+   *        increments a statistic, then a <code>false</code> value may yield better performance.
+   * @param osStatFlags Non-zero if stats require system calls to collect them; for internal use
+   *        only
+   * @param system The distributed system that determines whether or not these statistics are stored
+   *        (and collected) in GemFire shared memory or in the local VM
    */
-  public LocalStatisticsImpl(StatisticsType type, String textId,
-                             long numericId,
-                             long uniqueId,
-                             boolean atomicIncrements,
-                             int osStatFlags,
-                             StatisticsManager system) {
-    super(type, calcTextId(system, textId), calcNumericId(system, numericId),
-          uniqueId, osStatFlags);
+  public LocalStatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
+      boolean atomicIncrements, int osStatFlags, StatisticsManager system) {
+    super(type, calcTextId(system, textId), calcNumericId(system, numericId), uniqueId,
+        osStatFlags);
 
     this.dSystem = system;
 
-    StatisticsTypeImpl realType = (StatisticsTypeImpl)type;
+    StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
     int intCount = realType.getIntStatCount();
     int longCount = realType.getLongStatCount();
     int doubleCount = realType.getDoubleStatCount();
@@ -146,7 +134,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
     }
   }
 
-  //////////////////////  Static Methods  //////////////////////
+  ////////////////////// Static Methods //////////////////////
 
   private static long calcNumericId(StatisticsManager system, long userValue) {
     if (userValue != 0) {
@@ -174,7 +162,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
     }
   }
 
-  //////////////////////  Instance Methods  //////////////////////
+  ////////////////////// Instance Methods //////////////////////
 
   @Override
   public final boolean isAtomic() {
@@ -189,7 +177,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
     }
   }
 
-  ////////////////////////  store() Methods  ///////////////////////
+  //////////////////////// store() Methods ///////////////////////
 
   @Override
   protected final void _setInt(int offset, int value) {
@@ -206,7 +194,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
     this.doubleStorage[offset] = value;
   }
 
-  ///////////////////////  get() Methods  ///////////////////////
+  /////////////////////// get() Methods ///////////////////////
 
   @Override
   protected final int _getInt(int offset) {
@@ -223,7 +211,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
     return this.doubleStorage[offset];
   }
 
-  ////////////////////////  inc() Methods  ////////////////////////
+  //////////////////////// inc() Methods ////////////////////////
 
   @Override
   protected final void _incInt(int offset, int delta) {
@@ -263,9 +251,11 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   final int[] _getIntStorage() {
     return this.intStorage;
   }
+
   final long[] _getLongStorage() {
     return this.longStorage;
   }
+
   final double[] _getDoubleStorage() {
     return this.doubleStorage;
   }

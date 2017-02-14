@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans;
 
@@ -79,11 +77,11 @@ import org.apache.geode.management.membership.ClientMembershipListenerAdapter;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 /**
- * Acts as an intermediate between MBean layer and Federation Layer. Handles all
- * Call backs from GemFire to instantiate or remove MBeans from GemFire Domain.
+ * Acts as an intermediate between MBean layer and Federation Layer. Handles all Call backs from
+ * GemFire to instantiate or remove MBeans from GemFire Domain.
  * 
- * Even though this class have a lot of utility functions it interacts with the state 
- * of the system and contains some state itself.
+ * Even though this class have a lot of utility functions it interacts with the state of the system
+ * and contains some state itself.
  * 
  * 
  * 
@@ -97,35 +95,34 @@ public class ManagementAdapter {
 
   /** GemFire Cache impl **/
   private GemFireCacheImpl cacheImpl;
-  
+
   /** Member Name **/
   private String memberSource;
 
   /**
-   * emitter is a helper class for sending notifications on behalf of the
-   * MemberMBean
+   * emitter is a helper class for sending notifications on behalf of the MemberMBean
    **/
   private NotificationBroadcasterSupport memberLevelNotifEmitter;
 
-  
+
   /** The <code>MBeanServer</code> for this application */
   public static final MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
-  
+
 
   /** MemberMBean instance **/
   private MemberMBean memberBean;
-  
-  
- 
-  private volatile boolean serviceInitialised = false;  
-  
+
+
+
+  private volatile boolean serviceInitialised = false;
+
   private MBeanAggregator aggregator;
-  
+
   public static final List<Class> refreshOnInit = new ArrayList<Class>();
-  
-  
+
+
   public static final List<String> internalLocks = new ArrayList<String>();
-  
+
 
   static {
     refreshOnInit.add(RegionMXBean.class);
@@ -141,56 +138,53 @@ public class ManagementAdapter {
   protected MemberMBeanBridge memberMBeanBridge;
 
   private final Object regionOpLock = new Object();
-  
+
 
 
   /**
-   * Adapter life cycle is tied with the Cache . So its better to make all cache
-   * level artifacts as instance variable
+   * Adapter life cycle is tied with the Cache . So its better to make all cache level artifacts as
+   * instance variable
    * 
-   * @param cache
-   *          gemfire cache
+   * @param cache gemfire cache
    */
-  public void handleCacheCreation(GemFireCacheImpl cache) throws ManagementException
-  {
-    try{
+  public void handleCacheCreation(GemFireCacheImpl cache) throws ManagementException {
+    try {
       this.cacheImpl = (GemFireCacheImpl) cache;
-      this.service = (SystemManagementService) ManagementService
-          .getManagementService(cacheImpl);
-      
+      this.service = (SystemManagementService) ManagementService.getManagementService(cacheImpl);
+
       this.memberMBeanBridge = new MemberMBeanBridge(cacheImpl, service).init();
       this.memberBean = new MemberMBean(memberMBeanBridge);
       this.memberLevelNotifEmitter = memberBean;
-      
-      ObjectName memberMBeanName = MBeanJMXAdapter
-          .getMemberMBeanName(InternalDistributedSystem.getConnectedInstance()
-              .getDistributedMember());
 
-     
-      memberSource = MBeanJMXAdapter.getMemberNameOrId(cacheImpl.getDistributedSystem().getDistributedMember());
+      ObjectName memberMBeanName = MBeanJMXAdapter.getMemberMBeanName(
+          InternalDistributedSystem.getConnectedInstance().getDistributedMember());
+
+
+      memberSource = MBeanJMXAdapter
+          .getMemberNameOrId(cacheImpl.getDistributedSystem().getDistributedMember());
 
 
       // Type casting to MemberMXBean to expose only those methods described in
       // the interface;
-      ObjectName changedMBeanName = service.registerInternalMBean(
-          (MemberMXBean) memberBean, memberMBeanName);
+      ObjectName changedMBeanName =
+          service.registerInternalMBean((MemberMXBean) memberBean, memberMBeanName);
       service.federate(changedMBeanName, MemberMXBean.class, true);
-     
-      
-      
+
+
+
       this.serviceInitialised = true;
-      
+
       // Service initialised is only for ManagementService and not necessarily
       // Manager service.
-      
-      
+
+
       /** For situations where locator is created before any cache is created **/
       if (InternalLocator.hasLocator()) {
         Locator loc = InternalLocator.getLocator();
         handleLocatorStart(loc);
       }
 
-      
+
       if (cache.getDistributedSystem().getConfig().getJmxManager()) {
         this.service.createManager();
         if (cache.getDistributedSystem().getConfig().getJmxManagerStart()) {
@@ -212,38 +206,36 @@ public class ManagementAdapter {
 
       }
     }
-    
+
   }
+
   /**
    * Handles all the distributed mbean creation part when a Manager is started
    */
-  public void handleManagerStart() throws ManagementException{
+  public void handleManagerStart() throws ManagementException {
     if (!isServiceInitialised("handleManagerStart")) {
       return;
     }
     MBeanJMXAdapter jmxAdapter = service.getJMXAdapter();
-    Map<ObjectName, Object> registeredMBeans = jmxAdapter
-        .getLocalGemFireMBean();
+    Map<ObjectName, Object> registeredMBeans = jmxAdapter.getLocalGemFireMBean();
 
     DistributedSystemBridge dsBridge = new DistributedSystemBridge(service);
     this.aggregator = new MBeanAggregator(dsBridge);
     // register the aggregator for Federation framework to use
     service.addProxyListener(aggregator);
-   
+
     /**
      * get the local member mbean as it need to be provided to aggregator first
      */
 
     MemberMXBean localMember = service.getMemberMXBean();
-    ObjectName memberObjectName = MBeanJMXAdapter
-        .getMemberMBeanName(InternalDistributedSystem.getConnectedInstance()
-            .getDistributedMember());
+    ObjectName memberObjectName = MBeanJMXAdapter.getMemberMBeanName(
+        InternalDistributedSystem.getConnectedInstance().getDistributedMember());
 
-    FederationComponent addedComp = service.getLocalManager().getFedComponents().get(
-        memberObjectName);
-    
-    service.afterCreateProxy(memberObjectName, MemberMXBean.class,
-        localMember, addedComp);
+    FederationComponent addedComp =
+        service.getLocalManager().getFedComponents().get(memberObjectName);
+
+    service.afterCreateProxy(memberObjectName, MemberMXBean.class, localMember, addedComp);
 
     Iterator<ObjectName> it = registeredMBeans.keySet().iterator();
     while (it.hasNext()) {
@@ -258,10 +250,9 @@ public class ManagementAdapter {
         String className = instance.getClassName();
         Class cls = ClassLoadUtil.classFromName(className);
         Type[] intfTyps = cls.getGenericInterfaces();
-        
-        FederationComponent newObj = service.getLocalManager().getFedComponents().get(
-            objectName);
-        
+
+        FederationComponent newObj = service.getLocalManager().getFedComponents().get(objectName);
+
         for (int i = 0; i < intfTyps.length; i++) {
           Class intfTyp = (Class) intfTyps[i];
           service.afterCreateProxy(objectName, intfTyp, object, newObj);
@@ -285,47 +276,43 @@ public class ManagementAdapter {
   }
 
   /**
-   * Handles all the clean up activities when a Manager is stopped
-   * It clears the distributed mbeans and underlying data structures
+   * Handles all the clean up activities when a Manager is stopped It clears the distributed mbeans
+   * and underlying data structures
    */
-  public void handleManagerStop() throws ManagementException{
+  public void handleManagerStop() throws ManagementException {
     if (!isServiceInitialised("handleManagerStop")) {
       return;
     }
     MBeanJMXAdapter jmxAdapter = service.getJMXAdapter();
-    Map<ObjectName, Object> registeredMBeans = jmxAdapter
-        .getLocalGemFireMBean();
-    
+    Map<ObjectName, Object> registeredMBeans = jmxAdapter.getLocalGemFireMBean();
+
     ObjectName aggregatemMBeanPattern = null;
     try {
-      aggregatemMBeanPattern = new ObjectName(
-          ManagementConstants.AGGREGATE_MBEAN_PATTERN);
+      aggregatemMBeanPattern = new ObjectName(ManagementConstants.AGGREGATE_MBEAN_PATTERN);
     } catch (MalformedObjectNameException e1) {
       throw new ManagementException(e1);
     } catch (NullPointerException e1) {
       throw new ManagementException(e1);
     }
-    
+
     MemberMXBean localMember = service.getMemberMXBean();
-    
-    ObjectName memberObjectName = MBeanJMXAdapter
-        .getMemberMBeanName(InternalDistributedSystem.getConnectedInstance()
-            .getDistributedMember());
-    
-    FederationComponent removedComp = service.getLocalManager().getFedComponents().get(
-        memberObjectName);
-    
-    service.afterRemoveProxy(memberObjectName, MemberMXBean.class,
-        localMember, removedComp);
-    
+
+    ObjectName memberObjectName = MBeanJMXAdapter.getMemberMBeanName(
+        InternalDistributedSystem.getConnectedInstance().getDistributedMember());
+
+    FederationComponent removedComp =
+        service.getLocalManager().getFedComponents().get(memberObjectName);
+
+    service.afterRemoveProxy(memberObjectName, MemberMXBean.class, localMember, removedComp);
+
     Iterator<ObjectName> it = registeredMBeans.keySet().iterator();
-    
+
     while (it.hasNext()) {
       ObjectName objectName = it.next();
       if (objectName.equals(memberObjectName)) {
         continue;
       }
-      if(aggregatemMBeanPattern.apply(objectName)){
+      if (aggregatemMBeanPattern.apply(objectName)) {
         continue;
       }
       Object object = registeredMBeans.get(objectName);
@@ -335,34 +322,35 @@ public class ManagementAdapter {
         String className = instance.getClassName();
         Class cls = ClassLoadUtil.classFromName(className);
         Type[] intfTyps = cls.getGenericInterfaces();
-        
-        FederationComponent oldObj = service.getLocalManager().getFedComponents().get(
-            objectName);
-        
+
+        FederationComponent oldObj = service.getLocalManager().getFedComponents().get(objectName);
+
         for (int i = 0; i < intfTyps.length; i++) {
           Class intfTyp = (Class) intfTyps[i];
           service.afterRemoveProxy(objectName, intfTyp, object, oldObj);
         }
       } catch (InstanceNotFoundException e) {
-        logger.warn("Failed to invoke aggregator for {} with exception {}", objectName, e.getMessage(), e);
+        logger.warn("Failed to invoke aggregator for {} with exception {}", objectName,
+            e.getMessage(), e);
       } catch (ClassNotFoundException e) {
-        logger.warn("Failed to invoke aggregator for {} with exception {}", objectName, e.getMessage(), e);
+        logger.warn("Failed to invoke aggregator for {} with exception {}", objectName,
+            e.getMessage(), e);
       }
 
     }
     service.removeProxyListener(this.aggregator);
     this.aggregator = null;
   }
-  
+
   /**
    * Assumption is always cache and MemberMbean has been will be created first
    * 
    */
-  public void handleManagerCreation() throws ManagementException{
+  public void handleManagerCreation() throws ManagementException {
     if (!isServiceInitialised("handleManagerCreation")) {
       return;
     }
-    
+
     ObjectName managerMBeanName = MBeanJMXAdapter.getManagerName();
 
     ManagerMBeanBridge bridge = new ManagerMBeanBridge(service);
@@ -372,60 +360,53 @@ public class ManagementAdapter {
     service.registerInternalMBean(bean, managerMBeanName);
 
   }
-  
+
   /**
-   * Handles Region Creation. This is the call back which will create the
-   * specified RegionMXBean and will send a notification on behalf of Member
-   * Mbean
+   * Handles Region Creation. This is the call back which will create the specified RegionMXBean and
+   * will send a notification on behalf of Member Mbean
    * 
-   * @param region
-   *          the region for which the call back is invoked
+   * @param region the region for which the call back is invoked
    */
-  public <K, V> void handleRegionCreation(Region<K, V> region)
-      throws ManagementException {
+  public <K, V> void handleRegionCreation(Region<K, V> region) throws ManagementException {
     if (!isServiceInitialised("handleRegionCreation")) {
       return;
     }
-    //Moving region creation operation inside a guarded block
-    //After getting access to regionOpLock it again checks for region
-    //destroy status 
-    
-    synchronized(regionOpLock){
+    // Moving region creation operation inside a guarded block
+    // After getting access to regionOpLock it again checks for region
+    // destroy status
+
+    synchronized (regionOpLock) {
       LocalRegion localRegion = (LocalRegion) region;
-      if(localRegion.isDestroyed()){
+      if (localRegion.isDestroyed()) {
         return;
       }
       /** Bridge is responsible for extracting data from GemFire Layer **/
       RegionMBeanBridge<K, V> bridge = RegionMBeanBridge.getInstance(region);
-      
+
       RegionMXBean regionMBean = new RegionMBean<K, V>(bridge);
-      ObjectName regionMBeanName = MBeanJMXAdapter.getRegionMBeanName(cacheImpl
-          .getDistributedSystem().getDistributedMember(), region.getFullPath());
-      ObjectName changedMBeanName = service.registerInternalMBean(regionMBean,
-          regionMBeanName);
+      ObjectName regionMBeanName = MBeanJMXAdapter.getRegionMBeanName(
+          cacheImpl.getDistributedSystem().getDistributedMember(), region.getFullPath());
+      ObjectName changedMBeanName = service.registerInternalMBean(regionMBean, regionMBeanName);
       service.federate(changedMBeanName, RegionMXBean.class, true);
-      
-      Notification notification = new Notification(
-          JMXNotificationType.REGION_CREATED, memberSource, SequenceNumber
-              .next(), System.currentTimeMillis(), ManagementConstants.REGION_CREATED_PREFIX
-              + region.getFullPath());
+
+      Notification notification = new Notification(JMXNotificationType.REGION_CREATED, memberSource,
+          SequenceNumber.next(), System.currentTimeMillis(),
+          ManagementConstants.REGION_CREATED_PREFIX + region.getFullPath());
       memberLevelNotifEmitter.sendNotification(notification);
       memberMBeanBridge.addRegion(region);
-    
-      
+
+
     }
-    
-   
+
+
   }
 
   /**
-   * Handles Disk Creation. Will create DiskStoreMXBean and will send a
-   * notification
+   * Handles Disk Creation. Will create DiskStoreMXBean and will send a notification
    * 
-   * @param disk
-   *          the disk store for which the call back is invoked
+   * @param disk the disk store for which the call back is invoked
    */
-  public void handleDiskCreation(DiskStore disk) throws ManagementException{
+  public void handleDiskCreation(DiskStore disk) throws ManagementException {
     if (!isServiceInitialised("handleDiskCreation")) {
       return;
     }
@@ -433,14 +414,12 @@ public class ManagementAdapter {
     DiskStoreMXBean diskStoreMBean = new DiskStoreMBean(bridge);
     ObjectName diskStoreMBeanName = MBeanJMXAdapter.getDiskStoreMBeanName(
         cacheImpl.getDistributedSystem().getDistributedMember(), disk.getName());
-    ObjectName changedMBeanName = service.registerInternalMBean(diskStoreMBean,
-        diskStoreMBeanName);
+    ObjectName changedMBeanName = service.registerInternalMBean(diskStoreMBean, diskStoreMBeanName);
 
     service.federate(changedMBeanName, DiskStoreMXBean.class, true);
 
-    Notification notification = new Notification(
-        JMXNotificationType.DISK_STORE_CREATED, memberSource,
-        SequenceNumber.next(), System.currentTimeMillis(),
+    Notification notification = new Notification(JMXNotificationType.DISK_STORE_CREATED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.DISK_STORE_CREATED_PREFIX + disk.getName());
     memberLevelNotifEmitter.sendNotification(notification);
     memberMBeanBridge.addDiskStore(disk);
@@ -452,43 +431,40 @@ public class ManagementAdapter {
    * 
    * @param lockService
    */
-  public void handleLockServiceCreation(DLockService lockService) throws ManagementException{
+  public void handleLockServiceCreation(DLockService lockService) throws ManagementException {
     if (!isServiceInitialised("handleLockServiceCreation")) {
       return;
     }
-    /** Internal Locks Should not be exposed to client for monitoring**/
-    if(internalLocks.contains(lockService.getName())){
+    /** Internal Locks Should not be exposed to client for monitoring **/
+    if (internalLocks.contains(lockService.getName())) {
       return;
     }
     LockServiceMBeanBridge bridge = new LockServiceMBeanBridge(lockService);
     LockServiceMXBean lockServiceMBean = new LockServiceMBean(bridge);
-    
+
     ObjectName lockServiceMBeanName = MBeanJMXAdapter.getLockServiceMBeanName(
         cacheImpl.getDistributedSystem().getDistributedMember(), lockService.getName());
-    
-    ObjectName changedMBeanName = service.registerInternalMBean(
-        lockServiceMBean, lockServiceMBeanName);
+
+    ObjectName changedMBeanName =
+        service.registerInternalMBean(lockServiceMBean, lockServiceMBeanName);
 
     service.federate(changedMBeanName, LockServiceMXBean.class, true);
 
-    Notification notification = new Notification(
-        JMXNotificationType.LOCK_SERVICE_CREATED, memberSource,
-        SequenceNumber.next(), System.currentTimeMillis(),
+    Notification notification = new Notification(JMXNotificationType.LOCK_SERVICE_CREATED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.LOCK_SERVICE_CREATED_PREFIX + lockService.getName());
     memberLevelNotifEmitter.sendNotification(notification);
-    
+
     memberMBeanBridge.addLockServiceStats(lockService);
   }
 
   /**
    * Handles GatewaySender creation
    * 
-   * @param sender
-   *          the specific gateway sender
+   * @param sender the specific gateway sender
    * @throws ManagementException
    */
-  public void handleGatewaySenderCreation(GatewaySender sender)
-      throws ManagementException {
+  public void handleGatewaySenderCreation(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderCreation")) {
       return;
     }
@@ -498,14 +474,12 @@ public class ManagementAdapter {
     ObjectName senderObjectName = MBeanJMXAdapter.getGatewaySenderMBeanName(
         cacheImpl.getDistributedSystem().getDistributedMember(), sender.getId());
 
-    ObjectName changedMBeanName = service.registerInternalMBean(senderMBean,
-        senderObjectName);
+    ObjectName changedMBeanName = service.registerInternalMBean(senderMBean, senderObjectName);
 
     service.federate(changedMBeanName, GatewaySenderMXBean.class, true);
 
-    Notification notification = new Notification(
-        JMXNotificationType.GATEWAY_SENDER_CREATED, memberSource,
-        SequenceNumber.next(), System.currentTimeMillis(),
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_SENDER_CREATED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_SENDER_CREATED_PREFIX);
     memberLevelNotifEmitter.sendNotification(notification);
 
@@ -514,103 +488,91 @@ public class ManagementAdapter {
   /**
    * Handles Gateway receiver creation
    * 
-   * @param recv
-   *          specific gateway receiver
+   * @param recv specific gateway receiver
    * @throws ManagementException
    */
-  public void handleGatewayReceiverCreate(GatewayReceiver recv)
-      throws ManagementException {
+  public void handleGatewayReceiverCreate(GatewayReceiver recv) throws ManagementException {
     if (!isServiceInitialised("handleGatewayReceiverCreate")) {
       return;
     }
-    if(!recv.isManualStart()){
+    if (!recv.isManualStart()) {
       return;
     }
-    
+
     createGatewayReceiverMBean(recv);
-   
+
   }
-  
-  private void createGatewayReceiverMBean(GatewayReceiver recv){
+
+  private void createGatewayReceiverMBean(GatewayReceiver recv) {
     GatewayReceiverMBeanBridge bridge = new GatewayReceiverMBeanBridge(recv);
 
     GatewayReceiverMXBean receiverMBean = new GatewayReceiverMBean(bridge);
     ObjectName recvObjectName = MBeanJMXAdapter
-        .getGatewayReceiverMBeanName(cacheImpl.getDistributedSystem()
-            .getDistributedMember());
+        .getGatewayReceiverMBeanName(cacheImpl.getDistributedSystem().getDistributedMember());
 
-    ObjectName changedMBeanName = service.registerInternalMBean(receiverMBean,
-        recvObjectName);
+    ObjectName changedMBeanName = service.registerInternalMBean(receiverMBean, recvObjectName);
 
     service.federate(changedMBeanName, GatewayReceiverMXBean.class, true);
 
-    Notification notification = new Notification(
-        JMXNotificationType.GATEWAY_RECEIVER_CREATED, memberSource,
-        SequenceNumber.next(), System.currentTimeMillis(),
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_RECEIVER_CREATED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_RECEIVER_CREATED_PREFIX);
     memberLevelNotifEmitter.sendNotification(notification);
 
   }
-  
-  
+
+
   /**
    * Handles Gateway receiver creation
    * 
-   * @param recv
-   *          specific gateway receiver
+   * @param recv specific gateway receiver
    * @throws ManagementException
    */
-  public void handleGatewayReceiverStart(GatewayReceiver recv)
-      throws ManagementException {
+  public void handleGatewayReceiverStart(GatewayReceiver recv) throws ManagementException {
     if (!isServiceInitialised("handleGatewayReceiverStart")) {
       return;
     }
-    
-    if(!recv.isManualStart()){
+
+    if (!recv.isManualStart()) {
       createGatewayReceiverMBean(recv);
     }
-    
-    GatewayReceiverMBean mbean = (GatewayReceiverMBean)service.getLocalGatewayReceiverMXBean();
+
+    GatewayReceiverMBean mbean = (GatewayReceiverMBean) service.getLocalGatewayReceiverMXBean();
     GatewayReceiverMBeanBridge bridge = mbean.getBridge();
-    
+
     bridge.startServer();
 
-    Notification notification = new Notification(
-        JMXNotificationType.GATEWAY_RECEIVER_STARTED, memberSource,
-        SequenceNumber.next(), System.currentTimeMillis(),
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_RECEIVER_STARTED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_RECEIVER_STARTED_PREFIX);
     memberLevelNotifEmitter.sendNotification(notification);
 
   }
-  
-  
+
+
   /**
    * Handles Gateway receiver creation
    * 
-   * @param recv
-   *          specific gateway receiver
+   * @param recv specific gateway receiver
    * @throws ManagementException
    */
-  public void handleGatewayReceiverStop(GatewayReceiver recv)
-      throws ManagementException {
+  public void handleGatewayReceiverStop(GatewayReceiver recv) throws ManagementException {
     if (!isServiceInitialised("handleGatewayReceiverStop")) {
       return;
     }
-    GatewayReceiverMBean mbean = (GatewayReceiverMBean)service.getLocalGatewayReceiverMXBean();
+    GatewayReceiverMBean mbean = (GatewayReceiverMBean) service.getLocalGatewayReceiverMXBean();
     GatewayReceiverMBeanBridge bridge = mbean.getBridge();
-    
+
     bridge.stopServer();
-      
-    Notification notification = new Notification(
-        JMXNotificationType.GATEWAY_RECEIVER_STOPPED, memberSource,
-        SequenceNumber.next(), System.currentTimeMillis(),
+
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_RECEIVER_STOPPED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_RECEIVER_STOPPED_PREFIX);
     memberLevelNotifEmitter.sendNotification(notification);
 
   }
 
-  public void handleAsyncEventQueueCreation(AsyncEventQueue queue)
-      throws ManagementException {
+  public void handleAsyncEventQueueCreation(AsyncEventQueue queue) throws ManagementException {
     if (!isServiceInitialised("handleAsyncEventQueueCreation")) {
       return;
     }
@@ -619,21 +581,19 @@ public class ManagementAdapter {
     ObjectName senderObjectName = MBeanJMXAdapter.getAsycnEventQueueMBeanName(
         cacheImpl.getDistributedSystem().getDistributedMember(), queue.getId());
 
-    ObjectName changedMBeanName = service.registerInternalMBean(queueMBean,
-        senderObjectName);
+    ObjectName changedMBeanName = service.registerInternalMBean(queueMBean, senderObjectName);
 
     service.federate(changedMBeanName, AsyncEventQueueMXBean.class, true);
 
-    Notification notification = new Notification(
-        JMXNotificationType.ASYNC_EVENT_QUEUE_CREATED, memberSource,
-        SequenceNumber.next(), System.currentTimeMillis(),
+    Notification notification = new Notification(JMXNotificationType.ASYNC_EVENT_QUEUE_CREATED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.ASYNC_EVENT_QUEUE_CREATED_PREFIX);
     memberLevelNotifEmitter.sendNotification(notification);
   }
-  
+
   /**
-   * Sends the alert with the Object source as member. This notification will
-   * get filtered out for particular alert level
+   * Sends the alert with the Object source as member. This notification will get filtered out for
+   * particular alert level
    * 
    * @param details
    */
@@ -642,12 +602,13 @@ public class ManagementAdapter {
       return;
     }
     if (service.isManager()) {
-      String systemSource = "DistributedSystem(" + service.getDistributedSystemMXBean().getDistributedSystemId() + ")";
+      String systemSource = "DistributedSystem("
+          + service.getDistributedSystemMXBean().getDistributedSystemId() + ")";
       Map<String, String> userData = prepareUserData(details);
-      
 
-      Notification notification = new Notification(JMXNotificationType.SYSTEM_ALERT, systemSource, SequenceNumber.next(),
-          details.getMsgTime().getTime(), details.getMsg());
+
+      Notification notification = new Notification(JMXNotificationType.SYSTEM_ALERT, systemSource,
+          SequenceNumber.next(), details.getMsgTime().getTime(), details.getMsg());
 
       notification.setUserData(userData);
       service.handleNotification(notification);
@@ -657,12 +618,13 @@ public class ManagementAdapter {
 
   private Map<String, String> prepareUserData(AlertDetails details) {
     Map<String, String> userData = new HashMap<String, String>();
-    userData.put(JMXNotificationUserData.ALERT_LEVEL, AlertDetails.getAlertLevelAsString(details.getAlertLevel()));
-  
+    userData.put(JMXNotificationUserData.ALERT_LEVEL,
+        AlertDetails.getAlertLevelAsString(details.getAlertLevel()));
+
 
     String source = details.getSource();
     userData.put(JMXNotificationUserData.THREAD, source);
-    
+
     InternalDistributedMember sender = details.getSender();
     String nameOrId = memberSource; // TODO Rishi/Abhishek - what if sender is
     // null?
@@ -677,11 +639,9 @@ public class ManagementAdapter {
   }
 
   /**
-   * Assumption is its a cache server instance. For Gateway receiver there will
-   * be a separate method
+   * Assumption is its a cache server instance. For Gateway receiver there will be a separate method
    * 
-   * @param cacheServer
-   *          cache server instance
+   * @param cacheServer cache server instance
    */
   public void handleCacheServerStart(CacheServer cacheServer) {
     if (!isServiceInitialised("handleCacheServerStart")) {
@@ -690,82 +650,72 @@ public class ManagementAdapter {
 
     CacheServerBridge cacheServerBridge = new CacheServerBridge(cacheServer, cacheImpl);
     cacheServerBridge.setMemberMBeanBridge(memberMBeanBridge);
-    
+
     CacheServerMBean cacheServerMBean = new CacheServerMBean(cacheServerBridge);
 
-    ObjectName cacheServerMBeanName = MBeanJMXAdapter
-        .getClientServiceMBeanName(cacheServer.getPort(), cacheImpl
-            .getDistributedSystem().getDistributedMember());
-    
-    ObjectName changedMBeanName = service.registerInternalMBean(
-        (CacheServerMXBean) cacheServerMBean, cacheServerMBeanName);
-    
-    ClientMembershipListener managementClientListener = new CacheServerMembershipListenerAdapter(cacheServerMBean,
-        memberLevelNotifEmitter, changedMBeanName);
+    ObjectName cacheServerMBeanName = MBeanJMXAdapter.getClientServiceMBeanName(
+        cacheServer.getPort(), cacheImpl.getDistributedSystem().getDistributedMember());
+
+    ObjectName changedMBeanName =
+        service.registerInternalMBean((CacheServerMXBean) cacheServerMBean, cacheServerMBeanName);
+
+    ClientMembershipListener managementClientListener = new CacheServerMembershipListenerAdapter(
+        cacheServerMBean, memberLevelNotifEmitter, changedMBeanName);
     ClientMembership.registerClientMembershipListener(managementClientListener);
-    
+
     cacheServerBridge.setClientMembershipListener(managementClientListener);
-    
+
     service.federate(changedMBeanName, CacheServerMXBean.class, true);
-    
-    Notification notification = new Notification(
-        JMXNotificationType.CACHE_SERVER_STARTED, memberSource, SequenceNumber
-            .next(), System.currentTimeMillis(),
-            ManagementConstants.CACHE_SERVER_STARTED_PREFIX);
+
+    Notification notification = new Notification(JMXNotificationType.CACHE_SERVER_STARTED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
+        ManagementConstants.CACHE_SERVER_STARTED_PREFIX);
 
     memberLevelNotifEmitter.sendNotification(notification);
-    
+
     memberMBeanBridge.setCacheServer(true);
 
   }
 
   /**
-   * Assumption is its a cache server instance. For Gateway receiver there will
-   * be a separate method
+   * Assumption is its a cache server instance. For Gateway receiver there will be a separate method
    * 
-   * @param server
-   *          cache server instance
+   * @param server cache server instance
    */
   public void handleCacheServerStop(CacheServer server) {
     if (!isServiceInitialised("handleCacheServerStop")) {
       return;
     }
 
-    CacheServerMBean mbean = (CacheServerMBean) service
-        .getLocalCacheServerMXBean(server.getPort());
-    
-    ClientMembershipListener listener = mbean.getBridge()
-        .getClientMembershipListener();
-    
-    if(listener != null){
+    CacheServerMBean mbean = (CacheServerMBean) service.getLocalCacheServerMXBean(server.getPort());
+
+    ClientMembershipListener listener = mbean.getBridge().getClientMembershipListener();
+
+    if (listener != null) {
       ClientMembership.unregisterClientMembershipListener(listener);
     }
-   
+
 
     mbean.stopMonitor();
 
-    ObjectName cacheServerMBeanName = MBeanJMXAdapter
-        .getClientServiceMBeanName(server.getPort(), cacheImpl
-            .getDistributedSystem().getDistributedMember());
+    ObjectName cacheServerMBeanName = MBeanJMXAdapter.getClientServiceMBeanName(server.getPort(),
+        cacheImpl.getDistributedSystem().getDistributedMember());
     service.unregisterMBean(cacheServerMBeanName);
-    
-    Notification notification = new Notification(
-        JMXNotificationType.CACHE_SERVER_STOPPED, memberSource, SequenceNumber
-            .next(), System.currentTimeMillis(),
-            ManagementConstants.CACHE_SERVER_STOPPED_PREFIX);
+
+    Notification notification = new Notification(JMXNotificationType.CACHE_SERVER_STOPPED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
+        ManagementConstants.CACHE_SERVER_STOPPED_PREFIX);
 
     memberLevelNotifEmitter.sendNotification(notification);
-    
+
     memberMBeanBridge.setCacheServer(false);
-   
+
   }
 
   /**
-   * Handles Cache removal. It will automatically remove all MBeans from GemFire
-   * Domain
+   * Handles Cache removal. It will automatically remove all MBeans from GemFire Domain
    * 
-   * @param cache
-   *          GemFire Cache instance. For now client cache is not supported
+   * @param cache GemFire Cache instance. For now client cache is not supported
    */
   public void handleCacheRemoval(Cache cache) throws ManagementException {
     if (!isServiceInitialised("handleCacheRemoval")) {
@@ -783,22 +733,22 @@ public class ManagementAdapter {
     }
     try {
       service.close();
-     
+
     } catch (Exception e) {
       logger.warn(e.getMessage(), e);
-    }finally{
+    } finally {
       this.cacheImpl = null;
       this.service = null;
-      this.memberMBeanBridge =null;
+      this.memberMBeanBridge = null;
       this.memberBean = null;
       this.memberLevelNotifEmitter = null;
-      
-      
+
+
     }
   }
 
   private void cleanUpMonitors() {
-    
+
     MemberMBean bean = (MemberMBean) service.getMemberMXBean();
     if (bean != null) {
       bean.stopMonitor();
@@ -808,33 +758,31 @@ public class ManagementAdapter {
 
     if (senders != null && senders.size() > 0) {
       for (GatewaySender sender : senders) {
-        GatewaySenderMBean senderMBean = (GatewaySenderMBean) service
-            .getLocalGatewaySenderMXBean(sender.getId());
+        GatewaySenderMBean senderMBean =
+            (GatewaySenderMBean) service.getLocalGatewaySenderMXBean(sender.getId());
         if (senderMBean != null) {
           senderMBean.stopMonitor();
         }
       }
     }
 
-    GatewayReceiverMBean receiver = (GatewayReceiverMBean) service
-        .getLocalGatewayReceiverMXBean();
+    GatewayReceiverMBean receiver = (GatewayReceiverMBean) service.getLocalGatewayReceiverMXBean();
     if (receiver != null) {
       receiver.stopMonitor();
     }
   }
-  
-  
+
+
   private void cleanBridgeResources() {
     List<CacheServer> servers = cacheImpl.getCacheServers();
 
     if (servers != null && servers.size() > 0) {
       for (CacheServer server : servers) {
-        CacheServerMBean mbean = (CacheServerMBean) service
-            .getLocalCacheServerMXBean(server.getPort());
+        CacheServerMBean mbean =
+            (CacheServerMBean) service.getLocalCacheServerMXBean(server.getPort());
 
         if (mbean != null) {
-          ClientMembershipListener listener = mbean.getBridge()
-            .getClientMembershipListener();
+          ClientMembershipListener listener = mbean.getBridge().getClientMembershipListener();
 
           if (listener != null) {
             ClientMembership.unregisterClientMembershipListener(listener);
@@ -846,50 +794,48 @@ public class ManagementAdapter {
   }
 
   /**
-   * Handles particular region destroy or close operation it will remove the
-   * corresponding MBean
+   * Handles particular region destroy or close operation it will remove the corresponding MBean
    * 
    * @param region
    */
-  public void handleRegionRemoval(Region region) throws ManagementException{
+  public void handleRegionRemoval(Region region) throws ManagementException {
     if (!isServiceInitialised("handleRegionRemoval")) {
       return;
     }
     /**
-     * Moved region remove operation to a guarded block. If a region is getting
-     * created it wont allow it to destroy any region.
+     * Moved region remove operation to a guarded block. If a region is getting created it wont
+     * allow it to destroy any region.
      */
 
-    synchronized(regionOpLock){
+    synchronized (regionOpLock) {
 
-      ObjectName regionMBeanName = MBeanJMXAdapter.getRegionMBeanName(cacheImpl
-          .getDistributedSystem().getDistributedMember(), region.getFullPath());
+      ObjectName regionMBeanName = MBeanJMXAdapter.getRegionMBeanName(
+          cacheImpl.getDistributedSystem().getDistributedMember(), region.getFullPath());
       RegionMBean bean = null;
       try {
-        bean = (RegionMBean)service.getLocalRegionMBean(region.getFullPath());
+        bean = (RegionMBean) service.getLocalRegionMBean(region.getFullPath());
       } catch (ManagementException e) {
         // If no bean found its a NO-OP
         // Mostly for situation like DiskAccessException while creating region
         // which does a compensatory close region
         if (logger.isDebugEnabled()) {
-          logger.debug(e.getMessage(), e);          
+          logger.debug(e.getMessage(), e);
         }
         return;
       }
-      
-      if(bean != null){
+
+      if (bean != null) {
         bean.stopMonitor();
       }
       service.unregisterMBean(regionMBeanName);
 
-      Notification notification = new Notification(
-          JMXNotificationType.REGION_CLOSED, memberSource, SequenceNumber.next(),
-          System.currentTimeMillis(), ManagementConstants.REGION_CLOSED_PREFIX
-              + region.getFullPath());
+      Notification notification = new Notification(JMXNotificationType.REGION_CLOSED, memberSource,
+          SequenceNumber.next(), System.currentTimeMillis(),
+          ManagementConstants.REGION_CLOSED_PREFIX + region.getFullPath());
       memberLevelNotifEmitter.sendNotification(notification);
       memberMBeanBridge.removeRegion(region);
     }
-  
+
   }
 
   /**
@@ -897,37 +843,36 @@ public class ManagementAdapter {
    * 
    * @param disk
    */
-  public void handleDiskRemoval(DiskStore disk) throws ManagementException{
-    
+  public void handleDiskRemoval(DiskStore disk) throws ManagementException {
+
     if (!isServiceInitialised("handleDiskRemoval")) {
       return;
     }
 
     ObjectName diskStoreMBeanName = MBeanJMXAdapter.getDiskStoreMBeanName(
         cacheImpl.getDistributedSystem().getDistributedMember(), disk.getName());
-    
+
     DiskStoreMBean bean = null;
     try {
-      bean = (DiskStoreMBean)service.getLocalDiskStoreMBean(disk.getName());
-      if(bean == null) {
-        return ;
+      bean = (DiskStoreMBean) service.getLocalDiskStoreMBean(disk.getName());
+      if (bean == null) {
+        return;
       }
     } catch (ManagementException e) {
       // If no bean found its a NO-OP
       if (logger.isDebugEnabled()) {
-        logger.debug(e.getMessage(), e);          
+        logger.debug(e.getMessage(), e);
       }
       return;
     }
-      
+
     bean.stopMonitor();
-    
+
     service.unregisterMBean(diskStoreMBeanName);
 
-    Notification notification = new Notification(
-        JMXNotificationType.DISK_STORE_CLOSED, memberSource, SequenceNumber.next(),
-        System.currentTimeMillis(), ManagementConstants.DISK_STORE_CLOSED_PREFIX
-            + disk.getName());
+    Notification notification = new Notification(JMXNotificationType.DISK_STORE_CLOSED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
+        ManagementConstants.DISK_STORE_CLOSED_PREFIX + disk.getName());
     memberLevelNotifEmitter.sendNotification(notification);
     memberMBeanBridge.removeDiskStore(disk);
   }
@@ -936,11 +881,10 @@ public class ManagementAdapter {
   /**
    * Handles Lock Service Removal
    * 
-   * @param lockService
-   *          lock service instance
+   * @param lockService lock service instance
    */
   public void handleLockServiceRemoval(DLockService lockService) throws ManagementException {
-   
+
     if (!isServiceInitialised("handleLockServiceRemoval")) {
       return;
     }
@@ -948,28 +892,24 @@ public class ManagementAdapter {
     ObjectName lockServiceMBeanName = MBeanJMXAdapter.getLockServiceMBeanName(
         cacheImpl.getDistributedSystem().getDistributedMember(), lockService.getName());
 
-    LockServiceMXBean bean = service.getLocalLockServiceMBean(lockService
-        .getName());
-    
+    LockServiceMXBean bean = service.getLocalLockServiceMBean(lockService.getName());
+
     service.unregisterMBean(lockServiceMBeanName);
 
-    Notification notification = new Notification(
-        JMXNotificationType.LOCK_SERVICE_CLOSED, memberSource, SequenceNumber.next(),
-        System.currentTimeMillis(), ManagementConstants.LOCK_SERVICE_CLOSED_PREFIX
-            + lockService.getName());
+    Notification notification = new Notification(JMXNotificationType.LOCK_SERVICE_CLOSED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
+        ManagementConstants.LOCK_SERVICE_CLOSED_PREFIX + lockService.getName());
     memberLevelNotifEmitter.sendNotification(notification);
   }
-  
+
   /**
-   * Handles management side call backs for a locator creation and start.
-   * Assumption is a cache will be created before hand.
+   * Handles management side call backs for a locator creation and start. Assumption is a cache will
+   * be created before hand.
    * 
-   * There is no corresponding handleStopLocator() method. Locator will close
-   * the cache whenever its stopped and it should also shutdown all the
-   * management services by closing the cache.
+   * There is no corresponding handleStopLocator() method. Locator will close the cache whenever its
+   * stopped and it should also shutdown all the management services by closing the cache.
    * 
-   * @param locator
-   *          instance of locator which is getting started
+   * @param locator instance of locator which is getting started
    * @throws ManagementException
    */
   public void handleLocatorStart(Locator locator) throws ManagementException {
@@ -977,95 +917,85 @@ public class ManagementAdapter {
       return;
     }
 
-    ObjectName locatorMBeanName = MBeanJMXAdapter.getLocatorMBeanName(cacheImpl
-        .getDistributedSystem().getDistributedMember());
+    ObjectName locatorMBeanName = MBeanJMXAdapter
+        .getLocatorMBeanName(cacheImpl.getDistributedSystem().getDistributedMember());
 
     LocatorMBeanBridge bridge = new LocatorMBeanBridge(locator);
     LocatorMBean locatorMBean = new LocatorMBean(bridge);
 
-    ObjectName changedMBeanName = service.registerInternalMBean(
-        (LocatorMXBean) locatorMBean, locatorMBeanName);
+    ObjectName changedMBeanName =
+        service.registerInternalMBean((LocatorMXBean) locatorMBean, locatorMBeanName);
 
     service.federate(changedMBeanName, LocatorMXBean.class, true);
 
-    Notification notification = new Notification(
-        JMXNotificationType.LOCATOR_STARTED, memberSource, SequenceNumber
-            .next(), System.currentTimeMillis(),
-            ManagementConstants.LOCATOR_STARTED_PREFIX);
+    Notification notification =
+        new Notification(JMXNotificationType.LOCATOR_STARTED, memberSource, SequenceNumber.next(),
+            System.currentTimeMillis(), ManagementConstants.LOCATOR_STARTED_PREFIX);
 
     memberLevelNotifEmitter.sendNotification(notification);
 
   }
-  
-  public void handleGatewaySenderStart(GatewaySender sender)
-      throws ManagementException {
+
+  public void handleGatewaySenderStart(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderStart")) {
       return;
     }
     if ((sender.getRemoteDSId() < 0)) {
       return;
     }
-    GatewaySenderMBean bean = (GatewaySenderMBean) service
-        .getLocalGatewaySenderMXBean(sender.getId());
-    
+    GatewaySenderMBean bean =
+        (GatewaySenderMBean) service.getLocalGatewaySenderMXBean(sender.getId());
+
     bean.getBridge().setDispatcher();
-    
-    Notification notification = new Notification(
-        JMXNotificationType.GATEWAY_SENDER_STARTED, memberSource,
-        SequenceNumber.next(), System.currentTimeMillis(),
+
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_SENDER_STARTED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_SENDER_STARTED_PREFIX + sender.getId());
 
     memberLevelNotifEmitter.sendNotification(notification);
 
   }
 
-  public void handleGatewaySenderStop(GatewaySender sender)
-      throws ManagementException {
+  public void handleGatewaySenderStop(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderStop")) {
       return;
     }
 
-    Notification notification = new Notification(
-        JMXNotificationType.GATEWAY_SENDER_STOPPED, memberSource,
-        SequenceNumber.next(), System.currentTimeMillis(),
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_SENDER_STOPPED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_SENDER_STOPPED_PREFIX + sender.getId());
 
     memberLevelNotifEmitter.sendNotification(notification);
 
   }
 
-  public void handleGatewaySenderPaused(GatewaySender sender)
-      throws ManagementException {
+  public void handleGatewaySenderPaused(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderPaused")) {
       return;
     }
 
-    Notification notification = new Notification(
-        JMXNotificationType.GATEWAY_SENDER_PAUSED, memberSource,
-        SequenceNumber.next(), System.currentTimeMillis(),
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_SENDER_PAUSED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_SENDER_PAUSED_PREFIX + sender.getId());
 
     memberLevelNotifEmitter.sendNotification(notification);
 
   }
 
-  public void handleGatewaySenderResumed(GatewaySender sender)
-      throws ManagementException {
+  public void handleGatewaySenderResumed(GatewaySender sender) throws ManagementException {
     if (!isServiceInitialised("handleGatewaySenderResumed")) {
       return;
     }
 
-    Notification notification = new Notification(
-        JMXNotificationType.GATEWAY_SENDER_RESUMED, memberSource,
-        SequenceNumber.next(), System.currentTimeMillis(),
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_SENDER_RESUMED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
         ManagementConstants.GATEWAY_SENDER_RESUMED_PREFIX + sender.getId());
 
     memberLevelNotifEmitter.sendNotification(notification);
 
   }
 
-  public void handleCacheServiceCreation(CacheService cacheService)
-      throws ManagementException {
+  public void handleCacheServiceCreation(CacheService cacheService) throws ManagementException {
     if (!isServiceInitialised("handleCacheServiceCreation")) {
       return;
     }
@@ -1083,28 +1013,28 @@ public class ManagementAdapter {
 
       service.federate(changedMBeanName, mbean.getInterfaceClass(), true);
 
-      Notification notification = new Notification(
-          JMXNotificationType.CACHE_SERVICE_CREATED, memberSource,
-          SequenceNumber.next(), System.currentTimeMillis(),
+      Notification notification = new Notification(JMXNotificationType.CACHE_SERVICE_CREATED,
+          memberSource, SequenceNumber.next(), System.currentTimeMillis(),
           ManagementConstants.CACHE_SERVICE_CREATED_PREFIX + id);
       memberLevelNotifEmitter.sendNotification(notification);
     }
   }
 
   /**
-   * Private class which acts as a ClientMembershipListener to propagate client
-   * joined/left notifications
+   * Private class which acts as a ClientMembershipListener to propagate client joined/left
+   * notifications
    */
 
-  private static class CacheServerMembershipListenerAdapter extends
-      ClientMembershipListenerAdapter {
-    
+  private static class CacheServerMembershipListenerAdapter
+      extends ClientMembershipListenerAdapter {
+
     private NotificationBroadcasterSupport serverLevelNotifEmitter;
     private NotificationBroadcasterSupport memberLevelNotifEmitter;
-    
+
     private String serverSource;
-    
-    public CacheServerMembershipListenerAdapter(NotificationBroadcasterSupport serverLevelNotifEmitter,
+
+    public CacheServerMembershipListenerAdapter(
+        NotificationBroadcasterSupport serverLevelNotifEmitter,
         NotificationBroadcasterSupport memberLevelNotifEmitter, ObjectName serverSource) {
       this.serverLevelNotifEmitter = serverLevelNotifEmitter;
       this.memberLevelNotifEmitter = memberLevelNotifEmitter;
@@ -1112,41 +1042,44 @@ public class ManagementAdapter {
     }
 
     /**
-     * Invoked when a client has connected to this process or when this process
-     * has connected to a CacheServer.
+     * Invoked when a client has connected to this process or when this process has connected to a
+     * CacheServer.
      */
     public void memberJoined(ClientMembershipEvent event) {
-      Notification notification = new Notification(JMXNotificationType.CLIENT_JOINED, serverSource, SequenceNumber
-          .next(), System.currentTimeMillis(), ManagementConstants.CLIENT_JOINED_PREFIX + event.getMemberId());
+      Notification notification = new Notification(JMXNotificationType.CLIENT_JOINED, serverSource,
+          SequenceNumber.next(), System.currentTimeMillis(),
+          ManagementConstants.CLIENT_JOINED_PREFIX + event.getMemberId());
       serverLevelNotifEmitter.sendNotification(notification);
       memberLevelNotifEmitter.sendNotification(notification);
 
     }
 
     /**
-     * Invoked when a client has gracefully disconnected from this process or
-     * when this process has gracefully disconnected from a CacheServer.
+     * Invoked when a client has gracefully disconnected from this process or when this process has
+     * gracefully disconnected from a CacheServer.
      */
     public void memberLeft(ClientMembershipEvent event) {
-      Notification notification = new Notification(JMXNotificationType.CLIENT_LEFT, serverSource, SequenceNumber
-          .next(), System.currentTimeMillis(), ManagementConstants.CLIENT_LEFT_PREFIX + event.getMemberId());
+      Notification notification = new Notification(JMXNotificationType.CLIENT_LEFT, serverSource,
+          SequenceNumber.next(), System.currentTimeMillis(),
+          ManagementConstants.CLIENT_LEFT_PREFIX + event.getMemberId());
       serverLevelNotifEmitter.sendNotification(notification);
       memberLevelNotifEmitter.sendNotification(notification);
     }
 
     /**
-     * Invoked when a client has unexpectedly disconnected from this process or
-     * when this process has unexpectedly disconnected from a CacheServer.
+     * Invoked when a client has unexpectedly disconnected from this process or when this process
+     * has unexpectedly disconnected from a CacheServer.
      */
     public void memberCrashed(ClientMembershipEvent event) {
-      Notification notification = new Notification(JMXNotificationType.CLIENT_CRASHED, serverSource, SequenceNumber
-          .next(), System.currentTimeMillis(), ManagementConstants.CLIENT_CRASHED_PREFIX + event.getMemberId());
+      Notification notification = new Notification(JMXNotificationType.CLIENT_CRASHED, serverSource,
+          SequenceNumber.next(), System.currentTimeMillis(),
+          ManagementConstants.CLIENT_CRASHED_PREFIX + event.getMemberId());
       serverLevelNotifEmitter.sendNotification(notification);
       memberLevelNotifEmitter.sendNotification(notification);
     }
 
   }
-  
+
   private boolean isServiceInitialised(String method) {
     if (!serviceInitialised) {
       if (logger.isDebugEnabled()) {

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.util;
 
@@ -42,9 +40,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**
- * The CollectionUtilsJUnitTest class is a test suite of test cases testing the contract and functionality of the
- * CollectionUtils class.
+ * The CollectionUtilsJUnitTest class is a test suite of test cases testing the contract and
+ * functionality of the CollectionUtils class.
  * <p/>
+ * 
  * @see org.apache.geode.internal.util.CollectionUtils
  * @see org.junit.Assert
  * @see org.junit.Test
@@ -55,7 +54,7 @@ public class CollectionUtilsJUnitTest {
 
   @Test
   public void testAsList() {
-    final Integer[] numbers = { 0, 1, 2, 1, 0 };
+    final Integer[] numbers = {0, 1, 2, 1, 0};
 
     final List<Integer> numberList = CollectionUtils.asList(numbers);
 
@@ -69,7 +68,7 @@ public class CollectionUtilsJUnitTest {
 
   @Test
   public void testAsSet() {
-    final Integer[] numbers = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    final Integer[] numbers = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 
     final Set<Integer> numberSet = CollectionUtils.asSet(numbers);
 
@@ -83,7 +82,7 @@ public class CollectionUtilsJUnitTest {
 
   @Test
   public void testAsSetWithNonUniqueElements() {
-    final Integer[] numbers = { 0, 1, 2, 1, 0 };
+    final Integer[] numbers = {0, 1, 2, 1, 0};
 
     final Set<Integer> numberSet = CollectionUtils.asSet(numbers);
 
@@ -95,7 +94,8 @@ public class CollectionUtilsJUnitTest {
 
   @Test
   public void testCreateProperties() {
-    Properties properties = CollectionUtils.createProperties(Collections.singletonMap("one", "two"));
+    Properties properties =
+        CollectionUtils.createProperties(Collections.singletonMap("one", "two"));
 
     assertNotNull(properties);
     assertFalse(properties.isEmpty());
@@ -153,7 +153,8 @@ public class CollectionUtilsJUnitTest {
 
   @Test
   public void testEmptyListWithList() {
-    final List<String> expectedList = Arrays.asList("aardvark", "baboon", "cat", "dog", "eel", "ferret");
+    final List<String> expectedList =
+        Arrays.asList("aardvark", "baboon", "cat", "dog", "eel", "ferret");
 
     assertNotNull(expectedList);
     assertFalse(expectedList.isEmpty());
@@ -185,7 +186,8 @@ public class CollectionUtilsJUnitTest {
 
   @Test
   public void testEmptySetWithSet() {
-    final Set<String> expectedSet = new HashSet<String>(Arrays.asList("aardvark", "baboon", "cat", "dog", "ferret"));
+    final Set<String> expectedSet =
+        new HashSet<String>(Arrays.asList("aardvark", "baboon", "cat", "dog", "ferret"));
 
     assertNotNull(expectedSet);
     assertFalse(expectedSet.isEmpty());
@@ -300,11 +302,13 @@ public class CollectionUtilsJUnitTest {
     assertFalse(expectedMap.isEmpty());
     assertEquals(6, expectedMap.size());
 
-    final Map<Object, String> actualMap = CollectionUtils.removeKeys(expectedMap, new Filter<Map.Entry<Object, String>>() {
-      @Override public boolean accept(final Map.Entry<Object, String> entry) {
-        return !StringUtils.isBlank(entry.getValue());
-      }
-    });
+    final Map<Object, String> actualMap =
+        CollectionUtils.removeKeys(expectedMap, new Filter<Map.Entry<Object, String>>() {
+          @Override
+          public boolean accept(final Map.Entry<Object, String> entry) {
+            return !StringUtils.isBlank(entry.getValue());
+          }
+        });
 
     assertSame(expectedMap, actualMap);
     assertFalse(actualMap.isEmpty());
@@ -367,13 +371,13 @@ public class CollectionUtilsJUnitTest {
 
     list.add("one");
     list.add("two");
-    
+
     final Vector<String> v = new Vector<>();
     v.add("three");
     v.add("four");
-    
+
     boolean modified = CollectionUtils.addAll(list, v.elements());
-    
+
     assertTrue(modified);
     assertEquals(4, list.size());
     assertSame(v.get(0), list.get(2));
@@ -386,12 +390,12 @@ public class CollectionUtilsJUnitTest {
 
     set.add("one");
     set.add("two");
-    
+
     final Vector<String> v = new Vector<>();
     v.add("one");
-    
+
     boolean modified = CollectionUtils.addAll(set, v.elements());
-    
+
     assertTrue(!modified);
     assertEquals(2, set.size());
   }
@@ -402,17 +406,19 @@ public class CollectionUtilsJUnitTest {
 
     list.add("one");
     list.add("two");
-        
+
     boolean modified = CollectionUtils.addAll(list, new Enumeration<String>() {
       @Override
       public boolean hasMoreElements() {
         return false;
       }
+
       @Override
       public String nextElement() {
         throw new NoSuchElementException();
-      }});
-    
+      }
+    });
+
     assertTrue(!modified);
     assertEquals(2, list.size());
   }
@@ -423,9 +429,9 @@ public class CollectionUtilsJUnitTest {
 
     list.add("one");
     list.add("two");
-        
+
     boolean modified = CollectionUtils.addAll(list, (Enumeration<String>) null);
-    
+
     assertTrue(!modified);
     assertEquals(2, list.size());
   }
@@ -435,7 +441,7 @@ public class CollectionUtilsJUnitTest {
     final ArrayList<Integer> list = new ArrayList<>();
     list.add(0);
     list.add(1);
-    
+
     final Iterable<Integer> iterable = CollectionUtils.unmodifiableIterable(list);
     assertNotNull(iterable);
 
@@ -451,7 +457,7 @@ public class CollectionUtilsJUnitTest {
     } catch (NoSuchElementException e) {
       // ignore
     }
-    
+
     list.add(2);
     try {
       iterator1.next();

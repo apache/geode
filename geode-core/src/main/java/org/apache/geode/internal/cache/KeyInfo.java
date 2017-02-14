@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -49,7 +47,7 @@ public class KeyInfo {
     this.key = key;
     this.callbackArg = callbackArg;
     this.bucketId = UNKNOWN_BUCKET;
-    this.value =  value;
+    this.value = value;
   }
 
   public KeyInfo(Object key, Object callbackArg, int bucketId) {
@@ -58,18 +56,18 @@ public class KeyInfo {
     this.bucketId = bucketId;
     this.value = null;
   }
-  
+
   public KeyInfo(KeyInfo keyInfo) {
     this.bucketId = keyInfo.bucketId;
     this.callbackArg = keyInfo.callbackArg;
     this.value = keyInfo.value;
     this.key = keyInfo.key;
   }
-  
+
   public final Object getKey() {
     return this.key;
   }
-  
+
   public final Object getCallbackArg() {
     return this.callbackArg;
   }
@@ -78,7 +76,7 @@ public class KeyInfo {
   public Object getValue() {
     return this.value;
   }
-  
+
   public final int getBucketId() {
     return this.bucketId;
   }
@@ -96,18 +94,17 @@ public class KeyInfo {
   }
 
   public String toString() {
-    return "(key="+key+",bucketId="+bucketId+")";
+    return "(key=" + key + ",bucketId=" + bucketId + ")";
   }
-  
+
   /*
    * For Distributed Join Purpose
    */
-  public boolean isCheckPrimary()
-      throws UnsupportedOperationInTransactionException {
+  public boolean isCheckPrimary() throws UnsupportedOperationInTransactionException {
     return true;
-//    throw new UnsupportedOperationInTransactionException(
-//        LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
-//            .toLocalizedString("isCheckPrimary"));
+    // throw new UnsupportedOperationInTransactionException(
+    // LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
+    // .toLocalizedString("isCheckPrimary"));
   }
 
   /*
@@ -119,7 +116,7 @@ public class KeyInfo {
         LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
             .toLocalizedString("setCheckPrimary"));
   }
-  
+
   public boolean isDistKeyInfo() {
     return false;
   }

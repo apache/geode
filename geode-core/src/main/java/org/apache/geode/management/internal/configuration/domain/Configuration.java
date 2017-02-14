@@ -1,111 +1,151 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.configuration.domain;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 
 /**
- * Domain object for all the configuration related data. 
+ * Domain object for all the configuration related data.
  *
  */
-public class Configuration implements DataSerializable{
-  
+public class Configuration implements DataSerializable {
+
   private static final long serialVersionUID = 1L;
   private String configName;
   private String cacheXmlContent;
   private String cacheXmlFileName;
   private String propertiesFileName;
-  private Properties gemfireProperties = new Properties();
-  Set<String> jarNames = new HashSet<String>();
-  
-  //Public no arg constructor required for Deserializable
+  private Properties gemfireProperties;
+  Set<String> jarNames;
+
+  // Public no arg constructor required for Deserializable
   public Configuration() {
-    
+
   }
-  
+
+  public Configuration(Configuration that) {
+    this.configName = that.configName;
+    this.cacheXmlContent = that.cacheXmlContent;
+    this.cacheXmlFileName = that.cacheXmlFileName;
+    this.propertiesFileName = that.propertiesFileName;
+    this.gemfireProperties = new Properties();
+    this.gemfireProperties.putAll(that.gemfireProperties);
+    this.jarNames = new HashSet<>(that.jarNames);
+  }
+
   public Configuration(String configName) {
     this.configName = configName;
     this.cacheXmlFileName = configName + ".xml";
-    this.setPropertiesFileName(configName + ".properties");
+    this.propertiesFileName = configName + ".properties";
+    this.gemfireProperties = new Properties();
+    this.jarNames = new HashSet<String>();
   }
-  
+
   public String getCacheXmlContent() {
     return cacheXmlContent;
   }
-  
+
   public void setCacheXmlContent(String cacheXmlContent) {
     this.cacheXmlContent = cacheXmlContent;
   }
-  
+
+  public void setCacheXmlFile(File cacheXmlFile)
+      throws TransformerException, ParserConfigurationException, IOException, SAXException {
+    if (cacheXmlFile.length() == 0) {
+      this.cacheXmlContent = "";
+    } else {
+      Document doc = XmlUtils.getDocumentBuilder().parse(cacheXmlFile);
+      this.cacheXmlContent = XmlUtils.elementToString(doc);
+    }
+  }
+
+  public void setPropertiesFile(File propertiesFile) throws IOException {
+    if (!propertiesFile.exists())
+      return;
+
+    FileInputStream fis = null;
+    try {
+      fis = new FileInputStream(propertiesFile);
+      this.gemfireProperties.load(fis);
+    } finally {
+      if (fis != null) {
+        fis.close();
+      }
+    }
+  }
+
   public String getCacheXmlFileName() {
     return cacheXmlFileName;
   }
-  
-  public void setCacheXmlFileName(String cacheXmlFileName) {
-    this.cacheXmlFileName = cacheXmlFileName;
-  }
-  
+
   public Properties getGemfireProperties() {
     return gemfireProperties;
   }
-  
+
   public void setGemfireProperties(Properties gemfireProperties) {
     this.gemfireProperties = gemfireProperties;
   }
-  
+
+  public void addGemfireProperties(Properties gemfireProperties) {
+    this.gemfireProperties.putAll(gemfireProperties);
+  }
+
   public String getConfigName() {
     return configName;
-  }
-  
-  public void setConfigName(String configName) {
-    this.configName = configName;
   }
 
   public String getPropertiesFileName() {
     return propertiesFileName;
   }
 
-  public void setPropertiesFileName(String propertiesFileName) {
-    this.propertiesFileName = propertiesFileName;
+  public void addJarNames(Set<String> jarNames) {
+    this.jarNames.addAll(jarNames);
   }
-  
+
   public void addJarNames(String[] jarNames) {
-    if (jarNames != null) {
-      for (String jarName : jarNames) {
-        this.jarNames.add(jarName);
-      }
-    }
+    if (jarNames == null)
+      return;
+
+    this.jarNames.addAll(Stream.of(jarNames).collect(Collectors.toSet()));
   }
-  
+
+
   public void removeJarNames(String[] jarNames) {
     if (jarNames != null) {
-      for (String jarName : jarNames) {
-        this.jarNames.remove(jarName);
-      }
-    }else {
+      this.jarNames.removeAll(Stream.of(jarNames).collect(Collectors.toSet()));
+    } else {
       this.jarNames.clear();
     }
   }
@@ -113,7 +153,7 @@ public class Configuration implements DataSerializable{
   public Set<String> getJarNames() {
     return this.jarNames;
   }
-  
+
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(configName, out);
@@ -133,31 +173,25 @@ public class Configuration implements DataSerializable{
     this.gemfireProperties = DataSerializer.readProperties(in);
     this.jarNames = DataSerializer.readHashSet(in);
   }
-  
-  
+
+
   @Override
   public String toString() {
-    return "Configuration [configName=" + configName + ", cacheXmlContent="
-        + cacheXmlContent + ", cacheXmlFileName=" + cacheXmlFileName
-        + ", propertiesFileName=" + propertiesFileName + ", gemfireProperties="
-        + gemfireProperties + ", jarNames=" + jarNames + "]";
+    return "Configuration [configName=" + configName + ", cacheXmlContent=" + cacheXmlContent
+        + ", cacheXmlFileName=" + cacheXmlFileName + ", propertiesFileName=" + propertiesFileName
+        + ", gemfireProperties=" + gemfireProperties + ", jarNames=" + jarNames + "]";
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result
-        + ((cacheXmlContent == null) ? 0 : cacheXmlContent.hashCode());
-    result = prime * result
-        + ((cacheXmlFileName == null) ? 0 : cacheXmlFileName.hashCode());
-    result = prime * result
-        + ((configName == null) ? 0 : configName.hashCode());
-    result = prime * result
-        + ((gemfireProperties == null) ? 0 : gemfireProperties.hashCode());
+    result = prime * result + ((cacheXmlContent == null) ? 0 : cacheXmlContent.hashCode());
+    result = prime * result + ((cacheXmlFileName == null) ? 0 : cacheXmlFileName.hashCode());
+    result = prime * result + ((configName == null) ? 0 : configName.hashCode());
+    result = prime * result + ((gemfireProperties == null) ? 0 : gemfireProperties.hashCode());
     result = prime * result + ((jarNames == null) ? 0 : jarNames.hashCode());
-    result = prime * result
-        + ((propertiesFileName == null) ? 0 : propertiesFileName.hashCode());
+    result = prime * result + ((propertiesFileName == null) ? 0 : propertiesFileName.hashCode());
     return result;
   }
 
@@ -202,5 +236,5 @@ public class Configuration implements DataSerializable{
       return false;
     return true;
   }
-  
+
 }

@@ -38,8 +38,8 @@ Set distributed system properties by any combination of the following. The syste
     -   In the API, set the `System` properties before the cache creation call. Example:
 
         ``` pre
-        System.setProperty("DgemfirePropertyFile", "gfTest");
-        System.setProperty("Dgemfire.mcast-port", "10999");
+        System.setProperty("gemfirePropertyFile", "gfTest");
+        System.setProperty("gemfire.mcast-port", "10999");
 
         Cache cache = new CacheFactory().create();
         ```
@@ -76,6 +76,7 @@ Set distributed system properties by any combination of the following. The syste
     disable-tcp=false
     ```
 
-4.  Default value. The default property values are listed in the online Java documentation for `org.apache.geode.distributed.DistributedSystem`.
+4.  Default value. The default values are defined within the API for 
+`org.apache.geode.distributed.ConfigurationProperties`.
 
 

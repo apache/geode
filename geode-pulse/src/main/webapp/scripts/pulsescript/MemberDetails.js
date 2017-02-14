@@ -35,11 +35,9 @@ $(document).ready(function() {
   // modify UI text as per requirement
   customizeUI();
 
-  if (CONST_BACKEND_PRODUCT_SQLFIRE == productname.toLowerCase()) {
-    alterHtmlContainer(CONST_BACKEND_PRODUCT_SQLFIRE);
-  } else {
-    alterHtmlContainer(CONST_BACKEND_PRODUCT_GEMFIRE);
-  }
+
+  alterHtmlContainer(CONST_BACKEND_PRODUCT_GEMFIRE);
+
 
   scanPageForWidgets();
   createMemberRegionsTreeMap();
@@ -193,19 +191,8 @@ function hideAsyncEventQueuePopup() {
  * is sqlfire or gemfire
  */
 function alterHtmlContainer(prodname) {
-  if (CONST_BACKEND_PRODUCT_SQLFIRE == prodname.toLowerCase()) {
-    // Hide HTML for following
-
-    // Show HTML for following
-    $('#subTabQueryStatistics').show();
-  } else {
     // Hide HTML for following
     $('#subTabQueryStatistics').hide();
-
-    // Show HTML for following
-
-  }
-
 }
 
 // Function to generate HTML for Members list drop down
@@ -1009,14 +996,6 @@ function createMemberRegionsGrid() {
             mRLC.css("position", "relative");
             mRLC.css('right', scrollPositionX);
           });
-
-          // change col names depend on product
-          if (CONST_BACKEND_PRODUCT_SQLFIRE == productname.toLowerCase()) {
-            jQuery("#memberRegionsList").jqGrid('setLabel', 'entryCount',
-                jQuery.i18n.prop('pulse-entrycount-custom'));
-            jQuery("#memberRegionsList").jqGrid('setLabel', 'entrySize',
-                jQuery.i18n.prop('pulse-entrysize-custom'));
-          }
         }
       });
 }

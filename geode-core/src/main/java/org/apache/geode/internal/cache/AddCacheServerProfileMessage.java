@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -32,23 +30,22 @@ import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * OperationMessage synchronously propagates a change in the profile to
- * another member.  It is a serial message so that there is no chance
- * of out-of-order execution.
+ * OperationMessage synchronously propagates a change in the profile to another member. It is a
+ * serial message so that there is no chance of out-of-order execution.
  */
-public class AddCacheServerProfileMessage extends SerialDistributionMessage implements MessageWithReply {
+public class AddCacheServerProfileMessage extends SerialDistributionMessage
+    implements MessageWithReply {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   int processorId;
 
   @Override
   protected void process(DistributionManager dm) {
-    int oldLevel =
-      LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+    int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
     try {
       GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      if (cache != null && !cache.isClosed()) {  // will be null if not initialized
+      if (cache != null && !cache.isClosed()) { // will be null if not initialized
         operateOnCache(cache);
       }
     } finally {
@@ -63,46 +60,47 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage impl
       }
     }
   }
-  
+
   private void operateOnCache(GemFireCacheImpl cache) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    
-    for (DistributedRegion r: this.getDistributedRegions(cache)) {
-      CacheDistributionAdvisor cda = (CacheDistributionAdvisor)r.getDistributionAdvisor();
+
+    for (DistributedRegion r : this.getDistributedRegions(cache)) {
+      CacheDistributionAdvisor cda = (CacheDistributionAdvisor) r.getDistributionAdvisor();
       CacheDistributionAdvisor.CacheProfile cp =
-        (CacheDistributionAdvisor.CacheProfile)cda.getProfile(getSender());
-      if (cp != null){
+          (CacheDistributionAdvisor.CacheProfile) cda.getProfile(getSender());
+      if (cp != null) {
         if (isDebugEnabled) {
-          logger.debug("Setting hasCacheServer flag on region \"{}\" for {}", r.getFullPath(), getSender());
+          logger.debug("Setting hasCacheServer flag on region \"{}\" for {}", r.getFullPath(),
+              getSender());
         }
         cp.hasCacheServer = true;
       }
     }
-    for (PartitionedRegion r: this.getPartitionedRegions(cache)) {
-      CacheDistributionAdvisor cda = (CacheDistributionAdvisor)r.getDistributionAdvisor();
+    for (PartitionedRegion r : this.getPartitionedRegions(cache)) {
+      CacheDistributionAdvisor cda = (CacheDistributionAdvisor) r.getDistributionAdvisor();
       CacheDistributionAdvisor.CacheProfile cp =
-        (CacheDistributionAdvisor.CacheProfile)cda.getProfile(getSender());
-      if (cp != null){
+          (CacheDistributionAdvisor.CacheProfile) cda.getProfile(getSender());
+      if (cp != null) {
         if (isDebugEnabled) {
-          logger.debug("Setting hasCacheServer flag on region \"{}\" for {}", r.getFullPath(), getSender());
+          logger.debug("Setting hasCacheServer flag on region \"{}\" for {}", r.getFullPath(),
+              getSender());
         }
         cp.hasCacheServer = true;
       }
     }
   }
-  
+
   /** set the hasCacheServer flags for all regions in this cache */
   public void operateOnLocalCache(GemFireCacheImpl cache) {
-    int oldLevel =
-      LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+    int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
     try {
-      for (LocalRegion r: this.getAllRegions(cache)) {
+      for (LocalRegion r : this.getAllRegions(cache)) {
         FilterProfile fp = r.getFilterProfile();
         if (fp != null) {
           fp.getLocalProfile().hasCacheServer = true;
         }
       }
-      for (PartitionedRegion r: this.getPartitionedRegions(cache)) {
+      for (PartitionedRegion r : this.getPartitionedRegions(cache)) {
         FilterProfile fp = r.getFilterProfile();
         if (fp != null) {
           fp.getLocalProfile().hasCacheServer = true;
@@ -113,16 +111,16 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage impl
     }
   }
 
-  
+
   private Set<LocalRegion> getAllRegions(GemFireCacheImpl gfc) {
     return gfc.getAllRegions();
   }
-  
+
   private Set<DistributedRegion> getDistributedRegions(GemFireCacheImpl gfc) {
     Set<DistributedRegion> result = new HashSet();
-    for (LocalRegion r: gfc.getAllRegions()) {
+    for (LocalRegion r : gfc.getAllRegions()) {
       if (r instanceof DistributedRegion) {
-        result.add((DistributedRegion)r);
+        result.add((DistributedRegion) r);
       }
     }
     return result;
@@ -134,8 +132,7 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage impl
   }
 
   /** for deserialization only */
-  public AddCacheServerProfileMessage() {
-  }
+  public AddCacheServerProfileMessage() {}
 
   public int getDSFID() {
     return ADD_CACHESERVER_PROFILE_UPDATE;

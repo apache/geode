@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.jmx.internal;
 
@@ -36,12 +34,12 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
  * 
  * @since GemFire 5.7
  */
-public class StatAlertNotification extends StatAlert implements Serializable, DataSerializable, DataSerializableFixedID {
+public class StatAlertNotification extends StatAlert
+    implements Serializable, DataSerializable, DataSerializableFixedID {
   private static final long serialVersionUID = -1634729103430107871L;
   private String memberId;
 
-  public StatAlertNotification() {
-  }
+  public StatAlertNotification() {}
 
   public StatAlertNotification(StatAlert statAlert, String memberId) {
     this.setDefinitionId(statAlert.getDefinitionId());
@@ -63,8 +61,7 @@ public class StatAlertNotification extends StatAlert implements Serializable, Da
 
   /**
    * 
-   * @param id
-   *                of gemfire member which raised the alert
+   * @param id of gemfire member which raised the alert
    */
   public void setMemberId(String id) {
     memberId = id;
@@ -85,16 +82,10 @@ public class StatAlertNotification extends StatAlert implements Serializable, Da
   }
 
   /**
-   * The notification is something like this
-   * "For Member ID: <ID>
-   * [
-   *  <StatName> = <Value>
-   *  .. 
-   * ]"
-   * @param defn
-   *                {@link StatAlertDefinition}
-   * @return String representation of this object based on
-   *         {@link StatAlertDefinition}
+   * The notification is something like this "For Member ID: <ID> [ <StatName> = <Value> .. ]"
+   * 
+   * @param defn {@link StatAlertDefinition}
+   * @return String representation of this object based on {@link StatAlertDefinition}
    */
   public String toString(StatAlertDefinition defn) {
     StringBuffer buf = new StringBuffer();
@@ -103,8 +94,7 @@ public class StatAlertNotification extends StatAlert implements Serializable, Da
     buf.append("\n");
     buf.append("[ ");
     for (int i = 0; i < getValues().length; i++) {
-      buf.append(defn.getStatisticInfo()[i].toString() + "=" + getValues()[i]
-          + "\n");
+      buf.append(defn.getStatisticInfo()[i].toString() + "=" + getValues()[i] + "\n");
     }
     buf.append("]");
     return getTime().toString() + ":" + buf.toString();
@@ -116,7 +106,7 @@ public class StatAlertNotification extends StatAlert implements Serializable, Da
       return false;
     }
 
-    StatAlertNotification other = (StatAlertNotification)object;
+    StatAlertNotification other = (StatAlertNotification) object;
 
     int defId = getDefinitionId();
 
@@ -143,13 +133,12 @@ public class StatAlertNotification extends StatAlert implements Serializable, Da
     DataSerializer.writeString(this.memberId, out);
   }
 
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     // Do not modify StatAlert to allow 57 cacheservers to function with 57+ agent
     // However, update of a new StatAlertDefn on 57 server from 57+ agent not covered with this
     this.setDefinitionId(DataSerializer.readPrimitiveInt(in));
     this.setTime(DataSerializer.readDate(in));
-    this.setValues((Number[])DataSerializer.readObjectArray(in));
+    this.setValues((Number[]) DataSerializer.readObjectArray(in));
 
     this.memberId = DataSerializer.readString(in);
   }

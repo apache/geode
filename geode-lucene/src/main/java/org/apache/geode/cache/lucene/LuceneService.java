@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.lucene;
 
@@ -28,8 +26,8 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 /**
  * LuceneService instance is a singleton for each cache.
  * 
- * It provides handle for managing the {@link LuceneIndex} and create the {@link LuceneQuery}
- * via {@link LuceneQueryFactory}
+ * It provides handle for managing the {@link LuceneIndex} and create the {@link LuceneQuery} via
+ * {@link LuceneQueryFactory}
  * 
  * </p>
  * Example: <br>
@@ -71,28 +69,31 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 public interface LuceneService {
 
   /**
-   * A special field name that indicates that the entire region value should
-   * be indexed. This will only work if the region value is a String or Number, in
-   * which case a lucene document will be created with a single field with this name.
+   * A special field name that indicates that the entire region value should be indexed. This will
+   * only work if the region value is a String or Number, in which case a lucene document will be
+   * created with a single field with this name.
    */
   String REGION_VALUE_FIELD = "__REGION_VALUE_FIELD";
 
   /**
    * Create a lucene index using default analyzer.
-   * @param fields The fields of the object to index. Only fields listed here will be stored
-   * in the index. Fields should map to PDX fieldNames if the object is serialized with PDX, or
-   * to java fields on the object otherwise. The special field name {{@link #REGION_VALUE_FIELD}}
-   * indicates that the entire value should be stored as a single field in the index.
+   * 
+   * @param fields The fields of the object to index. Only fields listed here will be stored in the
+   *        index. Fields should map to PDX fieldNames if the object is serialized with PDX, or to
+   *        java fields on the object otherwise. The special field name
+   *        {{@link #REGION_VALUE_FIELD}} indicates that the entire value should be stored as a
+   *        single field in the index.
    */
   public void createIndex(String indexName, String regionPath, String... fields);
-  
+
   /**
    * Create a lucene index using specified analyzer per field
    * 
    * @param indexName index name
    * @param regionPath region name
-   * @param analyzerPerField A map of fields to analyzers. See {{@link #createIndex(String, String, String...)}}
-   * for details on valid values for fields. Each field will be tokenized using the provided Analyzer.
+   * @param analyzerPerField A map of fields to analyzers. See
+   *        {{@link #createIndex(String, String, String...)}} for details on valid values for
+   *        fields. Each field will be tokenized using the provided Analyzer.
    */
   public void createIndex(String indexName, String regionPath,
       Map<String, Analyzer> analyzerPerField);
@@ -105,25 +106,28 @@ public interface LuceneService {
    */
   @Deprecated
   public void destroyIndex(LuceneIndex index);
-  
+
   /**
    * Get the lucene index object specified by region name and index name
+   * 
    * @param indexName index name
    * @param regionPath region name
    * @return LuceneIndex object
    */
   public LuceneIndex getIndex(String indexName, String regionPath);
-  
+
   /**
    * get all the lucene indexes.
+   * 
    * @return all index objects in a Collection
    */
   public Collection<LuceneIndex> getAllIndexes();
 
   /**
    * create LuceneQueryFactory
+   * 
    * @return LuceneQueryFactory object
    */
   public LuceneQueryFactory createLuceneQueryFactory();
 
- }
+}

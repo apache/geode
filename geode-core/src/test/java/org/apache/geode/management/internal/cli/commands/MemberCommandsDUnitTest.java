@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -61,7 +59,8 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    // This test does not require an actual Gfsh connection to work, however when run as part of a suite, prior tests
+    // This test does not require an actual Gfsh connection to work, however when run as part of a
+    // suite, prior tests
     // may mess up the environment causing this test to fail. Setting this prevents false failures.
     CliUtil.isGfshVM = false;
   }
@@ -86,11 +85,13 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
   private void createRegionsWithSubRegions() {
     final Cache cache = getCache();
 
-    RegionFactory<String, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    RegionFactory<String, Integer> dataRegionFactory =
+        cache.createRegionFactory(RegionShortcut.REPLICATE);
     dataRegionFactory.setConcurrencyLevel(3);
     Region<String, Integer> region1 = dataRegionFactory.create(REGION1);
     region1.createSubregion(SUBREGION1C, region1.getAttributes());
-    Region<String, Integer> subregion2 = region1.createSubregion(SUBREGION1A, region1.getAttributes());
+    Region<String, Integer> subregion2 =
+        region1.createSubregion(SUBREGION1A, region1.getAttributes());
 
     subregion2.createSubregion(SUBREGION1B, subregion2.getAttributes());
     dataRegionFactory.create(REGION2);
@@ -100,22 +101,26 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
   private void createPartitionedRegion1() {
     final Cache cache = getCache();
     // Create the data region
-    RegionFactory<String, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory<String, Integer> dataRegionFactory =
+        cache.createRegionFactory(RegionShortcut.PARTITION);
     dataRegionFactory.create(PR1);
   }
 
   private void createPartitionedRegion(String regionName) {
     final Cache cache = getCache();
     // Create the data region
-    RegionFactory<String, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory<String, Integer> dataRegionFactory =
+        cache.createRegionFactory(RegionShortcut.PARTITION);
     dataRegionFactory.setConcurrencyLevel(4);
-    EvictionAttributes ea = EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY);
+    EvictionAttributes ea =
+        EvictionAttributes.createLIFOEntryAttributes(100, EvictionAction.LOCAL_DESTROY);
     dataRegionFactory.setEvictionAttributes(ea);
     dataRegionFactory.setEnableAsyncConflation(true);
 
     FixedPartitionAttributes fpa = FixedPartitionAttributes.createFixedPartition("Par1", true);
-    PartitionAttributes pa = new PartitionAttributesFactory().setLocalMaxMemory(100).setRecoveryDelay(
-        2).setTotalMaxMemory(200).setRedundantCopies(1).addFixedPartitionAttributes(fpa).create();
+    PartitionAttributes pa =
+        new PartitionAttributesFactory().setLocalMaxMemory(100).setRecoveryDelay(2)
+            .setTotalMaxMemory(200).setRedundantCopies(1).addFixedPartitionAttributes(fpa).create();
     dataRegionFactory.setPartitionAttributes(pa);
 
     dataRegionFactory.create(regionName);
@@ -125,7 +130,8 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
   private void createLocalRegion() {
     final Cache cache = getCache();
     // Create the data region
-    RegionFactory<String, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.LOCAL);
+    RegionFactory<String, Integer> dataRegionFactory =
+        cache.createRegionFactory(RegionShortcut.LOCAL);
     dataRegionFactory.create("LocalRegion");
   }
 
@@ -141,7 +147,8 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
 
     getSystem(propsMe);
     final Cache cache = getCache();
-    RegionFactory<String, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE_PROXY);
+    RegionFactory<String, Integer> dataRegionFactory =
+        cache.createRegionFactory(RegionShortcut.REPLICATE_PROXY);
     dataRegionFactory.setConcurrencyLevel(5);
     Region<String, Integer> region1 = dataRegionFactory.create(REGION1);
 
@@ -194,7 +201,8 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
   public void testListMemberAll() throws IOException, ClassNotFoundException {
     setupSystem();
     CommandProcessor commandProcessor = new CommandProcessor();
-    Result result = commandProcessor.createCommandStatement(CliStrings.LIST_MEMBER, EMPTY_ENV).process();
+    Result result =
+        commandProcessor.createCommandStatement(CliStrings.LIST_MEMBER, EMPTY_ENV).process();
     getLogWriter().info("#SB" + getResultAsString(result));
     assertEquals(true, result.getStatus().equals(Status.OK));
   }
@@ -217,7 +225,8 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
 
       final Properties props = createProperties(host, openPorts[0]);
       CommandProcessor commandProcessor = new CommandProcessor();
-      Result result = commandProcessor.createCommandStatement(CliStrings.LIST_MEMBER, EMPTY_ENV).process();
+      Result result =
+          commandProcessor.createCommandStatement(CliStrings.LIST_MEMBER, EMPTY_ENV).process();
 
       getLogWriter().info("#SB" + getResultAsString(result));
       assertEquals(true, result.getStatus().equals(Status.ERROR));
@@ -260,11 +269,11 @@ public class MemberCommandsDUnitTest extends JUnit4CacheTestCase {
 
     while (iters.hasNext()) {
       DistributedMember member = iters.next();
-      Result result = commandProcessor.createCommandStatement("describe member --name=" + member.getId(),
-          EMPTY_ENV).process();
+      Result result = commandProcessor
+          .createCommandStatement("describe member --name=" + member.getId(), EMPTY_ENV).process();
       assertEquals(true, result.getStatus().equals(Status.OK));
       getLogWriter().info("#SB" + getResultAsString(result));
-      //assertIndexDetailsEquals(true, result.getStatus().equals(Status.OK));
+      // assertIndexDetailsEquals(true, result.getStatus().equals(Status.OK));
     }
   }
 

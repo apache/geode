@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -90,21 +88,17 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
     final VM vm1 = host.getVM(1);
-    //1. start locator with mcast port
+    // 1. start locator with mcast port
     vm0.invoke(create);
     vm1.invoke(create);
-    //There is possibility that you may get this packet from other tests
+    // There is possibility that you may get this packet from other tests
     /*
-    SerializableRunnable validateMulticastBeforeRegionOps =
-        new CacheSerializableRunnable("validateMulticast before region ops") {
-            public void run2() throws CacheException {
-              validateMulticastOpsBeforeRegionOps();
-            }
-        };
-      
-    vm0.invoke(validateMulticastBeforeRegionOps);
-    vm1.invoke(validateMulticastBeforeRegionOps);
-    */
+     * SerializableRunnable validateMulticastBeforeRegionOps = new
+     * CacheSerializableRunnable("validateMulticast before region ops") { public void run2() throws
+     * CacheException { validateMulticastOpsBeforeRegionOps(); } };
+     * 
+     * vm0.invoke(validateMulticastBeforeRegionOps); vm1.invoke(validateMulticastBeforeRegionOps);
+     */
 
     SerializableRunnable doPuts = new CacheSerializableRunnable("do put") {
       public void run2() throws CacheException {
@@ -117,11 +111,12 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
     vm0.invoke(doPuts);
 
-    SerializableRunnable validateMulticastAfterRegionOps = new CacheSerializableRunnable("validateMulticast after region ops") {
-      public void run2() throws CacheException {
-        validateMulticastOpsAfterRegionOps();
-      }
-    };
+    SerializableRunnable validateMulticastAfterRegionOps =
+        new CacheSerializableRunnable("validateMulticast after region ops") {
+          public void run2() throws CacheException {
+            validateMulticastOpsAfterRegionOps();
+          }
+        };
 
     vm0.invoke(validateMulticastAfterRegionOps);
     vm1.invoke(validateMulticastAfterRegionOps);
@@ -158,7 +153,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
       vm0.invoke("setSysProps", () -> setSysProps());
       vm1.invoke("setSysProps", () -> setSysProps());
 
-      //1. start locator with mcast port
+      // 1. start locator with mcast port
       vm0.invoke("createRegion", () -> {
         createRegion(name, getRegionAttributes());
         return "";
@@ -223,55 +218,58 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     p.put(LOG_LEVEL, "info");
     addDSProps(p);
     return p;
-  } 
-  
-  protected void addDSProps(Properties p) {
   }
+
+  protected void addDSProps(Properties p) {}
 
   protected void validateMulticastOpsAfterRegionOps() {
     int writes = getGemfireCache().getDistributionManager().getStats().getMcastWrites();
     int reads = getGemfireCache().getDistributionManager().getStats().getMcastReads();
-    assertTrue("Should have multicast writes or reads. Writes=  " + writes +  " ,read= " + reads, 
+    assertTrue("Should have multicast writes or reads. Writes=  " + writes + " ,read= " + reads,
         writes > 0 || reads > 0);
 
     validateUDPEncryptionStats();
   }
 
   protected void validateUDPEncryptionStats() {
-    long encrptTime = getGemfireCache().getDistributionManager().getStats().getUDPMsgEncryptionTiime();
-    long decryptTime = getGemfireCache().getDistributionManager().getStats().getUDPMsgDecryptionTime();
-    assertTrue("Should have multicast writes or reads. encrptTime=  " + encrptTime +  " ,decryptTime= " + decryptTime,
-        encrptTime == 0 && decryptTime == 0);
+    long encrptTime =
+        getGemfireCache().getDistributionManager().getStats().getUDPMsgEncryptionTiime();
+    long decryptTime =
+        getGemfireCache().getDistributionManager().getStats().getUDPMsgDecryptionTime();
+    assertTrue("Should have multicast writes or reads. encrptTime=  " + encrptTime
+        + " ,decryptTime= " + decryptTime, encrptTime == 0 && decryptTime == 0);
   }
 
   private void validateMulticastOpsBeforeRegionOps() {
     int writes = getGemfireCache().getDistributionManager().getStats().getMcastWrites();
     int reads = getGemfireCache().getDistributionManager().getStats().getMcastReads();
     int total = writes + reads;
-    assertTrue("Should not have any multicast writes or reads before region ops. Writes=  " + writes + " ,read= " + reads, total == 0);
+    assertTrue("Should not have any multicast writes or reads before region ops. Writes=  " + writes
+        + " ,read= " + reads, total == 0);
   }
 
   private int startLocator() {
-  final int [] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-  final int locatorPort = ports[0];
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
+    final int locatorPort = ports[0];
 
-  VM locator1Vm = Host.getHost(0).getVM(locatorVM);;
+    VM locator1Vm = Host.getHost(0).getVM(locatorVM);;
     locator1Vm.invoke(new SerializableCallable() {
       @Override
       public Object call() {
-        final File locatorLogFile = new File(getTestMethodName() + "-locator-" + locatorPort + ".log");
+        final File locatorLogFile =
+            new File(getTestMethodName() + "-locator-" + locatorPort + ".log");
         final Properties locatorProps = new Properties();
         locatorProps.setProperty(NAME, "LocatorWithMcast");
         locatorProps.setProperty(MCAST_PORT, mcastport);
         locatorProps.setProperty(MCAST_TTL, mcastttl);
         locatorProps.setProperty(LOG_LEVEL, "info");
         addDSProps(locatorProps);
-        //locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
+        // locatorProps.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "true");
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, null, null,
-              locatorProps);
+          final InternalLocator locator =
+              (InternalLocator) Locator.startLocatorAndDS(locatorPort, null, null, locatorProps);
           System.out.println("test Locator started " + locatorPort);
-           } catch (IOException ioex) {
+        } catch (IOException ioex) {
           fail("Unable to create a locator with a shared configuration");
         }
         return null;
@@ -281,18 +279,15 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void closeLocator() {
-    VM locator1Vm = Host.getHost(0).getVM(locatorVM);
-    ;
+    VM locator1Vm = Host.getHost(0).getVM(locatorVM);;
     SerializableRunnable locatorCleanup = new SerializableRunnable() {
       @Override
       public void run() {
-        System.out.println("test Locator closing " + locatorPort);
-        ;
+        System.out.println("test Locator closing " + locatorPort);;
         InternalLocator locator = InternalLocator.getLocator();
         if (locator != null) {
           locator.stop();
-          System.out.println("test Locator closed " + locatorPort);
-          ;
+          System.out.println("test Locator closed " + locatorPort);;
         }
       }
     };

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -39,7 +37,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
 
   /** The file used by this test (method) to initialize the cache */
   private File xmlFile;
-  
+
   /** set this to false if a test needs a non-loner distributed system */
   static boolean lonerDistributedSystem = true;
 
@@ -50,24 +48,23 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    this.xmlFile = null;    
+    this.xmlFile = null;
   }
-  
+
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     disconnectAllFromDS();
   }
 
   /**
-   * The version of GemFire tested by this class.  This method should
-   * be overridden by subclasses.
+   * The version of GemFire tested by this class. This method should be overridden by subclasses.
    *
    * @see CacheXml#VERSION_3_0
    */
   protected String getGemFireVersion() {
     return CacheXml.VERSION_3_0;
   }
-  
+
   protected boolean getUseSchema() {
     return false;
   }
@@ -80,7 +77,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
   }
 
   /**
-   * Finds an XML file with the given name.  Looks in $JTESTS.
+   * Finds an XML file with the given name. Looks in $JTESTS.
    */
   protected File findFile(String fileName) {
     String path = TestUtil.getResourcePath(getClass(), fileName);
@@ -90,8 +87,7 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
   public Properties getDistributedSystemProperties() {
     Properties props = super.getDistributedSystemProperties();
     if (this.xmlFile != null) {
-      props.setProperty(CACHE_XML_FILE,
-                        this.xmlFile.toString());
+      props.setProperty(CACHE_XML_FILE, this.xmlFile.toString());
     }
 
     // make it a loner
@@ -104,14 +100,14 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
   }
 
   /**
-   * Uses the {@link CacheXmlGenerator} to generate an XML file from
-   * the given {@link CacheCreation}.  It then creates a {@link Cache}
-   * from the XML and asserts that it is the same as the cache
-   * described in the <code>CacheCreation</code>.
+   * Uses the {@link CacheXmlGenerator} to generate an XML file from the given
+   * {@link CacheCreation}. It then creates a {@link Cache} from the XML and asserts that it is the
+   * same as the cache described in the <code>CacheCreation</code>.
    */
   protected void testXml(CacheCreation creation) {
     testXml(creation, true);
   }
+
   protected void testXml(CacheCreation creation, boolean checkSame) {
 
     File dir = new File("XML_" + this.getGemFireVersion());
@@ -138,18 +134,14 @@ public class CacheXmlTestCase extends JUnit4CacheTestCase {
     try {
       if (checkSame && !creation.sameAs(cache)) {
         StringWriter sw = new StringWriter();
-        CacheXmlGenerator.generate(creation, new PrintWriter(sw, true),
-            useSchema, version);
-        CacheXmlGenerator.generate(cache, new PrintWriter(sw, true),
-            useSchema, version);
+        CacheXmlGenerator.generate(creation, new PrintWriter(sw, true), useSchema, version);
+        CacheXmlGenerator.generate(cache, new PrintWriter(sw, true), useSchema, version);
         fail(sw.toString());
       }
     } catch (RuntimeException re) {
       StringWriter sw = new StringWriter();
-      CacheXmlGenerator.generate(creation, new PrintWriter(sw, true),
-          useSchema, version);
-      CacheXmlGenerator.generate(cache, new PrintWriter(sw, true),
-          useSchema, version);
+      CacheXmlGenerator.generate(creation, new PrintWriter(sw, true), useSchema, version);
+      CacheXmlGenerator.generate(cache, new PrintWriter(sw, true), useSchema, version);
       Assert.fail(sw.toString(), re);
     }
   }

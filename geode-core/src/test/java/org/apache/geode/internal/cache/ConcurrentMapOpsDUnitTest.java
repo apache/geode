@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -69,16 +67,18 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
   private static final String REP_REG_NAME = "repRegion";
   private static final String PR_REG_NAME = "prRegion";
   private static final int MAX_ENTRIES = 113;
-  
-  enum OP {PUTIFABSENT, REPLACE, REMOVE}
-  
+
+  enum OP {
+    PUTIFABSENT, REPLACE, REMOVE
+  }
+
   @Override
   public Properties getDistributedSystemProperties() {
     Properties result = super.getDistributedSystemProperties();
     result.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     return result;
   }
-  
+
   private void createRegions(VM vm) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -88,31 +88,35 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       }
     });
   }
-  
+
   private void createRedundantRegions(VM vm) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getCache().createRegionFactory(RegionShortcut.REPLICATE).setConcurrencyChecksEnabled(true).create(REP_REG_NAME);
-        getCache().createRegionFactory(RegionShortcut.PARTITION_REDUNDANT).setConcurrencyChecksEnabled(true).create(PR_REG_NAME);
+        getCache().createRegionFactory(RegionShortcut.REPLICATE).setConcurrencyChecksEnabled(true)
+            .create(REP_REG_NAME);
+        getCache().createRegionFactory(RegionShortcut.PARTITION_REDUNDANT)
+            .setConcurrencyChecksEnabled(true).create(PR_REG_NAME);
         return null;
       }
     });
   }
 
   private Region createReplicateRegion() {
-    return getCache().createRegionFactory(RegionShortcut.REPLICATE).setConcurrencyChecksEnabled(true).create(REP_REG_NAME);
+    return getCache().createRegionFactory(RegionShortcut.REPLICATE)
+        .setConcurrencyChecksEnabled(true).create(REP_REG_NAME);
   }
 
   private Region createPartitionedRegion() {
-    return getCache().createRegionFactory(RegionShortcut.PARTITION).setConcurrencyChecksEnabled(true).create(PR_REG_NAME);
+    return getCache().createRegionFactory(RegionShortcut.PARTITION)
+        .setConcurrencyChecksEnabled(true).create(PR_REG_NAME);
   }
 
   private Integer createRegionsAndStartServer(VM vm) {
     return createRegionsAndStartServer(vm, false);
   }
-  
+
   private Integer createRegionsAndStartServer(VM vm, final boolean withRedundancy) {
-    return (Integer)vm.invoke(new SerializableCallable() {
+    return (Integer) vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REP_REG_NAME);
         if (withRedundancy) {
@@ -128,39 +132,41 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       }
     });
   }
-  
+
   private void createEmptyRegion(VM vm) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getCache().createRegionFactory(RegionShortcut.REPLICATE_PROXY).setConcurrencyChecksEnabled(true).create(REP_REG_NAME);
-        getCache().createRegionFactory(RegionShortcut.PARTITION_PROXY).setConcurrencyChecksEnabled(true).create(PR_REG_NAME);
+        getCache().createRegionFactory(RegionShortcut.REPLICATE_PROXY)
+            .setConcurrencyChecksEnabled(true).create(REP_REG_NAME);
+        getCache().createRegionFactory(RegionShortcut.PARTITION_PROXY)
+            .setConcurrencyChecksEnabled(true).create(PR_REG_NAME);
         return null;
       }
     });
   }
-  
+
   private void createClientRegionWithRI(VM vm, final int port, final boolean isEmpty) {
     createClientRegion(vm, port, isEmpty, true, -1);
   }
-  
+
   private void createClientRegion(VM vm, final int port1, final boolean isEmpty, int port2) {
     createClientRegion(vm, port1, isEmpty, false, port2);
   }
-  
-  private void createClientRegion(VM vm, final int port1, final boolean isEmpty, final boolean ri, final int port2) {
+
+  private void createClientRegion(VM vm, final int port1, final boolean isEmpty, final boolean ri,
+      final int port2) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         ClientCacheFactory ccf = new ClientCacheFactory();
-        ccf.addPoolServer("localhost"/*getServerHostName(Host.getHost(0))*/, port1);
+        ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);
         if (port2 > 0) {
           ccf.addPoolServer("localhost", port2);
         }
         ccf.setPoolSubscriptionEnabled(true);
         ccf.set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
         ClientCache cCache = getClientCache(ccf);
-        ClientRegionFactory<Integer, String> crf = cCache
-            .createClientRegionFactory(isEmpty ? ClientRegionShortcut.PROXY
-                : ClientRegionShortcut.CACHING_PROXY);
+        ClientRegionFactory<Integer, String> crf = cCache.createClientRegionFactory(
+            isEmpty ? ClientRegionShortcut.PROXY : ClientRegionShortcut.CACHING_PROXY);
         Region<Integer, String> r = crf.create(REP_REG_NAME);
         Region<Integer, String> pr = crf.create(PR_REG_NAME);
         if (ri) {
@@ -172,43 +178,49 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  private static abstract class AbstractConcMapOpsListener implements CacheListener<Integer, String> {
+  private static abstract class AbstractConcMapOpsListener
+      implements CacheListener<Integer, String> {
     public void afterCreate(EntryEvent<Integer, String> event) {
       validate(event);
     }
+
     public void afterDestroy(EntryEvent<Integer, String> event) {
       validate(event);
     }
+
     public void afterInvalidate(EntryEvent<Integer, String> event) {
       validate(event);
     }
-    public void afterRegionClear(RegionEvent<Integer, String> event) {
-    }
-    public void afterRegionCreate(RegionEvent<Integer, String> event) {
-    }
-    public void afterRegionDestroy(RegionEvent<Integer, String> event) {
-    }
-    public void afterRegionInvalidate(RegionEvent<Integer, String> event) {
-    }
-    public void afterRegionLive(RegionEvent<Integer, String> event) {
-    }
+
+    public void afterRegionClear(RegionEvent<Integer, String> event) {}
+
+    public void afterRegionCreate(RegionEvent<Integer, String> event) {}
+
+    public void afterRegionDestroy(RegionEvent<Integer, String> event) {}
+
+    public void afterRegionInvalidate(RegionEvent<Integer, String> event) {}
+
+    public void afterRegionLive(RegionEvent<Integer, String> event) {}
+
     public void afterUpdate(EntryEvent<Integer, String> event) {
       validate(event);
     }
-    public void close() {
-    }
+
+    public void close() {}
+
     abstract void validate(EntryEvent event);
   }
 
   private static class NotInvokedListener extends AbstractConcMapOpsListener {
     @Override
     void validate(EntryEvent event) {
-      fail("should not be called.  Event="+event);
+      fail("should not be called.  Event=" + event);
     }
   }
 
   private static class InitialCreatesListener extends AbstractConcMapOpsListener {
     AtomicInteger numCreates = new AtomicInteger();
+
     @Override
     void validate(EntryEvent event) {
       if (!event.getOperation().isCreate()) {
@@ -264,6 +276,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         waitForCreates(pr);
         return null;
       }
+
       private void waitForCreates(Region region) {
         CacheListener[] listeners = region.getAttributes().getCacheListeners();
         boolean listenerFound = false;
@@ -276,12 +289,14 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
               public boolean done() {
                 return initialCreatesListener.numCreates.get() == MAX_ENTRIES;
               }
+
               @Override
               public String description() {
-                return "Client expected to get "+MAX_ENTRIES+" creates, but got "+initialCreatesListener.numCreates.get();
+                return "Client expected to get " + MAX_ENTRIES + " creates, but got "
+                    + initialCreatesListener.numCreates.get();
               }
             };
-            Wait.waitForCriterion(wc, 30*1000, 500, true);
+            Wait.waitForCriterion(wc, 30 * 1000, 500, true);
           }
         }
         if (!listenerFound) {
@@ -318,43 +333,43 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         Region r = getCache().getRegion(REP_REG_NAME);
         Region pr = getCache().getRegion(PR_REG_NAME);
-        for (int i=0; i<MAX_ENTRIES; i++) {
-          assertEquals("value"+i, r.putIfAbsent(i, "piavalue"));
-          assertEquals("value"+i, pr.putIfAbsent(i, "piavalue"));
+        for (int i = 0; i < MAX_ENTRIES; i++) {
+          assertEquals("value" + i, r.putIfAbsent(i, "piavalue"));
+          assertEquals("value" + i, pr.putIfAbsent(i, "piavalue"));
         }
-        for (int i=0; i<MAX_ENTRIES; i++) {
+        for (int i = 0; i < MAX_ENTRIES; i++) {
           assertFalse(r.replace(i, "value", "replace1Value"));
           assertFalse(pr.replace(i, "value", "replace1Value"));
         }
-        for (int i=MAX_ENTRIES+1; i<MAX_ENTRIES*2; i++) {
-          assertNull(r.replace(i, "replace2value"+i));
-          assertNull(pr.replace(i, "replace2value"+i));
+        for (int i = MAX_ENTRIES + 1; i < MAX_ENTRIES * 2; i++) {
+          assertNull(r.replace(i, "replace2value" + i));
+          assertNull(pr.replace(i, "replace2value" + i));
         }
-        for (int i=MAX_ENTRIES+1; i<MAX_ENTRIES*2; i++) {
-          assertFalse(r.remove(i, "removeValue"+i));
-          assertFalse(pr.remove(i, "removeValue"+i));
+        for (int i = MAX_ENTRIES + 1; i < MAX_ENTRIES * 2; i++) {
+          assertFalse(r.remove(i, "removeValue" + i));
+          assertFalse(pr.remove(i, "removeValue" + i));
         }
         return null;
       }
     });
   }
-  
+
   @Test
   public void testBug42162() {
     dotestConcOps(false);
   }
-  
+
   @Test
   public void testBug42162EmptyClient() {
     dotestConcOps(true);
   }
-  
+
   private void dotestConcOps(final boolean emptyClient) {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client = host.getVM(2);
     int port1 = createRegionsAndStartServer(server);
-    
+
     createClientRegion(client, port1, emptyClient, -1);
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -390,6 +405,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         final Region pr = getCache().getRegion(PR_REG_NAME);
         WaitCriterion wc = new WaitCriterion() {
           AssertionError e = null;
+
           public boolean done() {
             try {
               if (!emptyClient) {
@@ -413,8 +429,9 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
             }
             return true;
           }
+
           public String description() {
-            return "timeout "+e;
+            return "timeout " + e;
           }
         };
         Wait.waitForCriterion(wc, 30000, 1000, true);
@@ -442,13 +459,14 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         final Region pr = getCache().getRegion(PR_REG_NAME);
         WaitCriterion wc = new WaitCriterion() {
           AssertionError e = null;
+
           public boolean done() {
             try {
               assertEquals("value2", r.putIfAbsent("key0", null));
               assertEquals("value2", pr.putIfAbsent("key0", null));
               assertEquals("newValue", r.putIfAbsent("keyForNull", null));
               assertEquals("newValue", pr.putIfAbsent("keyForNull", null));
-              //replace from client
+              // replace from client
               assertEquals("value2", r.replace("key0", "value"));
               assertEquals("value2", pr.replace("key0", "value"));
               assertNull(r.replace("NoKeyOnServer", "value"));
@@ -461,8 +479,9 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
             }
             return true;
           }
+
           public String description() {
-            return "timeout "+e.getMessage();
+            return "timeout " + e.getMessage();
           }
         };
         Wait.waitForCriterion(wc, 30000, 1000, true);
@@ -479,14 +498,14 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       }
     });
   }
-  
+
   @Test
   public void testNullValueFromNonEmptyClients() {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client = host.getVM(2);
     int port1 = createRegionsAndStartServer(server);
-    
+
     createClientRegion(client, port1, true, -1);
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -518,12 +537,12 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
   public void testPutIfAbsent() {
     doPutIfAbsentWork(false);
   }
-  
+
   @Test
   public void testPutIfAbsentCS() {
     doPutIfAbsentWork(true);
   }
-  
+
   private void doPutIfAbsentWork(final boolean cs) {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
@@ -566,17 +585,17 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       }
     });
   }
-  
+
   @Test
   public void testRemove() {
     doRemoveWork(false);
   }
-  
+
   @Test
   public void testRemoveCS() {
     doRemoveWork(true);
   }
-  
+
   private void doRemoveWork(final boolean cs) {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
@@ -630,17 +649,17 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       }
     });
   }
-  
+
   @Test
   public void testReplaceCS() {
     doReplaceWork(true);
   }
-  
+
   @Test
   public void testReplace() {
     doReplaceWork(false);
   }
-  
+
   private void doReplaceWork(final boolean cs) {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
@@ -697,29 +716,33 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       }
     });
   }
-  
+
   @Test
   public void testBug42167() {
     do42167Work(false, REP_REG_NAME);
   }
+
   @Test
   public void testBug42167PR() {
     do42167Work(false, PR_REG_NAME);
   }
+
   @Test
   public void testBug42167Empty() {
     do42167Work(true, REP_REG_NAME);
   }
+
   @Test
   public void testBug42167EmptyPR() {
     do42167Work(true, PR_REG_NAME);
   }
+
   private void do42167Work(final boolean emptyClient, final String regionName) {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client = host.getVM(2);
     int port1 = createRegionsAndStartServer(server);
-    
+
     createClientRegion(client, port1, emptyClient, -1);
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -739,7 +762,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         }
         getCache().getLogger().fine("SWAP:doingRemove");
         assertTrue(r.remove("key0", "value"));
-        
+
         getCache().getLogger().fine("Bruce:doingExtraRemoves.  Bug #47010");
         DestroyOp.TEST_HOOK_ENTRY_NOT_FOUND = false;
         assertTrue(r.remove("key0") == null);
@@ -764,7 +787,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         DestroyOp.TEST_HOOK_ENTRY_NOT_FOUND = false;
         assertTrue(r.destroy("nonExistentKey3") == null);
         assertTrue(DestroyOp.TEST_HOOK_ENTRY_NOT_FOUND);
-        
+
         getCache().getLogger().fine("SWAP:doingReplace");
         assertEquals("value2", r.replace("key2", "newValue2"));
         getCache().getLogger().fine("SWAP:doingReplace2");
@@ -786,21 +809,23 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       }
     });
   }
-  
+
   @Test
   public void testBug42189() {
     doBug42189Work(REP_REG_NAME);
   }
+
   @Test
   public void testBug42189PR() {
     doBug42189Work(PR_REG_NAME);
   }
+
   private void doBug42189Work(final String regionName) {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client = host.getVM(2);
     int port1 = createRegionsAndStartServer(server);
-    
+
     createClientRegion(client, port1, false, -1);
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -809,7 +834,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         assertNull(r.putIfAbsent("key0", "value"));
         assertTrue(r.containsKey("key0"));
         Object v = r.get("key0");
-        assertNull("expected null but was "+v, v);
+        assertNull("expected null but was " + v, v);
         return null;
       }
     });
@@ -819,7 +844,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         assertNull(r.putIfAbsent("key0", "value"));
         assertTrue(r.containsKeyOnServer("key0"));
         Object v = r.get("key0");
-        assertNull("expected null but was "+v, v);
+        assertNull("expected null but was " + v, v);
         return null;
       }
     });
@@ -834,7 +859,8 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Replicate Region test for bug #42195: putIfAbsent from client does not put old value in local cache
+   * Replicate Region test for bug #42195: putIfAbsent from client does not put old value in local
+   * cache
    */
   @Ignore("TODO")
   @Test
@@ -843,7 +869,8 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Partitioned Region test for bug #42195: putIfAbsent from client does not put old value in local cache
+   * Partitioned Region test for bug #42195: putIfAbsent from client does not put old value in local
+   * cache
    */
   @Ignore("TODO")
   @Test
@@ -856,7 +883,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
     VM server = host.getVM(0);
     VM client = host.getVM(2);
     int port1 = createRegionsAndStartServer(server);
-    
+
     createClientRegion(client, port1, false, -1);
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -877,21 +904,23 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       }
     });
   }
-  
+
   @Test
   public void testReplacePutsKeyInLocalClientCache() {
     doReplacePutsKeyInLocalClientCacheWork(REP_REG_NAME);
   }
+
   @Test
   public void testReplacePutsKeyInLocalClientCachePR() {
     doReplacePutsKeyInLocalClientCacheWork(PR_REG_NAME);
   }
+
   private void doReplacePutsKeyInLocalClientCacheWork(final String regionName) {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client = host.getVM(2);
     int port1 = createRegionsAndStartServer(server);
-    
+
     createClientRegion(client, port1, false, -1);
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
@@ -910,7 +939,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         assertTrue(r.containsKeyOnServer("key0"));
         assertTrue(r.containsKey("key0"));
         assertTrue(r.containsValueForKey("key0"));
-        
+
         assertFalse(r.replace("key2", "DontReplace", "newValue"));
         assertTrue(r.replace("key2", "value2", "newValu2"));
         assertTrue(r.containsKeyOnServer("key2"));
@@ -973,14 +1002,16 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         Region r = getCache().getRegion(regionName);
         r.registerInterest("ALL_KEYS");
         return null;
-      }});
+      }
+    });
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region r = getCache().getRegion(regionName);
         r.putIfAbsent(key, null);
         assertTrue(r.containsKey(key));
         return null;
-      }});
+      }
+    });
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         final Region r = getCache().getRegion(regionName);
@@ -988,6 +1019,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
           public String description() {
             return "waiting for server operation to reach client";
           }
+
           public boolean done() {
             return r.containsKey(key);
           }
@@ -995,9 +1027,9 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         Wait.waitForCriterion(w, 10000, 200, true);
         assertTrue(r.containsKeyOnServer(key));
         boolean result = r.remove(key, null);
-//        if (!result) {
-//          ((LocalRegion)r).dumpBackingMap();
-//        }
+        // if (!result) {
+        // ((LocalRegion)r).dumpBackingMap();
+        // }
         assertTrue(result);
         assertFalse(r.containsKey(key));
         assertFalse(r.containsKeyOnServer(key));
@@ -1005,27 +1037,32 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       }
     });
   }
+
   @Test
   public void testWithDelta() {
     doTestWithDeltaWork(false, REP_REG_NAME);
   }
+
   @Test
   public void testWithDeltaPR() {
     doTestWithDeltaWork(false, PR_REG_NAME);
-  }  
+  }
+
   @Test
   public void testWithDeltaCS() {
     doTestWithDeltaWork(true, REP_REG_NAME);
   }
+
   @Test
   public void testWithDeltaPRCS() {
     doTestWithDeltaWork(true, PR_REG_NAME);
   }
+
   private void doTestWithDeltaWork(final boolean clientServer, final String regName) {
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
     VM vm2 = host.getVM(1);
-    
+
     if (clientServer) {
       int port = createRegionsAndStartServer(vm1);
       createClientRegion(vm2, port, false, -1);
@@ -1033,7 +1070,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       createRegions(vm1);
       createRegions(vm2);
     }
-    
+
     vm2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Region r = getCache().getRegion(regName);
@@ -1051,13 +1088,13 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       }
     });
   }
-  
-  /** test putIfAbsent with failover & retry.  This is bugs 42559 and 43640 */
+
+  /** test putIfAbsent with failover & retry. This is bugs 42559 and 43640 */
   @Test
   public void testRetriedPutIfAbsent() throws Exception {
     doRetriedOperation(Operation.PUT_IF_ABSENT, false);
   }
-  
+
   @Test
   public void testRetriedReplace() throws Exception {
     doRetriedOperation(Operation.REPLACE, false);
@@ -1072,7 +1109,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
   public void testRetriedPutIfAbsentPR() throws Exception {
     doRetriedOperation(Operation.PUT_IF_ABSENT, false);
   }
-  
+
   @Test
   public void testRetriedReplacePR() throws Exception {
     doRetriedOperation(Operation.REPLACE, false);
@@ -1082,6 +1119,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
   public void testRetriedRemovePR() throws Exception {
     doRetriedOperation(Operation.REMOVE, false);
   }
+
   private void doRetriedOperation(final Operation op, boolean usePR) {
     Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
@@ -1089,27 +1127,27 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
     final VM client = host.getVM(2);
     final int port1 = createRegionsAndStartServer(server1, true);
     final int port2 = createRegionsAndStartServer(server2, true);
-    final String regionName = usePR? PR_REG_NAME : REP_REG_NAME;
+    final String regionName = usePR ? PR_REG_NAME : REP_REG_NAME;
 
     IgnoredException.addIgnoredException("java.net.SocketException");
-    
+
     createClientRegion(client, port1, false, port2);
-    
+
     SerializableCallable getID = new SerializableCallable("get DM ID") {
       public Object call() {
         return getSystem().getDistributedMember();
       }
     };
 
-    final DistributedMember server1ID = (DistributedMember)server1.invoke(getID);
-    final DistributedMember server2ID = (DistributedMember)server2.invoke(getID);
-    
+    final DistributedMember server1ID = (DistributedMember) server1.invoke(getID);
+    final DistributedMember server2ID = (DistributedMember) server2.invoke(getID);
+
     Set<IgnoredException> exceptions = new HashSet<IgnoredException>();
     exceptions.add(IgnoredException.addIgnoredException("Membership: requesting removal", server1));
     exceptions.add(IgnoredException.addIgnoredException("Membership: requesting removal", server2));
     exceptions.add(IgnoredException.addIgnoredException("ForcedDisconnect", server1));
     exceptions.add(IgnoredException.addIgnoredException("ForcedDisconnect", server2));
-    
+
     try {
 
       server1.invoke(new SerializableCallable("install crasher in server1") {
@@ -1120,7 +1158,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
             r.destroy("key0");
           }
           // force client to use server1 for now
-//          getCache().getCacheServers().get(0).stop();
+          // getCache().getCacheServers().get(0).stop();
           r.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
             private void killSender(EntryEvent event) {
               if (event.isOriginRemote()) {
@@ -1133,16 +1171,19 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
                 }
               }
             }
+
             @Override
             public void afterCreate(EntryEvent event) {
               getCache().getLogger().info("afterCreate invoked with " + event);
               killSender(event);
             }
+
             @Override
             public void afterUpdate(EntryEvent event) {
               getCache().getLogger().info("afterUpdate invoked with " + event);
               killSender(event);
             }
+
             @Override
             public void afterDestroy(EntryEvent event) {
               getCache().getLogger().info("afterDestroy invoked with " + event);
@@ -1157,7 +1198,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         public Object call() throws Exception {
           Region r = getCache().getRegion(regionName);
           // force client to use server1 for now
-//          getCache().getCacheServers().get(0).stop();
+          // getCache().getCacheServers().get(0).stop();
           r.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
             private void killSender(EntryEvent event) {
               if (event.isOriginRemote()) {
@@ -1170,16 +1211,19 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
                 }
               }
             }
+
             @Override
             public void afterCreate(EntryEvent event) {
               getCache().getLogger().info("afterCreate invoked with " + event);
               killSender(event);
             }
+
             @Override
             public void afterUpdate(EntryEvent event) {
               getCache().getLogger().info("afterUpdate invoked with " + event);
               killSender(event);
             }
+
             @Override
             public void afterDestroy(EntryEvent event) {
               getCache().getLogger().info("afterDestroy invoked with " + event);
@@ -1189,15 +1233,15 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
           return null;
         }
       });
-      
+
 
       client.invoke(new SerializableRunnable() {
         public void run() {
-          GemFireCacheImpl cache = (GemFireCacheImpl)getCache();
+          GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
           Region r = cache.getRegion(regionName);
           if (op == Operation.PUT_IF_ABSENT) {
             assertTrue("expected putIfAbsent to succeed and return null",
-              r.putIfAbsent("key0", "newvalue") == null);
+                r.putIfAbsent("key0", "newvalue") == null);
           } else if (op == Operation.REMOVE) {
             assertTrue("expected remove operation to succeed and return true",
                 r.remove("key0", "value"));
@@ -1209,27 +1253,29 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
       });
     } finally {
       disconnectAllFromDS();
-      for (IgnoredException ex: exceptions) {
+      for (IgnoredException ex : exceptions) {
         ex.remove();
       }
     }
   }
-  
+
   private static class CustomerDelta implements Serializable, Delta {
     private String name;
     private String address;
     private boolean nameChanged;
     private boolean addressChanged;
+
     public CustomerDelta(CustomerDelta o) {
       this.address = o.address;
       this.name = o.name;
     }
+
     public CustomerDelta(String name, String address) {
       this.name = name;
       this.address = address;
     }
-    public void fromDelta(DataInput in) throws IOException,
-        InvalidDeltaException {
+
+    public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
       boolean nameC = in.readBoolean();
       if (nameC) {
         this.name = in.readUTF();
@@ -1239,9 +1285,11 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         this.address = in.readUTF();
       }
     }
+
     public boolean hasDelta() {
       return nameChanged || addressChanged;
     }
+
     public void toDelta(DataOutput out) throws IOException {
       if (this.nameChanged) {
         out.writeBoolean(nameChanged);
@@ -1252,26 +1300,33 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         out.writeUTF(address);
       }
     }
+
     public void setName(String name) {
       this.nameChanged = true;
       this.name = name;
     }
+
     public String getName() {
       return name;
     }
+
     public void setAddress(String address) {
       this.addressChanged = true;
       this.address = address;
     }
+
     public String getAddress() {
       return address;
     }
+
     @Override
     public boolean equals(Object obj) {
-      if (!(obj instanceof CustomerDelta)) return false;
-      CustomerDelta other = (CustomerDelta)obj;
+      if (!(obj instanceof CustomerDelta))
+        return false;
+      CustomerDelta other = (CustomerDelta) obj;
       return this.name.equals(other.name) && this.address.equals(other.address);
     }
+
     @Override
     public int hashCode() {
       return this.address.hashCode() + this.name.hashCode();

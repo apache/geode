@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -22,9 +20,8 @@ import java.lang.Math;
 import java.lang.ref.*;
 
 /**
- * An <code>ObjIdMap</code> maps GemFire object ids to an
- * <code>Object</code>.  This is an optimization because using a
- * {@link java.util.HashMap} for this purposed proved to be too slow
+ * An <code>ObjIdMap</code> maps GemFire object ids to an <code>Object</code>. This is an
+ * optimization because using a {@link java.util.HashMap} for this purposed proved to be too slow
  * because of all of the {@link Integer}s that had to be created.
  */
 public class ObjIdMap {
@@ -35,9 +32,9 @@ public class ObjIdMap {
   /** The total number of mappings in the map */
   private int count;
 
-  /** Once the number of mappings in the map exceeds the threshold,
-   * the map is rehashed.  The threshold is the
-   * (capacity * loadFactor). capacity is table.length
+  /**
+   * Once the number of mappings in the map exceeds the threshold, the map is rehashed. The
+   * threshold is the (capacity * loadFactor). capacity is table.length
    */
   private int threshold;
 
@@ -46,41 +43,41 @@ public class ObjIdMap {
 
   public final Object rehashLock = new Object();
 
-  ////////////////////  Constructors  ////////////////////
+  //////////////////// Constructors ////////////////////
 
   /**
-   * Creates a new, empty map with the given initial capacity (number
-   * of buckets) and load factor.
+   * Creates a new, empty map with the given initial capacity (number of buckets) and load factor.
    */
   public ObjIdMap(int initialCapacity, float loadFactor) {
     if (initialCapacity < 0) {
-      throw new IllegalArgumentException(LocalizedStrings.ObjIdMap_ILLEGAL_INITIAL_CAPACITY_0.toLocalizedString(Integer.valueOf(initialCapacity)));
+      throw new IllegalArgumentException(LocalizedStrings.ObjIdMap_ILLEGAL_INITIAL_CAPACITY_0
+          .toLocalizedString(Integer.valueOf(initialCapacity)));
     }
 
     if (loadFactor <= 0 || Float.isNaN(loadFactor)) {
-      throw new IllegalArgumentException(LocalizedStrings.ObjIdMap_ILLEGAL_LOAD_FACTOR_0.toLocalizedString(new Float(loadFactor)));
+      throw new IllegalArgumentException(
+          LocalizedStrings.ObjIdMap_ILLEGAL_LOAD_FACTOR_0.toLocalizedString(new Float(loadFactor)));
     }
 
-    if (initialCapacity==0) {
+    if (initialCapacity == 0) {
       initialCapacity = 1;
     }
 
     this.loadFactor = loadFactor;
     table = new Entry[initialCapacity];
-    threshold = (int)(initialCapacity * loadFactor);
+    threshold = (int) (initialCapacity * loadFactor);
   }
 
   /**
-   * Creates a new, empty map with the default initial capacity (11
-   * buckets) and load factor (0.75).
+   * Creates a new, empty map with the default initial capacity (11 buckets) and load factor (0.75).
    */
   public ObjIdMap() {
     this(11, 0.75f);
   }
 
   /**
-   * Create a new map which will contain all the contents of the oldMap
-   * and then add the specified key and value.
+   * Create a new map which will contain all the contents of the oldMap and then add the specified
+   * key and value.
    */
   public ObjIdMap(ObjIdMap oldMap, int addKey, Object addValue) {
     this.loadFactor = oldMap.loadFactor;
@@ -89,6 +86,7 @@ public class ObjIdMap {
     rehash(oldMap.table, oldMap.count, oldMap.count + 2);
     put(addKey, addValue);
   }
+
   /**
    * Create a new map which will contain all the contents of the oldMap.
    */
@@ -99,7 +97,7 @@ public class ObjIdMap {
     this.threshold = oldMap.threshold;
     this.loadFactor = oldMap.loadFactor;
   }
-  ////////////////////  Instance Methods  ////////////////////
+  //////////////////// Instance Methods ////////////////////
 
   /**
    * Returns the number of mappings in this map
@@ -109,11 +107,9 @@ public class ObjIdMap {
   }
 
   /**
-   * Returns <code>true</code> if this map contains a mapping for the
-   * given key.
+   * Returns <code>true</code> if this map contains a mapping for the given key.
    *
-   * @throws IllegalArgumentException
-   *         <code>key</code> is less than zero
+   * @throws IllegalArgumentException <code>key</code> is less than zero
    */
   public boolean containsKey(int key) {
 
@@ -129,14 +125,13 @@ public class ObjIdMap {
   }
 
   /**
-   * Returns the object to which the given key is mapped.  If no
-   * object is mapped to the given key, <code>null</code> is returned.
+   * Returns the object to which the given key is mapped. If no object is mapped to the given key,
+   * <code>null</code> is returned.
    *
-   * @throws IllegalArgumentException
-   *         <code>key</code> is less than zero
+   * @throws IllegalArgumentException <code>key</code> is less than zero
    */
   public Object get(int key) {
- 
+
     Entry[] table = this.table;
     int bucket = Math.abs(key) % table.length;
     for (Entry e = table[bucket]; e != null; e = e.next) {
@@ -149,27 +144,26 @@ public class ObjIdMap {
   }
 
   /**
-   * Rehashes this map into a new map with a large number of buckets.
-   * It is called when the number of entries in the map exceeds the
-   * capacity and load factor.
+   * Rehashes this map into a new map with a large number of buckets. It is called when the number
+   * of entries in the map exceeds the capacity and load factor.
    */
   private void rehash() {
     rehash(this.table, this.count, this.count * 2 + 1);
   }
-           
+
   private void rehash(Entry[] oldMap, int newCount, int newCapacity) {
     int oldCapacity = oldMap.length;
 
     Entry newMap[] = new Entry[newCapacity];
 
     synchronized (rehashLock) {
-      for (int i = oldCapacity ; i-- > 0 ;) {
-        for (Entry old = oldMap[i] ; old != null ; ) {
+      for (int i = oldCapacity; i-- > 0;) {
+        for (Entry old = oldMap[i]; old != null;) {
           Entry e = old;
           old = old.next;
 
           if (e.value != null && e.value instanceof WeakReference) {
-            WeakReference r = (WeakReference)e.value;
+            WeakReference r = (WeakReference) e.value;
             if (r.get() == null) {
               // don't copy this one into the new table since its value was gc'd
               newCount--;
@@ -182,19 +176,17 @@ public class ObjIdMap {
         }
       }
 
-      threshold = (int)(newCapacity * loadFactor);
+      threshold = (int) (newCapacity * loadFactor);
       count = newCount;
       table = newMap;
     }
   }
 
   /**
-   * Creates a mapping between the given key (object id) and an
-   * object.  Returns the previous value, or <code>null</code> if
-   * there was none.
+   * Creates a mapping between the given key (object id) and an object. Returns the previous value,
+   * or <code>null</code> if there was none.
    *
-   * @throws IllegalArgumentException
-   *         <code>key</code> is less than zero
+   * @throws IllegalArgumentException <code>key</code> is less than zero
    */
   public Object put(int key, Object value) {
 
@@ -211,7 +203,7 @@ public class ObjIdMap {
     // Adjust the table, if necessary
     if (this.count >= this.threshold) {
       rehash();
-//      table = this.table; assignment has no effect
+      // table = this.table; assignment has no effect
       bucket = Math.abs(key) % table.length;
     }
 
@@ -225,15 +217,14 @@ public class ObjIdMap {
   }
 
   /**
-   * Removes the mapping for the given key.  Returns the object to
-   * which the key was mapped, or <code>null</code> otherwise.
+   * Removes the mapping for the given key. Returns the object to which the key was mapped, or
+   * <code>null</code> otherwise.
    */
   public Object remove(int key) {
     Entry[] table = this.table;
     int bucket = Math.abs(key) % table.length;
 
-    for (Entry e = table[bucket], prev = null; e != null;
-         prev = e, e = e.next) {
+    for (Entry e = table[bucket], prev = null; e != null; prev = e, e = e.next) {
       if (key == e.key) {
         if (prev != null)
           prev.next = e.next;
@@ -268,16 +259,15 @@ public class ObjIdMap {
   }
 
   /**
-   * Returns an iterator over the {@link Entry}s of this map.  Note
-   * that this iterator is <b>not</b> fail-fast.  That is, it is the
-   * user's responsibility to ensure that the map does not change
+   * Returns an iterator over the {@link Entry}s of this map. Note that this iterator is <b>not</b>
+   * fail-fast. That is, it is the user's responsibility to ensure that the map does not change
    * while he is iterating over it.
    */
   public EntryIterator iterator() {
     return new EntryIterator();
   }
 
-  ///////////////////////  Inner Classes  ///////////////////////
+  /////////////////////// Inner Classes ///////////////////////
 
   /**
    * Inner class that represents an entry in the map
@@ -295,15 +285,15 @@ public class ObjIdMap {
     public int getKey() {
       return this.key;
     }
+
     public Object getValue() {
       return this.value;
     }
   }
 
   /**
-   * A class for iterating over the contents of an
-   * <code>ObjIdMap</code> 
-   */ 
+   * A class for iterating over the contents of an <code>ObjIdMap</code>
+   */
   public class EntryIterator {
     /** The current collision chain we're traversing */
     private int index = 0;
@@ -311,11 +301,11 @@ public class ObjIdMap {
     /** The next Entry we'll iterate over */
     private Entry next = null;
 
-    ////////////////////  Instance Methods  ////////////////////
+    //////////////////// Instance Methods ////////////////////
 
     /**
-     * Returns the next Entry to visit.  Will return <code>null</code>
-     * after we have iterated through all of the entries.
+     * Returns the next Entry to visit. Will return <code>null</code> after we have iterated through
+     * all of the entries.
      */
     public Entry next() {
       while (this.next == null && this.index < table.length) {

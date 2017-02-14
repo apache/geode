@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed;
 
@@ -46,7 +44,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 @Category(IntegrationTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class LocatorLauncherAssemblyIntegrationTest extends AbstractLocatorLauncherIntegrationTestCase {
+public class LocatorLauncherAssemblyIntegrationTest
+    extends AbstractLocatorLauncherIntegrationTestCase {
 
   @Before
   public final void setUpLocatorLauncherLocalTest() throws Exception {
@@ -66,16 +65,10 @@ public class LocatorLauncherAssemblyIntegrationTest extends AbstractLocatorLaunc
   public void testLocatorStopsWhenJmxPortIsZero() throws Throwable {
     String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
 
-    final Builder builder = new Builder()
-        .setMemberName(getUniqueName())
-        .setPort(this.locatorPort)
-        .setRedirectOutput(false)
-        .setWorkingDirectory(rootFolder)
-        .set(LOG_LEVEL, "config")
-        .set(ENABLE_CLUSTER_CONFIGURATION, "false")
-        .set(JMX_MANAGER, "true")
-        .set(JMX_MANAGER_START, "true")
-        .set(JMX_MANAGER_PORT, "0");
+    final Builder builder = new Builder().setMemberName(getUniqueName()).setPort(this.locatorPort)
+        .setRedirectOutput(false).setWorkingDirectory(rootFolder).set(LOG_LEVEL, "config")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "false").set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_START, "true").set(JMX_MANAGER_PORT, "0");
 
     performTest(builder);
   }
@@ -88,15 +81,10 @@ public class LocatorLauncherAssemblyIntegrationTest extends AbstractLocatorLaunc
     String rootFolder = this.temporaryFolder.getRoot().getCanonicalPath();
     final int jmxPort = AvailablePortHelper.getRandomAvailableTCPPorts(1)[0];
 
-    final Builder builder = new Builder().setMemberName(getUniqueName())
-        .setPort(this.locatorPort)
-        .setRedirectOutput(false)
-        .setWorkingDirectory(rootFolder)
-        .set(LOG_LEVEL, "config")
-        .set(ENABLE_CLUSTER_CONFIGURATION, "false")
-        .set(JMX_MANAGER, "true")
-        .set(JMX_MANAGER_START, "true")
-        .set(JMX_MANAGER_PORT, Integer.toString(jmxPort));
+    final Builder builder = new Builder().setMemberName(getUniqueName()).setPort(this.locatorPort)
+        .setRedirectOutput(false).setWorkingDirectory(rootFolder).set(LOG_LEVEL, "config")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "false").set(JMX_MANAGER, "true")
+        .set(JMX_MANAGER_START, "true").set(JMX_MANAGER_PORT, Integer.toString(jmxPort));
 
     performTest(builder);
   }
@@ -115,7 +103,8 @@ public class LocatorLauncherAssemblyIntegrationTest extends AbstractLocatorLaunc
 
       // validate the pid file and its contents
       this.pidFile = new File(this.temporaryFolder.getRoot(), ProcessType.LOCATOR.getPidFileName());
-      assertTrue("Pid file " + this.pidFile.getCanonicalPath().toString() + " should exist", this.pidFile.exists());
+      assertTrue("Pid file " + this.pidFile.getCanonicalPath().toString() + " should exist",
+          this.pidFile.exists());
       final int pid = readPid(this.pidFile);
       assertTrue(pid > 0);
       assertEquals(ProcessUtils.identifyPid(), pid);

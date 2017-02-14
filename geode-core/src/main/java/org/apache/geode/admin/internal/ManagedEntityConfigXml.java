@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.internal;
 
@@ -24,29 +22,26 @@ import org.xml.sax.*;
 import java.io.InputStream;
 
 /**
- * The abstract superclass of classes that convert XML into a {@link
- * org.apache.geode.admin.DistributedSystemConfig} and vice versa.
- * It provides helper methods and constants.
+ * The abstract superclass of classes that convert XML into a
+ * {@link org.apache.geode.admin.DistributedSystemConfig} and vice versa. It provides helper methods
+ * and constants.
  *
  * @since GemFire 4.0
  */
 abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
 
   /** The location of the DTD file */
-  protected static final String DTD_LOCATION =
-    "/org/apache/geode/admin/doc-files/ds5_0.dtd";
+  protected static final String DTD_LOCATION = "/org/apache/geode/admin/doc-files/ds5_0.dtd";
 
   /** The URL for the DTD */
-  protected static final String SYSTEM_ID =
-    "http://www.gemstone.com/dtd/ds5_0.dtd";
+  protected static final String SYSTEM_ID = "http://www.gemstone.com/dtd/ds5_0.dtd";
 
   /** The public ID for the DTD */
-  protected static final String PUBLIC_ID = 
-    "-//GemStone Systems, Inc.//GemFire Distributed System 5.0//EN";
+  protected static final String PUBLIC_ID =
+      "-//GemStone Systems, Inc.//GemFire Distributed System 5.0//EN";
 
   /** The name of the <code>distributed-system</code> element. */
-  public static final String DISTRIBUTED_SYSTEM =
-    "distributed-system";
+  public static final String DISTRIBUTED_SYSTEM = "distributed-system";
 
   /** The name of the <code>id</code> attribute. */
   public static final String ID = "id";
@@ -97,46 +92,48 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
   public static final String PROPERTY = "property";
 
   /** Name of the <code>authentication-required</code> attribute */
-  public static final String AUTHENTICATION_REQUIRED =
-    "authentication-required";
+  public static final String AUTHENTICATION_REQUIRED = "authentication-required";
 
   /** The name of the <code>key</code> element */
   public static final String KEY = "key";
 
   /** The name of the <code>value</code> element */
   public static final String VALUE = "value";
-  
+
   /** The name of the <code>classpath</code> element */
   public static final String CLASSPATH = "classpath";
 
-  ///////////////////////  Instance Methods  ///////////////////////
+  /////////////////////// Instance Methods ///////////////////////
 
   /**
-   * Given a public id, attempt to resolve it to a DTD.  Returns an
-   * <code>InputSoure</code> for the DTD.
+   * Given a public id, attempt to resolve it to a DTD. Returns an <code>InputSoure</code> for the
+   * DTD.
    */
-  public InputSource resolveEntity(String publicId, String systemId) 
-    throws SAXException {
+  public InputSource resolveEntity(String publicId, String systemId) throws SAXException {
 
     if (publicId == null || systemId == null) {
-      throw new SAXException(LocalizedStrings.ManagedEntityConfigXml_PUBLIC_ID_0_SYSTEM_ID_1.toLocalizedString(new Object[] {publicId, systemId}));
+      throw new SAXException(LocalizedStrings.ManagedEntityConfigXml_PUBLIC_ID_0_SYSTEM_ID_1
+          .toLocalizedString(new Object[] {publicId, systemId}));
     }
 
     // Figure out the location for the publicId.
     String location = DTD_LOCATION;
 
     InputSource result;
-//    if (location != null) (cannot be null) 
+    // if (location != null) (cannot be null)
     {
       InputStream stream = ClassPathLoader.getLatest().getResourceAsStream(getClass(), location);
       if (stream != null) {
         result = new InputSource(stream);
       } else {
-        throw new SAXNotRecognizedException(LocalizedStrings.ManagedEntityConfigXml_DTD_NOT_FOUND_0.toLocalizedString(location));
+        throw new SAXNotRecognizedException(
+            LocalizedStrings.ManagedEntityConfigXml_DTD_NOT_FOUND_0.toLocalizedString(location));
       }
 
-//    } else {
-//      throw new SAXNotRecognizedException(LocalizedStrings.ManagedEntityConfigXml_COULD_NOT_FIND_DTD_FOR_0_1.toLocalizedString(new Object[] {publicId, systemId}));
+      // } else {
+      // throw new
+      // SAXNotRecognizedException(LocalizedStrings.ManagedEntityConfigXml_COULD_NOT_FIND_DTD_FOR_0_1.toLocalizedString(new
+      // Object[] {publicId, systemId}));
     }
 
     return result;
@@ -145,7 +142,7 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
   /**
    * Warnings are ignored
    */
-  public void warning(SAXParseException ex) throws SAXException { 
+  public void warning(SAXParseException ex) throws SAXException {
 
   }
 
@@ -153,16 +150,18 @@ abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
    * Throws a {@link org.apache.geode.cache.CacheXmlException}
    */
   public void error(SAXParseException ex) throws SAXException {
-    IllegalArgumentException ex2 = new IllegalArgumentException(LocalizedStrings.ManagedEntityConfigXml_ERROR_WHILE_PARSING_XML.toLocalizedString());
+    IllegalArgumentException ex2 = new IllegalArgumentException(
+        LocalizedStrings.ManagedEntityConfigXml_ERROR_WHILE_PARSING_XML.toLocalizedString());
     ex2.initCause(ex);
     throw ex2;
   }
-  
+
   /**
    * Throws a {@link org.apache.geode.cache.CacheXmlException}
    */
   public void fatalError(SAXParseException ex) throws SAXException {
-    IllegalArgumentException ex2 = new IllegalArgumentException(LocalizedStrings.ManagedEntityConfigXml_FATAL_ERROR_WHILE_PARSING_XML.toLocalizedString());
+    IllegalArgumentException ex2 = new IllegalArgumentException(
+        LocalizedStrings.ManagedEntityConfigXml_FATAL_ERROR_WHILE_PARSING_XML.toLocalizedString());
     ex2.initCause(ex);
     throw ex2;
   }

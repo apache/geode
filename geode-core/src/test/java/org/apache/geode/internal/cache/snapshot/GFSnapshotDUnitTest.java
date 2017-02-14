@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.snapshot;
 
@@ -80,8 +78,10 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
 
     Properties properties = configureCommonProperties(new Properties());
 
-    locator.invoke("Start Locator", () -> configureAndStartLocator(locatorPort, serverHostName, properties));
-    server.invoke("Start Server", () -> configureAndStartServer(locatorPort, serverHostName, properties));
+    locator.invoke("Start Locator",
+        () -> configureAndStartLocator(locatorPort, serverHostName, properties));
+    server.invoke("Start Server",
+        () -> configureAndStartServer(locatorPort, serverHostName, properties));
     client.invoke("Start client", () -> {
       createAndStartClient(locatorPort, serverHostName);
       return null;
@@ -98,8 +98,7 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
 
   private void createAndStartClient(final int locatorPort, final String serverHostName) {
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
-    clientCacheFactory.set("log-level", "config")
-                      .addPoolLocator(serverHostName, locatorPort);
+    clientCacheFactory.set("log-level", "config").addPoolLocator(serverHostName, locatorPort);
     ClientCache clientCache = clientCacheFactory.create();
     clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("TestRegion");
   }
@@ -121,7 +120,8 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
     return file.getAbsolutePath();
   }
 
-  private void iterateOverSnapshot(final String snapshotFilePath) throws IOException, ClassNotFoundException {
+  private void iterateOverSnapshot(final String snapshotFilePath)
+      throws IOException, ClassNotFoundException {
 
     File mySnapshot = new File(snapshotFilePath + "/snapshot-TestRegion");
     SnapshotIterator<Integer, TestObject> snapshotIterator = SnapshotReader.read(mySnapshot);
@@ -154,7 +154,8 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
     return properties;
   }
 
-  private void configureAndStartLocator(final int locatorPort, final String serverHostName, final Properties properties) throws IOException {
+  private void configureAndStartLocator(final int locatorPort, final String serverHostName,
+      final Properties properties) throws IOException {
     DistributedTestUtils.deleteLocatorStateFile();
 
     final String memberName = getUniqueName() + "-locator";
@@ -166,16 +167,14 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
       builder.set(propertyName, properties.getProperty(propertyName));
     }
     LocatorLauncher locatorLauncher = builder.setBindAddress(serverHostName)
-                             .setHostnameForClients(serverHostName)
-                             .setMemberName(memberName)
-                             .setPort(locatorPort)
-                             .setWorkingDirectory(workingDirectory.getCanonicalPath())
-                             .build();
+        .setHostnameForClients(serverHostName).setMemberName(memberName).setPort(locatorPort)
+        .setWorkingDirectory(workingDirectory.getCanonicalPath()).build();
     locatorLauncher.start();
 
   }
 
-  private void configureAndStartServer(final int locatorPort, final String serverHostName, final Properties properties) throws IOException {
+  private void configureAndStartServer(final int locatorPort, final String serverHostName,
+      final Properties properties) throws IOException {
     final String memberName = getUniqueName() + "-server";
     final File workingDirectory = temporaryFolder.newFolder(memberName);
     final File pdxDirectory = temporaryFolder.newFolder(memberName + "-pdx");
@@ -188,26 +187,26 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
       builder.set(propertyName, properties.getProperty(propertyName));
     }
 
-    ServerLauncher serverLauncher = builder.set("locators", serverHostName + "[" + locatorPort + "]")
-                            .setMemberName(memberName)
-                            .set("log-level", "config")
-                            .setHostNameForClients(serverHostName)
-                            .setServerBindAddress(serverHostName)
-                            .setServerPort(0)
-                            .setWorkingDirectory(workingDirectory.getCanonicalPath())
-                            .setPdxDiskStore("pdxDS")
-                            .setPdxPersistent(true)
-                            .build();
+    ServerLauncher serverLauncher =
+        builder.set("locators", serverHostName + "[" + locatorPort + "]").setMemberName(memberName)
+            .set("log-level", "config").setHostNameForClients(serverHostName)
+            .setServerBindAddress(serverHostName).setServerPort(0)
+            .setWorkingDirectory(workingDirectory.getCanonicalPath()).setPdxDiskStore("pdxDS")
+            .setPdxPersistent(true).build();
     serverLauncher.start();
 
     Cache cache = CacheFactory.getAnyInstance();
 
-    cache.createDiskStoreFactory().setDiskDirsAndSizes(new File[] { pdxDirectory }, new int[] { 16000 }).create("pdxDS");
+    cache.createDiskStoreFactory().setDiskDirsAndSizes(new File[] {pdxDirectory}, new int[] {16000})
+        .create("pdxDS");
 
-    cache.createDiskStoreFactory().setDiskDirsAndSizes(new File[] { diskStoreDirectory }, new int[] { 16000 }).create("diskStore");
+    cache.createDiskStoreFactory()
+        .setDiskDirsAndSizes(new File[] {diskStoreDirectory}, new int[] {16000})
+        .create("diskStore");
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
-    regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE).setScope(Scope.DISTRIBUTED_ACK).setDiskStoreName("diskStore").create("TestRegion");
+    regionFactory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE).setScope(Scope.DISTRIBUTED_ACK)
+        .setDiskStoreName("diskStore").create("TestRegion");
   }
 
 

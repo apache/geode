@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -51,7 +49,8 @@ public class Put extends BaseCommand {
 
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException, InterruptedException {
+  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+      throws IOException, InterruptedException {
     Part regionNamePart = null, keyPart = null, valuePart = null, callbackArgPart = null;
     String regionName = null;
     Object callbackArg = null, key = null;
@@ -72,7 +71,7 @@ public class Put extends BaseCommand {
     keyPart = msg.getPart(1);
     valuePart = msg.getPart(2);
     eventPart = msg.getPart(3);
-    //    callbackArgPart = null; (redundant assignment)
+    // callbackArgPart = null; (redundant assignment)
     if (msg.getNumberOfParts() > 4) {
       callbackArgPart = msg.getPart(4);
       try {
@@ -94,20 +93,25 @@ public class Put extends BaseCommand {
     }
 
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: Received put request ({} bytes) from {} for region {} key {} value {}", servConn.getName(), msg.getPayloadLength(), servConn
-        .getSocketString(), regionName, key, valuePart);
+      logger.trace("{}: Received put request ({} bytes) from {} for region {} key {} value {}",
+          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), regionName, key,
+          valuePart);
     }
 
     // Process the put request
     if (key == null || regionName == null) {
       if (key == null) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.Put_0_THE_INPUT_KEY_FOR_THE_PUT_REQUEST_IS_NULL, servConn.getName()));
-        errMessage = LocalizedStrings.Put_THE_INPUT_KEY_FOR_THE_PUT_REQUEST_IS_NULL.toLocalizedString();
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.Put_0_THE_INPUT_KEY_FOR_THE_PUT_REQUEST_IS_NULL, servConn.getName()));
+        errMessage =
+            LocalizedStrings.Put_THE_INPUT_KEY_FOR_THE_PUT_REQUEST_IS_NULL.toLocalizedString();
       }
       if (regionName == null) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.Put_0_THE_INPUT_REGION_NAME_FOR_THE_PUT_REQUEST_IS_NULL, servConn
-          .getName()));
-        errMessage = LocalizedStrings.Put_THE_INPUT_REGION_NAME_FOR_THE_PUT_REQUEST_IS_NULL.toLocalizedString();
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.Put_0_THE_INPUT_REGION_NAME_FOR_THE_PUT_REQUEST_IS_NULL,
+            servConn.getName()));
+        errMessage = LocalizedStrings.Put_THE_INPUT_REGION_NAME_FOR_THE_PUT_REQUEST_IS_NULL
+            .toLocalizedString();
       }
       writeErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage.toString(), servConn);
       servConn.setAsTrue(RESPONDED);
@@ -116,7 +120,8 @@ public class Put extends BaseCommand {
 
     LocalRegion region = (LocalRegion) servConn.getCache().getRegion(regionName);
     if (region == null) {
-      String reason = LocalizedStrings.Put_REGION_WAS_NOT_FOUND_DURING_PUT_REQUEST.toLocalizedString();
+      String reason =
+          LocalizedStrings.Put_REGION_WAS_NOT_FOUND_DURING_PUT_REQUEST.toLocalizedString();
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
       servConn.setAsTrue(RESPONDED);
       return;
@@ -124,11 +129,11 @@ public class Put extends BaseCommand {
 
     if (valuePart.isNull() && region.containsKey(key)) {
       // Invalid to 'put' a null value in an existing key
-      logger.info(LocalizedMessage.create(LocalizedStrings.Put_0_ATTEMPTED_TO_PUT_A_NULL_VALUE_FOR_EXISTING_KEY_1, new Object[] {
-        servConn.getName(),
-        key
-      }));
-      errMessage = LocalizedStrings.Put_ATTEMPTED_TO_PUT_A_NULL_VALUE_FOR_EXISTING_KEY_0.toLocalizedString();
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.Put_0_ATTEMPTED_TO_PUT_A_NULL_VALUE_FOR_EXISTING_KEY_1,
+          new Object[] {servConn.getName(), key}));
+      errMessage =
+          LocalizedStrings.Put_ATTEMPTED_TO_PUT_A_NULL_VALUE_FOR_EXISTING_KEY_0.toLocalizedString();
       writeErrorResponse(msg, MessageType.PUT_DATA_ERROR, errMessage, servConn);
       servConn.setAsTrue(RESPONDED);
       return;
@@ -152,7 +157,8 @@ public class Put extends BaseCommand {
         }
         // Allow PUT operations on meta regions (bug #38961)
         else if (!region.isUsedForMetaRegion()) {
-          PutOperationContext putContext = authzRequest.putAuthorize(regionName, key, value, isObject, callbackArg);
+          PutOperationContext putContext =
+              authzRequest.putAuthorize(regionName, key, value, isObject, callbackArg);
           value = putContext.getSerializedValue();
           isObject = putContext.isObject();
           callbackArg = putContext.getCallbackArg();
@@ -167,16 +173,18 @@ public class Put extends BaseCommand {
         // Create the null entry. Since the value is null, the value of the
         // isObject
         // the true after null doesn't matter and is not used.
-        result = region.basicBridgeCreate(key, null, true, callbackArg, servConn.getProxyID(), true, new EventIDHolder(eventId), false);
+        result = region.basicBridgeCreate(key, null, true, callbackArg, servConn.getProxyID(), true,
+            new EventIDHolder(eventId), false);
       } else {
         // Put the entry
-        result = region.basicBridgePut(key, value, null, isObject, callbackArg, servConn.getProxyID(), true, new EventIDHolder(eventId));
+        result = region.basicBridgePut(key, value, null, isObject, callbackArg,
+            servConn.getProxyID(), true, new EventIDHolder(eventId));
       }
       if (result) {
         servConn.setModificationInfo(true, regionName, key);
       } else {
         StringId message = LocalizedStrings.PUT_0_FAILED_TO_PUT_ENTRY_FOR_REGION_1_KEY_2_VALUE_3;
-        Object[] messageArgs = new Object[] { servConn.getName(), regionName, key, valuePart };
+        Object[] messageArgs = new Object[] {servConn.getName(), regionName, key, valuePart};
         String s = message.toLocalizedString(messageArgs);
         logger.info(s);
         throw new Exception(s);
@@ -203,7 +211,8 @@ public class Put extends BaseCommand {
           logger.debug("{}: Unexpected Security exception", servConn.getName(), ce);
         }
       } else {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.PUT_0_UNEXPECTED_EXCEPTION, servConn.getName()), ce);
+        logger.warn(LocalizedMessage.create(LocalizedStrings.PUT_0_UNEXPECTED_EXCEPTION,
+            servConn.getName()), ce);
       }
       return;
     } finally {
@@ -217,7 +226,8 @@ public class Put extends BaseCommand {
 
     servConn.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sent put response back to {} for region {} key {} value {}", servConn.getName(), servConn.getSocketString(), regionName, key, valuePart);
+      logger.debug("{}: Sent put response back to {} for region {} key {} value {}",
+          servConn.getName(), servConn.getSocketString(), regionName, key, valuePart);
     }
     stats.incWritePutResponseTime(DistributionStats.getStatTime() - start);
   }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
@@ -49,7 +47,7 @@ public interface AsyncEventQueueMXBean {
    * Returns the size of a batch that gets delivered over the AsyncEventQueue.
    */
   public int getBatchSize();
-  
+
   /**
    * Returns the interval between transmissions by the AsyncEventQueue.
    */
@@ -63,35 +61,33 @@ public interface AsyncEventQueueMXBean {
   public boolean isBatchConflationEnabled();
 
   /**
-   * Returns whether the AsyncEventQueue is configured to be persistent or
-   * non-persistent.
+   * Returns whether the AsyncEventQueue is configured to be persistent or non-persistent.
    * 
    * @return True if the queue is persistent, false otherwise.
    */
   public boolean isPersistent();
 
   /**
-   * Returns whether the queue is primary or secondary. Events get delivered
-   * only by the primary queue. If the primary queue goes down then the secondary
-   * queue first becomes primary and then starts delivering the events. 
+   * Returns whether the queue is primary or secondary. Events get delivered only by the primary
+   * queue. If the primary queue goes down then the secondary queue first becomes primary and then
+   * starts delivering the events.
    * 
    * @return True if this is the primary queue, false otherwise.
    */
   public boolean isPrimary();
-  
+
   /**
    * Returns the number of dispatcher threads working for this <code>AsyncEventQueue</code>.
    */
   public int getDispatcherThreads();
-  
+
   /**
-   * Returns the order policy followed while dispatching the events to remote
-   * distributed system. Order policy is only relevant when the number of dispatcher
-   * threads is greater than one.
+   * Returns the order policy followed while dispatching the events to remote distributed system.
+   * Order policy is only relevant when the number of dispatcher threads is greater than one.
    */
-  
+
   public String getOrderPolicy();
- 
+
   /**
    * Returns whether the isDiskSynchronous property is set for this AsyncEventQueue.
    * 
@@ -110,7 +106,7 @@ public interface AsyncEventQueueMXBean {
    * Returns the class name of the AsyncEventListener that is attached to the queue.
    */
   public String getAsyncEventListener();
-  
+
   /**
    * Returns the Size of the event queue
    * 

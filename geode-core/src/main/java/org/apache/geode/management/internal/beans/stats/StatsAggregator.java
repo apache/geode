@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans.stats;
 
@@ -69,11 +67,9 @@ public class StatsAggregator {
     }
   }
 
-  public void aggregate(FederationComponent newComp,
-      FederationComponent oldComp) {
+  public void aggregate(FederationComponent newComp, FederationComponent oldComp) {
 
-    Map<String, Object> newState = (newComp != null ? newComp.getObjectState()
-        : null);
+    Map<String, Object> newState = (newComp != null ? newComp.getObjectState() : null);
     Map<String, Object> oldState;
 
     if (oldComp != null && oldComp.getOldState().size() > 0) {
@@ -85,7 +81,7 @@ public class StatsAggregator {
     String attribute = null;
     try {
       if (typeMap != null && !typeMap.isEmpty()) {
-        for (Map.Entry<String, Class<?>> typeEntry: typeMap.entrySet()) {
+        for (Map.Entry<String, Class<?>> typeEntry : typeMap.entrySet()) {
           attribute = typeEntry.getKey();
 
           Object newVal = newState != null ? newState.get(attribute) : null;
@@ -104,7 +100,7 @@ public class StatsAggregator {
               incLong(attribute, (Long) newVal, (Long) oldVal);
             } else if (classzz == Integer.TYPE) {
               if (oldVal == null) {
-                oldVal =  new Integer(0);
+                oldVal = new Integer(0);
               }
               incInt(attribute, (Integer) newVal, (Integer) oldVal);
             } else if (classzz == Float.TYPE) {
@@ -122,7 +118,7 @@ public class StatsAggregator {
 
           } else if (oldState != null && newState == null) {
             Object oldVal = oldState.get(attribute);
-            if(oldVal != null){
+            if (oldVal != null) {
               Class<?> classzz = typeEntry.getValue();
               if (classzz == Long.TYPE) {
                 decLong(attribute, (Long) oldVal);
@@ -142,10 +138,10 @@ public class StatsAggregator {
 
       }
     } catch (Exception e) {
-        if(logger.fineEnabled()){
-          logger.fine("Exception while processing attribute " + attribute);
-          logger.fine(e);
-        }
+      if (logger.fineEnabled()) {
+        logger.fine("Exception while processing attribute " + attribute);
+        logger.fine(e);
+      }
     }
 
   }
@@ -226,7 +222,7 @@ public class StatsAggregator {
     }
   }
 
-  public void decLong(String attributeName,Long oldVal) {
+  public void decLong(String attributeName, Long oldVal) {
     if (oldVal == 0) {
       return;
     }
@@ -245,7 +241,7 @@ public class StatsAggregator {
     }
   }
 
-  public void decInt(String attributeName,Integer oldVal) {
+  public void decInt(String attributeName, Integer oldVal) {
     if (oldVal == 0) {
       return;
     }
@@ -264,7 +260,7 @@ public class StatsAggregator {
     }
   }
 
-  public void decFloat(String attributeName,Float oldVal) {
+  public void decFloat(String attributeName, Float oldVal) {
     if (oldVal == 0) {
       return;
     }
@@ -283,7 +279,7 @@ public class StatsAggregator {
     }
   }
 
-  public void decDouble(String attributeName,Double oldVal) {
+  public void decDouble(String attributeName, Double oldVal) {
     if (oldVal == 0) {
       return;
     }

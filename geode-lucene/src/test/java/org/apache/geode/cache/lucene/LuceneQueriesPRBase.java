@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.lucene;
@@ -36,11 +32,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.lucene.test.IndexRepositorySpy;
-import org.apache.geode.cache.lucene.internal.IndexRepositoryFactory;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
-import org.apache.geode.cache.lucene.internal.PartitionedRepositoryManager;
-import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
-import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
@@ -48,13 +39,12 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 
 /**
- * This test class adds more basic tests of lucene functionality
- * for partitioned regions. These tests should work across all types
- * of PRs and topologies.
+ * This test class adds more basic tests of lucene functionality for partitioned regions. These
+ * tests should work across all types of PRs and topologies.
  *
  */
 public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
-  protected static final int NUM_BUCKETS = 7;
+  protected static final int NUM_BUCKETS = 10;
 
   @After
   public void cleanupRebalanceCallback() {
@@ -71,16 +61,20 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
 
   @Test
   public void returnCorrectResultsWhenMoveBucketHappensOnIndexUpdate() throws InterruptedException {
-    final DistributedMember member2 = dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
+    final DistributedMember member2 =
+        dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     addCallbackToMoveBucket(dataStore1, member2);
 
     putEntriesAndValidateQueryResults();
   }
 
   @Test
-  public void returnCorrectResultsWhenBucketIsMovedAndMovedBackOnIndexUpdate() throws InterruptedException {
-    final DistributedMember member1 = dataStore1.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
-    final DistributedMember member2 = dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
+  public void returnCorrectResultsWhenBucketIsMovedAndMovedBackOnIndexUpdate()
+      throws InterruptedException {
+    final DistributedMember member1 =
+        dataStore1.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
+    final DistributedMember member2 =
+        dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     addCallbackToMoveBucket(dataStore1, member2);
     addCallbackToMoveBucket(dataStore2, member1);
 
@@ -107,7 +101,8 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
   }
 
   @Test
-  public void returnCorrectResultsWhenRebalanceHappensWhileSenderIsPaused() throws InterruptedException {
+  public void returnCorrectResultsWhenRebalanceHappensWhileSenderIsPaused()
+      throws InterruptedException {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
@@ -127,9 +122,11 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }
 
-  protected PartitionAttributes getPartitionAttributes() {
+  protected PartitionAttributes getPartitionAttributes(final boolean isAccessor) {
     PartitionAttributesFactory factory = new PartitionAttributesFactory();
-    factory.setLocalMaxMemory(100);
+    if (!isAccessor) {
+      factory.setLocalMaxMemory(100);
+    }
     factory.setTotalNumBuckets(NUM_BUCKETS);
     return factory.create();
   }
@@ -157,7 +154,7 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     accessor.invoke(() -> {
       final Cache cache = getCache();
       Region<Object, Object> region = cache.getRegion(REGION_NAME);
-      IntStream.range(0,NUM_BUCKETS).forEach(i -> region.put(i, new TestObject("hello world")));
+      IntStream.range(0, NUM_BUCKETS).forEach(i -> region.put(i, new TestObject("hello world")));
     });
   }
 
@@ -190,8 +187,8 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
   private void rebalanceRegion(VM vm) {
     // Do a rebalance
     vm.invoke(() -> {
-        RebalanceOperation op = getCache().getResourceManager().createRebalanceFactory().start();
-        RebalanceResults results = op.getResults();
+      RebalanceOperation op = getCache().getResourceManager().createRebalanceFactory().start();
+      RebalanceResults results = op.getResults();
     });
   }
 

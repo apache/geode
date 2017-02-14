@@ -1,0 +1,82 @@
+---
+title:  Automated Rebalancing of Partitioned Region Data
+---
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+Automated rebalance triggers a rebalance
+(see [Rebalancing Partitioned Region Data](rebalancing_pr_data.html))
+operation based on a
+time schedule.
+At the scheduled intervals, the balance of the partitioned regions
+is evaluated based on configured criteria.
+One criterion is a minimum threshhold for number of bytes that
+would be transferred if the rebalance takes place.
+The other criterion uses the ratio of the number of bytes
+that would be transferred to the total number of bytes in the
+regions.
+If the evaluation indicates the system is out of balance,
+the rebalance transfer is initiated.
+
+To enable automated rebalance, specify the rebalance manager
+in the `<initializer>` attribute within the `<cache>` configuration
+of the `cache.xml` file:
+
+``` pre
+<class-name> org.apache.geode.cache.util.AutoBalancer </class-name>
+```
+
+The time schedule that triggers an evaluation and possible rebalance
+uses a cron-based specification in 
+the `<initializer>` attribute within the `<cache>` configuration 
+of the `cache.xml` file.
+This scheduling specification is required.
+Specify the cron expression in the Spring format.
+This example specification triggers each Saturday at 3am:
+
+``` pre
+<parameter name="schedule"> 0 0 3 ? * SAT </parameter>
+```
+
+This example specification triggers once each day at 4am:
+
+``` pre
+<parameter name="schedule"> 0 0 4 * * ?</parameter>
+```
+
+The automated rebalance specifications that specify criteria for
+triggering the rebalance are optional and have reasonable default values.
+
+One criterion is a minimum number of bytes that would be transferred
+if the rebalance were to take place.
+The specification is in units of bytes; here is the specification
+for the default value of 100MB:
+
+``` pre
+<parameter name="minimum-size"> 104857600</parameter>
+```
+
+Another criterion represents the ratio of bytes that would be transferred
+to the total number of bytes in the partitioned regions,
+represented as an integer percentage.
+The default is 10 percent.
+This example specificies 15 percent:
+ 
+``` pre
+<parameter name="size-threshold-percent"> 15 </parameter>
+```
+

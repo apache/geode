@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
@@ -23,29 +21,31 @@ import org.jgroups.Message;
 import org.apache.geode.internal.Version;
 
 public class GMSPingPonger {
-  private byte[] pingInBytes = new byte[] { 'p', 'i', 'n', 'g' };
-  private byte[] pongInBytes = new byte[] { 'p', 'o', 'n', 'g' };
-  
+  private byte[] pingInBytes = new byte[] {'p', 'i', 'n', 'g'};
+  private byte[] pongInBytes = new byte[] {'p', 'o', 'n', 'g'};
+
   public boolean isPingMessage(byte[] buffer) {
-    return buffer.length == 4 && (buffer[0] == 'p' && buffer[1] == 'i' && buffer[2] == 'n' && buffer[3] == 'g');
+    return buffer.length == 4
+        && (buffer[0] == 'p' && buffer[1] == 'i' && buffer[2] == 'n' && buffer[3] == 'g');
   }
-  
+
   public boolean isPongMessage(byte[] buffer) {
-    return buffer.length == 4 && (buffer[0] == 'p' && buffer[1] == 'o' && buffer[2] == 'n' && buffer[3] == 'g');
+    return buffer.length == 4
+        && (buffer[0] == 'p' && buffer[1] == 'o' && buffer[2] == 'n' && buffer[3] == 'g');
   }
-  
+
   public void sendPongMessage(JChannel channel, Address src, Address dest) throws Exception {
-    channel.send(createPongMessage(src, dest)); 
+    channel.send(createPongMessage(src, dest));
   }
-  
+
   public Message createPongMessage(Address src, Address dest) {
-	  return createJGMessage(pongInBytes, src, dest, Version.CURRENT_ORDINAL);
+    return createJGMessage(pongInBytes, src, dest, Version.CURRENT_ORDINAL);
   }
-  
+
   public Message createPingMessage(Address src, Address dest) {
     return createJGMessage(pingInBytes, src, dest, Version.CURRENT_ORDINAL);
   }
-  
+
   public void sendPingMessage(JChannel channel, Address src, JGAddress dest) throws Exception {
     channel.send(createPingMessage(src, dest));
   }

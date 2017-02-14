@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  *
@@ -44,12 +42,11 @@ public class UnregisterInterest extends BaseCommand {
     return singleton;
   }
 
-  UnregisterInterest() {
-  }
+  UnregisterInterest() {}
 
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long start)
-    throws ClassNotFoundException, IOException {
+      throws ClassNotFoundException, IOException {
     Part regionNamePart = null, keyPart = null;
     String regionName = null;
     Object key = null;
@@ -82,17 +79,21 @@ public class UnregisterInterest extends BaseCommand {
       return;
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Received unregister interest request ({} bytes) from {} for region {} key {}", servConn.getName(), msg
-        .getPayloadLength(), servConn.getSocketString(), regionName, key);
+      logger.debug(
+          "{}: Received unregister interest request ({} bytes) from {} for region {} key {}",
+          servConn.getName(), msg.getPayloadLength(), servConn.getSocketString(), regionName, key);
     }
 
     // Process the unregister interest request
     if ((key == null) && (regionName == null)) {
-      errMessage = LocalizedStrings.UnRegisterInterest_THE_INPUT_REGION_NAME_AND_KEY_FOR_THE_UNREGISTER_INTEREST_REQUEST_ARE_NULL;
+      errMessage =
+          LocalizedStrings.UnRegisterInterest_THE_INPUT_REGION_NAME_AND_KEY_FOR_THE_UNREGISTER_INTEREST_REQUEST_ARE_NULL;
     } else if (key == null) {
-      errMessage = LocalizedStrings.UnRegisterInterest_THE_INPUT_KEY_FOR_THE_UNREGISTER_INTEREST_REQUEST_IS_NULL;
+      errMessage =
+          LocalizedStrings.UnRegisterInterest_THE_INPUT_KEY_FOR_THE_UNREGISTER_INTEREST_REQUEST_IS_NULL;
     } else if (regionName == null) {
-      errMessage = LocalizedStrings.UnRegisterInterest_THE_INPUT_REGION_NAME_FOR_THE_UNREGISTER_INTEREST_REQUEST_IS_NULL;
+      errMessage =
+          LocalizedStrings.UnRegisterInterest_THE_INPUT_REGION_NAME_FOR_THE_UNREGISTER_INTEREST_REQUEST_IS_NULL;
       String s = errMessage.toLocalizedString();
       logger.warn("{}: {}", servConn.getName(), s);
       writeErrorResponse(msg, MessageType.UNREGISTER_INTEREST_DATA_ERROR, s, servConn);
@@ -101,11 +102,11 @@ public class UnregisterInterest extends BaseCommand {
     }
 
     try {
-    if (interestType == InterestType.REGULAR_EXPRESSION) {
-      this.securityService.authorizeRegionRead(regionName);
-    } else {
-      this.securityService.authorizeRegionRead(regionName, key.toString());
-    }
+      if (interestType == InterestType.REGULAR_EXPRESSION) {
+        this.securityService.authorizeRegionRead(regionName);
+      } else {
+        this.securityService.authorizeRegionRead(regionName, key.toString());
+      }
     } catch (NotAuthorizedException ex) {
       writeException(msg, ex, false, servConn);
       servConn.setAsTrue(RESPONDED);
@@ -116,7 +117,8 @@ public class UnregisterInterest extends BaseCommand {
     if (authzRequest != null) {
       if (!DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
         try {
-          UnregisterInterestOperationContext unregisterContext = authzRequest.unregisterInterestAuthorize(regionName, key, interestType);
+          UnregisterInterestOperationContext unregisterContext =
+              authzRequest.unregisterInterestAuthorize(regionName, key, interestType);
           key = unregisterContext.getKey();
         } catch (NotAuthorizedException ex) {
           writeException(msg, ex, false, servConn);
@@ -126,23 +128,21 @@ public class UnregisterInterest extends BaseCommand {
       }
     }
     // Yogesh : bug fix for 36457 :
-      /*
-       * Region destroy message from server to client results in client calling
-       * unregister to server (an unnecessary callback). The unregister
-       * encounters an error because the region has been destroyed on the server
-       * and hence falsely marks the server dead.
-       */
-      /*
-       * Region region = crHelper.getRegion(regionName); if (region == null) {
-       * logger.warning(this.name + ": Region named " + regionName + " was not
-       * found during unregister interest request"); writeErrorResponse(msg,
-       * MessageType.UNREGISTER_INTEREST_DATA_ERROR); responded = true; } else {
-       */
+    /*
+     * Region destroy message from server to client results in client calling unregister to server
+     * (an unnecessary callback). The unregister encounters an error because the region has been
+     * destroyed on the server and hence falsely marks the server dead.
+     */
+    /*
+     * Region region = crHelper.getRegion(regionName); if (region == null) {
+     * logger.warning(this.name + ": Region named " + regionName + " was not found during unregister
+     * interest request"); writeErrorResponse(msg, MessageType.UNREGISTER_INTEREST_DATA_ERROR);
+     * responded = true; } else {
+     */
     // Unregister interest irrelevent of whether the region is present it or
     // not
-    servConn.getAcceptor()
-            .getCacheClientNotifier()
-            .unregisterClientInterest(regionName, key, interestType, isClosing, servConn.getProxyID(), keepalive);
+    servConn.getAcceptor().getCacheClientNotifier().unregisterClientInterest(regionName, key,
+        interestType, isClosing, servConn.getProxyID(), keepalive);
 
     // Update the statistics and write the reply
     // bserverStats.incLong(processDestroyTimeId,
@@ -151,7 +151,8 @@ public class UnregisterInterest extends BaseCommand {
     writeReply(msg, servConn);
     servConn.setAsTrue(RESPONDED);
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Sent unregister interest response for region {} key {}", servConn.getName(), regionName, key);
+      logger.debug("{}: Sent unregister interest response for region {} key {}", servConn.getName(),
+          regionName, key);
     }
     // bserverStats.incLong(writeDestroyResponseTimeId,
     // DistributionStats.getStatTime() - start);

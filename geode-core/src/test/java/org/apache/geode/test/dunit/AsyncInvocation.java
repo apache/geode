@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.test.dunit;
 
@@ -27,12 +25,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.geode.SystemFailure;
 
 /**
- * An {@code AsyncInvocation} represents the invocation of a remote invocation
- * that executes asynchronously from its caller.  An instance of
- * {@code AsyncInvocation} provides information about the invocation such as
- * any exception that it may have thrown.
+ * An {@code AsyncInvocation} represents the invocation of a remote invocation that executes
+ * asynchronously from its caller. An instance of {@code AsyncInvocation} provides information about
+ * the invocation such as any exception that it may have thrown.
  *
- * <p>{@code AsyncInvocation} can be used as follows:
+ * <p>
+ * {@code AsyncInvocation} can be used as follows:
  *
  * <pre>
  *   AsyncInvocation ai1 = vm.invokeAsync(() -> Test.method1());
@@ -53,7 +51,7 @@ import org.apache.geode.SystemFailure;
  */
 public class AsyncInvocation<V> implements Future<V> {
   // TODO:davidw: Add the ability to get a return value back from the
-  // async method call.  (Use a static ThreadLocal field that is
+  // async method call. (Use a static ThreadLocal field that is
   // accessible from the Runnable used in VM#invoke)
   // TODO:?: reimplement using Futures
 
@@ -74,22 +72,19 @@ public class AsyncInvocation<V> implements Future<V> {
 
   /** True if this {@code AsyncInvocation} has been cancelled */
   private boolean cancelled;
-  
+
   /**
    * Creates a new {@code AsyncInvocation}.
    *
-   * @param  target
-   *         The object or {@link Class} on which the remote method was
-   *         invoked
-   * @param  methodName
-   *         The name of the method being invoked
-   * @param  work
-   *         The actual invocation of the method
+   * @param target The object or {@link Class} on which the remote method was invoked
+   * @param methodName The name of the method being invoked
+   * @param work The actual invocation of the method
    */
   public AsyncInvocation(final Object target, final String methodName, final Callable<V> work) {
     this.target = target;
     this.methodName = methodName;
-    this.thread = new Thread(new AsyncInvocationGroup(), runnable(work), getName(target, methodName));
+    this.thread =
+        new Thread(new AsyncInvocationGroup(), runnable(work), getName(target, methodName));
   }
 
   /**
@@ -111,8 +106,7 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
-   * Returns whether or not an exception occurred during this async
-   * method invocation.
+   * Returns whether or not an exception occurred during this async method invocation.
    *
    * @throws AssertionError if this {@code AsyncInvocation} is not done.
    */
@@ -121,8 +115,7 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
-   * Returns the exception that was thrown during this async method
-   * invocation.
+   * Returns the exception that was thrown during this async method invocation.
    *
    * @throws AssertionError if this {@code AsyncInvocation} is not done.
    */
@@ -142,17 +135,17 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
-   * Throws {@code AssertionError} wrapping any {@code Exception} thrown by
-   * this {@code AsyncInvocation}.
+   * Throws {@code AssertionError} wrapping any {@code Exception} thrown by this
+   * {@code AsyncInvocation}.
    *
    * @return this {@code AsyncInvocation}
    *
-   * @throws AssertionError wrapping any {@code Exception} thrown by this
-   *         {@code AsyncInvocation}.
+   * @throws AssertionError wrapping any {@code Exception} thrown by this {@code AsyncInvocation}.
    */
   public AsyncInvocation<V> checkException() {
     if (this.resultThrowable.get() != null) {
-      throw new AssertionError("An exception occurred during asynchronous invocation.", getException());
+      throw new AssertionError("An exception occurred during asynchronous invocation.",
+          getException());
     }
     return this;
   }
@@ -162,12 +155,11 @@ public class AsyncInvocation<V> implements Future<V> {
    *
    * @return the result of this {@code AsyncInvocation}
    *
-   * @throws AssertionError wrapping any {@code Exception} thrown by this
-   *         {@code AsyncInvocation}.
+   * @throws AssertionError wrapping any {@code Exception} thrown by this {@code AsyncInvocation}.
    *
-   * @throws AssertionError wrapping a {@code TimeoutException} if this
-   *         {@code AsyncInvocation} fails to complete within the default
-   *         timeout of 60 seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
+   * @throws AssertionError wrapping a {@code TimeoutException} if this {@code AsyncInvocation}
+   *         fails to complete within the default timeout of 60 seconds as defined by
+   *         {@link #DEFAULT_JOIN_MILLIS}.
    *
    * @throws InterruptedException if the current thread is interrupted.
    *
@@ -183,17 +175,14 @@ public class AsyncInvocation<V> implements Future<V> {
   /**
    * Returns the result of this {@code AsyncInvocation}.
    *
-   * @param  millis
-   *         the time to wait in milliseconds
+   * @param millis the time to wait in milliseconds
    *
    * @return the result of this {@code AsyncInvocation}
    *
-   * @throws AssertionError wrapping any {@code Exception} thrown by this
-   *         {@code AsyncInvocation}.
+   * @throws AssertionError wrapping any {@code Exception} thrown by this {@code AsyncInvocation}.
    *
-   * @throws AssertionError wrapping a {@code TimeoutException} if this
-   *         {@code AsyncInvocation} fails to complete within the specified
-   *         timeout of {@code millis}.
+   * @throws AssertionError wrapping a {@code TimeoutException} if this {@code AsyncInvocation}
+   *         fails to complete within the specified timeout of {@code millis}.
    *
    * @throws InterruptedException if the current thread is interrupted.
    *
@@ -224,17 +213,14 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
-   * Waits at most {@code millis} milliseconds for this
-   * {@code AsyncInvocation} to complete. A timeout of {@code 0} means to wait
-   * forever.
+   * Waits at most {@code millis} milliseconds for this {@code AsyncInvocation} to complete. A
+   * timeout of {@code 0} means to wait forever.
    *
-   * @param  millis
-   *         the time to wait in milliseconds
+   * @param millis the time to wait in milliseconds
    *
    * @return this {@code AsyncInvocation}
    *
-   * @throws IllegalArgumentException if the value of {@code millis} is
-   *         negative.
+   * @throws IllegalArgumentException if the value of {@code millis} is negative.
    *
    * @throws InterruptedException if the current thread is interrupted.
    */
@@ -244,23 +230,21 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
-   * Waits at most {@code millis} milliseconds plus {@code nanos} nanoseconds
-   * for this {@code AsyncInvocation} to complete.
+   * Waits at most {@code millis} milliseconds plus {@code nanos} nanoseconds for this
+   * {@code AsyncInvocation} to complete.
    *
-   * @param  millis
-   *         the time to wait in milliseconds
-   * @param  nanos
-   *         {@code 0-999999} additional nanoseconds to wait
+   * @param millis the time to wait in milliseconds
+   * @param nanos {@code 0-999999} additional nanoseconds to wait
    *
    * @return this {@code AsyncInvocation}
    *
-   * @throws IllegalArgumentException
-   *         if the value of {@code millis} is negative, or the value
-   *         of {@code nanos} is not in the range {@code 0-999999}.
+   * @throws IllegalArgumentException if the value of {@code millis} is negative, or the value of
+   *         {@code nanos} is not in the range {@code 0-999999}.
    *
    * @throws InterruptedException if the current thread is interrupted.
    */
-  public synchronized AsyncInvocation<V> join(final long millis, final int nanos) throws InterruptedException {
+  public synchronized AsyncInvocation<V> join(final long millis, final int nanos)
+      throws InterruptedException {
     this.thread.join(millis, nanos);
     return this;
   }
@@ -299,11 +283,11 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
-   * Tests if this {@code AsyncInvocation}'s thread is alive. A thread is alive
-   * if it has been started and has not yet died.
+   * Tests if this {@code AsyncInvocation}'s thread is alive. A thread is alive if it has been
+   * started and has not yet died.
    *
-   * @return {@code true} if this {@code AsyncInvocation}'s thread is alive;
-   *         {@code false} otherwise.
+   * @return {@code true} if this {@code AsyncInvocation}'s thread is alive; {@code false}
+   *         otherwise.
    */
   public synchronized boolean isAlive() {
     return this.thread.isAlive();
@@ -316,7 +300,7 @@ public class AsyncInvocation<V> implements Future<V> {
 
   @Override
   public synchronized boolean isDone() {
-    return !this.thread.isAlive(); //state != NEW;
+    return !this.thread.isAlive(); // state != NEW;
   }
 
   @Override
@@ -332,17 +316,68 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
-   * Waits if necessary for the work to complete, and then returns the result
-   * of this {@code AsyncInvocation}.
+   * Waits if necessary for at most the given time for the computation to complete.
+   *
+   * @param timeout the maximum time to wait
+   * @param unit the time unit of the timeout argument
+   *
+   * @return this {@code AsyncInvocation}
+   *
+   * @throws AssertionError wrapping any {@code Exception} thrown by this {@code AsyncInvocation}.
+   *
+   * @throws CancellationException if the computation was cancelled
+   *
+   * @throws ExecutionException if the computation threw an exception
+   *
+   * @throws InterruptedException if the current thread is interrupted.
+   *
+   * @throws TimeoutException if the wait timed out
+   */
+  public AsyncInvocation<V> await(final long timeout, final TimeUnit unit)
+      throws ExecutionException, InterruptedException, TimeoutException {
+    long millis = unit.toMillis(timeout);
+    join(millis);
+    timeoutIfAlive(millis);
+    checkException();
+    return this;
+  }
+
+  /**
+   * Waits if necessary for at most the given time for the computation to complete.
+   *
+   * @return this {@code AsyncInvocation}
+   *
+   * @throws AssertionError wrapping any {@code Exception} thrown by this {@code AsyncInvocation}.
+   *
+   * @throws AssertionError wrapping a {@code TimeoutException} if this {@code AsyncInvocation}
+   *         fails to complete within the default timeout of 60 seconds as defined by
+   *         {@link #DEFAULT_JOIN_MILLIS}.
+   *
+   * @throws CancellationException if the computation was cancelled
+   *
+   * @throws ExecutionException if the computation threw an exception
+   *
+   * @throws InterruptedException if the current thread is interrupted.
+   */
+  public AsyncInvocation<V> await() throws ExecutionException, InterruptedException {
+    try {
+      return await(DEFAULT_JOIN_MILLIS, TimeUnit.MILLISECONDS);
+    } catch (TimeoutException timeoutException) {
+      throw new AssertionError(timeoutException);
+    }
+  }
+
+  /**
+   * Waits if necessary for the work to complete, and then returns the result of this
+   * {@code AsyncInvocation}.
    *
    * @return the result of this {@code AsyncInvocation}
    *
-   * @throws AssertionError wrapping any {@code Exception} thrown by this
-   *         {@code AsyncInvocation}.
+   * @throws AssertionError wrapping any {@code Exception} thrown by this {@code AsyncInvocation}.
    *
-   * @throws AssertionError wrapping a {@code TimeoutException} if this
-   *         {@code AsyncInvocation} fails to complete within the default
-   *         timeout of 60 seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
+   * @throws AssertionError wrapping a {@code TimeoutException} if this {@code AsyncInvocation}
+   *         fails to complete within the default timeout of 60 seconds as defined by
+   *         {@link #DEFAULT_JOIN_MILLIS}.
    *
    * @throws CancellationException if the computation was cancelled
    *
@@ -360,20 +395,15 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
-   * Waits if necessary for at most the given time for the computation
-   * to complete, and then retrieves its result, if available.
+   * Waits if necessary for at most the given time for the computation to complete, and then
+   * retrieves its result, if available.
    *
-   * @param  timeout the maximum time to wait
-   * @param  unit the time unit of the timeout argument
+   * @param timeout the maximum time to wait
+   * @param unit the time unit of the timeout argument
    *
    * @return the result of this {@code AsyncInvocation}
    *
-   * @throws AssertionError wrapping any {@code Exception} thrown by this
-   *         {@code AsyncInvocation}.
-   *
-   * @throws AssertionError wrapping a {@code TimeoutException} if this
-   *         {@code AsyncInvocation} fails to complete within the default
-   *         timeout of 60 seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
+   * @throws AssertionError wrapping any {@code Exception} thrown by this {@code AsyncInvocation}.
    *
    * @throws CancellationException if the computation was cancelled
    *
@@ -384,7 +414,8 @@ public class AsyncInvocation<V> implements Future<V> {
    * @throws TimeoutException if the wait timed out
    */
   @Override
-  public V get(final long timeout, final TimeUnit unit) throws ExecutionException, InterruptedException, TimeoutException {
+  public V get(final long timeout, final TimeUnit unit)
+      throws ExecutionException, InterruptedException, TimeoutException {
     long millis = unit.toMillis(timeout);
     join(millis);
     timeoutIfAlive(millis);
@@ -393,10 +424,10 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
-   * Returns the identifier of this {@code AsyncInvocation}'s thread. The
-   * thread ID is a positive <tt>long</tt> number generated when this thread
-   * was created. The thread ID is unique and remains unchanged during its
-   * lifetime. When a thread is terminated, this thread ID may be reused.
+   * Returns the identifier of this {@code AsyncInvocation}'s thread. The thread ID is a positive
+   * <tt>long</tt> number generated when this thread was created. The thread ID is unique and
+   * remains unchanged during its lifetime. When a thread is terminated, this thread ID may be
+   * reused.
    *
    * @return this {@code AsyncInvocation}'s thread's ID.
    */
@@ -410,11 +441,9 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
-   * Throws {@code IllegalStateException} if this {@code AsyncInvocation} is
-   * not done.
+   * Throws {@code IllegalStateException} if this {@code AsyncInvocation} is not done.
    *
-   * @param  message
-   *         The value to be used in constructing detail message
+   * @param message The value to be used in constructing detail message
    *
    * @return this {@code AsyncInvocation}
    *
@@ -429,35 +458,35 @@ public class AsyncInvocation<V> implements Future<V> {
 
   /**
    * Throws {@code AssertionError} wrapping a {@code TimeoutException} if this
-   * {@code AsyncInvocation} fails to complete within the default timeout of 60
-   * seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
+   * {@code AsyncInvocation} fails to complete within the default timeout of 60 seconds as defined
+   * by {@link #DEFAULT_JOIN_MILLIS}.
    *
    * @return this {@code AsyncInvocation}
    *
-   * @throws TimeoutException if this {@code AsyncInvocation} fails to complete
-   *         within the default timeout of 60 seconds as defined by
-   *         {@link #DEFAULT_JOIN_MILLIS}.
+   * @throws TimeoutException if this {@code AsyncInvocation} fails to complete within the default
+   *         timeout of 60 seconds as defined by {@link #DEFAULT_JOIN_MILLIS}.
    */
   private AsyncInvocation<V> timeoutIfAlive(final long timeout) throws TimeoutException {
     if (this.thread.isAlive()) {
-      throw new TimeoutException("Timed out waiting " + timeout + " milliseconds for AsyncInvocation to complete.");
+      throw new TimeoutException(
+          "Timed out waiting " + timeout + " milliseconds for AsyncInvocation to complete.");
     }
     return this;
   }
 
   private Runnable runnable(final Callable<V> work) {
     return () -> {
-        try {
-          resultValue.set(work.call());
-        } catch (Throwable throwable) {
-          resultThrowable.set(throwable);
-        }
+      try {
+        resultValue.set(work.call());
+      } catch (Throwable throwable) {
+        resultThrowable.set(throwable);
+      }
     };
   }
 
   /**
-   * Returns the name of a {@code AsyncInvocation} based on its
-   * {@code targetObject} and {@code methodName}.
+   * Returns the name of a {@code AsyncInvocation} based on its {@code targetObject} and
+   * {@code methodName}.
    */
   private static String getName(final Object target, final String methodName) {
     StringBuilder sb = new StringBuilder(methodName);
@@ -475,8 +504,7 @@ public class AsyncInvocation<V> implements Future<V> {
   }
 
   /**
-   * A {@code ThreadGroup} that notices when an exception occurs
-   * during an {@code AsyncInvocation}.
+   * A {@code ThreadGroup} that notices when an exception occurs during an {@code AsyncInvocation}.
    */
   private class AsyncInvocationGroup extends ThreadGroup {
 
@@ -487,7 +515,7 @@ public class AsyncInvocation<V> implements Future<V> {
     @Override
     public void uncaughtException(Thread thread, Throwable throwable) {
       if (throwable instanceof VirtualMachineError) {
-        SystemFailure.setFailure((VirtualMachineError)throwable); // don't throw
+        SystemFailure.setFailure((VirtualMachineError) throwable); // don't throw
       }
       resultThrowable.set(throwable);
     }

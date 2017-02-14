@@ -23,7 +23,7 @@ Determine the proper startup and shutdown procedures, and write your startup and
 
 Well-designed procedures for starting and stopping your system can speed startup and protect your data. The processes you need to start and stop include server and locator processes and your other Geode applications, including clients. The procedures you use depend in part on your system’s configuration and the dependencies between your system processes.
 
-Use the following guidelines to create startup and shutdown procedures and scripts. Some of these instructions use [`gfsh` (Geode SHell)](../../tools_modules/gfsh/chapter_overview.html).
+Use the following guidelines to create startup and shutdown procedures and scripts. Some of these instructions use [`gfsh`](../../tools_modules/gfsh/chapter_overview.html).
 
 ## <a id="starting_up_shutting_down__section_3D111558326D4A38BE48C17D44BB66DB" class="no-quick-link"></a>Starting Up Your System
 
@@ -126,6 +126,17 @@ Shut down the distributed system members according to the type of member. For ex
     ``` pre
     gfsh>stop locator --dir=<locator_working_dir>
     ```
+
+-   Do not use the command line `kill -9` to shut down a server under
+ordinary circumstances.
+Especially on systems with a small number of members,
+using a `kill` instead of a `gfsh stop` can cause the partition detection
+mechanism to place the system in an end state that will wait forever to
+reconnect to the killed server,
+and there will be no way to restart that killed server.
+If a `kill` command appears the only way to rid the system of a server,
+then `kill` *all* the processes of the distributed system
+or use `kill -INT`, which will allow an orderly shutdown of the process. 
 
 ## <a id="starting_up_shutting_down__section_7CF680CF8A924C57A7052AE2F975DA81" class="no-quick-link"></a>Option for System Member Shutdown Behavior
 

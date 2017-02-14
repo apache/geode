@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -31,19 +29,18 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
-/** TXRegionLockRequest represents all the locks that need to be made
- * for a single region.
+/**
+ * TXRegionLockRequest represents all the locks that need to be made for a single region.
  *
  * 
  * @since GemFire 4.0
  * 
  */
 public class TXRegionLockRequestImpl
-  implements org.apache.geode.internal.cache.locks.TXRegionLockRequest
-{
+    implements org.apache.geode.internal.cache.locks.TXRegionLockRequest {
   private static final long serialVersionUID = 5840033961584078082L;
   private static final Logger logger = LogService.getLogger();
-  
+
   private transient LocalRegion r;
   private String regionPath;
   private Set<Object> entryKeys;
@@ -51,13 +48,13 @@ public class TXRegionLockRequestImpl
   public TXRegionLockRequestImpl() {
     // for DataSerializer
   }
-  
-  public TXRegionLockRequestImpl(LocalRegion r)
-  {
+
+  public TXRegionLockRequestImpl(LocalRegion r) {
     this.r = r;
     this.regionPath = null;
     this.entryKeys = null;
   }
+
   /**
    * Used by unit tests
    */
@@ -75,15 +72,14 @@ public class TXRegionLockRequestImpl
       return;
     }
     if (this.entryKeys == null) {
-      //Create new temporary HashSet. Fix for defect # 44472.
+      // Create new temporary HashSet. Fix for defect # 44472.
       final HashSet<Object> tmp = new HashSet<Object>(s.size());
       tmp.addAll(s);
       this.entryKeys = tmp;
-    	
+
     } else {
       // Need to make a copy so we can do a union
-      final HashSet<Object> tmp = new HashSet<Object>(this.entryKeys.size()
-          + s.size());
+      final HashSet<Object> tmp = new HashSet<Object>(this.entryKeys.size() + s.size());
       tmp.addAll(s);
       tmp.addAll(this.entryKeys);
       this.entryKeys = tmp;
@@ -96,16 +92,15 @@ public class TXRegionLockRequestImpl
     }
     this.entryKeys.add(key);
   }
-  
-  public final void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
+
+  public final void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.regionPath = DataSerializer.readString(in);
 
     final GemFireCacheImpl cache = getCache(false);
     try {
       final int size = InternalDataSerializer.readArrayLength(in);
       if (cache != null && size > 0) {
-        this.r = (LocalRegion)cache.getRegion(this.regionPath);
+        this.r = (LocalRegion) cache.getRegion(this.regionPath);
       }
       this.entryKeys = readEntryKeySet(size, in);
     } catch (CacheClosedException cce) {
@@ -113,10 +108,9 @@ public class TXRegionLockRequestImpl
       this.entryKeys = null;
     }
   }
-  
-  private final Set<Object> readEntryKeySet(
-      final int size, final DataInput in) throws IOException,
-      ClassNotFoundException {
+
+  private final Set<Object> readEntryKeySet(final int size, final DataInput in)
+      throws IOException, ClassNotFoundException {
 
     if (logger.isDebugEnabled()) {
       logger.trace(LogMarker.SERIALIZER, "Reading HashSet with size {}", size);
@@ -141,9 +135,8 @@ public class TXRegionLockRequestImpl
     InternalDataSerializer.writeSet(this.entryKeys, out);
   }
 
-  public static final TXRegionLockRequestImpl createFromData(DataInput in) 
-    throws IOException, ClassNotFoundException
-  {
+  public static final TXRegionLockRequestImpl createFromData(DataInput in)
+      throws IOException, ClassNotFoundException {
     TXRegionLockRequestImpl result = new TXRegionLockRequestImpl();
     InternalDataSerializer.invokeFromData(result, in);
     return result;
@@ -179,8 +172,8 @@ public class TXRegionLockRequestImpl
   }
 
   /**
-   * Only safe to call in the vm that creates this request.
-   * Once it is serialized this method will return null.
+   * Only safe to call in the vm that creates this request. Once it is serialized this method will
+   * return null.
    */
   public final LocalRegion getLocalRegion() {
     return this.r;
@@ -189,10 +182,8 @@ public class TXRegionLockRequestImpl
   @Override
   public String toString() {
     final StringBuilder result = new StringBuilder(256);
-    result.append("regionPath=")
-      .append(getRegionFullPath())
-      .append(" keys=")
-      .append(this.entryKeys);
+    result.append("regionPath=").append(getRegionFullPath()).append(" keys=")
+        .append(this.entryKeys);
     return result.toString();
   }
 }

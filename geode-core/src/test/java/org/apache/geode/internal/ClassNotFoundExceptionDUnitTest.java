@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -66,17 +64,25 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
   public ClassNotFoundExceptionDUnitTest() {
     super();
   }
-  
+
   @Test
   public void testDataSerializable() throws InterruptedException {
-    doTest(new ObjectFactory() { public Object get() { return new ClassNotFoundDataSerializable();} });
+    doTest(new ObjectFactory() {
+      public Object get() {
+        return new ClassNotFoundDataSerializable();
+      }
+    });
   }
-  
+
   @Test
   public void testPdx() throws InterruptedException {
-    doTest(new ObjectFactory() { public Object get() { return new ClassNotFoundPdx(false);} });
+    doTest(new ObjectFactory() {
+      public Object get() {
+        return new ClassNotFoundPdx(false);
+      }
+    });
   }
-  
+
   public void doTest(final ObjectFactory objectFactory) throws InterruptedException {
     IgnoredException.addIgnoredException("SerializationException");
     Host host = Host.getHost(0);
@@ -90,96 +96,100 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
     int port2 = createServerRegion(vm1);
     createClientRegion(vm2, port1);
     createClientRegion(vm3, port2);
-    
+
     SerializableRunnable putKey = new SerializableRunnable() {
       public void run() {
         Region region = getCache().getRegion("testSimplePdx");
         region.put("a", "b");
         region.put("b", "b");
-        for(int i =0; i < 10; i++) {
+        for (int i = 0; i < 10; i++) {
           region.put(i, i);
         }
-        if(!region.containsKey("test")) {
+        if (!region.containsKey("test")) {
           region.put("test", objectFactory.get());
         }
         try {
           region.put(objectFactory.get(), objectFactory.get());
           fail("Should have received an exception");
-        } catch(SerializationException expected) {
-          //ok
-        } catch(ServerOperationException expected) {
-          if(!(expected.getCause() instanceof SerializationException) && !(expected.getCause() instanceof ClassNotFoundException) ) {
+        } catch (SerializationException expected) {
+          // ok
+        } catch (ServerOperationException expected) {
+          if (!(expected.getCause() instanceof SerializationException)
+              && !(expected.getCause() instanceof ClassNotFoundException)) {
             throw expected;
           }
         }
-//        try {
-//          region.replace("test", objectFactory.get(), objectFactory.get());
-//          fail("Should have received an exception");
-//        } catch(SerializationException expected) {
-//          //ok
-//        } catch(ServerOperationException expected) {
-//          if(!(expected.getCause() instanceof SerializationException) && !(expected.getCause() instanceof ClassNotFoundException)) {
-//            throw expected;
-//          }
-//        }
+        // try {
+        // region.replace("test", objectFactory.get(), objectFactory.get());
+        // fail("Should have received an exception");
+        // } catch(SerializationException expected) {
+        // //ok
+        // } catch(ServerOperationException expected) {
+        // if(!(expected.getCause() instanceof SerializationException) && !(expected.getCause()
+        // instanceof ClassNotFoundException)) {
+        // throw expected;
+        // }
+        // }
       }
     };
-    
+
     SerializableRunnable getValue = new SerializableRunnable() {
       public void run() {
         Region region = getCache().getRegion("testSimplePdx");
         try {
           assertNotNull(region.get("test"));
           fail("Should have received an exception");
-        } catch(SerializationException expected) {
-          //ok
-        } catch(ServerOperationException expected) {
-          if(!(expected.getCause() instanceof SerializationException) && !(expected.getCause() instanceof ClassNotFoundException)) {
+        } catch (SerializationException expected) {
+          // ok
+        } catch (ServerOperationException expected) {
+          if (!(expected.getCause() instanceof SerializationException)
+              && !(expected.getCause() instanceof ClassNotFoundException)) {
             throw expected;
           }
         }
       }
     };
-    
+
     SerializableRunnable registerInterest = new SerializableRunnable() {
       public void run() {
         Region region = getCache().getRegion("testSimplePdx");
-        
+
         try {
           ArrayList keys = new ArrayList();
-          for(int i =0; i < 1000; i++) {
+          for (int i = 0; i < 1000; i++) {
             keys.add(i);
           }
           keys.add("test");
           region.getAll(keys);
           fail("Should have received an exception");
-        } catch(SerializationException expected) {
+        } catch (SerializationException expected) {
           System.out.println("hi");
-          //ok
-        } catch(ServerOperationException expected) {
-          if(!(expected.getCause() instanceof SerializationException) && !(expected.getCause() instanceof ClassNotFoundException)) {
+          // ok
+        } catch (ServerOperationException expected) {
+          if (!(expected.getCause() instanceof SerializationException)
+              && !(expected.getCause() instanceof ClassNotFoundException)) {
             throw expected;
           }
         }
       }
     };
-    
-    
+
+
     vm2.invoke(putKey);
 
-    
+
     vm1.invoke(getValue);
-    
+
     vm3.invoke(getValue);
     vm3.invoke(registerInterest);
     vm1.invoke(putKey);
   }
-  
+
   private int createServerRegion(VM vm) {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
-//        af.setScope(Scope.DISTRIBUTED_ACK);
+        // af.setScope(Scope.DISTRIBUTED_ACK);
         af.setDataPolicy(DataPolicy.PARTITION);
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         paf.setRedundantCopies(1);
@@ -196,7 +206,7 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
 
     return (Integer) vm.invoke(createRegion);
   }
-  
+
   private void createClientRegion(final VM vm, final int port) {
     SerializableCallable createRegion = new SerializableCallable() {
       public Object call() throws Exception {
@@ -205,49 +215,46 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port);
         cf.setPoolSubscriptionEnabled(true);
         ClientCache cache = getClientCache(cf);
-        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-        .create("testSimplePdx");
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("testSimplePdx");
         return null;
       }
     };
     vm.invoke(createRegion);
   }
-  
+
   private static class ClassNotFoundDataSerializable implements DataSerializable {
-    
+
     public ClassNotFoundDataSerializable() {
-      
+
     }
 
-    public void toData(DataOutput out) throws IOException {
-    }
+    public void toData(DataOutput out) throws IOException {}
 
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       throw new ClassNotFoundException("Test exception");
     }
   }
-  
+
   public static class ClassNotFoundPdx implements PdxSerializable {
-    
+
     public ClassNotFoundPdx(boolean throwIt) {
-      
+
     }
-    
+
     public ClassNotFoundPdx() throws ClassNotFoundException {
       throw new ClassNotFoundException("Test Exception");
     }
 
     public void toData(PdxWriter writer) {
       writer.writeString("field1", "string");
-      
+
     }
 
     public void fromData(PdxReader reader) {
-      
+
     }
   }
-  
+
   private static interface ObjectFactory extends Serializable {
     public Object get();
   }

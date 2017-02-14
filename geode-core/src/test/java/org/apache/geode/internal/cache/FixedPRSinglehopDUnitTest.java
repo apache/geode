@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -26,7 +24,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import com.jayway.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -76,27 +76,27 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
   private static final Date q1dateJan1 = new Date(2010, 0, 1);
 
   private static final Date q1dateFeb1 = new Date(2010, 1, 1);
-  
+
   private static final Date q1dateMar1 = new Date(2010, 2, 1);
-  
+
   private static final Date q2dateApr1 = new Date(2010, 3, 1);
-  
+
   private static final Date q2dateMay1 = new Date(2010, 4, 1);
-  
+
   private static final Date q2dateJun1 = new Date(2010, 5, 1);
 
   private static final Date q3dateJuly1 = new Date(2010, 6, 1);
-  
+
   private static final Date q3dateAug1 = new Date(2010, 7, 1);
 
   private static final Date q3dateSep1 = new Date(2010, 8, 1);
-  
+
   private static final Date q4dateOct1 = new Date(2010, 9, 1);
-  
+
   private static final Date q4dateNov1 = new Date(2010, 10, 1);
-  
+
   private static final Date q4dateDec1 = new Date(2010, 11, 1);
-  
+
   @Test
   public void testNoClientConnected() {
     final Host host = Host.getHost(0);
@@ -110,25 +110,23 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", 3));
 
-    datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.createServer( false, fpaList ));
+    datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.createServer(false, fpaList));
 
     fpaList.clear();
-    accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.createServer( true, fpaList ));
+    accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.createServer(true, fpaList));
 
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", 3));
 
-    peer1.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(
-        false, fpaList ));
+    peer1.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(false, fpaList));
 
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", 3));
 
-    peer2.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(
-        false, fpaList ));
+    peer2.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(false, fpaList));
 
     datastoreServer.invoke(() -> FixedPRSinglehopDUnitTest.putIntoPartitionedRegions());
     accessorServer.invoke(() -> FixedPRSinglehopDUnitTest.putIntoPartitionedRegions());
@@ -164,23 +162,21 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
 
-    Integer port0 = (Integer)accessorServer1.invoke(() -> FixedPRSinglehopDUnitTest.createServer( true,
-            fpaList ));
+    Integer port0 = (Integer) accessorServer1
+        .invoke(() -> FixedPRSinglehopDUnitTest.createServer(true, fpaList));
 
-    Integer port1 = (Integer)accessorServer2.invoke(() -> FixedPRSinglehopDUnitTest.createServer( true,
-            fpaList ));
+    Integer port1 = (Integer) accessorServer2
+        .invoke(() -> FixedPRSinglehopDUnitTest.createServer(true, fpaList));
 
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", true, 3));
 
-    peer1.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(
-        false, fpaList ));
+    peer1.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(false, fpaList));
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", true, 3));
 
-    peer2.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(
-        false, fpaList ));
+    peer2.invoke(() -> FixedPRSinglehopDUnitTest.createPeer(false, fpaList));
 
     createClient(port0, port1);
 
@@ -192,7 +188,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
     verifyEmptyStaticData();
   }
-  
+
   // 4 servers, 1 client connected to all 4 servers.
   // Put data, get data and make the metadata stable.
   // Now verify that metadata has all 8 buckets info.
@@ -200,38 +196,38 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
   @Category(FlakyTest.class) // GEODE-1176: random ports, time sensitive, waitForCriterion
   @Test
   public void test_MetadataContents() {
-    
+
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
     VM server3 = host.getVM(2);
     VM server4 = host.getVM(3);
-    
+
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
-    
+
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", false, 3));
 
-    Integer port1 = (Integer)server1.invoke(() -> FixedPRSinglehopDUnitTest.createServer( false,
-            fpaList ));
+    Integer port1 =
+        (Integer) server1.invoke(() -> FixedPRSinglehopDUnitTest.createServer(false, fpaList));
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", false, 3));
 
-    Integer port2 = (Integer)server2.invoke(() -> FixedPRSinglehopDUnitTest.createServer( false,
-            fpaList ));
+    Integer port2 =
+        (Integer) server2.invoke(() -> FixedPRSinglehopDUnitTest.createServer(false, fpaList));
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", false, 3));
-    
-    Integer port3 = (Integer)server3.invoke(() -> FixedPRSinglehopDUnitTest.createServer( false,
-            fpaList ));
+
+    Integer port3 =
+        (Integer) server3.invoke(() -> FixedPRSinglehopDUnitTest.createServer(false, fpaList));
     fpaList.clear();
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", true, 3));
     fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", false, 3));
-    
-    Integer port4 = (Integer)server4.invoke(() -> FixedPRSinglehopDUnitTest.createServer( false,
-            fpaList ));    
+
+    Integer port4 =
+        (Integer) server4.invoke(() -> FixedPRSinglehopDUnitTest.createServer(false, fpaList));
 
     createClient(port1, port2, port3, port4);
 
@@ -239,34 +235,34 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
     getFromPartitionedRegions();
 
-    SerializableRunnableIF printView = () -> FixedPRSinglehopDUnitTest.printView(); 
+    SerializableRunnableIF printView = () -> FixedPRSinglehopDUnitTest.printView();
     server1.invoke(printView);
     server2.invoke(printView);
     server3.invoke(printView);
     server4.invoke(printView);
-    
+
     int totalBucketOnServer = 0;
-    SerializableCallableIF<Integer> getBucketCount = () -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated();
+    SerializableCallableIF<Integer> getBucketCount =
+        () -> FixedPRSinglehopDUnitTest.primaryBucketsOnServer();
     totalBucketOnServer += server1.invoke(getBucketCount);
     totalBucketOnServer += server2.invoke(getBucketCount);
     totalBucketOnServer += server3.invoke(getBucketCount);
     totalBucketOnServer += server4.invoke(getBucketCount);
-    
-    verifyMetadata(totalBucketOnServer,2);
+
+    verifyMetadata(totalBucketOnServer, 2);
     updateIntoSinglePR();
-  }  
-  
+  }
+
   /**
-   * This test will check to see if all the partitionAttributes are sent to the client.
-   * In case one partition comes late, we should fetch that when there is a network hop because
-   * of that partitioned region.
-   * This test will create 3 servers with partition. Do some operations on them. Validate that
-   * the metadata are fetched and then later up one more partition and do some operations on them. It should
-   * fetch new fpa. 
+   * This test will check to see if all the partitionAttributes are sent to the client. In case one
+   * partition comes late, we should fetch that when there is a network hop because of that
+   * partitioned region. This test will create 3 servers with partition. Do some operations on them.
+   * Validate that the metadata are fetched and then later up one more partition and do some
+   * operations on them. It should fetch new fpa.
    */
   @Test
   public void test_FPAmetadataFetch() {
-    
+
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
@@ -276,74 +272,83 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     final int portLocator = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String hostLocator = NetworkUtils.getServerHostName(server1.getHost());
     final String locator = hostLocator + "[" + portLocator + "]";
-    server3.invoke(() -> FixedPRSinglehopDUnitTest.startLocatorInVM( portLocator ));
+    server3.invoke(() -> FixedPRSinglehopDUnitTest.startLocatorInVM(portLocator));
     try {
-    
-    List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
-    
-    fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", true, 3));
-    fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", false, 3));
 
-    Integer port1 = (Integer)server1.invoke(() -> FixedPRSinglehopDUnitTest.createServerWithLocator( locator, false,
-            fpaList,  simpleFPR));
-    fpaList.clear();
-    fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", true, 3));
+      List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
 
-    Integer port2 = (Integer)server2.invoke(() -> FixedPRSinglehopDUnitTest.createServerWithLocator( locator, false,
-            fpaList , simpleFPR));
-    fpaList.clear();
-    
-    createClientWithLocator(hostLocator, portLocator);
-    
-    putIntoPartitionedRegionsThreeQs();
+      fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", true, 3));
+      fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", false, 3));
 
-    getFromPartitionedRegionsFor3Qs();
-    Wait.pause(2000);
-    // TODO: Verify that all the fpa's are in the map
-    server1.invoke(() -> FixedPRSinglehopDUnitTest.printView());
-    server2.invoke(() -> FixedPRSinglehopDUnitTest.printView());
-    
-    int totalBucketOnServer = 0;
-    totalBucketOnServer += (Integer)server1.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
-    totalBucketOnServer += (Integer)server2.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
-    int currentRedundancy = 1;
-    verifyMetadata(totalBucketOnServer,currentRedundancy);
-    updateIntoSinglePRFor3Qs();
-    
-    // now create one more partition
-    fpaList.clear();
-    fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", true, 3));
-    fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", true, 3));
-    fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", false, 3));
-    fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", false, 3));
-  
-    Integer port4 = (Integer)server4.invoke(() -> FixedPRSinglehopDUnitTest.createServerWithLocator( locator, false,
-            fpaList, simpleFPR ));    
-    
-    Wait.pause(2000);
-    putIntoPartitionedRegions();
-    // Client should get the new partition
-    // TODO: Verify that
+      Integer port1 = (Integer) server1.invoke(() -> FixedPRSinglehopDUnitTest
+          .createServerWithLocator(locator, false, fpaList, simpleFPR));
+      fpaList.clear();
+      fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", true, 3));
 
-    getFromPartitionedRegions();
-    Wait.pause(2000);
-    server1.invoke(() -> FixedPRSinglehopDUnitTest.printView());
-    server2.invoke(() -> FixedPRSinglehopDUnitTest.printView());
-    server4.invoke(() -> FixedPRSinglehopDUnitTest.printView());
-    
-    totalBucketOnServer = 0;
-    totalBucketOnServer += (Integer)server1.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
-    totalBucketOnServer += (Integer)server2.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
-    totalBucketOnServer += (Integer)server4.invoke(() -> FixedPRSinglehopDUnitTest.totalNumBucketsCreated());
-    
-    updateIntoSinglePR();
+      Integer port2 = (Integer) server2.invoke(() -> FixedPRSinglehopDUnitTest
+          .createServerWithLocator(locator, false, fpaList, simpleFPR));
+      fpaList.clear();
+
+      createClientWithLocator(hostLocator, portLocator);
+
+      putIntoPartitionedRegionsThreeQs();
+
+      getFromPartitionedRegionsFor3Qs();
+      // Server 1 is actually primary for both Q1 and Q2, since there is no FPA server with
+      // primary set to true.
+      Awaitility.await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6)
+              && (server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3));
+
+      // TODO: Verify that all the fpa's are in the map
+      server1.invoke(FixedPRSinglehopDUnitTest::printView);
+      server2.invoke(FixedPRSinglehopDUnitTest::printView);
+
+      int totalBucketOnServer = 0;
+      totalBucketOnServer +=
+          (Integer) server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
+      totalBucketOnServer +=
+          (Integer) server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
+
+      verifyMetadata(totalBucketOnServer, 1);
+      updateIntoSinglePRFor3Qs();
+
+      // now create one more partition
+      fpaList.clear();
+      fpaList.add(FixedPartitionAttributes.createFixedPartition("Q4", true, 3));
+      fpaList.add(FixedPartitionAttributes.createFixedPartition("Q2", true, 3));
+      fpaList.add(FixedPartitionAttributes.createFixedPartition("Q1", false, 3));
+      fpaList.add(FixedPartitionAttributes.createFixedPartition("Q3", false, 3));
+
+      Integer port4 = (Integer) server4.invoke(() -> FixedPRSinglehopDUnitTest
+          .createServerWithLocator(locator, false, fpaList, simpleFPR));
+
+      putIntoPartitionedRegions();
+      // Wait to make sure that the buckets have actually moved.
+      Awaitility.await().atMost(15, TimeUnit.SECONDS)
+          .until(() -> (server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3)
+              && (server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 3)
+              && (server4.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6));
+
+      getFromPartitionedRegions();
+      server1.invoke(FixedPRSinglehopDUnitTest::printView);
+      server2.invoke(FixedPRSinglehopDUnitTest::printView);
+      server4.invoke(FixedPRSinglehopDUnitTest::printView);
+
+      totalBucketOnServer = 0;
+      totalBucketOnServer +=
+          (Integer) server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
+      totalBucketOnServer +=
+          (Integer) server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
+      totalBucketOnServer +=
+          (Integer) server4.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
+      updateIntoSinglePR();
     } finally {
-    server3.invoke(() -> FixedPRSinglehopDUnitTest.stopLocator()); 
+      server3.invoke(FixedPRSinglehopDUnitTest::stopLocator);
     }
   }
-  
-  public static int createServer(boolean isAccessor,
-      List<FixedPartitionAttributes> fpaList) {
+
+  public static int createServer(boolean isAccessor, List<FixedPartitionAttributes> fpaList) {
 
     FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     cache = test.getCache();
@@ -353,11 +358,10 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     server.setHostnameForClients("localhost");
     try {
       server.start();
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       Assert.fail("Failed to start server ", e);
     }
-    
+
     if (!fpaList.isEmpty() || isAccessor) {
       PartitionAttributesFactory paf = new PartitionAttributesFactory();
       paf.setRedundantCopies(1).setTotalNumBuckets(12);
@@ -373,14 +377,13 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       attr.setPartitionAttributes(paf.create());
       region = cache.createRegion(PR_NAME, attr.create());
       assertNotNull(region);
-      LogWriterUtils.getLogWriter().info(
-          "Partitioned Region " + PR_NAME + " created Successfully :"
-              + region.toString());
+      LogWriterUtils.getLogWriter()
+          .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
     }
     return port;
   }
 
-  
+
   public static int createServerWithLocator(String locator, boolean isAccessor,
       List<FixedPartitionAttributes> fpaList, boolean simpleFPR) {
 
@@ -390,18 +393,17 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     props.setProperty(LOCATORS, locator);
     DistributedSystem ds = test.getSystem(props);
     cache = new CacheFactory(props).create(ds);
-    
+
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
     server.setHostnameForClients("localhost");
     try {
       server.start();
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       Assert.fail("Failed to start server ", e);
     }
-    
+
     if (!fpaList.isEmpty() || isAccessor) {
       PartitionAttributesFactory paf = new PartitionAttributesFactory();
       paf.setRedundantCopies(1).setTotalNumBuckets(12);
@@ -411,16 +413,15 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       for (FixedPartitionAttributes fpa : fpaList) {
         paf.addFixedPartitionAttributes(fpa);
       }
-      //paf.setPartitionResolver(new SingleHopQuarterPartitionResolver());
+      // paf.setPartitionResolver(new SingleHopQuarterPartitionResolver());
       paf.setPartitionResolver(new QuarterPartitionResolver());
 
       AttributesFactory attr = new AttributesFactory();
       attr.setPartitionAttributes(paf.create());
       region = cache.createRegion(PR_NAME, attr.create());
       assertNotNull(region);
-      LogWriterUtils.getLogWriter().info(
-          "Partitioned Region " + PR_NAME + " created Successfully :"
-              + region.toString());
+      LogWriterUtils.getLogWriter()
+          .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
     }
     return port;
   }
@@ -433,8 +434,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
     try {
       locator = Locator.startLocatorAndDS(locatorPort, logFile, null, props);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
@@ -443,22 +443,21 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
   public static void stopLocator() {
     locator.stop();
   }
-  
-  public static int totalNumBucketsCreated () {
+
+  public static int primaryBucketsOnServer() {
     FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
-    PartitionedRegion pr = (PartitionedRegion)cache.getRegion(PR_NAME);
+    PartitionedRegion pr = (PartitionedRegion) cache.getRegion(PR_NAME);
     assertNotNull(pr);
     return pr.getLocalPrimaryBucketsListTestOnly().size();
   }
-  
-  public static void createPeer(boolean isAccessor,
-      List<FixedPartitionAttributes> fpaList) {
+
+  public static void createPeer(boolean isAccessor, List<FixedPartitionAttributes> fpaList) {
     FixedPRSinglehopDUnitTest test = new FixedPRSinglehopDUnitTest();
     cache = test.getCache();
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(1).setTotalNumBuckets(12);
-    if(isAccessor){
+    if (isAccessor) {
       paf.setLocalMaxMemory(0);
     }
     for (FixedPartitionAttributes fpa : fpaList) {
@@ -470,9 +469,8 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     attr.setPartitionAttributes(paf.create());
     region = cache.createRegion(PR_NAME, attr.create());
     assertNotNull(region);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region " + PR_NAME + " created Successfully :"
-            + region.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
 
   }
 
@@ -488,13 +486,11 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
-      p = PoolManager.createFactory().addServer("localhost", port0)
-          .setPingInterval(250).setSubscriptionEnabled(true)
-          .setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
-          .setRetryAttempts(3).create(PR_NAME);
-    }
-    finally {
+      p = PoolManager.createFactory().addServer("localhost", port0).setPingInterval(250)
+          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
+          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(3)
+          .create(PR_NAME);
+    } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
@@ -513,13 +509,11 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
-      p = PoolManager.createFactory().addServer("localhost", port0).addServer(
-          "localhost", port1).setPingInterval(250).setSubscriptionEnabled(true)
-          .setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
+      p = PoolManager.createFactory().addServer("localhost", port0).addServer("localhost", port1)
+          .setPingInterval(250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
           .setRetryAttempts(3).create(PR_NAME);
-    }
-    finally {
+    } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
@@ -538,12 +532,11 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
-      p = PoolManager.createFactory().addLocator(host, port0).setPingInterval(
-          250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
-          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6)
-          .setMaxConnections(10).setRetryAttempts(3).create(PR_NAME);
-    }
-    finally {
+      p = PoolManager.createFactory().addLocator(host, port0).setPingInterval(250)
+          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
+          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(3)
+          .create(PR_NAME);
+    } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
@@ -562,14 +555,12 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
-      p = PoolManager.createFactory().addServer("localhost", port0).addServer(
-          "localhost", port1).addServer("localhost", port2).addServer(
-          "localhost", port3).setPingInterval(250).setSubscriptionEnabled(true)
-          .setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
-          .setRetryAttempts(3).create(PR_NAME);
-    }
-    finally {
+      p = PoolManager.createFactory().addServer("localhost", port0).addServer("localhost", port1)
+          .addServer("localhost", port2).addServer("localhost", port3).setPingInterval(250)
+          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
+          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(3)
+          .create(PR_NAME);
+    } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
@@ -583,16 +574,15 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     RegionAttributes attrs = factory.create();
     region = cache.createRegion(PR_NAME, attrs);
     assertNotNull(region);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region " + PR_NAME + " created Successfully :"
-            + region.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region " + PR_NAME + " created Successfully :" + region.toString());
   }
 
   public static void putIntoPartitionedRegions() {
     region.put(q1dateJan1, "create0");
     region.put(q2dateApr1, "create1");
     region.put(q3dateJuly1, "create2");
-    region.put(q4dateOct1, "create3");    
+    region.put(q4dateOct1, "create3");
     region.put(q1dateFeb1, "create4");
     region.put(q2dateMay1, "create5");
     region.put(q3dateAug1, "create6");
@@ -601,11 +591,11 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     region.put(q2dateJun1, "create9");
     region.put(q3dateSep1, "create10");
     region.put(q4dateDec1, "create11");
-    
+
     region.put(q1dateJan1, "update0");
     region.put(q2dateApr1, "update1");
     region.put(q3dateJuly1, "update2");
-    region.put(q4dateOct1, "update3");    
+    region.put(q4dateOct1, "update3");
     region.put(q1dateFeb1, "update4");
     region.put(q2dateMay1, "update5");
     region.put(q3dateAug1, "update6");
@@ -614,12 +604,12 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     region.put(q2dateJun1, "update9");
     region.put(q3dateSep1, "update10");
     region.put(q4dateDec1, "update11");
-    
-    
+
+
     region.put(q1dateJan1, "update00");
     region.put(q2dateApr1, "update11");
     region.put(q3dateJuly1, "update22");
-    region.put(q4dateOct1, "update33");    
+    region.put(q4dateOct1, "update33");
     region.put(q1dateFeb1, "update44");
     region.put(q2dateMay1, "update55");
     region.put(q3dateAug1, "update66");
@@ -628,7 +618,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     region.put(q2dateJun1, "update99");
     region.put(q3dateSep1, "update1010");
     region.put(q4dateDec1, "update1111");
-    
+
     region.put(q1dateJan1, "update000");
     region.put(q1dateFeb1, "update444");
     region.put(q1dateMar1, "update888");
@@ -640,25 +630,25 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     region.put(q3dateAug1, "update666");
     region.put(q3dateSep1, "update101010");
     region.put(q1dateJan1, "update00000");
-    region.put(q4dateOct1, "update333");              
-    region.put(q4dateNov1, "update777");          
+    region.put(q4dateOct1, "update333");
+    region.put(q4dateNov1, "update777");
     region.put(q4dateDec1, "update111111");
     region.put(q1dateJan1, "update000000");
-    
+
   }
 
   public static void putIntoPartitionedRegionsThreeQs() {
     region.put(q1dateJan1, "create0");
     region.put(q2dateApr1, "create1");
     region.put(q3dateJuly1, "create2");
-        
+
     region.put(q1dateFeb1, "create4");
     region.put(q2dateMay1, "create5");
     region.put(q3dateAug1, "create6");
     region.put(q1dateMar1, "create8");
     region.put(q2dateJun1, "create9");
     region.put(q3dateSep1, "create10");
-    
+
     region.put(q1dateJan1, "update0");
     region.put(q2dateApr1, "update1");
     region.put(q3dateJuly1, "update2");
@@ -668,7 +658,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     region.put(q1dateMar1, "update8");
     region.put(q2dateJun1, "update9");
     region.put(q3dateSep1, "update10");
-    
+
     region.put(q1dateJan1, "update00");
     region.put(q2dateApr1, "update11");
     region.put(q3dateJuly1, "update22");
@@ -679,7 +669,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     region.put(q2dateJun1, "update99");
     region.put(q3dateSep1, "update1010");
   }
-  
+
   public static void getFromPartitionedRegions() {
     region.get(q1dateJan1, "create0");
     region.get(q2dateApr1, "create1");
@@ -710,7 +700,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     region.get(q2dateApr1, "update11");
     region.get(q3dateJuly1, "update22");
   }
-  
+
   public static void putIntoSinglePR() {
     region.put(q1dateJan1, "create0");
     region.put(q2dateApr1, "create1");
@@ -728,8 +718,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void updateIntoSinglePR() {
-    ClientMetadataService cms = ((GemFireCacheImpl)cache)
-        .getClientMetadataService();
+    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
     region.put(q1dateJan1, "update0");
     assertEquals(false, cms.isRefreshMetadataTestOnly());
@@ -745,10 +734,10 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
     region.put(q2dateMay1, "update11");
     assertEquals(false, cms.isRefreshMetadataTestOnly());
-    
+
     region.put(q2dateJun1, "update111");
     assertEquals(false, cms.isRefreshMetadataTestOnly());
-    
+
     region.put(q3dateJuly1, "update2");
     assertEquals(false, cms.isRefreshMetadataTestOnly());
 
@@ -770,8 +759,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void updateIntoSinglePRFor3Qs() {
-    ClientMetadataService cms = ((GemFireCacheImpl)cache)
-        .getClientMetadataService();
+    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
     region.put(q1dateJan1, "update0");
     assertEquals(false, cms.isRefreshMetadataTestOnly());
@@ -787,10 +775,10 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
 
     region.put(q2dateMay1, "update11");
     assertEquals(false, cms.isRefreshMetadataTestOnly());
-    
+
     region.put(q2dateJun1, "update111");
     assertEquals(false, cms.isRefreshMetadataTestOnly());
-    
+
     region.put(q3dateJuly1, "update2");
     assertEquals(false, cms.isRefreshMetadataTestOnly());
 
@@ -803,50 +791,42 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void verifyEmptyMetadata() {
-    ClientMetadataService cms = ((GemFireCacheImpl)cache)
-        .getClientMetadataService();
+    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     assertTrue(cms.getClientPRMetadata_TEST_ONLY().isEmpty());
   }
 
   public static void verifyEmptyStaticData() {
-    ClientMetadataService cms = ((GemFireCacheImpl)cache)
-        .getClientMetadataService();
+    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     assertTrue(cms.getClientPartitionAttributesMap().isEmpty());
   }
 
   public static void verifyNonEmptyMetadata() {
-    ClientMetadataService cms = ((GemFireCacheImpl)cache)
-        .getClientMetadataService();
+    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     assertTrue(!cms.getClientPRMetadata_TEST_ONLY().isEmpty());
     assertTrue(!cms.getClientPartitionAttributesMap().isEmpty());
   }
 
   public static void printMetadata() {
     if (cache != null) {
-      ClientMetadataService cms = ((GemFireCacheImpl)cache)
-          .getClientMetadataService();
-      ((GemFireCacheImpl)cache).getLogger().info(
-          "Metadata is " + cms.getClientPRMetadata_TEST_ONLY());
+      ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
+      ((GemFireCacheImpl) cache).getLogger()
+          .info("Metadata is " + cms.getClientPRMetadata_TEST_ONLY());
     }
   }
 
   public static void printView() {
-    PartitionedRegion pr = (PartitionedRegion)region;
+    PartitionedRegion pr = (PartitionedRegion) region;
     if (pr.cache != null) {
-      ((GemFireCacheImpl)cache).getLogger().info(
-          "Primary Bucket view of server0  "
-              + pr.getDataStore().getLocalPrimaryBucketsListTestOnly());
-      ((GemFireCacheImpl)cache).getLogger().info(
-          "Secondary Bucket view of server0  "
-              + pr.getDataStore().getLocalNonPrimaryBucketsListTestOnly());
+      ((GemFireCacheImpl) cache).getLogger().info("Primary Bucket view of server0  "
+          + pr.getDataStore().getLocalPrimaryBucketsListTestOnly());
+      ((GemFireCacheImpl) cache).getLogger().info("Secondary Bucket view of server0  "
+          + pr.getDataStore().getLocalNonPrimaryBucketsListTestOnly());
     }
   }
 
   private void verifyMetadata(final int totalBuckets, int currentRedundancy) {
-    ClientMetadataService cms = ((GemFireCacheImpl)cache)
-        .getClientMetadataService();
-    final Map<String, ClientPartitionAdvisor> regionMetaData = cms
-        .getClientPRMetadata_TEST_ONLY();
+    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
         return (regionMetaData.size() == 1);
@@ -857,10 +837,9 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
       }
     };
     Wait.waitForCriterion(wc, 60000, 1000, true);
-    
+
     assertTrue(regionMetaData.containsKey(region.getFullPath()));
-    final ClientPartitionAdvisor prMetaData = regionMetaData
-        .get(region.getFullPath());
+    final ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
     wc = new WaitCriterion() {
       public boolean done() {
         return (prMetaData.getBucketServerLocationsMap_TEST_ONLY().size() == totalBuckets);
@@ -873,16 +852,16 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     };
     Wait.waitForCriterion(wc, 60000, 1000, true);
     System.out.println("metadata is " + prMetaData);
-    System.out.println("metadata bucket locations map is " + prMetaData.getBucketServerLocationsMap_TEST_ONLY());
+    System.out.println(
+        "metadata bucket locations map is " + prMetaData.getBucketServerLocationsMap_TEST_ONLY());
     for (Map.Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-      assertEquals("list has wrong contents: " + entry.getValue(),
-          currentRedundancy, ((List)entry.getValue()).size());
+      assertEquals("list has wrong contents: " + entry.getValue(), currentRedundancy,
+          ((List) entry.getValue()).size());
     }
   }
 
   public static void clearMetadata() {
-    ClientMetadataService cms = ((GemFireCacheImpl)cache)
-        .getClientMetadataService();
+    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.getClientPartitionAttributesMap().clear();
     cms.getClientPRMetadata_TEST_ONLY().clear();
   }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.dunit;
 
@@ -67,12 +65,10 @@ public class QueryParamsAuthorizationDUnitTest extends JUnit4CacheTestCase {
     final VM server1 = host.getVM(0);
     final VM client = host.getVM(1);
     // create servers and regions
-    final int port = (Integer) server1.invoke(new SerializableCallable(
-        "Create Server1") {
+    final int port = (Integer) server1.invoke(new SerializableCallable("Create Server1") {
       @Override
       public Object call() throws Exception {
-        CacheFactory cf = new CacheFactory()
-            .set(MCAST_PORT, "0")
+        CacheFactory cf = new CacheFactory().set(MCAST_PORT, "0")
             .set(SECURITY_CLIENT_ACCESSOR,
                 "org.apache.geode.cache.query.dunit.QueryAuthorization.create")
             .set(SECURITY_CLIENT_AUTHENTICATOR, DummyAuthenticator.class.getName() + ".create");
@@ -93,22 +89,21 @@ public class QueryParamsAuthorizationDUnitTest extends JUnit4CacheTestCase {
         ClientCacheFactory ccf = new ClientCacheFactory()
             .addPoolServer(NetworkUtils.getServerHostName(server1.getHost()), port)
             .set(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName() + ".create")
-            .set(SECURITY_PREFIX+"username", "root")
-            .set(SECURITY_PREFIX+"password", "root");
+            .set(SECURITY_PREFIX + "username", "root").set(SECURITY_PREFIX + "password", "root");
 
         ClientCache cache = getClientCache(ccf);
-        Region r1 = cache.createClientRegionFactory(
-            ClientRegionShortcut.CACHING_PROXY).create(regName);
+        Region r1 =
+            cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regName);
 
         for (int i = 0; i < 20; i++) {
           r1.put("key-" + i, new Portfolio(i));
         }
 
         QueryService qs = cache.getQueryService();
-        Object[] params = new Object[] { "active", 0 };
-        SelectResults sr = (SelectResults) qs.newQuery(
-            "select * from " + r1.getFullPath()
-                + " where status = $1 and ID > $2 ").execute(params);
+        Object[] params = new Object[] {"active", 0};
+        SelectResults sr = (SelectResults) qs
+            .newQuery("select * from " + r1.getFullPath() + " where status = $1 and ID > $2 ")
+            .execute(params);
         assertTrue("Result size should be greater than 0 ", sr.size() > 0);
         return null;
       }

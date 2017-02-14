@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans.stats;
 
@@ -110,7 +108,7 @@ public class RegionClusterStatsMonitor {
   private static final String GATEWAY_ENABLED = "GatewayEnabled";
 
   private static final String PERSISTENT_ENABLED = "PersistentEnabled";
-  
+
   private volatile long lastAccessedTime = 0;
 
   private volatile long lastModifiedTime = 0;
@@ -129,7 +127,7 @@ public class RegionClusterStatsMonitor {
 
   private long entryCount = 0;
 
-  private volatile int numBucketsWithoutRedundancy = 0; 
+  private volatile int numBucketsWithoutRedundancy = 0;
 
   /**
    * Eviction attributes
@@ -140,8 +138,7 @@ public class RegionClusterStatsMonitor {
 
   private Map<String, Class<?>> typeMap;
 
-  public void aggregate(FederationComponent newState,
-      FederationComponent oldState) {
+  public void aggregate(FederationComponent newState, FederationComponent oldState) {
     aggregator.aggregate(newState, oldState);
     incLastAccessedTime(newState, oldState);
     incLastModifiedTime(newState, oldState);
@@ -193,8 +190,7 @@ public class RegionClusterStatsMonitor {
 
   }
 
-  private void incLastAccessedTime(FederationComponent newState,
-      FederationComponent oldState) {
+  private void incLastAccessedTime(FederationComponent newState, FederationComponent oldState) {
     if (newState != null) {
       if (newState.getValue(LAST_ACCESSED_TIME) != null) {
         lastAccessedTime = (Long) newState.getValue(LAST_ACCESSED_TIME);
@@ -202,20 +198,18 @@ public class RegionClusterStatsMonitor {
 
     }
   }
-  
+
   private void incNumBucketsWithoutRedundancy(FederationComponent newState,
       FederationComponent oldState) {
     if (newState != null) {
       if (newState.getValue(NUM_BUCKESTS_WITHOUT_REDUNDANCY) != null) {
-        numBucketsWithoutRedundancy = (Integer) newState
-            .getValue(NUM_BUCKESTS_WITHOUT_REDUNDANCY);
+        numBucketsWithoutRedundancy = (Integer) newState.getValue(NUM_BUCKESTS_WITHOUT_REDUNDANCY);
       }
 
     }
   }
 
-  private void incLastModifiedTime(FederationComponent newState,
-      FederationComponent oldState) {
+  private void incLastModifiedTime(FederationComponent newState, FederationComponent oldState) {
     if (newState != null) {
       if (newState.getValue(LAST_MODIFIED_TIME) != null) {
         lastModifiedTime = (Long) newState.getValue(LAST_MODIFIED_TIME);
@@ -224,8 +218,7 @@ public class RegionClusterStatsMonitor {
     }
   }
 
-  private void updateEntryCount(FederationComponent newState,
-      FederationComponent oldState) {
+  private void updateEntryCount(FederationComponent newState, FederationComponent oldState) {
     if (newState != null) {
       if (newState.getValue(ENTRY_COUNT) != null) {
         entryCount = (Long) newState.getValue(ENTRY_COUNT);
@@ -337,7 +330,7 @@ public class RegionClusterStatsMonitor {
   public int getAvgBucketSize() {
     int bucketNum = getBucketCount();
     if (bucketNum > 0) {
-      return getTotalBucketSize() /  bucketNum;
+      return getTotalBucketSize() / bucketNum;
     } else {
       return 0;
     }
@@ -379,8 +372,7 @@ public class RegionClusterStatsMonitor {
     return aggregator.getLongValue(ENTRY_SIZE);
   }
 
-  private void setFixedAttributes(FederationComponent newState,
-      FederationComponent oldState) {
+  private void setFixedAttributes(FederationComponent newState, FederationComponent oldState) {
     if (this.regionName == null) {
       if (newState != null) {
         if (newState.getValue(REGION_NAME) != null) {

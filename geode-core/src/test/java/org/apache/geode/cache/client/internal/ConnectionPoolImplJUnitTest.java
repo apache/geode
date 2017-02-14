@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal;
 
@@ -27,6 +25,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -44,15 +43,17 @@ import static org.junit.Assert.*;
 /**
  *
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class ConnectionPoolImplJUnitTest {
-  
-  private static final String expectedRedundantErrorMsg = "Could not find any server to create redundant client queue on.";
-  private static final String expectedPrimaryErrorMsg = "Could not find any server to create primary client queue on.";
+
+  private static final String expectedRedundantErrorMsg =
+      "Could not find any server to create redundant client queue on.";
+  private static final String expectedPrimaryErrorMsg =
+      "Could not find any server to create primary client queue on.";
 
   private Cache cache;
-  private int port; 
-  
+  private int port;
+
   @Before
   public void setUp() {
     Properties props = new Properties();
@@ -61,7 +62,7 @@ public class ConnectionPoolImplJUnitTest {
     cache = CacheFactory.create(DistributedSystem.connect(props));
     port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
   }
-  
+
   @After
   public void tearDown() {
     if (cache != null && !cache.isClosed()) {
@@ -69,24 +70,24 @@ public class ConnectionPoolImplJUnitTest {
       cache.close();
     }
   }
-  
+
   private void setQueueError() {
     final String addExpectedPEM =
         "<ExpectedException action=add>" + expectedPrimaryErrorMsg + "</ExpectedException>";
     final String addExpectedREM =
         "<ExpectedException action=add>" + expectedRedundantErrorMsg + "</ExpectedException>";
-    
+
     cache.getLogger().info(addExpectedPEM);
     cache.getLogger().info(addExpectedREM);
-    
+
   }
-  
+
   private void unsetQueueError() {
     final String removeExpectedPEM =
         "<ExpectedException action=remove>" + expectedPrimaryErrorMsg + "</ExpectedException>";
     final String removeExpectedREM =
         "<ExpectedException action=remove>" + expectedRedundantErrorMsg + "</ExpectedException>";
-    
+
     cache.getLogger().info(removeExpectedPEM);
     cache.getLogger().info(removeExpectedREM);
   }
@@ -98,7 +99,7 @@ public class ConnectionPoolImplJUnitTest {
     cpf.addServer("localhost", port);
 
     PoolImpl pool = (PoolImpl) cpf.create("myfriendlypool");
-    
+
     // check defaults
     assertEquals(PoolFactory.DEFAULT_FREE_CONNECTION_TIMEOUT, pool.getFreeConnectionTimeout());
     assertEquals(PoolFactory.DEFAULT_SOCKET_BUFFER_SIZE, pool.getSocketBufferSize());
@@ -111,7 +112,8 @@ public class ConnectionPoolImplJUnitTest {
     assertEquals(PoolFactory.DEFAULT_THREAD_LOCAL_CONNECTIONS, pool.getThreadLocalConnections());
     assertEquals(PoolFactory.DEFAULT_SUBSCRIPTION_ENABLED, pool.getSubscriptionEnabled());
     assertEquals(PoolFactory.DEFAULT_SUBSCRIPTION_REDUNDANCY, pool.getSubscriptionRedundancy());
-    assertEquals(PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT, pool.getSubscriptionMessageTrackingTimeout());
+    assertEquals(PoolFactory.DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT,
+        pool.getSubscriptionMessageTrackingTimeout());
     assertEquals(PoolFactory.DEFAULT_SUBSCRIPTION_ACK_INTERVAL, pool.getSubscriptionAckInterval());
     assertEquals(PoolFactory.DEFAULT_SERVER_GROUP, pool.getServerGroup());
     // check non default
@@ -119,21 +121,19 @@ public class ConnectionPoolImplJUnitTest {
     assertEquals(1, pool.getServers().size());
     assertEquals(0, pool.getLocators().size());
     {
-      InetSocketAddress addr = (InetSocketAddress)pool.getServers().get(0);
+      InetSocketAddress addr = (InetSocketAddress) pool.getServers().get(0);
       assertEquals(port, addr.getPort());
       assertEquals("localhost", addr.getHostName());
     }
-    
+
   }
-  
+
   @Test
   public void testProperties() throws Exception {
     int readTimeout = 234234;
 
     PoolFactory cpf = PoolManager.createFactory();
-    cpf.addServer("localhost", port)
-      .setReadTimeout(readTimeout)
-      .setThreadLocalConnections(true);
+    cpf.addServer("localhost", port).setReadTimeout(readTimeout).setThreadLocalConnections(true);
 
     PoolImpl pool = (PoolImpl) cpf.create("myfriendlypool");
 
@@ -144,12 +144,12 @@ public class ConnectionPoolImplJUnitTest {
     assertEquals(1, pool.getServers().size());
     assertEquals(0, pool.getLocators().size());
     {
-      InetSocketAddress addr = (InetSocketAddress)pool.getServers().get(0);
+      InetSocketAddress addr = (InetSocketAddress) pool.getServers().get(0);
       assertEquals(port, addr.getPort());
       assertEquals("localhost", addr.getHostName());
     }
   }
-  
+
   @Test
   public void testCacheClose() throws Exception {
     PoolFactory cpf = PoolManager.createFactory();
@@ -157,11 +157,11 @@ public class ConnectionPoolImplJUnitTest {
     Pool pool1 = cpf.create("pool1");
     Pool pool2 = cpf.create("pool2");
     cache.close();
-    
+
     assertTrue(pool1.isDestroyed());
     assertTrue(pool2.isDestroyed());
   }
-  
+
   @Test
   public void testExecuteOp() throws Exception {
     CacheServer server1 = cache.addCacheServer();
@@ -171,90 +171,92 @@ public class ConnectionPoolImplJUnitTest {
     int port2 = ports[1];
     server1.setPort(port1);
     server2.setPort(port2);
-    
+
     server1.start();
     server2.start();
-    
+
     PoolFactory cpf = PoolManager.createFactory();
     cpf.addServer("localhost", port2);
     cpf.addServer("localhost", port1);
     PoolImpl pool = (PoolImpl) cpf.create("pool1");
-    
+
     ServerLocation location1 = new ServerLocation("localhost", port1);
     ServerLocation location2 = new ServerLocation("localhost", port2);
-    
+
     Op testOp = new Op() {
       int attempts = 0;
 
       public Object attempt(Connection cnx) throws Exception {
-        if(attempts == 0) {
+        if (attempts == 0) {
           attempts++;
           throw new SocketTimeoutException();
-        }
-        else {
+        } else {
           return cnx.getServer();
         }
-          
+
       }
+
       @Override
       public boolean useThreadLocalConnection() {
         return true;
       }
     };
-    
-    //TODO - set retry attempts, and throw in some assertions
-    //about how many times we retry
-    
+
+    // TODO - set retry attempts, and throw in some assertions
+    // about how many times we retry
+
     ServerLocation usedServer = (ServerLocation) pool.execute(testOp);
     assertTrue("expected " + location1 + " or " + location2 + ", got " + usedServer,
         location1.equals(usedServer) || location2.equals(usedServer));
-    
+
     testOp = new Op() {
       public Object attempt(Connection cnx) throws Exception {
-          throw new SocketTimeoutException();
+        throw new SocketTimeoutException();
       }
+
       @Override
       public boolean useThreadLocalConnection() {
         return true;
       }
     };
-    
+
     try {
       usedServer = (ServerLocation) pool.execute(testOp);
       fail("Should have failed");
-    } catch(ServerConnectivityException expected) {
-      //do nothing
+    } catch (ServerConnectivityException expected) {
+      // do nothing
     }
   }
-  
+
   @Test
   public void testCreatePool() throws Exception {
     CacheServer server1 = cache.addCacheServer();
     int port1 = port;
     server1.setPort(port1);
-    
+
     server1.start();
-    
+
     PoolFactory cpf = PoolManager.createFactory();
     cpf.addServer("localhost", port1);
     cpf.setSubscriptionEnabled(true);
     cpf.setSubscriptionRedundancy(0);
     PoolImpl pool = (PoolImpl) cpf.create("pool1");
-    
+
     ServerLocation location1 = new ServerLocation("localhost", port1);
-    
+
     Op testOp = new Op() {
       public Object attempt(Connection cnx) throws Exception {
-          return cnx.getServer();
+        return cnx.getServer();
       }
+
       @Override
       public boolean useThreadLocalConnection() {
         return true;
       }
     };
-    
+
     assertEquals(location1, pool.executeOnPrimary(testOp));
     assertEquals(location1, pool.executeOnQueuesAndReturnPrimaryResult(testOp));
   }
-  
+
 }

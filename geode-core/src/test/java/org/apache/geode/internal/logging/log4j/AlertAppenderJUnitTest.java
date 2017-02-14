@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.logging.log4j;
 
@@ -47,12 +45,12 @@ public class AlertAppenderJUnitTest {
 
   private final List<DistributedMember> members = new ArrayList<DistributedMember>();
   private Level previousLogLevel;
-  
+
   @Before
   public void setUp() {
     this.previousLogLevel = LogService.getBaseLogLevel();
   }
-  
+
   @After
   public void tearDown() {
     LogService.setBaseLogLevel(this.previousLogLevel);
@@ -63,11 +61,11 @@ public class AlertAppenderJUnitTest {
       this.members.clear();
     }
   }
-  
+
   private DistributedMember createTestDistributedMember(String name) {
     return new TestDistributedMember(name);
   }
-  
+
   /**
    * Verify that adding/removing/replacing listeners works correctly.
    */
@@ -79,9 +77,9 @@ public class AlertAppenderJUnitTest {
     DistributedMember member4 = createTestDistributedMember("Member4");
     DistributedMember member5 = createTestDistributedMember("Member5");
     DistributedMember member6 = createTestDistributedMember("Member6");
-    
+
     LogService.setBaseLogLevel(Level.WARN);
-    
+
     AlertAppender.getInstance().addAlertListener(member1, Alert.SEVERE);
     AlertAppender.getInstance().addAlertListener(member2, Alert.WARNING);
     AlertAppender.getInstance().addAlertListener(member3, Alert.ERROR);
@@ -93,8 +91,9 @@ public class AlertAppenderJUnitTest {
     listenersField.setAccessible(true);
 
     @SuppressWarnings("unchecked")
-    final CopyOnWriteArrayList<AlertAppender.Listener> listeners = 
-        (CopyOnWriteArrayList<AlertAppender.Listener>) listenersField.get(AlertAppender.getInstance());
+    final CopyOnWriteArrayList<AlertAppender.Listener> listeners =
+        (CopyOnWriteArrayList<AlertAppender.Listener>) listenersField
+            .get(AlertAppender.getInstance());
 
     // Verify add
     assertSame(member5, listeners.get(0).getMember());
@@ -133,7 +132,7 @@ public class AlertAppenderJUnitTest {
     assertSame(member6, listeners.get(3).getMember());
     assertSame(member1, listeners.get(4).getMember());
     assertSame(5, listeners.size());
-    
+
     assertTrue(AlertAppender.getInstance().removeAlertListener(member1));
     assertTrue(AlertAppender.getInstance().removeAlertListener(member2));
     assertFalse(AlertAppender.getInstance().removeAlertListener(member3));
@@ -141,52 +140,52 @@ public class AlertAppenderJUnitTest {
     assertTrue(AlertAppender.getInstance().removeAlertListener(member5));
     assertTrue(AlertAppender.getInstance().removeAlertListener(member6));
   }
-  
+
   /**
-   * Verifies that the appender is correctly added and removed from the Log4j
-   * configuration and that when the configuration is changed the appender is
-   * still there.
+   * Verifies that the appender is correctly added and removed from the Log4j configuration and that
+   * when the configuration is changed the appender is still there.
    */
   @Test
   public final void testAppenderToConfigHandling() throws Exception {
     LogService.setBaseLogLevel(Level.WARN);
 
-    final String appenderName = AlertAppender.getInstance().getName();      
+    final String appenderName = AlertAppender.getInstance().getName();
     final AppenderContext appenderContext = LogService.getAppenderContext();
-    
+
     LoggerConfig loggerConfig = appenderContext.getLoggerConfig();
-    
+
     // Find out home many appenders exist before we get started
     final int startingSize = loggerConfig.getAppenders().size();
-    
+
     // Add a listener and verify that the appender was added to log4j
     DistributedMember member1 = createTestDistributedMember("Member1");
     AlertAppender.getInstance().addAlertListener(member1, Alert.SEVERE);
-    assertEquals(loggerConfig.getAppenders().values().toString(), startingSize+1, loggerConfig.getAppenders().size());
+    assertEquals(loggerConfig.getAppenders().values().toString(), startingSize + 1,
+        loggerConfig.getAppenders().size());
     assertTrue(loggerConfig.getAppenders().containsKey(appenderName));
-    
+
     // Add another listener and verify that there's still only 1 alert appender
     DistributedMember member2 = createTestDistributedMember("Member1");
     AlertAppender.getInstance().addAlertListener(member2, Alert.SEVERE);
-    assertEquals(startingSize+1, loggerConfig.getAppenders().size());
-    
+    assertEquals(startingSize + 1, loggerConfig.getAppenders().size());
+
     // Modify the config and verify that the appender still exists
     assertEquals(Level.WARN, LogService.getLogger(LogService.BASE_LOGGER_NAME).getLevel());
-    
+
     LogService.setBaseLogLevel(Level.INFO);
-    
+
     assertEquals(Level.INFO, LogService.getLogger(LogService.BASE_LOGGER_NAME).getLevel());
     loggerConfig = appenderContext.getLoggerConfig();
-    assertEquals(startingSize+1, loggerConfig.getAppenders().size());
+    assertEquals(startingSize + 1, loggerConfig.getAppenders().size());
     assertTrue(loggerConfig.getAppenders().containsKey(appenderName));
-    
+
     // Remove the listeners and verify that the appender was removed from log4j
     assertTrue(AlertAppender.getInstance().removeAlertListener(member2));
     assertFalse(AlertAppender.getInstance().removeAlertListener(member1));
     assertEquals(startingSize, loggerConfig.getAppenders().size());
     assertFalse(loggerConfig.getAppenders().containsKey(appenderName));
   }
-    
+
   private static class TestDistributedMember implements DistributedMember {
     private final String name;
 

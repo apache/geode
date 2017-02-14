@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache.tier.sockets;
@@ -36,9 +34,9 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Encapsulates list containing objects, serialized objects, raw byte arrays, or
- * exceptions. It can optionally also hold the list of associated keys. Assumes
- * that keys are either provided for all entries or for none.
+ * Encapsulates list containing objects, serialized objects, raw byte arrays, or exceptions. It can
+ * optionally also hold the list of associated keys. Assumes that keys are either provided for all
+ * entries or for none.
  * 
  * @since GemFire 5.7
  */
@@ -50,7 +48,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
   protected static final byte OBJECT = 1;
 
   protected static final byte EXCEPTION = 2;
-  
+
   protected static final byte KEY_NOT_AT_SERVER = 3;
 
   protected byte[] objectTypeArray;
@@ -60,13 +58,12 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
   protected List keys;
 
   protected List objects;
-  
+
   public void addPart(Object key, Object value, byte objectType, VersionTag versionTag) {
     int size = this.objects.size();
     int maxSize = this.objectTypeArray.length;
     if (size >= maxSize) {
-      throw new IndexOutOfBoundsException("Cannot add object part beyond "
-          + maxSize + " elements");
+      throw new IndexOutOfBoundsException("Cannot add object part beyond " + maxSize + " elements");
     }
     if (this.hasKeys) {
       if (key == null) {
@@ -89,15 +86,14 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
 
   public ObjectPartList(int maxSize, boolean hasKeys) {
     if (maxSize <= 0) {
-      throw new IllegalArgumentException("Invalid size " + maxSize
-          + " to ObjectPartList constructor");
+      throw new IllegalArgumentException(
+          "Invalid size " + maxSize + " to ObjectPartList constructor");
     }
     this.objectTypeArray = new byte[maxSize];
     this.hasKeys = hasKeys;
     if (hasKeys) {
       this.keys = new ArrayList();
-    }
-    else {
+    } else {
       this.keys = null;
     }
     this.objects = new ArrayList();
@@ -110,19 +106,19 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
   public void addExceptionPart(Object key, Exception ex) {
     addPart(key, ex, EXCEPTION, null);
   }
-  
+
   public void addObjectPartForAbsentKey(Object key, Object value) {
     // ObjectPartList is for clients < version 6.5.0, which didn't support this setting
     throw new IllegalAccessError("inappropriate use of ObjectPartList");
   }
 
 
-  
+
   public void addAll(ObjectPartList other) {
     if (logger.isTraceEnabled(LogMarker.OBJECT_PART_LIST)) {
       logger.trace(LogMarker.OBJECT_PART_LIST, "OPL.addAll: other={}\nthis={}", other, this);
     }
-    
+
     if (this.hasKeys) {
       if (other.keys != null) {
         if (this.keys == null) {
@@ -131,8 +127,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
           this.keys.addAll(other.keys);
         }
       }
-    }
-    else if (other.hasKeys) {
+    } else if (other.hasKeys) {
       this.hasKeys = true;
       this.keys = new ArrayList(other.keys);
     }
@@ -146,7 +141,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
       return Collections.unmodifiableList(this.keys);
     }
   }
-  
+
   /** unprotected access to the keys collection, which may be null */
   public List getKeysForTest() {
     return this.keys;
@@ -159,12 +154,12 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
       return Collections.unmodifiableList(this.objects);
     }
   }
-  
+
   /** unprotected access to the objects collection, which may be null */
   public List getObjectsForTest() {
     return this.objects;
   }
-  
+
   public int size() {
     // some lists have only keys and some have only objects, so we need to choose
     // the correct collection to query
@@ -177,8 +172,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
 
   public void reinit(int maxSize) {
     if (maxSize <= 0) {
-      throw new IllegalArgumentException("Invalid size " + maxSize
-          + " to ObjectPartList.reinit");
+      throw new IllegalArgumentException("Invalid size " + maxSize + " to ObjectPartList.reinit");
     }
     this.objectTypeArray = new byte[maxSize];
     this.objects.clear();
@@ -206,21 +200,17 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
         }
         out.writeBoolean(objectType == EXCEPTION);
         if (objectType == OBJECT && value instanceof byte[]) {
-          out.write((byte[])value);
-        }
-        else if (objectType == EXCEPTION) {
+          out.write((byte[]) value);
+        } else if (objectType == EXCEPTION) {
           // write exception as byte array so native clients can skip it
-          DataSerializer
-              .writeByteArray(CacheServerHelper.serialize(value), out);
+          DataSerializer.writeByteArray(CacheServerHelper.serialize(value), out);
           // write the exception string for native clients
           DataSerializer.writeString(value.toString(), out);
-        }
-        else {
+        } else {
           DataSerializer.writeObject(value, out);
         }
       }
-    }
-    else {
+    } else {
       out.writeInt(0);
     }
   }
@@ -244,8 +234,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
           value = CacheServerHelper.deserialize(exBytes);
           // ignore the exception string meant for native clients
           DataSerializer.readString(in);
-        }
-        else {
+        } else {
           value = DataSerializer.readObject(in);
         }
         this.objects.add(value);
@@ -264,7 +253,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
 
   @Override
   public void release() {
-    for (Object v: this.objects) {
+    for (Object v : this.objects) {
       OffHeapHelper.release(v);
     }
   }

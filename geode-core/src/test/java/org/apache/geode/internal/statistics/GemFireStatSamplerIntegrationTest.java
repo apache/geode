@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.statistics;
 
@@ -52,6 +50,7 @@ import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -61,9 +60,9 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  */
 @Category(IntegrationTest.class)
 public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
-  
+
   private static final Logger logger = LogService.getLogger();
-  
+
   private static final int STAT_SAMPLE_RATE = 1000;
 
   private DistributedSystem system;
@@ -93,7 +92,8 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
   /**
    * Tests the majority of getters and the basic functionality of the sampler.
    * 
-   * This test is skipped when running on Windows 7 because ProcessStats is not created for this OS. See #45395.
+   * This test is skipped when running on Windows 7 because ProcessStats is not created for this OS.
+   * See #45395.
    */
   @Test
   public void testBasics() throws Exception {
@@ -119,18 +119,16 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     Assert.assertEquals(getStatisticsManager().getId(), statSampler.getSystemId());
     assertTrue(statSampler.getSystemStartTime() < System.currentTimeMillis());
     Assert.assertEquals(SocketCreator.getHostName(SocketCreator.getLocalHost()),
-                 statSampler.getSystemDirectoryPath());
+        statSampler.getSystemDirectoryPath());
 
     AllStatistics allStats = new AllStatistics(statSampler);
 
     VMStatsContract vmStats = statSampler.getVMStats();
     assertNotNull(vmStats);
     assertTrue(vmStats instanceof VMStats50);
-    /* NOTE: VMStats50 is not an instance of Statistics but instead its
-     * instance contains 3 instances of Statistics:
-     * 1) vmStats
-     * 2) heapMemStats
-     * 3) nonHeapMemStats
+    /*
+     * NOTE: VMStats50 is not an instance of Statistics but instead its instance contains 3
+     * instances of Statistics: 1) vmStats 2) heapMemStats 3) nonHeapMemStats
      */
 
     Method getProcessStats = getGemFireStatSampler().getClass().getMethod("getProcessStats");
@@ -175,9 +173,10 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
   public void testArchiveFileExists() throws Exception {
     final String dir = this.testDir.getAbsolutePath();
     final String archiveFileName = dir + File.separator + this.testName.getMethodName() + ".gfs";
-    
-    final File archiveFile1 = new File(dir + File.separator + this.testName.getMethodName() + ".gfs");
-    
+
+    final File archiveFile1 =
+        new File(dir + File.separator + this.testName.getMethodName() + ".gfs");
+
     Properties props = createGemFireProperties();
     props.setProperty(STATISTIC_ARCHIVE_FILE, archiveFileName);
     connect(props);
@@ -190,10 +189,11 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     assertEquals(archiveFile1, archiveFile);
 
     waitForFileToExist(archiveFile, 5000, 10);
-    
-    assertTrue("File name incorrect: archiveFile.getName()=" + archiveFile.getName() +
-        " archiveFile.getAbsolutePath()=" + archiveFile.getAbsolutePath() +
-        " getCanonicalPath()" + archiveFile.getCanonicalPath(),
+
+    assertTrue(
+        "File name incorrect: archiveFile.getName()=" + archiveFile.getName()
+            + " archiveFile.getAbsolutePath()=" + archiveFile.getAbsolutePath()
+            + " getCanonicalPath()" + archiveFile.getCanonicalPath(),
         archiveFileName.contains(archiveFile.getName()));
   }
 
@@ -227,9 +227,9 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
   }
 
   /**
-   * Adds a LocalStatListener for an individual stat. Validates that it
-   * receives notifications. Removes the listener and validates that it
-   * was in fact removed and no longer receives notifications.
+   * Adds a LocalStatListener for an individual stat. Validates that it receives notifications.
+   * Removes the listener and validates that it was in fact removed and no longer receives
+   * notifications.
    */
   @Test
   public void testLocalStatListener() throws Exception {
@@ -241,10 +241,12 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     Method getLocalListeners = getGemFireStatSampler().getClass().getMethod("getLocalListeners");
     assertNotNull(getLocalListeners);
 
-    Method addLocalStatListener = getGemFireStatSampler().getClass().getMethod("addLocalStatListener", LocalStatListener.class, Statistics.class, String.class);
+    Method addLocalStatListener = getGemFireStatSampler().getClass()
+        .getMethod("addLocalStatListener", LocalStatListener.class, Statistics.class, String.class);
     assertNotNull(addLocalStatListener);
 
-    Method removeLocalStatListener = getGemFireStatSampler().getClass().getMethod("removeLocalStatListener", LocalStatListener.class);
+    Method removeLocalStatListener = getGemFireStatSampler().getClass()
+        .getMethod("removeLocalStatListener", LocalStatListener.class);
     assertNotNull(removeLocalStatListener);
 
     // validate that there are no listeners
@@ -262,7 +264,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
 
     LocalStatListener listener = new LocalStatListener() {
       public void statValueChanged(double value) {
-        sampleCountValue.set((int)value);
+        sampleCountValue.set((int) value);
         sampleCountChanged.incrementAndGet();
       }
     };
@@ -271,15 +273,16 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     assertTrue(statSampler.getLocalListeners().size() == 1);
 
     // there's a level of indirection here and some protected member fields
-    LocalStatListenerImpl lsli = (LocalStatListenerImpl)
-        statSampler.getLocalListeners().iterator().next();
+    LocalStatListenerImpl lsli =
+        (LocalStatListenerImpl) statSampler.getLocalListeners().iterator().next();
     assertEquals("sampleCount", lsli.stat.getName());
 
     // wait for the listener to update 4 times
     final int expectedChanges = 4;
     boolean done = false;
     try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 5000; done = (sampleCountChanged.get() >= expectedChanges)) {
+      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 5000; done =
+          (sampleCountChanged.get() >= expectedChanges)) {
         Thread.sleep(10);
       }
     } catch (InterruptedException e) {
@@ -341,8 +344,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
   }
 
   /**
-   * Verifies that archive rolling works correctly when archive-file-size-limit
-   * is specified.
+   * Verifies that archive rolling works correctly when archive-file-size-limit is specified.
    */
   @Test
   public void testArchiveRolling() throws Exception {
@@ -367,18 +369,19 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
 
     boolean done = false;
     try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 4000; done = (getSampleCollector() != null && getSampleCollector().getStatArchiveHandler() != null)) {
+      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 4000; done =
+          (getSampleCollector() != null && getSampleCollector().getStatArchiveHandler() != null)) {
         Thread.sleep(10);
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
-    assertTrue("Waiting for getSampleCollector().getStatArchiveHandler() to not be null", done);  
+    assertTrue("Waiting for getSampleCollector().getStatArchiveHandler() to not be null", done);
 
     StatArchiveHandler statArchiveHandler = getSampleCollector().getStatArchiveHandler();
     StatArchiveHandlerConfig config = statArchiveHandler.getStatArchiveHandlerConfig();
     assertEquals(1 * 1024, config.getArchiveFileSizeLimit());
-    
+
     waitForFileToExist(archiveFile, 4000, 10);
     waitForFileToExist(archiveFile1, 4000, 10);
     waitForFileToExist(archiveFile2, 4000, 10);
@@ -386,9 +389,9 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
   }
 
   /**
-   * Verifies that archive removal works correctly when archive-disk-space-limit
-   * is specified.
+   * Verifies that archive removal works correctly when archive-disk-space-limit is specified.
    */
+  @Category(FlakyTest.class) // GEODE-2286: need to rewrite with Awaitility and longer timeouts
   @Test
   public void testArchiveRemoval() throws Exception {
     final String dirName = this.testDir.getAbsolutePath();// + File.separator + this.testName;
@@ -402,7 +405,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     final File archiveFile4 = new File(dirName + File.separator + this.testName + "-01-04.gfs");
 
     final int sampleRate = 1000;
-    
+
     // set the system property to use KB instead of MB for file size
     System.setProperty(HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
     Properties props = createGemFireProperties();
@@ -421,13 +424,14 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     boolean exists = false;
     boolean done = false;
     try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 10*sampleRate;) {
+      for (StopWatch time = new StopWatch(true); !done
+          && time.elapsedTimeMillis() < 10 * sampleRate;) {
         exists1 = exists1 || archiveFile1.exists();
         exists2 = exists2 || archiveFile2.exists();
         exists3 = exists3 || archiveFile3.exists();
         exists4 = exists4 || archiveFile4.exists();
         exists = exists || archiveFile.exists();
-        done = exists1 && exists2 && exists3 && exists4 && exists;      
+        done = exists1 && exists2 && exists3 && exists4 && exists;
         if (!done) {
           Thread.sleep(10);
         }
@@ -435,14 +439,10 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
-    assertTrue("Waiting for archive files to exist:" 
-        + " exists1=" + exists1
-        + " exists2=" + exists2
-        + " exists3=" + exists3
-        + " exists4=" + exists4
-        + " exists=" + exists, done);
-    
-    waitForFileToDelete(archiveFile1, 10*sampleRate, 10);
+    assertTrue("Waiting for archive files to exist:" + " exists1=" + exists1 + " exists2=" + exists2
+        + " exists3=" + exists3 + " exists4=" + exists4 + " exists=" + exists, done);
+
+    waitForFileToDelete(archiveFile1, 10 * sampleRate, 10);
   }
 
   @Test
@@ -453,29 +453,29 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     statSampler.waitForInitialization(5000);
 
     final AtomicBoolean flag = new AtomicBoolean(false);
-    final LocalStatListener listener = new LocalStatListener(){
+    final LocalStatListener listener = new LocalStatListener() {
       public void statValueChanged(double value) {
         flag.set(true);
       }
     };
-    
+
     final String tenuredPoolName = HeapMemoryMonitor.getTenuredMemoryPoolMXBean().getName();
     logger.info("TenuredPoolName: {}", tenuredPoolName);
-    
-    final List<Statistics> list = ((StatisticsManager)this.system).getStatsList();
+
+    final List<Statistics> list = ((StatisticsManager) this.system).getStatsList();
     assertFalse(list.isEmpty());
 
     boolean done = false;
     try {
       for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 5000;) {
         Thread.sleep(10);
-        int i=0;
+        int i = 0;
         synchronized (list) {
           for (Object obj : list) {
             ++i;
             logger.info("List:{}:{}", i, obj);
             if (obj instanceof StatisticsImpl) {
-              StatisticsImpl si = (StatisticsImpl)obj;
+              StatisticsImpl si = (StatisticsImpl) obj;
               logger.info("stat:{}", si.getTextId());
               if (si.getTextId().contains(tenuredPoolName)) {
                 statSampler.addLocalStatListener(listener, si, "currentUsedMemory");
@@ -484,27 +484,28 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
             }
           }
         }
-        //done = false;
+        // done = false;
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
-    assertTrue("Waiting for " + tenuredPoolName + " statistics to be added to create listener for", done);
-    
-    assertTrue("expected at least one stat listener, found " +
-        statSampler.getLocalListeners().size(), 
-        statSampler.getLocalListeners().size() > 0);     
-    
-    long maxTenuredMemory = HeapMemoryMonitor.getTenuredMemoryPoolMXBean()
-                          .getUsage().getMax();
+    assertTrue("Waiting for " + tenuredPoolName + " statistics to be added to create listener for",
+        done);
 
-    //byte[] bytes = new byte[1024 * 1024 * 10];
-    byte[] bytes = new byte[(int)(maxTenuredMemory*0.01)];
+    assertTrue(
+        "expected at least one stat listener, found " + statSampler.getLocalListeners().size(),
+        statSampler.getLocalListeners().size() > 0);
+
+    long maxTenuredMemory = HeapMemoryMonitor.getTenuredMemoryPoolMXBean().getUsage().getMax();
+
+    // byte[] bytes = new byte[1024 * 1024 * 10];
+    byte[] bytes = new byte[(int) (maxTenuredMemory * 0.01)];
     Arrays.fill(bytes, Byte.MAX_VALUE);
 
     done = false;
     try {
-      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 5000; done = (flag.get())) {
+      for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < 5000; done =
+          (flag.get())) {
         Thread.sleep(10);
       }
     } catch (InterruptedException e) {
@@ -512,20 +513,20 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     }
     assertTrue("Waiting for listener to set flag to true", done);
   }
-  
+
   @Override
   protected StatisticsManager getStatisticsManager() {
-    return (InternalDistributedSystem)this.system;
+    return (InternalDistributedSystem) this.system;
   }
 
   protected OsStatisticsFactory getOsStatisticsFactory() {
-    return (InternalDistributedSystem)this.system;
+    return (InternalDistributedSystem) this.system;
   }
 
   private GemFireStatSampler getGemFireStatSampler() {
-    return ((InternalDistributedSystem)this.system).getStatSampler();
+    return ((InternalDistributedSystem) this.system).getStatSampler();
   }
-  
+
   private SampleCollector getSampleCollector() {
     return getGemFireStatSampler().getSampleCollector();
   }
@@ -543,8 +544,8 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
   }
 
   /**
-   * Creates a fresh loner DistributedSystem for each test. Note
-   * that the DistributedSystem is the StatisticsManager/Factory/etc.
+   * Creates a fresh loner DistributedSystem for each test. Note that the DistributedSystem is the
+   * StatisticsManager/Factory/etc.
    */
   @SuppressWarnings("deprecation")
   private void connect(Properties props) {
@@ -559,54 +560,54 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     }
   }
 
-//  public static class AsyncInvoker {
-//    public static AsyncInvocation invokeAsync(Runnable r) {
-//      return invokeAsync(r, "run", new Object[0]);
-//    }
-//    public static AsyncInvocation invokeAsync(Callable c) {
-//      return invokeAsync(c, "call", new Object[0]);
-//    }
-//    public static AsyncInvocation invokeAsync(
-//        final Object o, final String methodName, final Object[] args) {
-//      AsyncInvocation ai =
-//        new AsyncInvocation(o, methodName, new Runnable() {
-//          public void run() {
-//            MethExecutorResult result = 
-//                MethExecutor.executeObject(o, methodName, args);
-//            if (result.exceptionOccurred()) {
-//              throw new AsyncInvocationException(result.getException());
-//            }
-//            AsyncInvocation.setReturnValue(result.getResult());
-//          }
-//      });
-//      ai.start();
-//      return ai;
-//    }
-//    
-//    public static class AsyncInvocationException extends RuntimeException {
-//      private static final long serialVersionUID = -5522299018650622945L;
-//      /**
-//       * Creates a new <code>AsyncInvocationException</code>.
-//       */
-//      public AsyncInvocationException(String message) {
-//        super(message);
-//      }
-//
-//      /**
-//       * Creates a new <code>AsyncInvocationException</code> that was
-//       * caused by a given exception
-//       */
-//      public AsyncInvocationException(String message, Throwable thr) {
-//        super(message, thr);
-//      }
-//
-//      /**
-//       * Creates a new <code>AsyncInvocationException</code> that was
-//       * caused by a given exception
-//       */
-//      public AsyncInvocationException(Throwable thr) {
-//        super(thr.getMessage(), thr);
-//      }
-//    }
-//  }
+  // public static class AsyncInvoker {
+  // public static AsyncInvocation invokeAsync(Runnable r) {
+  // return invokeAsync(r, "run", new Object[0]);
+  // }
+  // public static AsyncInvocation invokeAsync(Callable c) {
+  // return invokeAsync(c, "call", new Object[0]);
+  // }
+  // public static AsyncInvocation invokeAsync(
+  // final Object o, final String methodName, final Object[] args) {
+  // AsyncInvocation ai =
+  // new AsyncInvocation(o, methodName, new Runnable() {
+  // public void run() {
+  // MethExecutorResult result =
+  // MethExecutor.executeObject(o, methodName, args);
+  // if (result.exceptionOccurred()) {
+  // throw new AsyncInvocationException(result.getException());
+  // }
+  // AsyncInvocation.setReturnValue(result.getResult());
+  // }
+  // });
+  // ai.start();
+  // return ai;
+  // }
+  //
+  // public static class AsyncInvocationException extends RuntimeException {
+  // private static final long serialVersionUID = -5522299018650622945L;
+  // /**
+  // * Creates a new <code>AsyncInvocationException</code>.
+  // */
+  // public AsyncInvocationException(String message) {
+  // super(message);
+  // }
+  //
+  // /**
+  // * Creates a new <code>AsyncInvocationException</code> that was
+  // * caused by a given exception
+  // */
+  // public AsyncInvocationException(String message, Throwable thr) {
+  // super(message, thr);
+  // }
+  //
+  // /**
+  // * Creates a new <code>AsyncInvocationException</code> that was
+  // * caused by a given exception
+  // */
+  // public AsyncInvocationException(Throwable thr) {
+  // super(thr.getMessage(), thr);
+  // }
+  // }
+  // }
 }

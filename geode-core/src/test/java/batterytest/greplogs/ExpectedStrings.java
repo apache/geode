@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -29,17 +27,16 @@ import java.util.regex.Pattern;
 public class ExpectedStrings {
 
   private ExpectedStrings() {}
-  
+
   public static boolean skipLogMsgs(String type) {
-    if ( type.equals("junit") 
-        || type.equals("java")
-        || type.equals("query") 
+    if (type.equals("junit") || type.equals("java") || type.equals("query")
         || type.equals("dunit")) {
       return true;
-    }else {
+    } else {
       return false;
-    }    
+    }
   }
+
   public static List create(String type) {
     List expected = new ArrayList();
 
@@ -74,36 +71,37 @@ public class ExpectedStrings {
     expected.add(Pattern.compile("Invoked MembershipNotifierHook"));
     expected.add(Pattern.compile("java.io.IOException: Connection reset by peer"));
     expected.add(Pattern.compile("client connections exceeds the licensed limit"));
-    //Exclude this since the only tests with securty enabled, expect to see 
-    //these and if they don't then the test fails
+    // Exclude this since the only tests with securty enabled, expect to see
+    // these and if they don't then the test fails
     expected.add(Pattern.compile("NotAuthorizedException"));
     expected.add(Pattern.compile("above critical heap threshold"));
     expected.add(Pattern.compile("below critical heap threshold"));
     expected.add(Pattern.compile("checkForForcedDisconnect processed Exception"));
     expected.add(Pattern.compile("operation generated expected \\S+Exception"));
 
-    expected.add(Pattern.compile("ExpectedString")); 
-    expected.add(Pattern.compile("ExpectedStrings")); 
+    expected.add(Pattern.compile("ExpectedString"));
+    expected.add(Pattern.compile("ExpectedStrings"));
 
-    expected.add(Pattern.compile("PassWithExpectedSevereJUnitTest")); 
-    expected.add(Pattern.compile("FailWithErrorInOutputJUnitTest")); 
-    expected.add(Pattern.compile("PassWithExpectedErrorJUnitTest")); 
+    expected.add(Pattern.compile("PassWithExpectedSevereJUnitTest"));
+    expected.add(Pattern.compile("FailWithErrorInOutputJUnitTest"));
+    expected.add(Pattern.compile("PassWithExpectedErrorJUnitTest"));
     expected.add(Pattern.compile("FailWithSevereInOutputJUnitTest"));
     expected.add(Pattern.compile("SystemAlertManager: A simple Alert."));
-    
-    expected.add(Pattern.compile("org.apache.geode.management.DependenciesNotFoundException")); 
 
-    //expected.add(Pattern.compile("Java version older than"));
-    //expected.add(Pattern.compile("Minimum system requirements not met. Unexpected behavior may result in additional errors."));
-    
-    if ( type.equals("junit") || type.equals("java") || type.equals("query")) {
+    expected.add(Pattern.compile("org.apache.geode.management.DependenciesNotFoundException"));
+
+    // expected.add(Pattern.compile("Java version older than"));
+    // expected.add(Pattern.compile("Minimum system requirements not met. Unexpected behavior may
+    // result in additional errors."));
+
+    if (type.equals("junit") || type.equals("java") || type.equals("query")) {
       expected.add(Pattern.compile("TEST EXCEPTION"));
       expected.add(Pattern.compile("testLogLevels"));
       expected.add(Pattern.compile("On iteration"));
-      expected.add(Pattern.compile("signal count"));  
-      //Remove when davidw fixes
-      expected.add(Pattern.compile("Expected")); 
-      //below here for gfx unit tests
+      expected.add(Pattern.compile("signal count"));
+      // Remove when davidw fixes
+      expected.add(Pattern.compile("Expected"));
+      // below here for gfx unit tests
       expected.add(Pattern.compile("Valid documents must have a"));
       expected.add(Pattern.compile("Loaded java.lang.ClassCastException"));
       expected.add(Pattern.compile("Loaded java.io.InvalidClassException"));
@@ -117,7 +115,7 @@ public class ExpectedStrings {
       expected.add(Pattern.compile("Unsupported at this time"));
       expected.add(Pattern.compile("DiskAccessException occured as expected"));
       expected.add(Pattern.compile("Oplog::createOplog:Exception in preblowing the file"));
-    } else if ( type.equals("dunit")) {
+    } else if (type.equals("dunit")) {
       expected.add(Pattern.compile("INCOMPATIBLE_ROOT"));
       expected.add(Pattern.compile("connecting to locator"));
       expected.add(Pattern.compile("ItsOkayForMyClassNotToBeFound"));
@@ -139,11 +137,16 @@ public class ExpectedStrings {
       expected.add(Pattern.compile("SQLException: Failed to start database 'newDB'"));
       expected.add(Pattern.compile("SQLException: Database 'newDB1' not found"));
       expected.add(Pattern.compile("INCORRECT_localhost"));
-      expected.add(Pattern.compile("WARNING: Failed to check connection: java.net.ConnectException: Connection refused"));
-      expected.add(Pattern.compile("WARNING: Failed to call the method close..:java.rmi.ConnectException:"));
-      expected.add(Pattern.compile("WARNING: Failed to restart: java.rmi.NoSuchObjectException: no such object in table"));
-      expected.add(Pattern.compile("WARNING: Failed to restart: java.rmi.ConnectException: Connection refused to host: .* nested exception is:"));
-      expected.add(Pattern.compile("UnitTests terminating abnormally after a client had a fatal task error"));
+      expected.add(Pattern.compile(
+          "WARNING: Failed to check connection: java.net.ConnectException: Connection refused"));
+      expected.add(
+          Pattern.compile("WARNING: Failed to call the method close..:java.rmi.ConnectException:"));
+      expected.add(Pattern.compile(
+          "WARNING: Failed to restart: java.rmi.NoSuchObjectException: no such object in table"));
+      expected.add(Pattern.compile(
+          "WARNING: Failed to restart: java.rmi.ConnectException: Connection refused to host: .* nested exception is:"));
+      expected.add(Pattern
+          .compile("UnitTests terminating abnormally after a client had a fatal task error"));
       expected.add(Pattern.compile("Doing stack dump on all"));
       expected.add(Pattern.compile("Unit test result: FAILED ==> Unsuccessfully ran JUnit tests"));
       expected.add(Pattern.compile("IGNORE_EXCEPTION_test"));
@@ -155,20 +158,21 @@ public class ExpectedStrings {
       expected.add(Pattern.compile("Pool unexpected closed socket on server"));
       expected.add(Pattern.compile("SocketTimeoutException"));
       expected.add(Pattern.compile("Could not initialize a primary queue on startup"));
-      expected.add(Pattern.compile("java.lang.IllegalArgumentException: Sample timestamp must be greater than previous timestamp"));
-      //The following 2 strings are ignored due to bug 52042
+      expected.add(Pattern.compile(
+          "java.lang.IllegalArgumentException: Sample timestamp must be greater than previous timestamp"));
+      // The following 2 strings are ignored due to bug 52042
       expected.add(Pattern.compile("failed accepting client connection"));
       expected.add(Pattern.compile("Acceptor received unknown communication"));
-    } else if ( type.equals("smoke")) {
+    } else if (type.equals("smoke")) {
       expected.add(Pattern.compile("Doing stack dump on all"));
       expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
       expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
       expected.add(Pattern.compile("Could not find Spring Shell library"));
-    } else if ( type.equals("perf")) {
+    } else if (type.equals("perf")) {
       expected.add(Pattern.compile("Doing stack dump on all"));
       expected.add(Pattern.compile("SIGQUIT received, dumping threads"));
       expected.add(Pattern.compile("Sleeping \\d+ seconds between stack dumps"));
-    } else if ( type.equals("moresmoke")) {
+    } else if (type.equals("moresmoke")) {
       expected.add(Pattern.compile(" expected error"));
       expected.add(Pattern.compile("Doing stack dump on all"));
       expected.add(Pattern.compile("SIGQUIT received, dumping threads"));

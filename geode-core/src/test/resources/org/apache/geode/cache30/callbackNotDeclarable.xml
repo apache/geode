@@ -17,8 +17,8 @@
 -->
 
 <!DOCTYPE cache PUBLIC
-    "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.0//EN"
-    "http://www.gemstone.com/dtd/cache4_0.dtd">
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+    "http://www.gemstone.com/dtd/cache7_0.dtd">
 
 <!-- Has a callback (cache loader) that does not implement Declarable
 -->
@@ -27,7 +27,7 @@
   <vm-root-region name="root">
     <region-attributes>
       <cache-listener>
-        <class-name>org.apache.geode.cache30.CacheXml30DUnitTest$NotDeclarableCacheListener</class-name>
+        <class-name>org.apache.geode.cache30.CacheXml66DUnitTest$NotDeclarableCacheListener</class-name>
       </cache-listener>
     </region-attributes>
   </vm-root-region>

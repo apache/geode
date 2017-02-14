@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -45,9 +43,10 @@ import org.apache.geode.management.internal.cli.functions.ListIndexFunction;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * The IndexCommandsJUnitTest class is a test suite of test cases testing the contract and functionality of the
- * IndexCommands class.
+ * The IndexCommandsJUnitTest class is a test suite of test cases testing the contract and
+ * functionality of the IndexCommands class.
  * </p>
+ * 
  * @see org.apache.geode.management.internal.cli.commands.IndexCommands
  * @see org.apache.geode.management.internal.cli.domain.IndexDetails
  * @see org.apache.geode.management.internal.cli.functions.ListIndexFunction
@@ -65,9 +64,11 @@ public class IndexCommandsJUnitTest {
 
   @Before
   public void setup() {
-    mockContext = new Mockery() {{
-      setImposteriser(ClassImposteriser.INSTANCE);
-    }};
+    mockContext = new Mockery() {
+      {
+        setImposteriser(ClassImposteriser.INSTANCE);
+      }
+    };
   }
 
   @After
@@ -80,7 +81,8 @@ public class IndexCommandsJUnitTest {
     return new TestIndexCommands(cache, functionExecutor);
   }
 
-  private IndexDetails createIndexDetails(final String memberId, final String regionPath, final String indexName) {
+  private IndexDetails createIndexDetails(final String memberId, final String regionPath,
+      final String indexName) {
     return new IndexDetails(memberId, regionPath, indexName);
   }
 
@@ -88,28 +90,34 @@ public class IndexCommandsJUnitTest {
   public void testGetIndexListing() {
     final Cache mockCache = mockContext.mock(Cache.class, "Cache");
 
-    final AbstractExecution mockFunctionExecutor = mockContext.mock(AbstractExecution.class, "Function Executor");
+    final AbstractExecution mockFunctionExecutor =
+        mockContext.mock(AbstractExecution.class, "Function Executor");
 
-    final ResultCollector mockResultCollector = mockContext.mock(ResultCollector.class, "ResultCollector");
+    final ResultCollector mockResultCollector =
+        mockContext.mock(ResultCollector.class, "ResultCollector");
 
     final IndexDetails indexDetails1 = createIndexDetails("memberOne", "/Employees", "empIdIdx");
-    final IndexDetails indexDetails2 = createIndexDetails("memberOne", "/Employees", "empLastNameIdx");
+    final IndexDetails indexDetails2 =
+        createIndexDetails("memberOne", "/Employees", "empLastNameIdx");
     final IndexDetails indexDetails3 = createIndexDetails("memberTwo", "/Employees", "empDobIdx");
 
-    final List<IndexDetails> expectedIndexDetails = Arrays.asList(indexDetails1, indexDetails2, indexDetails3);
+    final List<IndexDetails> expectedIndexDetails =
+        Arrays.asList(indexDetails1, indexDetails2, indexDetails3);
 
     final List<Set<IndexDetails>> results = new ArrayList<Set<IndexDetails>>(2);
 
     results.add(CollectionUtils.asSet(indexDetails2, indexDetails1));
     results.add(CollectionUtils.asSet(indexDetails3));
 
-    mockContext.checking(new Expectations() {{
-      oneOf(mockFunctionExecutor).setIgnoreDepartedMembers(with(equal(true)));
-      oneOf(mockFunctionExecutor).execute(with(aNonNull(ListIndexFunction.class)));
-      will(returnValue(mockResultCollector));
-      oneOf(mockResultCollector).getResult();
-      will(returnValue(results));
-    }});
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockFunctionExecutor).setIgnoreDepartedMembers(with(equal(true)));
+        oneOf(mockFunctionExecutor).execute(with(aNonNull(ListIndexFunction.class)));
+        will(returnValue(mockResultCollector));
+        oneOf(mockResultCollector).getResult();
+        will(returnValue(results));
+      }
+    });
 
     final IndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
 
@@ -125,17 +133,18 @@ public class IndexCommandsJUnitTest {
 
     final Execution mockFunctionExecutor = mockContext.mock(Execution.class, "Function Executor");
 
-    mockContext.checking(new Expectations() {{
-      oneOf(mockFunctionExecutor).execute(with(aNonNull(ListIndexFunction.class)));
-      will(throwException(new RuntimeException("expected")));
-    }});
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockFunctionExecutor).execute(with(aNonNull(ListIndexFunction.class)));
+        will(throwException(new RuntimeException("expected")));
+      }
+    });
 
     final IndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
 
     try {
       commands.getIndexListing();
-    }
-    catch (RuntimeException expected) {
+    } catch (RuntimeException expected) {
       assertEquals("expected", expected.getMessage());
       throw expected;
     }
@@ -145,9 +154,11 @@ public class IndexCommandsJUnitTest {
   public void testGetIndexListingReturnsFunctionInvocationTargetExceptionInResults() {
     final Cache mockCache = mockContext.mock(Cache.class, "Cache");
 
-    final AbstractExecution mockFunctionExecutor = mockContext.mock(AbstractExecution.class, "Function Executor");
+    final AbstractExecution mockFunctionExecutor =
+        mockContext.mock(AbstractExecution.class, "Function Executor");
 
-    final ResultCollector mockResultCollector = mockContext.mock(ResultCollector.class, "ResultCollector");
+    final ResultCollector mockResultCollector =
+        mockContext.mock(ResultCollector.class, "ResultCollector");
 
     final IndexDetails indexDetails = createIndexDetails("memberOne", "/Employees", "empIdIdx");
 
@@ -158,13 +169,15 @@ public class IndexCommandsJUnitTest {
     results.add(CollectionUtils.asSet(indexDetails));
     results.add(new FunctionInvocationTargetException("expected"));
 
-    mockContext.checking(new Expectations() {{
-      oneOf(mockFunctionExecutor).setIgnoreDepartedMembers(with(equal(true)));
-      oneOf(mockFunctionExecutor).execute(with(aNonNull(ListIndexFunction.class)));
-      will(returnValue(mockResultCollector));
-      oneOf(mockResultCollector).getResult();
-      will(returnValue(results));
-    }});
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockFunctionExecutor).setIgnoreDepartedMembers(with(equal(true)));
+        oneOf(mockFunctionExecutor).execute(with(aNonNull(ListIndexFunction.class)));
+        will(returnValue(mockResultCollector));
+        oneOf(mockResultCollector).getResult();
+        will(returnValue(results));
+      }
+    });
 
     final IndexCommands commands = createIndexCommands(mockCache, mockFunctionExecutor);
 

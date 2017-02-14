@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
@@ -48,6 +46,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Client health stats check
@@ -68,13 +67,13 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
   private static VM client2 = null;
   private static VM managingNode = null;
 
-  private static ManagementTestBase helper = new ManagementTestBase(){};
-  
+  private static ManagementTestBase helper = new ManagementTestBase() {};
+
   private static int numOfCreates = 0;
   private static int numOfUpdates = 0;
   private static int numOfInvalidates = 0;
   private static boolean lastKeyReceived = false;
-  
+
   private static GemFireCacheImpl cache = null;
 
   private VM server = null;
@@ -119,17 +118,19 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
 
     DistributedMember serverMember = helper.getMember(server);
 
-    client.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, false));
-    
-    client2.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 2, true, false));
+    client.invoke(
+        () -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, false));
+
+    client2.invoke(
+        () -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 2, true, false));
 
     client.invoke(() -> ClientHealthStatsDUnitTest.put());
     client2.invoke(() -> ClientHealthStatsDUnitTest.put());
-    
+
     managingNode.invoke(() -> ClientHealthStatsDUnitTest.verifyClientStats(serverMember, port, 2));
     helper.stopManagingNode(managingNode);
   }
-  
+
   @Test
   public void testClientHealthStats_SubscriptionDisabled() throws Exception {
     helper.createManagementCache(managingNode);
@@ -139,17 +140,19 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
 
     DistributedMember serverMember = helper.getMember(server);
 
-    client.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, false, false));
-    
-    client2.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 2, false, false));
+    client.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1,
+        false, false));
+
+    client2.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 2,
+        false, false));
 
     client.invoke(() -> ClientHealthStatsDUnitTest.put());
     client2.invoke(() -> ClientHealthStatsDUnitTest.put());
-    
+
     managingNode.invoke(() -> ClientHealthStatsDUnitTest.verifyClientStats(serverMember, port, 0));
     helper.stopManagingNode(managingNode);
   }
-  
+
   @Test
   public void testClientHealthStats_DurableClient() throws Exception {
     helper.createManagementCache(managingNode);
@@ -159,70 +162,75 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
 
     DistributedMember serverMember = helper.getMember(server);
 
-    client.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, true));
-    
-    client2.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 2, true, true));
+    client.invoke(
+        () -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, true));
+
+    client2.invoke(
+        () -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 2, true, true));
 
     client.invoke(() -> ClientHealthStatsDUnitTest.put());
     client2.invoke(() -> ClientHealthStatsDUnitTest.put());
-    
+
     client.invoke(() -> ClientHealthStatsDUnitTest.closeClientCache());
-    
+
     client2.invoke(() -> ClientHealthStatsDUnitTest.closeClientCache());
-    
+
     managingNode.invoke(() -> ClientHealthStatsDUnitTest.verifyClientStats(serverMember, port, 2));
     helper.stopManagingNode(managingNode);
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-337
   @Test
   public void testStatsMatchWithSize() throws Exception {
     // start a server
     int port = (Integer) server.invoke(() -> ClientHealthStatsDUnitTest.createServerCache());
     // create durable client, with durable RI
-    client.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, false));
+    client.invoke(
+        () -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, false));
     // do puts on server from three different threads, pause after 500 puts each.
     server.invoke(() -> ClientHealthStatsDUnitTest.doPuts());
     // close durable client
     client.invoke(() -> ClientHealthStatsDUnitTest.closeClientCache());
-    
-    server.invoke("verifyProxyHasBeenPaused", () -> verifyProxyHasBeenPaused() );
+
+    server.invoke("verifyProxyHasBeenPaused", () -> verifyProxyHasBeenPaused());
     // resume puts on server, add another 100.
     server.invokeAsync(() -> ClientHealthStatsDUnitTest.resumePuts());
     // start durable client
-    client.invoke(() -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, false));
+    client.invoke(
+        () -> ClientHealthStatsDUnitTest.createClientCache(server.getHost(), port, 1, true, false));
     // wait for full queue dispatch
     client.invoke(() -> ClientHealthStatsDUnitTest.waitForLastKey());
     // verify the stats
     server.invoke(() -> ClientHealthStatsDUnitTest.verifyStats(port));
   }
-  
-  private static void verifyProxyHasBeenPaused() {	  
-	  
-	  WaitCriterion criterion = new WaitCriterion() {
-      
+
+  private static void verifyProxyHasBeenPaused() {
+
+    WaitCriterion criterion = new WaitCriterion() {
+
       @Override
       public boolean done() {
         CacheClientNotifier ccn = CacheClientNotifier.getInstance();
         Collection<CacheClientProxy> ccProxies = ccn.getClientProxies();
-        
-        Iterator<CacheClientProxy> itr =  ccProxies.iterator();
-        
-        while(itr.hasNext()) {
-          CacheClientProxy ccp = itr.next(); 
+
+        Iterator<CacheClientProxy> itr = ccProxies.iterator();
+
+        while (itr.hasNext()) {
+          CacheClientProxy ccp = itr.next();
           System.out.println("proxy status " + ccp.getState());
-          if(ccp.isPaused())
+          if (ccp.isPaused())
             return true;
         }
         return false;
       }
-      
+
       @Override
       public String description() {
         return "Proxy has not paused yet";
       }
     };
-    
-    Wait.waitForCriterion(criterion, 15 * 1000, 200, true);	  
+
+    Wait.waitForCriterion(criterion, 15 * 1000, 200, true);
   }
 
   private static int createServerCache() throws Exception {
@@ -242,22 +250,24 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
     cache.close(true);
   }
 
-  private static void createClientCache(Host host, Integer port, int clientNum, boolean subscriptionEnabled, boolean durable) throws Exception {
+  private static void createClientCache(Host host, Integer port, int clientNum,
+      boolean subscriptionEnabled, boolean durable) throws Exception {
     Properties props = new Properties();
-    props.setProperty(DURABLE_CLIENT_ID, "durable-"+clientNum);
+    props.setProperty(DURABLE_CLIENT_ID, "durable-" + clientNum);
     props.setProperty(DURABLE_CLIENT_TIMEOUT, "300000");
     props.setProperty(LOG_LEVEL, "info");
-    props.setProperty(STATISTIC_ARCHIVE_FILE, getTestMethodName() + "_client_" + clientNum + ".gfs");
+    props.setProperty(STATISTIC_ARCHIVE_FILE,
+        getTestMethodName() + "_client_" + clientNum + ".gfs");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     ClientCacheFactory ccf = new ClientCacheFactory(props);
-    if(subscriptionEnabled){
+    if (subscriptionEnabled) {
       ccf.setPoolSubscriptionEnabled(true);
       ccf.setPoolSubscriptionAckInterval(50);
       ccf.setPoolSubscriptionRedundancy(0);
     }
-    
-    if(durable){
+
+    if (durable) {
       ccf.set(DURABLE_CLIENT_ID, "DurableClientId_" + clientNum);
       ccf.set(DURABLE_CLIENT_TIMEOUT, "" + 300);
     }
@@ -265,32 +275,33 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
     ccf.addPoolServer(host.getHostName(), port);
     cache = (GemFireCacheImpl) ccf.create();
 
-    ClientRegionFactory<String, String> crf = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
+    ClientRegionFactory<String, String> crf =
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
     crf.setConcurrencyChecksEnabled(false);
 
     crf.addCacheListener(new CacheListenerAdapter<String, String>() {
       public void afterInvalidate(EntryEvent<String, String> event) {
-        cache.getLoggerI18n().fine(
-            "Invalidate Event: " + event.getKey() + ", " + event.getNewValue());
+        cache.getLoggerI18n()
+            .fine("Invalidate Event: " + event.getKey() + ", " + event.getNewValue());
         numOfInvalidates++;
       }
+
       public void afterCreate(EntryEvent<String, String> event) {
         if (((String) event.getKey()).equals("last_key")) {
           lastKeyReceived = true;
         }
-        cache.getLoggerI18n().fine(
-            "Create Event: " + event.getKey() + ", " + event.getNewValue());
+        cache.getLoggerI18n().fine("Create Event: " + event.getKey() + ", " + event.getNewValue());
         numOfCreates++;
       }
+
       public void afterUpdate(EntryEvent<String, String> event) {
-        cache.getLoggerI18n().fine(
-            "Update Event: " + event.getKey() + ", " + event.getNewValue());
+        cache.getLoggerI18n().fine("Update Event: " + event.getKey() + ", " + event.getNewValue());
         numOfUpdates++;
       }
     });
 
     Region<String, String> r = crf.create(REGION_NAME);
-    if(subscriptionEnabled){
+    if (subscriptionEnabled) {
       r.registerInterest("ALL_KEYS", true);
       cache.readyForEvents();
     }
@@ -302,21 +313,21 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
     Thread t1 = new Thread(new Runnable() {
       public void run() {
         for (int i = 0; i < 500; i++) {
-          r.put("T1_KEY_"+i, "VALUE_"+i);
+          r.put("T1_KEY_" + i, "VALUE_" + i);
         }
       }
     });
     Thread t2 = new Thread(new Runnable() {
       public void run() {
         for (int i = 0; i < 500; i++) {
-          r.put("T2_KEY_"+i, "VALUE_"+i);
+          r.put("T2_KEY_" + i, "VALUE_" + i);
         }
       }
     });
     Thread t3 = new Thread(new Runnable() {
       public void run() {
         for (int i = 0; i < 500; i++) {
-          r.put("T3_KEY_"+i, "VALUE_"+i);
+          r.put("T3_KEY_" + i, "VALUE_" + i);
         }
       }
     });
@@ -334,7 +345,7 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
     Cache cache = GemFireCacheImpl.getInstance();
     Region<String, String> r = cache.getRegion(Region.SEPARATOR + REGION_NAME);
     for (int i = 0; i < 100; i++) {
-      r.put("NEWKEY_"+i, "NEWVALUE_"+i);
+      r.put("NEWKEY_" + i, "NEWVALUE_" + i);
     }
     r.put("last_key", "last_value");
   }
@@ -345,12 +356,13 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
       public boolean done() {
         return lastKeyReceived;
       }
+
       @Override
       public String description() {
         return "Did not receive last key.";
       }
     };
-    Wait.waitForCriterion(wc, 60*1000, 500, true);
+    Wait.waitForCriterion(wc, 60 * 1000, 500, true);
   }
 
   private static DistributedMember getMember() throws Exception {
@@ -358,7 +370,8 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
     return cache.getDistributedSystem().getDistributedMember();
   }
 
-  private static void verifyClientStats(DistributedMember serverMember, int serverPort, int numSubscriptions) {
+  private static void verifyClientStats(DistributedMember serverMember, int serverPort,
+      int numSubscriptions) {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     try {
       ManagementService service = ManagementService.getExistingManagementService(cache);
@@ -366,24 +379,30 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
 
       String[] clientIds = bean.getClientIds();
       assertTrue(clientIds.length == 2);
-      System.out.println("<ExpectedString> ClientId-1 of the Server is  " + clientIds[0] + "</ExpectedString> ");
-      System.out.println("<ExpectedString> ClientId-2 of the Server is  " + clientIds[1] + "</ExpectedString> ");
-      
+      System.out.println(
+          "<ExpectedString> ClientId-1 of the Server is  " + clientIds[0] + "</ExpectedString> ");
+      System.out.println(
+          "<ExpectedString> ClientId-2 of the Server is  " + clientIds[1] + "</ExpectedString> ");
+
       ClientHealthStatus[] clientStatuses = bean.showAllClientStats();
 
       ClientHealthStatus clientStatus1 = bean.showClientStats(clientIds[0]);
       ClientHealthStatus clientStatus2 = bean.showClientStats(clientIds[1]);
       assertNotNull(clientStatus1);
       assertNotNull(clientStatus2);
-      System.out.println("<ExpectedString> ClientStats-1 of the Server is  " + clientStatus1 + "</ExpectedString> ");
-      System.out.println("<ExpectedString> ClientStats-2 of the Server is  " + clientStatus2 + "</ExpectedString> ");
+      System.out.println("<ExpectedString> ClientStats-1 of the Server is  " + clientStatus1
+          + "</ExpectedString> ");
+      System.out.println("<ExpectedString> ClientStats-2 of the Server is  " + clientStatus2
+          + "</ExpectedString> ");
 
-      System.out.println("<ExpectedString> clientStatuses " + clientStatuses + "</ExpectedString> ");
+      System.out
+          .println("<ExpectedString> clientStatuses " + clientStatuses + "</ExpectedString> ");
       assertNotNull(clientStatuses);
-      
+
       assertTrue(clientStatuses.length == 2);
       for (ClientHealthStatus status : clientStatuses) {
-        System.out.println("<ExpectedString> ClientStats of the Server is  " + status + "</ExpectedString> ");
+        System.out.println(
+            "<ExpectedString> ClientStats of the Server is  " + status + "</ExpectedString> ");
       }
 
       DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
@@ -430,11 +449,16 @@ public class ClientHealthStatsDUnitTest extends JUnit4DistributedTestCase {
     CacheClientNotifier ccn = CacheClientNotifier.getInstance();
     CacheClientProxy ccp = ccn.getClientProxies().iterator().next();
     cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getQueueSize() " + ccp.getQueueSize());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getQueueSizeStat() " + ccp.getQueueSizeStat());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getEventsEnqued() " + ccp.getHARegionQueue().getStatistics().getEventsEnqued());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getEventsDispatched() " + ccp.getHARegionQueue().getStatistics().getEventsDispatched());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getEventsRemoved() " + ccp.getHARegionQueue().getStatistics().getEventsRemoved());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getNumVoidRemovals() " + ccp.getHARegionQueue().getStatistics().getNumVoidRemovals());
+    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+        "getQueueSizeStat() " + ccp.getQueueSizeStat());
+    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+        "getEventsEnqued() " + ccp.getHARegionQueue().getStatistics().getEventsEnqued());
+    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+        "getEventsDispatched() " + ccp.getHARegionQueue().getStatistics().getEventsDispatched());
+    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+        "getEventsRemoved() " + ccp.getHARegionQueue().getStatistics().getEventsRemoved());
+    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+        "getNumVoidRemovals() " + ccp.getHARegionQueue().getStatistics().getNumVoidRemovals());
     assertEquals(ccp.getQueueSize(), ccp.getQueueSizeStat());
     ClientQueueDetail queueDetails = serverBean.showClientQueueDetails()[0];
     assertEquals(queueDetails.getQueueSize(), ccp.getQueueSizeStat());

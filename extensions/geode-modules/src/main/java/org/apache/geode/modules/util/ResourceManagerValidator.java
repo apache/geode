@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.util;
 
 import org.apache.geode.cache.GemFireCache;
@@ -53,7 +51,8 @@ public class ResourceManagerValidator {
     }
   }
 
-  private static void validateSunArguments(GemFireCache cache, ResourceManager rm, List<String> inputArguments) {
+  private static void validateSunArguments(GemFireCache cache, ResourceManager rm,
+      List<String> inputArguments) {
     // Retrieve the -Xms, -Xmx, UseConcMarkSweepGC and CMSInitiatingOccupancyFraction arguments
     String dashXms = null, dashXmx = null, useCMS = null, cmsIOF = null;
     for (String argument : inputArguments) {
@@ -69,15 +68,9 @@ public class ResourceManagerValidator {
     }
     if (cache.getLogger().fineEnabled()) {
       StringBuilder builder = new StringBuilder();
-      builder.append("Relevant input java arguments: ")
-          .append("dashXms=")
-          .append(dashXms)
-          .append("; dashXmx=")
-          .append(dashXmx)
-          .append("; useCMS=")
-          .append(useCMS)
-          .append("; cmsIOF=")
-          .append(cmsIOF);
+      builder.append("Relevant input java arguments: ").append("dashXms=").append(dashXms)
+          .append("; dashXmx=").append(dashXmx).append("; useCMS=").append(useCMS)
+          .append("; cmsIOF=").append(cmsIOF);
       cache.getLogger().fine(builder.toString());
     }
 
@@ -91,15 +84,14 @@ public class ResourceManagerValidator {
     verifyCMSInitiatingOccupancyFraction(cache, rm, cmsIOF);
   }
 
-  private static void validateJavaHeapParameters(GemFireCache cache, String dashXms, String dashXmx) {
+  private static void validateJavaHeapParameters(GemFireCache cache, String dashXms,
+      String dashXmx) {
     if (dashXms == null) {
-      cache.getLogger()
-          .warning(
-              "Setting the initial size of the heap (configured using -Xms) is recommended so that GemFire cache eviction is optimal");
+      cache.getLogger().warning(
+          "Setting the initial size of the heap (configured using -Xms) is recommended so that GemFire cache eviction is optimal");
     } else if (dashXmx == null) {
-      cache.getLogger()
-          .warning(
-              "Setting the maximum size of the heap (configured using -Xmx) is recommended so that GemFire cache eviction is optimal");
+      cache.getLogger().warning(
+          "Setting the maximum size of the heap (configured using -Xmx) is recommended so that GemFire cache eviction is optimal");
     } else {
       // Neither heap parameter is null. Parse them and verify they are the same.
       List<String> dashXmsList = splitAtDigits(dashXms);
@@ -108,13 +100,9 @@ public class ResourceManagerValidator {
       String dashXmxStr = dashXmxList.get(1);
       if (!dashXmsStr.equals(dashXmxStr)) {
         StringBuilder builder = new StringBuilder();
-        builder.append("Setting the initial (")
-            .append(dashXmsStr)
-            .append(dashXmsList.get(2))
-            .append(") and maximum (")
-            .append(dashXmxStr)
-            .append(dashXmxList.get(2))
-            .append(") sizes of the heap the same is recommended so that GemFire cache eviction is optimal");
+        builder.append("Setting the initial (").append(dashXmsStr).append(dashXmsList.get(2))
+            .append(") and maximum (").append(dashXmxStr).append(dashXmxList.get(2)).append(
+                ") sizes of the heap the same is recommended so that GemFire cache eviction is optimal");
         cache.getLogger().warning(builder.toString());
       }
     }
@@ -122,31 +110,33 @@ public class ResourceManagerValidator {
 
   private static void verifyCMSGC(GemFireCache cache, String useCMS) {
     if (useCMS == null) {
-      cache.getLogger()
-          .warning(
-              "Using the concurrent garbage collector (configured using -XX:+UseConcMarkSweepGC) is recommended so that GemFire cache eviction is optimal");
+      cache.getLogger().warning(
+          "Using the concurrent garbage collector (configured using -XX:+UseConcMarkSweepGC) is recommended so that GemFire cache eviction is optimal");
     }
   }
 
-  private static void verifyCMSInitiatingOccupancyFraction(GemFireCache cache, ResourceManager rm, String cmsIOF) {
+  private static void verifyCMSInitiatingOccupancyFraction(GemFireCache cache, ResourceManager rm,
+      String cmsIOF) {
     if (cmsIOF == null) {
-      cache.getLogger()
-          .warning(
-              "Setting the CMS initiating occupancy fraction (configured using -XX:CMSInitiatingOccupancyFraction=N) is recommended so that GemFire cache eviction is optimal");
+      cache.getLogger().warning(
+          "Setting the CMS initiating occupancy fraction (configured using -XX:CMSInitiatingOccupancyFraction=N) is recommended so that GemFire cache eviction is optimal");
     } else {
-      // Parse the CMSInitiatingOccupancyFraction. Verify it is less than both eviction and critical thresholds.
+      // Parse the CMSInitiatingOccupancyFraction. Verify it is less than both eviction and critical
+      // thresholds.
       int cmsIOFVal = Integer.parseInt(cmsIOF.split("=")[1]);
       float currentEvictionHeapPercentage = rm.getEvictionHeapPercentage();
       if (currentEvictionHeapPercentage != 0 && currentEvictionHeapPercentage < cmsIOFVal) {
         cache.getLogger()
-            .warning(
-                "Setting the CMS initiating occupancy fraction (" + cmsIOFVal + ") less than the eviction heap percentage (" + currentEvictionHeapPercentage + ") is recommended so that GemFire cache eviction is optimal");
+            .warning("Setting the CMS initiating occupancy fraction (" + cmsIOFVal
+                + ") less than the eviction heap percentage (" + currentEvictionHeapPercentage
+                + ") is recommended so that GemFire cache eviction is optimal");
       }
       float currentCriticalHeapPercentage = rm.getCriticalHeapPercentage();
       if (currentCriticalHeapPercentage != 0 && currentCriticalHeapPercentage < cmsIOFVal) {
         cache.getLogger()
-            .warning(
-                "Setting the CMS initiating occupancy fraction (" + cmsIOFVal + ") less than the critical heap percentage (" + currentCriticalHeapPercentage + ") is recommended so that GemFire cache eviction is optimal");
+            .warning("Setting the CMS initiating occupancy fraction (" + cmsIOFVal
+                + ") less than the critical heap percentage (" + currentCriticalHeapPercentage
+                + ") is recommended so that GemFire cache eviction is optimal");
       }
     }
   }
@@ -160,7 +150,6 @@ public class ResourceManagerValidator {
     return result;
   }
 
-  private ResourceManagerValidator() {
-  }
+  private ResourceManagerValidator() {}
 
 }

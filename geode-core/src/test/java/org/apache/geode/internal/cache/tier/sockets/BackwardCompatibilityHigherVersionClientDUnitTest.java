@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -21,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -48,7 +47,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Test to verify that server responds to a higher versioned client.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4DistributedTestCase {
 
   /** the cache */
@@ -59,7 +58,8 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
   private static VM client1 = null;
 
   /** name of the test region */
-  private static final String REGION_NAME = "BackwardCompatibilityHigherVersionClientDUnitTest_Region";
+  private static final String REGION_NAME =
+      "BackwardCompatibilityHigherVersionClientDUnitTest_Region";
 
   static int CLIENT_ACK_INTERVAL = 5000;
 
@@ -90,20 +90,17 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
     addExceptions();
   }
 
-  public static void createClientCache(String host, Integer port1)
-      throws Exception {
+  public static void createClientCache(String host, Integer port1) throws Exception {
     new BackwardCompatibilityHigherVersionClientDUnitTest();
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new BackwardCompatibilityHigherVersionClientDUnitTest().createCache(props);
-    PoolImpl p = (PoolImpl)PoolManager.createFactory().addServer(host,
-        port1.intValue()).setSubscriptionEnabled(true)
-        .setSubscriptionRedundancy(1).setThreadLocalConnections(true)
-        .setMinConnections(1).setFreeConnectionTimeout(200000).setReadTimeout(
-            200000).setPingInterval(10000).setRetryAttempts(1)
-        .setSubscriptionAckInterval(CLIENT_ACK_INTERVAL).create(
-            "BackwardCompatibilityHigherVersionClientDUnitTest");
+    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port1.intValue())
+        .setSubscriptionEnabled(true).setSubscriptionRedundancy(1).setThreadLocalConnections(true)
+        .setMinConnections(1).setFreeConnectionTimeout(200000).setReadTimeout(200000)
+        .setPingInterval(10000).setRetryAttempts(1).setSubscriptionAckInterval(CLIENT_ACK_INTERVAL)
+        .create("BackwardCompatibilityHigherVersionClientDUnitTest");
 
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -115,8 +112,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
   }
 
   public static Integer createServerCache() throws Exception {
-    new BackwardCompatibilityHigherVersionClientDUnitTest()
-        .createCache(new Properties());
+    new BackwardCompatibilityHigherVersionClientDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -133,8 +129,10 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
 
   @Override
   public final void postTearDown() throws Exception {
-    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.unsetHandshakeVersionForTesting());
-    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.unsetConnectionToServerFailed());
+    client1.invoke(
+        () -> BackwardCompatibilityHigherVersionClientDUnitTest.unsetHandshakeVersionForTesting());
+    client1.invoke(
+        () -> BackwardCompatibilityHigherVersionClientDUnitTest.unsetConnectionToServerFailed());
 
     // close the clients first
     client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.closeCache());
@@ -155,57 +153,48 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
    */
   @Test
   public void testHigherVersionedClient() {
-    Integer port1 = ((Integer)server1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.createServerCache()));
+    Integer port1 = ((Integer) server1
+        .invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.createServerCache()));
 
-    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.setHandshakeVersionForTesting());
-    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.createClientCache(
-            NetworkUtils.getServerHostName(server1.getHost()), port1 ));
-    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest.verifyConnectionToServerFailed());
+    client1.invoke(
+        () -> BackwardCompatibilityHigherVersionClientDUnitTest.setHandshakeVersionForTesting());
+    client1.invoke(() -> BackwardCompatibilityHigherVersionClientDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port1));
+    client1.invoke(
+        () -> BackwardCompatibilityHigherVersionClientDUnitTest.verifyConnectionToServerFailed());
   }
 
-  /* 
-   * Prepare to write invalid version ordinal byte (current+1) from client to server 
-   * during handshake.
+  /*
+   * Prepare to write invalid version ordinal byte (current+1) from client to server during
+   * handshake.
    */
   public static void setHandshakeVersionForTesting() throws Exception {
-    HandShake.setVersionForTesting((short)(currentClientVersion + 1));
+    HandShake.setVersionForTesting((short) (currentClientVersion + 1));
   }
 
   public static void addExceptions() throws Exception {
     if (cache != null && !cache.isClosed()) {
-      cache.getLogger().info(
-          "<ExpectedException action=add>" + "UnsupportedVersionException"
-              + "</ExpectedException>");
-      cache.getLogger().info(
-          "<ExpectedException action=add>" + "ServerRefusedConnectionException"
-              + "</ExpectedException>");
-      cache.getLogger().info(
-          "<ExpectedException action=add>" + "SocketException"
-              + "</ExpectedException>");
+      cache.getLogger().info("<ExpectedException action=add>" + "UnsupportedVersionException"
+          + "</ExpectedException>");
+      cache.getLogger().info("<ExpectedException action=add>" + "ServerRefusedConnectionException"
+          + "</ExpectedException>");
       cache.getLogger()
-          .info(
-              "<ExpectedException action=add>"
-                  + "Could not initialize a primary queue"
-                  + "</ExpectedException>");
+          .info("<ExpectedException action=add>" + "SocketException" + "</ExpectedException>");
+      cache.getLogger().info("<ExpectedException action=add>"
+          + "Could not initialize a primary queue" + "</ExpectedException>");
     }
   }
 
   public static void removeExceptions() {
     if (cache != null && !cache.isClosed()) {
-      cache.getLogger().info(
-          "<ExpectedException action=remove>" + "UnsupportedVersionException"
-              + "</ExpectedException>");
-      cache.getLogger().info(
-          "<ExpectedException action=remove>"
-              + "ServerRefusedConnectionException" + "</ExpectedException>");
-      cache.getLogger().info(
-          "<ExpectedException action=remove>" + "SocketException"
-              + "</ExpectedException>");
+      cache.getLogger().info("<ExpectedException action=remove>" + "UnsupportedVersionException"
+          + "</ExpectedException>");
+      cache.getLogger().info("<ExpectedException action=remove>"
+          + "ServerRefusedConnectionException" + "</ExpectedException>");
       cache.getLogger()
-          .info(
-              "<ExpectedException action=remove>"
-                  + "Could not initialize a primary queue"
-                  + "</ExpectedException>");
+          .info("<ExpectedException action=remove>" + "SocketException" + "</ExpectedException>");
+      cache.getLogger().info("<ExpectedException action=remove>"
+          + "Could not initialize a primary queue" + "</ExpectedException>");
     }
   }
 
@@ -218,16 +207,15 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
   }
 
   /*
-   * Prepare to revert back to writing valid version ordinal byte from
-   * client to server during handshake.
+   * Prepare to revert back to writing valid version ordinal byte from client to server during
+   * handshake.
    */
   public static void unsetHandshakeVersionForTesting() throws Exception {
     HandShake.setVersionForTesting(currentClientVersion);
   }
 
   /*
-   * Restore ConnectionFactoryImpl.testFailedConnectionToServer to its default
-   * value.
+   * Restore ConnectionFactoryImpl.testFailedConnectionToServer to its default value.
    */
   public static void unsetConnectionToServerFailed() throws Exception {
     ConnectionFactoryImpl.testFailedConnectionToServer = false;
@@ -238,8 +226,7 @@ public class BackwardCompatibilityHigherVersionClientDUnitTest extends JUnit4Dis
       Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       r.destroyRegion();
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("failed while destroy region ", ex);
     }
   }

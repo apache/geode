@@ -1,5 +1,5 @@
 ---
-title:  Data Region Management
+title: Region Management
 ---
 
 <!--
@@ -19,73 +19,203 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Apache Geode provides different APIs and XML configuration models to support configuration and management of your data regions.
-
 <a id="data_regions__section_18A9481217204613958897FE64105097"></a>
-You store your data in region entry key/value pairs, with keys and values being any object types your application needs.
+Operations that create, destroy, invalidate, clear, and change the 
+configuration of regions work with gfsh commands, through an XML description,
+and via API calls.
 
+You store your data in region entry key/value pairs, with keys and values being any object types your application needs.
 The `org.apache.geode.cache.Region` interface implements `java.util.Map`.
 
 Each region's attributes define how the data in the region is stored, distributed, and managed. Data regions can be distributed, partitioned among system members, or local to the member.
 
-You can create regions in the `cache.xml` file, by using the API, or with the gfsh command-line interface. You can use *region shortcuts* to configure commonly-used types of regions. For more information about region shortcuts, see [Region Shortcuts Reference](../../reference/topics/region_shortcuts_reference.html#reference_lt4_54c_lk).
+*Region shortcuts* identify commonly-used types of regions.
+See more information about region shortcuts at [Region Shortcuts](../../reference/topics/chapter_overview_regionshortcuts.html).
+for more information about region shortcuts.
 
 **Note:**
 If you change attributes that define a region, you must restart the member for the changes to take effect.
 
-## <a id="data_regions__section_028F2602395646818680C906F205526B" class="no-quick-link"></a>The Region APIs
+#  Creating a Region
+
+###  Creating a Region with gfsh
+
+A simple and fast way to create a data region in the Apache Geode cache is to use the `gfsh` command-line tool.
+
+Region creation is subject to attribute consistency checks, both internal to the cache and, if the region is not local, between all caches where the region is defined.
+
+The `gfsh create region` [command reference page](../../tools_modules/gfsh/command-pages/create.html) details command line options for creating a region with `gfsh`.
+
+With `gfsh` connected to a JMX server,
+an example command that creates a replicated region is
+
+``` pre
+gfsh>create region --name=region1 --type=REPLICATE
+```
+
+Export the configuration files of your server so that you can save your region's configuration and recreate the region with the same attributes the next time you start up your cache server. See [export config](../../tools_modules/gfsh/command-pages/export.html#topic_C7C69306F93743459E65D46537F4A1EE) for details. 
+
+**Note:**
+The cluster configuration service, which is enabled by default, automatically saves the configuration on the locators in the distributed system. After you use the gfsh create region command, any new servers that you start that attach to the same locator receive the same configuration. You can also create alternate configurations within a distributed system by specifying a group when creating the region and starting servers. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
+
+
+###  Creating a Region Through the cache.xml File
+
+A common way to create a data region in the Apache Geode cache is through `cache.xml` declarations.
+When starting the member with the `cache.xml` file,
+the region will be created.
+
+Region creation is subject to attribute consistency checks, both internal to the cache and, if the region is not local, between all caches where the region is defined.
+
+-   In the `cache.xml` file, create a `<region>` element for the new region as a subelement to the `<cache>` element or the `<client-cache>` element. 
+-   Define the region's name and use a region shortcut, if one applies.
+-   Add other attributes as needed to customize the region’s behavior. 
+
+### cache.xml File Examples
+
+The `region` declaration of a replicated region named Portfolios:
+
+``` pre
+<region name="Portfolios" id="REPLICATE"/>
+```
+
+The `region` declaration of a partitioned region named myRegion:
+
+``` pre
+<region name="myRegion" refid="PARTITION"/>
+```
+
+The `region` declaration of a partitioned region that backs up content
+to disk:
+
+``` pre
+<region name="myRegion" refid="PARTITION_PERSISTENT"/>
+```
+
+The `region` declaration of a partitioned region configured with
+high availability and a modified storage capacity in the host member:
+
+``` pre
+<region name="myRegion" refid="PARTITION_REDUNDANT">
+    <region-attributes>
+        <partition-attributes local-max-memory="512" />
+    </region-attributes>
+</region>
+```
+
+The `region` declaration of a replicated region configured with
+an event listener in which entries expire:
+
+``` pre
+<region name="myRegion" refid="REPLICATE">
+    <region-attributes statistics-enabled="true">
+        <entry-time-to-live>
+            <expiration-attributes timeout="60" action="destroy"/>
+        </entry-time-to-live>
+        <cache-listener>
+            <class-name>myPackage.MyCacheListener</class-name>
+        </cache-listener>
+    </region-attributes>
+</region>
+```
+
+### <a id="data_regions__section_028F2602395646818680C906F205526B" class="no-quick-link"></a>Creating a Region Through the API
 
 Geode's regions APIs provide specialized behavior for different system member types.
 
--   **Peer/Server Region APIs**. Use these methods, interfaces, and classes for peer/server region creation. These are in the `org.apache.geode.cache` package. They correspond to declarations in the `<cache>` element for creating and configuring regions.
-    -   **`org.apache.geode.cache.Cache.createRegionFactory`** . This method takes a `RegionShortcut` `enum` to initiate region configuration, and returns a `RegionFactory`. Use `createRegionFactory()`, not "`new                                     RegionFactory`," to create a RegionFactory.
-    -   **`org.apache.geode.cache.RegionFactory`**. Provides methods to set individual region attributes and to create the region. The `create` call returns `Region`.
-    -   **`org.apache.geode.cache.RegionShortcut`**. Common region configurations can be retrieved through `Cache` `createRegionShortcut` and with the region attribute, `refid`.
--   **Client Region APIs**. Use these methods, interfaces, and classes for client region creation. These are in the `org.apache.geode.cache.client` package. They correspond to declarations in the `<client-cache>` element for creating and configuring regions.
+-   **Peer/Server Region APIs**.
+Use these methods, interfaces, and classes for peer/server region creation.
+These are in the `org.apache.geode.cache` package.
+They correspond to `cache.xml` declarations within the `<cache>` element
+for creating and configuring regions.
+    -   **`org.apache.geode.cache.Cache.createRegionFactory`** .
+This method takes a `RegionShortcut` `enum` to initiate region configuration,
+and it returns a `RegionFactory`.
+Use `createRegionFactory()`, not `new RegionFactory`,
+to create a RegionFactory.
+    -   **`org.apache.geode.cache.RegionFactory`**.
+Provides methods to set individual region attributes and to create the region.
+The `create` call returns a `Region`.
+    -   **`org.apache.geode.cache.RegionShortcut`**.
+Defines common region configurations.
+-   **Client Region APIs**. Use these methods, interfaces, and classes for client region creation. These are in the `org.apache.geode.cache.client` package. They correspond to `cache.xml` declarations in the `<client-cache>` element for creating and configuring regions.
 
     These are client versions of the Peer/Server Region APIs. These client APIs provide similar functionality, but are tailored to the needs and behaviors of client regions.
 
     -   **`org.apache.geode.cache.clientCache.createRegionFactory`** . This method takes a `ClientRegionShortcut` `enum` to initiate region configuration, and returns a `ClientRegionFactory`.
     -   **`org.apache.geode.cache.client.ClientRegionFactory`**. Provides methods to set individual region attributes and to create the region. The `create` call returns `Region`.
-    -   **`org.apache.geode.cache.client.ClientRegionShortcut`** . Common region configurations can be retrieved through `ClientCache` `createClientRegionFactory` and with the region attribute, `refid`.
--   **Region APIs Used For All Member Types**. These interfaces and classes are used universally for region management. These are in the `org.apache.geode.cache` package. They correspond to declarations under the `<cache>` and `<client-cache>` elements for creating and configuring regions.
-    -   **`org.apache.geode.cache.Region`** . Interface for managing your regions and their entries.
+    -   **`org.apache.geode.cache.client.ClientRegionShortcut`** . Defines
+common region configurations.
+-   **Region APIs Used For All Member Types**. These interfaces and classes are used universally for region management. These are in the `org.apache.geode.cache` package.
+They correspond to `cache.xml` declarations in the `<cache>` and `<client-cache>` elements for creating and configuring regions.
+    -   **`org.apache.geode.cache.Region`** . Interface for managing regions and their entries.
     -   **`org.apache.geode.cache.RegionAttributes`** . Object holding region configuration settings.
-    -   **`org.apache.geode.cache.createRegionFactory`**. Can be used to create `RegionAttributes` to pass to `RegionFactory` and `ClientRegionFactory`.
 
-## <a id="data_regions__section_9F898C23D2164ED5BB3789FD8B1F68C3" class="no-quick-link"></a>Create and Access Data Regions
+Use the API to create regions in the cache after startup.
+For run-time region creation, you need to use the API.
 
-Before you start, have your cache configuration defined, along with any cache-wide configuration your region requires, like disk store configuration and client server pool configuration.
+Region creation is subject to attribute consistency checks, both internal to the cache and, if the region is not local, between all caches where the region is defined.
 
-1.  Determine the region attributes requirements and identify the region shortcut setting that most closely matches your needs. See [Region Shortcuts and Custom Named Region Attributes](region_shortcuts.html) and [Region Shortcuts](../../reference/topics/chapter_overview_regionshortcuts.html) for more information.
-2.  Define any region attributes that are not provided in the shortcut you chose.
-3.  Create a region using any of the following methods:
-    -   `gfsh`. After starting up servers, a JMX manager and connecting to the cluster, execute the following command:
+1.  
 
-            gfsh>create region --name=Portfolios --type=REPLICATE
-    -   Declaration in the `cache.xml`:
+    Use a region shortcut to create your region factory. 
+    -   
 
-            <?xml version="1.0" encoding="UTF-8"?>
-            <cache
-                xmlns="http://geode.incubator.apache.org/schema/cache"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
-                version="1.0"
-                lock-lease="120"
-                lock-timeout="60"
-                search-timeout="300">
-            <!-- Create a region named Portfolios -->
-              <region name="Portfolios" id="REPLICATE"/>
-            </cache>
+        In peers and servers, use `org.apache.geode.cache.RegionFactory`.
+    -   
 
-        When the `cache.xml` is loaded at cache creation, the system automatically creates any declared regions.
-    -   `RegionFactory` API calls:
+        In clients, use `org.apache.geode.cache.client.ClientRegionFactory`.
 
-            Cache cache = CacheFactory.create();
-            RegionFactory rf = cache.createRegionFactory(REPLICATE);
-            Region pfloRegion = rf.create("Portfolios");
+2.  
 
-Once you have created your regions, you can access them through the `Cache` and `Region` APIs as full region lists or individually.
+    (Optional) Use the region factory to further configure your region. 
+3.  
+
+    Create your region from the configured region factory. 
+
+
+### API Examples
+
+Create a replicated region named Portfolios:
+
+``` pre
+Cache cache = CacheFactory.create();
+RegionFactory rf = cache.createRegionFactory(REPLICATE);
+Region pfloRegion = rf.create("Portfolios");
+```
+
+Create a partitioned region with a listener:
+
+``` pre
+RegionFactory rf =   
+    cache.createRegionFactory(RegionShortcut.PARTITION);
+rf.addCacheListener(new LoggingCacheListener());
+custRegion = rf.create("customer");
+```
+
+Create a partitioned region with a partition resolver for colocated
+regions:
+
+``` pre
+PartitionAttributesFactory paf = new PartitionAttributesFactory<CustomerId, String>();
+paf.setPartitionResolver(new CustomerOrderResolver());
+
+RegionFactory rf = 
+    cache.createRegionFactory(RegionShortcut.PARTITION);
+rf.setPartitionAttributes(paf.create());
+rf.addCacheListener(new LoggingCacheListener());
+custRegion = rf.create("customer");
+```
+
+Create a client region with a pool specification:
+
+``` pre
+ClientRegionFactory<String,String> cRegionFactory = 
+    cache.createClientRegionFactory(PROXY);
+Region<String, String> region = 
+    cRegionFactory.setPoolName("Pool3").create("DATA");
+```
+
 
 ## <a id="data_regions__section_jn1_sry_5m" class="no-quick-link"></a>Create and Access Data Subregions
 
@@ -107,9 +237,9 @@ You can create subregions using one of the following methods:
 
         <?xml version="1.0"?>
         <cache
-            xmlns="http://geode.incubator.apache.org/schema/cache"
+            xmlns="http://geode.apache.org/schema/cache"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+            xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
             version="1.0"
             lock-lease="120"
             lock-timeout="60"
@@ -134,11 +264,11 @@ You can create subregions using one of the following methods:
 `Region` method calls with a `recursive` parameter operate on the given
 region(s) and then recursively on all contained subregions. 
 
-## <a id="data_regions__section_7AD53DCC71064883BFA9C53E6040D85A" class="no-quick-link"></a>Update Data Regions
+## <a id="data_regions__section_7AD53DCC71064883BFA9C53E6040D85A" class="no-quick-link"></a>Update the Configuration of Data Regions
 
 Update your region properties and contents through `alter region` command, the API or from `cache.xml` file declarations.
 
--   Execute the [alter region](../../tools_modules/gfsh/command-pages/alter.html#topic_E74ED23CB60342538B2175C326E7D758) command.
+-   Use the [gfsh alter region](../../tools_modules/gfsh/command-pages/alter.html#topic_E74ED23CB60342538B2175C326E7D758) command.
 -   In the API, use `Cache` and `Region` methods to change configuration parameters and modify region structure and data.
 -   Load new XML declarations using the `Cache.loadCacheXml` method. Where possible, declarations in the new `cache.xml` file supersede existing definitions. For example, if a region declared in the `cache.xml` file already exists in the cache, its mutable attributes are modified according to the file declarations. Immutable attributes are not affected. If a region does not already exist, it is created. Entries and indexes are created or updated according to the state of the cache and the file declarations.
 
@@ -215,8 +345,3 @@ The `Region.close` operation works like the `Region.localDestroyRegion` operatio
 -   If persistent, the region is removed from memory but its disk files are retained.
 -   If partitioned, the region is removed from the local cache. If the partitioned region is redundant, local data caching fails over to another cache. Otherwise, local data is lost.
 
-## Using gfsh to Manage Regions
-
-You can also use gfsh commands to manage regions. There are commands to create, alter, describe, destroy, rebalance, and list the regions in your distributed system. By default, the cluster configuration service saves the cluster configuration as you execute gfsh commands. When you add new servers to the cluster, the servers receive this cluster-wide configuration and create the specified regions. You can also define *groups* that apply only to some of the servers in the cluster. Servers you start that specify a group also receive the group configuration from the cluster configuration service. See [Overview of the Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html).
-
-See [Creating a Region with gfsh](create_a_region_with_gfsh.html#task_75639BFA7847461D9E006E91B728BB44) and the [create](../../tools_modules/gfsh/command-pages/create.html) command reference page.

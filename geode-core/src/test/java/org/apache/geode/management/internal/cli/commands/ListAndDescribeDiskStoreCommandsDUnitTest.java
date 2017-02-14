@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -38,8 +36,9 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
- * The ListAndDescribeDiskStoreCommandsDUnitTest class is a test suite of functional tests cases testing the proper
- * functioning of the 'list disk-store' and 'describe disk-store' commands. </p>
+ * The ListAndDescribeDiskStoreCommandsDUnitTest class is a test suite of functional tests cases
+ * testing the proper functioning of the 'list disk-store' and 'describe disk-store' commands.
+ * </p>
  *
  * @see org.apache.geode.management.internal.cli.commands.CliCommandTestBase
  * @see org.apache.geode.management.internal.cli.commands.DiskStoreCommands
@@ -65,7 +64,8 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
 
   @Test
   public void testDescribeDiskStore() throws Exception {
-    final Result result = executeCommand(CliStrings.DESCRIBE_DISK_STORE + " --member=producerServer --name=producerData");
+    final Result result = executeCommand(
+        CliStrings.DESCRIBE_DISK_STORE + " --member=producerServer --name=producerData");
 
     assertNotNull(result);
     getLogWriter().info(toString(result));
@@ -74,20 +74,25 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
 
   @Test
   public void testDescribeDiskStoreWithInvalidMemberName() throws Exception {
-    final Result commandResult = executeCommand(CliStrings.DESCRIBE_DISK_STORE + " --member=badMemberName --name=producerData");
+    final Result commandResult = executeCommand(
+        CliStrings.DESCRIBE_DISK_STORE + " --member=badMemberName --name=producerData");
 
     assertNotNull(commandResult);
     assertEquals(Result.Status.ERROR, commandResult.getStatus());
-    assertEquals(CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, "badMemberName"), toString(commandResult));
+    assertEquals(CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, "badMemberName"),
+        toString(commandResult));
   }
 
   @Test
   public void testDescribeDiskStoreWithInvalidDiskStoreName() {
-    final Result commandResult = executeCommand(CliStrings.DESCRIBE_DISK_STORE + " --member=producerServer --name=badDiskStoreName");
+    final Result commandResult = executeCommand(
+        CliStrings.DESCRIBE_DISK_STORE + " --member=producerServer --name=badDiskStoreName");
 
     assertNotNull(commandResult);
     assertEquals(Result.Status.ERROR, commandResult.getStatus());
-    assertEquals("A disk store with name (badDiskStoreName) was not found on member (producerServer).", toString(commandResult));
+    assertEquals(
+        "A disk store with name (badDiskStoreName) was not found on member (producerServer).",
+        toString(commandResult));
   }
 
   private static String toString(final Result result) {
@@ -129,7 +134,8 @@ public class ListAndDescribeDiskStoreCommandsDUnitTest extends CliCommandTestBas
     return distributedSystemProperties;
   }
 
-  private void createPersistentRegion(final Peer peer, final String regionName, final String diskStoreName) throws Exception {
+  private void createPersistentRegion(final Peer peer, final String regionName,
+      final String diskStoreName) throws Exception {
     peer.run(new SerializableRunnable("Creating Persistent Region for Member " + peer.getName()) {
       @Override
       public void run() {

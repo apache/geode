@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.persistence.logging;
 
@@ -48,8 +46,7 @@ public class Level {
   private int value;
 
   /**
-   * Creates a new <code>Level</code> with a given name and integer
-   * value.
+   * Creates a new <code>Level</code> with a given name and integer value.
    */
   protected Level(String name, int value) {
     this.name = name;
@@ -57,42 +54,42 @@ public class Level {
   }
 
   /**
-   * Creates a new <code>Level</code> from a string.  The string
-   * should be something like "FINER" or "42".
+   * Creates a new <code>Level</code> from a string. The string should be something like "FINER" or
+   * "42".
    */
   public static Level parse(String name) {
-    if(name.equalsIgnoreCase("OFF")) {
-      return(OFF);
+    if (name.equalsIgnoreCase("OFF")) {
+      return (OFF);
 
-    } else if(name.equalsIgnoreCase("SEVERE")) {
-      return(SEVERE);
+    } else if (name.equalsIgnoreCase("SEVERE")) {
+      return (SEVERE);
 
-    } else if(name.equalsIgnoreCase("WARNING")) {
-      return(WARNING);
+    } else if (name.equalsIgnoreCase("WARNING")) {
+      return (WARNING);
 
-    } else if(name.equalsIgnoreCase("INFO")) {
-      return(INFO);
+    } else if (name.equalsIgnoreCase("INFO")) {
+      return (INFO);
 
-    } else if(name.equalsIgnoreCase("CONFIG")) {
-      return(CONFIG);
+    } else if (name.equalsIgnoreCase("CONFIG")) {
+      return (CONFIG);
 
-    } else if(name.equalsIgnoreCase("FINE")) {
-      return(FINE);
+    } else if (name.equalsIgnoreCase("FINE")) {
+      return (FINE);
 
-    } else if(name.equalsIgnoreCase("FINER")) {
-      return(FINER);
+    } else if (name.equalsIgnoreCase("FINER")) {
+      return (FINER);
 
-    } else if(name.equalsIgnoreCase("FINEST")) {
-      return(FINEST);
+    } else if (name.equalsIgnoreCase("FINEST")) {
+      return (FINEST);
 
-    } else if(name.equalsIgnoreCase("ALL")) {
-      return(ALL);
+    } else if (name.equalsIgnoreCase("ALL")) {
+      return (ALL);
     }
 
     try {
-      return(new Level(name, Integer.parseInt(name)));
+      return (new Level(name, Integer.parseInt(name)));
 
-    } catch(NumberFormatException ex) {
+    } catch (NumberFormatException ex) {
       throw new IllegalArgumentException("Invalid level: " + name);
     }
   }
@@ -101,28 +98,28 @@ public class Level {
    * Returns the integer value for this level
    */
   public int intValue() {
-    return(this.value);
+    return (this.value);
   }
 
   /**
    * Returns a textual representation of this level
    */
   public String toString() {
-    return("Level " + this.name + " (" + this.value + ")");
+    return ("Level " + this.name + " (" + this.value + ")");
   }
 
   /**
    * Two levels are equal if they have the same integer value
    */
   public boolean equals(Object o) {
-    if(o instanceof Level) {
+    if (o instanceof Level) {
       Level l = (Level) o;
-      if(l.value == this.value) {
-        return(true);
-      } 
+      if (l.value == this.value) {
+        return (true);
+      }
     }
 
-    return(false);
+    return (false);
   }
 
 }

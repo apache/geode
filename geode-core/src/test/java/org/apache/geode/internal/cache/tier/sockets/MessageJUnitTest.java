@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -22,6 +20,7 @@ import static org.mockito.Mockito.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,7 +28,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.Version;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, ClientServerTest.class})
 public class MessageJUnitTest {
 
   private Message message;
@@ -37,7 +36,7 @@ public class MessageJUnitTest {
   private MessageStats mockStats;
   private ByteBuffer msgBuffer;
   private ServerConnection mockServerConnection;
-  
+
   @Before
   public void setUp() throws Exception {
     mockSocket = mock(Socket.class);
@@ -50,18 +49,18 @@ public class MessageJUnitTest {
   }
 
   @Test
-  public void clearDoesNotThrowNPE() throws Exception{
+  public void clearDoesNotThrowNPE() throws Exception {
     // unsetComms clears the message's ByteBuffer, which was causing an NPE during shutdown
     // when clear() was invoked
     message.unsetComms();
     message.clear();
   }
-  
+
   @Test
   public void numberOfPartsIsAdjusted() {
     int numParts = message.getNumberOfParts();
-    message.setNumberOfParts(2*numParts+1);
-    assertEquals(2*numParts+1, message.getNumberOfParts());
+    message.setNumberOfParts(2 * numParts + 1);
+    assertEquals(2 * numParts + 1, message.getNumberOfParts());
     message.addBytesPart(new byte[1]);
     message.addIntPart(2);
     message.addLongPart(3);
@@ -69,12 +68,12 @@ public class MessageJUnitTest {
     message.addStringPart("5");
     assertEquals(5, message.getNextPartNumber());
   }
-  
+
   @Test
   public void messageLongerThanMaxIntIsRejected() throws Exception {
     Part[] parts = new Part[2];
     Part mockPart1 = mock(Part.class);
-    when(mockPart1.getLength()).thenReturn(Integer.MAX_VALUE/2);
+    when(mockPart1.getLength()).thenReturn(Integer.MAX_VALUE / 2);
     parts[0] = mockPart1;
     parts[1] = mockPart1;
     message.setParts(parts);
@@ -85,12 +84,12 @@ public class MessageJUnitTest {
       assertTrue(e.getMessage().contains("exceeds maximum integer value"));
     }
   }
-  
+
   @Test
   public void maxMessageSizeIsRespected() throws Exception {
     Part[] parts = new Part[2];
     Part mockPart1 = mock(Part.class);
-    when(mockPart1.getLength()).thenReturn(Message.MAX_MESSAGE_SIZE/2);
+    when(mockPart1.getLength()).thenReturn(Message.MAX_MESSAGE_SIZE / 2);
     parts[0] = mockPart1;
     parts[1] = mockPart1;
     message.setParts(parts);
@@ -103,8 +102,7 @@ public class MessageJUnitTest {
   }
 
   /**
-   * geode-1468: Message should clear the chunks in its Parts when
-   * performing cleanup.
+   * geode-1468: Message should clear the chunks in its Parts when performing cleanup.
    * 
    * @throws Exception
    */

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode;
 
@@ -35,8 +33,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 /**
- * This class makes sure an isolated "loner" distribution manager
- * can be created and do some cache functions.
+ * This class makes sure an isolated "loner" distribution manager can be created and do some cache
+ * functions.
  */
 @SuppressWarnings("deprecation")
 @Category(IntegrationTest.class)
@@ -45,7 +43,7 @@ public class LonerDMJUnitTest {
   @After
   public void tearDown() {
     DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-    if(ds != null) {
+    if (ds != null) {
       ds.disconnect();
     }
   }
@@ -62,17 +60,17 @@ public class LonerDMJUnitTest {
     cfg.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
     cfg.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
 
-    for (int i=0; i < 2; i++) {
+    for (int i = 0; i < 2; i++) {
       start = System.currentTimeMillis();
       ds = DistributedSystem.connect(cfg);
       end = System.currentTimeMillis();
-      System.out.println("ds.connect took    " + (end -start) + " ms");
+      System.out.println("ds.connect took    " + (end - start) + " ms");
       try {
 
         start = System.currentTimeMillis();
         c = CacheFactory.create(ds);
         end = System.currentTimeMillis();
-        System.out.println("Cache create took " + (end -start) + " ms");
+        System.out.println("Cache create took " + (end - start) + " ms");
 
         try {
           AttributesFactory af = new AttributesFactory();
@@ -89,7 +87,7 @@ public class LonerDMJUnitTest {
             start = System.currentTimeMillis();
             c.close();
             end = System.currentTimeMillis();
-            System.out.println("Cache close took " + (end -start) + " ms");
+            System.out.println("Cache close took " + (end - start) + " ms");
           }
         }
       } finally {
@@ -97,13 +95,13 @@ public class LonerDMJUnitTest {
           start = System.currentTimeMillis();
           ds.disconnect();
           end = System.currentTimeMillis();
-          System.out.println("ds.disconnect took " + (end -start) + " ms");
+          System.out.println("ds.disconnect took " + (end - start) + " ms");
         }
         ds = null;
       }
     }
   }
-  
+
   @Test
   public void testLonerWithStats() throws CacheException {
     long start;
@@ -117,17 +115,17 @@ public class LonerDMJUnitTest {
     cfg.setProperty(STATISTIC_ARCHIVE_FILE, "lonerStats.gfs");
     cfg.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
 
-    for (int i=0; i < 1; i++) {
+    for (int i = 0; i < 1; i++) {
       start = System.currentTimeMillis();
       ds = DistributedSystem.connect(cfg);
       end = System.currentTimeMillis();
-      System.out.println("ds.connect took    " + (end -start) + " ms");
+      System.out.println("ds.connect took    " + (end - start) + " ms");
       try {
 
         start = System.currentTimeMillis();
         c = CacheFactory.create(ds);
         end = System.currentTimeMillis();
-        System.out.println("Cache create took " + (end -start) + " ms");
+        System.out.println("Cache create took " + (end - start) + " ms");
 
         try {
           AttributesFactory af = new AttributesFactory();
@@ -144,7 +142,7 @@ public class LonerDMJUnitTest {
             start = System.currentTimeMillis();
             c.close();
             end = System.currentTimeMillis();
-            System.out.println("Cache close took " + (end -start) + " ms");
+            System.out.println("Cache close took " + (end - start) + " ms");
           }
         }
       } finally {
@@ -152,13 +150,13 @@ public class LonerDMJUnitTest {
           start = System.currentTimeMillis();
           ds.disconnect();
           end = System.currentTimeMillis();
-          System.out.println("ds.disconnect took " + (end -start) + " ms");
+          System.out.println("ds.disconnect took " + (end - start) + " ms");
         }
         ds = null;
       }
     }
   }
-  
+
   @Test
   public void testMemberId() throws UnknownHostException {
     String host = InetAddress.getLocalHost().getCanonicalHostName();
@@ -174,7 +172,7 @@ public class LonerDMJUnitTest {
     System.out.println("MemberId = " + ds.getMemberId());
     assertEquals(host.toString(), ds.getDistributedMember().getHost());
     assertEquals(OSProcess.getId(), ds.getDistributedMember().getProcessId());
-    if(!PureJavaMode.isPure()) {
+    if (!PureJavaMode.isPure()) {
       String pid = String.valueOf(OSProcess.getId());
       assertTrue(ds.getMemberId().indexOf(pid) > -1);
     }
@@ -182,9 +180,9 @@ public class LonerDMJUnitTest {
     String memberid = ds.getMemberId();
     String shortname = shortName(host);
     assertTrue("'" + memberid + "' does not contain '" + shortname + "'",
-               memberid.indexOf(shortname) > -1);
+        memberid.indexOf(shortname) > -1);
     // make sure the loner port can be updated
-    ((LonerDistributionManager)((InternalDistributedSystem)ds).getDM()).updateLonerPort(100);
+    ((LonerDistributionManager) ((InternalDistributedSystem) ds).getDM()).updateLonerPort(100);
   }
 
   private String shortName(String hostname) {
@@ -196,5 +194,5 @@ public class LonerDMJUnitTest {
     else
       return hostname;
   }
-  
+
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal;
 
@@ -68,7 +66,7 @@ import org.apache.geode.internal.logging.LogService;
  */
 public class ServerLocator implements TcpHandler, DistributionAdvisee {
   private static final Logger logger = LogService.getLogger();
-  
+
   private final int port;
   private final String hostNameForClients;
   private InternalDistributedSystem ds;
@@ -76,18 +74,20 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   private final int serialNumber = createSerialNumber();
   private final LocatorStats stats;
   private LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
-  private Map<ServerLocation, DistributedMember> ownerMap = new HashMap<ServerLocation, DistributedMember>();
+  private Map<ServerLocation, DistributedMember> ownerMap =
+      new HashMap<ServerLocation, DistributedMember>();
   private volatile List<ServerLocation> cachedLocators;
   private final Object cachedLocatorsLock = new Object();
-  
+
   private final static AtomicInteger profileSN = new AtomicInteger();
 
-  private static final long SERVER_LOAD_LOG_INTERVAL = (60 * 60 * 1000); // log server load once an hour
-  
+  private static final long SERVER_LOAD_LOG_INTERVAL = (60 * 60 * 1000); // log server load once an
+                                                                         // hour
+
   private final String logFile;
   private final String hostName;
   private final String memberName;
-  
+
   private ProductUseLog productUseLog;
 
   private volatile long lastLogTime;
@@ -95,44 +95,38 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   ServerLocator() throws IOException {
     this.port = 10334;
     this.hostName = SocketCreator.getLocalHost().getCanonicalHostName();
-    this.hostNameForClients= this.hostName;
+    this.hostNameForClients = this.hostName;
     this.logFile = null;
     this.memberName = null;
     this.ds = null;
     this.advisor = null;
     this.stats = null;
   }
-  
-  public ServerLocator(int port,
-                       InetAddress bindAddress,
-                       String hostNameForClients,
-                       File logFile,
-                       ProductUseLog productUseLogWriter,
-                       String memberName,
-                       InternalDistributedSystem ds,
-                       LocatorStats stats)
-    throws IOException
-  {
+
+  public ServerLocator(int port, InetAddress bindAddress, String hostNameForClients, File logFile,
+      ProductUseLog productUseLogWriter, String memberName, InternalDistributedSystem ds,
+      LocatorStats stats) throws IOException {
     this.port = port;
 
     if (bindAddress == null) {
       this.hostName = SocketCreator.getLocalHost().getCanonicalHostName();
     } else {
-      this.hostName= bindAddress.getHostAddress();
+      this.hostName = bindAddress.getHostAddress();
     }
 
     if (hostNameForClients != null && !hostNameForClients.equals("")) {
       this.hostNameForClients = hostNameForClients;
     } else {
-      this.hostNameForClients= this.hostName;
+      this.hostNameForClients = this.hostName;
     }
-    
+
     this.logFile = logFile != null ? logFile.getCanonicalPath() : null;
     this.memberName = memberName;
     this.productUseLog = productUseLogWriter;
 
     this.ds = ds;
-    this.advisor = ControllerAdvisor.createControllerAdvisor(this); // escapes constructor but allows field to be final
+    this.advisor = ControllerAdvisor.createControllerAdvisor(this); // escapes constructor but
+                                                                    // allows field to be final
     this.stats = stats;
   }
 
@@ -147,7 +141,7 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   public CancelCriterion getCancelCriterion() {
     return this.ds.getCancelCriterion();
   }
-  
+
   public void init(TcpServer tcpServer) {
     // if the ds is reconnecting we don't want to start server
     // location services until the DS finishes connecting
@@ -155,12 +149,11 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
       this.advisor.handshake();
     }
   }
-  
+
   /**
-   * A ServerLocator may be in place but non-functional during auto-reconnect
-   * because peer location services have been initialized while the servers
-   * reconnect but server location services aren't reconnected until a cache
-   * is available
+   * A ServerLocator may be in place but non-functional during auto-reconnect because peer location
+   * services have been initialized while the servers reconnect but server location services aren't
+   * reconnected until a cache is available
    */
   protected boolean readyToProcessRequests() {
     return this.ds != null;
@@ -170,21 +163,22 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     if (!readyToProcessRequests()) {
       return null;
     }
-    
-    if(logger.isDebugEnabled()) {
+
+    if (logger.isDebugEnabled()) {
       logger.debug("ServerLocator: Received request {}", request);
     }
 
-    if ( ! (request instanceof ServerLocationRequest) ) {
-      throw new InternalGemFireException("Expected ServerLocationRequest, got " + request.getClass());
+    if (!(request instanceof ServerLocationRequest)) {
+      throw new InternalGemFireException(
+          "Expected ServerLocationRequest, got " + request.getClass());
     }
 
     Object response;
-    int id = ((DataSerializableFixedID)request).getDSFID();
+    int id = ((DataSerializableFixedID) request).getDSFID();
     switch (id) {
       case DataSerializableFixedID.LOCATOR_STATUS_REQUEST:
-        response = new LocatorStatusResponse()
-          .initialize(this.port, this.hostName, this.logFile, this.memberName);
+        response = new LocatorStatusResponse().initialize(this.port, this.hostName, this.logFile,
+            this.memberName);
         break;
       case DataSerializableFixedID.LOCATOR_LIST_REQUEST:
         response = getLocatorListResponse((LocatorListRequest) request);
@@ -205,7 +199,7 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
         throw new InternalGemFireException("Unknown ServerLocationRequest: " + request.getClass());
     }
 
-    if(logger.isDebugEnabled()) {
+    if (logger.isDebugEnabled()) {
       logger.debug("ServerLocator: Sending response {}", response);
     }
 
@@ -213,69 +207,65 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   }
 
   private ClientConnectionResponse pickServer(ClientConnectionRequest clientRequest) {
-    ServerLocation location = loadSnapshot.getServerForConnection(clientRequest
-        .getServerGroup(), clientRequest.getExcludedServers());
+    ServerLocation location = loadSnapshot.getServerForConnection(clientRequest.getServerGroup(),
+        clientRequest.getExcludedServers());
     return new ClientConnectionResponse(location);
   }
 
   private ClientConnectionResponse pickReplacementServer(ClientReplacementRequest clientRequest) {
-    ServerLocation location = loadSnapshot
-      .getReplacementServerForConnection(clientRequest.getCurrentServer(),
-                                         clientRequest.getServerGroup(),
-                                         clientRequest.getExcludedServers());
+    ServerLocation location =
+        loadSnapshot.getReplacementServerForConnection(clientRequest.getCurrentServer(),
+            clientRequest.getServerGroup(), clientRequest.getExcludedServers());
     return new ClientConnectionResponse(location);
   }
 
-  
-  private GetAllServersResponse pickAllServers(
-      GetAllServersRequest clientRequest) {
+
+  private GetAllServersResponse pickAllServers(GetAllServersRequest clientRequest) {
     ArrayList servers = loadSnapshot.getServers(clientRequest.getServerGroup());
     return new GetAllServersResponse(servers);
   }
-  
+
   private Object getLocatorListResponse(LocatorListRequest request) {
     List<ServerLocation> controllers = getLocators();
     boolean balanced = loadSnapshot.hasBalancedConnections(request.getServerGroup());
     return new LocatorListResponse(controllers, balanced);
   }
-  
+
   private Object pickQueueServers(QueueConnectionRequest clientRequest) {
     Set excludedServers = new HashSet(clientRequest.getExcludedServers());
-    
+
     /* If this is a request to find durable queues, lets go find them */
-    
+
     ArrayList servers = new ArrayList();
     boolean durableQueueFound = false;
-    if(clientRequest.isFindDurable() && clientRequest.getProxyId().isDurable()) {
-      servers = FindDurableQueueProcessor.sendAndFind(this, clientRequest.getProxyId(), getDistributionManager());
+    if (clientRequest.isFindDurable() && clientRequest.getProxyId().isDurable()) {
+      servers = FindDurableQueueProcessor.sendAndFind(this, clientRequest.getProxyId(),
+          getDistributionManager());
       /* add the found durables to exclude list so they aren't candidates for more queues */
       excludedServers.addAll(servers);
-      durableQueueFound = servers.size()>0;
+      durableQueueFound = servers.size() > 0;
     }
-    
+
     List candidates;
-    if(clientRequest.getRedundantCopies() == -1) {
+    if (clientRequest.getRedundantCopies() == -1) {
       /* We need all the servers we can get */
       candidates = loadSnapshot.getServersForQueue(clientRequest.getProxyId(),
-                                                   clientRequest.getServerGroup(),
-                                                   excludedServers,-1);
-    } else if(clientRequest.getRedundantCopies() > servers.size()) {
+          clientRequest.getServerGroup(), excludedServers, -1);
+    } else if (clientRequest.getRedundantCopies() > servers.size()) {
       /* We need more servers. */
       int count = clientRequest.getRedundantCopies() - servers.size();
       candidates = loadSnapshot.getServersForQueue(clientRequest.getProxyId(),
-                                                   clientRequest.getServerGroup(),
-                                                   excludedServers,
-                                                   count);
+          clientRequest.getServerGroup(), excludedServers, count);
     } else {
       /* Otherwise, we don't need any more servers */
       candidates = Collections.EMPTY_LIST;
     }
-   
-    if(candidates.size()>1) {
-       Collections.shuffle(candidates);
-     }
+
+    if (candidates.size() > 1) {
+      Collections.shuffle(candidates);
+    }
     servers.addAll(candidates);
-    
+
     return new QueueConnectionResponse(durableQueueFound, servers);
   }
 
@@ -284,38 +274,40 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
     this.loadSnapshot.shutDown();
   }
 
-  public void restarting(DistributedSystem ds, GemFireCache cache, SharedConfiguration sharedConfig) {
+  public void restarting(DistributedSystem ds, GemFireCache cache,
+      ClusterConfigurationService sharedConfig) {
     if (ds != null) {
       this.loadSnapshot = new LocatorLoadSnapshot();
-      this.ds = (InternalDistributedSystem)ds;
-      this.advisor = ControllerAdvisor.createControllerAdvisor(this); // escapes constructor but allows field to be final
+      this.ds = (InternalDistributedSystem) ds;
+      this.advisor = ControllerAdvisor.createControllerAdvisor(this); // escapes constructor but
+                                                                      // allows field to be final
       if (ds.isConnected()) {
-        this.advisor.handshake();  // GEODE-1393: need to get server information during restart
+        this.advisor.handshake(); // GEODE-1393: need to get server information during restart
       }
     }
   }
-  
+
   // DistributionAdvisee methods
   public DM getDistributionManager() {
     return getSystem().getDistributionManager();
   }
-  
+
   public DistributionAdvisor getDistributionAdvisor() {
     return this.advisor;
   }
-  
+
   public Profile getProfile() {
     return getDistributionAdvisor().createProfile();
   }
-  
+
   public DistributionAdvisee getParentAdvisee() {
     return null;
   }
-  
+
   public InternalDistributedSystem getSystem() {
     return this.ds;
   }
-  
+
   public String getName() {
     return "ServerLocator";
   }
@@ -323,11 +315,11 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   public int getSerialNumber() {
     return this.serialNumber;
   }
-  
+
   public String getFullPath() {
     return getName();
   }
-  
+
   public InternalDistributedSystem getDs() {
     return ds;
   }
@@ -335,71 +327,70 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   private static int createSerialNumber() {
     return profileSN.incrementAndGet();
   }
-  
+
   public void fillInProfile(Profile profile) {
     assert profile instanceof ControllerProfile;
-    ControllerProfile cp = (ControllerProfile)profile;
+    ControllerProfile cp = (ControllerProfile) profile;
     cp.setHost(this.hostNameForClients);
     cp.setPort(this.port);
     cp.serialNumber = getSerialNumber();
     cp.finishInit();
   }
-  
+
 
   public void setLocatorCount(int count) {
     this.stats.setLocatorCount(count);
   }
+
   public void setServerCount(int count) {
     this.stats.setServerCount(count);
   }
-  
-  public void endRequest(Object request,long startTime) {
+
+  public void endRequest(Object request, long startTime) {
     stats.endLocatorRequest(startTime);
   }
-  
-  public void endResponse(Object request,long startTime) {
+
+  public void endResponse(Object request, long startTime) {
     stats.endLocatorResponse(startTime);
   }
-  
 
-  
+
+
   private List<ServerLocation> getLocators() {
-    if(cachedLocators != null) {
+    if (cachedLocators != null) {
       return cachedLocators;
-    }
-    else {
-      synchronized(cachedLocatorsLock) {
+    } else {
+      synchronized (cachedLocatorsLock) {
         List<ControllerProfile> profiles = advisor.fetchControllers();
         List<ServerLocation> result = new ArrayList<>(profiles.size() + 1);
-        for (ControllerProfile profile: profiles) {
+        for (ControllerProfile profile : profiles) {
           result.add(buildServerLocation(profile));
         }
-        result.add(new ServerLocation(hostNameForClients,port));
+        result.add(new ServerLocation(hostNameForClients, port));
         cachedLocators = result;
         return result;
       }
     }
   }
-  
+
   protected static ServerLocation buildServerLocation(GridProfile p) {
     return new ServerLocation(p.getHost(), p.getPort());
   }
-  
+
   /**
    * @param profile
    */
   public void profileCreated(Profile profile) {
-    if(profile instanceof CacheServerProfile) {
+    if (profile instanceof CacheServerProfile) {
       CacheServerProfile bp = (CacheServerProfile) profile;
       ServerLocation location = buildServerLocation(bp);
       String[] groups = bp.getGroups();
-      loadSnapshot.addServer(location, groups,
-                             bp.getInitialLoad(),
-                             bp.getLoadPollInterval());
-      if(logger.isDebugEnabled()) {
-        logger.debug("ServerLocator: Received load from a new server {}, {}", location, bp.getInitialLoad());
+      loadSnapshot.addServer(location, groups, bp.getInitialLoad(), bp.getLoadPollInterval());
+      if (logger.isDebugEnabled()) {
+        logger.debug("ServerLocator: Received load from a new server {}, {}", location,
+            bp.getInitialLoad());
       }
-      synchronized(ownerMap) {
+      synchronized (ownerMap) {
         ownerMap.put(location, profile.getDistributedMember());
       }
     } else {
@@ -411,15 +402,15 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
    * @param profile
    */
   public void profileRemoved(Profile profile) {
-    if(profile instanceof CacheServerProfile) {
+    if (profile instanceof CacheServerProfile) {
       CacheServerProfile bp = (CacheServerProfile) profile;
-      //InternalDistributedMember id = bp.getDistributedMember();
+      // InternalDistributedMember id = bp.getDistributedMember();
       ServerLocation location = buildServerLocation(bp);
       loadSnapshot.removeServer(location);
-      if(logger.isDebugEnabled()) {
+      if (logger.isDebugEnabled()) {
         logger.debug("ServerLocator: server departed {}", location);
       }
-      synchronized(ownerMap) {
+      synchronized (ownerMap) {
         ownerMap.remove(location);
       }
     } else {
@@ -429,12 +420,14 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
 
   public void profileUpdated(Profile profile) {
     cachedLocators = null;
-    getLogWriterI18n().warning(LocalizedStrings.ServerLocator_SERVERLOCATOR_UNEXPECTED_PROFILE_UPDATE);
+    getLogWriterI18n()
+        .warning(LocalizedStrings.ServerLocator_SERVERLOCATOR_UNEXPECTED_PROFILE_UPDATE);
   }
-  
+
   public void updateLoad(ServerLocation location, ServerLoad load, List clientIds) {
-    if(getLogWriterI18n().fineEnabled()) {
-      getLogWriterI18n().fine("ServerLocator: Received a load update from " + location +", " + load);
+    if (getLogWriterI18n().fineEnabled()) {
+      getLogWriterI18n()
+          .fine("ServerLocator: Received a load update from " + location + ", " + load);
     }
     loadSnapshot.updateLoad(location, load, clientIds);
     this.stats.incServerLoadUpdates();
@@ -447,53 +440,49 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
       if (loadMap.size() == 0) {
         return;
       }
-      
+
       long now = System.currentTimeMillis();
       long lastLogTime = this.lastLogTime;
       if (now < lastLogTime + SERVER_LOAD_LOG_INTERVAL) {
         return;
       }
       this.lastLogTime = now;
-      
+
       int queues = 0;
       int connections = 0;
-      for (ServerLoad l: loadMap.values()) {
+      for (ServerLoad l : loadMap.values()) {
         queues += l.getSubscriptionConnectionLoad();
-        connections = (int)Math.ceil(l.getConnectionLoad() / l.getLoadPerConnection());
+        connections = (int) Math.ceil(l.getConnectionLoad() / l.getLoadPerConnection());
       }
-      
+
       Set<DistributedMember> servers;
-      synchronized(ownerMap) {
+      synchronized (ownerMap) {
         servers = new HashSet<>(ownerMap.values());
       }
 
       StringBuilder sb = new StringBuilder(1000);
-      sb.append("server count: ")
-        .append(servers.size())
-        .append(" connected client count: ")
-        .append(connections)
-        .append(" client subscription queue count: ")
-        .append(queues)
-        .append(System.lineSeparator())
-        .append("current servers : ");
-      
+      sb.append("server count: ").append(servers.size()).append(" connected client count: ")
+          .append(connections).append(" client subscription queue count: ").append(queues)
+          .append(System.lineSeparator()).append("current servers : ");
+
       String[] ids = new String[servers.size()];
-      int i=0;
-      for (DistributedMember id: servers) {
+      int i = 0;
+      for (DistributedMember id : servers) {
         ids[i++] = id.toString();
       }
       Arrays.sort(ids);
-      for (i=0; i<ids.length; i++) {
+      for (i = 0; i < ids.length; i++) {
         sb.append(ids[i]).append(' ');
       }
       productUseLog.log(sb.toString());
     }
   }
+
   /**
-   * Test hook to get the load on all of the servers. Returns a map of
-   * ServerLocation-> Load object with the current load on that server
+   * Test hook to get the load on all of the servers. Returns a map of ServerLocation-> Load object
+   * with the current load on that server
    */
-  
+
   public Map getLoadMap() {
     return loadSnapshot.getLoadMap();
   }
@@ -501,5 +490,5 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   LogWriterI18n getLogWriterI18n() {
     return ds.getLogWriter().convertToLogWriterI18n();
   }
-  
+
 }

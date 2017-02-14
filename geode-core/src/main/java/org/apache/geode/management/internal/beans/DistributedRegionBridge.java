@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans;
 
@@ -42,9 +40,8 @@ import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.beans.stats.RegionClusterStatsMonitor;
 
 /**
- * Bridge to collect data from all the proxies from a named region.
- * MBeanAggregator will create this bridge and inject it into a
- * DistributedRegionMBean
+ * Bridge to collect data from all the proxies from a named region. MBeanAggregator will create this
+ * bridge and inject it into a DistributedRegionMBean
  * 
  * 
  */
@@ -84,19 +81,17 @@ public class DistributedRegionBridge {
    * Array of fixed partition attributes
    */
   private FixedPartitionAttributesData[] fixedPartitionAttributesTable;
-  
+
   private RegionClusterStatsMonitor monitor;
-  
+
   private boolean isPartitionedRegion = false;
 
 
   /**
    * Public constructor.
    * 
-   * @param objectName
-   *          Name of the MBean
-   * @param proxy
-   *          reference to the actual proxy
+   * @param objectName Name of the MBean
+   * @param proxy reference to the actual proxy
    */
   public DistributedRegionBridge(ObjectName objectName, RegionMXBean proxy,
       FederationComponent newState) {
@@ -109,12 +104,11 @@ public class DistributedRegionBridge {
   /**
    * Adds a proxy to the Proxy set
    * 
-   * @param objectName
-   *          name of the MBean
-   * @param proxy
-   *          reference to the actual proxy
+   * @param objectName name of the MBean
+   * @param proxy reference to the actual proxy
    */
-  public void addProxyToMap(ObjectName objectName, RegionMXBean proxy,  FederationComponent newState) {
+  public void addProxyToMap(ObjectName objectName, RegionMXBean proxy,
+      FederationComponent newState) {
     mapOfProxy.put(objectName, proxy);
     setSize = mapOfProxy.keySet().size();
     updateRegion(newState, null);
@@ -123,13 +117,12 @@ public class DistributedRegionBridge {
   /**
    * Removes proxy from the proxy set
    * 
-   * @param objectName
-   *          name of the MBean
-   * @param proxy
-   *          reference to the actual proxy
+   * @param objectName name of the MBean
+   * @param proxy reference to the actual proxy
    * @return true if this DistributedRegion's proxy set is empty
    */
-  public boolean removeProxyFromMap(ObjectName objectName, RegionMXBean proxy, FederationComponent oldState) {
+  public boolean removeProxyFromMap(ObjectName objectName, RegionMXBean proxy,
+      FederationComponent oldState) {
     mapOfProxy.remove(objectName);
     setSize = mapOfProxy.keySet().size();
     if (setSize == 0) {
@@ -138,9 +131,8 @@ public class DistributedRegionBridge {
     updateRegion(null, oldState);
     return false;
   }
-  
-  public void updateRegion(FederationComponent newState,
-      FederationComponent oldState) {
+
+  public void updateRegion(FederationComponent newState, FederationComponent oldState) {
     monitor.aggregate(newState, oldState);
   }
 
@@ -154,15 +146,15 @@ public class DistributedRegionBridge {
       Iterator<RegionMXBean> it = mapOfProxy.values().iterator();
       if (it != null) {
         while (it.hasNext()) {
-          try{
+          try {
             this.evictionAttributesData = it.next().listEvictionAttributes();
-          }catch(Exception e){
+          } catch (Exception e) {
             this.evictionAttributesData = null;
           }
-          if(evictionAttributesData != null){
+          if (evictionAttributesData != null) {
             break;
           }
-          
+
         }
       }
     }
@@ -171,8 +163,7 @@ public class DistributedRegionBridge {
 
   /**
    * 
-   * @return fixed partition attributes of a partition region if its fixed
-   *         partitioned
+   * @return fixed partition attributes of a partition region if its fixed partitioned
    */
   public FixedPartitionAttributesData[] getFixedPartitionAttributesData() {
 
@@ -181,8 +172,7 @@ public class DistributedRegionBridge {
       if (it != null) {
         while (it.hasNext()) {
           try {
-            this.fixedPartitionAttributesTable = it.next()
-                .listFixedPartitionAttributes();
+            this.fixedPartitionAttributesTable = it.next().listFixedPartitionAttributes();
           } catch (Exception e) {
             this.fixedPartitionAttributesTable = null;
           }
@@ -207,7 +197,7 @@ public class DistributedRegionBridge {
    * @return set of member ids on which this region is present.
    */
   public String[] getMembers() {
-    Iterator<ObjectName> it = mapOfProxy.keySet().iterator();    
+    Iterator<ObjectName> it = mapOfProxy.keySet().iterator();
     if (it != null) {
       List<String> memberList = new ArrayList<String>();
       while (it.hasNext()) {
@@ -215,8 +205,8 @@ public class DistributedRegionBridge {
         String formatedMemberId = (String) tempObjName.getKeyProperty("member");
         memberList.add(formatedMemberId);
       }
-     String[] members = new String[memberList.size()];
-     return memberList.toArray(members);
+      String[] members = new String[memberList.size()];
+      return memberList.toArray(members);
     }
     return ManagementConstants.NO_DATA_STRING;
   }
@@ -230,15 +220,15 @@ public class DistributedRegionBridge {
       Iterator<RegionMXBean> it = mapOfProxy.values().iterator();
       if (it != null) {
         while (it.hasNext()) {
-          try{
+          try {
             this.membershipAttributesData = it.next().listMembershipAttributes();
-          }catch(Exception e){
+          } catch (Exception e) {
             this.membershipAttributesData = null;
           }
-          if(membershipAttributesData != null){
+          if (membershipAttributesData != null) {
             break;
           }
-          
+
         }
       }
     }
@@ -263,23 +253,23 @@ public class DistributedRegionBridge {
 
   /**
    * Lists the sub regions of the GemFire {@link Region} represented by this
-   * {@link DistributedRegionMXBean}. If <code>recursive</code> is
-   * <code>true</code>, will return sub-regions by traversing recursively.
+   * {@link DistributedRegionMXBean}. If <code>recursive</code> is <code>true</code>, will return
+   * sub-regions by traversing recursively.
    * 
-   * @param recursive
-   *          if <code>true</code>, recursively traverses to find sub regions.
+   * @param recursive if <code>true</code>, recursively traverses to find sub regions.
    * @return String array of sub region paths
    */
   public String[] listSubRegionPaths(boolean recursive) {
     String[] subRegionPathsArr = new String[0];
-    
+
     Collection<RegionMXBean> proxies = mapOfProxy.values();
     // Need to go through all proxies as different proxies could have different sub-regions
     if (proxies != null && !proxies.isEmpty()) {
       SortedSet<String> subRegionPaths = new TreeSet<String>();
       for (RegionMXBean regionMXBean : proxies) {
         String[] listSubRegionPaths = regionMXBean.listSubregionPaths(recursive);
-        subRegionPaths.addAll(Arrays.asList(listSubRegionPaths)); // Little cosly, but how can it be avoided?
+        subRegionPaths.addAll(Arrays.asList(listSubRegionPaths)); // Little cosly, but how can it be
+                                                                  // avoided?
       }
 
       subRegionPathsArr = subRegionPaths.toArray(subRegionPathsArr);
@@ -298,15 +288,15 @@ public class DistributedRegionBridge {
       Iterator<RegionMXBean> it = mapOfProxy.values().iterator();
       if (it != null) {
         while (it.hasNext()) {
-          try{
+          try {
             this.partitionAttributesData = it.next().listPartitionAttributes();
-          }catch(Exception e){
+          } catch (Exception e) {
             this.partitionAttributesData = null;
           }
-          if(partitionAttributesData != null){
+          if (partitionAttributesData != null) {
             break;
           }
-          
+
         }
       }
     }
@@ -323,15 +313,15 @@ public class DistributedRegionBridge {
       Iterator<RegionMXBean> it = mapOfProxy.values().iterator();
       if (it != null) {
         while (it.hasNext()) {
-          try{
+          try {
             this.regionAttributesData = it.next().listRegionAttributes();
-          }catch(Exception e){
+          } catch (Exception e) {
             this.regionAttributesData = null;
           }
-          if(regionAttributesData != null){
+          if (regionAttributesData != null) {
             break;
           }
-          
+
         }
       }
     }
@@ -359,8 +349,7 @@ public class DistributedRegionBridge {
    * @return Avg Latency of cache listener call
    */
   public long getCacheListenerCallsAvgLatency() {
-    return MetricsCalculator.getAverage(monitor
-        .getCacheListenerCallsAvgLatency(), setSize);
+    return MetricsCalculator.getAverage(monitor.getCacheListenerCallsAvgLatency(), setSize);
 
   }
 
@@ -369,8 +358,7 @@ public class DistributedRegionBridge {
    * @return Avg Latency of cache writer call
    */
   public long getCacheWriterCallsAvgLatency() {
-    return MetricsCalculator.getAverage(monitor
-        .getCacheWriterCallsAvgLatency(), setSize);
+    return MetricsCalculator.getAverage(monitor.getCacheWriterCallsAvgLatency(), setSize);
   }
 
   /**
@@ -381,7 +369,7 @@ public class DistributedRegionBridge {
     return monitor.getCreatesRate();
   }
 
- 
+
   /**
    * 
    * @return destroy per second for the Regions
@@ -420,7 +408,7 @@ public class DistributedRegionBridge {
    * @return total hit count
    */
   public long getHitCount() {
-    if(isPartionedRegion()){
+    if (isPartionedRegion()) {
       return ManagementConstants.NOT_AVAILABLE_LONG;
     }
     return monitor.getHitCount();
@@ -431,7 +419,7 @@ public class DistributedRegionBridge {
    * @return hit to miss ratio
    */
   public float getHitRatio() {
-    if(isPartionedRegion()){
+    if (isPartionedRegion()) {
       return ManagementConstants.NOT_AVAILABLE_FLOAT;
     }
     return monitor.getHitRatio();
@@ -442,7 +430,7 @@ public class DistributedRegionBridge {
    * @return returns the last time the region was accessed
    */
   public long getLastAccessedTime() {
-    if(isPartionedRegion()){
+    if (isPartionedRegion()) {
       return ManagementConstants.NOT_AVAILABLE_LONG;
     }
     return monitor.getLastAccessedTime();
@@ -454,7 +442,7 @@ public class DistributedRegionBridge {
    * @return last update time of the region
    */
   public long getLastModifiedTime() {
-    if(isPartionedRegion()){
+    if (isPartionedRegion()) {
       return ManagementConstants.NOT_AVAILABLE_LONG;
     }
     return monitor.getLastModifiedTime();
@@ -462,8 +450,8 @@ public class DistributedRegionBridge {
 
   /**
    * 
-   * @return entries destroyed rate in the region through both destroy cache
-   *         operations and eviction.
+   * @return entries destroyed rate in the region through both destroy cache operations and
+   *         eviction.
    */
   public float getLruDestroyRate() {
     return monitor.getLruDestroyRate();
@@ -482,7 +470,7 @@ public class DistributedRegionBridge {
    * @return number of times cache missed on the local region
    */
   public long getMissCount() {
-    if(isPartionedRegion()){
+    if (isPartionedRegion()) {
       return ManagementConstants.NOT_AVAILABLE_LONG;
     }
     return monitor.getMissCount();
@@ -509,8 +497,7 @@ public class DistributedRegionBridge {
    * @return Average Latency for remote put
    */
   public long getPutRemoteAvgLatency() {
-    return MetricsCalculator.getAverage(monitor
-        .getPutRemoteAvgLatency(), setSize);
+    return MetricsCalculator.getAverage(monitor.getPutRemoteAvgLatency(), setSize);
   }
 
   /**
@@ -518,8 +505,7 @@ public class DistributedRegionBridge {
    * @return Latency for last remote put
    */
   public long getPutRemoteLatency() {
-    return MetricsCalculator.getAverage(monitor
-        .getPutRemoteLatency(), setSize);
+    return MetricsCalculator.getAverage(monitor.getPutRemoteLatency(), setSize);
   }
 
   /**
@@ -538,13 +524,13 @@ public class DistributedRegionBridge {
     return monitor.getPutsRate();
   }
 
- 
+
   /**
    * 
    * @return number of entries
    */
   public long getSystemRegionEntryCount() {
-    if (isPartionedRegion()) {      
+    if (isPartionedRegion()) {
       return monitor.getSystemRegionEntryCount();
     }
     return monitor.getEntryCount();
@@ -570,8 +556,8 @@ public class DistributedRegionBridge {
 
   /**
    * 
-   * @return The current number of entries whose value resides in the VM. The
-   *         value may also have been written to disk.
+   * @return The current number of entries whose value resides in the VM. The value may also have
+   *         been written to disk.
    */
   public long getTotalDiskEntriesInVM() {
     return monitor.getTotalDiskEntriesInVM();
@@ -579,14 +565,14 @@ public class DistributedRegionBridge {
 
   /**
    * 
-   * @return The current number of entries whose value is on disk and is not in
-   *         memory. This is true of overflowed entries. It is also true of
-   *         recovered entries that have not yet been faulted in.
+   * @return The current number of entries whose value is on disk and is not in memory. This is true
+   *         of overflowed entries. It is also true of recovered entries that have not yet been
+   *         faulted in.
    */
   public long getTotalEntriesOnlyOnDisk() {
     return monitor.getTotalEntriesOnlyOnDisk();
   }
-  
+
 
   public int getAvgBucketSize() {
     if (!isPartionedRegion()) {
@@ -615,6 +601,7 @@ public class DistributedRegionBridge {
     }
     return monitor.getPrimaryBucketCount();
   }
+
   public int getTotalBucketSize() {
     if (!isPartionedRegion()) {
       return ManagementConstants.NOT_AVAILABLE_INT;
@@ -629,6 +616,7 @@ public class DistributedRegionBridge {
   public long getDiskUsage() {
     return monitor.getDiskUsage();
   }
+
   public float getAverageReads() {
     return monitor.getAverageReads();
   }
@@ -640,11 +628,11 @@ public class DistributedRegionBridge {
   public boolean isGatewayEnabled() {
     return monitor.isGatewayEnabled();
   }
-  
+
   public boolean isPersistentEnabled() {
     return monitor.isPersistentEnabled();
   }
-  
+
   public int getEmptyNodes() {
     Iterator<RegionMXBean> it = mapOfProxy.values().iterator();
 
@@ -667,10 +655,10 @@ public class DistributedRegionBridge {
     return monitor.getEntrySize();
   }
 
-  private boolean isPartionedRegion(){
-    if(getPartitionAttributes() != null){
+  private boolean isPartionedRegion() {
+    if (getPartitionAttributes() != null) {
       return true;
-    }else{
+    } else {
       return false;
     }
   }

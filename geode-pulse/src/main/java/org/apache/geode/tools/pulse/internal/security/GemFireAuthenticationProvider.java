@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.tools.pulse.internal.security;
 
@@ -31,16 +29,17 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 
 /**
- * Spring security AuthenticationProvider for GemFire. It connects to gemfire manager using given credentials.
- * Successful connect is treated as successful authentication and web user is authenticated
+ * Spring security AuthenticationProvider for GemFire. It connects to gemfire manager using given
+ * credentials. Successful connect is treated as successful authentication and web user is
+ * authenticated
+ * 
  * @since GemFire version 9.0
  */
 public class GemFireAuthenticationProvider implements AuthenticationProvider {
 
   private final static PulseLogWriter LOGGER = PulseLogWriter.getLogger();
 
-  public GemFireAuthenticationProvider() {
-  }
+  public GemFireAuthenticationProvider() {}
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
@@ -48,7 +47,8 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
     if (authentication instanceof GemFireAuthentication) {
       GemFireAuthentication gemAuth = (GemFireAuthentication) authentication;
       LOGGER.fine("GemAuthentication is connected? = " + gemAuth.getJmxc());
-      if (gemAuth.getJmxc() != null && gemAuth.isAuthenticated()) return gemAuth;
+      if (gemAuth.getJmxc() != null && gemAuth.isAuthenticated())
+        return gemAuth;
     }
 
     String name = authentication.getName();

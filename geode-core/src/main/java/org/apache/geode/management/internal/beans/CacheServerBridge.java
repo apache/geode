@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans;
 
@@ -70,38 +68,37 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.membership.ClientMembershipListener;
 
 /**
- * Represents the GemFire CacheServer . Provides data and notifications about
- * server, subscriptions,durable queues and indices
+ * Represents the GemFire CacheServer . Provides data and notifications about server,
+ * subscriptions,durable queues and indices
  * 
  * 
  */
-public class CacheServerBridge extends ServerBridge{  
+public class CacheServerBridge extends ServerBridge {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private CacheServer cacheServer;
 
   private GemFireCacheImpl cache;
 
   private QueryService qs;
-   
+
   private StatsRate clientNotificationRate;
-  
+
   private StatsAverageLatency clientNotificatioAvgLatency;
 
   protected StatsRate queryRequestRate;
-  
+
   private MemberMBeanBridge memberMBeanBridge;
 
   private ClientMembershipListener membershipListener;
-  
+
   public static ThreadLocal<Version> clientVersion = new ThreadLocal<Version>();
 
   protected static int identifyPid() {
     try {
       return ProcessUtils.identifyPid();
-    }
-    catch (PidUnavailableException e) {
+    } catch (PidUnavailableException e) {
       if (logger.isDebugEnabled()) {
         logger.debug(e.getMessage(), e);
       }
@@ -114,7 +111,7 @@ public class CacheServerBridge extends ServerBridge{
     this.cacheServer = cacheServer;
     this.cache = cache;
     this.qs = cache.getQueryService();
-    
+
     initializeCacheServerStats();
   }
 
@@ -128,28 +125,29 @@ public class CacheServerBridge extends ServerBridge{
     this.memberMBeanBridge = memberMBeanBridge;
   }
 
-  public void stopMonitor(){
+  public void stopMonitor() {
     super.stopMonitor();
-    monitor.stopListener();    
+    monitor.stopListener();
   }
 
   private void initializeCacheServerStats() {
 
-    clientNotificationRate = new StatsRate(StatsKey.NUM_CLIENT_NOTIFICATION_REQUEST, StatType.INT_TYPE, monitor);
+    clientNotificationRate =
+        new StatsRate(StatsKey.NUM_CLIENT_NOTIFICATION_REQUEST, StatType.INT_TYPE, monitor);
 
-    clientNotificatioAvgLatency = new StatsAverageLatency(StatsKey.NUM_CLIENT_NOTIFICATION_REQUEST, StatType.INT_TYPE,
-        StatsKey.CLIENT_NOTIFICATION_PROCESS_TIME, monitor);
+    clientNotificatioAvgLatency = new StatsAverageLatency(StatsKey.NUM_CLIENT_NOTIFICATION_REQUEST,
+        StatType.INT_TYPE, StatsKey.CLIENT_NOTIFICATION_PROCESS_TIME, monitor);
 
     queryRequestRate = new StatsRate(StatsKey.QUERY_REQUESTS, StatType.INT_TYPE, monitor);
   }
-  
+
   /**
    * Returns the configured buffer size of the socket connection for this server
    **/
   public int getSocketBufferSize() {
     return cacheServer.getSocketBufferSize();
   }
-  
+
   public boolean getTcpNoDelay() {
     return cacheServer.getTcpNoDelay();
   }
@@ -181,8 +179,7 @@ public class CacheServerBridge extends ServerBridge{
   }
 
   /**
-   * Get the frequency in milliseconds to poll the load probe on this cache
-   * server.
+   * Get the frequency in milliseconds to poll the load probe on this cache server.
    **/
   public long getLoadPollInterval() {
     return cacheServer.getLoadPollInterval();
@@ -192,14 +189,14 @@ public class CacheServerBridge extends ServerBridge{
   public ServerLoadData fetchLoadProbe() {
     ServerLoadProbe probe = cacheServer.getLoadProbe();
     ServerLoad load = probe.getLoad(new ServerMetricsImpl(cacheServer.getMaxConnections()));
-    ServerLoadData data = new ServerLoadData(load.getConnectionLoad(), load.getSubscriptionConnectionLoad(), load.getLoadPerConnection(), load
-        .getLoadPerSubscriptionConnection());
+    ServerLoadData data =
+        new ServerLoadData(load.getConnectionLoad(), load.getSubscriptionConnectionLoad(),
+            load.getLoadPerConnection(), load.getLoadPerSubscriptionConnection());
     return data;
   }
 
   /**
-   * Returns the maxium number of threads allowed in this server to service
-   * client requests.
+   * Returns the maxium number of threads allowed in this server to service client requests.
    **/
   public int getMaxThreads() {
     return cacheServer.getMaxThreads();
@@ -216,8 +213,7 @@ public class CacheServerBridge extends ServerBridge{
   }
 
   /**
-   * Returns the time (in seconds ) after which a message in the client queue
-   * will expire.
+   * Returns the time (in seconds ) after which a message in the client queue will expire.
    **/
   public int getMessageTimeToLive() {
     return cacheServer.getMessageTimeToLive();
@@ -229,8 +225,7 @@ public class CacheServerBridge extends ServerBridge{
   }
 
   /**
-   * Returns the eviction policy that is executed when capacity of the client
-   * queue is reached
+   * Returns the eviction policy that is executed when capacity of the client queue is reached
    **/
   public String getEvictionPolicy() {
     if (cacheServer.getClientSubscriptionConfig() != null) {
@@ -241,24 +236,21 @@ public class CacheServerBridge extends ServerBridge{
   }
 
   /**
-   * The hostname or IP address to pass to the client as the loca- tion where
-   * the server is listening. When the server connects to the locator it tells
-   * the locator the host and port where it is listening for client connections.
-   * If the host the server uses by default is one that the client can’t
-   * translate into an IP address, the client will have no route to the server’s
-   * host and won’t be able to find the server. For this situation, you must
-   * supply the server’s alternate hostname for the locator to pass to the cli-
-   * ent. If null, the server’s bind-address (page 177) setting is used.
-   * Default: null.
+   * The hostname or IP address to pass to the client as the loca- tion where the server is
+   * listening. When the server connects to the locator it tells the locator the host and port where
+   * it is listening for client connections. If the host the server uses by default is one that the
+   * client can’t translate into an IP address, the client will have no route to the server’s host
+   * and won’t be able to find the server. For this situation, you must supply the server’s
+   * alternate hostname for the locator to pass to the cli- ent. If null, the server’s bind-address
+   * (page 177) setting is used. Default: null.
    **/
   public String getHostnameForClients() {
     return cacheServer.getHostnameForClients();
   }
 
   /**
-   * The hostname or IP address that the server is to listen on for client
-   * connections. If null, the server listens on the machine’s default address.
-   * Default: null.
+   * The hostname or IP address that the server is to listen on for client connections. If null, the
+   * server listens on the machine’s default address. Default: null.
    */
   public String getBindAddress() {
     return cacheServer.getBindAddress();
@@ -294,7 +286,7 @@ public class CacheServerBridge extends ServerBridge{
     }
     return 0;
   }
-  
+
   public String[] getIndexList() {
     Collection<Index> idxs = qs.getIndexes();
     if (!idxs.isEmpty()) {
@@ -333,20 +325,21 @@ public class CacheServerBridge extends ServerBridge{
     }
 
   }
-  
+
 
   private Map<String, ClientConnInfo> getUniqueClientIds() {
     Map<String, ClientConnInfo> uniqueIds = null;
 
     ServerConnection[] serverConnections = acceptor.getAllServerConnectionList();
-    Collection<CacheClientProxy> clientProxies = acceptor.getCacheClientNotifier().getClientProxies();
+    Collection<CacheClientProxy> clientProxies =
+        acceptor.getCacheClientNotifier().getClientProxies();
 
     if (clientProxies.size() > 0) {
       uniqueIds = new HashMap<String, ClientConnInfo>();
 
       for (CacheClientProxy p : clientProxies) {
-        ClientConnInfo clientConInfo = new ClientConnInfo(p.getProxyID(), p.getSocketHost(), p.getRemotePort(),
-            p.isPrimary());
+        ClientConnInfo clientConInfo =
+            new ClientConnInfo(p.getProxyID(), p.getSocketHost(), p.getRemotePort(), p.isPrimary());
         uniqueIds.put(p.getProxyID().getDSMembership(), clientConInfo);
       }
     }
@@ -358,11 +351,11 @@ public class CacheServerBridge extends ServerBridge{
       for (ServerConnection conn : serverConnections) {
         ClientProxyMembershipID clientId = conn.getProxyID();
         if (clientId != null) { // Check added to fix bug 51987
-        if (uniqueIds.get(clientId.getDSMembership()) == null) {
-          ClientConnInfo clientConInfo = new ClientConnInfo(conn.getProxyID(), conn.getSocketHost(),
-              conn.getSocketPort(), false);
-          uniqueIds.put(clientId.getDSMembership(), clientConInfo);
-        }
+          if (uniqueIds.get(clientId.getDSMembership()) == null) {
+            ClientConnInfo clientConInfo = new ClientConnInfo(conn.getProxyID(),
+                conn.getSocketHost(), conn.getSocketPort(), false);
+            uniqueIds.put(clientId.getDSMembership(), clientConInfo);
+          }
         }
       }
     }
@@ -378,12 +371,13 @@ public class CacheServerBridge extends ServerBridge{
     private ClientProxyMembershipID clientId;
 
     private String hostName;
-    
+
     private int port;
-    
+
     boolean isPrimary;
 
-    public ClientConnInfo(ClientProxyMembershipID clientId, String hostName, int port, boolean isPrimary) {
+    public ClientConnInfo(ClientProxyMembershipID clientId, String hostName, int port,
+        boolean isPrimary) {
       this.clientId = clientId;
       this.hostName = hostName;
       this.port = port;
@@ -397,57 +391,58 @@ public class CacheServerBridge extends ServerBridge{
     public ClientProxyMembershipID getClientId() {
       return clientId;
     }
-    
-    public String toString(){
+
+    public String toString() {
       StringBuffer buffer = new StringBuffer();
       buffer.append("[").append(clientId).append("; port=").append(port).append("; primary=")
           .append(isPrimary).append("]");
       return buffer.toString();
     }
   }
-  
-  public Version getClientVersion(ClientConnInfo connInfo){
-    GemFireCacheImpl cache = (GemFireCacheImpl)CacheFactory.getAnyInstance();    
-    
+
+  public Version getClientVersion(ClientConnInfo connInfo) {
+    GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
+
     if (cache.getCacheServers().size() == 0) {
-      return null;      
-    }
-       
-    CacheServerImpl server = (CacheServerImpl)cache.getCacheServers().iterator().next();
-    
-    if(server == null){
       return null;
     }
-    
-    AcceptorImpl  acceptorImpl  = server.getAcceptor(); 
-    if(acceptorImpl == null){
+
+    CacheServerImpl server = (CacheServerImpl) cache.getCacheServers().iterator().next();
+
+    if (server == null) {
       return null;
-    }         
-       
-    ServerConnection[] serverConnections  = acceptorImpl.getAllServerConnectionList();  
-   
+    }
+
+    AcceptorImpl acceptorImpl = server.getAcceptor();
+    if (acceptorImpl == null) {
+      return null;
+    }
+
+    ServerConnection[] serverConnections = acceptorImpl.getAllServerConnectionList();
+
     boolean flag = false;
-    if(connInfo.toString().contains("primary=true")){
+    if (connInfo.toString().contains("primary=true")) {
       flag = true;
     }
-        
-    for (ServerConnection conn : serverConnections){       
+
+    for (ServerConnection conn : serverConnections) {
       ClientProxyMembershipID cliIdFrmProxy = conn.getProxyID();
-      ClientConnInfo cci = new ClientConnInfo(conn.getProxyID(), conn.getSocketHost(), conn.getSocketPort(), flag);   
-      if (connInfo.toString().equals(cci.toString() )) {
-        return cliIdFrmProxy.getClientVersion();        
+      ClientConnInfo cci =
+          new ClientConnInfo(conn.getProxyID(), conn.getSocketHost(), conn.getSocketPort(), flag);
+      if (connInfo.toString().equals(cci.toString())) {
+        return cliIdFrmProxy.getClientVersion();
       }
-    }  
-    
-    //check form ccp
+    }
+
+    // check form ccp
     ClientProxyMembershipID proxyId = connInfo.getClientId();
     CacheClientProxy proxy = CacheClientNotifier.getInstance().getClientProxy(proxyId);
-    if(proxy != null){
+    if (proxy != null) {
       return proxy.getVersion();
-    }else{
+    } else {
       return null;
     }
-  } 
+  }
 
   public ClientHealthStatus showClientStats(String clientId) throws Exception {
     try {
@@ -485,11 +480,11 @@ public class CacheServerBridge extends ServerBridge{
   private ClientHealthStatus getClientHealthStatus(ClientConnInfo connInfo) {
     ClientProxyMembershipID proxyId = connInfo.getClientId();
     CacheClientProxy proxy = CacheClientNotifier.getInstance().getClientProxy(proxyId);
-  
-    if(proxy != null && !proxy.isConnected() && !proxyId.isDurable()){
+
+    if (proxy != null && !proxy.isConnected() && !proxyId.isDurable()) {
       return null;
     }
-    
+
     CacheServerBridge.clientVersion.set(getClientVersion(connInfo));
 
     int clientCQCount = 0;
@@ -498,28 +493,29 @@ public class CacheServerBridge extends ServerBridge{
       List<ServerCQ> cqs = cqService.getAllClientCqs(proxyId);
       clientCQCount = cqs.size();
     }
-    
-    ClientHealthStatus status = new ClientHealthStatus();    
 
-    Region clientHealthMonitoringRegion = ClientHealthMonitoringRegion.getInstance((GemFireCacheImpl) cache);
+    ClientHealthStatus status = new ClientHealthStatus();
+
+    Region clientHealthMonitoringRegion =
+        ClientHealthMonitoringRegion.getInstance((GemFireCacheImpl) cache);
     String clientName = proxyId.getDSMembership();
     status.setClientId(connInfo.toString());
     status.setName(clientName);
     status.setHostName(connInfo.getHostName());
-    status.setClientCQCount(clientCQCount); 
-    
-    //Only available for clients having subscription enabled true
-    if(proxy != null){
+    status.setClientCQCount(clientCQCount);
+
+    // Only available for clients having subscription enabled true
+    if (proxy != null) {
       status.setUpTime(proxy.getUpTime());
       status.setQueueSize(proxy.getQueueSizeStat());
       status.setConnected(proxy.isConnected());
-      status.setSubscriptionEnabled(true); 
-    }else{
+      status.setSubscriptionEnabled(true);
+    } else {
       status.setConnected(true);
-      status.setSubscriptionEnabled(false); 
+      status.setSubscriptionEnabled(false);
     }
 
-    ClientHealthStats stats = (ClientHealthStats) clientHealthMonitoringRegion.get(clientName);    
+    ClientHealthStats stats = (ClientHealthStats) clientHealthMonitoringRegion.get(clientName);
 
     if (stats != null) {
       status.setCpus(stats.getCpus());
@@ -536,12 +532,11 @@ public class CacheServerBridge extends ServerBridge{
 
 
   /**
-   * closes a continuous query and releases all the resources associated with
-   * it.
+   * closes a continuous query and releases all the resources associated with it.
    * 
    * @param queryName
    */
-  public void closeContinuousQuery(String queryName) throws Exception{
+  public void closeContinuousQuery(String queryName) throws Exception {
     CqService cqService = cache.getCqService();
     if (cqService != null) {
       Collection<? extends InternalCqQuery> allCqs = cqService.getAllCqs();
@@ -566,7 +561,7 @@ public class CacheServerBridge extends ServerBridge{
    * 
    * @param queryName
    */
-  public void executeContinuousQuery(String queryName) throws Exception{
+  public void executeContinuousQuery(String queryName) throws Exception {
     CqService cqService = cache.getCqService();
     if (cqService != null) {
       Collection<? extends InternalCqQuery> allCqs = cqService.getAllCqs();
@@ -581,16 +576,15 @@ public class CacheServerBridge extends ServerBridge{
         }
       }
     }
-    
+
   }
 
   /**
-   * Stops a given query witout releasing any of the resources associated with
-   * it.
+   * Stops a given query witout releasing any of the resources associated with it.
    * 
    * @param queryName
    */
-  public void stopContinuousQuery(String queryName) throws Exception{
+  public void stopContinuousQuery(String queryName) throws Exception {
     CqService cqService = cache.getCqService();
     if (cqService != null) {
       Collection<? extends InternalCqQuery> allCqs = cqService.getAllCqs();
@@ -598,7 +592,7 @@ public class CacheServerBridge extends ServerBridge{
         if (query.getName().equals(queryName)) {
           try {
             query.stop();
-            return ;
+            return;
           } catch (CqClosedException e) {
             throw new Exception(e.getMessage());
           } catch (CqException e) {
@@ -615,8 +609,8 @@ public class CacheServerBridge extends ServerBridge{
    * 
    * @param indexName
    */
-  public void removeIndex(String indexName) throws Exception{
-    try{
+  public void removeIndex(String indexName) throws Exception {
+    try {
       Collection<Index> idxs = qs.getIndexes();
       if (!idxs.isEmpty()) {
         Iterator<Index> idx = idxs.iterator();
@@ -625,10 +619,10 @@ public class CacheServerBridge extends ServerBridge{
           if (index.getName().equals(indexName)) {
             qs.removeIndex(index);
           }
-          return ;
+          return;
         }
       }
-    }catch(Exception e){
+    } catch (Exception e) {
       throw new Exception(e.getMessage());
     }
   }
@@ -638,7 +632,7 @@ public class CacheServerBridge extends ServerBridge{
     return qs.getIndexes().size();
   }
 
-  
+
   public int getNumClientNotificationRequests() {
     return getStatistic(StatsKey.NUM_CLIENT_NOTIFICATION_REQUEST).intValue();
   }
@@ -647,23 +641,23 @@ public class CacheServerBridge extends ServerBridge{
     return clientNotificatioAvgLatency.getAverageLatency();
   }
 
- 
+
   public float getClientNotificationRate() {
     return clientNotificationRate.getRate();
   }
-  
+
   public float getQueryRequestRate() {
     return queryRequestRate.getRate();
   }
 
-  public long getTotalIndexMaintenanceTime() {    
+  public long getTotalIndexMaintenanceTime() {
     return memberMBeanBridge.getTotalIndexMaintenanceTime();
   }
-  
+
 
   public long getActiveCQCount() {
     CqService cqService = cache.getCqService();
-    if(cqService != null && cqService.isRunning()){
+    if (cqService != null && cqService.isRunning()) {
       return cqService.getCqStatistics().numCqsActive();
     }
     return 0;
@@ -674,15 +668,14 @@ public class CacheServerBridge extends ServerBridge{
     return clientProxyMembershipIDMap.keySet().size();
   }
 
-  public void setClientMembershipListener(
-      ClientMembershipListener membershipListener) {
+  public void setClientMembershipListener(ClientMembershipListener membershipListener) {
     this.membershipListener = membershipListener;
   }
-  
+
   public ClientMembershipListener getClientMembershipListener() {
     return this.membershipListener;
   }
-  
+
   /**
    * @return Client Queue Details for all clients
    */
@@ -690,7 +683,8 @@ public class CacheServerBridge extends ServerBridge{
     List<ClientQueueDetail> clientQueueDetailList = null;
     try {
       if (acceptor != null && acceptor.getCacheClientNotifier() != null) {
-        Collection<CacheClientProxy> clientProxies = acceptor.getCacheClientNotifier().getClientProxies();
+        Collection<CacheClientProxy> clientProxies =
+            acceptor.getCacheClientNotifier().getClientProxies();
 
         if (clientProxies.size() > 0) {
           clientQueueDetailList = new ArrayList<ClientQueueDetail>();
@@ -715,7 +709,7 @@ public class CacheServerBridge extends ServerBridge{
       throw new Exception(e.getMessage());
     }
   }
-  
+
 
   private ClientQueueDetail getClientQueueDetail(CacheClientProxy p) {
 
@@ -726,7 +720,7 @@ public class CacheServerBridge extends ServerBridge{
       return null;
     }
     queueDetail.setClientId(CliUtil.getClientIdFromCacheClientProxy(p));
-    
+
     HARegionQueue queue = p.getHARegionQueue();
     if (queue == null) {
       return queueDetail;
@@ -742,7 +736,7 @@ public class CacheServerBridge extends ServerBridge{
     queueDetail.setNumVoidRemovals(queue.getStatistics().getNumVoidRemovals());
     return queueDetail;
   }
-  
+
   /**
    * 
    * @param clientId
@@ -752,7 +746,8 @@ public class CacheServerBridge extends ServerBridge{
 
     try {
       if (acceptor != null && acceptor.getCacheClientNotifier() != null) {
-        Collection<CacheClientProxy> clientProxies = acceptor.getCacheClientNotifier().getClientProxies();
+        Collection<CacheClientProxy> clientProxies =
+            acceptor.getCacheClientNotifier().getClientProxies();
         for (CacheClientProxy p : clientProxies) {
           String buffer = CliUtil.getClientIdFromCacheClientProxy(p);
           if (buffer.equals(clientId)) {

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -30,9 +28,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * This test prints out the version information obtained from the
- * {@link GemFireVersion} class.  It provides a record of what version
- * of GemFire (and the JDK) was used to run the unit tests.
+ * This test prints out the version information obtained from the {@link GemFireVersion} class. It
+ * provides a record of what version of GemFire (and the JDK) was used to run the unit tests.
  */
 @Category(UnitTest.class)
 public class GemFireVersionJUnitTest {
@@ -41,7 +38,7 @@ public class GemFireVersionJUnitTest {
   public void testPrintInfo() {
     final String versionOutput = GemFireVersion.asString();
     System.out.println(versionOutput);
-    
+
     assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.PRODUCT_NAME));
     assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.GEMFIRE_VERSION));
     assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.SOURCE_DATE));
@@ -52,7 +49,7 @@ public class GemFireVersionJUnitTest {
     assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_PLATFORM));
     assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_JAVA_VERSION));
   }
-  
+
   @Test
   public void testNoFile() {
     String noFile = "not a property file";
@@ -63,15 +60,19 @@ public class GemFireVersionJUnitTest {
     noVersion.print(pw);
 
     String noFileOutput = sw.toString();
-    assertTrue(noFileOutput.contains(LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0.toLocalizedString(noFile)));
+    assertTrue(noFileOutput.contains(
+        LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0
+            .toLocalizedString(noFile)));
   }
-  
+
   @Test
   public void testNoFileGetProperty() {
     String noFile = "not a property file";
     VersionDescription noVersion = new VersionDescription(noFile);
 
-    String err = LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0.toLocalizedString(noFile);
+    String err =
+        LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0
+            .toLocalizedString(noFile);
     assertEquals(err, noVersion.getProperty(VersionDescription.GEMFIRE_VERSION));
   }
 }

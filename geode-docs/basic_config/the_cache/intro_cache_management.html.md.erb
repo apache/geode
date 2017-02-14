@@ -39,7 +39,8 @@ Geode's caching APIs provide specialized behavior for different system member ty
 
 ## <a id="concept_F8BA7F2D3B5A40D78461E78BC5FB31FA__section_6486BDAF06EC4B91A548872066F3EC8C" class="no-quick-link"></a>The Cache XML
 
-Your `cache.xml` must be formatted according to the product XML schema definition `cache-1.0.xsd`. The schema definition file is available in the product distribution at `$GEMFIRE/schemas/geode.apache.org/schema/cache/cache-1.0.xsd`.
+Your `cache.xml` must be formatted according to the product XML schema definition `cache-1.0.xsd`. The schema definition file is available at
+[http://geode.apache.org/schema/cache/cache-1.0.xsd](http://geode.apache.org/schema/cache/cache-1.0.xsd).
 
 You use one format for peer and server caches and another for client caches.
 
@@ -47,9 +48,9 @@ You use one format for peer and server caches and another for client caches.
 
 ``` pre
 <?xml version="1.0" encoding="UTF-8"?>
-<cache xmlns="http://geode.incubator.apache.org/schema/cache"
+<cache xmlns="http://geode.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
     version="1.0”>
 ...
 </cache>
@@ -60,9 +61,9 @@ You use one format for peer and server caches and another for client caches.
 ``` pre
 <?xml version="1.0" encoding="UTF-8"?>
 <client-cache
-    xmlns="http://geode.incubator.apache.org/schema/cache"
+    xmlns="http://geode.apache.org/schema/cache"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://geode.incubator.apache.org/schema/cache http://geode.incubator.apache.org/schema/cache/cache-1.0.xsd"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
     version="1.0”>
 ...
 </client-cache>
@@ -76,7 +77,8 @@ Your system configuration and cache configuration are initialized when you start
 
 The steps in this section use `gemfire.properties` and `cache.xml` file examples, except where API is required. You can configure your distributed system properties and cache through the API as well, and you can use a combination of file configuration and API configuration.
 
-The XML examples may not include the full `cache.xml` file listing. All of your declarative cache configuration must conform to the cache XSD in the product installation `$GEMFIRE/schemas/geode.apache.org/schema/cache/cache-1.0.xsd`.
+The XML examples may not include the full `cache.xml` file listing. All of your declarative cache configuration must conform to the cache XSD at
+[http://geode.apache.org/schema/cache/cache-1.0.xsd](http://geode.apache.org/schema/cache/cache-1.0.xsd).
 
 For all of your Geode applications:
 

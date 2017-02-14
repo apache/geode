@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.session.internal.filter;
 
 import org.apache.geode.cache.Region;
@@ -49,9 +47,14 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
+import com.meterware.httpunit.GetMethodWebRequest;
+import com.meterware.httpunit.WebConversation;
+import com.meterware.httpunit.WebRequest;
+import com.meterware.httpunit.WebResponse;
+
 /**
- * In-container testing using Jetty. This allows us to test context listener
- * events as well as dispatching actions.
+ * In-container testing using Jetty. This allows us to test context listener events as well as
+ * dispatching actions.
  */
 @Category(IntegrationTest.class)
 @RunWith(PerTestClassLoaderRunner.class)
@@ -80,17 +83,19 @@ public class SessionReplicationIntegrationJUnitTest {
     tester = new MyServletTester();
     tester.setContextPath("/test");
 
-    filterHolder = tester.addFilter(SessionCachingFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
+    filterHolder =
+        tester.addFilter(SessionCachingFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
     filterHolder.setInitParameter(DistributionConfig.GEMFIRE_PREFIX + "property.mcast-port", "0");
-    filterHolder.setInitParameter(DistributionConfig.GEMFIRE_PREFIX + "property.log-file", gemfireLogFile.getAbsolutePath());
+    filterHolder.setInitParameter(DistributionConfig.GEMFIRE_PREFIX + "property.log-file",
+        gemfireLogFile.getAbsolutePath());
     filterHolder.setInitParameter("cache-type", "peer-to-peer");
 
     servletHolder = tester.addServlet(BasicServlet.class, "/hello");
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     /**
-     * This starts the servlet. Our wrapped servlets *must* start
-     * immediately otherwise the ServletContext is not captured correctly.
+     * This starts the servlet. Our wrapped servlets *must* start immediately otherwise the
+     * ServletContext is not captured correctly.
      */
     servletHolder.setInitOrder(0);
   }
@@ -113,8 +118,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.setAttribute("callback_1", c);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -140,8 +145,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.setAttribute("callback_1", c);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -150,16 +155,14 @@ public class SessionReplicationIntegrationJUnitTest {
 
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
 
-    assertTrue("Not a correctly generated session id",
-        response.getContent().endsWith("-GF"));
+    assertTrue("Not a correctly generated session id", response.getContent().endsWith("-GF"));
 
     List<Cookie> cookies = getCookies(response);
-    assertEquals("Session id != JSESSIONID from cookie",
-        response.getContent(), cookies.get(0).getValue());
+    assertEquals("Session id != JSESSIONID from cookie", response.getContent(),
+        cookies.get(0).getValue());
 
     Region r = getRegion();
-    assertNotNull("Session not found in region",
-        r.get(cookies.get(0).getValue()));
+    assertNotNull("Session not found in region", r.get(cookies.get(0).getValue()));
   }
 
 
@@ -184,8 +187,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.setAttribute("callback_1", c);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -194,8 +197,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
 
-    assertEquals("Session should not have been created", "OK",
-        response.getContent());
+    assertEquals("Session should not have been created", "OK", response.getContent());
   }
 
 
@@ -217,8 +219,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.setAttribute("callback_1", c);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -227,8 +229,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
 
-    assertEquals("Unknown attribute should be null", "null",
-        response.getContent());
+    assertEquals("Unknown attribute should be null", "null", response.getContent());
   }
 
 
@@ -256,8 +257,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.setAttribute("callback_1", c);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -280,8 +281,7 @@ public class SessionReplicationIntegrationJUnitTest {
         cookies2.get(0).getValue());
 
     Region r = getRegion();
-    assertNotNull("Session object should exist in region",
-        r.get(cookies.get(0).getValue()));
+    assertNotNull("Session object should exist in region", r.get(cookies.get(0).getValue()));
   }
 
   /**
@@ -315,8 +315,8 @@ public class SessionReplicationIntegrationJUnitTest {
     sh2.setInitParameter("test.callback", "callback_2");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -327,22 +327,21 @@ public class SessionReplicationIntegrationJUnitTest {
     List<Cookie> cookies = getCookies(response);
 
     Region r = getRegion();
-    assertEquals("bar",
-        ((HttpSession) r.get(cookies.get(0).getValue())).getAttribute("foo"));
+    assertEquals("bar", ((HttpSession) r.get(cookies.get(0).getValue())).getAttribute("foo"));
 
     request.setHeader("Cookie", "JSESSIONID=" + cookies.get(0).getValue());
     request.setURI("/test/request2");
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
 
-    assertEquals("baz",
-        ((HttpSession) r.get(cookies.get(0).getValue())).getAttribute(
-            "foo"));
+    assertEquals("baz", ((HttpSession) r.get(cookies.get(0).getValue())).getAttribute("foo"));
   }
 
   /**
    * Test setting an attribute to null deletes it
-  */
-  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
+   */
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class
+                             // loader isolation, TODO: rewrite test with JUnit 4 rules including
+                             // TemporaryFolder
   @Test
   public void testSetAttributeNullDeletesIt() throws Exception {
     Callback c_1 = new Callback() {
@@ -371,8 +370,8 @@ public class SessionReplicationIntegrationJUnitTest {
     sh2.setInitParameter("test.callback", "callback_2");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -383,96 +382,140 @@ public class SessionReplicationIntegrationJUnitTest {
     List<Cookie> cookies = getCookies(response);
 
     Region r = getRegion();
-    assertEquals("bar",
-        ((HttpSession) r.get(cookies.get(0).getValue())).getAttribute(
-            "foo"));
+    assertEquals("bar", ((HttpSession) r.get(cookies.get(0).getValue())).getAttribute("foo"));
 
     request.setHeader("Cookie", "JSESSIONID=" + cookies.get(0).getValue());
     request.setURI("/test/request2");
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
 
-    assertNull(
-        ((HttpSession) r.get(cookies.get(0).getValue())).getAttribute(
-            "foo"));
+    assertNull(((HttpSession) r.get(cookies.get(0).getValue())).getAttribute("foo"));
   }
 
-// Don't see how to do this currently as the SessionListener needs a full
-// web context to work in.
+  /**
+   * Test that a servlet can modify cookies
+   */
+  @Test
+  public void testUserCanModifyTheirOwnCookie() throws Exception {
+    Callback c = new Callback() {
+      @Override
+      public void call(HttpServletRequest request, HttpServletResponse response)
+          throws IOException {
+        Cookie userCookie = findUserCookie(request.getCookies());
+        if (userCookie == null) {
+          userCookie = new Cookie("myCookie", "0");
+        } else {
+          userCookie =
+              new Cookie("myCookie", Integer.toString(Integer.valueOf(userCookie.getValue()) + 1));
+        }
 
-//    /**
-//     * Test that sessions expire correctly
-//     */
-//    public void testSessionExpiration() throws Exception {
-//        Callback c_1 = new Callback() {
-//            @Override
-//            public void call(HttpServletRequest request, HttpServletResponse response)
-//                    throws IOException, ServletException {
-//                HttpSession s = request.getSession();
-//                s.setAttribute("foo", "bar");
-//                s.setMaxInactiveInterval(1);
-//
-//                PrintWriter out = response.getWriter();
-//                out.write(s.getId());
-//            }
-//        };
-//
-//        // This is the callback used to check if the session is still there
-//        Callback c_2 = new Callback() {
-//            @Override
-//            public void call(HttpServletRequest request, HttpServletResponse response)
-//                    throws IOException, ServletException {
-//                HttpSession s = request.getSession(false);
-//                String output;
-//                if (s == null) {
-//                    output = "null";
-//                } else {
-//                    output = s.getId();
-//                }
-//
-//                PrintWriter out = response.getWriter();
-//                out.write(output);
-//            }
-//        };
-//
-//        tester.addEventListener(new SessionListener());
-//        tester.setAttribute("callback_1", c_1);
-//        tester.setAttribute("callback_2", c_2);
-//
-//        servletHolder.setInitParameter("test.callback", "callback_1");
-//
-//        ServletHolder sh2 = tester.addServlet(BasicServlet.class, "/request2");
-//        sh2.setInitParameter("test.callback", "callback_2");
-//
-//        tester.start();
-//        ContextManager.getInstance().putContext(
-//                servletHolder.getServlet().getServletConfig().getServletContext());
-//
-//        request.setMethod("GET");
-//        request.setURI("/test/hello");
-//        request.setHeader("Host", "tester");
-//        request.setVersion("HTTP/1.0");
-//        response.parse(tester.getResponses(request.generate()));
-//
-//        String id = response.getContent();
-//
-//        // Wait for the session to expire
-//        Thread.sleep(2000);
-//
-//        request.setHeader("Cookie", "JSESSIONID=" + id);
-//        request.setURI("/test/request2");
-//        response.parse(tester.getResponses(request.generate()));
-//
-//        assertIndexDetailsEquals("null", response.getContent());
-//
-//        Region r = getRegion();
-//        assertNull("Region should not contain session", r.get(id));
-//    }
+        response.addCookie(userCookie);
+        request.getSession().setAttribute("dummy", "value");
+      }
+    };
+
+    tester.setAttribute("callback_1", c);
+    String url = tester.createConnector(true);
+    tester.start();
+
+    WebConversation wc = new WebConversation();
+    WebRequest req = new GetMethodWebRequest(url + "/test/hello");
+    req.setHeaderField("Cookie", "myCookie=" + 5);
+
+    final WebResponse webResponse = wc.getResponse(req);
+    assertEquals("6", webResponse.getNewCookieValue("myCookie"));
+  }
+
+  private Cookie findUserCookie(Cookie[] cookies) {
+    if (cookies == null) {
+      return null;
+    }
+    Cookie userCookie = null;
+    for (Cookie cookie : cookies) {
+      if (cookie.getName().equals("myCookie")) {
+        userCookie = cookie;
+      }
+    }
+    return userCookie;
+  }
+
+  // Don't see how to do this currently as the SessionListener needs a full
+  // web context to work in.
+
+  // /**
+  // * Test that sessions expire correctly
+  // */
+  // public void testSessionExpiration() throws Exception {
+  // Callback c_1 = new Callback() {
+  // @Override
+  // public void call(HttpServletRequest request, HttpServletResponse response)
+  // throws IOException, ServletException {
+  // HttpSession s = request.getSession();
+  // s.setAttribute("foo", "bar");
+  // s.setMaxInactiveInterval(1);
+  //
+  // PrintWriter out = response.getWriter();
+  // out.write(s.getId());
+  // }
+  // };
+  //
+  // // This is the callback used to check if the session is still there
+  // Callback c_2 = new Callback() {
+  // @Override
+  // public void call(HttpServletRequest request, HttpServletResponse response)
+  // throws IOException, ServletException {
+  // HttpSession s = request.getSession(false);
+  // String output;
+  // if (s == null) {
+  // output = "null";
+  // } else {
+  // output = s.getId();
+  // }
+  //
+  // PrintWriter out = response.getWriter();
+  // out.write(output);
+  // }
+  // };
+  //
+  // tester.addEventListener(new SessionListener());
+  // tester.setAttribute("callback_1", c_1);
+  // tester.setAttribute("callback_2", c_2);
+  //
+  // servletHolder.setInitParameter("test.callback", "callback_1");
+  //
+  // ServletHolder sh2 = tester.addServlet(BasicServlet.class, "/request2");
+  // sh2.setInitParameter("test.callback", "callback_2");
+  //
+  // tester.start();
+  // ContextManager.getInstance().putContext(
+  // servletHolder.getServlet().getServletConfig().getServletContext());
+  //
+  // request.setMethod("GET");
+  // request.setURI("/test/hello");
+  // request.setHeader("Host", "tester");
+  // request.setVersion("HTTP/1.0");
+  // response.parse(tester.getResponses(request.generate()));
+  //
+  // String id = response.getContent();
+  //
+  // // Wait for the session to expire
+  // Thread.sleep(2000);
+  //
+  // request.setHeader("Cookie", "JSESSIONID=" + id);
+  // request.setURI("/test/request2");
+  // response.parse(tester.getResponses(request.generate()));
+  //
+  // assertIndexDetailsEquals("null", response.getContent());
+  //
+  // Region r = getRegion();
+  // assertNull("Region should not contain session", r.get(id));
+  // }
 
   /**
-   * Test that invalidating a session destroys it as well as the backend
-   * object.
+   * Test that invalidating a session destroys it as well as the backend object.
    */
-  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class
+                             // loader isolation, TODO: rewrite test with JUnit 4 rules including
+                             // TemporaryFolder
   @Test
   public void testInvalidateSession1() throws Exception {
     Callback c_1 = new Callback() {
@@ -501,8 +544,8 @@ public class SessionReplicationIntegrationJUnitTest {
     sh2.setInitParameter("test.callback", "callback_2");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -512,15 +555,13 @@ public class SessionReplicationIntegrationJUnitTest {
 
     List<Cookie> cookies = getCookies(response);
     Region r = getRegion();
-    assertEquals("bar",
-        ((HttpSession) r.get(cookies.get(0).getValue())).getAttribute("foo"));
+    assertEquals("bar", ((HttpSession) r.get(cookies.get(0).getValue())).getAttribute("foo"));
 
     request.setHeader("Cookie", "JSESSIONID=" + cookies.get(0).getValue());
     request.setURI("/test/request2");
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
 
-    assertNull("Region should not contain session",
-        r.get(cookies.get(0).getValue()));
+    assertNull("Region should not contain session", r.get(cookies.get(0).getValue()));
   }
 
   /**
@@ -548,8 +589,8 @@ public class SessionReplicationIntegrationJUnitTest {
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -563,7 +604,9 @@ public class SessionReplicationIntegrationJUnitTest {
   /**
    * Test that invalidating a session throws an exception on subsequent access.
    */
-  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class
+                             // loader isolation, TODO: rewrite test with JUnit 4 rules including
+                             // TemporaryFolder
   @Test
   public void testInvalidateSession3() throws Exception {
     Callback c_1 = new Callback() {
@@ -586,8 +629,8 @@ public class SessionReplicationIntegrationJUnitTest {
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -623,8 +666,8 @@ public class SessionReplicationIntegrationJUnitTest {
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -636,8 +679,7 @@ public class SessionReplicationIntegrationJUnitTest {
   }
 
   /**
-   * Test that invalidating a session does not throw an exception for subsequent
-   * getId calls.
+   * Test that invalidating a session does not throw an exception for subsequent getId calls.
    */
   @Test
   public void testInvalidateSession5() throws Exception {
@@ -658,8 +700,8 @@ public class SessionReplicationIntegrationJUnitTest {
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -695,8 +737,8 @@ public class SessionReplicationIntegrationJUnitTest {
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -708,18 +750,18 @@ public class SessionReplicationIntegrationJUnitTest {
   }
 
   /**
-   * Test that invalidating a session does not throw an exception for
-   * subsequent getMaxInactiveInterval calls.
+   * Test that invalidating a session does not throw an exception for subsequent
+   * getMaxInactiveInterval calls.
    */
 
-// I've commented this out for now as Jetty seems to want to throw an
-// Exception here where the HttpServlet api doesn't specify that.
+  // I've commented this out for now as Jetty seems to want to throw an
+  // Exception here where the HttpServlet api doesn't specify that.
   @Test
   public void testInvalidateSession7() throws Exception {
     Callback c_1 = new Callback() {
       @Override
-      public void call(HttpServletRequest request,
-          HttpServletResponse response) throws IOException {
+      public void call(HttpServletRequest request, HttpServletResponse response)
+          throws IOException {
         HttpSession s = request.getSession();
         s.invalidate();
         s.getMaxInactiveInterval();
@@ -733,8 +775,8 @@ public class SessionReplicationIntegrationJUnitTest {
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -746,8 +788,8 @@ public class SessionReplicationIntegrationJUnitTest {
   }
 
   /**
-   * Test that invalidating a session does not throw an exception for subsequent
-   * getServletContext calls.
+   * Test that invalidating a session does not throw an exception for subsequent getServletContext
+   * calls.
    */
   @Test
   public void testInvalidateSession8() throws Exception {
@@ -768,8 +810,8 @@ public class SessionReplicationIntegrationJUnitTest {
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -783,6 +825,7 @@ public class SessionReplicationIntegrationJUnitTest {
   /**
    * Test that invalidating a session throws an exception on subsequent access.
    */
+  @Category(FlakyTest.class) // GEODE-1943
   @Test
   public void testInvalidateSession9() throws Exception {
     Callback c_1 = new Callback() {
@@ -801,20 +844,16 @@ public class SessionReplicationIntegrationJUnitTest {
     };
 
     tester.setAttribute("callback_1", c_1);
-
     servletHolder.setInitParameter("test.callback", "callback_1");
-
+    String url = tester.createConnector(true);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
 
-    request.setMethod("GET");
-    request.setURI("/test/hello");
-    request.setHeader("Host", "tester");
-    request.setVersion("HTTP/1.0");
-    response = HttpTester.parseResponse(tester.getResponses(request.generate()));
+    WebConversation wc = new WebConversation();
+    WebRequest req = new GetMethodWebRequest(url + "/test/hello");
+    req.setHeaderField("Host", "tester");
 
-    assertEquals("OK", response.getContent());
+    final WebResponse webResponse = wc.getResponse(req);
+    assertEquals("OK", webResponse.getResponseMessage());
   }
 
   /**
@@ -842,8 +881,8 @@ public class SessionReplicationIntegrationJUnitTest {
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -879,8 +918,8 @@ public class SessionReplicationIntegrationJUnitTest {
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -914,8 +953,8 @@ public class SessionReplicationIntegrationJUnitTest {
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -927,8 +966,8 @@ public class SessionReplicationIntegrationJUnitTest {
   }
 
   /**
-   * Test that invalidating a session results in null being returned on
-   * subsequent getSession(false) calls.
+   * Test that invalidating a session results in null being returned on subsequent getSession(false)
+   * calls.
    */
   @Test
   public void testInvalidateSession13() throws Exception {
@@ -953,8 +992,8 @@ public class SessionReplicationIntegrationJUnitTest {
     servletHolder.setInitParameter("test.callback", "callback_1");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -1000,8 +1039,8 @@ public class SessionReplicationIntegrationJUnitTest {
     sh.setInitParameter("test.callback", "callback_2");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        sh.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // sh.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -1038,8 +1077,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.setAttribute("callback_1", c);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -1061,8 +1100,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
     long time2 = Long.parseLong(response.getContent());
-    assertTrue("Creation time should be the same across requests",
-        time1 == time2);
+    assertTrue("Creation time should be the same across requests", time1 == time2);
   }
 
   /**
@@ -1082,8 +1120,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.setAttribute("callback_1", c);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -1093,7 +1131,7 @@ public class SessionReplicationIntegrationJUnitTest {
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
 
     long time1 = Long.parseLong(response.getContent());
-//        assertTrue("Last accessed time should be positive", time1 > 0);
+    // assertTrue("Last accessed time should be positive", time1 > 0);
 
     List<Cookie> cookies = getCookies(response);
     request.setHeader("Cookie", "JSESSIONID=" + cookies.get(0).getValue());
@@ -1102,8 +1140,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
     long time2 = Long.parseLong(response.getContent());
-    assertTrue("Last accessed time should be increasing across requests",
-        time2 > time1);
+    assertTrue("Last accessed time should be increasing across requests", time2 > time1);
   }
 
   /**
@@ -1123,8 +1160,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.setAttribute("callback_1", c);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -1138,17 +1175,13 @@ public class SessionReplicationIntegrationJUnitTest {
     String sessionId = cookies.get(0).getValue();
     Region r = getRegion();
 
-    assertEquals(
-        "Cached native session id does not match servlet returned native session id",
-        nativeSessionId,
-        ((GemfireHttpSession) r.get(sessionId)).getNativeSession().getId());
+    assertEquals("Cached native session id does not match servlet returned native session id",
+        nativeSessionId, ((GemfireHttpSession) r.get(sessionId)).getNativeSession().getId());
 
     request.setHeader("Cookie", "JSESSIONID=" + cookies.get(0).getValue());
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
 
-    assertEquals(
-        "Underlying native sessions must remain the same across requests",
-        nativeSessionId,
+    assertEquals("Underlying native sessions must remain the same across requests", nativeSessionId,
         ((GemfireHttpSession) r.get(sessionId)).getNativeSession().getId());
   }
 
@@ -1169,8 +1202,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.setAttribute("callback_1", c);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -1180,22 +1213,22 @@ public class SessionReplicationIntegrationJUnitTest {
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
     List<Cookie> cookies = getCookies(response);
     String sessionId = response.getContent();
-    assertEquals("Session ids should be the same", sessionId,
-        cookies.get(0).getValue());
+    assertEquals("Session ids should be the same", sessionId, cookies.get(0).getValue());
 
     request.setURI("/test/hello;jsessionid=" + sessionId);
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
     cookies = getCookies(response);
 
-    assertEquals("Session ids should be the same", sessionId,
-        cookies.get(0).getValue());
+    assertEquals("Session ids should be the same", sessionId, cookies.get(0).getValue());
   }
 
 
   /**
    * Test that request forward dispatching works
    */
-  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class loader isolation, TODO: rewrite test with JUnit 4 rules including TemporaryFolder
+  @Category(FlakyTest.class) // GEODE-1015: uses Jetty HttpTester, uses static vars with class
+                             // loader isolation, TODO: rewrite test with JUnit 4 rules including
+                             // TemporaryFolder
   @Test
   public void testDispatchingForward1() throws Exception {
     Callback c_1 = new Callback() {
@@ -1228,8 +1261,8 @@ public class SessionReplicationIntegrationJUnitTest {
     sh.setInitParameter("test.callback", "callback_2");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        sh.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // sh.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -1239,8 +1272,8 @@ public class SessionReplicationIntegrationJUnitTest {
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
     assertEquals("dispatched", response.getContent());
 
-//    ContextManager.getInstance().removeContext(
-//        sh.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().removeContext(
+    // sh.getServlet().getServletConfig().getServletContext());
   }
 
 
@@ -1279,8 +1312,8 @@ public class SessionReplicationIntegrationJUnitTest {
     sh.setInitParameter("test.callback", "callback_2");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        sh.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // sh.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -1290,8 +1323,8 @@ public class SessionReplicationIntegrationJUnitTest {
     response = HttpTester.parseResponse(tester.getResponses(request.generate()));
     assertEquals("dispatched_bang", response.getContent());
 
-//    ContextManager.getInstance().removeContext(
-//        sh.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().removeContext(
+    // sh.getServlet().getServletConfig().getServletContext());
   }
 
 
@@ -1330,8 +1363,8 @@ public class SessionReplicationIntegrationJUnitTest {
     sh.setInitParameter("test.callback", "callback_2");
 
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        sh.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // sh.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -1374,8 +1407,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.setAttribute("callback_1", c);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -1388,15 +1421,12 @@ public class SessionReplicationIntegrationJUnitTest {
 
     List<Cookie> cookies = getCookies(response);
 
-//        AbstractListener listener = RendezvousManager.getListener();
+    // AbstractListener listener = RendezvousManager.getListener();
     tester.stop();
 
-    assertTrue("Timeout waiting for events",
-        listener.await(1, TimeUnit.SECONDS));
-    assertEquals(ListenerEventType.SESSION_CREATED,
-        listener.events.get(0));
-    assertEquals(ListenerEventType.SESSION_DESTROYED,
-        listener.events.get(1));
+    assertTrue("Timeout waiting for events", listener.await(1, TimeUnit.SECONDS));
+    assertEquals(ListenerEventType.SESSION_CREATED, listener.events.get(0));
+    assertEquals(ListenerEventType.SESSION_DESTROYED, listener.events.get(1));
     assertEquals(cookies.get(0).getValue(), response.getContent());
   }
 
@@ -1419,8 +1449,8 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.setAttribute("callback_1", c);
     tester.start();
-//    ContextManager.getInstance().putContext(
-//        servletHolder.getServlet().getServletConfig().getServletContext());
+    // ContextManager.getInstance().putContext(
+    // servletHolder.getServlet().getServletConfig().getServletContext());
 
     request.setMethod("GET");
     request.setURI("/test/hello");
@@ -1435,19 +1465,15 @@ public class SessionReplicationIntegrationJUnitTest {
 
     tester.stop();
 
-    assertTrue("Timeout waiting for events",
-        listener.await(1, TimeUnit.SECONDS));
-    assertEquals(ListenerEventType.SESSION_CREATED,
-        listener.events.get(0));
-    assertEquals(ListenerEventType.SESSION_DESTROYED,
-        listener.events.get(1));
+    assertTrue("Timeout waiting for events", listener.await(1, TimeUnit.SECONDS));
+    assertEquals(ListenerEventType.SESSION_CREATED, listener.events.get(0));
+    assertEquals(ListenerEventType.SESSION_DESTROYED, listener.events.get(1));
     assertEquals(cookies.get(0).getValue(), response.getContent());
   }
 
 
 
-
-//  @Test
+  // @Test
   public void testJsp() throws Exception {
     tester.setResourceBase("target/test-classes");
     ServletHolder jspHolder = tester.addServlet(JspServlet.class, "/test/*");
@@ -1461,8 +1487,7 @@ public class SessionReplicationIntegrationJUnitTest {
           throws IOException, ServletException {
         request.getSession().setAttribute("foo", "bar");
         request.setAttribute("foo", "baz");
-        RequestDispatcher dispatcher = request.getRequestDispatcher(
-            "pagecontext.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("pagecontext.jsp");
         dispatcher.forward(request, response);
       }
     };
@@ -1542,7 +1567,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
   private Region getRegion() {
     // Yuck...
-    return ((GemfireSessionManager) ((SessionCachingFilter) filterHolder.getFilter()).getSessionManager()).getCache().getCache().getRegion(
-        "gemfire_modules_sessions");
+    return ((GemfireSessionManager) ((SessionCachingFilter) filterHolder.getFilter())
+        .getSessionManager()).getCache().getCache().getRegion("gemfire_modules_sessions");
   }
 }

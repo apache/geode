@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.util;
@@ -32,30 +30,34 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 public abstract class ArrayUtils {
 
   /**
-   * Gets the element at index in the array in a bound-safe manner.  If index is not a valid index in the given array,
-   * then the default value is returned.
+   * Gets the element at index in the array in a bound-safe manner. If index is not a valid index in
+   * the given array, then the default value is returned.
    * <p/>
+   * 
    * @param <T> the class type of the elements in the array.
    * @param array the array from which the element at index is retrieved.
    * @param index the index into the array to retrieve the element.
-   * @param defaultValue the default value of element type to return in the event that the array index is invalid.
+   * @param defaultValue the default value of element type to return in the event that the array
+   *        index is invalid.
    * @return the element at index from the array or the default value if the index is invalid.
    */
   public static <T> T getElementAtIndex(T[] array, int index, T defaultValue) {
     try {
       return array[index];
-    }
-    catch (ArrayIndexOutOfBoundsException ignore) {
+    } catch (ArrayIndexOutOfBoundsException ignore) {
       return defaultValue;
     }
   }
 
   /**
-   * Gets the first element from the given array or null if the array reference is null or the array length is 0.
+   * Gets the first element from the given array or null if the array reference is null or the array
+   * length is 0.
    * <p/>
+   * 
    * @param <T> the Class type of the elements in the array.
    * @param array the array of elements from which to retrieve the first element.
-   * @return the first element from the array or null if either the array reference is null or the array length is 0.
+   * @return the first element from the array or null if either the array reference is null or the
+   *         array length is 0.
    */
   public static <T> T getFirst(final T... array) {
     return (array != null && array.length > 0 ? array[0] : null);
@@ -64,6 +66,7 @@ public abstract class ArrayUtils {
   /**
    * Converts the specified Object array into a String representation.
    * <p/>
+   * 
    * @param array the Object array of elements to convert to a String.
    * @return a String representation of the Object array.
    * @see java.lang.StringBuilder
@@ -84,12 +87,12 @@ public abstract class ArrayUtils {
   }
 
   public static String toString(final String... array) {
-    return toString((Object[])array); 
+    return toString((Object[]) array);
   }
-  
+
   /**
-   * Insert an element into an array.  The element is inserted at the
-   * given position, all elements afterwards are moved to the right.
+   * Insert an element into an array. The element is inserted at the given position, all elements
+   * afterwards are moved to the right.
    *
    * @param originalArray array to insert into
    * @param pos position at which to insert the element
@@ -97,8 +100,8 @@ public abstract class ArrayUtils {
    * @return the new array
    */
   public static Object[] insert(Object[] originalArray, int pos, Object element) {
-    Object[] newArray = (Object[]) java.lang.reflect.Array.newInstance(
-      originalArray.getClass().getComponentType(), originalArray.length + 1);
+    Object[] newArray = (Object[]) java.lang.reflect.Array
+        .newInstance(originalArray.getClass().getComponentType(), originalArray.length + 1);
 
     // Test Cases (proof of correctness by examining corner cases)
     // 1) A B C D insert at 0: expect X A B C D
@@ -107,7 +110,8 @@ public abstract class ArrayUtils {
 
     // copy everything before the given position
     if (pos > 0) {
-      System.arraycopy(originalArray, 0, newArray, 0, pos); // does not copy originalArray[pos], where we insert
+      System.arraycopy(originalArray, 0, newArray, 0, pos); // does not copy originalArray[pos],
+                                                            // where we insert
     }
 
     // 1) A B C D insert at 0: no change, ". . . . ."
@@ -135,16 +139,16 @@ public abstract class ArrayUtils {
   }
 
   /**
-   * Remove element from an array.  The element is removed at the
-   * specified position, and all remaining elements are moved to the left.
+   * Remove element from an array. The element is removed at the specified position, and all
+   * remaining elements are moved to the left.
    *
    * @param originalArray array to remove from
    * @param pos position to remove
    * @return the new array
    */
   public static Object[] remove(Object[] originalArray, int pos) {
-    Object[] newArray = (Object[])java.lang.reflect.Array.newInstance(
-      originalArray.getClass().getComponentType(), originalArray.length - 1);
+    Object[] newArray = (Object[]) java.lang.reflect.Array
+        .newInstance(originalArray.getClass().getComponentType(), originalArray.length - 1);
 
     // Test cases: (proof of correctness)
     // 1) A B C D E remove 0: expect "B C D E"
@@ -153,11 +157,12 @@ public abstract class ArrayUtils {
 
     // Copy everything before
     if (pos > 0) {
-      System.arraycopy(originalArray, 0, newArray, 0, pos); // originalArray[pos - 1] is last element copied
+      System.arraycopy(originalArray, 0, newArray, 0, pos); // originalArray[pos - 1] is last
+                                                            // element copied
     }
 
     // 1) A B C D E remove 0: no change, ". . . ."
-    // 2) A B C D E remove 2: "A B"  copied at beginning: "A B . ."
+    // 2) A B C D E remove 2: "A B" copied at beginning: "A B . ."
     // 3) A B C D E remove 4: "A B C D" copied (all done)
 
     // Copy everything after
@@ -174,16 +179,16 @@ public abstract class ArrayUtils {
   }
 
   public static String objectRefString(Object obj) {
-    return obj != null ? obj.getClass().getSimpleName() + '@'
-        + Integer.toHexString(System.identityHashCode(obj)) : "(null)";
+    return obj != null
+        ? obj.getClass().getSimpleName() + '@' + Integer.toHexString(System.identityHashCode(obj))
+        : "(null)";
   }
 
   public static void objectRefString(Object obj, StringBuilder sb) {
     if (obj != null) {
       sb.append(obj.getClass().getSimpleName()).append('@')
           .append(Integer.toHexString(System.identityHashCode(obj)));
-    }
-    else {
+    } else {
       sb.append("(null)");
     }
   }
@@ -200,32 +205,29 @@ public abstract class ArrayUtils {
     if (obj instanceof Object[]) {
       sb.append('(');
       boolean first = true;
-      for (Object o : (Object[])obj) {
+      for (Object o : (Object[]) obj) {
         if (!first) {
           sb.append(',');
-        }
-        else {
+        } else {
           first = false;
         }
         objectString(o, sb);
       }
       sb.append(')');
-    }
-    else {
+    } else {
       objectStringWithBytes(obj, sb);
     }
   }
 
   /**
-   * Get proper string for an an object including arrays with upto one dimension
-   * of arrays.
+   * Get proper string for an an object including arrays with upto one dimension of arrays.
    */
   public static String objectStringNonRecursive(@Unretained Object obj) {
     StringBuilder sb = new StringBuilder();
     objectStringNonRecursive(obj, sb);
     return sb.toString();
-  }  
-  
+  }
+
   public static boolean areByteArrayArrayEquals(byte[][] v1, byte[][] v2) {
     boolean areEqual = false;
     if (v1.length == v2.length) {
@@ -241,27 +243,24 @@ public abstract class ArrayUtils {
   }
 
   /**
-   * Get proper string for an an object including arrays with upto one dimension
-   * of arrays.
+   * Get proper string for an an object including arrays with upto one dimension of arrays.
    */
   public static void objectStringNonRecursive(@Unretained Object obj, StringBuilder sb) {
     if (obj instanceof Object[]) {
       sb.append('(');
       boolean first = true;
-      for (Object o : (Object[])obj) {
+      for (Object o : (Object[]) obj) {
         if (!first) {
           sb.append(',');
           sb.append(o);
-        }
-        else {
+        } else {
           first = false;
           // show the first byte[] for byte[][] storage
           objectStringWithBytes(o, sb);
         }
       }
       sb.append(')');
-    }
-    else {
+    } else {
       objectStringWithBytes(obj, sb);
     }
   }
@@ -270,13 +269,12 @@ public abstract class ArrayUtils {
     if (obj instanceof byte[]) {
       sb.append('(');
       boolean first = true;
-      final byte[] bytes = (byte[])obj;
+      final byte[] bytes = (byte[]) obj;
       int numBytes = 0;
       for (byte b : bytes) {
         if (!first) {
           sb.append(',');
-        }
-        else {
+        } else {
           first = false;
         }
         sb.append(b);
@@ -287,15 +285,13 @@ public abstract class ArrayUtils {
         }
       }
       sb.append(')');
-    }
-    else {
+    } else {
       sb.append(obj);
     }
   }
 
   /**
-   * Check if two objects, possibly null, are equal. Doesn't really belong to
-   * this class...
+   * Check if two objects, possibly null, are equal. Doesn't really belong to this class...
    */
   public static boolean objectEquals(Object o1, Object o2) {
     if (o1 == o2) {
@@ -310,6 +306,7 @@ public abstract class ArrayUtils {
   /**
    * Converts the primitive int array into an Integer wrapper object array.
    * </p>
+   * 
    * @param array the primitive int array to convert into an Integer wrapper object array.
    * @return an Integer array containing the values from the elements in the primitive int array.
    */
@@ -324,9 +321,9 @@ public abstract class ArrayUtils {
 
     return integerArray;
   }
-  
+
   /**
-   * Converts a double byte array into a double Byte array. 
+   * Converts a double byte array into a double Byte array.
    * 
    * @param array the double byte array to convert into double Byte array
    * @return a double array of Byte objects containing values from the double byte array
@@ -346,7 +343,7 @@ public abstract class ArrayUtils {
   }
 
   /**
-   * Converts a double Byte array into a double byte array. 
+   * Converts a double Byte array into a double byte array.
    * 
    * @param byteArray the double Byte array to convert into a double byte array
    * @return a double byte array containing byte values from the double Byte array

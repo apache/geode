@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.lucene.internal.distributed;
@@ -34,7 +30,8 @@ import org.apache.geode.internal.Version;
 /**
  * Contains function arguments for text / lucene search
  */
-public class LuceneFunctionContext<C extends IndexResultCollector> implements DataSerializableFixedID {
+public class LuceneFunctionContext<C extends IndexResultCollector>
+    implements DataSerializableFixedID {
   private CollectorManager<C> manager;
   private int limit;
   private LuceneQueryProvider queryProvider;
@@ -48,11 +45,13 @@ public class LuceneFunctionContext<C extends IndexResultCollector> implements Da
     this(provider, indexName, null);
   }
 
-  public LuceneFunctionContext(LuceneQueryProvider provider, String indexName, CollectorManager<C> manager) {
+  public LuceneFunctionContext(LuceneQueryProvider provider, String indexName,
+      CollectorManager<C> manager) {
     this(provider, indexName, manager, LuceneQueryFactory.DEFAULT_LIMIT);
   }
 
-  public LuceneFunctionContext(LuceneQueryProvider provider, String indexName, CollectorManager<C> manager, int limit) {
+  public LuceneFunctionContext(LuceneQueryProvider provider, String indexName,
+      CollectorManager<C> manager, int limit) {
     this.queryProvider = provider;
     this.indexName = indexName;
     this.manager = manager;
@@ -74,8 +73,9 @@ public class LuceneFunctionContext<C extends IndexResultCollector> implements Da
   }
 
   /**
-   * On each member, search query is executed on one or more {@link IndexRepository}s. A {@link CollectorManager} could
-   * be provided to customize the way results from these repositories is collected and merged.
+   * On each member, search query is executed on one or more {@link IndexRepository}s. A
+   * {@link CollectorManager} could be provided to customize the way results from these repositories
+   * is collected and merged.
    * 
    * @return {@link CollectorManager} instance to be used by function
    */

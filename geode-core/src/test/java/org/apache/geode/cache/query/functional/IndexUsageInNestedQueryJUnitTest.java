@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /*
  * IndexUsageInNestedQuery.java
@@ -54,14 +52,15 @@ public class IndexUsageInNestedQueryJUnitTest {
   public void setUp() throws java.lang.Exception {
     CacheUtils.startCache();
     Region r = CacheUtils.createRegion("portfolios", Portfolio.class);
-    for(int i=0;i<4;i++)
-      r.put(i+"", new Portfolio(i));
+    for (int i = 0; i < 4; i++)
+      r.put(i + "", new Portfolio(i));
   }
 
   @After
   public void tearDown() throws java.lang.Exception {
     CacheUtils.closeCache();
   }
+
   @Test
   public void testNestedQueriesResultsasStructSet() throws Exception {
 
@@ -70,22 +69,22 @@ public class IndexUsageInNestedQueryJUnitTest {
     String queries[] = {
         "select distinct * from /portfolios p, (select distinct pos  as poos from /portfolios x, x.positions.values pos"
             + " where pos.secId = 'YHOO') as k",
-            "select distinct * from /portfolios p, (select distinct pos as poos from /portfolios p, p.positions.values pos"
-                + " where pos.secId = 'YHOO') as k",
-                "select distinct * from /portfolios p, (select distinct x.ID as ID  from /portfolios x"
-                    + " where x.ID = p.ID) as k ", // Currently Index Not Getting Used
-                    "select distinct * from /portfolios p, (select distinct pos as poos from /portfolios x, p.positions.values pos"
-                    + " where x.ID = p.ID) as k",   // Currently Index Not Getting Used        
-                    "select distinct * from /portfolios p, (select distinct x as pf , myPos as poos from /portfolios x, x.positions.values as myPos) as k "
-                    + "  where k.poos.secId = 'YHOO'",            
-                    "select distinct * from /portfolios p, (select distinct x as pf , myPos as poos from /portfolios x, x.positions.values as myPos) as K"
-                        + "  where K.poos.secId = 'YHOO'",
-                        "select distinct * from /portfolios p, (select distinct val from positions.values as val where val.secId = 'YHOO') as k ",
-                        "select distinct * from /portfolios x, x.positions.values where " 
-                            + "secId = element(select distinct vals.secId from /portfolios p, p.positions.values vals where vals.secId = 'YHOO')",
+        "select distinct * from /portfolios p, (select distinct pos as poos from /portfolios p, p.positions.values pos"
+            + " where pos.secId = 'YHOO') as k",
+        "select distinct * from /portfolios p, (select distinct x.ID as ID  from /portfolios x"
+            + " where x.ID = p.ID) as k ", // Currently Index Not Getting Used
+        "select distinct * from /portfolios p, (select distinct pos as poos from /portfolios x, p.positions.values pos"
+            + " where x.ID = p.ID) as k", // Currently Index Not Getting Used
+        "select distinct * from /portfolios p, (select distinct x as pf , myPos as poos from /portfolios x, x.positions.values as myPos) as k "
+            + "  where k.poos.secId = 'YHOO'",
+        "select distinct * from /portfolios p, (select distinct x as pf , myPos as poos from /portfolios x, x.positions.values as myPos) as K"
+            + "  where K.poos.secId = 'YHOO'",
+        "select distinct * from /portfolios p, (select distinct val from positions.values as val where val.secId = 'YHOO') as k ",
+        "select distinct * from /portfolios x, x.positions.values where "
+            + "secId = element(select distinct vals.secId from /portfolios p, p.positions.values vals where vals.secId = 'YHOO')",
 
     };
-    SelectResults r[][]= new SelectResults[queries.length][2];
+    SelectResults r[][] = new SelectResults[queries.length][2];
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -94,34 +93,32 @@ public class IndexUsageInNestedQueryJUnitTest {
         QueryObserverHolder.setInstance(observer);
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        //                DebuggerSupport.waitForJavaDebugger(CacheUtils.getLogger());
+        // DebuggerSupport.waitForJavaDebugger(CacheUtils.getLogger());
         r[i][0] = (SelectResults) q.execute();
-        if(!observer.isIndexesUsed){
+        if (!observer.isIndexesUsed) {
           CacheUtils.log("NO INDEX USED");
         }
-        CacheUtils.log(Utils.printResult(r[i][0]));
       } catch (Exception e) {
         e.printStackTrace();
       }
     }
 
-    //  Create an Index on status and execute the same query again.
+    // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    qs.createIndex("idIndex", IndexType.FUNCTIONAL,"p.ID","/portfolios p");
-    qs.createIndex("secIdIndex", IndexType.FUNCTIONAL,"b.secId","/portfolios pf, pf.positions.values b");
-    qs.createIndex("cIndex", IndexType.FUNCTIONAL, "pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID]","/portfolios pf");
+    qs.createIndex("idIndex", IndexType.FUNCTIONAL, "p.ID", "/portfolios p");
+    qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "b.secId",
+        "/portfolios pf, pf.positions.values b");
+    qs.createIndex("cIndex", IndexType.FUNCTIONAL,
+        "pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID]", "/portfolios pf");
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
         QueryObserverImpl observer2 = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer2);
         q = CacheUtils.getQueryService().newQuery(queries[i]);
-        r[i][1] = (SelectResults)q.execute();
-        if(observer2.isIndexesUsed == true){
-          CacheUtils.log("YES INDEX IS USED!");
-        }
-        CacheUtils.log(Utils.printResult(r[i][1]));
+        r[i][1] = (SelectResults) q.execute();
+
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -132,7 +129,7 @@ public class IndexUsageInNestedQueryJUnitTest {
 
 
 
-  class QueryObserverImpl extends QueryObserverAdapter{
+  class QueryObserverImpl extends QueryObserverAdapter {
     boolean isIndexesUsed = false;
     ArrayList indexesUsed = new ArrayList();
 
@@ -141,9 +138,9 @@ public class IndexUsageInNestedQueryJUnitTest {
     }
 
     public void afterIndexLookup(Collection results) {
-      if(results != null){
+      if (results != null) {
         isIndexesUsed = true;
-        //CacheUtils.log(Utils.printResult(results));
+        // CacheUtils.log(Utils.printResult(results));
       }
     }
   }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal.index;
 
@@ -48,9 +46,8 @@ public class MemoryIndexStoreJUnitTest {
   RegionEntry[] mockEntries;
   int numMockEntries = 10;
   GemFireCacheImpl actualInstance;
-  
-  protected void subclassPreSetup() {
-  }
+
+  protected void subclassPreSetup() {}
 
   protected Region createRegion() {
     return mock(LocalRegion.class);
@@ -67,7 +64,7 @@ public class MemoryIndexStoreJUnitTest {
     store = new MemoryIndexStore(region, mockStats);
     store.setIndexOnValues(true);
     mockEntries = new RegionEntry[numMockEntries];
-    IntStream.range(0, numMockEntries).forEach(i-> {
+    IntStream.range(0, numMockEntries).forEach(i -> {
       mockEntries[i] = createRegionEntry(i, new Object());
     });
   }
@@ -82,8 +79,7 @@ public class MemoryIndexStoreJUnitTest {
     IntStream.range(0, 150).forEach(i -> {
       try {
         store.addMapping(i % 3, createRegionEntry(i, new Object()));
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         throw new AssertionError(e);
       }
     });
@@ -95,8 +91,7 @@ public class MemoryIndexStoreJUnitTest {
     IntStream.range(0, 150).forEach(i -> {
       try {
         store.addMapping(1, createRegionEntry(i, new Object()));
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         throw new AssertionError(e);
       }
     });
@@ -104,12 +99,11 @@ public class MemoryIndexStoreJUnitTest {
   }
 
   @Test
-  public void testUpdateAgainstAConcurrentHashSet() throws Exception{
+  public void testUpdateAgainstAConcurrentHashSet() throws Exception {
     IntStream.range(0, 150).forEach(i -> {
       try {
         store.addMapping(1, createRegionEntry(1, new Object()));
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         throw new AssertionError(e);
       }
     });
@@ -132,24 +126,27 @@ public class MemoryIndexStoreJUnitTest {
       store.addMapping(QueryService.UNDEFINED, mockEntries[i]);
     }
     assertEquals(mockEntries.length, numObjectsIterated(store.get(QueryService.UNDEFINED)));
-    //Undefined will not return without an explicit get for UNDEFINED);
+    // Undefined will not return without an explicit get for UNDEFINED);
     assertEquals(0, numObjectsInStore(store));
   }
 
   @Test
-  public void testIteratorWithStartInclusiveAndNoKeysToRemoveReturnsCorrectNumberOfResults() throws Exception {
+  public void testIteratorWithStartInclusiveAndNoKeysToRemoveReturnsCorrectNumberOfResults()
+      throws Exception {
     addMockedEntries(numMockEntries);
     assertEquals(2, numObjectsIterated(store.iterator(numMockEntries - 2, true, null)));
   }
 
   @Test
-  public void testIteratorWithStartExclusiveAndNoKeysToRemoveReturnsCorrectNumberOfResults() throws Exception {
+  public void testIteratorWithStartExclusiveAndNoKeysToRemoveReturnsCorrectNumberOfResults()
+      throws Exception {
     addMockedEntries(numMockEntries);
     assertEquals(1, numObjectsIterated(store.iterator(numMockEntries - 2, false, null)));
   }
 
   @Test
-  public void testIteratorWithStartInclusiveAndKeyToRemoveReturnsCorrectNumberOfResults() throws Exception {
+  public void testIteratorWithStartInclusiveAndKeyToRemoveReturnsCorrectNumberOfResults()
+      throws Exception {
     addMockedEntries(numMockEntries);
     Set keysToRemove = new HashSet();
     keysToRemove.add("1");
@@ -157,7 +154,8 @@ public class MemoryIndexStoreJUnitTest {
   }
 
   @Test
-  public void testIteratorWithStartExclusiveAndKeyToRemoveReturnsCorrectNumberOfResults() throws Exception {
+  public void testIteratorWithStartExclusiveAndKeyToRemoveReturnsCorrectNumberOfResults()
+      throws Exception {
     addMockedEntries(numMockEntries);
     Set keysToRemove = new HashSet();
     keysToRemove.add("1");
@@ -205,13 +203,16 @@ public class MemoryIndexStoreJUnitTest {
 
     Iterator iterator = store.descendingIterator(null);
     iterator.hasNext();
-    assertEquals(mockEntry2, ((MemoryIndexStore.MemoryIndexStoreEntry)iterator.next()).getRegionEntry());
+    assertEquals(mockEntry2,
+        ((MemoryIndexStore.MemoryIndexStoreEntry) iterator.next()).getRegionEntry());
     iterator.hasNext();
-    assertEquals(mockEntry1, ((MemoryIndexStore.MemoryIndexStoreEntry)iterator.next()).getRegionEntry());
+    assertEquals(mockEntry1,
+        ((MemoryIndexStore.MemoryIndexStoreEntry) iterator.next()).getRegionEntry());
   }
 
   @Test
-  public void testDescendingIteratorWithRemovedKeysReturnsExpectedOrderOfEntries() throws Exception {
+  public void testDescendingIteratorWithRemovedKeysReturnsExpectedOrderOfEntries()
+      throws Exception {
     RegionEntry mockEntry1 = mockEntries[0];
     RegionEntry mockEntry2 = mockEntries[1];
     RegionEntry mockEntry3 = mockEntries[2];
@@ -223,18 +224,21 @@ public class MemoryIndexStoreJUnitTest {
     Iterator iteratorFirst = store.descendingIterator(keysToRemove);
     assertEquals(2, numObjectsIterated(iteratorFirst));
 
-    //keysToRemove has been modified by the store, we need to readd the key to remove
+    // keysToRemove has been modified by the store, we need to readd the key to remove
     keysToRemove.add("2");
     Iterator iterator = store.descendingIterator(keysToRemove);
     iterator.hasNext();
-    assertEquals(mockEntry3, ((MemoryIndexStore.MemoryIndexStoreEntry)iterator.next()).getRegionEntry());
+    assertEquals(mockEntry3,
+        ((MemoryIndexStore.MemoryIndexStoreEntry) iterator.next()).getRegionEntry());
     iterator.hasNext();
-    assertEquals(mockEntry1, ((MemoryIndexStore.MemoryIndexStoreEntry)iterator.next()).getRegionEntry());
+    assertEquals(mockEntry1,
+        ((MemoryIndexStore.MemoryIndexStoreEntry) iterator.next()).getRegionEntry());
     assertFalse(iterator.hasNext());
   }
 
   @Test
-  public void testDescendingIteratorWithMultipleRemovedKeysReturnsExpectedOrderOfEntries() throws Exception {
+  public void testDescendingIteratorWithMultipleRemovedKeysReturnsExpectedOrderOfEntries()
+      throws Exception {
     RegionEntry mockEntry1 = mockEntries[0];
     RegionEntry mockEntry2 = mockEntries[1];
     RegionEntry mockEntry3 = mockEntries[2];
@@ -247,12 +251,13 @@ public class MemoryIndexStoreJUnitTest {
     Iterator iteratorFirst = store.descendingIterator(keysToRemove);
     assertEquals(1, numObjectsIterated(iteratorFirst));
 
-    //keysToRemove has been modified by the store, we need to readd the key to remove
+    // keysToRemove has been modified by the store, we need to readd the key to remove
     keysToRemove.add("2");
     keysToRemove.add("1");
     Iterator iterator = store.descendingIterator(keysToRemove);
     iterator.hasNext();
-    assertEquals(mockEntry3, ((MemoryIndexStore.MemoryIndexStoreEntry)iterator.next()).getRegionEntry());
+    assertEquals(mockEntry3,
+        ((MemoryIndexStore.MemoryIndexStoreEntry) iterator.next()).getRegionEntry());
     assertFalse(iterator.hasNext());
   }
 
@@ -374,8 +379,7 @@ public class MemoryIndexStoreJUnitTest {
     IntStream.range(0, numEntriesToAdd).forEach(i -> {
       try {
         store.addMapping(mockEntries[i].getKey(), mockEntries[i]);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         throw new AssertionError(e);
       }
     });

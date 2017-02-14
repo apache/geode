@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.functional;
 
@@ -69,17 +67,16 @@ public class IndexCreationDeadLockJUnitTest {
     factory.setValueConstraint(Portfolio.class);
 
     factory.setIndexMaintenanceSynchronous(true);
-    region = CacheUtils.createRegion("portfolios", factory
-        .create(), true);
+    region = CacheUtils.createRegion("portfolios", factory.create(), true);
 
   }
 
   @After
   public void tearDown() throws Exception {
-    try{
+    try {
       this.region.localDestroyRegion();
-    }catch(RegionDestroyedException  rde) {
-      //Ignore
+    } catch (RegionDestroyedException rde) {
+      // Ignore
     }
 
     CacheUtils.closeCache();
@@ -96,7 +93,7 @@ public class IndexCreationDeadLockJUnitTest {
   }
 
   /**
-   * Tests  Index creation and maintenance deadlock scenario for Persistent only disk region
+   * Tests Index creation and maintenance deadlock scenario for Persistent only disk region
    */
   @Test
   public void testIndexCreationDeadLockForDiskOnlyRegion() {
@@ -112,15 +109,14 @@ public class IndexCreationDeadLockJUnitTest {
     DiskStore ds1 = dsf.setDiskDirs(new File[] {dir}).create("ds1");
     factory.setDiskStoreName("ds1");
     dir.deleteOnExit();
-    region = CacheUtils.createRegion("portfolios", factory
-        .create(), true);
+    region = CacheUtils.createRegion("portfolios", factory.create(), true);
     simulateDeadlockScenario();
     assertFalse(this.cause, this.testFailed);
     assertFalse("Index creation failed", this.exceptionInCreatingIndex);
   }
 
   /**
-   * Tests  Index creation and maintenance deadlock scenario for a region with stats enabled
+   * Tests Index creation and maintenance deadlock scenario for a region with stats enabled
    */
   @Test
   public void testIndexCreationDeadLockForStatsEnabledRegion() {
@@ -130,15 +126,14 @@ public class IndexCreationDeadLockJUnitTest {
     factory.setValueConstraint(Portfolio.class);
     factory.setStatisticsEnabled(true);
     factory.setIndexMaintenanceSynchronous(true);
-    region = CacheUtils.createRegion("portfolios", factory
-        .create(), true);
+    region = CacheUtils.createRegion("portfolios", factory.create(), true);
     simulateDeadlockScenario();
     assertFalse(this.cause, this.testFailed);
     assertFalse("Index creation failed", this.exceptionInCreatingIndex);
   }
 
   /**
-   * Tests inability to create index on a region which overflows to disk   *
+   * Tests inability to create index on a region which overflows to disk *
    */
   @Test
   public void testIndexCreationDeadLockForOverflowToDiskRegion() {
@@ -146,8 +141,8 @@ public class IndexCreationDeadLockJUnitTest {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setValueConstraint(Portfolio.class);
-    factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(
-        1, EvictionAction.OVERFLOW_TO_DISK));
+    factory.setEvictionAttributes(
+        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
     factory.setIndexMaintenanceSynchronous(true);
     File dir = new File("test");
     dir.mkdir();
@@ -158,8 +153,7 @@ public class IndexCreationDeadLockJUnitTest {
     region = CacheUtils.createRegion("portfolios", factory.create(), true);
     simulateDeadlockScenario();
     assertFalse(this.cause, this.testFailed);
-    assertTrue(
-        "Index creation succeeded . For diskRegion this shoudl not have happened",
+    assertTrue("Index creation succeeded . For diskRegion this shoudl not have happened",
         this.exceptionInCreatingIndex);
   }
 
@@ -178,16 +172,14 @@ public class IndexCreationDeadLockJUnitTest {
       super(thName);
 
       System.out
-          .println("--------------------- Thread started ------------------------- "
-              + thName);
+          .println("--------------------- Thread started ------------------------- " + thName);
     }
 
     @Override
     public void run() {
       try {
 
-        System.out
-            .println("--------------------- Creating Indices -------------------------");
+        System.out.println("--------------------- Creating Indices -------------------------");
         QueryService qs;
         qs = CacheUtils.getQueryService();
         qs.createIndex("status", IndexType.FUNCTIONAL, "pf.status",
@@ -196,10 +188,8 @@ public class IndexCreationDeadLockJUnitTest {
         qs.createIndex("secId", IndexType.FUNCTIONAL, "posit.secId",
             "/portfolios pf, pf.positions.values posit");
 
-        System.out
-            .println("--------------------- Index Creation Done-------------------------");
-      }
-      catch (Exception e) {
+        System.out.println("--------------------- Index Creation Done-------------------------");
+      } catch (Exception e) {
         exceptionInCreatingIndex = true;
       }
     }
@@ -213,46 +203,41 @@ public class IndexCreationDeadLockJUnitTest {
     public PutThread(String thName) {
       super(thName);
       System.out
-          .println("--------------------- Thread started ------------------------- "
-              + thName);
+          .println("--------------------- Thread started ------------------------- " + thName);
     }
 
     @Override
     public void run() {
       try {
-        System.out
-            .println("--------------------- Populating Data -------------------------");
+        System.out.println("--------------------- Populating Data -------------------------");
         for (int i = 0; i < 10; i++) {
           region.put(String.valueOf(i), new Portfolio(i));
-          Portfolio value = (Portfolio)region.get(String.valueOf(i));
+          Portfolio value = (Portfolio) region.get(String.valueOf(i));
           CacheUtils.log("value for key " + i + " is: " + value);
           CacheUtils.log("region.size(): - " + region.size());
         }
-        System.out
-            .println("--------------------- Data Populatio done -------------------------");
+        System.out.println("--------------------- Data Populatio done -------------------------");
 
-        System.out
-            .println("---------------------Destroying & repopulating the data -------------------------");
-        AttributesMutator mutator = IndexCreationDeadLockJUnitTest.this.region
-            .getAttributesMutator();
+        System.out.println(
+            "---------------------Destroying & repopulating the data -------------------------");
+        AttributesMutator mutator =
+            IndexCreationDeadLockJUnitTest.this.region.getAttributesMutator();
         mutator.setCacheWriter(new BeforeUpdateCallBack());
         CacheUtils.log("region.size(): - " + region.size());
         for (int i = 0; i < 10; i++) {
           region.destroy(String.valueOf(i));
           region.put(String.valueOf(i), new Portfolio(i + 20));
         }
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         e.printStackTrace();
         IndexCreationDeadLockJUnitTest.this.testFailed = true;
-        IndexCreationDeadLockJUnitTest.this.cause = "Test failed because of exception="
-            + e;
+        IndexCreationDeadLockJUnitTest.this.cause = "Test failed because of exception=" + e;
       }
     }
   }
 
   /**
-   *  make the update to wait for a while before updatation to simulate the deadlock condiction
+   * make the update to wait for a while before updatation to simulate the deadlock condiction
    */
   private class BeforeUpdateCallBack extends CacheWriterAdapter {
 
@@ -262,18 +247,16 @@ public class IndexCreationDeadLockJUnitTest {
     public void beforeCreate(EntryEvent event) throws CacheWriterException {
       cnt++;
       if (cnt == 10) {
-        System.out
-            .println("--------------------- starting IndexCreation Thread-------------------------");
+        System.out.println(
+            "--------------------- starting IndexCreation Thread-------------------------");
         Thread indxCreationThread = new HelperThread("index creator thread");
         indxCreationThread.start();
         try {
           ThreadUtils.join(indxCreationThread, 30 * 1000);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           e.printStackTrace();
           IndexCreationDeadLockJUnitTest.this.testFailed = true;
-          IndexCreationDeadLockJUnitTest.this.cause = "Test failed because of exception="
-              + e;
+          IndexCreationDeadLockJUnitTest.this.cause = "Test failed because of exception=" + e;
           fail(e.toString());
         }
       }

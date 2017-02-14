@@ -101,7 +101,7 @@ function executeDBQuery(){
     $('#memberAccordion').html('');
   }
 
-  $.getJSON("pulse/dataBrowserQuery", requestData, function(data) {
+  $.getJSON("dataBrowserQuery", requestData, function(data) {
     
     if(data != undefined && data != null){
       if(data.error != undefined && data.error != null){
@@ -954,11 +954,25 @@ function generateEntryUID(prefixForId, type, len) {
 // Function that posts the query result response received to backend in order
 // export it into file
 function exportResult() {
-  if(responseResult != undefined && responseResult !== null){
-    $.generateFile({
-      filename : 'export.json',
-      content : JSON.stringify(responseResult),
-      script : 'pulse/dataBrowserExport'
-    });
+ var queryText = $('#dataBrowserQueryText').val();
+  var selectedMemberNames = "";
+
+  if(isEmpty(queryText)){
+    alert("Please enter query to execute..");
+    return;
   }
+
+  // Determine selected members query to be execute on
+  if($("#membersList").html() != ""){
+    var selectedMembers = $( "input[type=checkbox][name=Member]:checked" );
+    for(var i=0; i< selectedMembers.length; i++){
+      if(selectedMemberNames == ""){
+        selectedMemberNames = selectedMembers[i].value;
+      }else{
+        selectedMemberNames += ","+selectedMembers[i].value;
+      }
+    }
+  }
+
+     window.open("dataBrowserExport?query=" + encodeURIComponent(queryText) + "&members=" + encodeURIComponent(selectedMemberNames), "_blank");
 }

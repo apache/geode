@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -26,6 +24,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.Random;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -62,7 +61,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;
@@ -83,8 +82,9 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
   private static int instanceCountWithOnePut = 1;
 
-  private static final String REGION_NAME = InstantiatorPropagationDUnitTest.class.getSimpleName() + "_region";
-  
+  private static final String REGION_NAME =
+      InstantiatorPropagationDUnitTest.class.getSimpleName() + "_region";
+
   protected static EventID eventId;
 
   static boolean testEventIDResult = false;
@@ -114,8 +114,8 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new InstantiatorPropagationDUnitTest().createCache(props);
-    Pool p = PoolManager.createFactory().addServer(host, port1.intValue())
-        .setMinConnections(1).setSubscriptionEnabled(true).setPingInterval(200)
+    Pool p = PoolManager.createFactory().addServer(host, port1.intValue()).setMinConnections(1)
+        .setSubscriptionEnabled(true).setPingInterval(200)
         .create("ClientServerInstantiatorRegistrationDUnitTestPool");
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -129,9 +129,9 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
   }
 
   private int initServerCache(VM server) {
-    Object[] args = new Object[] { new Integer(getMaxThreads()) };
-    return ((Integer)server.invoke(InstantiatorPropagationDUnitTest.class,
-        "createServerCache", args)).intValue();
+    Object[] args = new Object[] {new Integer(getMaxThreads())};
+    return ((Integer) server.invoke(InstantiatorPropagationDUnitTest.class, "createServerCache",
+        args)).intValue();
   }
 
   public static Integer createServerCache(Integer maxThreads) throws Exception {
@@ -166,9 +166,9 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
       cache.getDistributedSystem().disconnect();
     }
   }
-  
+
   public static void unregisterInstantiatorsInAllVMs() {
-    Invoke.invokeInEveryVM(()->unregisterInstantiatorsInThisVM());
+    Invoke.invokeInEveryVM(() -> unregisterInstantiatorsInThisVM());
   }
 
   public static void verifyInstantiators(final int numOfInstantiators) {
@@ -181,8 +181,8 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
       public String description() {
         return "expected " + numOfInstantiators + " but got this "
-            + InternalInstantiator.getInstantiators().length
-          + " instantiators=" + java.util.Arrays.toString(InternalInstantiator.getInstantiators());
+            + InternalInstantiator.getInstantiators().length + " instantiators="
+            + java.util.Arrays.toString(InternalInstantiator.getInstantiators());
       }
     };
     Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
@@ -191,254 +191,211 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
   public static void registerTestObject1() throws Exception {
 
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject1");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject1");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject1", e);
     }
   }
 
   public static void registerTestObject2() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject2");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject2");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject2", e);
     }
   }
 
   public static void registerTestObject3() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject3");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject3");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject3", e);
     }
   }
 
   public static void registerTestObject4() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject4");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject4");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject4", e);
     }
   }
 
   public static void registerTestObject5() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject5");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject5");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject5", e);
     }
   }
 
   public static void registerTestObject6() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject6");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject6");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject6", e);
     }
   }
 
   public static void registerTestObject7() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject7");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject7");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject7", e);
     }
   }
 
   public static void registerTestObject8() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject8");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject8");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject8", e);
     }
   }
 
   public static void registerTestObject9() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject9");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject9");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject9", e);
     }
   }
 
   public static void registerTestObject10() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject10");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject10");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject10", e);
     }
   }
 
   public static void registerTestObject11() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject11");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject11");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject11", e);
     }
   }
 
   public static void registerTestObject12() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject12");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject12");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject11", e);
     }
   }
 
   public static void registerTestObject13() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject13");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject13");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject13", e);
     }
   }
 
   public static void registerTestObject14() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject14");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject14");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject14", e);
     }
   }
 
   public static void registerTestObject15() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject15");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject15");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject15", e);
     }
   }
 
   public static void registerTestObject16() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject16");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject16");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject16", e);
     }
   }
 
   public static void registerTestObject17() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject17");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject17");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject17", e);
     }
   }
 
   public static void registerTestObject18() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject18");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject18");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject18", e);
     }
   }
-  
+
   public static void registerTestObject19() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject19");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject19");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject19", e);
     }
   }
 
   public static void registerTestObject20() throws Exception {
     try {
-      Class cls = Class
-          .forName("org.apache.geode.internal.cache.tier.sockets.TestObject20");
-      ConfigurableObject obj = (ConfigurableObject)cls.newInstance();
+      Class cls = Class.forName("org.apache.geode.internal.cache.tier.sockets.TestObject20");
+      ConfigurableObject obj = (ConfigurableObject) cls.newInstance();
       obj.init(0);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception in TestObject20", e);
     }
   }
 
   public static void stopServer() {
     try {
-      assertEquals("Expected exactly one BridgeServer", 1, cache
-          .getCacheServers().size());
-      CacheServerImpl bs = (CacheServerImpl)cache.getCacheServers()
-          .iterator().next();
+      assertEquals("Expected exactly one BridgeServer", 1, cache.getCacheServers().size());
+      CacheServerImpl bs = (CacheServerImpl) cache.getCacheServers().iterator().next();
       assertNotNull(bs);
       bs.stop();
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       fail("while setting stopServer  " + ex);
     }
   }
@@ -446,44 +403,39 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
   public static void startServer() {
     try {
       Cache c = CacheFactory.getAnyInstance();
-      assertEquals("Expected exactly one BridgeServer", 1, c.getCacheServers()
-          .size());
-      CacheServerImpl bs = (CacheServerImpl)c.getCacheServers().iterator()
-          .next();
+      assertEquals("Expected exactly one BridgeServer", 1, c.getCacheServers().size());
+      CacheServerImpl bs = (CacheServerImpl) c.getCacheServers().iterator().next();
       assertNotNull(bs);
       bs.start();
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       fail("while startServer()  " + ex);
     }
   }
 
   /**
-   * In this test the server is up first.2 Instantiators are registered on it.
-   * Verified if the 2 instantiators get propagated to client when client gets
-   * connected.
+   * In this test the server is up first.2 Instantiators are registered on it. Verified if the 2
+   * instantiators get propagated to client when client gets connected.
    */
   @Test
   public void testServerUpFirstClientLater() throws Exception {
     PORT1 = initServerCache(server1);
 
     unregisterInstantiatorsInAllVMs();
-    
+
     Wait.pause(3000);
 
     server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject1());
     server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject2());
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(2)));
 
-    client1
-        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
 
     // // wait for client2 to come online
     Wait.pause(3000);
     //
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(2)));
     //
     // // Put some entries from the client
     client1.invoke(new CacheSerializableRunnable("Put entries from client") {
@@ -496,15 +448,14 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     });
 
     // Run getAll
-    client1
-        .invoke(new CacheSerializableRunnable("Get all entries from server") {
-          public void run2() throws CacheException {
-            // Invoke getAll
-            Region region = cache.getRegion(REGION_NAME);
-            // Verify result size is correct
-            assertEquals(1, region.get(1));
-          }
-        });
+    client1.invoke(new CacheSerializableRunnable("Get all entries from server") {
+      public void run2() throws CacheException {
+        // Invoke getAll
+        Region region = cache.getRegion(REGION_NAME);
+        // Verify result size is correct
+        assertEquals(1, region.get(1));
+      }
+    });
 
     server1.invoke(new CacheSerializableRunnable("Put entry from client") {
       public void run2() throws CacheException {
@@ -528,10 +479,10 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
   }
 
   /**
-   * In this test there are 2 clients and 2 servers.Registered one instantiator
-   * on one client. Verified, if that instantiator gets propagated to the server
-   * the client is connected to(server1), to the other server(server2) in the DS
-   * and the client(client2) that is connected to server2.
+   * In this test there are 2 clients and 2 servers.Registered one instantiator on one client.
+   * Verified, if that instantiator gets propagated to the server the client is connected
+   * to(server1), to the other server(server2) in the DS and the client(client2) that is connected
+   * to server2.
    */
   @Test
   public void testInstantiatorsWith2ClientsN2Servers() throws Exception {
@@ -540,12 +491,10 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
     Wait.pause(3000);
 
-    client1
-        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) ));
-    client2
-        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT2) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
+    client2.invoke(() -> InstantiatorPropagationDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2)));
 
     unregisterInstantiatorsInAllVMs();
 
@@ -556,34 +505,31 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject3());
     Wait.pause(4000);
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
 
-    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
+    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
 
-    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
+    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
 
     unregisterInstantiatorsInAllVMs();
   }
 
   /**
-   * First register an instantiator on client1. Stop the server1. Now register 2
-   * instantiators on server1. Now check that server1,server2,client2 has all 3
-   * instantiators. Client1 should have only 1 instantiator since the server1
-   * was stopped when 2 instantiators were added on it.
+   * First register an instantiator on client1. Stop the server1. Now register 2 instantiators on
+   * server1. Now check that server1,server2,client2 has all 3 instantiators. Client1 should have
+   * only 1 instantiator since the server1 was stopped when 2 instantiators were added on it.
    */
   @Test
   public void testInstantiatorsWithServerKill() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
 
-    client1
-        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) ));
-    client2
-        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT2) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
+    client2.invoke(() -> InstantiatorPropagationDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2)));
 
     unregisterInstantiatorsInAllVMs();
 
@@ -598,39 +544,36 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject5());
     server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject6());
 
-    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
-            instanceCountWithAllPuts) ));
+    server2.invoke(() -> InstantiatorPropagationDUnitTest
+        .verifyInstantiators(new Integer(instanceCountWithAllPuts)));
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
-            instanceCountWithAllPuts) ));
+    server1.invoke(() -> InstantiatorPropagationDUnitTest
+        .verifyInstantiators(new Integer(instanceCountWithAllPuts)));
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
-            instanceCountWithOnePut) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest
+        .verifyInstantiators(new Integer(instanceCountWithOnePut)));
 
-    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
-            instanceCountWithAllPuts) ));
+    client2.invoke(() -> InstantiatorPropagationDUnitTest
+        .verifyInstantiators(new Integer(instanceCountWithAllPuts)));
 
     unregisterInstantiatorsInAllVMs();
   }
 
   /**
-   * 2 clients n 2 servers.Registered instantiators on both client n server to
-   * check if propagation of instantiators to n fro (from client n server) is
-   * taking place.Diff from the previous test in the case that server is not
-   * stopped.So registering an instantiator on server should propagate that to
-   * client as well.
+   * 2 clients n 2 servers.Registered instantiators on both client n server to check if propagation
+   * of instantiators to n fro (from client n server) is taking place.Diff from the previous test in
+   * the case that server is not stopped.So registering an instantiator on server should propagate
+   * that to client as well.
    */
   @Test
   public void testInstantiators() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
 
-    client1
-        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) ));
-    client2
-        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT2) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
+    client2.invoke(() -> InstantiatorPropagationDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2)));
 
     unregisterInstantiatorsInAllVMs();
 
@@ -643,76 +586,72 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     server1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject11());
     Wait.pause(4000);
 
-    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
+    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(2)));
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(2)));
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(2)));
 
-    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(2) ));
+    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(2)));
 
     unregisterInstantiatorsInAllVMs();
   }
 
   /**
-   * Test's Number of Instantiators at all clients & servers with one Server
-   * being stopped and then restarted
+   * Test's Number of Instantiators at all clients & servers with one Server being stopped and then
+   * restarted
    */
   @Ignore("TODO")
   @Test
   public void testInstantiatorsWithServerKillAndReInvoked() throws Exception {
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
-    client1
-        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) ));
-    client2
-        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT2) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
+    client2.invoke(() -> InstantiatorPropagationDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2)));
 
     unregisterInstantiatorsInAllVMs();
 
     client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject7());
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
-            instanceCountWithOnePut) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest
+        .verifyInstantiators(new Integer(instanceCountWithOnePut)));
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
-            instanceCountWithOnePut) ));
+    server1.invoke(() -> InstantiatorPropagationDUnitTest
+        .verifyInstantiators(new Integer(instanceCountWithOnePut)));
 
-    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
-            instanceCountWithOnePut) ));
+    server2.invoke(() -> InstantiatorPropagationDUnitTest
+        .verifyInstantiators(new Integer(instanceCountWithOnePut)));
 
-    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
-            instanceCountWithOnePut) ));
+    client2.invoke(() -> InstantiatorPropagationDUnitTest
+        .verifyInstantiators(new Integer(instanceCountWithOnePut)));
 
     server1.invoke(() -> InstantiatorPropagationDUnitTest.stopServer());
 
     try {
       client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject8());
-    }
-    catch (Exception expected) {// we are putting in a client whose server is
+    } catch (Exception expected) {// we are putting in a client whose server is
       // dead
     }
 
     server1.invoke(() -> InstantiatorPropagationDUnitTest.startServer());
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
-            instanceCountWithAllPuts) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest
+        .verifyInstantiators(new Integer(instanceCountWithAllPuts)));
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
-            instanceCountWithAllPuts) ));
+    server1.invoke(() -> InstantiatorPropagationDUnitTest
+        .verifyInstantiators(new Integer(instanceCountWithAllPuts)));
 
-    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(
-            instanceCountWithAllPuts) ));
+    server2.invoke(() -> InstantiatorPropagationDUnitTest
+        .verifyInstantiators(new Integer(instanceCountWithAllPuts)));
 
     unregisterInstantiatorsInAllVMs();
   }
 
   /**
-   * In this test there are 2 clients connected to 1 server and 1 client
-   * connected to the other server.Registered one instantiator on one
-   * client(client1). Verified, if that instantiator gets propagated to the
-   * server the client is connected to(server1), to client2, to the other
+   * In this test there are 2 clients connected to 1 server and 1 client connected to the other
+   * server.Registered one instantiator on one client(client1). Verified, if that instantiator gets
+   * propagated to the server the client is connected to(server1), to client2, to the other
    * server(server2) in the DS and the client that is connected to server2.
    */
   @Test
@@ -720,12 +659,10 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     PORT1 = initServerCache(server1);
     PORT2 = initServerCache(server2);
 
-    client1
-        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) ));
-    client2
-        .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache( NetworkUtils.getServerHostName(server1.getHost()),
-                new Integer(PORT1) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
+    client2.invoke(() -> InstantiatorPropagationDUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
     createClientCache(NetworkUtils.getServerHostName(server2.getHost()), new Integer(PORT2));
     unregisterInstantiatorsInAllVMs();
 
@@ -735,13 +672,13 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     client1.invoke(() -> InstantiatorPropagationDUnitTest.registerTestObject12());
     Wait.pause(4000);
 
-    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
+    client1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
 
-    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
+    server1.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
 
-    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
+    server2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
 
-    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators( new Integer(1) ));
+    client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyInstantiators(new Integer(1)));
 
     verifyInstantiators(1);
 
@@ -753,10 +690,8 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new InstantiatorPropagationDUnitTest().createCache(props);
-    Pool p = PoolManager.createFactory()
-      .addServer(host, port1.intValue())
-      .setSubscriptionEnabled(true)
-      .create("RegisterInstantiatorEventIdDUnitTestPool");
+    Pool p = PoolManager.createFactory().addServer(host, port1.intValue())
+        .setSubscriptionEnabled(true).create("RegisterInstantiatorEventIdDUnitTestPool");
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
@@ -764,8 +699,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
   }
 
   /**
-   * Test's same eventId being same for the Instantiators at all clients &
-   * servers
+   * Test's same eventId being same for the Instantiators at all clients & servers
    */
   @Ignore("TODO: disabled - the eventID received does not match the sender's eventID.  Why is this a requirement anyway?")
   @Test
@@ -773,12 +707,13 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     PORT1 = initServerCache(server1, 1);
     PORT2 = initServerCache(server2, 2);
 
-    createClientCache_EventId(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1));
+    createClientCache_EventId(NetworkUtils.getServerHostName(server1.getHost()),
+        new Integer(PORT1));
 
     unregisterInstantiatorsInAllVMs();
-    
+
     client2.invoke(() -> InstantiatorPropagationDUnitTest.createClientCache_EventId(
-            NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2) ));
+        NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2)));
     setClientServerObserver1();
     client2.invoke(() -> InstantiatorPropagationDUnitTest.setClientServerObserver2());
 
@@ -786,42 +721,41 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
     Wait.pause(10000);
 
-    Boolean pass = (Boolean)client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyResult());
+    Boolean pass = (Boolean) client2.invoke(() -> InstantiatorPropagationDUnitTest.verifyResult());
     assertTrue("EventId found Different", pass.booleanValue());
 
     PoolImpl.IS_INSTANTIATOR_CALLBACK = false;
   }
-  
+
   @Test
   public void testLazyRegistrationOfInstantiators() throws Exception {
     try {
       PORT1 = initServerCache(server1);
       PORT2 = initServerCache(server2);
-  
+
       unregisterInstantiatorsInAllVMs();
 
       Wait.pause(3000);
-  
-      createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
-          new Integer(PORT1));
-  
-      client2
-          .invoke(() -> InstantiatorPropagationDUnitTest.createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
-                  new Integer(PORT2)));
-  
+
+      createClientCache(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1));
+
+      client2.invoke(() -> InstantiatorPropagationDUnitTest.createClientCache(
+          NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2)));
+
       Wait.pause(3000);
       unregisterInstantiatorsInAllVMs();
-  
+
       assertTestObject20NotLoaded();
       server1.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
       server2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
       client2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
-  
+
       registerTestObject20();
       Wait.pause(5000);
       assertTestObject20Loaded();
       server1.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20Loaded());
-      //server2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20Loaded()); // classes are not initialized after loading in p2p path
+      // server2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20Loaded()); //
+      // classes are not initialized after loading in p2p path
       client2.invoke(() -> InstantiatorPropagationDUnitTest.assertTestObject20NotLoaded());
     } finally {
       unregisterInstantiatorsInAllVMs();
@@ -842,21 +776,17 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
     testEventIDResult = false;
     return new Boolean(temp);
   }
-  
+
   /**
    * this method initializes the appropriate server cache
    */
-  private int initServerCache(VM server, int serverNo)
-  {
-    Object[] args = new Object[] { new Integer(getMaxThreads()) };
+  private int initServerCache(VM server, int serverNo) {
+    Object[] args = new Object[] {new Integer(getMaxThreads())};
     if (serverNo == 1) {
-      return ((Integer)server.invoke(
-          InstantiatorPropagationDUnitTest.class,
+      return ((Integer) server.invoke(InstantiatorPropagationDUnitTest.class,
           "createServerCacheOne", args)).intValue();
-    }
-    else {
-      return ((Integer)server.invoke(
-          InstantiatorPropagationDUnitTest.class,
+    } else {
+      return ((Integer) server.invoke(InstantiatorPropagationDUnitTest.class,
           "createServerCacheTwo", args)).intValue();
     }
   }
@@ -865,8 +795,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
    * This method creates the server cache
    */
   public static Integer createServerCacheTwo(Integer maxThreads) throws Exception {
-    new InstantiatorPropagationDUnitTest()
-        .createCache(new Properties());
+    new InstantiatorPropagationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setMirrorType(MirrorType.KEYS_VALUES);
@@ -886,8 +815,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
    * This method creates the server cache
    */
   public static Integer createServerCacheOne(Integer maxThreads) throws Exception {
-    new InstantiatorPropagationDUnitTest()
-        .createCache(new Properties());
+    new InstantiatorPropagationDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setMirrorType(MirrorType.KEYS_VALUES);
@@ -904,56 +832,53 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
 
   public static void setClientServerObserver1() {
     PoolImpl.IS_INSTANTIATOR_CALLBACK = true;
-    ClientServerObserverHolder
-        .setInstance(new ClientServerObserverAdapter() {
-          public void beforeSendingToServer(EventID eventID)
-          {
-            eventId = eventID;
-            System.out.println("client2= "+client2 + " eventid= "+eventID);
-            client2.invoke(() -> InstantiatorPropagationDUnitTest.setEventId( eventId ));
+    ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      public void beforeSendingToServer(EventID eventID) {
+        eventId = eventID;
+        System.out.println("client2= " + client2 + " eventid= " + eventID);
+        client2.invoke(() -> InstantiatorPropagationDUnitTest.setEventId(eventId));
 
-          }
+      }
 
-        });
+    });
   }
 
   /**
    * sets the EventId value in the VM
    */
-  public static void setEventId(EventID eventID)
-  {
+  public static void setEventId(EventID eventID) {
     eventId = eventID;
   }
-  
-  public static void setClientServerObserver2()
-  {
-    PoolImpl.IS_INSTANTIATOR_CALLBACK = true;
-    ClientServerObserverHolder
-        .setInstance(new ClientServerObserverAdapter() {
-          public void afterReceivingFromServer(EventID eventID)
-          {
-            System.out.println("Observer2 received " + eventID + "; my eventID is " + eventId);
-            testEventIDResult = eventID.equals(eventId);
-          }
 
-        });
+  public static void setClientServerObserver2() {
+    PoolImpl.IS_INSTANTIATOR_CALLBACK = true;
+    ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
+      public void afterReceivingFromServer(EventID eventID) {
+        System.out.println("Observer2 received " + eventID + "; my eventID is " + eventId);
+        testEventIDResult = eventID.equals(eventId);
+      }
+
+    });
   }
 }
+
 
 // TODO: move the following classes to be inner classes
 
 abstract class ConfigurableObject {
   public abstract void init(int index);
+
   public abstract int getIndex();
+
   public abstract void validate(int index);
 }
+
 
 class TestObject1 extends ConfigurableObject implements DataSerializable {
 
   private int field1;
 
-  public TestObject1() {
-  }
+  public TestObject1() {}
 
   /**
    * Initializes a Instantiator1DUnitTestObject1.
@@ -979,8 +904,7 @@ class TestObject1 extends ConfigurableObject implements DataSerializable {
   }
 
   @Override
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -993,12 +917,12 @@ class TestObject1 extends ConfigurableObject implements DataSerializable {
   }
 }
 
+
 class TestObject2 extends ConfigurableObject implements DataSerializable {
 
   private int field1;
 
-  public TestObject2() {
-  }
+  public TestObject2() {}
 
   static {
     Instantiator.register(new Instantiator(TestObject2.class, -100122) {
@@ -1024,8 +948,7 @@ class TestObject2 extends ConfigurableObject implements DataSerializable {
   }
 
   @Override
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -1038,12 +961,12 @@ class TestObject2 extends ConfigurableObject implements DataSerializable {
   }
 }
 
+
 class TestObject3 extends ConfigurableObject implements DataSerializable {
 
   private int field1;
 
-  public TestObject3() {
-  }
+  public TestObject3() {}
 
   static {
     Instantiator.register(new Instantiator(TestObject3.class, -121) {
@@ -1069,8 +992,7 @@ class TestObject3 extends ConfigurableObject implements DataSerializable {
   }
 
   @Override
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -1083,12 +1005,12 @@ class TestObject3 extends ConfigurableObject implements DataSerializable {
   }
 }
 
+
 class TestObject4 extends ConfigurableObject implements DataSerializable {
 
   private int field1;
 
-  public TestObject4() {
-  }
+  public TestObject4() {}
 
   static {
     Instantiator.register(new Instantiator(TestObject4.class, -122) {
@@ -1114,8 +1036,7 @@ class TestObject4 extends ConfigurableObject implements DataSerializable {
   }
 
   @Override
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -1128,12 +1049,12 @@ class TestObject4 extends ConfigurableObject implements DataSerializable {
   }
 }
 
+
 class TestObject5 extends ConfigurableObject implements DataSerializable {
 
   private int field1;
 
-  public TestObject5() {
-  }
+  public TestObject5() {}
 
   static {
     Instantiator.register(new Instantiator(TestObject5.class, -123) {
@@ -1159,8 +1080,7 @@ class TestObject5 extends ConfigurableObject implements DataSerializable {
   }
 
   @Override
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -1173,12 +1093,12 @@ class TestObject5 extends ConfigurableObject implements DataSerializable {
   }
 }
 
+
 class TestObject6 extends ConfigurableObject implements DataSerializable {
 
   private int field1;
 
-  public TestObject6() {
-  }
+  public TestObject6() {}
 
   static {
     Instantiator.register(new Instantiator(TestObject6.class, -124) {
@@ -1201,8 +1121,7 @@ class TestObject6 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1213,12 +1132,12 @@ class TestObject6 extends ConfigurableObject implements DataSerializable {
   }
 }
 
+
 class TestObject7 extends ConfigurableObject implements DataSerializable {
 
   private int field1;
 
-  public TestObject7() {
-  }
+  public TestObject7() {}
 
   static {
     Instantiator.register(new Instantiator(TestObject7.class, -125) {
@@ -1240,8 +1159,7 @@ class TestObject7 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1252,12 +1170,12 @@ class TestObject7 extends ConfigurableObject implements DataSerializable {
   }
 }
 
+
 class TestObject8 extends ConfigurableObject implements DataSerializable {
 
   private int field1;
 
-  public TestObject8() {
-  }
+  public TestObject8() {}
 
   static {
     Instantiator.register(new Instantiator(TestObject8.class, -126) {
@@ -1279,8 +1197,7 @@ class TestObject8 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1291,12 +1208,12 @@ class TestObject8 extends ConfigurableObject implements DataSerializable {
   }
 }
 
+
 class TestObject9 extends ConfigurableObject implements DataSerializable {
 
   private int field1;
 
-  public TestObject9() {
-  }
+  public TestObject9() {}
 
   static {
     Instantiator.register(new Instantiator(TestObject9.class, -127) {
@@ -1318,8 +1235,7 @@ class TestObject9 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1330,12 +1246,12 @@ class TestObject9 extends ConfigurableObject implements DataSerializable {
   }
 }
 
+
 class TestObject10 extends ConfigurableObject implements DataSerializable {
 
   private int field1;
 
-  public TestObject10() {
-  }
+  public TestObject10() {}
 
   static {
     Instantiator.register(new Instantiator(TestObject10.class, -128) {
@@ -1357,8 +1273,7 @@ class TestObject10 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1368,6 +1283,7 @@ class TestObject10 extends ConfigurableObject implements DataSerializable {
     out.writeInt(this.field1);
   }
 }
+
 
 class TestObject11 extends ConfigurableObject implements DataSerializable {
 
@@ -1393,8 +1309,7 @@ class TestObject11 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1404,6 +1319,7 @@ class TestObject11 extends ConfigurableObject implements DataSerializable {
     out.writeInt(this.field1);
   }
 }
+
 
 class TestObject12 extends ConfigurableObject implements DataSerializable {
 
@@ -1429,8 +1345,7 @@ class TestObject12 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1440,6 +1355,7 @@ class TestObject12 extends ConfigurableObject implements DataSerializable {
     out.writeInt(this.field1);
   }
 }
+
 
 class TestObject13 extends ConfigurableObject implements DataSerializable {
 
@@ -1465,8 +1381,7 @@ class TestObject13 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1476,6 +1391,7 @@ class TestObject13 extends ConfigurableObject implements DataSerializable {
     out.writeInt(this.field1);
   }
 }
+
 
 class TestObject14 extends ConfigurableObject implements DataSerializable {
 
@@ -1501,8 +1417,7 @@ class TestObject14 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1512,6 +1427,7 @@ class TestObject14 extends ConfigurableObject implements DataSerializable {
     out.writeInt(this.field1);
   }
 }
+
 
 class TestObject15 extends ConfigurableObject implements DataSerializable {
 
@@ -1537,8 +1453,7 @@ class TestObject15 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1548,6 +1463,7 @@ class TestObject15 extends ConfigurableObject implements DataSerializable {
     out.writeInt(this.field1);
   }
 }
+
 
 class TestObject16 extends ConfigurableObject implements DataSerializable {
 
@@ -1573,8 +1489,7 @@ class TestObject16 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1584,6 +1499,7 @@ class TestObject16 extends ConfigurableObject implements DataSerializable {
     out.writeInt(this.field1);
   }
 }
+
 
 class TestObject17 extends ConfigurableObject implements DataSerializable {
 
@@ -1609,8 +1525,7 @@ class TestObject17 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1620,6 +1535,7 @@ class TestObject17 extends ConfigurableObject implements DataSerializable {
     out.writeInt(this.field1);
   }
 }
+
 
 class TestObject18 extends ConfigurableObject implements DataSerializable {
 
@@ -1645,8 +1561,7 @@ class TestObject18 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1656,6 +1571,7 @@ class TestObject18 extends ConfigurableObject implements DataSerializable {
     out.writeInt(this.field1);
   }
 }
+
 
 class TestObject19 extends ConfigurableObject implements DataSerializable {
 
@@ -1681,8 +1597,7 @@ class TestObject19 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1692,6 +1607,7 @@ class TestObject19 extends ConfigurableObject implements DataSerializable {
     out.writeInt(this.field1);
   }
 }
+
 
 class TestObject20 extends ConfigurableObject implements DataSerializable {
 
@@ -1718,8 +1634,7 @@ class TestObject20 extends ConfigurableObject implements DataSerializable {
     return 1;
   }
 
-  public void validate(int index) {
-  }
+  public void validate(int index) {}
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.field1 = in.readInt();
@@ -1728,5 +1643,5 @@ class TestObject20 extends ConfigurableObject implements DataSerializable {
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.field1);
   }
-  
+
 }

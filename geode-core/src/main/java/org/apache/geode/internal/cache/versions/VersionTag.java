@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.versions;
 
@@ -32,30 +30,29 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 
 /**
- * VersionTags are sent with distribution messages and carry version info
- * for the operation.
+ * VersionTags are sent with distribution messages and carry version info for the operation.
  * <p/>
- * Note that on the receiving end the membership IDs in a version tag will
- * not be references to canonical IDs and should be made so before storing
- * them for any length of time.
+ * Note that on the receiving end the membership IDs in a version tag will not be references to
+ * canonical IDs and should be made so before storing them for any length of time.
  * <p/>
- * This class implements java.io.Serializable for dunit testing.  It should
- * not otherwise be serialized with that mechanism.
+ * This class implements java.io.Serializable for dunit testing. It should not otherwise be
+ * serialized with that mechanism.
  *
  */
-public abstract class VersionTag<T extends VersionSource> implements DataSerializableFixedID, java.io.Serializable, VersionHolder<T> {
+public abstract class VersionTag<T extends VersionSource>
+    implements DataSerializableFixedID, java.io.Serializable, VersionHolder<T> {
   private static final Logger logger = LogService.getLogger();
-  
+
   private static final long serialVersionUID = 9098338414308465271L;
 
   // tag_size represents the tag, but does not count member ID sizes since they are
   // interned in the region version vectors
-  public static final int TAG_SIZE = ReflectionSingleObjectSizer.OBJECT_SIZE +
-          ReflectionSingleObjectSizer.REFERENCE_SIZE * 2 + 23;
+  public static final int TAG_SIZE =
+      ReflectionSingleObjectSizer.OBJECT_SIZE + ReflectionSingleObjectSizer.REFERENCE_SIZE * 2 + 23;
 
   /**
-   * A timestamp that cannot exist due to range restrictions.  This is used
-   * to mark a timestamp as not being real
+   * A timestamp that cannot exist due to range restrictions. This is used to mark a timestamp as
+   * not being real
    */
   public static final long ILLEGAL_VERSION_TIMESTAMP = 0x8000000000000000l;
 
@@ -76,7 +73,7 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
 
   private static final int BITS_ALLOWED_BY_RESOLVER = 0x40;
   // Note: the only valid BITS_* are 0xFFFF.
-  
+
   /**
    * the per-entry version number for the operation
    */
@@ -110,28 +107,26 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   private static final AtomicIntegerFieldUpdater<VersionTag> bitsUpdater =
       AtomicIntegerFieldUpdater.newUpdater(VersionTag.class, "bits");
   /**
-   * boolean bits
-   * Note: this is an int field so it has 32 bits BUT only the lower 16 bits are serialized.
-   * So all our code should treat this an an unsigned short field.
+   * boolean bits Note: this is an int field so it has 32 bits BUT only the lower 16 bits are
+   * serialized. So all our code should treat this an an unsigned short field.
    */
   private volatile int bits;
 
   /**
-   * the initiator of the operation.  If null, the initiator was the sender
-   * of the operation
+   * the initiator of the operation. If null, the initiator was the sender of the operation
    */
   private T memberID;
 
   /**
-   * for Delta operations, the ID of the version stamp on which the delta
-   * is based.  The version number for that stamp is getEntryVersion()-1
+   * for Delta operations, the ID of the version stamp on which the delta is based. The version
+   * number for that stamp is getEntryVersion()-1
    */
   private T previousMemberID;
 
   public boolean isFromOtherMember() {
     return (this.bits & BITS_IS_REMOTE_TAG) != 0;
   }
-  
+
   /** was the timestamp of this tag used to update the cache's timestamp? */
   public boolean isTimeStampUpdated() {
     return (this.bits & BITS_TIMESTAMP_APPLIED) != 0;
@@ -179,11 +174,11 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   }
 
   public long getRegionVersion() {
-    return (((long)regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);  
+    return (((long) regionVersionHighBytes) << 32) | (regionVersionLowBytes & 0x00000000FFFFFFFFL);
   }
 
   /**
-   * set rvv internal bytes.  Used by region entries
+   * set rvv internal bytes. Used by region entries
    */
   public void setRegionVersion(short highBytes, int lowBytes) {
     this.regionVersionHighBytes = highBytes;
@@ -191,14 +186,14 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   }
 
   /**
-   * get rvv internal high byte.  Used by region entries for transferring to storage
+   * get rvv internal high byte. Used by region entries for transferring to storage
    */
   public short getRegionVersionHighBytes() {
     return this.regionVersionHighBytes;
   }
 
   /**
-   * get rvv internal low bytes.  Used by region entries for transferring to storage
+   * get rvv internal low bytes. Used by region entries for transferring to storage
    */
   public int getRegionVersionLowBytes() {
     return this.regionVersionLowBytes;
@@ -217,14 +212,13 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   public boolean isRecorded() {
     return ((this.bits & BITS_RECORDED) != 0);
   }
-  
+
   /**
-   * Set canonical ID objects into this version tag using the DM's cache
-   * of IDs
+   * Set canonical ID objects into this version tag using the DM's cache of IDs
+   * 
    * @param distributionManager
    */
-  public void setCanonicalIDs(DM distributionManager) {
-  }
+  public void setCanonicalIDs(DM distributionManager) {}
 
   /**
    * @return the memberID
@@ -256,10 +250,9 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   }
 
   /**
-   * sets the possible-duplicate flag for this tag.  When a tag has this
-   * bit it means that the cache had seen the operation that was being applied
-   * to it and plucked out the current version stamp to use in propagating
-   * the event to other members and clients.  A member receiving this event
+   * sets the possible-duplicate flag for this tag. When a tag has this bit it means that the cache
+   * had seen the operation that was being applied to it and plucked out the current version stamp
+   * to use in propagating the event to other members and clients. A member receiving this event
    * should not allow duplicate application of the event to the cache.
    */
   public VersionTag setPosDup(boolean flag) {
@@ -276,8 +269,8 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   }
 
   /**
-   * set or clear the flag that this tag was blessed by a
-   * conflict resolver
+   * set or clear the flag that this tag was blessed by a conflict resolver
+   * 
    * @param flag
    * @return this tag
    */
@@ -289,11 +282,11 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
     }
     return this;
   }
-  
+
   public boolean isAllowedByResolver() {
     return (this.bits & BITS_ALLOWED_BY_RESOLVER) != 0;
   }
-  
+
   public int getDistributedSystemId() {
     return this.distributedSystemId;
   }
@@ -303,9 +296,8 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   }
 
   /**
-   * replace null member IDs with the given identifier.  This is used to
-   * incorporate version information into the cache that has been received
-   * from another VM
+   * replace null member IDs with the given identifier. This is used to incorporate version
+   * information into the cache that has been received from another VM
    *
    * @param id
    */
@@ -319,19 +311,19 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   }
 
   /**
-   * returns true if this tag has a previous member ID for delta operation
-   * checks
+   * returns true if this tag has a previous member ID for delta operation checks
    */
   public boolean hasPreviousMemberID() {
     return (this.bits & BITS_HAS_PREVIOUS_ID) != 0;
   }
 
   /**
-   * returns true if entry and region version numbers are not both zero, meaning this
-   * has valid version numbers
+   * returns true if entry and region version numbers are not both zero, meaning this has valid
+   * version numbers
    */
   public boolean hasValidVersion() {
-    return !(this.entryVersion == 0 && this.regionVersionHighBytes == 0 && this.regionVersionLowBytes == 0);
+    return !(this.entryVersion == 0 && this.regionVersionHighBytes == 0
+        && this.regionVersionLowBytes == 0);
   }
 
   public void toData(DataOutput out) throws IOException {
@@ -358,7 +350,8 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
       }
     }
     if (logger.isTraceEnabled(LogMarker.VERSION_TAG)) {
-      logger.info(LogMarker.VERSION_TAG, "serializing {} with flags 0x{}", this.getClass(), Integer.toHexString(flags));
+      logger.info(LogMarker.VERSION_TAG, "serializing {} with flags 0x{}", this.getClass(),
+          Integer.toHexString(flags));
     }
     out.writeShort(flags);
     out.writeShort(this.bits);
@@ -376,7 +369,8 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
     if (this.memberID != null && includeMember) {
       writeMember(this.memberID, out);
     }
-    if (this.previousMemberID != null && (this.previousMemberID != this.memberID || !includeMember)) {
+    if (this.previousMemberID != null
+        && (this.previousMemberID != this.memberID || !includeMember)) {
       writeMember(this.previousMemberID, out);
     }
   }
@@ -384,7 +378,8 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int flags = in.readUnsignedShort();
     if (logger.isTraceEnabled(LogMarker.VERSION_TAG)) {
-      logger.info(LogMarker.VERSION_TAG, "deserializing {} with flags 0x{}", this.getClass(), Integer.toHexString(flags));
+      logger.info(LogMarker.VERSION_TAG, "deserializing {} with flags 0x{}", this.getClass(),
+          Integer.toHexString(flags));
     }
     bitsUpdater.set(this, in.readUnsignedShort());
     this.distributedSystemId = in.readByte();
@@ -410,7 +405,7 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
     }
     setIsRemoteForTesting();
   }
-  
+
   public void setIsRemoteForTesting() {
     setBits(BITS_IS_REMOTE_TAG);
   }
@@ -420,20 +415,12 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   public abstract void writeMember(T memberID, DataOutput out) throws IOException;
 
 
-  public int getSizeInBytes() {
-    int size = org.apache.geode.internal.cache.lru.Sizeable.PER_OBJECT_OVERHEAD + VersionTag.TAG_SIZE;
-    // member size calculation 
-    size += memberID.getSizeInBytes();
-    return size;
-    
-  }
-
   @Override
   public String toString() {
     StringBuilder s = new StringBuilder();
     if (isGatewayTag()) {
-      s.append("{ds=").append(this.distributedSystemId)
-              .append("; time=").append(getVersionTimeStamp()).append("}");
+      s.append("{ds=").append(this.distributedSystemId).append("; time=")
+          .append(getVersionTimeStamp()).append("}");
     } else {
       s.append("{v").append(this.entryVersion);
       s.append("; rv").append(getRegionVersion());
@@ -460,7 +447,7 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
 
 
   /**
-   * @return the time stamp of this operation.  This is an unsigned integer returned as a long
+   * @return the time stamp of this operation. This is an unsigned integer returned as a long
    */
   public long getVersionTimeStamp() {
     return this.timeStamp;
@@ -485,7 +472,7 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
   }
 
   public static VersionTag create(boolean persistent, DataInput in)
-          throws IOException, ClassNotFoundException {
+      throws IOException, ClassNotFoundException {
     VersionTag<?> tag;
     if (persistent) {
       tag = new DiskVersionTag();
@@ -544,7 +531,7 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
     }
     return true;
   }
-  
+
   /**
    * Set any bits in the given bitMask on the bits field
    */
@@ -556,6 +543,7 @@ public abstract class VersionTag<T extends VersionSource> implements DataSeriali
       newBits = oldBits | bitMask;
     } while (!bitsUpdater.compareAndSet(this, oldBits, newBits));
   }
+
   /**
    * Clear any bits not in the given bitMask from the bits field
    */

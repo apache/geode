@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
@@ -21,94 +19,87 @@ import java.util.Map;
 
 
 /**
- * Composite data type used to distribute statistics which can be used to 
- * determine the health of a cache client.
+ * Composite data type used to distribute statistics which can be used to determine the health of a
+ * cache client.
  * 
  * @since GemFire 7.0
  */
 public class ClientHealthStatus {
-  
+
   /**
    * Id of the client
    */
   private String clientId;
-  
+
   /**
    * Name of the client
    */
   private String name;
-  
+
   /**
    * Host Name of the client
    */
   private String hostName;
-  
+
   /**
-   * "numOfGets", IntCounter, "The total number of times a successful get has
-   * been done on this cache." Java: CachePerfStats.gets Native: Not yet Defined
+   * "numOfGets", IntCounter, "The total number of times a successful get has been done on this
+   * cache." Java: CachePerfStats.gets Native: Not yet Defined
    */
   private int numOfGets;
 
   /**
-   * "numOfPuts", IntCounter, "The total number of times an entry is added or
-   * replaced in this cache as a result of a local operation (put(), create(),
-   * or get() which results in load, netsearch, or netloading a value). Note
-   * that this only counts puts done explicitly on this cache. It does not count
-   * updates pushed from other caches." Java: CachePerfStats.puts Native: Not
-   * yet Defined
+   * "numOfPuts", IntCounter, "The total number of times an entry is added or replaced in this cache
+   * as a result of a local operation (put(), create(), or get() which results in load, netsearch,
+   * or netloading a value). Note that this only counts puts done explicitly on this cache. It does
+   * not count updates pushed from other caches." Java: CachePerfStats.puts Native: Not yet Defined
    */
   private int numOfPuts;
-  
+
   /**
-   * Represents number of cache misses in this client. IntCounter, "Total number
-   * of times a get on the cache did not find a value already in local memory."
-   * Java: CachePerfStats.misses
+   * Represents number of cache misses in this client. IntCounter, "Total number of times a get on
+   * the cache did not find a value already in local memory." Java: CachePerfStats.misses
    */
   private int numOfMisses;
-  
+
   /**
-   * Represents number of cache listners calls completed. IntCounter, "Total
-   * number of times a cache listener call has completed."
-   * Java: CachePerfStats.cacheListenerCallsCompleted
+   * Represents number of cache listners calls completed. IntCounter, "Total number of times a cache
+   * listener call has completed." Java: CachePerfStats.cacheListenerCallsCompleted
    */
   private int numOfCacheListenerCalls;
-  
+
   /**
-   * Represents total number of active threads in the client VM. IntCounter,
-   * "Current number of live threads (both daemon and non-daemon) in this VM."
-   * Java: VMStats.threads
+   * Represents total number of active threads in the client VM. IntCounter, "Current number of live
+   * threads (both daemon and non-daemon) in this VM." Java: VMStats.threads
    **/
   private int numOfThreads;
-      
+
   /**
-   * Represents the CPU time used by the process (in nanoseconds). LongCounter,
-   * "CPU timed used by the process in nanoseconds."
-   * Java: VMStats.processCpuTime   
+   * Represents the CPU time used by the process (in nanoseconds). LongCounter, "CPU timed used by
+   * the process in nanoseconds." Java: VMStats.processCpuTime
    **/
   private long processCpuTime;
-  
+
   /**
-   * Represents the number of cpus available to the java VM on its machine. IntCounter,
-   * "Number of cpus available to the java VM on its machine."
-   * Java: VMStats.cpus   
+   * Represents the number of cpus available to the java VM on its machine. IntCounter, "Number of
+   * cpus available to the java VM on its machine." Java: VMStats.cpus
    **/
   private int cpus;
-  
+
   /**
    * client queue sizes
    */
   private int queueSize;
-  
+
   /**
    * Represents time when this snapshot of the client statistics was taken.
    **/
-  private long upTime; 
-  
-  /** 
-  *Whether a durable client is connected or not to the server. 
-  **/ 
-  private boolean connected; 
-  
+  private long upTime;
+
+  /**
+   * Whether a durable client is connected or not to the server.
+   **/
+  private boolean connected;
+
   /**
    * Number of CQS getting executed by the client
    */
@@ -118,12 +109,12 @@ public class ClientHealthStatus {
    * Whether the client has subscriptions enabled true or not..
    **/
   private boolean subscriptionEnabled;
-  
+
 
   /**
    * Represents stats for a poolName .
-   **/  
-  private Map<String, String> clientPoolStatsMap = new HashMap<String , String>(); 
+   **/
+  private Map<String, String> clientPoolStatsMap = new HashMap<String, String>();
 
   /**
    * Returns the number of times a successful get operation has occurred.
@@ -133,11 +124,10 @@ public class ClientHealthStatus {
   }
 
   /**
-   * Returns the number of times an entry was added or replaced in this
-   * cache as a result of a local operation. Operations counted include puts,
-   * creates, and gets which result in loading, net searching, or net loading
-   * a value. The count only includes operations done explicitly on this cache,
-   * not those that are pushed from other caches.
+   * Returns the number of times an entry was added or replaced in this cache as a result of a local
+   * operation. Operations counted include puts, creates, and gets which result in loading, net
+   * searching, or net loading a value. The count only includes operations done explicitly on this
+   * cache, not those that are pushed from other caches.
    */
   public int getNumOfPuts() {
     return numOfPuts;
@@ -184,7 +174,7 @@ public class ClientHealthStatus {
   public long getUpTime() {
     return upTime;
   }
-  
+
   /**
    * Returns the ID of the client.
    */
@@ -200,8 +190,8 @@ public class ClientHealthStatus {
   }
 
   /**
-   * Set the number of times an entry was added or replaced in this
-   * cache as a result of a local operation.
+   * Set the number of times an entry was added or replaced in this cache as a result of a local
+   * operation.
    */
   public void setNumOfPuts(int numOfPuts) {
     this.numOfPuts = numOfPuts;
@@ -269,7 +259,7 @@ public class ClientHealthStatus {
   public int getQueueSize() {
     return queueSize;
   }
-  
+
   /**
    * Returns the name of the client.
    */
@@ -299,14 +289,14 @@ public class ClientHealthStatus {
   }
 
 
-  public Map<String,String > getPoolStats(){
-    return this.clientPoolStatsMap ;
+  public Map<String, String> getPoolStats() {
+    return this.clientPoolStatsMap;
   }
-  
-  public void setPoolStats(Map<String, String> map){
-    this.clientPoolStatsMap = map ;
+
+  public void setPoolStats(Map<String, String> map) {
+    this.clientPoolStatsMap = map;
   }
-  
+
   public boolean isConnected() {
     return connected;
   }
@@ -314,7 +304,7 @@ public class ClientHealthStatus {
   public void setConnected(boolean connected) {
     this.connected = connected;
   }
-  
+
 
   public boolean getSubscriptionEnabled() {
     return subscriptionEnabled;
@@ -335,11 +325,13 @@ public class ClientHealthStatus {
 
   @Override
   public String toString() {
-    return "ClientHealthStatus [clientId=" + clientId + ", name=" + name + ", hostName=" + hostName + ", numOfGets="
-        + numOfGets + ", numOfPuts=" + numOfPuts + ", numOfMisses=" + numOfMisses + ", numOfCacheListenerCalls="
-        + numOfCacheListenerCalls + ", numOfThreads=" + numOfThreads + ", processCpuTime=" + processCpuTime + ", cpus="
-        + cpus + ", queueSize=" + queueSize + ", upTime=" + upTime + ", clientPoolStatsMap=" + clientPoolStatsMap
-        + ", connected=" + connected + " clientCQCount = " + clientCQCount + " subscriptionEnabled = " + subscriptionEnabled + "]";
+    return "ClientHealthStatus [clientId=" + clientId + ", name=" + name + ", hostName=" + hostName
+        + ", numOfGets=" + numOfGets + ", numOfPuts=" + numOfPuts + ", numOfMisses=" + numOfMisses
+        + ", numOfCacheListenerCalls=" + numOfCacheListenerCalls + ", numOfThreads=" + numOfThreads
+        + ", processCpuTime=" + processCpuTime + ", cpus=" + cpus + ", queueSize=" + queueSize
+        + ", upTime=" + upTime + ", clientPoolStatsMap=" + clientPoolStatsMap + ", connected="
+        + connected + " clientCQCount = " + clientCQCount + " subscriptionEnabled = "
+        + subscriptionEnabled + "]";
   }
 
 }

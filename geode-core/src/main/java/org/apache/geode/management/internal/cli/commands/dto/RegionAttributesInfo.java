@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands.dto;
 
@@ -27,20 +25,20 @@ import org.apache.geode.management.internal.cli.util.JsonUtil;
 
 public class RegionAttributesInfo implements CliJsonSerializable {
   private static Map<String, String> nameToDisplayName = new HashMap<String, String>();
-  
+
   static {
-    nameToDisplayName.put("cacheLoader",     "Cache Loader");
-    nameToDisplayName.put("cacheWriter",     "Cache Writer");
-    nameToDisplayName.put("keyConstraint",   "Key Constraint");
+    nameToDisplayName.put("cacheLoader", "Cache Loader");
+    nameToDisplayName.put("cacheWriter", "Cache Writer");
+    nameToDisplayName.put("keyConstraint", "Key Constraint");
     nameToDisplayName.put("valueConstraint", "Value Constraint");
   }
-  
+
   private String cacheLoader;
   private String cacheWriter;
   private String keyConstraint;
   private String valueConstraint;
   private String[] fieldsToSkipOnUI;
-  
+
   public RegionAttributesInfo() {}
 
   /**
@@ -49,23 +47,26 @@ public class RegionAttributesInfo implements CliJsonSerializable {
    * @param keyConstraint
    * @param valueConstraint
    */
-  public RegionAttributesInfo(String cacheLoader, String cacheWriter,
-      String keyConstraint, String valueConstraint) {
+  public RegionAttributesInfo(String cacheLoader, String cacheWriter, String keyConstraint,
+      String valueConstraint) {
     this.cacheLoader = cacheLoader;
     this.cacheWriter = cacheWriter;
     this.keyConstraint = keyConstraint;
     this.valueConstraint = valueConstraint;
   }
-  
+
   public String getCacheLoader() {
     return cacheLoader;
   }
+
   public String getCacheWriter() {
     return cacheWriter;
   }
+
   public String getKeyConstraint() {
     return keyConstraint;
   }
+
   public String getValueConstraint() {
     return valueConstraint;
   }
@@ -74,21 +75,22 @@ public class RegionAttributesInfo implements CliJsonSerializable {
   public String[] getFieldsToSkipOnUI() {
     return fieldsToSkipOnUI;
   }
-  
+
   @Override
-  public void setFieldsToSkipOnUI(String ... fieldsToSkipOnUI) {
+  public void setFieldsToSkipOnUI(String... fieldsToSkipOnUI) {
     this.fieldsToSkipOnUI = fieldsToSkipOnUI;
   }
-  
+
   @Override
   public int getJSId() {
     return CLI_DOMAIN_OBJECT__REGION_ATTR_INFO;
   }
-  
+
   @Override
   public Map<String, String> getFieldNameToDisplayName() {
     return nameToDisplayName;
   }
+
   @Override
   public void fromJson(GfJsonObject objectStateAsjson) {
     this.cacheLoader = JsonUtil.getString(objectStateAsjson, "cacheLoader");
@@ -101,15 +103,11 @@ public class RegionAttributesInfo implements CliJsonSerializable {
   public int hashCode() { // eclipse generated
     final int prime = 31;
     int result = 1;
-    result = prime * result
-        + ((cacheLoader == null) ? 0 : cacheLoader.hashCode());
-    result = prime * result
-        + ((cacheWriter == null) ? 0 : cacheWriter.hashCode());
+    result = prime * result + ((cacheLoader == null) ? 0 : cacheLoader.hashCode());
+    result = prime * result + ((cacheWriter == null) ? 0 : cacheWriter.hashCode());
     result = prime * result + Arrays.hashCode(fieldsToSkipOnUI);
-    result = prime * result
-        + ((keyConstraint == null) ? 0 : keyConstraint.hashCode());
-    result = prime * result
-        + ((valueConstraint == null) ? 0 : valueConstraint.hashCode());
+    result = prime * result + ((keyConstraint == null) ? 0 : keyConstraint.hashCode());
+    result = prime * result + ((valueConstraint == null) ? 0 : valueConstraint.hashCode());
     return result;
   }
 

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.persistence;
 
@@ -51,34 +49,37 @@ import org.apache.geode.internal.logging.LogService;
 /**
  *
  */
-public class PersistentStateQueryMessage extends
-    HighPriorityDistributionMessage implements MessageWithReply {
+public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
+    implements MessageWithReply {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private String regionPath;
   private PersistentMemberID id;
   private int processorId;
   private PersistentMemberID initializingId;
 
   public PersistentStateQueryMessage() {
-    
+
   }
-  
-  public PersistentStateQueryMessage(String regionPath, PersistentMemberID id, PersistentMemberID initializingId, int processorId) {
+
+  public PersistentStateQueryMessage(String regionPath, PersistentMemberID id,
+      PersistentMemberID initializingId, int processorId) {
     this.regionPath = regionPath;
     this.id = id;
     this.initializingId = initializingId;
     this.processorId = processorId;
   }
 
-  public static PersistentStateQueryResults send(
-      Set<InternalDistributedMember> members, DM dm, String regionPath,
-      PersistentMemberID persistentId, PersistentMemberID initializingId) throws ReplyException {
-    PersistentStateQueryReplyProcessor processor = new PersistentStateQueryReplyProcessor(dm, members);
-    PersistentStateQueryMessage msg = new PersistentStateQueryMessage(regionPath, persistentId, initializingId, processor.getProcessorId());
+  public static PersistentStateQueryResults send(Set<InternalDistributedMember> members, DM dm,
+      String regionPath, PersistentMemberID persistentId, PersistentMemberID initializingId)
+      throws ReplyException {
+    PersistentStateQueryReplyProcessor processor =
+        new PersistentStateQueryReplyProcessor(dm, members);
+    PersistentStateQueryMessage msg = new PersistentStateQueryMessage(regionPath, persistentId,
+        initializingId, processor.getProcessorId());
     msg.setRecipients(members);
-    
+
     dm.putOutgoing(msg);
     processor.waitForRepliesUninterruptibly();
     return processor.results;
@@ -86,8 +87,8 @@ public class PersistentStateQueryMessage extends
 
   @Override
   protected void process(DistributionManager dm) {
-    int oldLevel =         // Set thread local flag to allow entrance through initialization Latch
-      LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+    int oldLevel = // Set thread local flag to allow entrance through initialization Latch
+        LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
 
     PersistentMemberState state = null;
     PersistentMemberID myId = null;
@@ -103,19 +104,20 @@ public class PersistentStateQueryMessage extends
       Cache cache = CacheFactory.getInstance(dm.getSystem());
       Region region = cache.getRegion(this.regionPath);
       PersistenceAdvisor persistenceAdvisor = null;
-      if(region instanceof DistributedRegion) {
+      if (region instanceof DistributedRegion) {
         persistenceAdvisor = ((DistributedRegion) region).getPersistenceAdvisor();
-      } else if ( region == null) {
-        Bucket proxy = PartitionedRegionHelper.getProxyBucketRegion(GemFireCacheImpl.getInstance(), this.regionPath, false);
-        if(proxy != null) {
+      } else if (region == null) {
+        Bucket proxy = PartitionedRegionHelper.getProxyBucketRegion(GemFireCacheImpl.getInstance(),
+            this.regionPath, false);
+        if (proxy != null) {
           persistenceAdvisor = proxy.getPersistenceAdvisor();
         }
       }
-      if(persistenceAdvisor != null) {
-        if(id != null) {
+      if (persistenceAdvisor != null) {
+        if (id != null) {
           state = persistenceAdvisor.getPersistedStateOfMember(id);
         }
-        if(initializingId != null && state == null) {
+        if (initializingId != null && state == null) {
           state = persistenceAdvisor.getPersistedStateOfMember(initializingId);
         }
         myId = persistenceAdvisor.getPersistentID();
@@ -126,25 +128,22 @@ public class PersistentStateQueryMessage extends
       }
     } catch (RegionDestroyedException e) {
       logger.debug("<RegionDestroyed> {}", this);
-    }
-    catch (CancelException e) {
+    } catch (CancelException e) {
       logger.debug("<CancelException> {}", this);
-    }
-    catch(VirtualMachineError e) {
+    } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
-    }
-    catch(Throwable t) {
+    } catch (Throwable t) {
       SystemFailure.checkFailure();
       exception = new ReplyException(t);
-    }
-    finally {
+    } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
       ReplyMessage replyMsg;
-      if(successfulReply) {
-        PersistentStateQueryReplyMessage persistentReplyMessage = new PersistentStateQueryReplyMessage();
+      if (successfulReply) {
+        PersistentStateQueryReplyMessage persistentReplyMessage =
+            new PersistentStateQueryReplyMessage();
         persistentReplyMessage.myId = myId;
-        persistentReplyMessage.persistedStateOfPeer= state;
+        persistentReplyMessage.persistedStateOfPeer = state;
         persistentReplyMessage.myInitializingId = myInitializingId;
         persistentReplyMessage.diskStoreId = diskStoreId;
         persistentReplyMessage.onlineMembers = onlineMembers;
@@ -154,10 +153,10 @@ public class PersistentStateQueryMessage extends
       }
       replyMsg.setProcessorId(processorId);
       replyMsg.setRecipient(getSender());
-      if(exception != null) {
+      if (exception != null) {
         replyMsg.setException(exception);
       }
-      if(logger.isDebugEnabled()) {
+      if (logger.isDebugEnabled()) {
         logger.debug("Received {},replying with {}", this, replyMsg);
       }
       dm.putOutgoing(replyMsg);
@@ -167,20 +166,19 @@ public class PersistentStateQueryMessage extends
   public int getDSFID() {
     return PERSISTENT_STATE_QUERY_REQUEST;
   }
-  
+
   @Override
-  public void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     regionPath = DataSerializer.readString(in);
     processorId = in.readInt();
     boolean hasId = in.readBoolean();
-    if(hasId) {
+    if (hasId) {
       id = new PersistentMemberID();
       id.fromData(in);
     }
     boolean hasInitializingId = in.readBoolean();
-    if(hasInitializingId) {
+    if (hasInitializingId) {
       initializingId = new PersistentMemberID();
       initializingId.fromData(in);
     }
@@ -192,37 +190,39 @@ public class PersistentStateQueryMessage extends
     DataSerializer.writeString(regionPath, out);
     out.writeInt(processorId);
     out.writeBoolean(id != null);
-    if(id != null) {
+    if (id != null) {
       id.toData(out);
     }
     out.writeBoolean(initializingId != null);
-    if(initializingId != null) {
+    if (initializingId != null) {
       initializingId.toData(out);
     }
   }
-  
+
   @Override
   public String toString() {
-    return super.toString() + ",id=" + id + ",regionPath=" + regionPath + ",initializingId=" + initializingId; 
+    return super.toString() + ",id=" + id + ",regionPath=" + regionPath + ",initializingId="
+        + initializingId;
   }
-  
+
   private static class PersistentStateQueryReplyProcessor extends ReplyProcessor21 {
     PersistentStateQueryResults results = new PersistentStateQueryResults();
 
     public PersistentStateQueryReplyProcessor(DM dm, Collection initMembers) {
       super(dm, initMembers);
     }
-    
+
     @Override
     public void process(DistributionMessage msg) {
-      if(msg instanceof PersistentStateQueryReplyMessage) {
+      if (msg instanceof PersistentStateQueryReplyMessage) {
         PersistentStateQueryReplyMessage reply = (PersistentStateQueryReplyMessage) msg;
-        results.addResult(reply.persistedStateOfPeer, reply.getSender(), reply.myId, reply.myInitializingId, reply.diskStoreId, reply.onlineMembers);
-       }
+        results.addResult(reply.persistedStateOfPeer, reply.getSender(), reply.myId,
+            reply.myInitializingId, reply.diskStoreId, reply.onlineMembers);
+      }
       super.process(msg);
     }
   }
-  
+
   public static class PersistentStateQueryReplyMessage extends ReplyMessage {
     public HashSet<PersistentMemberID> onlineMembers;
     public DiskStoreID diskStoreId;
@@ -236,29 +236,28 @@ public class PersistentStateQueryMessage extends
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       boolean hasId = in.readBoolean();
-      if(hasId) {
+      if (hasId) {
         myId = new PersistentMemberID();
         myId.fromData(in);
       }
       boolean hasState = in.readBoolean();
-      if(hasState) {
+      if (hasState) {
         persistedStateOfPeer = PersistentMemberState.fromData(in);
       }
       boolean hasInitializingId = in.readBoolean();
-      if(hasInitializingId) {
+      if (hasInitializingId) {
         myInitializingId = new PersistentMemberID();
         myInitializingId.fromData(in);
       }
       boolean hasDiskStoreID = in.readBoolean();
-      if(hasDiskStoreID) {
+      if (hasDiskStoreID) {
         diskStoreId = new DiskStoreID(in.readLong(), in.readLong());
       }
       boolean hasOnlineMembers = in.readBoolean();
-      if(hasOnlineMembers) {
+      if (hasOnlineMembers) {
         onlineMembers = DataSerializer.readHashSet(in);
       }
     }
@@ -266,42 +265,43 @@ public class PersistentStateQueryMessage extends
     @Override
     public void toData(DataOutput out) throws IOException {
       super.toData(out);
-      if(myId == null) {
+      if (myId == null) {
         out.writeBoolean(false);
       } else {
         out.writeBoolean(true);
         myId.toData(out);
       }
-      if(persistedStateOfPeer == null) {
+      if (persistedStateOfPeer == null) {
         out.writeBoolean(false);
       } else {
         out.writeBoolean(true);
         persistedStateOfPeer.toData(out);
       }
-      if(myInitializingId== null) {
+      if (myInitializingId == null) {
         out.writeBoolean(false);
       } else {
         out.writeBoolean(true);
         myInitializingId.toData(out);
       }
-      if(diskStoreId== null) {
+      if (diskStoreId == null) {
         out.writeBoolean(false);
       } else {
         out.writeBoolean(true);
         out.writeLong(diskStoreId.getMostSignificantBits());
         out.writeLong(diskStoreId.getLeastSignificantBits());
       }
-      if(onlineMembers== null) {
+      if (onlineMembers == null) {
         out.writeBoolean(false);
       } else {
         out.writeBoolean(true);
         DataSerializer.writeHashSet(onlineMembers, out);
       }
     }
-    
+
     @Override
     public String toString() {
-      return super.toString() + ",myId=" + myId + ",myInitializingId=" + myInitializingId + ",persistedStateOfPeer=" + persistedStateOfPeer; 
+      return super.toString() + ",myId=" + myId + ",myInitializingId=" + myInitializingId
+          + ",persistedStateOfPeer=" + persistedStateOfPeer;
     }
   }
 }

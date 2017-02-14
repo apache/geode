@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.auth;
 
@@ -30,7 +28,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests GMSAuthenticator using old security.
  */
-@Category({ UnitTest.class, SecurityTest.class })
+@Category({UnitTest.class, SecurityTest.class})
 public class GMSAuthenticatorWithAuthenticatorTest extends AbstractGMSAuthenticatorTestCase {
 
   @Override
@@ -98,25 +96,32 @@ public class GMSAuthenticatorWithAuthenticatorTest extends AbstractGMSAuthentica
   public void getCredentialsShouldThrowIfPeerAuthInitDoesNotExist() throws Exception {
     String authInit = getClass().getName() + "$NotExistAuth.create";
     props.setProperty(SECURITY_PEER_AUTH_INIT, authInit);
-    assertThatThrownBy(() -> authenticator.getCredentials(member, props)).hasMessageContaining("Instance could not be obtained from");
+    assertThatThrownBy(() -> authenticator.getCredentials(member, props))
+        .hasMessageContaining("Instance could not be obtained from");
   }
 
   @Test
   public void getCredentialsShouldThrowIfPeerAuthInitCreateReturnsNull() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTH_INIT, AuthInitCreateReturnsNull.class.getName() + ".create");
-    assertThatThrownBy(() -> authenticator.getCredentials(member, props)).hasMessageContaining("Instance could not be obtained from");
+    props.setProperty(SECURITY_PEER_AUTH_INIT,
+        AuthInitCreateReturnsNull.class.getName() + ".create");
+    assertThatThrownBy(() -> authenticator.getCredentials(member, props))
+        .hasMessageContaining("Instance could not be obtained from");
   }
 
   @Test
   public void getCredentialsShouldThrowIfPeerAuthInitGetCredentialsAndInitThrow() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTH_INIT, AuthInitGetCredentialsAndInitThrow.class.getName() + ".create");
-    assertThatThrownBy(() -> authenticator.getCredentials(member, props)).hasMessageContaining("expected init error");
+    props.setProperty(SECURITY_PEER_AUTH_INIT,
+        AuthInitGetCredentialsAndInitThrow.class.getName() + ".create");
+    assertThatThrownBy(() -> authenticator.getCredentials(member, props))
+        .hasMessageContaining("expected init error");
   }
 
   @Test
   public void getCredentialsShouldThrowIfPeerAuthInitGetCredentialsThrows() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTH_INIT, AuthInitGetCredentialsThrows.class.getName() + ".create");
-    assertThatThrownBy(() -> authenticator.getCredentials(member, props)).hasMessageContaining("expected get credential error");
+    props.setProperty(SECURITY_PEER_AUTH_INIT,
+        AuthInitGetCredentialsThrows.class.getName() + ".create");
+    assertThatThrownBy(() -> authenticator.getCredentials(member, props))
+        .hasMessageContaining("expected get credential error");
   }
 
   @Test
@@ -137,7 +142,7 @@ public class GMSAuthenticatorWithAuthenticatorTest extends AbstractGMSAuthentica
   @Test
   public void authenticateShouldReturnNullIfPeerAuthenticatorIsNull() throws Exception {
     String result = authenticator.authenticate(member, props, props);
-    //assertThat(result).isNull(); // NOTE: old security used to return null
+    // assertThat(result).isNull(); // NOTE: old security used to return null
     assertThat(result).contains("Security check failed. Instance could not be obtained from null");
   }
 
@@ -145,12 +150,13 @@ public class GMSAuthenticatorWithAuthenticatorTest extends AbstractGMSAuthentica
   public void authenticateShouldReturnNullIfPeerAuthenticatorIsEmpty() throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, "");
     String result = authenticator.authenticate(member, props, props);
-    //assertThat(result).isNull(); // NOTE: old security used to return null
+    // assertThat(result).isNull(); // NOTE: old security used to return null
     assertThat(result).contains("Security check failed. Instance could not be obtained from");
   }
 
   @Test
-  public void authenticateShouldReturnFailureMessageIfPeerAuthenticatorDoesNotExist() throws Exception {
+  public void authenticateShouldReturnFailureMessageIfPeerAuthenticatorDoesNotExist()
+      throws Exception {
     props.setProperty(SECURITY_PEER_AUTHENTICATOR, getClass().getName() + "$NotExistAuth.create");
     String result = authenticator.authenticate(member, props, props);
     assertThat(result).startsWith("Security check failed. Instance could not be obtained from");
@@ -158,28 +164,32 @@ public class GMSAuthenticatorWithAuthenticatorTest extends AbstractGMSAuthentica
 
   @Test
   public void authenticateShouldReturnFailureMessageIfAuthenticateReturnsNull() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorReturnsNulls.class.getName() + ".create");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR,
+        AuthenticatorReturnsNulls.class.getName() + ".create");
     String result = authenticator.authenticate(member, props, props);
     assertThat(result).startsWith("Security check failed. Instance could not be obtained");
   }
 
   @Test
   public void authenticateShouldReturnFailureMessageIfNullCredentials() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorReturnsNulls.class.getName() + ".create");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR,
+        AuthenticatorReturnsNulls.class.getName() + ".create");
     String result = authenticator.authenticate(member, null, props);
     assertThat(result).startsWith("Failed to find credentials from");
   }
 
   @Test
   public void authenticateShouldReturnFailureMessageIfAuthenticateInitThrows() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorInitThrows.class.getName() + ".create");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR,
+        AuthenticatorInitThrows.class.getName() + ".create");
     String result = authenticator.authenticate(member, props, props);
     assertThat(result).startsWith("Security check failed. expected init error");
   }
 
   @Test
   public void authenticateShouldReturnFailureMessageIfAuthenticateThrows() throws Exception {
-    props.setProperty(SECURITY_PEER_AUTHENTICATOR, AuthenticatorAuthenticateThrows.class.getName() + ".create");
+    props.setProperty(SECURITY_PEER_AUTHENTICATOR,
+        AuthenticatorAuthenticateThrows.class.getName() + ".create");
     String result = authenticator.authenticate(member, props, props);
     assertThat(result).startsWith("Security check failed. expected authenticate error");
   }

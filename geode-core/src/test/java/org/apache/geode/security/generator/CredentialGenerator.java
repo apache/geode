@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.security.generator;
 
@@ -34,8 +32,8 @@ import org.apache.geode.security.templates.LdapUserAuthenticator;
 import org.apache.geode.security.templates.PKCSAuthenticator;
 
 /**
- * Encapsulates obtaining valid and invalid credentials. Implementations will be
- * for different kinds of authentication schemes.
+ * Encapsulates obtaining valid and invalid credentials. Implementations will be for different kinds
+ * of authentication schemes.
  * 
  * @since GemFire 5.5
  */
@@ -44,28 +42,25 @@ public abstract class CredentialGenerator {
   private static final Logger logger = LogService.getLogger();
 
   /**
-   * A set of properties that should be added to the Gemfire system properties
-   * before using the authentication module.
+   * A set of properties that should be added to the Gemfire system properties before using the
+   * authentication module.
    */
   private Properties systemProperties = null;
 
   /**
-   * A set of properties that should be added to the java system properties
-   * before using the authentication module.
+   * A set of properties that should be added to the java system properties before using the
+   * authentication module.
    */
   protected Properties javaProperties = null;
 
   /**
-   * A factory method to create a new instance of an {@link CredentialGenerator}
-   * for the given {@link ClassCode}. Caller is supposed to invoke
-   * {@link CredentialGenerator#init} immediately after obtaining the instance.
+   * A factory method to create a new instance of an {@link CredentialGenerator} for the given
+   * {@link ClassCode}. Caller is supposed to invoke {@link CredentialGenerator#init} immediately
+   * after obtaining the instance.
    * 
-   * @param  classCode
-   *         the {@code ClassCode} of the {@code CredentialGenerator}
-   *         implementation
+   * @param classCode the {@code ClassCode} of the {@code CredentialGenerator} implementation
    * 
-   * @return an instance of {@code CredentialGenerator} for the given class
-   *         code
+   * @return an instance of {@code CredentialGenerator} for the given class code
    */
   public static CredentialGenerator create(final ClassCode classCode) {
     switch (classCode.classType) {
@@ -74,8 +69,8 @@ public abstract class CredentialGenerator {
       // return new DummyCredentialGenerator();
       case ClassCode.ID_LDAP:
         return new LdapUserCredentialGenerator();
-        // case ClassCode.ID_SSL:ø
-        // return new SSLCredentialGenerator();
+      // case ClassCode.ID_SSL:ø
+      // return new SSLCredentialGenerator();
       case ClassCode.ID_PKCS:
         return new PKCSCredentialGenerator();
       default:
@@ -86,8 +81,7 @@ public abstract class CredentialGenerator {
   /**
    * Initialize the credential generator.
    *
-   * @throws IllegalArgumentException when there is a problem during
-   *         initialization
+   * @throws IllegalArgumentException when there is a problem during initialization
    */
   public void init() throws IllegalArgumentException {
     this.systemProperties = initialize();
@@ -95,16 +89,16 @@ public abstract class CredentialGenerator {
   }
 
   /**
-   * @return A set of extra properties that should be added to Gemfire system
-   *         properties when not null.
+   * @return A set of extra properties that should be added to Gemfire system properties when not
+   *         null.
    */
   public Properties getSystemProperties() {
     return this.systemProperties;
   }
 
   /**
-   * @return A set of extra properties that should be added to Gemfire system
-   *         properties when not null.
+   * @return A set of extra properties that should be added to Gemfire system properties when not
+   *         null.
    */
   public Properties getJavaProperties() {
     return this.javaProperties;
@@ -118,16 +112,16 @@ public abstract class CredentialGenerator {
   public abstract ClassCode classCode();
 
   /**
-   * The name of the {@link AuthInitialize} factory function that should be used
-   * in conjunction with the credentials generated by this generator.
+   * The name of the {@link AuthInitialize} factory function that should be used in conjunction with
+   * the credentials generated by this generator.
    * 
    * @return name of the {@code AuthInitialize} factory function
    */
   public abstract String getAuthInit();
 
   /**
-   * The name of the {@link Authenticator} factory function that should be used
-   * in conjunction with the credentials generated by this generator.
+   * The name of the {@link Authenticator} factory function that should be used in conjunction with
+   * the credentials generated by this generator.
    * 
    * @return name of the {@code Authenticator} factory function
    */
@@ -141,8 +135,7 @@ public abstract class CredentialGenerator {
   /**
    * Get a set of valid credentials for the given {@link Principal}.
    * 
-   * @return credentials for the given {@code Principal} or null if none
-   *         possible.
+   * @return credentials for the given {@code Principal} or null if none possible.
    */
   public abstract Properties getValidCredentials(final Principal principal);
 
@@ -152,47 +145,45 @@ public abstract class CredentialGenerator {
   public abstract Properties getInvalidCredentials(final int index);
 
   /**
-   * Initialize the credential generator. This is provided separately from the
-   * {@link #init()} method for convenience of implementations so that they do not
-   * need to store in {@link #systemProperties}. The latter is convenient for the users
-   * who do not need to store these properties rather can obtain it later by
-   * invoking {@link #getSystemProperties()}
+   * Initialize the credential generator. This is provided separately from the {@link #init()}
+   * method for convenience of implementations so that they do not need to store in
+   * {@link #systemProperties}. The latter is convenient for the users who do not need to store
+   * these properties rather can obtain it later by invoking {@link #getSystemProperties()}
    *
-   * <p>Required to be implemented by concrete classes that implement this abstract
-   * class.
+   * <p>
+   * Required to be implemented by concrete classes that implement this abstract class.
    *
-   * @return A set of extra properties that should be added to Gemfire system
-   *         properties when not null.
+   * @return A set of extra properties that should be added to Gemfire system properties when not
+   *         null.
    *
-   * @throws IllegalArgumentException when there is a problem during
-   *         initialization
+   * @throws IllegalArgumentException when there is a problem during initialization
    */
   protected abstract Properties initialize() throws IllegalArgumentException;
 
   /**
    * Enumeration for various {@link CredentialGenerator} implementations.
    *
-   * <p>The following schemes are supported as of now:
-   * {@code DummyAuthenticator}, {@code LdapUserAuthenticator},
-   * {@code PKCSAuthenticator}. In addition SSL socket mode with mutual
-   * authentication is also supported.
+   * <p>
+   * The following schemes are supported as of now: {@code DummyAuthenticator},
+   * {@code LdapUserAuthenticator}, {@code PKCSAuthenticator}. In addition SSL socket mode with
+   * mutual authentication is also supported.
    *
-   * <p>To add a new authentication scheme the following needs to be done:
+   * <p>
+   * To add a new authentication scheme the following needs to be done:
    * <ul>
-   * <li>Add implementations for {@link AuthInitialize} and
-   * {@link Authenticator} classes for clients/peers.</li>
-   * <li>Add a new enumeration value for the scheme in this class. Notice the
-   * size of {@code VALUES} array and increase that if it is getting
-   * overflowed. Note the methods and fields for existing schemes and add for
-   * the new one in a similar manner.</li>
+   * <li>Add implementations for {@link AuthInitialize} and {@link Authenticator} classes for
+   * clients/peers.</li>
+   * <li>Add a new enumeration value for the scheme in this class. Notice the size of {@code VALUES}
+   * array and increase that if it is getting overflowed. Note the methods and fields for existing
+   * schemes and add for the new one in a similar manner.</li>
    * <li>Add an implementation for {@link CredentialGenerator}.</li>
    * <li>Modify the CredentialGenerator.Factory#create [no such Factory exists] method to add
-   * creation of an instance of the new implementation for the
-   * {@code ClassCode} enumeration value.</li>
+   * creation of an instance of the new implementation for the {@code ClassCode} enumeration
+   * value.</li>
    * </ul>
    *
-   * <p>All security dunit tests will automagically start testing the new
-   * implementation after this.
+   * <p>
+   * All security dunit tests will automagically start testing the new implementation after this.
    *
    * @since GemFire 5.5
    */
@@ -208,9 +199,12 @@ public abstract class CredentialGenerator {
     private static final ClassCode[] VALUES = new ClassCode[10];
     private static final Map CODE_NAME_MAP = new HashMap();
 
-    public static final ClassCode DUMMY = new ClassCode(DummyAuthenticator.class.getName() + ".create", ID_DUMMY);
-    public static final ClassCode LDAP = new ClassCode(LdapUserAuthenticator.class.getName() + ".create", ID_LDAP);
-    public static final ClassCode PKCS = new ClassCode(PKCSAuthenticator.class.getName() + ".create", ID_PKCS);
+    public static final ClassCode DUMMY =
+        new ClassCode(DummyAuthenticator.class.getName() + ".create", ID_DUMMY);
+    public static final ClassCode LDAP =
+        new ClassCode(LdapUserAuthenticator.class.getName() + ".create", ID_LDAP);
+    public static final ClassCode PKCS =
+        new ClassCode(PKCSAuthenticator.class.getName() + ".create", ID_PKCS);
     public static final ClassCode SSL = new ClassCode("SSL", ID_SSL);
 
     /** The name of this class. */
@@ -306,7 +300,7 @@ public abstract class CredentialGenerator {
       if (!(obj instanceof ClassCode)) {
         return false;
       }
-      final ClassCode other = (ClassCode)obj;
+      final ClassCode other = (ClassCode) obj;
       return other.ordinal == this.ordinal;
     }
 
@@ -320,8 +314,7 @@ public abstract class CredentialGenerator {
     }
 
     /**
-     * Returns a hash code value for this {@code ClassCode} which is the
-     * same as its ordinal.
+     * Returns a hash code value for this {@code ClassCode} which is the same as its ordinal.
      *
      * @return the ordinal of this operation.
      */

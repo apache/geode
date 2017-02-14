@@ -1,23 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.internal;
 
-//import org.apache.geode.admin.DistributedSystemConfig;
-//import org.apache.geode.admin.ManagedEntity;
+// import org.apache.geode.admin.DistributedSystemConfig;
+// import org.apache.geode.admin.ManagedEntity;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -28,15 +26,13 @@ import java.io.File;
 import java.net.*;
 
 /**
- * The abstract superclass of objects that configure a managed entity
- * such as a GemFire cache server or a distribution locator.
- * It contains configuration state and behavior common to all managed
+ * The abstract superclass of objects that configure a managed entity such as a GemFire cache server
+ * or a distribution locator. It contains configuration state and behavior common to all managed
  * entities.
  *
  * @since GemFire 4.0
  */
-public abstract class ManagedEntityConfigImpl
-  implements ManagedEntityConfig {
+public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
 
   /** The name of the host on which the managed entity runs */
   private String host;
@@ -50,23 +46,26 @@ public abstract class ManagedEntityConfigImpl
   /** Command used to launch locator on remote machine */
   private String remoteCommand;
 
-  /** The managed entity configured by this object.
+  /**
+   * The managed entity configured by this object.
    *
-   * @see #isReadOnly */
+   * @see #isReadOnly
+   */
   private InternalManagedEntity entity = null;
 
-  /////////////////////  Static Methods  /////////////////////
+  ///////////////////// Static Methods /////////////////////
 
   /**
-   * Returns the {@linkplain InetAddress#getCanonicalHostName
-   * canonical name} of the local machine.
+   * Returns the {@linkplain InetAddress#getCanonicalHostName canonical name} of the local machine.
    */
   protected static String getLocalHostName() {
     try {
       return SocketCreator.getLocalHost().getCanonicalHostName();
 
     } catch (UnknownHostException ex) {
-      IllegalStateException ex2 = new IllegalStateException(LocalizedStrings.ManagedEntityConfigImpl_COULD_NOT_DETERMINE_LOCALHOST.toLocalizedString());
+      IllegalStateException ex2 = new IllegalStateException(
+          LocalizedStrings.ManagedEntityConfigImpl_COULD_NOT_DETERMINE_LOCALHOST
+              .toLocalizedString());
       ex2.initCause(ex);
       throw ex2;
     }
@@ -81,14 +80,14 @@ public abstract class ManagedEntityConfigImpl
   }
 
   /**
-   * Returns the location of the GemFire product installation.  This
-   * is determined by finding the location of the gemfire jar
-   * and working backwards.
+   * Returns the location of the GemFire product installation. This is determined by finding the
+   * location of the gemfire jar and working backwards.
    */
   private static File getGemFireInstallation() {
     URL url = GemFireVersion.getJarURL();
     if (url == null) {
-      throw new IllegalStateException(LocalizedStrings.ManagedEntityConfigImpl_COULD_NOT_FIND_GEMFIREJAR.toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.ManagedEntityConfigImpl_COULD_NOT_FIND_GEMFIREJAR.toLocalizedString());
     }
 
     File gemfireJar = new File(url.getPath());
@@ -98,36 +97,32 @@ public abstract class ManagedEntityConfigImpl
     return product;
   }
 
-  //////////////////////  Constructors  //////////////////////
+  ////////////////////// Constructors //////////////////////
 
   /**
-   * Creates a <code>ManagedEntityConfigImpl</code> with the default
-   * configuration.
+   * Creates a <code>ManagedEntityConfigImpl</code> with the default configuration.
    */
   protected ManagedEntityConfigImpl() {
     this.host = getLocalHostName();
-    this.workingDirectory =
-      getCurrentWorkingDirectory().getAbsolutePath(); 
-    this.productDirectory =
-      getGemFireInstallation().getAbsolutePath();
-    this.remoteCommand = null;  // Delegate to AdminDistributedSystem
+    this.workingDirectory = getCurrentWorkingDirectory().getAbsolutePath();
+    this.productDirectory = getGemFireInstallation().getAbsolutePath();
+    this.remoteCommand = null; // Delegate to AdminDistributedSystem
   }
 
   /**
-   * Creates a new <code>ManagedEntityConfigImpl</code> based on the
-   * configuration of a running <code>GemFireVM</code>
+   * Creates a new <code>ManagedEntityConfigImpl</code> based on the configuration of a running
+   * <code>GemFireVM</code>
    */
   protected ManagedEntityConfigImpl(GemFireVM vm) {
     this.host = SocketCreator.getHostName(vm.getHost());
     this.workingDirectory = vm.getWorkingDirectory().getAbsolutePath();
-    this.productDirectory = vm.getGemFireDir().getAbsolutePath();
+    this.productDirectory = vm.getGeodeHomeDir().getAbsolutePath();
     this.remoteCommand = null;
   }
 
   /**
-   * A copy constructor that creates a new
-   * <code>ManagedEntityConfigImpl</code> with the same configuration
-   * as another <code>ManagedEntityConfig</code>.
+   * A copy constructor that creates a new <code>ManagedEntityConfigImpl</code> with the same
+   * configuration as another <code>ManagedEntityConfig</code>.
    */
   protected ManagedEntityConfigImpl(ManagedEntityConfig other) {
     this.host = other.getHost();
@@ -136,32 +131,33 @@ public abstract class ManagedEntityConfigImpl
     this.remoteCommand = other.getRemoteCommand();
   }
 
-  ////////////////////  Instance Methods  ////////////////////
+  //////////////////// Instance Methods ////////////////////
 
   /**
-   * Checks to see if this config object is "read only".  If it is,
-   * then an {@link IllegalStateException} is thrown.  It should be
-   * called by every setter method.
+   * Checks to see if this config object is "read only". If it is, then an
+   * {@link IllegalStateException} is thrown. It should be called by every setter method.
    *
    * @see #isReadOnly
    */
   public void checkReadOnly() {
     if (this.isReadOnly()) {
-      throw new IllegalStateException(LocalizedStrings.ManagedEntityConfigImpl_THIS_CONFIGURATION_CANNOT_BE_MODIFIED_WHILE_ITS_MANAGED_ENTITY_IS_RUNNING.toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.ManagedEntityConfigImpl_THIS_CONFIGURATION_CANNOT_BE_MODIFIED_WHILE_ITS_MANAGED_ENTITY_IS_RUNNING
+              .toLocalizedString());
     }
   }
 
   /**
-   * Returns whether or not this <code>ManagedEntityConfigImpl</code>
-   * is read-only (can be modified).
+   * Returns whether or not this <code>ManagedEntityConfigImpl</code> is read-only (can be
+   * modified).
    */
   protected boolean isReadOnly() {
     return this.entity != null && this.entity.isRunning();
   }
 
   /**
-   * Sets the entity that is configured by this config object.  Once
-   * the entity is running, the config object cannot be modified.
+   * Sets the entity that is configured by this config object. Once the entity is running, the
+   * config object cannot be modified.
    *
    * @see #checkReadOnly
    */
@@ -170,8 +166,7 @@ public abstract class ManagedEntityConfigImpl
   }
 
   /**
-   * Notifies any configuration listeners that this configuration has
-   * changed.
+   * Notifies any configuration listeners that this configuration has changed.
    */
   protected abstract void configChanged();
 
@@ -219,12 +214,12 @@ public abstract class ManagedEntityConfigImpl
   /**
    * Validates this configuration.
    *
-   * @throws IllegalStateException
-   *         If this config is not valid
+   * @throws IllegalStateException If this config is not valid
    */
   public void validate() {
     if (InetAddressUtil.validateHost(this.host) == null) {
-      throw new IllegalStateException(LocalizedStrings.ManagedEntityConfigImpl_INVALID_HOST_0.toLocalizedString(this.host));
+      throw new IllegalStateException(
+          LocalizedStrings.ManagedEntityConfigImpl_INVALID_HOST_0.toLocalizedString(this.host));
     }
   }
 
@@ -232,8 +227,7 @@ public abstract class ManagedEntityConfigImpl
   public Object clone() throws CloneNotSupportedException {
     // Since all fields are immutable objects, no deep cloning is
     // necessary.
-    ManagedEntityConfigImpl clone =
-      (ManagedEntityConfigImpl) super.clone();
+    ManagedEntityConfigImpl clone = (ManagedEntityConfigImpl) super.clone();
     clone.entity = null;
     return clone;
   }
@@ -246,7 +240,7 @@ public abstract class ManagedEntityConfigImpl
 
     StringBuffer sb = new StringBuffer();
     sb.append(className);
-    
+
     sb.append(" host=");
     sb.append(this.getHost());
     sb.append(" workingDirectory=");

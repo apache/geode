@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
@@ -40,13 +38,15 @@ public class PartitionAttributesData {
   private final String[] partitionListeners;
 
   /**
-   * This constructor is to be used by internal JMX framework only. User should
-   * not try to create an instance of this class.
+   * This constructor is to be used by internal JMX framework only. User should not try to create an
+   * instance of this class.
    */
-  @ConstructorProperties({ "redundantCopies", "totalMaxMemory", "totalNumBuckets", "localMaxMemory", "colocatedWith", "partitionResolver",
-      "recoveryDelay", "startupRecoveryDelay", "partitionListeners" })
-  public PartitionAttributesData(int redundantCopies, long totalMaxMemory, int totalNumBuckets, int localMaxMemory, String colocatedWith,
-      String partitionResolver, long recoveryDelay, long startupRecoveryDelay, String[] partitionListeners) {
+  @ConstructorProperties({"redundantCopies", "totalMaxMemory", "totalNumBuckets", "localMaxMemory",
+      "colocatedWith", "partitionResolver", "recoveryDelay", "startupRecoveryDelay",
+      "partitionListeners"})
+  public PartitionAttributesData(int redundantCopies, long totalMaxMemory, int totalNumBuckets,
+      int localMaxMemory, String colocatedWith, String partitionResolver, long recoveryDelay,
+      long startupRecoveryDelay, String[] partitionListeners) {
 
     this.redundantCopies = redundantCopies;
     this.totalMaxMemory = totalMaxMemory;
@@ -88,8 +88,7 @@ public class PartitionAttributesData {
   }
 
   /**
-   * Returns the name of the PartitionedRegion that this PartitionedRegion is
-   * colocated with.
+   * Returns the name of the PartitionedRegion that this PartitionedRegion is colocated with.
    */
   public String getColocatedWith() {
     return colocatedWith;
@@ -103,16 +102,16 @@ public class PartitionAttributesData {
   }
 
   /**
-   * Returns the delay (in milliseconds) that a member will wait while trying
-   * to satisfy the redundancy of data hosted on other members.
+   * Returns the delay (in milliseconds) that a member will wait while trying to satisfy the
+   * redundancy of data hosted on other members.
    */
   public long getRecoveryDelay() {
     return recoveryDelay;
   }
 
   /**
-   * Returns the delay (in milliseconds) that a new member will wait while trying
-   * to satisfy the redundancy of data hosted on other members.
+   * Returns the delay (in milliseconds) that a new member will wait while trying to satisfy the
+   * redundancy of data hosted on other members.
    */
   public long getStartupRecoveryDelay() {
     return startupRecoveryDelay;

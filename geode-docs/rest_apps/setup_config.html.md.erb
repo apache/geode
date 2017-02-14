@@ -78,8 +78,8 @@ The following procedure starts up a REST API service-enabled Geode deployment:
 2.  Start a server node with the Geode property `start-dev-rest-api` set to `true`. For example:
 
     ``` pre
-    gfsh>start server --name=server1 --J=-Dgemfire.start-dev-rest-api=true \
-    --J=-Dgemfire.http-service-port=8080 --J=-Dgemfire.http-service-bind-address=localhost
+    gfsh>start server --name=server1 --start-rest-api=true \
+    --http-service-port=8080 --http-service-bind-address=localhost
     ```
 
     Optionally, you can also configure a `http-service-bind-address` and `http-service-port` to identify the cache server and specific port that will host REST services. If you do not specify the `http-service-port`, the default port is 7070. If you do not specify `http-service-bind-address`, the HTTP service will bind to all local addresses by default.
@@ -87,8 +87,8 @@ The following procedure starts up a REST API service-enabled Geode deployment:
     Any server that hosts data, even a server acting as a JMX manager, can start the developer REST API service. For example, to start the service on a server that is also a JMX manager, you would run:
 
     ``` pre
-    gfsh>start server --name=server1  --J=-Dgemfire.start-dev-rest-api=true \
-    --J=-Dgemfire.http-service-port=8080 --J=-Dgemfire.http-service-bind-address=localhost \
+    gfsh>start server --name=server1  --start-rest-api=true \
+    --http-service-port=8080 --http-service-bind-address=localhost \
     --J=-Dgemfire.jmx-manager=true --J=-Dgemfire.jmx-manager-start=true
     ```
 
@@ -97,8 +97,8 @@ The following procedure starts up a REST API service-enabled Geode deployment:
 3.  You may also need to specify a CLASSPATH to load any functions that need to be made available to your REST services. For example:
 
     ``` pre
-    gfsh>start server --name=server1 --J=-Dgemfire.start-dev-rest-api=true \
-    --J=-Dgemfire.http-service-port=8080 --J=-Dgemfire.http-service-bind-address=localhost \
+    gfsh>start server --name=server1 --start-rest-api=true \
+    --http-service-port=8080 --http-service-bind-address=localhost \
     --classpath=/myapps/testfunctions.jar
     ```
 

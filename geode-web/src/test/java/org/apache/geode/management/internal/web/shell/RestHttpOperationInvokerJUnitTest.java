@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.web.shell;
 
@@ -43,9 +41,10 @@ import org.apache.geode.management.internal.web.http.HttpMethod;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * The RestHttpOperationInvokerJUnitTest class is a test suite of test cases testing the contract and functionality of the
- * RestHttpOperationInvoker class.
+ * The RestHttpOperationInvokerJUnitTest class is a test suite of test cases testing the contract
+ * and functionality of the RestHttpOperationInvoker class.
  * <p/>
+ * 
  * @see java.net.URI
  * @see org.apache.geode.management.internal.cli.CommandRequest
  * @see org.apache.geode.management.internal.web.http.HttpMethod
@@ -66,33 +65,35 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
 
   @Before
   public void setUp() throws Exception {
-    final Link listLibraries = new Link("list-libraries", toUri("http://host.domain.com/service/v1/libraries"));
-    final Link getLibrary = new Link("get-library", toUri("http://host.domain.com/service/v1/libraries/{name}"));
-    final Link listBooks = new Link("list-books", toUri("http://host.domain.com/service/v1/libraries/{name}/books"));
-    final Link listBooksByAuthor = new Link("list-books", toUri("http://host.domain.com/service/v1/libraries/{name}/books/{author}"));
-    final Link listBooksByAuthorAndCategory = new Link("list-books", toUri("http://host.domain.com/service/v1/libraries/{name}/books/{author}/{category}"));
-    final Link listBooksByAuthorAndYear = new Link("list-books", toUri("http://host.domain.com/service/v1/libraries/{name}/books/{author}/{year}"));
-    final Link listBooksByAuthorCategoryAndYear = new Link("list-books", toUri("http://host.domain.com/service/v1/libraries/{name}/books/{author}/{category}/{year}"));
-    final Link addBook = new Link("add-book", toUri("http://host.domain.com/service/v1/libraries/{name}/books"), HttpMethod.POST);
-    final Link getBookByIsbn = new Link("get-book", toUri("http://host.domain.com/service/v1/libraries/{name}/books/{isbn}"));
-    final Link getBookByTitle = new Link("get-book", toUri("http://host.domain.com/service/v1/libraries/{name}/books/{title}"));
-    final Link removeBook = new Link("remove-book", toUri("http://host.domain.com/service/v1/libraries/{name}/books/{isbn}"), HttpMethod.DELETE);
+    final Link listLibraries =
+        new Link("list-libraries", toUri("http://host.domain.com/service/v1/libraries"));
+    final Link getLibrary =
+        new Link("get-library", toUri("http://host.domain.com/service/v1/libraries/{name}"));
+    final Link listBooks =
+        new Link("list-books", toUri("http://host.domain.com/service/v1/libraries/{name}/books"));
+    final Link listBooksByAuthor = new Link("list-books",
+        toUri("http://host.domain.com/service/v1/libraries/{name}/books/{author}"));
+    final Link listBooksByAuthorAndCategory = new Link("list-books",
+        toUri("http://host.domain.com/service/v1/libraries/{name}/books/{author}/{category}"));
+    final Link listBooksByAuthorAndYear = new Link("list-books",
+        toUri("http://host.domain.com/service/v1/libraries/{name}/books/{author}/{year}"));
+    final Link listBooksByAuthorCategoryAndYear = new Link("list-books", toUri(
+        "http://host.domain.com/service/v1/libraries/{name}/books/{author}/{category}/{year}"));
+    final Link addBook = new Link("add-book",
+        toUri("http://host.domain.com/service/v1/libraries/{name}/books"), HttpMethod.POST);
+    final Link getBookByIsbn = new Link("get-book",
+        toUri("http://host.domain.com/service/v1/libraries/{name}/books/{isbn}"));
+    final Link getBookByTitle = new Link("get-book",
+        toUri("http://host.domain.com/service/v1/libraries/{name}/books/{title}"));
+    final Link removeBook = new Link("remove-book",
+        toUri("http://host.domain.com/service/v1/libraries/{name}/books/{isbn}"),
+        HttpMethod.DELETE);
 
     linkIndex = new LinkIndex();
 
-    linkIndex.addAll(
-      listLibraries,
-      getLibrary,
-      listBooks,
-      listBooksByAuthor,
-      listBooksByAuthorAndCategory,
-      listBooksByAuthorAndYear,
-      listBooksByAuthorCategoryAndYear,
-      addBook,
-      getBookByIsbn,
-      getBookByTitle,
-      removeBook
-    );
+    linkIndex.addAll(listLibraries, getLibrary, listBooks, listBooksByAuthor,
+        listBooksByAuthorAndCategory, listBooksByAuthorAndYear, listBooksByAuthorCategoryAndYear,
+        addBook, getBookByIsbn, getBookByTitle, removeBook);
 
     assertEquals(11, linkIndex.size());
 
@@ -107,19 +108,25 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     operationInvoker = null;
   }
 
-  private CommandRequest createCommandRequest(final String command, final Map<String, String> options) {
+  private CommandRequest createCommandRequest(final String command,
+      final Map<String, String> options) {
     return new TestCommandRequest(command, options, Collections.<String, String>emptyMap(), null);
   }
 
-  private CommandRequest createCommandRequest(final String command, final Map<String, String> options, final Map<String, String> environment) {
+  private CommandRequest createCommandRequest(final String command,
+      final Map<String, String> options, final Map<String, String> environment) {
     return new TestCommandRequest(command, options, environment, null);
   }
 
-  private CommandRequest createCommandRequest(final String command, final Map<String, String> options, final byte[][] fileData) {
-    return new TestCommandRequest(command, options, Collections.<String, String>emptyMap(), fileData);
+  private CommandRequest createCommandRequest(final String command,
+      final Map<String, String> options, final byte[][] fileData) {
+    return new TestCommandRequest(command, options, Collections.<String, String>emptyMap(),
+        fileData);
   }
 
-  private CommandRequest createCommandRequest(final String command, final Map<String, String> options, final Map<String, String> environment, final byte[][] fileData) {
+  private CommandRequest createCommandRequest(final String command,
+      final Map<String, String> options, final Map<String, String> environment,
+      final byte[][] fileData) {
     return new TestCommandRequest(command, options, environment, fileData);
   }
 
@@ -129,7 +136,8 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
   }
 
   private RestHttpOperationInvoker getOperationInvoker() {
-    assertTrue("The RestHttpOperationInvoker was not properly initialized!", operationInvoker != null);
+    assertTrue("The RestHttpOperationInvoker was not properly initialized!",
+        operationInvoker != null);
     return operationInvoker;
   }
 
@@ -151,7 +159,8 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     final ClientHttpRequest request = getOperationInvoker().createHttpRequest(command);
 
     assertNotNull(request);
-    assertEquals("POST http://host.domain.com/service/v1/libraries/{name}/books", request.getLink().toHttpRequestLine());
+    assertEquals("POST http://host.domain.com/service/v1/libraries/{name}/books",
+        request.getLink().toHttpRequestLine());
     assertEquals("Adams", request.getParameterValue("author"));
     assertEquals("sci-fi", request.getParameterValue("category"));
     assertEquals("0-123456789", request.getParameterValue("isbn"));
@@ -162,7 +171,8 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     assertFalse(request.getParameters().containsKey("nullOption"));
 
     for (String requestParameter : request.getParameters().keySet()) {
-      assertFalse(requestParameter.startsWith(RestHttpOperationInvoker.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX));
+      assertFalse(requestParameter
+          .startsWith(RestHttpOperationInvoker.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX));
     }
 
     assertNull(request.getParameterValue(RestHttpOperationInvoker.RESOURCES_REQUEST_PARAMETER));
@@ -185,37 +195,39 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     final ClientHttpRequest request = getOperationInvoker().createHttpRequest(command);
 
     assertNotNull(request);
-    assertEquals("GET http://host.domain.com/service/v1/libraries/{name}/books/{isbn}", request.getLink()
-      .toHttpRequestLine());
+    assertEquals("GET http://host.domain.com/service/v1/libraries/{name}/books/{isbn}",
+        request.getLink().toHttpRequestLine());
     assertEquals("${ISBN}", request.getParameterValue("isbn"));
     assertFalse(request.getParameters().containsKey("ISBN"));
     assertEquals("0-987654321", request.getParameterValue(
-      RestHttpOperationInvoker.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "ISBN"));
+        RestHttpOperationInvoker.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "ISBN"));
     assertFalse(request.getParameters().containsKey("VAR"));
     assertEquals("test", request.getParameterValue(
-      RestHttpOperationInvoker.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "VAR"));
+        RestHttpOperationInvoker.ENVIRONMENT_VARIABLE_REQUEST_PARAMETER_PREFIX + "VAR"));
   }
 
   @Test
   public void testCreatHttpRequestWithFileData() {
     final Map<String, String> commandOptions = Collections.singletonMap("isbn", "0-123456789");
 
-    final byte[][] fileData = {
-      "/path/to/book/content.txt".getBytes(),
-      "Once upon a time in a galaxy far, far away...".getBytes()
-    };
+    final byte[][] fileData = {"/path/to/book/content.txt".getBytes(),
+        "Once upon a time in a galaxy far, far away...".getBytes()};
 
     final CommandRequest command = createCommandRequest("add-book", commandOptions, fileData);
 
     final ClientHttpRequest request = getOperationInvoker().createHttpRequest(command);
 
     assertNotNull(request);
-    assertEquals("POST http://host.domain.com/service/v1/libraries/{name}/books", request.getLink().toHttpRequestLine());
+    assertEquals("POST http://host.domain.com/service/v1/libraries/{name}/books",
+        request.getLink().toHttpRequestLine());
     assertEquals("0-123456789", request.getParameterValue("isbn"));
-    assertTrue(request.getParameters().containsKey(RestHttpOperationInvoker.RESOURCES_REQUEST_PARAMETER));
-    assertTrue(request.getParameterValue(RestHttpOperationInvoker.RESOURCES_REQUEST_PARAMETER) instanceof Resource);
+    assertTrue(
+        request.getParameters().containsKey(RestHttpOperationInvoker.RESOURCES_REQUEST_PARAMETER));
+    assertTrue(request.getParameterValue(
+        RestHttpOperationInvoker.RESOURCES_REQUEST_PARAMETER) instanceof Resource);
 
-    final List<Object> resources = request.getParameterValues(RestHttpOperationInvoker.RESOURCES_REQUEST_PARAMETER);
+    final List<Object> resources =
+        request.getParameterValues(RestHttpOperationInvoker.RESOURCES_REQUEST_PARAMETER);
 
     assertNotNull(resources);
     assertFalse(resources.isEmpty());
@@ -228,7 +240,8 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
 
     commandOptions.put("name", "BarnesN'Noble");
 
-    Link link = getOperationInvoker().findLink(createCommandRequest("list-libraries", commandOptions));
+    Link link =
+        getOperationInvoker().findLink(createCommandRequest("list-libraries", commandOptions));
 
     assertNotNull(link);
     assertEquals("http://host.domain.com/service/v1/libraries", toString(link.getHref()));
@@ -243,7 +256,8 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     link = getOperationInvoker().findLink(createCommandRequest("list-books", commandOptions));
 
     assertNotNull(link);
-    assertEquals("http://host.domain.com/service/v1/libraries/{name}/books/{author}", toString(link.getHref()));
+    assertEquals("http://host.domain.com/service/v1/libraries/{name}/books/{author}",
+        toString(link.getHref()));
 
     commandOptions.put("category", "sci-fi");
     commandOptions.put("year", "1998");
@@ -252,8 +266,9 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     link = getOperationInvoker().findLink(createCommandRequest("list-books", commandOptions));
 
     assertNotNull(link);
-    assertEquals("http://host.domain.com/service/v1/libraries/{name}/books/{author}/{category}/{year}",
-      toString(link.getHref()));
+    assertEquals(
+        "http://host.domain.com/service/v1/libraries/{name}/books/{author}/{category}/{year}",
+        toString(link.getHref()));
 
     commandOptions.remove("category");
 
@@ -261,7 +276,7 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
 
     assertNotNull(link);
     assertEquals("http://host.domain.com/service/v1/libraries/{name}/books/{author}/{year}",
-      toString(link.getHref()));
+        toString(link.getHref()));
 
     commandOptions.put("category", "fantasy");
     commandOptions.put("isbn", "0-123456789");
@@ -270,19 +285,22 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     link = getOperationInvoker().findLink(createCommandRequest("add-book", commandOptions));
 
     assertNotNull(link);
-    assertEquals("http://host.domain.com/service/v1/libraries/{name}/books", toString(link.getHref()));
+    assertEquals("http://host.domain.com/service/v1/libraries/{name}/books",
+        toString(link.getHref()));
 
     commandOptions.remove("isbn");
 
     link = getOperationInvoker().findLink(createCommandRequest("get-book", commandOptions));
 
     assertNotNull(link);
-    assertEquals("http://host.domain.com/service/v1/libraries/{name}/books/{title}", toString(link.getHref()));
+    assertEquals("http://host.domain.com/service/v1/libraries/{name}/books/{title}",
+        toString(link.getHref()));
 
     link = getOperationInvoker().findLink(createCommandRequest("remove-book", commandOptions));
 
     assertNotNull(link);
-    assertEquals("http://host.domain.com/service/v1/libraries/{name}/books/{isbn}", toString(link.getHref()));
+    assertEquals("http://host.domain.com/service/v1/libraries/{name}/books/{isbn}",
+        toString(link.getHref()));
   }
 
   @Test
@@ -297,13 +315,14 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
 
       @Override
       @SuppressWarnings("unchecked")
-      protected <T> ResponseEntity<T> send(final ClientHttpRequest request, final Class<T> responseType, final Map<String, ?> uriVariables) {
+      protected <T> ResponseEntity<T> send(final ClientHttpRequest request,
+          final Class<T> responseType, final Map<String, ?> uriVariables) {
         return new ResponseEntity(expectedResult, HttpStatus.OK);
       }
     };
 
-    final String actualResult = operationInvoker.processCommand(createCommandRequest("list-libraries",
-      Collections.<String, String>emptyMap()));
+    final String actualResult = operationInvoker.processCommand(
+        createCommandRequest("list-libraries", Collections.<String, String>emptyMap()));
 
     assertEquals(expectedResult, actualResult);
   }
@@ -321,19 +340,19 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
       @Override
       protected HttpOperationInvoker getHttpOperationInvoker() {
         return new AbstractHttpOperationInvoker(AbstractHttpOperationInvoker.REST_API_URL) {
-          @Override public Object processCommand(final CommandRequest command) {
+          @Override
+          public Object processCommand(final CommandRequest command) {
             return expectedResult;
           }
         };
       }
 
       @Override
-      protected void printWarning(final String message, final Object... args) {
-      }
+      protected void printWarning(final String message, final Object... args) {}
     };
 
-    final String actualResult = operationInvoker.processCommand(createCommandRequest("get resource",
-      Collections.<String, String>emptyMap()));
+    final String actualResult = operationInvoker.processCommand(
+        createCommandRequest("get resource", Collections.<String, String>emptyMap()));
 
     assertEquals(expectedResult, actualResult);
   }
@@ -349,11 +368,11 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
       }
 
       @Override
-      protected void printWarning(final String message, final Object... args) {
-      }
+      protected void printWarning(final String message, final Object... args) {}
 
       @Override
-      protected <T> ResponseEntity<T> send(final ClientHttpRequest request, final Class<T> responseType, final Map<String, ?> uriVariables) {
+      protected <T> ResponseEntity<T> send(final ClientHttpRequest request,
+          final Class<T> responseType, final Map<String, ?> uriVariables) {
         throw new ResourceAccessException("test");
       }
 
@@ -366,12 +385,12 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     assertTrue(operationInvoker.isConnected());
 
     final String expectedResult = String.format(
-      "The connection to the GemFire Manager's HTTP service @ %1$s failed with: %2$s. "
-        + "Please try reconnecting or see the GemFire Manager's log file for further details.",
-      operationInvoker.getBaseUrl(), "test");
+        "The connection to the GemFire Manager's HTTP service @ %1$s failed with: %2$s. "
+            + "Please try reconnecting or see the GemFire Manager's log file for further details.",
+        operationInvoker.getBaseUrl(), "test");
 
-    final String actualResult = operationInvoker.processCommand(createCommandRequest("list-libraries",
-      Collections.<String, String>emptyMap()));
+    final String actualResult = operationInvoker.processCommand(
+        createCommandRequest("list-libraries", Collections.<String, String>emptyMap()));
 
     assertFalse(operationInvoker.isConnected());
     assertEquals(expectedResult, actualResult);
@@ -392,9 +411,9 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
     };
 
     try {
-      operationInvoker.processCommand(createCommandRequest("get resource", Collections.<String, String>emptyMap()));
-    }
-    catch (RestApiCallForCommandNotFoundException e) {
+      operationInvoker.processCommand(
+          createCommandRequest("get resource", Collections.<String, String>emptyMap()));
+    } catch (RestApiCallForCommandNotFoundException e) {
       assertEquals("No REST API call for command (get resource) was found!", e.getMessage());
       throw e;
     }
@@ -403,11 +422,12 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
   @Test(expected = IllegalStateException.class)
   public void testProcessCommandWhenNotConnected() {
     try {
-      getOperationInvoker().processCommand(createCommandRequest("get-book", Collections.<String, String>emptyMap()));
-    }
-    catch (IllegalStateException e) {
-      assertEquals("Gfsh must be connected to the GemFire Manager in order to process commands remotely!",
-        e.getMessage());
+      getOperationInvoker()
+          .processCommand(createCommandRequest("get-book", Collections.<String, String>emptyMap()));
+    } catch (IllegalStateException e) {
+      assertEquals(
+          "Gfsh must be connected to the GemFire Manager in order to process commands remotely!",
+          e.getMessage());
       throw e;
     }
   }
@@ -418,11 +438,8 @@ public class RestHttpOperationInvokerJUnitTest extends AbstractWebTestCase {
 
     private final String command;
 
-    protected TestCommandRequest(final String command,
-                                 final Map<String, String> commandParameters,
-                                 final Map<String, String> environment,
-                                 final byte[][] fileData)
-    {
+    protected TestCommandRequest(final String command, final Map<String, String> commandParameters,
+        final Map<String, String> environment, final byte[][] fileData) {
       super(environment, fileData);
 
       assert command != null : "The command cannot be null!";

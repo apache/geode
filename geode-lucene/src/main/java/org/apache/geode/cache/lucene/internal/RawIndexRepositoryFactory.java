@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.lucene.internal;
 
@@ -33,21 +31,18 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 public class RawIndexRepositoryFactory extends IndexRepositoryFactory {
-  public RawIndexRepositoryFactory() {
-  }
+  public RawIndexRepositoryFactory() {}
 
-  public IndexRepository createIndexRepository(final Integer bucketId,
-                                        LuceneSerializer serializer,
-                                        LuceneIndexImpl index, PartitionedRegion userRegion)
-    throws IOException
-  {
+  public IndexRepository createIndexRepository(final Integer bucketId, LuceneSerializer serializer,
+      LuceneIndexImpl index, PartitionedRegion userRegion) throws IOException {
     final IndexRepository repo;
-    LuceneRawIndex indexForRaw = (LuceneRawIndex)index;
+    LuceneRawIndex indexForRaw = (LuceneRawIndex) index;
     BucketRegion dataBucket = getMatchingBucket(userRegion, bucketId);
 
     Directory dir = null;
     if (indexForRaw.withPersistence()) {
-      String bucketLocation = LuceneServiceImpl.getUniqueIndexName(index.getName(), index.getRegionPath()+"_"+bucketId);
+      String bucketLocation = LuceneServiceImpl.getUniqueIndexName(index.getName(),
+          index.getRegionPath() + "_" + bucketId);
       File location = new File(index.getName(), bucketLocation);
       if (!location.exists()) {
         location.mkdirs();
@@ -58,6 +53,7 @@ public class RawIndexRepositoryFactory extends IndexRepositoryFactory {
     }
     IndexWriterConfig config = new IndexWriterConfig(indexForRaw.getAnalyzer());
     IndexWriter writer = new IndexWriter(dir, config);
-    return new IndexRepositoryImpl(null, writer, serializer, indexForRaw.getIndexStats(), dataBucket);
+    return new IndexRepositoryImpl(null, writer, serializer, indexForRaw.getIndexStats(),
+        dataBucket);
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal;
 
@@ -30,12 +28,10 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.GemFireVersion;
 
 /**
- * Provides optional data fields as properties for StartupMessage and 
- * StartupResponseMessage. This is handled by serializing and deserializing
- * a new Properties instance if and only if the member version is 6.6.3 or
- * greater. New fields can be added to the Properties without breaking
- * backwards compatibility. All new fields added should be written to allow
- * for version compatibility.
+ * Provides optional data fields as properties for StartupMessage and StartupResponseMessage. This
+ * is handled by serializing and deserializing a new Properties instance if and only if the member
+ * version is 6.6.3 or greater. New fields can be added to the Properties without breaking backwards
+ * compatibility. All new fields added should be written to allow for version compatibility.
  * 
  * @since GemFire 7.0
  */
@@ -46,27 +42,25 @@ class StartupMessageData {
   static final String MCAST_PORT = "MP";
   static final String MCAST_HOST_ADDRESS = "MHA";
   static final String IS_SHARED_CONFIG_ENABLED = "ISCE";
-  
+
   private Properties optionalFields;
-  
+
   /**
-   * Constructs a new instance with empty Properties. After construction
-   * the instance should optionally invoke one or more "write" methods such 
-   * as {@link #writeHostedLocators(Collection)} before invoking 
-   * <code>toData(DataOutput)</code> to marshal the Properties into the DataOutput
+   * Constructs a new instance with empty Properties. After construction the instance should
+   * optionally invoke one or more "write" methods such as {@link #writeHostedLocators(Collection)}
+   * before invoking <code>toData(DataOutput)</code> to marshal the Properties into the DataOutput
    * (onto the wire).
    */
   StartupMessageData() {
     this.optionalFields = new Properties();
   }
-  
+
   public void readFrom(DataInput in) throws ClassNotFoundException, IOException {
     this.optionalFields = DataSerializer.readObject(in);
   }
 
   /**
-   * Check for the optional field {@link #HOSTED_LOCATORS} and return the
-   * value or null.
+   * Check for the optional field {@link #HOSTED_LOCATORS} and return the value or null.
    */
   Collection<String> readHostedLocators() {
     if (this.optionalFields == null || this.optionalFields.isEmpty()) {
@@ -89,33 +83,35 @@ class StartupMessageData {
     }
     return hostedLocators;
   }
-  
-//  /**
-//   * Check for the optional field {@link #HOSTED_LOCATORS_WITH_SHARED_CONFIGURATION} and return the
-//   * value or null.
-//   */
-//  Collection<String> readHostedLocatorsWithSharedConfiguration() {
-//    if (this.optionalFields == null || this.optionalFields.isEmpty()) {
-//      return null;
-//    }
-//    Collection<String> hostedLocatorsWithSharedConfiguration = null;
-//    String hostedLocatorsString = this.optionalFields.getProperty(HOSTED_LOCATORS_WITH_SHARED_CONFIGURATION);
-//    if (hostedLocatorsString != null && !hostedLocatorsString.isEmpty()) {
-//      StringTokenizer st = new StringTokenizer(hostedLocatorsString, COMMA_DELIMITER);
-//      hostedLocatorsWithSharedConfiguration = new ArrayList<String>();
-//      while (st.hasMoreTokens()) {
-//        String locatorString = st.nextToken();
-//        if (locatorString != null && !locatorString.isEmpty()) {
-//          hostedLocatorsWithSharedConfiguration.add(locatorString);
-//        }
-//      }
-//      if (hostedLocatorsWithSharedConfiguration.isEmpty()) {
-//        hostedLocatorsWithSharedConfiguration = null;
-//      }
-//    }
-//    return hostedLocatorsWithSharedConfiguration;
-//  }
-  
+
+  // /**
+  // * Check for the optional field {@link #HOSTED_LOCATORS_WITH_SHARED_CONFIGURATION} and return
+  // the
+  // * value or null.
+  // */
+  // Collection<String> readHostedLocatorsWithSharedConfiguration() {
+  // if (this.optionalFields == null || this.optionalFields.isEmpty()) {
+  // return null;
+  // }
+  // Collection<String> hostedLocatorsWithSharedConfiguration = null;
+  // String hostedLocatorsString =
+  // this.optionalFields.getProperty(HOSTED_LOCATORS_WITH_SHARED_CONFIGURATION);
+  // if (hostedLocatorsString != null && !hostedLocatorsString.isEmpty()) {
+  // StringTokenizer st = new StringTokenizer(hostedLocatorsString, COMMA_DELIMITER);
+  // hostedLocatorsWithSharedConfiguration = new ArrayList<String>();
+  // while (st.hasMoreTokens()) {
+  // String locatorString = st.nextToken();
+  // if (locatorString != null && !locatorString.isEmpty()) {
+  // hostedLocatorsWithSharedConfiguration.add(locatorString);
+  // }
+  // }
+  // if (hostedLocatorsWithSharedConfiguration.isEmpty()) {
+  // hostedLocatorsWithSharedConfiguration = null;
+  // }
+  // }
+  // return hostedLocatorsWithSharedConfiguration;
+  // }
+
   boolean readIsSharedConfigurationEnabled() {
     if (this.optionalFields == null || this.optionalFields.isEmpty()) {
       return false;
@@ -137,26 +133,30 @@ class StartupMessageData {
       }
     }
   }
-  
-//  void writeHostedLocatorsWithSharedConfiguration(Collection<String> hostedLocatorsWithSharedConfiguration) {
-//    if (this.optionalFields == null) {
-//      return;
-//    }
-//    if (hostedLocatorsWithSharedConfiguration != null && !hostedLocatorsWithSharedConfiguration.isEmpty()) {
-//      String hostedLocatorsString = asCommaDelimitedString(hostedLocatorsWithSharedConfiguration);
-//      if (hostedLocatorsString != null && !hostedLocatorsString.isEmpty()) {
-//        this.optionalFields.setProperty(HOSTED_LOCATORS_WITH_SHARED_CONFIGURATION, hostedLocatorsString);
-//      }
-//    }
-//  }
-//  
+
+  // void writeHostedLocatorsWithSharedConfiguration(Collection<String>
+  // hostedLocatorsWithSharedConfiguration) {
+  // if (this.optionalFields == null) {
+  // return;
+  // }
+  // if (hostedLocatorsWithSharedConfiguration != null &&
+  // !hostedLocatorsWithSharedConfiguration.isEmpty()) {
+  // String hostedLocatorsString = asCommaDelimitedString(hostedLocatorsWithSharedConfiguration);
+  // if (hostedLocatorsString != null && !hostedLocatorsString.isEmpty()) {
+  // this.optionalFields.setProperty(HOSTED_LOCATORS_WITH_SHARED_CONFIGURATION,
+  // hostedLocatorsString);
+  // }
+  // }
+  // }
+  //
   void writeIsSharedConfigurationEnabled(boolean isSharedConfigurationEnabled) {
     if (this.optionalFields == null) {
       return;
     }
-    this.optionalFields.setProperty(IS_SHARED_CONFIG_ENABLED, Boolean.toString(isSharedConfigurationEnabled));
+    this.optionalFields.setProperty(IS_SHARED_CONFIG_ENABLED,
+        Boolean.toString(isSharedConfigurationEnabled));
   }
-  
+
   int readMcastPort() {
     int result = 0;
     if (this.optionalFields != null) {
@@ -167,7 +167,7 @@ class StartupMessageData {
     }
     return result;
   }
-  
+
   void writeMcastPort(int mcastPort) {
     if (this.optionalFields != null) {
       if (mcastPort != 0) {
@@ -175,7 +175,7 @@ class StartupMessageData {
       }
     }
   }
-  
+
   String readMcastHostAddress() {
     String result = null;
     if (this.optionalFields != null) {
@@ -183,7 +183,7 @@ class StartupMessageData {
     }
     return result;
   }
-  
+
   void writeMcastHostAddress(String addr) {
     if (this.optionalFields != null) {
       if (addr != null && !addr.isEmpty()) {
@@ -193,8 +193,7 @@ class StartupMessageData {
   }
 
   /**
-   * Writes all optional fields to the DataOutput or null for minimal
-   * wire footprint.
+   * Writes all optional fields to the DataOutput or null for minimal wire footprint.
    * 
    * @throws IOException
    */
@@ -205,17 +204,17 @@ class StartupMessageData {
       DataSerializer.writeObject(this.optionalFields, out);
     }
   }
-  
+
   /**
    * Returns {@link #optionalFields} for testing.
    */
   Properties getOptionalFields() {
     return this.optionalFields;
   }
-  
+
   /**
-   * Marshals a collection of strings to a single comma-delimited string.
-   * Returns null if collection is null or empty.
+   * Marshals a collection of strings to a single comma-delimited string. Returns null if collection
+   * is null or empty.
    */
   public static String asCommaDelimitedString(Collection<String> strings) {
     StringBuilder sb = new StringBuilder();

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed;
 
@@ -30,7 +28,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.DistributionLocator;
 import org.junit.runners.Parameterized;
@@ -38,14 +36,13 @@ import org.junit.runners.Parameterized;
 /**
  * @since GemFire 8.0
  */
-public abstract class AbstractLocatorLauncherIntegrationTestCase extends AbstractLauncherIntegrationTestCase {
+public abstract class AbstractLocatorLauncherIntegrationTestCase
+    extends AbstractLauncherIntegrationTestCase {
 
   @Parameterized.Parameters
   public static Collection<Object> data() {
-    return Arrays.asList(new Object[] {
-        (IntSupplier) () -> 0,
-        (IntSupplier) () -> AvailablePortHelper.getRandomAvailableTCPPort()
-    });
+    return Arrays.asList(new Object[] {(IntSupplier) () -> 0,
+        (IntSupplier) () -> AvailablePortHelper.getRandomAvailableTCPPort()});
   }
 
   @Parameterized.Parameter
@@ -66,11 +63,14 @@ public abstract class AbstractLocatorLauncherIntegrationTestCase extends Abstrac
   @Before
   public final void setUpAbstractLocatorLauncherIntegrationTestCase() throws Exception {
     this.locatorPort = portSupplier.getAsInt();
-    System.setProperty(DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(this.locatorPort));
+    System.setProperty(DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY,
+        String.valueOf(this.locatorPort));
     this.workingDirectory = this.temporaryFolder.getRoot().getCanonicalPath();
-    this.clusterConfigDirectory = this.temporaryFolder.newFolder(SharedConfiguration.CLUSTER_CONFIG_DISK_DIR_PREFIX + getUniqueName()).getCanonicalPath();
+    this.clusterConfigDirectory = this.temporaryFolder
+        .newFolder(ClusterConfigurationService.CLUSTER_CONFIG_DISK_DIR_PREFIX + getUniqueName())
+        .getCanonicalPath();
   }
-  
+
   @After
   public final void tearDownAbstractLocatorLauncherIntegrationTestCase() throws Exception {
     this.locatorPort = 0;
@@ -87,34 +87,38 @@ public abstract class AbstractLocatorLauncherIntegrationTestCase extends Abstrac
     return Status.NOT_RESPONDING;
   }
 
-  protected void waitForLocatorToStart(final LocatorLauncher launcher, int timeout, int interval, boolean throwOnTimeout) throws Exception {
-    assertEventuallyTrue("waiting for process to start: " + launcher.status(), new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        try {
-          final LocatorState LocatorState = launcher.status();
-          return (LocatorState != null && Status.ONLINE.equals(LocatorState.getStatus()));
-        }
-        catch (RuntimeException e) {
-          return false;
-        }
-      }
-    }, timeout, interval);
+  protected void waitForLocatorToStart(final LocatorLauncher launcher, int timeout, int interval,
+      boolean throwOnTimeout) throws Exception {
+    assertEventuallyTrue("waiting for process to start: " + launcher.status(),
+        new Callable<Boolean>() {
+          @Override
+          public Boolean call() throws Exception {
+            try {
+              final LocatorState LocatorState = launcher.status();
+              return (LocatorState != null && Status.ONLINE.equals(LocatorState.getStatus()));
+            } catch (RuntimeException e) {
+              return false;
+            }
+          }
+        }, timeout, interval);
   }
-  
-  protected void waitForLocatorToStart(final LocatorLauncher launcher, int timeout, boolean throwOnTimeout) throws Exception {
+
+  protected void waitForLocatorToStart(final LocatorLauncher launcher, int timeout,
+      boolean throwOnTimeout) throws Exception {
     waitForLocatorToStart(launcher, timeout, INTERVAL_MILLISECONDS, throwOnTimeout);
   }
-  
-  protected void waitForLocatorToStart(final LocatorLauncher launcher, boolean throwOnTimeout) throws Exception {
+
+  protected void waitForLocatorToStart(final LocatorLauncher launcher, boolean throwOnTimeout)
+      throws Exception {
     waitForLocatorToStart(launcher, TIMEOUT_MILLISECONDS, INTERVAL_MILLISECONDS, throwOnTimeout);
   }
-  
+
   protected void waitForLocatorToStart(final LocatorLauncher launcher) throws Exception {
     waitForLocatorToStart(launcher, TIMEOUT_MILLISECONDS, INTERVAL_MILLISECONDS, true);
   }
-  
-  protected static void waitForLocatorToStart(int port, int timeout, int interval, boolean throwOnTimeout) throws Exception {
+
+  protected static void waitForLocatorToStart(int port, int timeout, int interval,
+      boolean throwOnTimeout) throws Exception {
     final LocatorLauncher locatorLauncher = new Builder().setPort(port).build();
     assertEventuallyTrue("Waiting for Locator in other process to start.", new Callable<Boolean>() {
       @Override
@@ -122,8 +126,7 @@ public abstract class AbstractLocatorLauncherIntegrationTestCase extends Abstrac
         try {
           final LocatorState locatorState = locatorLauncher.status();
           return (locatorState != null && Status.ONLINE.equals(locatorState.getStatus()));
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
           return false;
         }
       }

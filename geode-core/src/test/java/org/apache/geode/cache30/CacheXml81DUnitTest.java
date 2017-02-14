@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -37,8 +35,8 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * Tests 8.1 schema based configuration. From this point all config test cases
- * should extend this test case where {@link #getUseSchema()} will return true.
+ * Tests 8.1 schema based configuration. From this point all config test cases should extend this
+ * test case where {@link #getUseSchema()} will return true.
  * 
  *
  * @since GemFire 8.1
@@ -46,7 +44,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   private static final long serialVersionUID = 1L;
-  
+
   public CacheXml81DUnitTest() {
     super();
   }
@@ -60,8 +58,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   }
 
   /**
-   * Test extensions to
-   * <code>cache<code> element.
+   * Test extensions to <code>cache<code> element.
    * 
    * @since GemFire 8.1
    */
@@ -84,7 +81,8 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     @SuppressWarnings("unchecked")
     final Extensible<Cache> c = (Extensible<Cache>) getCache();
     assertNotNull(c);
-    final MockCacheExtension m = (MockCacheExtension) c.getExtensionPoint().getExtensions().iterator().next();
+    final MockCacheExtension m =
+        (MockCacheExtension) c.getExtensionPoint().getExtensions().iterator().next();
     assertNotNull(m);
 
     assertEquals(1, m.beforeCreateCounter.get());
@@ -104,7 +102,8 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final CacheCreation cache = new CacheCreation();
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     @SuppressWarnings("unchecked")
-    Extensible<Region<?, ?>> region = (Extensible<Region<?, ?>>) cache.createRegion(regionName, attrs);
+    Extensible<Region<?, ?>> region =
+        (Extensible<Region<?, ?>>) cache.createRegion(regionName, attrs);
 
     final MockRegionExtension extension = new MockRegionExtension("test");
     region.getExtensionPoint().addExtension(extension);
@@ -122,7 +121,8 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     @SuppressWarnings("unchecked")
     final Extensible<Region<?, ?>> r = (Extensible<Region<?, ?>>) getCache().getRegion(regionName);
     assertNotNull(r);
-    final MockRegionExtension m = (MockRegionExtension) r.getExtensionPoint().getExtensions().iterator().next();
+    final MockRegionExtension m =
+        (MockRegionExtension) r.getExtensionPoint().getExtensions().iterator().next();
     assertNotNull(m);
 
     assertEquals(1, m.beforeCreateCounter.get());
@@ -130,10 +130,10 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     assertEquals(0, m.getXmlGeneratorCounter.get());
 
   }
-  
+
   /**
-   * Test {@link Locator} is used in {@link SAXParseException}.
-   * Exercises {@link XmlParser#setDocumentLocator(Locator)}
+   * Test {@link Locator} is used in {@link SAXParseException}. Exercises
+   * {@link XmlParser#setDocumentLocator(Locator)}
    * 
    * @since GemFire 8.2
    */
@@ -143,7 +143,8 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     final CacheCreation cache = new CacheCreation();
     final RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     @SuppressWarnings("unchecked")
-    Extensible<Region<?, ?>> region = (Extensible<Region<?, ?>>) cache.createRegion(regionName, attrs);
+    Extensible<Region<?, ?>> region =
+        (Extensible<Region<?, ?>>) cache.createRegion(regionName, attrs);
 
     final MockRegionExtension extension = new MockRegionExtension("exception");
     region.getExtensionPoint().addExtension(extension);
@@ -152,7 +153,8 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
     assertEquals(0, extension.onCreateCounter.get());
     assertEquals(0, extension.getXmlGeneratorCounter.get());
 
-    IgnoredException expectedException = IgnoredException.addIgnoredException("While reading Cache XML file");
+    IgnoredException expectedException =
+        IgnoredException.addIgnoredException("While reading Cache XML file");
     try {
       testXml(cache);
       fail("Excepted CacheXmlException");

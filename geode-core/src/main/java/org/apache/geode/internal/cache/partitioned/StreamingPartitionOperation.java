@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.partitioned;
 
@@ -55,37 +53,41 @@ import org.apache.geode.internal.util.BlobHelper;
 
 
 /**
-* StreamingPartitionOperation is an abstraction for sending messages to multiple (or single)
- * recipients requesting a potentially large amount of data from a Partitioned Region datastore
- * and receiving the reply with data chunked into several messages.
+ * StreamingPartitionOperation is an abstraction for sending messages to multiple (or single)
+ * recipients requesting a potentially large amount of data from a Partitioned Region datastore and
+ * receiving the reply with data chunked into several messages.
  *
  */
 
 public abstract class StreamingPartitionOperation extends StreamingOperation {
   private static final Logger logger = LogService.getLogger();
-  
+
   protected final int regionId;
-  
+
   /** Creates a new instance of StreamingPartitionOperation */
   public StreamingPartitionOperation(InternalDistributedSystem sys, int regionId) {
     super(sys);
     this.regionId = regionId;
   }
-  
+
   @Override
   public void getDataFromAll(Set recipients) {
-    throw new UnsupportedOperationException(LocalizedStrings.StreamingPartitionOperation_CALL_GETPARTITIONEDDATAFROM_INSTEAD.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.StreamingPartitionOperation_CALL_GETPARTITIONEDDATAFROM_INSTEAD
+            .toLocalizedString());
   }
-  
+
   /**
-  * Returns normally if succeeded to get data, otherwise throws an exception
+   * Returns normally if succeeded to get data, otherwise throws an exception
    */
   public Set<InternalDistributedMember> getPartitionedDataFrom(Set recipients)
-  throws org.apache.geode.cache.TimeoutException, InterruptedException, QueryException, ForceReattemptException {
-    if (Thread.interrupted()) throw new InterruptedException();
+      throws org.apache.geode.cache.TimeoutException, InterruptedException, QueryException,
+      ForceReattemptException {
+    if (Thread.interrupted())
+      throw new InterruptedException();
     if (recipients.isEmpty())
       return Collections.emptySet();
-    
+
     StreamingPartitionResponse processor = new StreamingPartitionResponse(this.sys, recipients);
     DistributionMessage m = createRequestMessage(recipients, processor);
     this.sys.getDistributionManager().putOutgoing(m);
@@ -93,35 +95,38 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     Set<InternalDistributedMember> failedMembers = processor.waitForCacheOrQueryException();
     return failedMembers;
   }
-  
+
   /** Override in subclass to instantiate request message */
-  @Override  
-  protected abstract DistributionMessage createRequestMessage(Set recipients, ReplyProcessor21 processor);
+  @Override
+  protected abstract DistributionMessage createRequestMessage(Set recipients,
+      ReplyProcessor21 processor);
 
   protected class StreamingPartitionResponse extends ReplyProcessor21 {
     protected volatile boolean abort = false;
     protected final Map statusMap = new HashMap();
-    
+
     protected final AtomicInteger msgsBeingProcessed = new AtomicInteger();
     private volatile String memberDepartedMessage = null;
-    private final Set<InternalDistributedMember> failedMembers = new CopyOnWriteHashSet<InternalDistributedMember>();
-    
+    private final Set<InternalDistributedMember> failedMembers =
+        new CopyOnWriteHashSet<InternalDistributedMember>();
+
     class Status {
       int msgsProcessed = 0;
       int numMsgs = 0;
-      
+
       /** Return true if this is the very last reply msg to process for this member */
       protected synchronized boolean trackMessage(StreamingReplyMessage m) {
         this.msgsProcessed++;
-        
+
         if (m.isLastMessage()) {
           this.numMsgs = m.getMessageNumber() + 1;
         }
         if (logger.isDebugEnabled()) {
-          logger.debug("Streaming Message Tracking Status: Processor id: {}; Sender: {}; Messages Processed: {}; NumMsgs: {}",
+          logger.debug(
+              "Streaming Message Tracking Status: Processor id: {}; Sender: {}; Messages Processed: {}; NumMsgs: {}",
               getProcessorId(), m.getSender(), this.msgsProcessed, this.numMsgs);
         }
-        
+
         // this.numMsgs starts out as zero and gets initialized
         // only when we get a lastMsg true.
         // Since we increment msgsProcessed, the following condition
@@ -129,14 +134,13 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         // lastMsg, and signals that all messages have been processed
         return this.msgsProcessed == this.numMsgs;
       }
-  
+
     }
-    
-    public StreamingPartitionResponse(InternalDistributedSystem system,
-                                      Set members) {
+
+    public StreamingPartitionResponse(InternalDistributedSystem system, Set members) {
       super(system, members);
     }
-    
+
     protected boolean stopBecauseOfExceptions() {
       return false;
     }
@@ -147,18 +151,18 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       if (!waitingOnMember(msg.getSender())) {
         return;
       }
-      
+
       this.msgsBeingProcessed.incrementAndGet();
       try {
-        StreamingReplyMessage m = (StreamingReplyMessage)msg;
+        StreamingReplyMessage m = (StreamingReplyMessage) msg;
         boolean isLast = true; // is last message for this member?
         List objects = m.getObjects();
-        if (objects != null) {  // CONSTRAINT: objects should only be null if there's no data at all
+        if (objects != null) { // CONSTRAINT: objects should only be null if there's no data at all
           // Bug 37461: don't allow abort flag to be cleared
           boolean isAborted = this.abort; // volatile fetch
           if (!isAborted) {
-            isAborted = !processChunk(objects, m.getSender(),
-                m.getMessageNumber(), m.isLastMessage());
+            isAborted =
+                !processChunk(objects, m.getSender(), m.getMessageNumber(), m.isLastMessage());
             if (isAborted) {
               this.abort = true; // volatile store
             }
@@ -167,30 +171,29 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
           // @todo ezoerner send an abort message to data provider if
           // !doContinue (region was destroyed or cache closed);
           // also provide ability to explicitly cancel
-        }
-        else {
+        } else {
           // if a null chunk was received (no data), then
           // we're done with that member
           isLast = true;
         }
-       if (isLast) { //commented by Suranjan watch this out
+        if (isLast) { // commented by Suranjan watch this out
           super.process(msg, false); // removes from members and cause us to
                                      // ignore future messages received from that member
         }
-      }
-      finally {
+      } finally {
         this.msgsBeingProcessed.decrementAndGet();
-        checkIfDone(); // check to see if decrementing msgsBeingProcessed requires signalling to proceed
-      }          
-    }  
+        checkIfDone(); // check to see if decrementing msgsBeingProcessed requires signalling to
+                       // proceed
+      }
+    }
 
-    protected synchronized void processException(DistributionMessage msg,
-        ReplyException ex) {
+    protected synchronized void processException(DistributionMessage msg, ReplyException ex) {
       Throwable t = ex.getCause();
-      if (t instanceof ForceReattemptException ||
-          t instanceof CacheClosedException) {
+      if (t instanceof ForceReattemptException || t instanceof CacheClosedException) {
         if (logger.isDebugEnabled()) {
-          logger.debug("StreamingPartitionResponse received exception {} for member {} query retry required.", t, msg.getSender());
+          logger.debug(
+              "StreamingPartitionResponse received exception {} for member {} query retry required.",
+              t, msg.getSender());
         }
         this.failedMembers.add(msg.getSender());
       } else {
@@ -200,16 +203,19 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
 
     @Override
     public void memberDeparted(InternalDistributedMember id, boolean crashed) {
-      if (id!=null && waitingOnMember(id)) {
+      if (id != null && waitingOnMember(id)) {
         this.failedMembers.add(id);
-        this.memberDepartedMessage = LocalizedStrings.StreamingPartitionOperation_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1.toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)});
+        this.memberDepartedMessage =
+            LocalizedStrings.StreamingPartitionOperation_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
+                .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)});
       }
       super.memberDeparted(id, crashed);
     }
 
     /**
      * Waits for the response from the {@link PartitionMessage}'s recipient
-     * @throws CacheException  if the recipient threw a cache exception during message processing
+     * 
+     * @throws CacheException if the recipient threw a cache exception during message processing
      * @throws QueryException if the recipient threw a query exception
      * @throws RegionDestroyedException if the peer has closed its copy of the region
      * @return The set of members that failed.
@@ -219,37 +225,36 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       try {
         waitForRepliesUninterruptibly();
         return this.failedMembers;
-      }
-      catch (ReplyException e) {
+      } catch (ReplyException e) {
         Throwable t = e.getCause();
         if (t instanceof CacheException) {
-          throw (CacheException)t;
-        } else if(t instanceof RegionDestroyedException) {
-          throw (RegionDestroyedException)t;
+          throw (CacheException) t;
+        } else if (t instanceof RegionDestroyedException) {
+          throw (RegionDestroyedException) t;
         } else if (t instanceof QueryException) {
-          throw (QueryException)t;
+          throw (QueryException) t;
         } else if (t instanceof PrimaryBucketException) {
           throw new PrimaryBucketException("Peer failed primary test", t);
         }
         e.handleAsUnexpected();
-        //This won't be reached, because of the above,
-        //but it makes the compiler happy.
+        // This won't be reached, because of the above,
+        // but it makes the compiler happy.
         throw e;
       }
     }
 
-    
+
     /**
-     * Contract of {@link ReplyProcessor21#stillWaiting()} is that it never
-     * returns true after returning false.
+     * Contract of {@link ReplyProcessor21#stillWaiting()} is that it never returns true after
+     * returning false.
      */
     private volatile boolean finishedWaiting = false;
-    
-    /** Overridden to wait for messages being currently processed:
-      *  This situation can come about if a member departs while we
-      *  are still processing data from that member
-      */
-    @Override  
+
+    /**
+     * Overridden to wait for messages being currently processed: This situation can come about if a
+     * member departs while we are still processing data from that member
+     */
+    @Override
     protected boolean stillWaiting() {
       if (finishedWaiting) { // volatile fetch
         return false;
@@ -260,12 +265,11 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         return true;
       }
       // volatile fetches and volatile store:
-      finishedWaiting =  finishedWaiting ||
-          this.abort || !super.stillWaiting();
+      finishedWaiting = finishedWaiting || this.abort || !super.stillWaiting();
       return !finishedWaiting;
     }
-    
-    @Override  
+
+    @Override
     public String toString() {
       // bug 37213: make sure toString is bullet-proof from escaped constructor
       StringBuffer sb = new StringBuffer();
@@ -275,11 +279,10 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       sb.append(Integer.toString(this.getProcessorId()));
       if (this.members == null) {
         sb.append(" (null memebrs)");
-      }
-      else {
+      } else {
         sb.append(" waiting for ");
         sb.append(Integer.toString(numMembers()));
-        sb.append(" replies"); 
+        sb.append(" replies");
         sb.append((exception == null ? "" : (" exception: " + exception)));
         sb.append(" from ");
         sb.append(membersToString());
@@ -288,12 +291,12 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
       sb.append(Integer.toString(this.msgsBeingProcessed.get()));
       sb.append(" messages in the process of being processed" + ">");
       return sb.toString();
-    }    
-    
+    }
+
     protected boolean trackMessage(StreamingReplyMessage m) {
       Status status;
       synchronized (this) {
-        status = (Status)this.statusMap.get(m.getSender());
+        status = (Status) this.statusMap.get(m.getSender());
         if (status == null) {
           status = new Status();
           this.statusMap.put(m.getSender(), status);
@@ -306,23 +309,23 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
      * @param notReceivedMembers
      */
     public void removeFailedSenders(Set notReceivedMembers) {
-      for (Iterator i=notReceivedMembers.iterator(); i.hasNext(); ) {
-        removeMember((InternalDistributedMember)i.next(), true);
+      for (Iterator i = notReceivedMembers.iterator(); i.hasNext();) {
+        removeMember((InternalDistributedMember) i.next(), true);
       }
     }
   }
-  
-  public static abstract class StreamingPartitionMessage extends PartitionMessage {    
+
+  public static abstract class StreamingPartitionMessage extends PartitionMessage {
     // the following transient fields are used for passing extra data to the sendReply method
     transient HeapDataOutputStream outStream = null;
     transient int replyMsgNum = 0;
     transient boolean replyLastMsg = true;
     transient int numObjectsInChunk = 0;
-    
+
     public StreamingPartitionMessage() {
       super();
     }
-    
+
     public StreamingPartitionMessage(Set recipients, int regionId, ReplyProcessor21 processor) {
       super(recipients, regionId, processor);
     }
@@ -331,12 +334,16 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         ReplyProcessor21 processor) {
       super(recipient, regionId, processor);
     }
-    
-    /** send a reply message.  This is in a method so that subclasses can override the reply message type
-      *  @see PutMessage#sendReply
-      */
-    @Override  
-    protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex, PartitionedRegion pr, long startTime) {
+
+    /**
+     * send a reply message. This is in a method so that subclasses can override the reply message
+     * type
+     * 
+     * @see PutMessage#sendReply
+     */
+    @Override
+    protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
+        PartitionedRegion pr, long startTime) {
       // if there was an exception, then throw out any data
       if (ex != null) {
         this.outStream = null;
@@ -348,42 +355,40 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
           pr.getPrStats().endPartitionMessagesProcessing(startTime);
         }
       }
-      StreamingReplyMessage.send(member, procId, ex, dm, this.outStream,
-                                 this.numObjectsInChunk, this.replyMsgNum,
-                                 this.replyLastMsg);
+      StreamingReplyMessage.send(member, procId, ex, dm, this.outStream, this.numObjectsInChunk,
+          this.replyMsgNum, this.replyLastMsg);
     }
-    
+
     /**
-      * An operation upon the messages partitioned region
+     * An operation upon the messages partitioned region
      * 
-     * @param dm
-     *          the manager that received the message
-     * @param pr
-     *          the partitioned region that should be modified
+     * @param dm the manager that received the message
+     * @param pr the partitioned region that should be modified
      * @return true if a reply message should be sent
      * @throws CacheException if an error is generated in the remote cache
      * @throws ForceReattemptException if the peer is no longer available
      */
-    @Override  
-    protected boolean operateOnPartitionedRegion(DistributionManager dm,
-                                                 PartitionedRegion pr, long startTime)
-    throws CacheException, QueryException, ForceReattemptException, InterruptedException {
+    @Override
+    protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+        long startTime)
+        throws CacheException, QueryException, ForceReattemptException, InterruptedException {
       final boolean isTraceEnabled = logger.isTraceEnabled();
-      
-      if (Thread.interrupted()) throw new InterruptedException();
+
+      if (Thread.interrupted())
+        throw new InterruptedException();
       Object nextObject;
       Object failedObject = null;
       int socketBufferSize = dm.getSystem().getConfig().getSocketBufferSize();
       int chunkSize = socketBufferSize - StreamingOperation.MSG_OVERHEAD;
       boolean sentFinalMessage = false;
       boolean receiverCacheClosed = false;
-      
+
       this.outStream = new HeapDataOutputStream(chunkSize, getSender().getVersionObject());
-      
-      try {        
+
+      try {
         do {
-//          boolean firstObject = true;
-          
+          // boolean firstObject = true;
+
           // always write at least one object, allowing expansion
           // if we have an object already that didn't get added, then use
           // that object instead of getting another one
@@ -398,23 +403,26 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
           if (!this.replyLastMsg) {
             numObjectsInChunk = 1;
             if (isTraceEnabled) {
-              logger.trace("Writing this object to StreamingPartitionMessage outStream: '{}'", nextObject);
-            } 
+              logger.trace("Writing this object to StreamingPartitionMessage outStream: '{}'",
+                  nextObject);
+            }
             BlobHelper.serializeTo(nextObject, outStream);
-            
+
             // for the next objects, disallow stream from allocating more storage
             do {
-              outStream.disallowExpansion(CHUNK_FULL); // sets the mark where rollback occurs on CHUNK_FULL
-              
+              outStream.disallowExpansion(CHUNK_FULL); // sets the mark where rollback occurs on
+                                                       // CHUNK_FULL
+
               nextObject = getNextReplyObject(pr);
               this.replyLastMsg = nextObject == Token.END_OF_STREAM;
-              
+
               if (!this.replyLastMsg) {
                 try {
-                  
+
                   if (isTraceEnabled) {
-                    logger.trace("Writing this object to StreamingPartitionMessage outStream: '{}'", nextObject);
-                  } 
+                    logger.trace("Writing this object to StreamingPartitionMessage outStream: '{}'",
+                        nextObject);
+                  }
                   BlobHelper.serializeTo(nextObject, outStream);
                   this.numObjectsInChunk++;
                 } catch (GemFireRethrowable e) {
@@ -422,49 +430,51 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
                   // and buffer is automatically reset to point where it was disallowed
                   failedObject = nextObject;
                   break;
-                } 
+                }
               }
             } while (nextObject != Token.END_OF_STREAM);
           }
-          
+
           try {
             sendReply(getSender(), this.processorId, dm, null, pr, startTime);
             this.replyMsgNum++;
             if (this.replyLastMsg) {
               sentFinalMessage = true;
             }
-          } 
-          catch (CancelException e) {
+          } catch (CancelException e) {
             receiverCacheClosed = true;
             break;
           }
           this.outStream.reset(); // ready for reuse, assumes sendReply
-                                   // does not queue the message but outStream has
-                                   // already been used          
+                                  // does not queue the message but outStream has
+                                  // already been used
           this.numObjectsInChunk = 0;
         } while (!this.replyLastMsg);
       } catch (IOException ioe) {
         // not expected to ever happen
         throw new InternalGemFireException(ioe);
       }
-      
-      
-      if (!sentFinalMessage && !receiverCacheClosed) {    
-        throw new InternalGemFireError(LocalizedStrings.StreamingPartitionOperation_UNEXPECTED_CONDITION.toLocalizedString());
+
+
+      if (!sentFinalMessage && !receiverCacheClosed) {
+        throw new InternalGemFireError(
+            LocalizedStrings.StreamingPartitionOperation_UNEXPECTED_CONDITION.toLocalizedString());
       }
-      
-      //otherwise, we're already done, so don't send another reply
-      return false;      
-    } 
-    
-    /** override in subclass to provide reply data.
-      *  terminate by returning END_OF_STREAM token object
-      */
+
+      // otherwise, we're already done, so don't send another reply
+      return false;
+    }
+
+    /**
+     * override in subclass to provide reply data. terminate by returning END_OF_STREAM token object
+     */
     protected abstract Object getNextReplyObject(PartitionedRegion pr)
-    throws CacheException, ForceReattemptException, InterruptedException;
-    
+        throws CacheException, ForceReattemptException, InterruptedException;
+
     protected Object getNextReplyObject() {
-      throw new UnsupportedOperationException(LocalizedStrings.StreamingPartitionOperation_USE_GETNEXTREPLYOBJECTPARTITIONEDREGION_INSTEAD.toLocalizedString());
+      throw new UnsupportedOperationException(
+          LocalizedStrings.StreamingPartitionOperation_USE_GETNEXTREPLYOBJECTPARTITIONEDREGION_INSTEAD
+              .toLocalizedString());
     }
   }
 }

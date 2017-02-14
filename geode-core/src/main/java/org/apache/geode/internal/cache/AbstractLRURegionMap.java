@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -56,10 +54,13 @@ import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
  */
 public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   private static final Logger logger = LogService.getLogger();
-  
+
   protected abstract void _setCCHelper(EnableLRU ccHelper);
+
   protected abstract EnableLRU _getCCHelper();
+
   protected abstract void _setLruList(NewLRUClockHand lruList);
+
   protected abstract NewLRUClockHand _getLruList();
 
   private LRUAlgorithm evictionController;
@@ -68,42 +69,40 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     super(internalRegionArgs);
   }
 
-  protected void initialize(Object owner,
-                            Attributes attr,
-                            InternalRegionArguments internalRegionArgs) {
+  protected void initialize(Object owner, Attributes attr,
+      InternalRegionArguments internalRegionArgs) {
 
-    super.initialize(owner, attr, internalRegionArgs, true/*isLRU*/);
+    super.initialize(owner, attr, internalRegionArgs, true/* isLRU */);
 
     EvictionAlgorithm ea;
     LRUAlgorithm ec;
     if (owner instanceof LocalRegion) {
-      ea = ((LocalRegion)owner).getEvictionAttributes().getAlgorithm();
-      ec = ((LocalRegion)owner).getEvictionController();
+      ea = ((LocalRegion) owner).getEvictionAttributes().getAlgorithm();
+      ec = ((LocalRegion) owner).getEvictionController();
     } else if (owner instanceof PlaceHolderDiskRegion) {
-      PlaceHolderDiskRegion phdr = (PlaceHolderDiskRegion)owner;
+      PlaceHolderDiskRegion phdr = (PlaceHolderDiskRegion) owner;
       ea = phdr.getActualLruAlgorithm();
       ec = phdr.getEvictionAttributes().createEvictionController(null, phdr.getOffHeap());
     } else {
       throw new IllegalStateException("expected LocalRegion or PlaceHolderDiskRegion");
     }
     this.evictionController = ec;
-    
-    if (ea.isLRUMemory())  {
-      ((MemLRUCapacityController) ec).setEntryOverHead(getEntryOverHead()); 
+
+    if (ea.isLRUMemory()) {
+      ((MemLRUCapacityController) ec).setEntryOverHead(getEntryOverHead());
     }
-    if (ea.isLRUHeap())  {
-      ((HeapLRUCapacityController) ec).setEntryOverHead(getEntryOverHead()); 
-    }    
+    if (ea.isLRUHeap()) {
+      ((HeapLRUCapacityController) ec).setEntryOverHead(getEntryOverHead());
+    }
     _setCCHelper(getHelper(ec));
-    
+
     /*
      * modification for LIFO Logic incubation
      * 
      */
-    if (ea == EvictionAlgorithm.LIFO_ENTRY || ea == EvictionAlgorithm.LIFO_MEMORY ) {
+    if (ea == EvictionAlgorithm.LIFO_ENTRY || ea == EvictionAlgorithm.LIFO_MEMORY) {
       _setLruList(new NewLIFOClockHand(owner, _getCCHelper(), internalRegionArgs));
-    }
-    else {
+    } else {
       _setLruList(new NewLRUClockHand(owner, _getCCHelper(), internalRegionArgs));
     }
   }
@@ -115,58 +114,61 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     this.evictionController.setBucketRegion(r);
   }
 
-  /** The delta produced during a put for activating LRU cannot be used while some
-   * outside party (LocalRegion) has a segment locked... so we'll keep it in a thread
-   * local for a callback after the segment is released.
+  /**
+   * The delta produced during a put for activating LRU cannot be used while some outside party
+   * (LocalRegion) has a segment locked... so we'll keep it in a thread local for a callback after
+   * the segment is released.
    */
   private final ThreadLocal lruDelta = new ThreadLocal();
   private final ThreadLocal mustRemove = new ThreadLocal();
   private final ThreadLocal callbackDisabled = new ThreadLocal();
 
-  private int getDelta( ) {
+  private int getDelta() {
     Object d = lruDelta.get();
-    lruDelta.set(null);         // We only want the delta consumed once
-    if ( d == null ) return 0;
-    return ((Integer)d).intValue();
+    lruDelta.set(null); // We only want the delta consumed once
+    if (d == null)
+      return 0;
+    return ((Integer) d).intValue();
   }
 
-  private void setDelta( int delta ) {
+  private void setDelta(int delta) {
     if (!getCallbackDisabled()) {
       if (getMustRemove()) {
         // after implementation of network-partition-detection we may
         // run into situations where a cache listener performs a cache
-        // operation that needs to update LRU stats.  In order to do this
+        // operation that needs to update LRU stats. In order to do this
         // we first have to execute the previous LRU actions.
         lruUpdateCallback();
       }
-      setMustRemove( true );
+      setMustRemove(true);
     }
     Integer delt = (Integer) lruDelta.get();
     if (delt != null) {
       delta += delt.intValue();
     }
-    lruDelta.set( Integer.valueOf( delta ) );
+    lruDelta.set(Integer.valueOf(delta));
   }
 
 
   /**
-   * Marker class to indicate that the wrapped value
-   * is owned by a CachedDeserializable and its form is
-   * changing from serialized to deserialized.
+   * Marker class to indicate that the wrapped value is owned by a CachedDeserializable and its form
+   * is changing from serialized to deserialized.
    */
   public static class CDValueWrapper {
     private final Object v;
+
     CDValueWrapper(Object v) {
       this.v = v;
     }
+
     public Object getValue() {
       return this.v;
     }
   }
-  
+
   /**
-   * Used when a CachedDeserializable's value changes form.
-   * PRECONDITION: caller has le synced
+   * Used when a CachedDeserializable's value changes form. PRECONDITION: caller has le synced
+   * 
    * @param le the entry whose CachedDeserializable's value changed.
    * @param cd the CachedDeserializable whose form has changed
    * @param v the new form of the CachedDeserializable's value.
@@ -208,8 +210,8 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
       }
     }
     // fix for bug 42090
-    if (_getCCHelper().getEvictionAlgorithm().isLRUHeap()
-        &&_isOwnerALocalRegion() && _getOwner() instanceof BucketRegion
+    if (_getCCHelper().getEvictionAlgorithm().isLRUHeap() && _isOwnerALocalRegion()
+        && _getOwner() instanceof BucketRegion
         && HeapEvictor.EVICT_HIGH_ENTRY_COUNT_BUCKETS_FIRST) {
       result = false;
     }
@@ -222,25 +224,29 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   public void finishChangeValueForm() {
     lruUpdateCallback();
   }
-  
-  private boolean getMustRemove( ) {
+
+  private boolean getMustRemove() {
     Object d = mustRemove.get();
-    if ( d == null ) return false;
-    return ((Boolean)d).booleanValue();
+    if (d == null)
+      return false;
+    return ((Boolean) d).booleanValue();
   }
 
-  private void setMustRemove( boolean b ) {
-    mustRemove.set( b ? Boolean.TRUE : null );
+  private void setMustRemove(boolean b) {
+    mustRemove.set(b ? Boolean.TRUE : null);
   }
-  private boolean getCallbackDisabled( ) {
+
+  private boolean getCallbackDisabled() {
     Object d = callbackDisabled.get();
-    if ( d == null ) return false;
-    return ((Boolean)d).booleanValue();
+    if (d == null)
+      return false;
+    return ((Boolean) d).booleanValue();
   }
 
-  private void setCallbackDisabled( boolean b ) {
-    callbackDisabled.set( b ? Boolean.TRUE : Boolean.FALSE );
+  private void setCallbackDisabled(boolean b) {
+    callbackDisabled.set(b ? Boolean.TRUE : Boolean.FALSE);
   }
+
   /**
    * Returns the size of entries in this entries map
    */
@@ -256,21 +262,20 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   /** unsafe audit code. */
-  public final void audit( ) {
+  public final void audit() {
     if (logger.isTraceEnabled(LogMarker.LRU)) {
-      logger.trace(LogMarker.LRU, "Size of LRUMap = {}", sizeInVM() );
+      logger.trace(LogMarker.LRU, "Size of LRUMap = {}", sizeInVM());
     }
     _getLruList().audit();
   }
 
   /**
-   * Evicts the given entry from the cache. Returns the total number of bytes
-   * evicted. 
-   * 1. For action local destroy, returns size(key + value)
-   * 2. For action evict to disk, returns size(value)
+   * Evicts the given entry from the cache. Returns the total number of bytes evicted. 1. For action
+   * local destroy, returns size(key + value) 2. For action evict to disk, returns size(value)
+   * 
    * @return number of bytes evicted, zero if no eviction took place
    */
-  protected int evictEntry(LRUEntry entry, LRUStatistics stats) throws RegionClearedException  {
+  protected int evictEntry(LRUEntry entry, LRUStatistics stats) throws RegionClearedException {
     EvictionAction action = _getCCHelper().getEvictionAction();
     LocalRegion region = _getOwner();
     if (action.isLocalDestroy()) {
@@ -287,7 +292,8 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
         if (entry.isInUseByTransaction()) {
           entry.unsetEvicted();
           if (logger.isTraceEnabled(LogMarker.LRU)) {
-            logger.trace(LogMarker.LRU, "No eviction of transactional entry for key={}", entry.getKey());
+            logger.trace(LogMarker.LRU, "No eviction of transactional entry for key={}",
+                entry.getKey());
           }
           return 0;
         }
@@ -304,90 +310,93 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
           // no need to evict these; it will not save any space
           // and the destroyed token needs to stay in memory
           if (logger.isTraceEnabled(LogMarker.LRU)) {
-            logger.trace(LogMarker.LRU, "no need to evict {} token for key={}", entryVal, entry.getKey());
+            logger.trace(LogMarker.LRU, "no need to evict {} token for key={}", entryVal,
+                entry.getKey());
           }
           return 0;
         }
         entry.setEvicted();
-        change = DiskEntry.Helper.overflowToDisk((DiskEntry)entry, region, _getCCHelper());
+        change = DiskEntry.Helper.overflowToDisk((DiskEntry) entry, region, _getCCHelper());
       }
       boolean result = change < 0;
       if (result) {
-        
+
         if (_getOwner() instanceof BucketRegion) {
-          BucketRegion bucketRegion = (BucketRegion)_getOwner();
+          BucketRegion bucketRegion = (BucketRegion) _getOwner();
           bucketRegion.updateCounter(change);
-          //if(bucketRegion.getBucketAdvisor().isPrimary()){
-            stats.updateCounter(change);
-         // }
-        }
-        else {
+          // if(bucketRegion.getBucketAdvisor().isPrimary()){
+          stats.updateCounter(change);
+          // }
+        } else {
           stats.updateCounter(change);
         }
 
       } else {
         if (logger.isTraceEnabled(LogMarker.LRU)) {
-          logger.trace(LogMarker.LRU, "no need to evict token for key={} because moving its value to disk resulted in a net change of {} bytes.",
-            entry.getKey(), change);
+          logger.trace(LogMarker.LRU,
+              "no need to evict token for key={} because moving its value to disk resulted in a net change of {} bytes.",
+              entry.getKey(), change);
         }
       }
       return change * -1;
 
     } else {
-      throw new InternalGemFireException(LocalizedStrings.AbstractLRURegionMap_UNKNOWN_EVICTION_ACTION_0.toLocalizedString(action));
+      throw new InternalGemFireException(
+          LocalizedStrings.AbstractLRURegionMap_UNKNOWN_EVICTION_ACTION_0
+              .toLocalizedString(action));
     }
   }
-  
+
   /**
-   *  update the running counter of all the entries
+   * update the running counter of all the entries
    *
-   * @param  delta  Description of the Parameter
+   * @param delta Description of the Parameter
    */
   protected final void changeTotalEntrySize(int delta) {
     if (_isOwnerALocalRegion()) {
       if (_getOwner() instanceof BucketRegion) {
-        BucketRegion bucketRegion = (BucketRegion)_getOwner();
+        BucketRegion bucketRegion = (BucketRegion) _getOwner();
         bucketRegion.updateCounter(delta);
       }
     }
     _getLruList().stats().updateCounter(delta);
 
-    if (delta > 0 ) {
+    if (delta > 0) {
       if (logger.isTraceEnabled(LogMarker.LRU)) {
-        logger.trace(LogMarker.LRU, "total lru size is now: {}", getTotalEntrySize() );
+        logger.trace(LogMarker.LRU, "total lru size is now: {}", getTotalEntrySize());
       }
     }
   }
 
   /**
-   *  access the getHelper method on the eviction controller to initialize
-   *  the ccHelper field.
+   * access the getHelper method on the eviction controller to initialize the ccHelper field.
    *
-   * @param  ec  The governing eviction controller.
-   * @return     the helper instance from the eviction controller.
+   * @param ec The governing eviction controller.
+   * @return the helper instance from the eviction controller.
    */
-  private static EnableLRU getHelper( LRUAlgorithm ec ) {
+  private static EnableLRU getHelper(LRUAlgorithm ec) {
     return ec.getLRUHelper();
   }
+
   @Override
   public void evictValue(Object key) {
-    throw new IllegalStateException("The evictValue is not supported on regions with eviction attributes.");
+    throw new IllegalStateException(
+        "The evictValue is not supported on regions with eviction attributes.");
   }
 
   /**
-   *  Gets the total entry size limit for the map from the capacity
-   *  controller helper.
+   * Gets the total entry size limit for the map from the capacity controller helper.
    *
-   * @return    The total allowable size of this maps entries.
+   * @return The total allowable size of this maps entries.
    */
   protected final long getLimit() {
     if (_getOwner() instanceof BucketRegion) {
-      BucketRegion bucketRegion = (BucketRegion)_getOwner();
+      BucketRegion bucketRegion = (BucketRegion) _getOwner();
       return bucketRegion.getLimit();
     }
     return _getLruList().stats().getLimit();
   }
-  
+
   public final LRUStatistics getLRUStatistics() {
     return _getLruList().stats();
   }
@@ -400,7 +409,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
    */
   protected final long getTotalEntrySize() {
     if (_getOwnerObject() instanceof BucketRegion) {
-      BucketRegion bucketRegion = (BucketRegion)_getOwner();
+      BucketRegion bucketRegion = (BucketRegion) _getOwner();
       return bucketRegion.getCounter();
     }
     return _getLruList().stats().getCounter();
@@ -409,7 +418,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   @Override
   public final void lruUpdateCallback() {
     final boolean isDebugEnabled_LRU = logger.isTraceEnabled(LogMarker.LRU);
-    
+
     if (getCallbackDisabled()) {
       return;
     }
@@ -419,71 +428,73 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     if (isDebugEnabled_LRU && _isOwnerALocalRegion()) {
       logger.trace(LogMarker.LRU,
           "lruUpdateCallback; list size is: {}; actual size is: {}; map size is: {}; delta is: {}; limit is: {}; tombstone count={}",
-          getTotalEntrySize(), this._getLruList().getExpensiveListCount(), size(), delta, getLimit(), _getOwner().getTombstoneCount());
+          getTotalEntrySize(), this._getLruList().getExpensiveListCount(), size(), delta,
+          getLimit(), _getOwner().getTombstoneCount());
     }
     LRUStatistics stats = _getLruList().stats();
     if (!_isOwnerALocalRegion()) {
       changeTotalEntrySize(delta);
       // instead of evicting we just quit faulting values in
-    } else
-    if (_getCCHelper().getEvictionAlgorithm().isLRUHeap()) {
+    } else if (_getCCHelper().getEvictionAlgorithm().isLRUHeap()) {
       changeTotalEntrySize(delta);
       try {
-          while (bytesToEvict > 0 && _getCCHelper().mustEvict(stats, _getOwner(), bytesToEvict)) {
-            boolean evictFromThisRegion = true;
-          if (HeapEvictor.EVICT_HIGH_ENTRY_COUNT_BUCKETS_FIRST && _getOwner() instanceof BucketRegion) {
+        while (bytesToEvict > 0 && _getCCHelper().mustEvict(stats, _getOwner(), bytesToEvict)) {
+          boolean evictFromThisRegion = true;
+          if (HeapEvictor.EVICT_HIGH_ENTRY_COUNT_BUCKETS_FIRST
+              && _getOwner() instanceof BucketRegion) {
             long bytesEvicted = 0;
             long totalBytesEvicted = 0;
-            List<BucketRegion> regions = ((BucketRegion)_getOwner())
-                .getPartitionedRegion().getSortedBuckets();
+            List<BucketRegion> regions =
+                ((BucketRegion) _getOwner()).getPartitionedRegion().getSortedBuckets();
             Iterator<BucketRegion> iter = regions.iterator();
             while (iter.hasNext()) {
               BucketRegion region = iter.next();
-              //only primaries can trigger inline eviction fix for 41814
-          	  if(!region.getBucketAdvisor().isPrimary()){       	
-              try {
-                bytesEvicted = ((AbstractLRURegionMap)region.entries)
-                    .centralizedLruUpdateCallback();
-                if (bytesEvicted == 0) {
-                  iter.remove();
-                } else {
-                  evictFromThisRegion = false;
+              // only primaries can trigger inline eviction fix for 41814
+              if (!region.getBucketAdvisor().isPrimary()) {
+                try {
+                  bytesEvicted =
+                      ((AbstractLRURegionMap) region.entries).centralizedLruUpdateCallback();
+                  if (bytesEvicted == 0) {
+                    iter.remove();
+                  } else {
+                    evictFromThisRegion = false;
+                  }
+                  totalBytesEvicted += bytesEvicted;
+                  bytesToEvict -= bytesEvicted;
+                  if (bytesEvicted > bytesToEvict) {
+                    bytesToEvict = 0;
+                    break;
+                  }
+                  if (totalBytesEvicted > bytesToEvict) {
+                    break;
+                  }
+                } catch (RegionDestroyedException rd) {
+                  region.cache.getCancelCriterion().checkCancelInProgress(rd);
+                } catch (Exception e) {
+                  region.cache.getCancelCriterion().checkCancelInProgress(e);
+                  logger.warn(
+                      LocalizedMessage.create(LocalizedStrings.Eviction_EVICTOR_TASK_EXCEPTION,
+                          new Object[] {e.getMessage()}),
+                      e);
                 }
-                totalBytesEvicted += bytesEvicted;
-                bytesToEvict -= bytesEvicted;
-                if(bytesEvicted > bytesToEvict){
-                  bytesToEvict = 0;
-                  break;
-                }                  
-                if(totalBytesEvicted > bytesToEvict) {
-                  break;
-                }
               }
-              catch (RegionDestroyedException rd) {
-                region.cache.getCancelCriterion().checkCancelInProgress(rd);
-              }
-              catch (Exception e) {
-                region.cache.getCancelCriterion().checkCancelInProgress(e);
-                logger.warn(LocalizedMessage.create(LocalizedStrings.Eviction_EVICTOR_TASK_EXCEPTION,
-                    new Object[] { e.getMessage() }), e);
-              }
-            }
             }
           }
-          if(evictFromThisRegion) {
-            LRUEntry removalEntry = (LRUEntry)_getLruList().getLRUEntry();
+          if (evictFromThisRegion) {
+            LRUEntry removalEntry = (LRUEntry) _getLruList().getLRUEntry();
             if (removalEntry != null) {
               int sizeOfValue = evictEntry(removalEntry, stats);
               if (sizeOfValue != 0) {
                 bytesToEvict -= sizeOfValue;
                 if (isDebugEnabled_LRU) {
-                  logger.trace(LogMarker.LRU, "evicted entry key={} total entry size is now: {} bytesToEvict :{}",
+                  logger.trace(LogMarker.LRU,
+                      "evicted entry key={} total entry size is now: {} bytesToEvict :{}",
                       removalEntry.getKey(), getTotalEntrySize(), bytesToEvict);
                 }
                 stats.incEvictions();
                 if (_isOwnerALocalRegion()) {
                   if (_getOwner() instanceof BucketRegion) {
-                    ((BucketRegion)_getOwner()).incEvictions(1);
+                    ((BucketRegion) _getOwner()).incEvictions(1);
                   }
                 }
                 if (isDebugEnabled_LRU) {
@@ -492,8 +503,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
                 _getCCHelper().afterEviction();
               }
 
-            }
-            else {
+            } else {
               if (getTotalEntrySize() != 0) {
                 if (isDebugEnabled_LRU) {
                   logger.trace(LogMarker.LRU, "leaving evict loop early");
@@ -503,29 +513,28 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
             }
           }
         }
-      }
-      catch (RegionClearedException e) {
+      } catch (RegionClearedException e) {
         // TODO Auto-generated catch block
         if (isDebugEnabled_LRU) {
           logger.trace(LogMarker.LRU, "exception ={}", e.getCause());
         }
       }
-    }
-    else {
+    } else {
       try {
         // to fix bug 48285 do no evict if bytesToEvict <= 0.
         while (bytesToEvict > 0 && _getCCHelper().mustEvict(stats, _getOwner(), bytesToEvict)) {
-          LRUEntry removalEntry = (LRUEntry)_getLruList().getLRUEntry();
+          LRUEntry removalEntry = (LRUEntry) _getLruList().getLRUEntry();
           if (removalEntry != null) {
             if (evictEntry(removalEntry, stats) != 0) {
               if (isDebugEnabled_LRU) {
-                logger.trace(LogMarker.LRU, "evicted entry key(2)={} total entry size is now: {} bytesToEvict :",
-                  removalEntry.getKey(), getTotalEntrySize(), bytesToEvict);
+                logger.trace(LogMarker.LRU,
+                    "evicted entry key(2)={} total entry size is now: {} bytesToEvict :",
+                    removalEntry.getKey(), getTotalEntrySize(), bytesToEvict);
               }
               stats.incEvictions();
               if (_isOwnerALocalRegion()) {
                 if (_getOwner() instanceof BucketRegion) {
-                  ((BucketRegion)_getOwner()).incEvictions(1);
+                  ((BucketRegion) _getOwner()).incEvictions(1);
                 }
               }
               if (isDebugEnabled_LRU) {
@@ -535,8 +544,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
 
             }
 
-          }
-          else {
+          } else {
             if (getTotalEntrySize() != 0) {
               if (isDebugEnabled_LRU) {
                 logger.trace(LogMarker.LRU, "leaving evict loop early");
@@ -546,8 +554,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
           }
         }
         changeTotalEntrySize(delta);
-      }
-      catch (RegionClearedException e) {
+      } catch (RegionClearedException e) {
         // TODO Auto-generated catch block
         if (isDebugEnabled_LRU) {
           logger.debug("exception ={}", e.getCause());
@@ -555,29 +562,30 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
       }
     }
     if (isDebugEnabled_LRU) {
-      logger.trace(LogMarker.LRU, "callback complete.  LRU size is now {}", _getLruList().stats().getCounter());
+      logger.trace(LogMarker.LRU, "callback complete.  LRU size is now {}",
+          _getLruList().stats().getCounter());
     }
     // If in transaction context (either local or message)
     // reset the tx thread local
- } 
-  
+  }
+
   private boolean mustEvict() {
     LocalRegion owner = _getOwner();
     InternalResourceManager resourceManager = owner.getCache().getResourceManager();
-    
+
     final boolean monitorStateIsEviction;
     if (!owner.getAttributes().getOffHeap()) {
       monitorStateIsEviction = resourceManager.getHeapMonitor().getState().isEviction();
     } else {
       monitorStateIsEviction = resourceManager.getOffHeapMonitor().getState().isEviction();
     }
-    
+
     return monitorStateIsEviction && this.sizeInVM() > 0;
   }
-  
+
   public final int centralizedLruUpdateCallback() {
     final boolean isDebugEnabled_LRU = logger.isTraceEnabled(LogMarker.LRU);
-    
+
     int evictedBytes = 0;
     if (getCallbackDisabled()) {
       return evictedBytes;
@@ -585,17 +593,18 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     getDelta();
     resetThreadLocals();
     if (isDebugEnabled_LRU) {
-      logger.trace(LogMarker.LRU, "centralLruUpdateCallback: lru size is now {}, limit is: {}", getTotalEntrySize(), getLimit());
+      logger.trace(LogMarker.LRU, "centralLruUpdateCallback: lru size is now {}, limit is: {}",
+          getTotalEntrySize(), getLimit());
     }
     LRUStatistics stats = _getLruList().stats();
     try {
       while (mustEvict() && evictedBytes == 0) {
-        LRUEntry removalEntry = (LRUEntry)_getLruList().getLRUEntry();
+        LRUEntry removalEntry = (LRUEntry) _getLruList().getLRUEntry();
         if (removalEntry != null) {
           evictedBytes = evictEntry(removalEntry, stats);
           if (evictedBytes != 0) {
             if (_getOwner() instanceof BucketRegion) {
-              ((BucketRegion)_getOwner()).incEvictions(1);
+              ((BucketRegion) _getOwner()).incEvictions(1);
             }
             stats.incEvictions();
             if (isDebugEnabled_LRU) {
@@ -603,8 +612,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
             }
             _getCCHelper().afterEviction();
           }
-        }
-        else {
+        } else {
           if (getTotalEntrySize() != 0) {
             if (isDebugEnabled_LRU) {
               logger.trace(LogMarker.LRU, "leaving evict loop early");
@@ -613,8 +621,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
           break;
         }
       }
-    }
-    catch (RegionClearedException rce) {
+    } catch (RegionClearedException rce) {
       // Ignore
       if (isDebugEnabled_LRU) {
         logger.trace(LogMarker.LRU, "exception ={}", rce.getCause());
@@ -627,9 +634,9 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     // reset the tx thread local
     return evictedBytes;
   }
-  
- 
-  
+
+
+
   /**
    * Update counter related to limit in list
    * 
@@ -641,14 +648,15 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
     final int delta = getDelta();
     resetThreadLocals();
     if (logger.isTraceEnabled(LogMarker.LRU)) {
-      logger.trace(LogMarker.LRU, "updateStats - delta is: {} total is: {} limit is: {}", delta, getTotalEntrySize(), getLimit());
+      logger.trace(LogMarker.LRU, "updateStats - delta is: {} total is: {} limit is: {}", delta,
+          getTotalEntrySize(), getLimit());
     }
 
     if (delta != 0) {
       changeTotalEntrySize(delta);
     }
   }
-  
+
   @Override
   public final boolean disableLruUpdateCallback() {
     if (getCallbackDisabled()) {
@@ -658,19 +666,22 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
       return true;
     }
   }
+
   @Override
   public final void enableLruUpdateCallback() {
     setCallbackDisabled(false);
   }
-  //TODO rebalancing these methods are new on the
-  //rebalancing branch but never used???
+
+  // TODO rebalancing these methods are new on the
+  // rebalancing branch but never used???
   public final void disableLruUpdateCallbackForInline() {
     setCallbackDisabled(true);
   }
+
   public final void enableLruUpdateCallbackForInline() {
     setCallbackDisabled(false);
   }
-  
+
   @Override
   public final void resetThreadLocals() {
     mustRemove.set(null);
@@ -679,76 +690,70 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public final Set<VersionSource> clear(RegionVersionVector rvv)
-  {
+  public final Set<VersionSource> clear(RegionVersionVector rvv) {
     _getLruList().clear(rvv);
     return super.clear(rvv);
   }
-  
-  /*Asif :
-   * Motivation: An entry which is no longer existing in the system due to clear
-   * operation, should not be present the LRUList being used by the region.
+
+  /*
+   * Asif : Motivation: An entry which is no longer existing in the system due to clear operation,
+   * should not be present the LRUList being used by the region.
    * 
-   * Case1 : An entry has been written to disk & on its return code path, it 
-   * invokes lruCreate or lruUpdate. Before starting the operation of writing to disk,
-   * the HTree reference is set in the threadlocal. A clear operation changes
-   * the Htree reference in a write lock.
-   * Thus if the htree reference has not changed till this point, it would mean either
-   * the entry is still valid or a clear operation is in progress but has not changed the 
-   * Htree Reference . Since we store the LRUList in a local variable, it implies that if 
-   * clear occurs , it will go in the stale list & if not it goes in the right list.
-   * Both ways we are safe.
+   * Case1 : An entry has been written to disk & on its return code path, it invokes lruCreate or
+   * lruUpdate. Before starting the operation of writing to disk, the HTree reference is set in the
+   * threadlocal. A clear operation changes the Htree reference in a write lock. Thus if the htree
+   * reference has not changed till this point, it would mean either the entry is still valid or a
+   * clear operation is in progress but has not changed the Htree Reference . Since we store the
+   * LRUList in a local variable, it implies that if clear occurs , it will go in the stale list &
+   * if not it goes in the right list. Both ways we are safe.
    * 
-   * Case 2: The Htree reference has changed ( implying a clear conflic with put)
-   *  but the entry is valid. This is possible as we first set the Htree Ref in thread local.
-   *  Now before the update operation has acquired the entry , clear happens. As a result
-   *  the update operation has become create. Since the clear changes the Htree Ref & the LRUList
-   *  in a write lock & hence by the time the original update operation acquires the read lock,
-   *  the LRUList  has already been changed by clear. Now in the update operation's return path
-   *  the List which it stores in local variable is bound to be the new List. 
-   *  Since our code checks if the entry reference exists in the region in case of conflict
-   *  & if yes, we append the entry to the List. It is guaranteed to be added to the 
-   *  new List.
-   *  
-   *    Also it is necessary that when we clear the region, first the concurrent map of the region
-   *    containing entries needs to be cleared. The Htree Reference should be reset after 
-   *    that. And then we should be resetting the LRUList. 
-   *    Previously the Htree  reference was being set before clearing the Map. This caused
-   *    Bug 37606. 
-   *    If the order of clear operation on disk region is ( incorrect ) 
-   *    1) map.clear 2) Resetting the LRUList 3) Changing the Htree ref 
-   *    Then following bug  can occur.,
-   *    During entry operation on its return path, invokes lruUpdate/lruCreate. 
-   *    By that time the clear proceeds & it has reset the LRUList & cleared the entries.
-   *    But as the Htree ref has not changed, we would take the locally available LRUList
-   *    ( which may be the new List) & append the entry to the List.
-   *    
+   * Case 2: The Htree reference has changed ( implying a clear conflic with put) but the entry is
+   * valid. This is possible as we first set the Htree Ref in thread local. Now before the update
+   * operation has acquired the entry , clear happens. As a result the update operation has become
+   * create. Since the clear changes the Htree Ref & the LRUList in a write lock & hence by the time
+   * the original update operation acquires the read lock, the LRUList has already been changed by
+   * clear. Now in the update operation's return path the List which it stores in local variable is
+   * bound to be the new List. Since our code checks if the entry reference exists in the region in
+   * case of conflict & if yes, we append the entry to the List. It is guaranteed to be added to the
+   * new List.
+   * 
+   * Also it is necessary that when we clear the region, first the concurrent map of the region
+   * containing entries needs to be cleared. The Htree Reference should be reset after that. And
+   * then we should be resetting the LRUList. Previously the Htree reference was being set before
+   * clearing the Map. This caused Bug 37606. If the order of clear operation on disk region is (
+   * incorrect ) 1) map.clear 2) Resetting the LRUList 3) Changing the Htree ref Then following bug
+   * can occur., During entry operation on its return path, invokes lruUpdate/lruCreate. By that
+   * time the clear proceeds & it has reset the LRUList & cleared the entries. But as the Htree ref
+   * has not changed, we would take the locally available LRUList ( which may be the new List) &
+   * append the entry to the List.
    * 
    * 
-  */
+   * 
+   */
   @Override
   protected final void lruEntryCreate(RegionEntry re) {
-    LRUEntry e = (LRUEntry)re;
+    LRUEntry e = (LRUEntry) re;
     // Assert.assertFalse(e._getValue() instanceof DiskEntry.RecoveredEntry)
     if (logger.isTraceEnabled(LogMarker.LRU)) {
       logger.trace(LogMarker.LRU,
           "lruEntryCreate for key={}; list size is: {}; actual size is: {}; map size is: {}; entry size: {}; in lru clock: {}",
-          re.getKey(), getTotalEntrySize(), this._getLruList().getExpensiveListCount(), size(), e.getEntrySize(), !e.testEvicted());
+          re.getKey(), getTotalEntrySize(), this._getLruList().getExpensiveListCount(), size(),
+          e.getEntrySize(), !e.testEvicted());
     }
-//    this.lruCreatedKey = re.getKey(); // [ bruce ] for DEBUGGING only
+    // this.lruCreatedKey = re.getKey(); // [ bruce ] for DEBUGGING only
     e.unsetEvicted();
-    NewLRUClockHand lruList = _getLruList();   
-    DiskRegion disk =  _getOwner().getDiskRegion();
+    NewLRUClockHand lruList = _getLruList();
+    DiskRegion disk = _getOwner().getDiskRegion();
     boolean possibleClear = disk != null && disk.didClearCountChange();
-    if(!possibleClear || this._getOwner().basicGetEntry(re.getKey()) == re ) {
+    if (!possibleClear || this._getOwner().basicGetEntry(re.getKey()) == re) {
       lruList.appendEntry(e);
       lruEntryUpdate(e);
-    }    
+    }
   }
-  
+
   @Override
-  protected final void lruEntryUpdate(RegionEntry re ) {
-    final LRUEntry e = (LRUEntry)re;
+  protected final void lruEntryUpdate(RegionEntry re) {
+    final LRUEntry e = (LRUEntry) re;
     setDelta(e.updateEntrySize(_getCCHelper()));
     if (logger.isDebugEnabled()) {
       logger.debug("lruEntryUpdate for key={} size={}", re.getKey(), e.getEntrySize());
@@ -774,7 +779,8 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
         // the old txs allowing the entry to be evicted and causing a tx conflict.
         // TODO: this should now be safe but why the odd condition for this block
         // and why call lruList.appendEntry twice (once above and once in resetRefCount.
-        // Also lruEntryUpdate only happens on an lru. Do we need to call reset for the non-lru (expiration) case?
+        // Also lruEntryUpdate only happens on an lru. Do we need to call reset for the non-lru
+        // (expiration) case?
         e.resetRefCount(lruList);
       }
     } else {
@@ -786,34 +792,39 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
       }
     }
   }
+
   @Override
   protected final void lruEntryDestroy(RegionEntry re) {
-    final LRUEntry e = (LRUEntry)re;
+    final LRUEntry e = (LRUEntry) re;
     if (logger.isTraceEnabled(LogMarker.LRU)) {
       logger.trace(LogMarker.LRU,
           "lruEntryDestroy for key={}; list size is: {}; actual size is: {}; map size is: {}; entry size: {}; in lru clock: {}",
-          re.getKey(), getTotalEntrySize(), this._getLruList().getExpensiveListCount(), size(), e.getEntrySize(), !e.testEvicted());
+          re.getKey(), getTotalEntrySize(), this._getLruList().getExpensiveListCount(), size(),
+          e.getEntrySize(), !e.testEvicted());
     }
 
-//    if (this.lruCreatedKey == re.getKey()) {
-//      String method = Thread.currentThread().getStackTrace()[5].getMethodName(); 
-//    }
-//    boolean wasEvicted = e.testEvicted();
-    /*boolean removed = */_getLruList().unlinkEntry(e);
-//    if (removed || wasEvicted) { // evicted entries have already been removed from the list
+    // if (this.lruCreatedKey == re.getKey()) {
+    // String method = Thread.currentThread().getStackTrace()[5].getMethodName();
+    // }
+    // boolean wasEvicted = e.testEvicted();
+    /* boolean removed = */_getLruList().unlinkEntry(e);
+    // if (removed || wasEvicted) { // evicted entries have already been removed from the list
     changeTotalEntrySize(-1 * e.getEntrySize());// subtract the size.
     Token vTok = re.getValueAsToken();
-    if (vTok == Token.DESTROYED || vTok == Token.TOMBSTONE) { // OFFHEAP noop TODO: use re.isDestroyedOrTombstone
+    if (vTok == Token.DESTROYED || vTok == Token.TOMBSTONE) { // OFFHEAP noop TODO: use
+                                                              // re.isDestroyedOrTombstone
       // if in token mode we need to recalculate the size of the entry since it's
       // staying in the map and may be resurrected
       e.updateEntrySize(_getCCHelper());
     }
-//    } else if (debug) {
-//      debugLogging("entry not removed from LRU list");
-//    }
+    // } else if (debug) {
+    // debugLogging("entry not removed from LRU list");
+    // }
 
   }
-  /** Called by DiskEntry.Helper.faultInValue
+
+  /**
+   * Called by DiskEntry.Helper.faultInValue
    */
   @Override
   public final void lruEntryFaultIn(LRUEntry e) {
@@ -834,7 +845,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
       lruList.appendEntry(e);
     }
   }
-  
+
   @Override
   public final void decTxRefCount(RegionEntry re) {
     LocalRegion lr = null;
@@ -848,7 +859,7 @@ public abstract class AbstractLRURegionMap extends AbstractRegionMap {
   public final boolean lruLimitExceeded() {
     return _getCCHelper().mustEvict(_getLruList().stats(), null, 0);
   }
-  
+
   @Override
   public void lruCloseStats() {
     _getLruList().closeStats();

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin.remote;
 
@@ -30,20 +28,19 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 
 /**
- * The MissingPersistentIdResonse we return 662 peers. This response
- * includes this list of ids that we have locally.
+ * The MissingPersistentIdResonse we return 662 peers. This response includes this list of ids that
+ * we have locally.
  *
  */
 public class MissingPersistentIDsResponse extends AdminResponse {
 
   private Set<PersistentID> missingIds;
   private Set<PersistentID> localIds;
-  
-  public MissingPersistentIDsResponse() {
-  }
 
-  public MissingPersistentIDsResponse(Set<PersistentID> missingIds,
-      Set<PersistentID> localIds, InternalDistributedMember recipient) {
+  public MissingPersistentIDsResponse() {}
+
+  public MissingPersistentIDsResponse(Set<PersistentID> missingIds, Set<PersistentID> localIds,
+      InternalDistributedMember recipient) {
     this.missingIds = missingIds;
     this.localIds = localIds;
     this.setRecipient(recipient);
@@ -52,7 +49,7 @@ public class MissingPersistentIDsResponse extends AdminResponse {
   public int getDSFID() {
     return MISSING_PERSISTENT_IDS_RESPONSE;
   }
-  
+
   @Override
   protected void process(DistributionManager dm) {
     super.process(dm);
@@ -63,16 +60,16 @@ public class MissingPersistentIDsResponse extends AdminResponse {
     super.fromData(in);
     int size = in.readInt();
     missingIds = new HashSet<PersistentID>(size);
-    for(int i =0; i < size; i++) {
+    for (int i = 0; i < size; i++) {
       PersistentMemberPattern pattern = new PersistentMemberPattern();
-      InternalDataSerializer.invokeFromData(pattern,in);
+      InternalDataSerializer.invokeFromData(pattern, in);
       missingIds.add(pattern);
     }
     size = in.readInt();
     localIds = new HashSet<PersistentID>(size);
-    for(int i =0; i < size; i++) {
+    for (int i = 0; i < size; i++) {
       PersistentMemberPattern pattern = new PersistentMemberPattern();
-      InternalDataSerializer.invokeFromData(pattern,in);
+      InternalDataSerializer.invokeFromData(pattern, in);
       localIds.add(pattern);
     }
   }
@@ -81,19 +78,19 @@ public class MissingPersistentIDsResponse extends AdminResponse {
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     out.writeInt(missingIds.size());
-    for(PersistentID pattern : missingIds) {
+    for (PersistentID pattern : missingIds) {
       InternalDataSerializer.invokeToData(pattern, out);
     }
     out.writeInt(localIds.size());
-    for(PersistentID pattern : localIds) {
-      InternalDataSerializer.invokeToData(pattern,out);
+    for (PersistentID pattern : localIds) {
+      InternalDataSerializer.invokeToData(pattern, out);
     }
   }
-  
+
   public Set<PersistentID> getMissingIds() {
     return missingIds;
   }
-  
+
   public Set<PersistentID> getLocalIds() {
     return localIds;
   }
@@ -106,9 +103,8 @@ public class MissingPersistentIDsResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    return getClass().getName() + ": missing=" + missingIds + "local="
-        + localIds;
+    return getClass().getName() + ": missing=" + missingIds + "local=" + localIds;
   }
-  
-  
+
+
 }

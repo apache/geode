@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.tcp;
 
@@ -35,19 +33,19 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/** <p>MsgDestreamer supports destreaming a streamed message from a tcp Connection
- * that arrives in chunks.
- * This allows us to receive a message without needing to
- * read it completely into a buffer before we can start deserializing it.
-
-    @since GemFire 5.0.2
-   
-    */
+/**
+ * <p>
+ * MsgDestreamer supports destreaming a streamed message from a tcp Connection that arrives in
+ * chunks. This allows us to receive a message without needing to read it completely into a buffer
+ * before we can start deserializing it.
+ * 
+ * @since GemFire 5.0.2
+ * 
+ */
 
 public class MsgDestreamer {
   /**
-   * If an exception occurs during deserialization of the message it will be
-   * recorded here.
+   * If an exception occurs during deserialization of the message it will be recorded here.
    */
   private Throwable failure;
   /**
@@ -64,7 +62,7 @@ public class MsgDestreamer {
   private final DestreamerThread t;
 
   private int size;
-  
+
   final CancelCriterion stopper;
 
   final Version version;
@@ -84,7 +82,7 @@ public class MsgDestreamer {
     reset();
     this.t.close();
   }
-  
+
   public void reset() {
     synchronized (this) {
       this.failure = null;
@@ -93,110 +91,120 @@ public class MsgDestreamer {
     this.size = 0;
     this.t.setName("IDLE p2pDestreamer");
   }
+
   public void setName(String name) {
     this.t.setName("p2pDestreamer for " + name);
   }
 
   private void waitUntilDone() throws InterruptedException {
-    if (this.t.isClosed() || Thread.interrupted()) throw new InterruptedException();
+    if (this.t.isClosed() || Thread.interrupted())
+      throw new InterruptedException();
     synchronized (this) {
       while (this.failure == null && this.result == null) {
-        if (this.t.isClosed() || Thread.interrupted()) throw new InterruptedException();
+        if (this.t.isClosed() || Thread.interrupted())
+          throw new InterruptedException();
         this.wait(); // spurious wakeup ok
       }
     }
   }
-  
-//   private final String me = "MsgDestreamer<" + System.identityHashCode(this) + ">";
 
-//   public String toString() {
-//     return this.me;
-//   }
-//     private void logit(String s) {
-//       LogWriterI18n l = getLogger();
-//       if (l != null) {
-//         l.fine(this + ": " + s);
-//       }
-//     }
-//     private LogWriterI18n getLogger() {
-//       LogWriterI18n result = null;
-//       DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-//       if (ds != null) {
-//         result = ds.getLogWriter();
-//       }
-//       return result;
-//     }
-    
+  // private final String me = "MsgDestreamer<" + System.identityHashCode(this) + ">";
+
+  // public String toString() {
+  // return this.me;
+  // }
+  // private void logit(String s) {
+  // LogWriterI18n l = getLogger();
+  // if (l != null) {
+  // l.fine(this + ": " + s);
+  // }
+  // }
+  // private LogWriterI18n getLogger() {
+  // LogWriterI18n result = null;
+  // DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
+  // if (ds != null) {
+  // result = ds.getLogWriter();
+  // }
+  // return result;
+  // }
+
   /**
    * Adds a chunk for this guy to deserialize
+   * 
    * @param bb contains the bytes of the chunk
    * @param length the number of bytes in bb that are this chunk
    */
   public void addChunk(ByteBuffer bb, int length) throws IOException {
     // if this destreamer has failed or this chunk is empty just return
     if (this.failure == null && length > 0) {
-//       logit("addChunk bb length=" + length);
+      // logit("addChunk bb length=" + length);
       this.t.addChunk(bb, length);
       this.size += length;
     }
   }
+
   /**
    * Adds a chunk for this guy to deserialize
+   * 
    * @param b a byte array contains the bytes of the chunk
    */
   public void addChunk(byte[] b) throws IOException {
     // if this destreamer has failed or this chunk is empty just return
     if (this.failure == null && b != null && b.length > 0) {
-//       logit("addChunk length=" + b.length);
+      // logit("addChunk length=" + b.length);
       ByteBuffer bb = ByteBuffer.wrap(b);
       this.t.addChunk(bb, b.length);
       this.size += b.length;
     }
   }
+
   /**
    * Returns the number of bytes added to this destreamer.
    */
   public int size() {
     return this.size;
   }
+
   /**
    * Waits for the deserialization to complete and returns the deserialized message.
-   * @throws IOException
-   *         A problem occured while deserializing the message.
-   * @throws ClassNotFoundException
-   *         The class of an object read from <code>in</code> could
-   *         not be found
+   * 
+   * @throws IOException A problem occured while deserializing the message.
+   * @throws ClassNotFoundException The class of an object read from <code>in</code> could not be
+   *         found
    */
   public DistributionMessage getMessage()
-    throws InterruptedException, IOException, ClassNotFoundException
-  {
-//    if (Thread.interrupted()) throw new InterruptedException(); not necessary done in waitUntilDone
-    //this.t.join();
+      throws InterruptedException, IOException, ClassNotFoundException {
+    // if (Thread.interrupted()) throw new InterruptedException(); not necessary done in
+    // waitUntilDone
+    // this.t.join();
     waitUntilDone();
     if (this.failure != null) {
-//       logit("failed with" + this.failure);
+      // logit("failed with" + this.failure);
       if (this.failure instanceof ClassNotFoundException) {
-        throw (ClassNotFoundException)this.failure;
+        throw (ClassNotFoundException) this.failure;
       } else if (this.failure instanceof IOException) {
-        throw (IOException)this.failure;
+        throw (IOException) this.failure;
       } else {
-        IOException io =  new IOException(LocalizedStrings.MsgDestreamer_FAILURE_DURING_MESSAGE_DESERIALIZATION.toLocalizedString());
+        IOException io =
+            new IOException(LocalizedStrings.MsgDestreamer_FAILURE_DURING_MESSAGE_DESERIALIZATION
+                .toLocalizedString());
         io.initCause(this.failure);
         throw io;
       }
     } else {
-//       logit("result =" + this.result);
+      // logit("result =" + this.result);
       return this.result;
     }
   }
+
   /**
-   * Returns the reply processor id for the current failed message.
-   * Returns 0 if it does not have one.
-   * Note this method should only be called after getMessage has thrown an exception.
+   * Returns the reply processor id for the current failed message. Returns 0 if it does not have
+   * one. Note this method should only be called after getMessage has thrown an exception.
    */
   public int getRPid() {
     return this.RPid;
   }
+
   protected void setFailure(Throwable ex, int RPid) {
     synchronized (this) {
       this.failure = ex;
@@ -204,6 +212,7 @@ public class MsgDestreamer {
       this.notify();
     }
   }
+
   protected void setResult(DistributionMessage msg) {
     synchronized (this) {
       this.result = msg;
@@ -211,6 +220,7 @@ public class MsgDestreamer {
       this.notify();
     }
   }
+
   /**
    * Thread used to deserialize chunks into a message.
    */
@@ -218,22 +228,24 @@ public class MsgDestreamer {
     private volatile boolean closed = false;
     final DestreamerIS is;
     final DMStats stats;
+
     public DestreamerThread(DMStats stats, CancelCriterion stopper) {
       setDaemon(true);
       super.setName("IDLE p2pDestreamer");
       this.is = new DestreamerIS(this, stopper);
       this.stats = stats;
     }
-//     private final String me = "DestreamerThread<" + System.identityHashCode(this) + ">";
-//     public String toString() {
-//       return this.me;
-//     }
+    // private final String me = "DestreamerThread<" + System.identityHashCode(this) + ">";
+    // public String toString() {
+    // return this.me;
+    // }
 
     public void addChunk(ByteBuffer chunk, int bbLength) throws IOException {
       ByteBuffer bb = chunk.slice();
       bb.limit(bbLength);
       this.is.addChunk(bb);
     }
+
     @Override
     public void run() {
       for (;;) {
@@ -243,21 +255,19 @@ public class MsgDestreamer {
         try {
           ReplyProcessor21.initMessageRPId();
           final Version v = version;
-          DataInputStream dis = v == null ? new DataInputStream(this.is)
-              : new VersionedDataInputStream(this.is, v);
+          DataInputStream dis =
+              v == null ? new DataInputStream(this.is) : new VersionedDataInputStream(this.is, v);
           long startSer = this.stats.startMsgDeserialization();
-          setResult((DistributionMessage)InternalDataSerializer.readDSFID(dis));
+          setResult((DistributionMessage) InternalDataSerializer.readDSFID(dis));
           this.stats.endMsgDeserialization(startSer);
-        } 
-        catch (VirtualMachineError err) {
+        } catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
-          // If this ever returns, rethrow the error.  We're poisoned
+          // If this ever returns, rethrow the error. We're poisoned
           // now, so don't let this thread continue.
           throw err;
-        }
-        catch (Throwable ex) {
+        } catch (Throwable ex) {
           // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above).  However, there is
+          // catch VirtualMachineError (see above). However, there is
           // _still_ a possibility that you are dealing with a cascading
           // error condition, so you also need to check to see if the JVM
           // is still usable:
@@ -269,18 +279,19 @@ public class MsgDestreamer {
         }
       }
     }
+
     public void close() {
       this.closed = true;
       interrupt();
     }
+
     public boolean isClosed() {
       return this.closed;
     }
   }
   /**
-   * This input stream waits for data to be available.
-   * Once it is provided, by a call to addChunk, it will stream the
-   * data in from that chunk, signal that is has completed, and then wait for
+   * This input stream waits for data to be available. Once it is provided, by a call to addChunk,
+   * it will stream the data in from that chunk, signal that is has completed, and then wait for
    * another chunk.
    */
   private static class DestreamerIS extends InputStream {
@@ -289,15 +300,17 @@ public class MsgDestreamer {
     ByteBuffer data;
     final DestreamerThread owner;
     final CancelCriterion stopper;
-    
+
     private class Stopper extends CancelCriterion {
       private final CancelCriterion stopper;
-      
+
       Stopper(CancelCriterion stopper) {
         this.stopper = stopper;
       }
 
-      /* (non-Javadoc)
+      /*
+       * (non-Javadoc)
+       * 
        * @see org.apache.geode.CancelCriterion#cancelInProgress()
        */
       @Override
@@ -312,7 +325,9 @@ public class MsgDestreamer {
         return null;
       }
 
-      /* (non-Javadoc)
+      /*
+       * (non-Javadoc)
+       * 
        * @see org.apache.geode.CancelCriterion#generateCancelledException(java.lang.Throwable)
        */
       @Override
@@ -328,79 +343,87 @@ public class MsgDestreamer {
         return new DistributedSystemDisconnectedException("owner is closed");
       }
     }
-    
+
     public DestreamerIS(DestreamerThread t, CancelCriterion stopper) {
       this.owner = t;
       this.data = null;
       this.stopper = new Stopper(stopper);
     }
 
-//   public String toString() {
-//     return this.owner.me;
-//   }
-//     private void logit(String s) {
-//       LogWriterI18n l = getLogger();
-//       if (l != null) {
-//         l.fine(this + ": " + s);
-//       }
-//     }
+    // public String toString() {
+    // return this.owner.me;
+    // }
+    // private void logit(String s) {
+    // LogWriterI18n l = getLogger();
+    // if (l != null) {
+    // l.fine(this + ": " + s);
+    // }
+    // }
 
-//     private LogWriterI18n getLogger() {
-//       LogWriterI18n result = null;
-//       DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-//       if (ds != null) {
-//         result = ds.getLogWriter();
-//       }
-//       return result;
-//     }
-    
+    // private LogWriterI18n getLogger() {
+    // LogWriterI18n result = null;
+    // DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
+    // if (ds != null) {
+    // result = ds.getLogWriter();
+    // }
+    // return result;
+    // }
+
     private boolean isClosed() {
       return this.owner.isClosed();
     }
-    
+
     private ByteBuffer waitForData() throws InterruptedException {
-      if (isClosed() || Thread.interrupted()) throw new InterruptedException();
+      if (isClosed() || Thread.interrupted())
+        throw new InterruptedException();
       synchronized (this.dataMon) {
         ByteBuffer result = this.data;
         while (result == null) {
-          if (isClosed() || Thread.interrupted()) throw new InterruptedException();
-          //logit("about to dataMon wait");
+          if (isClosed() || Thread.interrupted())
+            throw new InterruptedException();
+          // logit("about to dataMon wait");
           this.dataMon.wait(); // spurious wakeup ok
-          //logit("after dataMon wait");
-          if (isClosed() || Thread.interrupted()) throw new InterruptedException();
+          // logit("after dataMon wait");
+          if (isClosed() || Thread.interrupted())
+            throw new InterruptedException();
           result = this.data;
         }
         return result;
       }
     }
+
     private void provideData(ByteBuffer bb) {
       synchronized (this.dataMon) {
-//         if (bb != null) {
-//           logit("MDIS: providing bb with " +
-//                 bb.remaining() + " bytes");
-//         }
+        // if (bb != null) {
+        // logit("MDIS: providing bb with " +
+        // bb.remaining() + " bytes");
+        // }
         this.data = bb;
-        //logit("dataMon notify bb=" + bb);
+        // logit("dataMon notify bb=" + bb);
         this.dataMon.notify();
       }
     }
-    
+
     private void waitUntilDone() throws InterruptedException {
-      if (isClosed() || Thread.interrupted()) throw new InterruptedException();
+      if (isClosed() || Thread.interrupted())
+        throw new InterruptedException();
       synchronized (this.doneMon) {
         while (this.data != null) {
-          if (isClosed() || Thread.interrupted()) throw new InterruptedException();
-          //logit("about to doneMon wait");
+          if (isClosed() || Thread.interrupted())
+            throw new InterruptedException();
+          // logit("about to doneMon wait");
           this.doneMon.wait(); // spurious wakeup ok
-          //logit("after doneMon wait");
-          if (isClosed() || Thread.interrupted()) throw new InterruptedException();
+          // logit("after doneMon wait");
+          if (isClosed() || Thread.interrupted())
+            throw new InterruptedException();
         }
       }
     }
+
     private void signalDone() {
       synchronized (this.doneMon) {
         this.data = null;
-        //logit("doneMon notify");
+        // logit("doneMon notify");
         this.doneMon.notify();
       }
     }
@@ -413,11 +436,9 @@ public class MsgDestreamer {
         try {
           waitUntilDone();
           break;
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
           interrupted = true;
-        }
-        finally {
+        } finally {
           if (interrupted) {
             Thread.currentThread().interrupt();
           }
@@ -442,11 +463,9 @@ public class MsgDestreamer {
             try {
               myData = waitForData();
               break;
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
               interrupted = true;
-            }
-            finally {
+            } finally {
               if (interrupted) {
                 Thread.currentThread().interrupt();
               }
@@ -459,8 +478,8 @@ public class MsgDestreamer {
             stopper.checkCancelInProgress(null);
             throw new InternalGemFireError("bug 37230, please report to support");
           }
-//           logit("received new bb with " +
-//                 myData.remaining() + " bytes");
+          // logit("received new bb with " +
+          // myData.remaining() + " bytes");
         }
         int remaining = myData.remaining();
         if (remaining <= 0) {
@@ -471,30 +490,28 @@ public class MsgDestreamer {
       } while (!available);
       return myData;
     }
-    
+
     @Override
     public final void close() {
       signalDone();
     }
+
     /**
-     * See the InputStream read method for javadocs.
-     * Note that if an attempt
-     * to read past the end of the wrapped ByteBuffer is done this method
-     * throws BufferUnderflowException
+     * See the InputStream read method for javadocs. Note that if an attempt to read past the end of
+     * the wrapped ByteBuffer is done this method throws BufferUnderflowException
      */
     @Override
     public final int read() throws IOException {
       ByteBuffer bb = waitForAvailableData();
-//       logit("read result=" + result);
+      // logit("read result=" + result);
       return (bb.get() & 0xff);
     }
-  
 
-    /* this method is not thread safe
-     * See the InputStream read method for javadocs.
-     * Note that if an attempt
-     * to read past the end of the wrapped ByteBuffer is done this method
-     * throws BufferUnderflowException
+
+    /*
+     * this method is not thread safe See the InputStream read method for javadocs. Note that if an
+     * attempt to read past the end of the wrapped ByteBuffer is done this method throws
+     * BufferUnderflowException
      */
     @Override
     public final int read(byte b[], int off, int len) throws IOException {
@@ -505,7 +522,7 @@ public class MsgDestreamer {
         bytesToRead = remaining;
       }
       bb.get(b, off, bytesToRead);
-//       logit("read[] read=" + bytesToRead);
+      // logit("read[] read=" + bytesToRead);
       return bytesToRead;
     }
 
@@ -518,8 +535,9 @@ public class MsgDestreamer {
         return bb.remaining();
       }
     }
-    
+
   }
+
   private static LogWriterI18n getLogger() {
     LogWriterI18n result = null;
     InternalDistributedSystem ids = InternalDistributedSystem.unsafeGetConnectedInstance();

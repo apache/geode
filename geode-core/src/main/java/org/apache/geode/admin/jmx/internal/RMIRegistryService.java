@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.jmx.internal;
 
@@ -45,36 +43,31 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
   private boolean isRunning;
 
   /**
-   * Constructor to configure RMI Registry to start using default RMI Registry 
-   * port: {@link Registry#REGISTRY_PORT}
+   * Constructor to configure RMI Registry to start using default RMI Registry port:
+   * {@link Registry#REGISTRY_PORT}
    */
   public RMIRegistryService() {
     this(Registry.REGISTRY_PORT);
   }
 
   /**
-   * Constructor to configure RMI Registry to start using given RMI Registry
-   * port.
+   * Constructor to configure RMI Registry to start using given RMI Registry port.
    * 
-   * @param port
-   *          to run RMI Registry on
+   * @param port to run RMI Registry on
    */
   public RMIRegistryService(int port) {
     setPort(port);
   }
 
   /**
-   * Constructor to configure RMI Registry to start using given RMI Registry
-   * port & host bind address.
+   * Constructor to configure RMI Registry to start using given RMI Registry port & host bind
+   * address.
    * 
-   * @param host
-   *          to bind RMI Registry to
-   * @param port
-   *          to run RMI Registry on
+   * @param host to bind RMI Registry to
+   * @param port to run RMI Registry on
    * 
-   * @throws UnknownHostException
-   *           if IP Address can not be resolved for the given host string while
-   *           creating the RMIServerSocketFactory
+   * @throws UnknownHostException if IP Address can not be resolved for the given host string while
+   *         creating the RMIServerSocketFactory
    */
   public RMIRegistryService(String host, int port) throws UnknownHostException {
     setPort(port);
@@ -83,7 +76,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
       ssf = new RMIServerSocketFactoryImpl(host);
     }
   }
-  
+
   /**
    * Returns the host on which rmiregistry listens for incoming connections
    *
@@ -96,16 +89,15 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
   /**
    * Sets the host on which rmiregistry listens for incoming connections
    * 
-   * @param host
-   *          the host on which rmiregistry listens for incoming connections
+   * @param host the host on which rmiregistry listens for incoming connections
    */
   protected void setHost(String host) {
-    if (isRunning()) { 
+    if (isRunning()) {
       throw new IllegalStateException("RMIRegistryService is running, cannot change the host");
     }
     this.host = host;
   }
-  
+
   /**
    * Returns the port on which rmiregistry listens for incoming connections
    * 
@@ -118,11 +110,10 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
   /**
    * Sets the port on which rmiregistry listens for incoming connections
    * 
-   * @param port
-   *          the port on which rmiregistry listens for incoming connections
+   * @param port the port on which rmiregistry listens for incoming connections
    */
   protected void setPort(int port) {
-    if (isRunning()) { 
+    if (isRunning()) {
       throw new IllegalStateException("RMIRegistryService is running, cannot change the port");
     }
     this.port = port;
@@ -137,13 +128,12 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
   public synchronized void start() throws RemoteException {
     if (!isRunning()) {
       if (ssf != null) {
-        registry = LocateRegistry.createRegistry(port, 
-                                                 null, //RMIClientSocketFactory 
-                                                 ssf); //RMIServerSocketFactory
+        registry = LocateRegistry.createRegistry(port, null, // RMIClientSocketFactory
+            ssf); // RMIServerSocketFactory
       } else {
         registry = LocateRegistry.createRegistry(port);
       }
-      
+
       isRunning = true;
     }
   }
@@ -195,6 +185,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
   }
 }
 
+
 /**
  * Custom implementation of the {@link RMIServerSocketFactory}
  * 
@@ -204,34 +195,27 @@ class RMIServerSocketFactoryImpl implements RMIServerSocketFactory {
   private InetAddress bindAddress;
 
   /**
-   * Constructs a RMIServerSocketFactory. The given rmiBindAddress is used to
-   * bind the ServerSockets created from this factory.
+   * Constructs a RMIServerSocketFactory. The given rmiBindAddress is used to bind the ServerSockets
+   * created from this factory.
    * 
-   * @param rmiBindAddress
-   *          String representation of the address to bind the ServerSockets to
+   * @param rmiBindAddress String representation of the address to bind the ServerSockets to
    * 
-   * @throws UnknownHostException
-   *           if IP Address can not be resolved for the given host string
+   * @throws UnknownHostException if IP Address can not be resolved for the given host string
    */
-  /*default */RMIServerSocketFactoryImpl(String rmiBindAddress) 
-    throws UnknownHostException {
+  /* default */ RMIServerSocketFactoryImpl(String rmiBindAddress) throws UnknownHostException {
     this.bindAddress = InetAddress.getByName(rmiBindAddress);
   }
 
   /**
-   * Create a server socket on the specified port (port 0 indicates an anonymous
-   * port).
+   * Create a server socket on the specified port (port 0 indicates an anonymous port).
    * 
-   * @param port
-   *          the port number
+   * @param port the port number
    * @return the server socket on the specified port
-   * @exception IOException
-   *              if an I/O error occurs during server socket creation
+   * @exception IOException if an I/O error occurs during server socket creation
    */
   public ServerSocket createServerSocket(int port) throws IOException {
-    return new ServerSocket(port, 
-                            0/*backlog - for '0' internally uses the default*/, 
-                            bindAddress);
+    return new ServerSocket(port, 0/* backlog - for '0' internally uses the default */,
+        bindAddress);
   }
 }
 

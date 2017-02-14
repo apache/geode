@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -44,7 +42,7 @@ public class AbstractRegionMapTest {
     verify(arm.owner, never()).basicInvalidatePart2(any(), any(), anyBoolean(), anyBoolean());
     verify(arm.owner, never()).invokeInvalidateCallbacks(any(), any(), anyBoolean());
   }
-  
+
   @Test
   public void invalidateOfNonExistentRegionThrowsEntryNotFoundWithForce() {
     AbstractRegionMap.FORCE_INVALIDATE_EVENT = true;
@@ -64,12 +62,12 @@ public class AbstractRegionMapTest {
       AbstractRegionMap.FORCE_INVALIDATE_EVENT = false;
     }
   }
-  
+
   @Test
   public void invalidateOfAlreadyInvalidEntryReturnsFalse() {
     TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
     EntryEventImpl event = createEventForInvalidate(arm.owner);
-    
+
     // invalidate on region that is not initialized should create
     // entry in map as invalid.
     try {
@@ -77,7 +75,7 @@ public class AbstractRegionMapTest {
       fail("expected EntryNotFoundException");
     } catch (EntryNotFoundException expected) {
     }
-    
+
     when(arm.owner.isInitialized()).thenReturn(true);
     assertFalse(arm.invalidate(event, true, false, false));
     verify(arm.owner, never()).basicInvalidatePart2(any(), any(), anyBoolean(), anyBoolean());
@@ -113,7 +111,7 @@ public class AbstractRegionMapTest {
     when(lr.getKeyInfo(key)).thenReturn(new KeyInfo(key, null, null));
     return EntryEventImpl.create(lr, Operation.INVALIDATE, key, false, null, true, false);
   }
-  
+
   @Test
   public void invalidateForceNewEntryOfAlreadyInvalidEntryReturnsFalse() {
     TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
@@ -123,7 +121,7 @@ public class AbstractRegionMapTest {
     // entry in map as invalid.
     assertTrue(arm.invalidate(event, true, true, false));
     verify(arm.owner, times(1)).basicInvalidatePart2(any(), any(), anyBoolean(), anyBoolean());
-    
+
     when(arm.owner.isInitialized()).thenReturn(true);
     assertFalse(arm.invalidate(event, true, true, false));
     verify(arm.owner, times(1)).basicInvalidatePart2(any(), any(), anyBoolean(), anyBoolean());

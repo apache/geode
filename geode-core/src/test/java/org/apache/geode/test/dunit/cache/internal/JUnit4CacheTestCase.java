@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.test.dunit.cache.internal;
 
@@ -62,21 +60,24 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
- * This class is the base class for all distributed tests using JUnit 4 that
- * require the creation of a {@link Cache}.
+ * This class is the base class for all distributed tests using JUnit 4 that require the creation of
+ * a {@link Cache}.
  *
  * TODO: make this class abstract when JUnit3CacheTestCase is deleted
  */
-public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase implements CacheTestFixture {
+public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
+    implements CacheTestFixture {
 
   private static final Logger logger = LogService.getLogger();
 
   /**
    * The Cache from which regions are obtained.
    *
-   * <p>All references synchronized via {@code JUnit4CacheTestCase.class}.
+   * <p>
+   * All references synchronized via {@code JUnit4CacheTestCase.class}.
    *
-   * <p>Field is static so it doesn't get serialized with SerializableRunnable inner classes.
+   * <p>
+   * Field is static so it doesn't get serialized with SerializableRunnable inner classes.
    */
   private static Cache cache;
 
@@ -107,21 +108,22 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
   }
 
   private final void createCache(final boolean client, final CacheFactory factory) {
-    synchronized(JUnit4CacheTestCase.class) {
+    synchronized (JUnit4CacheTestCase.class) {
       try {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
+        System.setProperty(
+            DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
         Cache newCache;
         if (client) {
           System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "locators", "");
           System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, "0");
-          newCache = (Cache)new ClientCacheFactory(getSystem().getProperties()).create();
+          newCache = (Cache) new ClientCacheFactory(getSystem().getProperties()).create();
         } else {
-          if(factory == null) {
+          if (factory == null) {
             newCache = CacheFactory.create(getSystem());
           } else {
             Properties props = getSystem().getProperties();
-            for(Map.Entry entry : props.entrySet()) {
-              factory.set((String) entry.getKey(), (String)entry.getValue());
+            for (Map.Entry entry : props.entrySet()) {
+              factory.set((String) entry.getKey(), (String) entry.getValue());
             }
             newCache = factory.create();
           }
@@ -136,7 +138,8 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
       } catch (Exception ex) {
         Assert.fail("Checked exception while initializing cache??", ex);
       } finally {
-        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+        System.clearProperty(
+            DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
         System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "locators");
         System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT);
       }
@@ -144,13 +147,13 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
   }
 
   /**
-   * Creates the {@code Cache} for this test that is not connected to other
-   * members.
+   * Creates the {@code Cache} for this test that is not connected to other members.
    */
   public final Cache createLonerCache() {
-    synchronized(JUnit4CacheTestCase.class) {
+    synchronized (JUnit4CacheTestCase.class) {
       try {
-        System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
+        System.setProperty(
+            DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
         Cache newCache = CacheFactory.create(getLonerSystem());
         cache = newCache;
       } catch (CacheExistsException e) {
@@ -162,15 +165,16 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
       } catch (Exception ex) {
         Assert.fail("Checked exception while initializing cache??", ex);
       } finally {
-        System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+        System.clearProperty(
+            DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
       }
       return cache;
     }
   }
 
   /**
-   * Sets this test up with a {@code CacheCreation} as its cache. Any existing
-   * cache is closed. Whoever calls this must also call {@code finishCacheXml}.
+   * Sets this test up with a {@code CacheCreation} as its cache. Any existing cache is closed.
+   * Whoever calls this must also call {@code finishCacheXml}.
    */
   public static final synchronized void beginCacheXml() {
     closeCache();
@@ -178,18 +182,19 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
   }
 
   /**
-   * Finish what {@code beginCacheXml} started. It does this be generating a
-   * cache.xml file and then creating a real cache using that cache.xml.
+   * Finish what {@code beginCacheXml} started. It does this be generating a cache.xml file and then
+   * creating a real cache using that cache.xml.
    */
   public final void finishCacheXml(final String name) {
-    synchronized(JUnit4CacheTestCase.class) {
+    synchronized (JUnit4CacheTestCase.class) {
       File file = new File(name + "-cache.xml");
       try {
         PrintWriter pw = new PrintWriter(new FileWriter(file), true);
         CacheXmlGenerator.generate(cache, pw);
         pw.close();
       } catch (IOException ex) {
-        Assert.fail("IOException during cache.xml generation to " + file, ex); // TODO: remove error handling
+        Assert.fail("IOException during cache.xml generation to " + file, ex); // TODO: remove error
+                                                                               // handling
       }
       cache = null;
       GemFireCacheImpl.testCacheXml = file;
@@ -202,11 +207,12 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
   }
 
   /**
-   * Finish what {@code beginCacheXml} started. It does this be generating a
-   * cache.xml file and then creating a real cache using that cache.xml.
+   * Finish what {@code beginCacheXml} started. It does this be generating a cache.xml file and then
+   * creating a real cache using that cache.xml.
    */
-  public final void finishCacheXml(final String name, final boolean useSchema, final String xmlVersion) {
-    synchronized(JUnit4CacheTestCase.class) {
+  public final void finishCacheXml(final String name, final boolean useSchema,
+      final String xmlVersion) {
+    synchronized (JUnit4CacheTestCase.class) {
       File dir = new File("XML_" + xmlVersion);
       dir.mkdirs();
       File file = new File(dir, name + ".xml");
@@ -215,7 +221,8 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
         CacheXmlGenerator.generate(cache, pw, useSchema, xmlVersion);
         pw.close();
       } catch (IOException ex) {
-        Assert.fail("IOException during cache.xml generation to " + file, ex); // TODO: remove error handling
+        Assert.fail("IOException during cache.xml generation to " + file, ex); // TODO: remove error
+                                                                               // handling
       }
       cache = null;
       GemFireCacheImpl.testCacheXml = file;
@@ -238,6 +245,11 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
     return getCache(false, factory);
   }
 
+  public final Cache getCache(final Properties properties) {
+    getSystem(properties);
+    return getCache();
+  }
+
   public final Cache getCache(final boolean client) {
     return getCache(client, null);
   }
@@ -246,12 +258,13 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
     synchronized (JUnit4CacheTestCase.class) {
       final GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
-              && gemFireCache.getCancelCriterion().isCancelInProgress()) {
+          && gemFireCache.getCancelCriterion().isCancelInProgress()) {
         Wait.waitForCriterion(new WaitCriterion() { // TODO: replace with Awaitility
           @Override
           public boolean done() {
             return gemFireCache.isClosed();
           }
+
           @Override
           public String description() {
             return "waiting for cache to close";
@@ -278,12 +291,13 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
     synchronized (JUnit4CacheTestCase.class) {
       final GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
-              && gemFireCache.getCancelCriterion().isCancelInProgress()) {
+          && gemFireCache.getCancelCriterion().isCancelInProgress()) {
         Wait.waitForCriterion(new WaitCriterion() { // TODO: replace with Awaitility
           @Override
           public boolean done() {
             return gemFireCache.isClosed();
           }
+
           @Override
           public String description() {
             return "waiting for cache to close";
@@ -293,21 +307,20 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
       if (cache == null || cache.isClosed()) {
         cache = null;
         disconnectFromDS();
-        cache = (Cache)factory.create();
+        cache = (Cache) factory.create();
       }
       if (cache != null) {
         IgnoredException.addIgnoredException("java.net.ConnectException");
       }
-      return (ClientCache)cache;
+      return (ClientCache) cache;
     }
   }
 
   /**
-   * Invokes {@link #getCache()} and casts the return to
-   * {@code GemFireCacheImpl}.
+   * Invokes {@link #getCache()} and casts the return to {@code GemFireCacheImpl}.
    */
   public final GemFireCacheImpl getGemfireCache() { // TODO: remove?
-    return (GemFireCacheImpl)getCache();
+    return (GemFireCacheImpl) getCache();
   }
 
   public static final synchronized boolean hasCache() {
@@ -327,7 +340,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
   public static final synchronized void closeCache() {
     // Workaround for that fact that some classes are now extending
     // CacheTestCase but not using it properly.
-    if(cache == null) {
+    if (cache == null) {
       cache = GemFireCacheImpl.getInstance();
     }
     try {
@@ -335,13 +348,13 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
         try {
           if (!cache.isClosed()) {
             if (cache instanceof GemFireCacheImpl) {
-              CacheTransactionManager txMgr = ((GemFireCacheImpl)cache).getTxManager();
+              CacheTransactionManager txMgr = ((GemFireCacheImpl) cache).getTxManager();
               if (txMgr != null) {
                 if (txMgr.exists()) {
                   try {
                     // make sure we cleanup this threads txid stored in a thread local
                     txMgr.rollback();
-                  }catch(Exception ignore) {
+                  } catch (Exception ignore) {
 
                   }
                 }
@@ -349,14 +362,13 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
             }
             cache.close();
           }
-        }
-        finally {
+        } finally {
           cache = null;
         }
       } // cache != null
     } finally {
-      //Make sure all pools are closed, even if we never
-      //created a cache
+      // Make sure all pools are closed, even if we never
+      // created a cache
       PoolManager.close(false);
     }
   }
@@ -366,7 +378,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
    */
   protected final void closeAllCache() {
     closeCache();
-    Invoke.invokeInEveryVM(()->closeCache());
+    Invoke.invokeInEveryVM(() -> closeCache());
   }
 
   @Override
@@ -378,7 +390,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
 
   private final void tearDownCacheTestCase() {
     remoteTearDown();
-    Invoke.invokeInEveryVM(()->remoteTearDown());
+    Invoke.invokeInEveryVM(() -> remoteTearDown());
   }
 
   @Override
@@ -402,15 +414,13 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
     try {
       DistributionMessageObserver.setInstance(null);
       destroyRegions(cache);
-    }
-    finally {
+    } finally {
       try {
         closeCache();
-      }
-      finally {
+      } finally {
         try {
           cleanDiskDirs();
-        } catch(Exception e) {
+        } catch (Exception e) {
           LogWriterUtils.getLogWriter().error("Error cleaning disk dirs", e);
         }
       }
@@ -420,22 +430,24 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
   /**
    * Returns a region with the given name and attributes.
    */
-  public final Region createRegion(final String name, final RegionAttributes attributes) throws CacheException {
+  public final Region createRegion(final String name, final RegionAttributes attributes)
+      throws CacheException {
     return createRegion(name, "root", attributes);
   }
 
   /**
-   * Provide any internal region arguments, typically required when internal
-   * use (aka meta-data) regions are needed.
+   * Provide any internal region arguments, typically required when internal use (aka meta-data)
+   * regions are needed.
    *
-   * @return internal arguments, which may be null.  If null, then default
-   *         InternalRegionArguments are used to construct the Region
+   * @return internal arguments, which may be null. If null, then default InternalRegionArguments
+   *         are used to construct the Region
    */
   private final InternalRegionArguments getInternalRegionArguments() { // TODO: delete?
     return null;
   }
 
-  public final Region createRegion(final String name, final String rootName, final RegionAttributes attributes) throws CacheException {
+  public final Region createRegion(final String name, final String rootName,
+      final RegionAttributes attributes) throws CacheException {
     Region root = getRootRegion(rootName);
     if (root == null) {
       // don't put listeners on root region
@@ -483,15 +495,18 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
     return getCache().getRegion(rootName);
   }
 
-  protected final Region createRootRegion(final RegionAttributes attributes) throws RegionExistsException, TimeoutException {
+  protected final Region createRootRegion(final RegionAttributes attributes)
+      throws RegionExistsException, TimeoutException {
     return createRootRegion("root", attributes);
   }
 
-  public final Region createRootRegion(final String rootName, final RegionAttributes attributes) throws RegionExistsException, TimeoutException {
+  public final Region createRootRegion(final String rootName, final RegionAttributes attributes)
+      throws RegionExistsException, TimeoutException {
     return getCache().createRegion(rootName, attributes);
   }
 
-  public final Region createExpiryRootRegion(final String rootName, final RegionAttributes attributes) throws RegionExistsException, TimeoutException {
+  public final Region createExpiryRootRegion(final String rootName,
+      final RegionAttributes attributes) throws RegionExistsException, TimeoutException {
     System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
     try {
       return createRootRegion(rootName, attributes);
@@ -504,11 +519,15 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
    * @deprecated Please use {@link IgnoredException#addIgnoredException(String)} instead.
    */
   @Deprecated
-  public final CacheSerializableRunnable addExceptionTag1(final String exceptionStringToIgnore) { // TODO: delete this method
+  public final CacheSerializableRunnable addExceptionTag1(final String exceptionStringToIgnore) { // TODO:
+                                                                                                  // delete
+                                                                                                  // this
+                                                                                                  // method
     CacheSerializableRunnable addExceptionTag = new CacheSerializableRunnable("addExceptionTag") {
       @Override
       public void run2() {
-        getCache().getLogger().info("<ExpectedException action=add>" + exceptionStringToIgnore + "</ExpectedException>");
+        getCache().getLogger().info(
+            "<ExpectedException action=add>" + exceptionStringToIgnore + "</ExpectedException>");
       }
     };
     return addExceptionTag;
@@ -518,13 +537,18 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
    * @deprecated Please use {@link IgnoredException#addIgnoredException(String)} instead.
    */
   @Deprecated
-  public final CacheSerializableRunnable removeExceptionTag1(final String exceptionStringToIgnore) { // TODO: delete this method
-    CacheSerializableRunnable removeExceptionTag = new CacheSerializableRunnable("removeExceptionTag") {
-      @Override
-      public void run2() throws CacheException {
-        getCache().getLogger().info("<ExpectedException action=remove>" + exceptionStringToIgnore + "</ExpectedException>");
-      }
-    };
+  public final CacheSerializableRunnable removeExceptionTag1(final String exceptionStringToIgnore) { // TODO:
+                                                                                                     // delete
+                                                                                                     // this
+                                                                                                     // method
+    CacheSerializableRunnable removeExceptionTag =
+        new CacheSerializableRunnable("removeExceptionTag") {
+          @Override
+          public void run2() throws CacheException {
+            getCache().getLogger().info("<ExpectedException action=remove>"
+                + exceptionStringToIgnore + "</ExpectedException>");
+          }
+        };
     return removeExceptionTag;
   }
 
@@ -536,8 +560,8 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
   }
 
   /**
-   * Return a set of disk directories for persistence tests. These directories
-   * will be automatically cleaned up on test case closure.
+   * Return a set of disk directories for persistence tests. These directories will be automatically
+   * cleaned up on test case closure.
    */
   public static final File[] getDiskDirs() {
     return new File[] {getDiskDir()};
@@ -549,26 +573,27 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase impl
   }
 
   private static void deleteBACKUPDiskStoreFile(final File file) {
-    if(file.getName().startsWith("BACKUPDiskStore-")){
+    if (file.getName().startsWith("BACKUPDiskStore-")) {
       try {
         FileUtil.delete(file);
-      }
-      catch (IOException e) {
+      } catch (IOException e) {
         throw new RuntimeException("Unable to delete BACKUPDiskStore file", e);
       }
     }
   }
 
   /**
-   * Used to generate a cache.xml. Basically just a {@code CacheCreation} with
-   * a few more methods implemented.
+   * Used to generate a cache.xml. Basically just a {@code CacheCreation} with a few more methods
+   * implemented.
    */
   private static final class TestCacheCreation extends CacheCreation {
     private boolean closed = false;
+
     @Override
     public void close() {
       this.closed = true;
     }
+
     @Override
     public boolean isClosed() {
       return this.closed;

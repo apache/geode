@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.memcached.commands;
 
@@ -56,17 +54,18 @@ public class GetCommand extends AbstractCommand {
   private static final String RN = "\r\n";
   private static final ByteBuffer RN_BUF = asciiCharset.encode(RN);
   private static final ByteBuffer END_BUF = asciiCharset.encode(Reply.END.toString());
-  
+
   /**
    * buffer used to compose one line of reply
    */
   private static ThreadLocal<CharBuffer> lineBuffer = new ThreadLocal<CharBuffer>();
-  
+
   /**
    * defaults to the default send buffer size on socket
    */
-  private static final int REPLY_BUFFER_CAPACITY = Integer.getInteger("replyBufferCapacity", 146988);
-  
+  private static final int REPLY_BUFFER_CAPACITY =
+      Integer.getInteger("replyBufferCapacity", 146988);
+
   /**
    * buffer for sending get replies, one per thread
    */
@@ -82,9 +81,10 @@ public class GetCommand extends AbstractCommand {
     return processBinaryCommand(request.getRequest(), request, cache, request.getResponse());
   }
 
-  protected ByteBuffer processBinaryCommand(ByteBuffer buffer, RequestReader request, Cache cache, ByteBuffer response) {
+  protected ByteBuffer processBinaryCommand(ByteBuffer buffer, RequestReader request, Cache cache,
+      ByteBuffer response) {
     Region<Object, ValueWrapper> r = getMemcachedRegion(cache);
-    
+
     KeyWrapper key = getKey(buffer, HEADER_LENGTH);
     ValueWrapper val = null;
     try {
@@ -93,7 +93,7 @@ public class GetCommand extends AbstractCommand {
       return handleBinaryException(key, request, response, "get", e);
     }
     if (getLogger().fineEnabled()) {
-      getLogger().fine("get:key:"+key+" val:"+val);
+      getLogger().fine("get:key:" + key + " val:" + val);
     }
     if (val == null) {
       if (isQuiet()) {
@@ -102,7 +102,8 @@ public class GetCommand extends AbstractCommand {
       response.putShort(POSITION_RESPONSE_STATUS, ResponseStatus.KEY_NOT_FOUND.asShort());
     } else {
       byte[] realValue = val.getValue();
-      int responseLength = HEADER_LENGTH + realValue.length + EXTRAS_LENGTH + (sendKeysInResponse() ? key.getKey().length : 0);
+      int responseLength = HEADER_LENGTH + realValue.length + EXTRAS_LENGTH
+          + (sendKeysInResponse() ? key.getKey().length : 0);
       if (response.capacity() < responseLength) {
         response = request.getResponse(responseLength);
       }
@@ -112,7 +113,8 @@ public class GetCommand extends AbstractCommand {
         response.putShort(KEY_LENGTH_INDEX, (short) key.getKey().length);
       }
       response.put(EXTRAS_LENGTH_INDEX, (byte) EXTRAS_LENGTH);
-      response.putInt(TOTAL_BODY_LENGTH_INDEX, EXTRAS_LENGTH + realValue.length + (sendKeysInResponse() ? key.getKey().length : 0));
+      response.putInt(TOTAL_BODY_LENGTH_INDEX,
+          EXTRAS_LENGTH + realValue.length + (sendKeysInResponse() ? key.getKey().length : 0));
       response.putLong(POSITION_CAS, val.getVersion());
       response.position(HEADER_LENGTH);
       response.putInt(val.getFlags());
@@ -120,7 +122,7 @@ public class GetCommand extends AbstractCommand {
         response.put(key.getKey());
       }
       response.put(realValue);
-      
+
       response.flip();
     }
     return response;
@@ -148,16 +150,16 @@ public class GetCommand extends AbstractCommand {
     flb.flip();
     String firstLine = getFirstLine();
     String[] firstLineElements = firstLine.split(" ");
-    
+
     boolean isGets = firstLineElements[0].equals("gets");
     Set<String> keys = new HashSet<String>();
-    for (int i=1; i<firstLineElements.length; i++) {
+    for (int i = 1; i < firstLineElements.length; i++) {
       keys.add(stripNewline(firstLineElements[i]));
     }
-    
+
     Region<Object, ValueWrapper> r = getMemcachedRegion(cache);
     Map<Object, ValueWrapper> results = r.getAll(keys);
-    
+
     return composeReply(results, isGets);
   }
 
@@ -169,7 +171,7 @@ public class GetCommand extends AbstractCommand {
     while (it.hasNext()) {
       Entry<Object, ValueWrapper> e = it.next();
       if (getLogger().fineEnabled()) {
-        getLogger().fine("get compose reply:"+e);
+        getLogger().fine("get compose reply:" + e);
       }
       ValueWrapper valWrapper = e.getValue();
       if (valWrapper != null) {
@@ -178,7 +180,7 @@ public class GetCommand extends AbstractCommand {
         reply.put(VALUE).put(W_SPACE);
         reply.put(e.getKey().toString()).put(W_SPACE);
         reply.put(Integer.toString(valWrapper.getFlags())).put(W_SPACE); // flags
-        
+
         String valBytes = v == null ? Integer.toString(0) : Integer.toString(v.length);
         reply.put(valBytes);
         if (isGets) {
@@ -200,7 +202,7 @@ public class GetCommand extends AbstractCommand {
     buffer.flip();
     return buffer;
   }
-  
+
   private ByteBuffer getReplyBuffer() {
     ByteBuffer retVal = replyBuffer.get();
     if (retVal == null) {
@@ -210,7 +212,7 @@ public class GetCommand extends AbstractCommand {
     retVal.clear();
     return retVal;
   }
-  
+
   private CharBuffer getLineBuffer() {
     CharBuffer retVal = lineBuffer.get();
     if (retVal == null) {

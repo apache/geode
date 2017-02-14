@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -32,9 +30,10 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * The delegating <tt>ClassLoader</tt> used by GemFire to load classes and other resources. This <tt>ClassLoader</tt>
- * delegates to any <tt>ClassLoader</tt>s added to the list of custom class loaders, thread context <tt>ClassLoader</tt>
- * s unless they have been excluded}, the <tt>ClassLoader</tt> which loaded the GemFire classes, and finally the system
+ * The delegating <tt>ClassLoader</tt> used by GemFire to load classes and other resources. This
+ * <tt>ClassLoader</tt> delegates to any <tt>ClassLoader</tt>s added to the list of custom class
+ * loaders, thread context <tt>ClassLoader</tt> s unless they have been excluded}, the
+ * <tt>ClassLoader</tt> which loaded the GemFire classes, and finally the system
  * <tt>ClassLoader</tt>.
  * <p>
  * The thread context class loaders can be excluded by setting the system property
@@ -50,9 +49,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * <li>1. Any custom loaders in the order they were added
  * <li>2. <tt>Thread.currentThread().getContextClassLoader()</tt> unless excludeTCCL == true
  * <li>3. <tt>ClassPathLoader.class.getClassLoader()</tt>
- * <li>4. <tt>ClassLoader.getSystemClassLoader()</tt> If the attempt to acquire any of the above class loaders results
- * in either a {@link java.lang.SecurityException SecurityException} or a null, then that class loader is quietly
- * skipped. Duplicate class loaders will be skipped.
+ * <li>4. <tt>ClassLoader.getSystemClassLoader()</tt> If the attempt to acquire any of the above
+ * class loaders results in either a {@link java.lang.SecurityException SecurityException} or a
+ * null, then that class loader is quietly skipped. Duplicate class loaders will be skipped.
  * 
  * @since GemFire 6.5.1.4
  */
@@ -64,33 +63,43 @@ public final class ClassPathLoader {
    * See also http://docs.oracle.com/javase/specs/jvms/se7/html/jvms-5.html
    */
 
-  public static final String ENABLE_TRACE_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "ClassPathLoader.enableTrace";
+  public static final String ENABLE_TRACE_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "ClassPathLoader.enableTrace";
   public static final String ENABLE_TRACE_DEFAULT_VALUE = "false";
   private final boolean ENABLE_TRACE = false;
 
   private static final Logger logger = LogService.getLogger();
 
-  public static final String EXCLUDE_TCCL_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "excludeThreadContextClassLoader";
+  public static final String EXCLUDE_TCCL_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "excludeThreadContextClassLoader";
   public static final boolean EXCLUDE_TCCL_DEFAULT_VALUE = false;
   private boolean excludeTCCL;
-  
+
   // This calculates the location of the extlib directory relative to the
-  // location of the gemfire jar file.  If for some reason the ClassPathLoader
+  // location of the gemfire jar file. If for some reason the ClassPathLoader
   // class is found in a directory instead of a JAR file (as when testing),
   // then it will be relative to the location of the root of the package and
   // class.
-  public static final String EXT_LIB_DIR_PARENT_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "ClassPathLoader.EXT_LIB_DIR";
-  public static final String EXT_LIB_DIR_PARENT_DEFAULT = ClassPathLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+  public static final String EXT_LIB_DIR_PARENT_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "ClassPathLoader.EXT_LIB_DIR";
+  public static final String EXT_LIB_DIR_PARENT_DEFAULT =
+      ClassPathLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+
   static final File defineEXT_LIB_DIR() {
-    return new File((new File(System.getProperty(EXT_LIB_DIR_PARENT_PROPERTY, EXT_LIB_DIR_PARENT_DEFAULT))).getParent(), "ext");
+    return new File(
+        (new File(System.getProperty(EXT_LIB_DIR_PARENT_PROPERTY, EXT_LIB_DIR_PARENT_DEFAULT)))
+            .getParent(),
+        "ext");
   }
 
   // This token is placed into the list of class loaders to determine where
   // to insert the TCCL when in forName(...), getResource(...), etc.
-  private static final ClassLoader TCCL_PLACEHOLDER = new ClassLoader() { // This is never used for class loading
+  private static final ClassLoader TCCL_PLACEHOLDER = new ClassLoader() { // This is never used for
+                                                                          // class loading
   };
 
-  private static final AtomicReference<ClassPathLoader> latest = new AtomicReference<ClassPathLoader>();
+  private static final AtomicReference<ClassPathLoader> latest =
+      new AtomicReference<ClassPathLoader>();
 
   private final List<ClassLoader> classLoaders;
 
@@ -117,11 +126,10 @@ public final class ClassPathLoader {
 
     setLatestToDefault();
   }
-  
+
   /**
-   * Starting at the files or directories identified by 'files', search for valid
-   * JAR files and return a list of their URLs.  Sub-directories will also be
-   * searched.
+   * Starting at the files or directories identified by 'files', search for valid JAR files and
+   * return a list of their URLs. Sub-directories will also be searched.
    * 
    * @param files Files or directories to search for valid JAR content.
    * 
@@ -138,14 +146,17 @@ public final class ClassPathLoader {
           urls.addAll(getJarURLsFromFiles(file.listFiles()));
         } else {
           if (!JarClassLoader.hasValidJarContent(file)) {
-            logger.warn("Invalid JAR content when attempting to create ClassLoader for file: {}", file.getAbsolutePath());
+            logger.warn("Invalid JAR content when attempting to create ClassLoader for file: {}",
+                file.getAbsolutePath());
             continue;
           }
 
           try {
             urls.add(file.toURI().toURL());
           } catch (MalformedURLException muex) {
-            logger.warn("Encountered invalid URL when attempting to create ClassLoader for file: {}:{}", file.getAbsolutePath(), muex.getMessage());
+            logger.warn(
+                "Encountered invalid URL when attempting to create ClassLoader for file: {}:{}",
+                file.getAbsolutePath(), muex.getMessage());
             continue;
           }
         }
@@ -197,16 +208,18 @@ public final class ClassPathLoader {
     for (final ClassLoader classLoader : defaultLoaders) {
       classLoaders.add(classLoader);
     }
-    
+
     // Add user JAR files from the EXT_LIB_DIR directory using a single ClassLoader
     try {
       File EXT_LIB_DIR = defineEXT_LIB_DIR();
       if (EXT_LIB_DIR.exists()) {
         if (!EXT_LIB_DIR.isDirectory() || !EXT_LIB_DIR.canRead()) {
-          logger.warn("Cannot read from directory when attempting to load JAR files: {}", EXT_LIB_DIR.getAbsolutePath());
+          logger.warn("Cannot read from directory when attempting to load JAR files: {}",
+              EXT_LIB_DIR.getAbsolutePath());
         } else {
           List<URL> extLibJarURLs = getJarURLsFromFiles(EXT_LIB_DIR);
-          ClassLoader classLoader = new URLClassLoader(extLibJarURLs.toArray(new URL[extLibJarURLs.size()]));
+          ClassLoader classLoader =
+              new URLClassLoader(extLibJarURLs.toArray(new URL[extLibJarURLs.size()]));
           classLoaders.add(classLoader);
         }
       }
@@ -266,11 +279,10 @@ public final class ClassPathLoader {
   }
 
   /**
-   * Add or replace the provided {@link ClassLoader} to the list held by this ClassPathLoader. Then use the resulting
-   * list to create a new ClassPathLoader and set it as the latest.
+   * Add or replace the provided {@link ClassLoader} to the list held by this ClassPathLoader. Then
+   * use the resulting list to create a new ClassPathLoader and set it as the latest.
    * 
-   * @param classLoader
-   *          {@link ClassLoader} to add
+   * @param classLoader {@link ClassLoader} to add
    */
   public ClassPathLoader addOrReplaceAndSetLatest(final ClassLoader classLoader) {
     ClassPathLoader classPathLoader = addOrReplace(classLoader);
@@ -305,12 +317,11 @@ public final class ClassPathLoader {
   }
 
   /**
-   * Remove the provided {@link ClassLoader} from the list held by this ClassPathLoader. Then use the resulting list to
-   * create a new ClassPathLoader and set it as the latest. Silently ignores requests to remove non-existent
-   * ClassLoaders.
+   * Remove the provided {@link ClassLoader} from the list held by this ClassPathLoader. Then use
+   * the resulting list to create a new ClassPathLoader and set it as the latest. Silently ignores
+   * requests to remove non-existent ClassLoaders.
    * 
-   * @param classLoader
-   *          {@link ClassLoader} to remove
+   * @param classLoader {@link ClassLoader} to remove
    */
   public ClassPathLoader removeAndSetLatest(final ClassLoader classLoader) {
     ClassPathLoader classPathLoader = remove(classLoader);
@@ -482,15 +493,14 @@ public final class ClassPathLoader {
   }
 
   /**
-   * Finds the resource with the given name. This method will first search the class loader of the context class for the
-   * resource. That failing, this method will invoke {@link #getResource(String)} to find the resource.
+   * Finds the resource with the given name. This method will first search the class loader of the
+   * context class for the resource. That failing, this method will invoke
+   * {@link #getResource(String)} to find the resource.
    * 
-   * @param contextClass
-   *          The class whose class loader will first be searched
-   * @param name
-   *          The resource name
-   * @return A <tt>URL</tt> object for reading the resource, or <tt>null</tt> if the resource could not be found or the
-   *         invoker doesn't have adequate privileges to get the resource.
+   * @param contextClass The class whose class loader will first be searched
+   * @param name The resource name
+   * @return A <tt>URL</tt> object for reading the resource, or <tt>null</tt> if the resource could
+   *         not be found or the invoker doesn't have adequate privileges to get the resource.
    */
   public URL getResource(final Class<?> contextClass, final String name) {
     if (contextClass != null) {
@@ -509,10 +519,10 @@ public final class ClassPathLoader {
    * The search order is described in the documentation for {@link #getResource(String)}.
    * </p>
    * 
-   * @param name
-   *          The resource name
+   * @param name The resource name
    * 
-   * @return An input stream for reading the resource, or <tt>null</tt> if the resource could not be found
+   * @return An input stream for reading the resource, or <tt>null</tt> if the resource could not be
+   *         found
    */
   public InputStream getResourceAsStream(final String name) {
     URL url = getResource(name);
@@ -528,11 +538,10 @@ public final class ClassPathLoader {
    * <p>
    * The search order is described in the documentation for {@link #getResource(Class, String)}.
    * 
-   * @param contextClass
-   *          The class whose class loader will first be searched
-   * @param name
-   *          The resource name
-   * @return An input stream for reading the resource, or <tt>null</tt> if the resource could not be found
+   * @param contextClass The class whose class loader will first be searched
+   * @param name The resource name
+   * @return An input stream for reading the resource, or <tt>null</tt> if the resource could not be
+   *         found
    */
   public InputStream getResourceAsStream(final Class<?> contextClass, final String name) {
     if (contextClass != null) {
@@ -545,35 +554,31 @@ public final class ClassPathLoader {
   }
 
   /**
-   * Finds all the resources with the given name. This method will first search
-   * the class loader of the context class for the resource before searching all
-   * other {@link ClassLoader}s.
+   * Finds all the resources with the given name. This method will first search the class loader of
+   * the context class for the resource before searching all other {@link ClassLoader}s.
    * 
-   * @param  contextClass
-   *         The class whose class loader will first be searched
-   *         
-   * @param  name
-   *         The resource name
+   * @param contextClass The class whose class loader will first be searched
+   * 
+   * @param name The resource name
    *
-   * @return  An enumeration of {@link java.net.URL <tt>URL</tt>} objects for
-   *          the resource.  If no resources could  be found, the enumeration
-   *          will be empty.  Resources that the class loader doesn't have
-   *          access to will not be in the enumeration.
+   * @return An enumeration of {@link java.net.URL <tt>URL</tt>} objects for the resource. If no
+   *         resources could be found, the enumeration will be empty. Resources that the class
+   *         loader doesn't have access to will not be in the enumeration.
    *
-   * @throws  IOException
-   *          If I/O errors occur
-   *          
+   * @throws IOException If I/O errors occur
+   * 
    * @see ClassLoader#getResources(String)
    */
-  public Enumeration<URL> getResources(final Class<?> contextClass, final String name) throws IOException {
+  public Enumeration<URL> getResources(final Class<?> contextClass, final String name)
+      throws IOException {
     final boolean isDebugEnabled = logger.isTraceEnabled();
-    
+
     if (isDebugEnabled) {
       logger.trace(new StringBuilder("getResources(").append(name).append(")"));
     }
-    
+
     final LinkedHashSet<URL> urls = new LinkedHashSet<URL>();
-    
+
     try {
       if (contextClass != null) {
         CollectionUtils.addAll(urls, contextClass.getClassLoader().getResources(name));
@@ -581,7 +586,7 @@ public final class ClassPathLoader {
     } catch (IOException ignore) {
       // ignore and search others
     }
-    
+
     Enumeration<URL> resources = null;
     ClassLoader tccl = null;
     if (!excludeTCCL) {
@@ -623,7 +628,8 @@ public final class ClassPathLoader {
           resources = classLoader.getResources(name);
           if (resources != null && resources.hasMoreElements()) {
             if (logger.isTraceEnabled()) {
-              logger.trace(new StringBuilder("getResources found by classLoader: ").append(classLoader));
+              logger.trace(
+                  new StringBuilder("getResources found by classLoader: ").append(classLoader));
             }
             CollectionUtils.addAll(urls, resources);
           }
@@ -640,34 +646,31 @@ public final class ClassPathLoader {
       }
       throw ioException;
     }
-    
+
     if (isDebugEnabled) {
       logger.trace("getResources returning empty enumeration");
     }
-    
+
     return Collections.enumeration(urls);
   }
-  
+
   /**
    * Finds all the resources with the given name.
    * 
-   * @param  name
-   *         The resource name
+   * @param name The resource name
    *
-   * @return  An enumeration of {@link java.net.URL <tt>URL</tt>} objects for
-   *          the resource.  If no resources could  be found, the enumeration
-   *          will be empty.  Resources that the class loader doesn't have
-   *          access to will not be in the enumeration.
+   * @return An enumeration of {@link java.net.URL <tt>URL</tt>} objects for the resource. If no
+   *         resources could be found, the enumeration will be empty. Resources that the class
+   *         loader doesn't have access to will not be in the enumeration.
    *
-   * @throws  IOException
-   *          If I/O errors occur
+   * @throws IOException If I/O errors occur
    * 
    * @see ClassLoader#getResources(String)
    */
   public Enumeration<URL> getResources(String name) throws IOException {
     return getResources(null, name);
   }
-    
+
   /**
    * Wrap this {@link ClassPathLoader} with a {@link ClassLoader} facade.
    * 
@@ -702,14 +705,13 @@ public final class ClassPathLoader {
       }
     };
   }
-  
+
   public static ClassPathLoader getLatest() {
     return latest.get();
   }
-  
+
   /**
-   * Helper method equivalent to
-   * <code>ClassPathLoader.getLatest().asClassLoader();</code>.
+   * Helper method equivalent to <code>ClassPathLoader.getLatest().asClassLoader();</code>.
    * 
    * @return {@link ClassLoader} for current {@link ClassPathLoader}.
    * @since GemFire 8.1

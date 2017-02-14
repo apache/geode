@@ -1,32 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
 import java.beans.ConstructorProperties;
+import java.io.Serializable;
 
 /**
- * Composite data type used to distribute metrics for the operating system hosting
- * a member of the distributed system.
+ * Composite data type used to distribute metrics for the operating system hosting a member of the
+ * distributed system.
  * 
  * @since GemFire 7.0
  *
  */
-public class OSMetrics {
-  
+public class OSMetrics implements Serializable {
+
   /**
    * Maximum number file descriptor which can be opened
    */
@@ -65,40 +64,35 @@ public class OSMetrics {
   private String arch;
 
   /**
-   * Returns the number of processors available to the Java virtual machine.
-   * This method is equivalent to the {@link Runtime#availableProcessors()}
-   * method.
+   * Returns the number of processors available to the Java virtual machine. This method is
+   * equivalent to the {@link Runtime#availableProcessors()} method.
    */
   private int availableProcessors;
 
   /**
-   * * Returns the system load average for the last minute. The system load
-   * average is the sum of the number of runnable entities queued to the
-   * {@linkplain #getAvailableProcessors available processors} and the number of
-   * runnable entities running on the available processors averaged over a
-   * period of time. The way in which the load average is calculated is
-   * operating system specific but is typically a damped time-dependent average.
+   * * Returns the system load average for the last minute. The system load average is the sum of
+   * the number of runnable entities queued to the {@linkplain #getAvailableProcessors available
+   * processors} and the number of runnable entities running on the available processors averaged
+   * over a period of time. The way in which the load average is calculated is operating system
+   * specific but is typically a damped time-dependent average.
    */
   private double systemLoadAverage;
 
   /**
    * 
-   * This constructor is to be used by internal JMX framework only. User should
-   * not try to create an instance of this class.
+   * This constructor is to be used by internal JMX framework only. User should not try to create an
+   * instance of this class.
    */
-  @ConstructorProperties( { "maxFileDescriptorCount",
-      "openFileDescriptorCount", "processCpuTime",
-      "committedVirtualMemorySize", "totalPhysicalMemorySize",
-      "freePhysicalMemorySize", "totalSwapSpaceSize", "freeSwapSpaceSize",
-      "name", "version", "arch", "availableProcessors", "systemLoadAverage"
+  @ConstructorProperties({"maxFileDescriptorCount", "openFileDescriptorCount", "processCpuTime",
+      "committedVirtualMemorySize", "totalPhysicalMemorySize", "freePhysicalMemorySize",
+      "totalSwapSpaceSize", "freeSwapSpaceSize", "name", "version", "arch", "availableProcessors",
+      "systemLoadAverage"
 
   })
-  public OSMetrics(long maxFileDescriptorCount, long openFileDescriptorCount,
-      long processCpuTime, long committedVirtualMemorySize,
-      long totalPhysicalMemorySize, long freePhysicalMemorySize,
-      long totalSwapSpaceSize, long freeSwapSpaceSize, String name,
-      String version, String arch, int availableProcessors,
-      double systemLoadAverage) {
+  public OSMetrics(long maxFileDescriptorCount, long openFileDescriptorCount, long processCpuTime,
+      long committedVirtualMemorySize, long totalPhysicalMemorySize, long freePhysicalMemorySize,
+      long totalSwapSpaceSize, long freeSwapSpaceSize, String name, String version, String arch,
+      int availableProcessors, double systemLoadAverage) {
     this.maxFileDescriptorCount = maxFileDescriptorCount;
     this.openFileDescriptorCount = openFileDescriptorCount;
     this.processCpuTime = processCpuTime;
@@ -116,8 +110,7 @@ public class OSMetrics {
   }
 
   /**
-   * Returns the maximum number of open file descriptors allowed by the
-   * operating system.
+   * Returns the maximum number of open file descriptors allowed by the operating system.
    */
   public long getMaxFileDescriptorCount() {
     return maxFileDescriptorCount;
@@ -145,16 +138,14 @@ public class OSMetrics {
   }
 
   /**
-   * Returns the number of megabytes of memory available to the operating
-   * system.
+   * Returns the number of megabytes of memory available to the operating system.
    */
   public long getTotalPhysicalMemorySize() {
     return totalPhysicalMemorySize;
   }
 
   /**
-   * Returns the number of megabytes of free memory available to the operating
-   * system.
+   * Returns the number of megabytes of free memory available to the operating system.
    */
   public long getFreePhysicalMemorySize() {
     return freePhysicalMemorySize;
@@ -216,15 +207,12 @@ public class OSMetrics {
   public String toString() {
 
     return "{OSMetrics : maxFileDescriptorCount = " + maxFileDescriptorCount
-        + " openFileDescriptorCount = " + openFileDescriptorCount
-        + " processCpuTime = " + processCpuTime
-        + " committedVirtualMemorySize = " + committedVirtualMemorySize
-        + " totalPhysicalMemorySize = " + totalPhysicalMemorySize
-        + " freePhysicalMemorySize = " + freePhysicalMemorySize
-        + " totalSwapSpaceSize = " + totalSwapSpaceSize
-        + " freeSwapSpaceSize = " + freeSwapSpaceSize + " name = " + name
-        + " version = " + version + " arch = " + arch
-        + " availableProcessors = " + availableProcessors
+        + " openFileDescriptorCount = " + openFileDescriptorCount + " processCpuTime = "
+        + processCpuTime + " committedVirtualMemorySize = " + committedVirtualMemorySize
+        + " totalPhysicalMemorySize = " + totalPhysicalMemorySize + " freePhysicalMemorySize = "
+        + freePhysicalMemorySize + " totalSwapSpaceSize = " + totalSwapSpaceSize
+        + " freeSwapSpaceSize = " + freeSwapSpaceSize + " name = " + name + " version = " + version
+        + " arch = " + arch + " availableProcessors = " + availableProcessors
         + " systemLoadAverage = " + systemLoadAverage + "}";
   }
 }

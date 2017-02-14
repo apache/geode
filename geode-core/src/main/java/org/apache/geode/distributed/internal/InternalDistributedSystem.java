@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.distributed.internal;
@@ -38,8 +36,10 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.cache.CacheXmlException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -98,47 +98,49 @@ import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
 import org.apache.geode.internal.statistics.DummyStatisticsImpl;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
-import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.statistics.LocalStatisticsImpl;
-import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.statistics.StatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
+import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.tcp.ConnectionTable;
-import org.apache.geode.internal.util.concurrent.StoppableCondition;
-import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.security.GemFireSecurityException;
 
 /**
- * The concrete implementation of {@link DistributedSystem} that
- * provides internal-only functionality.
+ * The concrete implementation of {@link DistributedSystem} that provides internal-only
+ * functionality.
+ * 
  * @since GemFire 3.0
  */
-public class InternalDistributedSystem extends DistributedSystem implements OsStatisticsFactory, StatisticsManager {
+public class InternalDistributedSystem extends DistributedSystem
+    implements OsStatisticsFactory, StatisticsManager {
 
   private static final Logger logger = LogService.getLogger();
 
-  public static final String DISABLE_MANAGEMENT_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "disableManagement";
+  public static final String DISABLE_MANAGEMENT_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "disableManagement";
 
   /**
    * If auto-reconnect is going on this will hold a reference to it
    */
   public static volatile DistributedSystem systemAttemptingReconnect;
 
-  public static final CreationStackGenerator DEFAULT_CREATION_STACK_GENERATOR = new CreationStackGenerator() {
-    @Override
-    public Throwable generateCreationStack(final DistributionConfig config) {
-      return null;
-    }
-  };
+  public static final CreationStackGenerator DEFAULT_CREATION_STACK_GENERATOR =
+      new CreationStackGenerator() {
+        @Override
+        public Throwable generateCreationStack(final DistributionConfig config) {
+          return null;
+        }
+      };
 
   // the following is overridden from DistributedTestCase to fix #51058
-  public static final AtomicReference<CreationStackGenerator> TEST_CREATION_STACK_GENERATOR = new AtomicReference<CreationStackGenerator>(DEFAULT_CREATION_STACK_GENERATOR);
+  public static final AtomicReference<CreationStackGenerator> TEST_CREATION_STACK_GENERATOR =
+      new AtomicReference<CreationStackGenerator>(DEFAULT_CREATION_STACK_GENERATOR);
 
   /**
-   * The distribution manager that is used to communicate with the
-   * distributed system.
+   * The distribution manager that is used to communicate with the distributed system.
    */
   protected DM dm;
 
@@ -168,8 +170,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
    */
   private DSClock clock;
 
-  //  /** The log writer was provided by an external entity */
-  //  private boolean externalLogWriterProvided = false;
+  // /** The log writer was provided by an external entity */
+  // private boolean externalLogWriterProvided = false;
   //
   private LogWriterAppender logWriterAppender = null;
 
@@ -186,16 +188,16 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   protected final Object isConnectedMutex = new Object();
 
   /**
-   * Is this <code>DistributedSystem</code> connected to a
-   * distributed system?
+   * Is this <code>DistributedSystem</code> connected to a distributed system?
    * <p>
-   * Concurrency: volatile for reads and protected by synchronization of {@link #isConnectedMutex} for writes
+   * Concurrency: volatile for reads and protected by synchronization of {@link #isConnectedMutex}
+   * for writes
    */
   protected volatile boolean isConnected;
 
   /**
-   * Set to true if this distributed system is a singleton; it will
-   * always be the only member of the system.
+   * Set to true if this distributed system is a singleton; it will always be the only member of the
+   * system.
    */
   private boolean isLoner = false;
 
@@ -205,14 +207,13 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   private GemFireStatSampler sampler = null;
 
   /**
-   * A set of listeners that are invoked when this connection to the
-   * distributed system is disconnected
+   * A set of listeners that are invoked when this connection to the distributed system is
+   * disconnected
    */
   private final Set listeners = new LinkedHashSet(); // needs to be ordered
 
   /**
-   * Set of listeners that are invoked whenever a connection is created to
-   * the distributed system
+   * Set of listeners that are invoked whenever a connection is created to the distributed system
    */
   private static Set connectListeners = new LinkedHashSet(); // needs to be ordered
 
@@ -222,39 +223,38 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   private static List<ReconnectListener> reconnectListeners = new ArrayList<ReconnectListener>();
 
   /**
-   * whether this DS is one created to reconnect to the distributed
-   * system after a forced-disconnect.  This state is cleared once reconnect
-   * is successful.
+   * whether this DS is one created to reconnect to the distributed system after a
+   * forced-disconnect. This state is cleared once reconnect is successful.
    */
   private boolean isReconnectingDS;
 
   /**
-   * During a reconnect attempt this is used to perform quorum checks
-   * before allowing a location service to be started up in this JVM.
-   * If quorum checks fail then we delay starting location services until
-   * a live locator can be contacted.
+   * During a reconnect attempt this is used to perform quorum checks before allowing a location
+   * service to be started up in this JVM. If quorum checks fail then we delay starting location
+   * services until a live locator can be contacted.
    */
   private QuorumChecker quorumChecker;
 
 
   /**
-   * A Constant that matches the ThreadGroup name of the shutdown hook.
-   * This constant is used to insure consistency with LoggingThreadGroup.
-   * Due to Bug 38407, be careful about moving this to another class.
+   * A Constant that matches the ThreadGroup name of the shutdown hook. This constant is used to
+   * insure consistency with LoggingThreadGroup. Due to Bug 38407, be careful about moving this to
+   * another class.
    */
   public final static String SHUTDOWN_HOOK_NAME = "Distributed system shutdown hook";
   /**
-   * A property to prevent shutdown hooks from being registered with the VM.
-   * This is regarding bug 38407
+   * A property to prevent shutdown hooks from being registered with the VM. This is regarding bug
+   * 38407
    */
-  public final static String DISABLE_SHUTDOWN_HOOK_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "disableShutdownHook";
+  public final static String DISABLE_SHUTDOWN_HOOK_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "disableShutdownHook";
 
   /**
    * A property to append to existing log-file instead of truncating it.
    */
   public final static String APPEND_TO_LOG_FILE = DistributionConfig.GEMFIRE_PREFIX + "append-log";
 
-  ////////////////////  Configuration Fields  ////////////////////
+  //////////////////// Configuration Fields ////////////////////
 
   /**
    * The config object used to create this distributed system
@@ -266,7 +266,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
    */
   private DistributionConfig config;
 
-  private final boolean statsDisabled = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
+  private final boolean statsDisabled =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
 
   private volatile boolean shareSockets = DistributionConfig.DEFAULT_CONSERVE_SOCKETS;
 
@@ -284,11 +285,10 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
    */
   private final Throwable creationStack;
 
-  /////////////////////  Static Methods  /////////////////////
+  ///////////////////// Static Methods /////////////////////
 
   /**
-   * Creates a new instance of <code>InternalDistributedSystem</code>
-   * with the given configuration.
+   * Creates a new instance of <code>InternalDistributedSystem</code> with the given configuration.
    */
   public static InternalDistributedSystem newInstance(Properties config) {
     boolean success = false;
@@ -303,7 +303,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       return newSystem;
     } finally {
       if (!success) {
-        LoggingThreadGroup.cleanUpThreadGroups(); // bug44365 - logwriters accumulate, causing mem leak
+        LoggingThreadGroup.cleanUpThreadGroups(); // bug44365 - logwriters accumulate, causing mem
+                                                  // leak
         SystemFailure.stopThreads();
       }
     }
@@ -312,6 +313,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
   /**
    * creates a non-functional instance for testing
+   * 
    * @param nonDefault - non-default distributed system properties
    */
   public static InternalDistributedSystem newInstanceForTesting(DM dm, Properties nonDefault) {
@@ -323,9 +325,9 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Returns a connection to the distributed system that is suitable
-   * for administration.  For administration, we are not as strict
-   * when it comes to existing connections.
+   * Returns a connection to the distributed system that is suitable for administration. For
+   * administration, we are not as strict when it comes to existing connections.
+   * 
    * @since GemFire 4.0
    */
   public static DistributedSystem connectForAdmin(Properties props) {
@@ -333,18 +335,20 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Returns a connected distributed system for this VM, or null
-   * if there is no connected distributed system in this VM.
-   * This method synchronizes on the existingSystems collection.
+   * Returns a connected distributed system for this VM, or null if there is no connected
+   * distributed system in this VM. This method synchronizes on the existingSystems collection.
    * <p>
-   * <p>author bruce
+   * <p>
+   * author bruce
+   * 
    * @since GemFire 5.0
    */
   public static InternalDistributedSystem getConnectedInstance() {
     InternalDistributedSystem result = null;
     synchronized (existingSystemsLock) {
       if (!existingSystems.isEmpty()) {
-        InternalDistributedSystem existingSystem = (InternalDistributedSystem) existingSystems.get(0);
+        InternalDistributedSystem existingSystem =
+            (InternalDistributedSystem) existingSystems.get(0);
         if (existingSystem.isConnected()) {
           result = existingSystem;
         }
@@ -354,9 +358,11 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Returns the current distributed system, if there is one.
-   * Note: this method is no longer unsafe size existingSystems uses copy-on-write.
-   * <p>author bruce
+   * Returns the current distributed system, if there is one. Note: this method is no longer unsafe
+   * size existingSystems uses copy-on-write.
+   * <p>
+   * author bruce
+   * 
    * @since GemFire 5.0
    */
   public static InternalDistributedSystem unsafeGetConnectedInstance() {
@@ -427,16 +433,14 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
 
-  //////////////////////  Constructors  //////////////////////
+  ////////////////////// Constructors //////////////////////
 
   /**
-   * Creates a new <code>InternalDistributedSystem</code> with the
-   * given configuration properties.  Does all of the magic of finding
-   * the "default" values of properties.  See {@link
-   * DistributedSystem#connect} for a list of exceptions that may be
-   * thrown.
-   * @param nonDefault The non-default configuration properties specified by the
-   * caller
+   * Creates a new <code>InternalDistributedSystem</code> with the given configuration properties.
+   * Does all of the magic of finding the "default" values of properties. See
+   * {@link DistributedSystem#connect} for a list of exceptions that may be thrown.
+   * 
+   * @param nonDefault The non-default configuration properties specified by the caller
    *
    * @see DistributedSystem#connect
    */
@@ -466,29 +470,34 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       this.originalConfig = new DistributionConfigImpl(nonDefault);
     }
 
-    ((DistributionConfigImpl) this.originalConfig).checkForDisallowedDefaults(); // throws IllegalStateEx
+    ((DistributionConfigImpl) this.originalConfig).checkForDisallowedDefaults(); // throws
+                                                                                 // IllegalStateEx
     this.shareSockets = this.originalConfig.getConserveSockets();
     this.startTime = System.currentTimeMillis();
     this.grc = new GrantorRequestProcessor.GrantorRequestContext(stopper);
 
-    this.creationStack = TEST_CREATION_STACK_GENERATOR.get().generateCreationStack(this.originalConfig);
+    this.creationStack =
+        TEST_CREATION_STACK_GENERATOR.get().generateCreationStack(this.originalConfig);
 
-    //    if (DistributionConfigImpl.multicastTest) {
-    //      this.logger.warning("Use of multicast has been forced");
-    //    }
-    //    if (DistributionConfigImpl.forceDisableTcp) {
-    //      this.logger.warning("Use of UDP has been forced");
-    //    }
-    //    if (org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager.multicastTest) {
-    //      this.logger.warning("Use of multicast for all distributed cache operations has been forced");
-    //    }
+    // if (DistributionConfigImpl.multicastTest) {
+    // this.logger.warning("Use of multicast has been forced");
+    // }
+    // if (DistributionConfigImpl.forceDisableTcp) {
+    // this.logger.warning("Use of UDP has been forced");
+    // }
+    // if
+    // (org.apache.geode.distributed.internal.membership.jgroup.JGroupMembershipManager.multicastTest)
+    // {
+    // this.logger.warning("Use of multicast for all distributed cache operations has been forced");
+    // }
 
   }
 
-  ////////////////////  Instance Methods  ////////////////////
+  //////////////////// Instance Methods ////////////////////
 
   /**
    * Registers a listener to the system
+   * 
    * @param listener listener to be added
    */
   public void addResourceListener(ResourceEventsListener listener) {
@@ -497,6 +506,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
   /**
    * Un-Registers a listener to the system
+   * 
    * @param listener listener to be removed
    */
   public void removeResourceListener(ResourceEventsListener listener) {
@@ -512,6 +522,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
   /**
    * Handles a particular event associated with a resource
+   * 
    * @param event Resource event
    * @param resource resource on which event is generated
    */
@@ -539,13 +550,13 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Initializes this connection to a distributed system with the
-   * current configuration state.
+   * Initializes this connection to a distributed system with the current configuration state.
    */
   private void initialize() {
     if (this.originalConfig.getLocators().equals("")) {
       if (this.originalConfig.getMcastPort() != 0) {
-        throw new GemFireConfigException("The " + LOCATORS + " attribute can not be empty when the " + MCAST_PORT + " attribute is non-zero.");
+        throw new GemFireConfigException("The " + LOCATORS + " attribute can not be empty when the "
+            + MCAST_PORT + " attribute is non-zero.");
       } else {
         // no distribution
         this.isLoner = true;
@@ -559,38 +570,47 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     try {
       SocketCreatorFactory.setDistributionConfig(config);
 
+      AlertAppender.getInstance().onConnect(this);
+
       // LOG: create LogWriterAppender(s) if log-file or security-log-file is specified
-      final boolean hasLogFile = this.config.getLogFile() != null && !this.config.getLogFile().equals(new File(""));
-      final boolean hasSecurityLogFile = this.config.getSecurityLogFile() != null && !this.config.getSecurityLogFile().equals(new File(""));
+      final boolean hasLogFile =
+          this.config.getLogFile() != null && !this.config.getLogFile().equals(new File(""));
+      final boolean hasSecurityLogFile = this.config.getSecurityLogFile() != null
+          && !this.config.getSecurityLogFile().equals(new File(""));
       LogService.configureLoggers(hasLogFile, hasSecurityLogFile);
       if (hasLogFile || hasSecurityLogFile) {
 
         // main log file
         if (hasLogFile) {
           // if log-file then create logWriterAppender
-          this.logWriterAppender = LogWriterAppenders.getOrCreateAppender(LogWriterAppenders.Identifier.MAIN, this.isLoner, this.config, true);
+          this.logWriterAppender = LogWriterAppenders.getOrCreateAppender(
+              LogWriterAppenders.Identifier.MAIN, this.isLoner, this.config, true);
         }
 
         // security log file
         if (hasSecurityLogFile) {
           // if security-log-file then create securityLogWriterAppender
-          this.securityLogWriterAppender = LogWriterAppenders.getOrCreateAppender(LogWriterAppenders.Identifier.SECURITY, this.isLoner, this.config, false);
+          this.securityLogWriterAppender = LogWriterAppenders.getOrCreateAppender(
+              LogWriterAppenders.Identifier.SECURITY, this.isLoner, this.config, false);
         } else {
           // let security route to regular log-file or stdout
         }
       }
 
-      // LOG: create LogWriterLogger(s) for backwards compatibility of getLogWriter and getSecurityLogWriter
+      // LOG: create LogWriterLogger(s) for backwards compatibility of getLogWriter and
+      // getSecurityLogWriter
       if (this.logWriter == null) {
-        this.logWriter = LogWriterFactory.createLogWriterLogger(this.isLoner, false, this.config, true);
+        this.logWriter =
+            LogWriterFactory.createLogWriterLogger(this.isLoner, false, this.config, true);
         this.logWriter.fine("LogWriter is created.");
       }
 
-      //    logWriter.info("Created log writer for IDS@"+System.identityHashCode(this));
+      // logWriter.info("Created log writer for IDS@"+System.identityHashCode(this));
 
       if (this.securityLogWriter == null) {
         // LOG: whole new LogWriterLogger instance for security
-        this.securityLogWriter = LogWriterFactory.createLogWriterLogger(this.isLoner, true, this.config, false);
+        this.securityLogWriter =
+            LogWriterFactory.createLogWriterLogger(this.isLoner, true, this.config, false);
         this.securityLogWriter.fine("SecurityLogWriter is created.");
       }
 
@@ -600,7 +620,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       this.clock = new DSClock(this.isLoner);
 
       if (this.attemptingToReconnect && logger.isDebugEnabled()) {
-        logger.debug("This thread is initializing a new DistributedSystem in order to reconnect to other members");
+        logger.debug(
+            "This thread is initializing a new DistributedSystem in order to reconnect to other members");
       }
       // Note we need loners to load the license in case they are a
       // bridge server and will need to enforce the member limit
@@ -614,25 +635,32 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
         HandShake.initPrivateKey(this.config.getSecurityProps());
         HandShake.initDHKeys(this.config);
       } catch (Exception ex) {
-        throw new GemFireSecurityException(LocalizedStrings.InternalDistributedSystem_PROBLEM_IN_INITIALIZING_KEYS_FOR_CLIENT_AUTHENTICATION.toLocalizedString(), ex);
+        throw new GemFireSecurityException(
+            LocalizedStrings.InternalDistributedSystem_PROBLEM_IN_INITIALIZING_KEYS_FOR_CLIENT_AUTHENTICATION
+                .toLocalizedString(),
+            ex);
       }
 
-      final long offHeapMemorySize = OffHeapStorage.parseOffHeapMemorySize(getConfig().getOffHeapMemorySize());
+      final long offHeapMemorySize =
+          OffHeapStorage.parseOffHeapMemorySize(getConfig().getOffHeapMemorySize());
 
       this.offHeapStore = OffHeapStorage.createOffHeapStorage(this, offHeapMemorySize, this);
 
       // Note: this can only happen on a linux system
       if (getConfig().getLockMemory()) {
-        // This calculation is not exact, but seems fairly close.  So far we have
+        // This calculation is not exact, but seems fairly close. So far we have
         // not loaded much into the heap and the current RSS usage is already
         // included the available memory calculation.
         long avail = LinuxProcFsStatistics.getAvailableMemory(logger);
         long size = offHeapMemorySize + Runtime.getRuntime().totalMemory();
         if (avail < size) {
           if (GemFireCacheImpl.ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED) {
-            logger.warn(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT_WARN, size - avail));
+            logger.warn(LocalizedMessage.create(
+                LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT_WARN, size - avail));
           } else {
-            throw new IllegalStateException(LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT.toLocalizedString(avail, size));
+            throw new IllegalStateException(
+                LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT
+                    .toLocalizedString(avail, size));
           }
         }
 
@@ -660,7 +688,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
             InternalLocator locator = InternalLocator.getLocator();
-            getDistributionManager().addHostedLocators(getDistributedMember(), InternalLocator.getLocatorStrings(), locator.isSharedConfigurationEnabled());
+            getDistributionManager().addHostedLocators(getDistributedMember(),
+                InternalLocator.getLocatorStrings(), locator.isSharedConfigurationEnabled());
           }
         } finally {
           if (this.dm == null && this.quorumChecker != null) {
@@ -678,9 +707,12 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       try {
         this.id = this.dm.getChannelId();
       } catch (DistributedSystemDisconnectedException e) {
-        // bug #48144 - The dm's channel threw an NPE.  It now throws this exception
+        // bug #48144 - The dm's channel threw an NPE. It now throws this exception
         // but during startup we should instead throw a SystemConnectException
-        throw new SystemConnectException(LocalizedStrings.InternalDistributedSystem_DISTRIBUTED_SYSTEM_HAS_DISCONNECTED.toLocalizedString(), e);
+        throw new SystemConnectException(
+            LocalizedStrings.InternalDistributedSystem_DISTRIBUTED_SYSTEM_HAS_DISCONNECTED
+                .toLocalizedString(),
+            e);
       }
 
       synchronized (this.isConnectedMutex) {
@@ -713,10 +745,10 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
         LogWriterAppenders.startupComplete(LogWriterAppenders.Identifier.SECURITY);
       }
 
-      //this.logger.info("ds created", new RuntimeException("DEBUG: STACK"));
+      // this.logger.info("ds created", new RuntimeException("DEBUG: STACK"));
 
-      //Log any instantiators that were registered before the log writer
-      //was created
+      // Log any instantiators that were registered before the log writer
+      // was created
       InternalInstantiator.logInstantiators();
     } catch (RuntimeException ex) {
       this.config.close();
@@ -733,39 +765,53 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
    */
   private void startInitLocator() throws InterruptedException {
     String locatorString = this.originalConfig.getStartLocator();
-    if (locatorString.length() > 0) {
-      // when reconnecting we don't want to join with a colocated locator unless
-      // there is a quorum of the old members available
-      if (attemptingToReconnect && !this.isConnected) {
-        if (this.quorumChecker != null) {
-          logger.info("performing a quorum check to see if location services can be started early");
-          if (!quorumChecker.checkForQuorum(3 * this.config.getMemberTimeout())) {
-            logger.info("quorum check failed - not allowing location services to start early");
-            return;
-          }
-          logger.info("Quorum check passed - allowing location services to start early");
+    if (locatorString.length() == 0) {
+      return;
+    }
+
+    // when reconnecting we don't want to join with a colocated locator unless
+    // there is a quorum of the old members available
+    if (attemptingToReconnect && !this.isConnected) {
+      if (this.quorumChecker != null) {
+        logger.info("performing a quorum check to see if location services can be started early");
+        if (!quorumChecker.checkForQuorum(3 * this.config.getMemberTimeout())) {
+          logger.info("quorum check failed - not allowing location services to start early");
+          return;
         }
+        logger.info("Quorum check passed - allowing location services to start early");
       }
-      DistributionLocatorId locId = new DistributionLocatorId(locatorString);
+    }
+    DistributionLocatorId locId = new DistributionLocatorId(locatorString);
+    try {
+      this.startedLocator =
+          InternalLocator.createLocator(locId.getPort(), null, null, this.logWriter, // LOG: this is
+                                                                                     // after IDS
+                                                                                     // has created
+                                                                                     // LogWriterLoggers
+                                                                                     // and
+                                                                                     // Appenders
+              this.securityLogWriter, // LOG: this is after IDS has created LogWriterLoggers and
+                                      // Appenders
+              locId.getHost(), locId.getHostnameForClients(), this.originalConfig.toProperties(),
+              false);
+
+      // if locator is started this way, cluster config is not enabled, set the flag correctly
+      this.startedLocator.getConfig().setEnableClusterConfiguration(false);
+
+      boolean startedPeerLocation = false;
       try {
-        this.startedLocator = InternalLocator.createLocator(locId.getPort(), null, null, this.logWriter, // LOG: this is after IDS has created LogWriterLoggers and Appenders
-          this.securityLogWriter, // LOG: this is after IDS has created LogWriterLoggers and Appenders
-          locId.getHost(), locId.getHostnameForClients(), this.originalConfig.toProperties(), false);
-        if (locId.isPeerLocator()) {
-          boolean startedPeerLocation = false;
-          try {
-            this.startedLocator.startPeerLocation(true);
-            startedPeerLocation = true;
-          } finally {
-            if (!startedPeerLocation) {
-              this.startedLocator.stop();
-            }
-          }
+        this.startedLocator.startPeerLocation(true);
+        startedPeerLocation = true;
+      } finally {
+        if (!startedPeerLocation) {
+          this.startedLocator.stop();
         }
-      } catch (IOException e) {
-        throw new GemFireIOException(LocalizedStrings.
-          InternalDistributedSystem_PROBLEM_STARTING_A_LOCATOR_SERVICE.toLocalizedString(), e);
       }
+    } catch (IOException e) {
+      throw new GemFireIOException(
+          LocalizedStrings.InternalDistributedSystem_PROBLEM_STARTING_A_LOCATOR_SERVICE
+              .toLocalizedString(),
+          e);
     }
   }
 
@@ -775,17 +821,9 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   private void endInitLocator() throws IOException {
     InternalLocator loc = this.startedLocator;
     if (loc != null) {
-      String locatorString = this.originalConfig.getStartLocator();
-      //      DistributionLocatorId locId = new DistributionLocatorId(locatorString);
       boolean finished = false;
       try {
-        // during the period when the product is using only paper licenses we always
-        // start server location services in order to be able to log information
-        // about the use of cache servers
-        //      if(locId.isServerLocator()) {
         loc.startServerLocation(this);
-        //      }
-
         loc.endStartLocator(this);
         finished = true;
       } finally {
@@ -811,14 +849,17 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Checks whether or not this connection to a distributed system is
-   * closed.
-   * @throws DistributedSystemDisconnectedException This connection has been {@link #disconnect(boolean, String, boolean) disconnected}
+   * Checks whether or not this connection to a distributed system is closed.
+   * 
+   * @throws DistributedSystemDisconnectedException This connection has been
+   *         {@link #disconnect(boolean, String, boolean) disconnected}
    */
   private void checkConnected() {
     if (!isConnected()) {
-      throw new DistributedSystemDisconnectedException(LocalizedStrings.InternalDistributedSystem_THIS_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_HAS_BEEN_DISCONNECTED.toLocalizedString(), dm
-        .getRootCause());
+      throw new DistributedSystemDisconnectedException(
+          LocalizedStrings.InternalDistributedSystem_THIS_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_HAS_BEEN_DISCONNECTED
+              .toLocalizedString(),
+          dm.getRootCause());
     }
   }
 
@@ -837,7 +878,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * This class defers to the DM.  If we don't have a DM, we're dead.
+   * This class defers to the DM. If we don't have a DM, we're dead.
    */
   protected class Stopper extends CancelCriterion {
 
@@ -897,15 +938,10 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /*
-  public Cache myCache;
-
-  public void setCache(Cache cache){
-	  myCache=cache;
-  }
-  public Cache getCache(){
-	  return myCache;
-  }
-  */
+   * public Cache myCache;
+   * 
+   * public void setCache(Cache cache){ myCache=cache; } public Cache getCache(){ return myCache; }
+   */
 
   /**
    * Returns the stat sampler
@@ -920,17 +956,19 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   protected volatile boolean isDisconnecting = false;
 
   /**
-   * Disconnects this VM from the distributed system.  Shuts down the
-   * distribution manager, and if necessary,
+   * Disconnects this VM from the distributed system. Shuts down the distribution manager, and if
+   * necessary,
    */
   @Override
   public void disconnect() {
-    disconnect(false, LocalizedStrings.InternalDistributedSystem_NORMAL_DISCONNECT.toLocalizedString(), false);
+    disconnect(false,
+        LocalizedStrings.InternalDistributedSystem_NORMAL_DISCONNECT.toLocalizedString(), false);
   }
 
   /**
-   * Disconnects this member from the distributed system when an internal
-   * error has caused distribution to fail (e.g., this member was shunned)
+   * Disconnects this member from the distributed system when an internal error has caused
+   * distribution to fail (e.g., this member was shunned)
+   * 
    * @param reason a string describing why the disconnect is occurring
    * @param cause an optional exception showing the reason for abnormal disconnect
    * @param shunned whether this member was shunned by the membership coordinator
@@ -950,14 +988,16 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * This is how much time, in milliseconds to allow a disconnect listener
-   * to run before we interrupt it.
+   * This is how much time, in milliseconds to allow a disconnect listener to run before we
+   * interrupt it.
    */
-  static private final long MAX_DISCONNECT_WAIT = Long.getLong("DistributionManager.DISCONNECT_WAIT", 10 * 1000).longValue();
+  static private final long MAX_DISCONNECT_WAIT =
+      Long.getLong("DistributionManager.DISCONNECT_WAIT", 10 * 1000).longValue();
 
   /**
-   * Run a disconnect listener, checking for errors and
-   * honoring the timeout {@link #MAX_DISCONNECT_WAIT}.
+   * Run a disconnect listener, checking for errors and honoring the timeout
+   * {@link #MAX_DISCONNECT_WAIT}.
+   * 
    * @param dc the listener to run
    */
   private void runDisconnect(final DisconnectListener dc, ThreadGroup tg) {
@@ -969,7 +1009,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
           dc.onDisconnect(InternalDistributedSystem.this);
         } catch (CancelException e) {
           if (logger.isDebugEnabled()) {
-            logger.debug("Disconnect listener <{}> thwarted by cancellation: {}", dc, e, logger.isTraceEnabled() ? e : null);
+            logger.debug("Disconnect listener <{}> thwarted by cancellation: {}", dc, e,
+                logger.isTraceEnabled() ? e : null);
           }
         }
       }
@@ -982,12 +1023,16 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       t.join(MAX_DISCONNECT_WAIT);
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      logger.warn(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_INTERRUPTED_WHILE_PROCESSING_DISCONNECT_LISTENER), e);
+      logger.warn(
+          LocalizedMessage.create(
+              LocalizedStrings.InternalDistributedSystem_INTERRUPTED_WHILE_PROCESSING_DISCONNECT_LISTENER),
+          e);
     }
 
     // Make sure the listener gets the cue to die
     if (t.isAlive()) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_DISCONNECT_LISTENER_STILL_RUNNING__0, dc));
+      logger.warn(LocalizedMessage.create(
+          LocalizedStrings.InternalDistributedSystem_DISCONNECT_LISTENER_STILL_RUNNING__0, dc));
       t.interrupt();
 
       try {
@@ -997,7 +1042,9 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       }
 
       if (t.isAlive()) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_DISCONNECT_LISTENER_IGNORED_ITS_INTERRUPT__0, dc));
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.InternalDistributedSystem_DISCONNECT_LISTENER_IGNORED_ITS_INTERRUPT__0,
+            dc));
       }
     }
 
@@ -1006,11 +1053,13 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   public boolean isDisconnectListenerThread() {
     Boolean disconnectListenerThreadBoolean = (Boolean) this.disconnectListenerThread.get();
 
-    return disconnectListenerThreadBoolean != null && disconnectListenerThreadBoolean.booleanValue();
+    return disconnectListenerThreadBoolean != null
+        && disconnectListenerThreadBoolean.booleanValue();
   }
 
   /**
    * Run a disconnect listener in the same thread sequence as the reconnect.
+   * 
    * @param dc the listener to run
    * @param tg the thread group to run the listener in
    */
@@ -1020,7 +1069,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       dc.onDisconnect(InternalDistributedSystem.this);
     } catch (DistributedSystemDisconnectedException e) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Disconnect listener <{}> thwarted by shutdown: {}", dc, e, logger.isTraceEnabled() ? e : null);
+        logger.debug("Disconnect listener <{}> thwarted by shutdown: {}", dc, e,
+            logger.isTraceEnabled() ? e : null);
       }
     }
   }
@@ -1028,10 +1078,12 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   /**
    * A logging thread group for the disconnect and shutdown listeners
    */
-  private final ThreadGroup disconnectListenerThreadGroup = LoggingThreadGroup.createThreadGroup("Disconnect Listeners");
+  private final ThreadGroup disconnectListenerThreadGroup =
+      LoggingThreadGroup.createThreadGroup("Disconnect Listeners");
 
   /**
    * Disconnect cache, run disconnect listeners.
+   * 
    * @param doReconnect whether a reconnect will be done
    * @param reason the reason that the system is disconnecting
    *
@@ -1041,7 +1093,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     // Make a pass over the disconnect listeners, asking them _politely_
     // to clean up.
     HashSet shutdownListeners = new HashSet();
-    for (; ; ) {
+    for (;;) {
       DisconnectListener listener = null;
       synchronized (this.listeners) {
         Iterator itr = listeners.iterator();
@@ -1065,9 +1117,9 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Process the shutdown listeners.  It is essential that the DM has been
-   * shut down before calling this step, to ensure that no new listeners are
-   * registering.
+   * Process the shutdown listeners. It is essential that the DM has been shut down before calling
+   * this step, to ensure that no new listeners are registering.
+   * 
    * @param shutdownListeners shutdown listeners initially registered with us
    */
   private void doShutdownListeners(HashSet shutdownListeners) {
@@ -1083,26 +1135,27 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
         s.onShutdown(this);
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
-        // If this ever returns, rethrow the error.  We're poisoned
+        // If this ever returns, rethrow the error. We're poisoned
         // now, so don't let this thread continue.
         throw err;
       } catch (Throwable t) {
         // Whenever you catch Error or Throwable, you must also
-        // catch VirtualMachineError (see above).  However, there is
+        // catch VirtualMachineError (see above). However, there is
         // _still_ a possibility that you are dealing with a cascading
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
         // things could break since we continue, but we want to disconnect!
-        logger.fatal(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_SHUTDOWNLISTENER__0__THREW, s), t);
+        logger.fatal(LocalizedMessage
+            .create(LocalizedStrings.InternalDistributedSystem_SHUTDOWNLISTENER__0__THREW, s), t);
       }
     }
 
     // During the window while we were running disconnect listeners, new
     // disconnect listeners may have appeared. After messagingDisabled is
-    // set, no new ones will be created.  However, we must process any
+    // set, no new ones will be created. However, we must process any
     // that appeared in the interim.
-    for (; ; ) {
+    for (;;) {
       // Pluck next listener from the list
       DisconnectListener dcListener = null;
       ShutdownListener sdListener = null;
@@ -1127,18 +1180,19 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
           sdListener.onShutdown(this);
         } catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
-          // If this ever returns, rethrow the error.  We're poisoned
+          // If this ever returns, rethrow the error. We're poisoned
           // now, so don't let this thread continue.
           throw err;
         } catch (Throwable t) {
           // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above).  However, there is
+          // catch VirtualMachineError (see above). However, there is
           // _still_ a possibility that you are dealing with a cascading
           // error condition, so you also need to check to see if the JVM
           // is still usable:
           SystemFailure.checkFailure();
           // things could break since we continue, but we want to disconnect!
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_DISCONNECTLISTENERSHUTDOWN_THREW), t);
+          logger.fatal(LocalizedMessage.create(
+              LocalizedStrings.InternalDistributedSystem_DISCONNECTLISTENERSHUTDOWN_THREW), t);
         }
       }
     } // for
@@ -1151,6 +1205,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
   /**
    * Ensure that the MembershipManager class gets loaded.
+   * 
    * @see SystemFailure#loadEmergencyClasses()
    */
   static public void loadEmergencyClasses() {
@@ -1163,6 +1218,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
   /**
    * Closes the membership manager
+   * 
    * @see SystemFailure#emergencyClose()
    */
   public void emergencyClose() {
@@ -1208,7 +1264,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
           this.isConnectedMutex.wait();
         } catch (InterruptedException e) {
           interrupted = true;
-          getLogWriter().convertToLogWriterI18n().warning(LocalizedStrings.InternalDistributedSystem_DISCONNECT_WAIT_INTERRUPTED, e);
+          getLogWriter().convertToLogWriterI18n()
+              .warning(LocalizedStrings.InternalDistributedSystem_DISCONNECT_WAIT_INTERRUPTED, e);
         } finally {
           if (interrupted) {
             Thread.currentThread().interrupt();
@@ -1219,18 +1276,17 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Disconnects this VM from the distributed system. Shuts down the
-   * distribution manager.
+   * Disconnects this VM from the distributed system. Shuts down the distribution manager.
+   * 
    * @param preparingForReconnect true if called by a reconnect operation
    * @param reason the reason the disconnect is being performed
-   * @param keepAlive true if user requested durable subscriptions are to be retained at
-   * server.
+   * @param keepAlive true if user requested durable subscriptions are to be retained at server.
    */
   protected void disconnect(boolean preparingForReconnect, String reason, boolean keepAlive) {
     boolean isShutdownHook = (shutdownHook != null) && (Thread.currentThread() == shutdownHook);
 
     if (!preparingForReconnect) {
-      //      logger.info("disconnecting IDS@"+System.identityHashCode(this));
+      // logger.info("disconnecting IDS@"+System.identityHashCode(this));
       synchronized (reconnectListeners) {
         reconnectListeners.clear();
       }
@@ -1252,7 +1308,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
           // the distributed system close.
           GemFireCacheImpl currentCache = GemFireCacheImpl.getInstance();
           if (currentCache != null && !currentCache.isClosed()) {
-            disconnectListenerThread.set(Boolean.TRUE); // bug #42663 - this must be set while closing the cache
+            disconnectListenerThread.set(Boolean.TRUE); // bug #42663 - this must be set while
+                                                        // closing the cache
             try {
               currentCache.close(reason, dm.getRootCause(), keepAlive, true); // fix for 42150
             } catch (VirtualMachineError e) {
@@ -1261,8 +1318,11 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
             } catch (Throwable e) {
               SystemFailure.checkFailure();
               // Whenever you catch Error or Throwable, you must also
-              // check for fatal JVM error (see above).  However, there is
-              logger.warn(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_EXCEPTION_TRYING_TO_CLOSE_CACHE), e);
+              // check for fatal JVM error (see above). However, there is
+              logger.warn(
+                  LocalizedMessage.create(
+                      LocalizedStrings.InternalDistributedSystem_EXCEPTION_TRYING_TO_CLOSE_CACHE),
+                  e);
             } finally {
               disconnectListenerThread.set(Boolean.FALSE);
             }
@@ -1360,7 +1420,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
       // NOTE: no logging after this point :-)
 
-      LoggingThreadGroup.cleanUpThreadGroups(); // bug35388 - logwriters accumulate, causing mem leak
+      LoggingThreadGroup.cleanUpThreadGroups(); // bug35388 - logwriters accumulate, causing mem
+                                                // leak
       EventID.unsetDS();
 
     } finally {
@@ -1391,17 +1452,17 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Returns the distribution manager without checking for connected or not so
-   * can also return null.
+   * Returns the distribution manager without checking for connected or not so can also return null.
    */
   public final DM getDM() {
     return this.dm;
   }
 
   /**
-   * If this DistributedSystem is attempting to reconnect to the distributed system
-   * this will return the quorum checker created by the old MembershipManager for
-   * checking to see if a quorum of old members can be reached.
+   * If this DistributedSystem is attempting to reconnect to the distributed system this will return
+   * the quorum checker created by the old MembershipManager for checking to see if a quorum of old
+   * members can be reached.
+   * 
    * @return the quorum checking service
    */
   public final QuorumChecker getQuorumChecker() {
@@ -1409,16 +1470,16 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Returns true if this DS has been attempting to reconnect but
-   * the attempt has been cancelled.
+   * Returns true if this DS has been attempting to reconnect but the attempt has been cancelled.
    */
   public boolean isReconnectCancelled() {
     return reconnectCancelled;
   }
 
   /**
-   * Returns whether or not this distributed system has the same
-   * configuration as the given set of properties.
+   * Returns whether or not this distributed system has the same configuration as the given set of
+   * properties.
+   * 
    * @see DistributedSystem#connect
    */
   public boolean sameAs(Properties props, boolean isConnected) {
@@ -1436,9 +1497,9 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Returns whether or not the given configuration properties refer
-   * to the same distributed system as this
-   * <code>InternalDistributedSystem</code> connection.
+   * Returns whether or not the given configuration properties refer to the same distributed system
+   * as this <code>InternalDistributedSystem</code> connection.
+   * 
    * @since GemFire 4.0
    */
   public boolean sameSystemAs(Properties props) {
@@ -1467,6 +1528,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
   /**
    * Canonicalizes a locators string so that they may be compared.
+   * 
    * @since GemFire 4.0
    */
   private static String canonicalizeLocators(String locators) {
@@ -1489,7 +1551,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     }
 
     StringBuffer sb = new StringBuffer();
-    for (Iterator iter = sorted.iterator(); iter.hasNext(); ) {
+    for (Iterator iter = sorted.iterator(); iter.hasNext();) {
       sb.append((String) iter.next());
       if (iter.hasNext()) {
         sb.append(",");
@@ -1506,9 +1568,9 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Returns the id of this connection to the distributed system.
-   * This is actually the port of the distribution manager's
-   * distribution channel.
+   * Returns the id of this connection to the distributed system. This is actually the port of the
+   * distribution manager's distribution channel.
+   * 
    * @see org.apache.geode.distributed.internal.DistributionChannel#getId
    */
   @Override
@@ -1545,12 +1607,12 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     Set<InternalDistributedMember> allMembers = dm.getDistributionManagerIdsIncludingAdmin();
     Set<DistributedMember> results = new HashSet<DistributedMember>(2);
 
-    //Search through the set of all members
+    // Search through the set of all members
     for (InternalDistributedMember member : allMembers) {
 
       Set<InetAddress> equivalentAddresses = dm.getEquivalents(member.getInetAddress());
-      //Check to see if the passed in address is matches one of the addresses on
-      //the given member.
+      // Check to see if the passed in address is matches one of the addresses on
+      // the given member.
       if (address.equals(member.getInetAddress()) || equivalentAddresses.contains(address)) {
         results.add(member);
       }
@@ -1582,13 +1644,13 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     return getOriginalConfig().getName();
   }
 
-  ///////////////////////  Utility Methods  ///////////////////////
+  /////////////////////// Utility Methods ///////////////////////
 
   /**
-   * Since {@link DistributedSystem#connect} guarantees that there is
-   * a canonical instance of <code>DistributedSystem</code> for each
-   * configuration, we can use the default implementation of
+   * Since {@link DistributedSystem#connect} guarantees that there is a canonical instance of
+   * <code>DistributedSystem</code> for each configuration, we can use the default implementation of
    * <code>equals</code>.
+   * 
    * @see #sameAs
    */
   @Override
@@ -1597,9 +1659,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Since we use the default implementation of {@link #equals
-   * equals}, we can use the default implementation of
-   * <code>hashCode</code>.
+   * Since we use the default implementation of {@link #equals equals}, we can use the default
+   * implementation of <code>hashCode</code>.
    */
   @Override
   public int hashCode() {
@@ -1607,8 +1668,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Returns a string describing this connection to distributed system
-   * (including highlights of its configuration).
+   * Returns a string describing this connection to distributed system (including highlights of its
+   * configuration).
    */
   @Override
   public String toString() {
@@ -1659,12 +1720,12 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
   private final CopyOnWriteArrayList<Statistics> statsList = new CopyOnWriteArrayList<Statistics>();
   private int statsListModCount = 0;
-  private long statsListUniqueId = 1;
-  private final Object statsListUniqueIdLock = new Object();
+  private AtomicLong statsListUniqueId = new AtomicLong(1);
 
   // As the function execution stats can be lot in number, its better to put
   // them in a map so that it will be accessible immediately
-  private final ConcurrentHashMap<String, FunctionStats> functionExecutionStatsMap = new ConcurrentHashMap<String, FunctionStats>();
+  private final ConcurrentHashMap<String, FunctionStats> functionExecutionStatsMap =
+      new ConcurrentHashMap<String, FunctionStats>();
   private FunctionServiceStats functionServiceStats = null;
 
   public int getStatListModCount() {
@@ -1693,7 +1754,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
         return s;
       }
     }
-    throw new RuntimeException(LocalizedStrings.PureStatSampler_COULD_NOT_FIND_STATISTICS_INSTANCE.toLocalizedString());
+    throw new RuntimeException(
+        LocalizedStrings.PureStatSampler_COULD_NOT_FIND_STATISTICS_INSTANCE.toLocalizedString());
   }
 
   @Override
@@ -1710,7 +1772,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   @Override
   public final Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
-    return (Statistics[])statsList.toArray(new Statistics[0]);
+    return (Statistics[]) statsList.toArray(new Statistics[0]);
   }
 
   // StatisticsFactory methods
@@ -1726,15 +1788,14 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     return createOsStatistics(type, textId, numericId, 0);
   }
 
-  public Statistics createOsStatistics(StatisticsType type, String textId, long numericId, int osStatFlags) {
+  public Statistics createOsStatistics(StatisticsType type, String textId, long numericId,
+      int osStatFlags) {
     if (this.statsDisabled) {
       return new DummyStatisticsImpl(type, textId, numericId);
     }
-    long myUniqueId;
-    synchronized (statsListUniqueIdLock) {
-      myUniqueId = statsListUniqueId++; // fix for bug 30597
-    }
-    Statistics result = new LocalStatisticsImpl(type, textId, numericId, myUniqueId, false, osStatFlags, this);
+    long myUniqueId = statsListUniqueId.getAndIncrement();
+    Statistics result =
+        new LocalStatisticsImpl(type, textId, numericId, myUniqueId, false, osStatFlags, this);
     synchronized (statsList) {
       statsList.add(result);
       statsListModCount++;
@@ -1768,8 +1829,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * For every registered statistic instance call the specified visitor.
-   * This method was added to fix bug 40358
+   * For every registered statistic instance call the specified visitor. This method was added to
+   * fix bug 40358
    */
   public void visitStatistics(StatisticsVisitor visitor) {
     for (Statistics s : this.statsList) {
@@ -1779,6 +1840,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
   /**
    * Used to "visit" each instance of Statistics registered with
+   * 
    * @see #visitStatistics
    */
   public interface StatisticsVisitor {
@@ -1863,10 +1925,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       return new DummyStatisticsImpl(type, textId, numericId);
     }
 
-    long myUniqueId;
-    synchronized (statsListUniqueIdLock) {
-      myUniqueId = statsListUniqueId++; // fix for bug 30597
-    }
+    long myUniqueId = statsListUniqueId.getAndIncrement();
     Statistics result = StatisticsImpl.createAtomicNoOS(type, textId, numericId, myUniqueId, this);
     synchronized (statsList) {
       statsList.add(result);
@@ -1918,27 +1977,33 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     return tf.createDoubleGauge(name, description, units);
   }
 
-  public StatisticDescriptor createIntCounter(String name, String description, String units, boolean largerBetter) {
+  public StatisticDescriptor createIntCounter(String name, String description, String units,
+      boolean largerBetter) {
     return tf.createIntCounter(name, description, units, largerBetter);
   }
 
-  public StatisticDescriptor createLongCounter(String name, String description, String units, boolean largerBetter) {
+  public StatisticDescriptor createLongCounter(String name, String description, String units,
+      boolean largerBetter) {
     return tf.createLongCounter(name, description, units, largerBetter);
   }
 
-  public StatisticDescriptor createDoubleCounter(String name, String description, String units, boolean largerBetter) {
+  public StatisticDescriptor createDoubleCounter(String name, String description, String units,
+      boolean largerBetter) {
     return tf.createDoubleCounter(name, description, units, largerBetter);
   }
 
-  public StatisticDescriptor createIntGauge(String name, String description, String units, boolean largerBetter) {
+  public StatisticDescriptor createIntGauge(String name, String description, String units,
+      boolean largerBetter) {
     return tf.createIntGauge(name, description, units, largerBetter);
   }
 
-  public StatisticDescriptor createLongGauge(String name, String description, String units, boolean largerBetter) {
+  public StatisticDescriptor createLongGauge(String name, String description, String units,
+      boolean largerBetter) {
     return tf.createLongGauge(name, description, units, largerBetter);
   }
 
-  public StatisticDescriptor createDoubleGauge(String name, String description, String units, boolean largerBetter) {
+  public StatisticDescriptor createDoubleGauge(String name, String description, String units,
+      boolean largerBetter) {
     return tf.createDoubleGauge(name, description, units, largerBetter);
   }
 
@@ -1947,9 +2012,9 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Makes note of a <code>ConnectListener</code> whose
-   * <code>onConnect</code> method will be invoked when a connection is
-   * created to a distributed system.
+   * Makes note of a <code>ConnectListener</code> whose <code>onConnect</code> method will be
+   * invoked when a connection is created to a distributed system.
+   * 
    * @return set of currently existing system connections
    */
   public static List addConnectListener(ConnectListener listener) {
@@ -1962,14 +2027,15 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Makes note of a <code>ReconnectListener</code> whose
-   * <code>onReconnect</code> method will be invoked when a connection is
-   * recreated to a distributed system during auto-reconnect.<p>
+   * Makes note of a <code>ReconnectListener</code> whose <code>onReconnect</code> method will be
+   * invoked when a connection is recreated to a distributed system during auto-reconnect.
+   * <p>
    * <p>
    * The ReconnectListener set is cleared after a disconnect.
    */
   public static void addReconnectListener(ReconnectListener listener) {
-    //    (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("registering reconnect listener: " + listener);
+    // (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("registering reconnect
+    // listener: " + listener);
     synchronized (existingSystemsLock) {
       synchronized (reconnectListeners) {
         reconnectListeners.add(listener);
@@ -1978,9 +2044,9 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Removes a <code>ConnectListener</code> from the list of
-   * listeners that will be notified when a connection is created to
-   * a distributed system.
+   * Removes a <code>ConnectListener</code> from the list of listeners that will be notified when a
+   * connection is created to a distributed system.
+   * 
    * @return true if listener was in the list
    */
   public static boolean removeConnectListener(ConnectListener listener) {
@@ -1990,37 +2056,37 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Notifies all registered <code>ConnectListener</code>s that a
-   * connection to a distributed system has been created.
+   * Notifies all registered <code>ConnectListener</code>s that a connection to a distributed system
+   * has been created.
    */
   private static void notifyConnectListeners(InternalDistributedSystem sys) {
     synchronized (connectListeners) {
-      for (Iterator iter = connectListeners.iterator(); iter.hasNext(); ) {
+      for (Iterator iter = connectListeners.iterator(); iter.hasNext();) {
         try {
           ConnectListener listener = (ConnectListener) iter.next();
           listener.onConnect(sys);
         } catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
-          // If this ever returns, rethrow the error.  We're poisoned
+          // If this ever returns, rethrow the error. We're poisoned
           // now, so don't let this thread continue.
           throw err;
         } catch (Throwable t) {
           // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above).  However, there is
+          // catch VirtualMachineError (see above). However, there is
           // _still_ a possibility that you are dealing with a cascading
           // error condition, so you also need to check to see if the JVM
           // is still usable:
           SystemFailure.checkFailure();
-          sys.getLogWriter().convertToLogWriterI18n().severe(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW, t);
+          sys.getLogWriter().convertToLogWriterI18n()
+              .severe(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW, t);
         }
       }
     }
   }
 
   /**
-   * Removes a <code>ReconnectListener</code> from the list of
-   * listeners that will be notified when a connection is recreated to
-   * a distributed system.
+   * Removes a <code>ReconnectListener</code> from the list of listeners that will be notified when
+   * a connection is recreated to a distributed system.
    */
   public static void removeReconnectListener(ReconnectListener listener) {
     synchronized (reconnectListeners) {
@@ -2029,10 +2095,11 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Notifies all registered <code>ReconnectListener</code>s that a
-   * connection to a distributed system has been recreated.
+   * Notifies all registered <code>ReconnectListener</code>s that a connection to a distributed
+   * system has been recreated.
    */
-  private static void notifyReconnectListeners(InternalDistributedSystem oldsys, InternalDistributedSystem newsys, boolean starting) {
+  private static void notifyReconnectListeners(InternalDistributedSystem oldsys,
+      InternalDistributedSystem newsys, boolean starting) {
     List<ReconnectListener> listeners;
     synchronized (reconnectListeners) {
       listeners = new ArrayList<ReconnectListener>(reconnectListeners);
@@ -2054,30 +2121,32 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
           throw err;
         }
         // Whenever you catch Error or Throwable, you must also
-        // check for fatal JVM error (see above).  However, there is
+        // check for fatal JVM error (see above). However, there is
         // _still_ a possibility that you are dealing with a cascading
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        logger.fatal(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW), t);
+        logger.fatal(LocalizedMessage
+            .create(LocalizedStrings.InternalDistributedSystem_CONNECTLISTENER_THREW), t);
       }
     }
   }
 
   /**
-   * Notifies all resource event listeners. All exceptions are caught here and
-   * only a warning message is printed in the log
+   * Notifies all resource event listeners. All exceptions are caught here and only a warning
+   * message is printed in the log
+   * 
    * @param event Enumeration depicting particular resource event
    * @param resource the actual resource object.
    */
   private void notifyResourceEventListeners(ResourceEvent event, Object resource) {
-    for (Iterator<ResourceEventsListener> iter = resourceListeners.iterator(); iter.hasNext(); ) {
+    for (Iterator<ResourceEventsListener> iter = resourceListeners.iterator(); iter.hasNext();) {
       try {
         ResourceEventsListener listener = (ResourceEventsListener) iter.next();
         listener.handleEvent(event, resource);
       } catch (CancelException e) {
-        //ignore
-      } catch (GemFireSecurityException|ManagementException ex) {
+        // ignore
+      } catch (GemFireSecurityException | ManagementException ex) {
         if (event == ResourceEvent.CACHE_CREATE) {
           throw ex;
         } else {
@@ -2096,9 +2165,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Makes note of a <code>DisconnectListener</code> whose
-   * <code>onDisconnect</code> method will be invoked when this
-   * connection to the distributed system is disconnected.
+   * Makes note of a <code>DisconnectListener</code> whose <code>onDisconnect</code> method will be
+   * invoked when this connection to the distributed system is disconnected.
    */
   public void addDisconnectListener(DisconnectListener listener) {
     synchronized (this.listeners) {
@@ -2106,7 +2174,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
       Boolean disconnectListenerThreadBoolean = (Boolean) disconnectListenerThread.get();
 
-      if (disconnectListenerThreadBoolean == null || !disconnectListenerThreadBoolean.booleanValue()) {
+      if (disconnectListenerThreadBoolean == null
+          || !disconnectListenerThreadBoolean.booleanValue()) {
         // Don't add disconnect listener after messaging has been disabled.
         // Do this test _after_ adding the listener to narrow the window.
         // It's possible to miss it still and never invoke the listener, but
@@ -2114,24 +2183,26 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
         String reason = this.stopper.cancelInProgress();
         if (reason != null) {
           this.listeners.remove(listener); // don't leave in the list!
-          throw new DistributedSystemDisconnectedException(LocalizedStrings.InternalDistributedSystem_NO_LISTENERS_PERMITTED_AFTER_SHUTDOWN_0.toLocalizedString(reason), dm
-            .getRootCause());
+          throw new DistributedSystemDisconnectedException(
+              LocalizedStrings.InternalDistributedSystem_NO_LISTENERS_PERMITTED_AFTER_SHUTDOWN_0
+                  .toLocalizedString(reason),
+              dm.getRootCause());
         }
       }
     } // synchronized
   }
 
   /**
-   * A non-null value of Boolean.TRUE will identify a thread being used to
-   * execute disconnectListeners. {@link #addDisconnectListener} will
-   * not throw ShutdownException if the value is Boolean.TRUE.
+   * A non-null value of Boolean.TRUE will identify a thread being used to execute
+   * disconnectListeners. {@link #addDisconnectListener} will not throw ShutdownException if the
+   * value is Boolean.TRUE.
    */
   final ThreadLocal disconnectListenerThread = new ThreadLocal();
 
   /**
-   * Removes a <code>DisconnectListener</code> from the list of
-   * listeners that will be notified when this connection to the
-   * distributed system is disconnected.
+   * Removes a <code>DisconnectListener</code> from the list of listeners that will be notified when
+   * this connection to the distributed system is disconnected.
+   * 
    * @return true if listener was in the list
    */
   public boolean removeDisconnectListener(DisconnectListener listener) {
@@ -2141,8 +2212,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Returns any existing <code>InternalDistributedSystem</code> instance.
-   * Returns <code>null</code> if no instance exists.
+   * Returns any existing <code>InternalDistributedSystem</code> instance. Returns <code>null</code>
+   * if no instance exists.
    */
   public static InternalDistributedSystem getAnyInstance() {
     List l = existingSystems;
@@ -2171,17 +2242,17 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Fires an "informational" <code>SystemMembershipEvent</code> in
-   * admin VMs.
+   * Fires an "informational" <code>SystemMembershipEvent</code> in admin VMs.
+   * 
    * @since GemFire 4.0
    */
   public void fireInfoEvent(Object callback) {
-    throw new UnsupportedOperationException(LocalizedStrings.InternalDistributedSystem_NOT_IMPLEMENTED_YET.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.InternalDistributedSystem_NOT_IMPLEMENTED_YET.toLocalizedString());
   }
 
   /**
-   * Installs a shutdown hook to ensure
-   * that we are disconnected if an application VM shuts down
+   * Installs a shutdown hook to ensure that we are disconnected if an application VM shuts down
    * without first calling disconnect itself.
    */
   public static final Thread shutdownHook;
@@ -2192,7 +2263,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     ThreadGroup tg = LoggingThreadGroup.createThreadGroup(SHUTDOWN_HOOK_NAME);
     Thread tmp_shutdownHook = null;
     try {
-      //Added for bug 38407
+      // Added for bug 38407
       if (!Boolean.getBoolean(DISABLE_SHUTDOWN_HOOK_PROPERTY)) {
         tmp_shutdownHook = new Thread(tg, new Runnable() {
           public void run() {
@@ -2201,22 +2272,25 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
             if (ds != null && ds.isConnected()) {
               LogWriterI18n log = ((InternalDistributedSystem) ds).getInternalLogWriter();
               log.info(LocalizedStrings.InternalDistributedSystem_shutdownHook_shuttingdown);
-              DurableClientAttributes dca = ((InternalDistributedSystem) ds).getDistributedMember().getDurableClientAttributes();
+              DurableClientAttributes dca = ((InternalDistributedSystem) ds).getDistributedMember()
+                  .getDurableClientAttributes();
               boolean isDurableClient = false;
 
               if (dca != null) {
                 isDurableClient = ((dca.getId() == null || dca.getId().isEmpty()) ? false : true);
               }
 
-              ((InternalDistributedSystem) ds).disconnect(false, LocalizedStrings.InternalDistributedSystem_NORMAL_DISCONNECT.toLocalizedString(), isDurableClient/*keep alive drive from this*/);
+              ((InternalDistributedSystem) ds).disconnect(false,
+                  LocalizedStrings.InternalDistributedSystem_NORMAL_DISCONNECT.toLocalizedString(),
+                  isDurableClient/* keep alive drive from this */);
               // this was how we wanted to do it for 5.7, but there were shutdown
               // issues in PR/dlock (see bug 39287)
-              //              InternalDistributedSystem ids = (InternalDistributedSystem)ds;
-              //              if (ids.getDistributionManager() != null &&
-              //                  ids.getDistributionManager().getMembershipManager() != null) {
-              //                ids.getDistributionManager().getMembershipManager()
-              //                  .uncleanShutdown("VM is exiting", null);
-              //              }
+              // InternalDistributedSystem ids = (InternalDistributedSystem)ds;
+              // if (ids.getDistributionManager() != null &&
+              // ids.getDistributionManager().getMembershipManager() != null) {
+              // ids.getDistributionManager().getMembershipManager()
+              // .uncleanShutdown("VM is exiting", null);
+              // }
             }
           }
         }, SHUTDOWN_HOOK_NAME);
@@ -2226,19 +2300,17 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       shutdownHook = tmp_shutdownHook;
     }
   }
-  ///////////////////////  Inner Classes  ///////////////////////
+  /////////////////////// Inner Classes ///////////////////////
 
   /**
-   * A listener that gets invoked before this connection to the
-   * distributed system is disconnected.
+   * A listener that gets invoked before this connection to the distributed system is disconnected.
    */
   public interface DisconnectListener {
 
     /**
-     * Invoked before a connection to the distributed system is
-     * disconnected.
-     * @param sys the the system we are disconnecting from
-     * process should take before returning.
+     * Invoked before a connection to the distributed system is disconnected.
+     * 
+     * @param sys the the system we are disconnecting from process should take before returning.
      */
     public void onDisconnect(InternalDistributedSystem sys);
 
@@ -2251,36 +2323,37 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
     /**
      * Invoked when reconnect attempts are initiated
-     * @param oldSystem the old DS, which is in a partially disconnected state
-     * and cannot be used for messaging
+     * 
+     * @param oldSystem the old DS, which is in a partially disconnected state and cannot be used
+     *        for messaging
      */
     public void reconnecting(InternalDistributedSystem oldSystem);
 
     /**
      * Invoked after a reconnect to the distributed system
+     * 
      * @param oldSystem the old DS
      * @param newSystem the new DS
      */
-    public void onReconnect(InternalDistributedSystem oldSystem, InternalDistributedSystem newSystem);
+    public void onReconnect(InternalDistributedSystem oldSystem,
+        InternalDistributedSystem newSystem);
   }
 
   /**
-   * A listener that gets invoked after this connection to the
-   * distributed system is disconnected
+   * A listener that gets invoked after this connection to the distributed system is disconnected
    */
   public interface ShutdownListener extends DisconnectListener {
 
     /**
-     * Invoked after the connection to the distributed system has
-     * been disconnected
+     * Invoked after the connection to the distributed system has been disconnected
+     * 
      * @param sys
      */
     public void onShutdown(InternalDistributedSystem sys);
   }
 
   /**
-   * Integer representing number of tries already made
-   * to reconnect and that failed.
+   * Integer representing number of tries already made to reconnect and that failed.
    */
   private volatile static int reconnectAttemptCounter = 0;
 
@@ -2290,8 +2363,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   private static long reconnectAttemptTime;
 
   /**
-   * Boolean indicating if DS needs to reconnect and reconnect
-   * is in progress.
+   * Boolean indicating if DS needs to reconnect and reconnect is in progress.
    */
   private volatile boolean attemptingToReconnect = false;
 
@@ -2301,8 +2373,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   private volatile boolean reconnected = false;
 
   /**
-   * Boolean indicating that this member has been shunned by other members
-   * or a network partition has occurred
+   * Boolean indicating that this member has been shunned by other members or a network partition
+   * has occurred
    */
   private volatile boolean forcedDisconnect = false;
 
@@ -2311,16 +2383,15 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
    */
   private volatile InternalDistributedSystem reconnectDS;
   /**
-   * Was this distributed system started with FORCE_LOCATOR_DM_TYPE=true?
-   * We need to know when reconnecting.
+   * Was this distributed system started with FORCE_LOCATOR_DM_TYPE=true? We need to know when
+   * reconnecting.
    */
   private boolean locatorDMTypeForced;
 
 
   /**
-   * Returns true if we are reconnecting the distributed system or
-   * reconnect has completed.  If this returns true it means that
-   * this instance of the DS is now disconnected and unusable.
+   * Returns true if we are reconnecting the distributed system or reconnect has completed. If this
+   * returns true it means that this instance of the DS is now disconnected and unusable.
    */
   public boolean isReconnecting() {
     InternalDistributedSystem rds = this.reconnectDS;
@@ -2339,21 +2410,18 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
 
   /**
-   * Returns true if we are reconnecting the distributed system
-   * and this instance was created for one of the connection
-   * attempts.  If the connection succeeds this state is cleared
-   * and this method will commence to return false.
+   * Returns true if we are reconnecting the distributed system and this instance was created for
+   * one of the connection attempts. If the connection succeeds this state is cleared and this
+   * method will commence to return false.
    */
   public boolean isReconnectingDS() {
     return this.isReconnectingDS;
   }
 
   /**
-   * returns the membership socket of the old
-   * distributed system, if available, when
-   * isReconnectingDS returns true.  This is
-   * used to connect the new DM to the distributed
-   * system through RemoteTransportConfig.
+   * returns the membership socket of the old distributed system, if available, when
+   * isReconnectingDS returns true. This is used to connect the new DM to the distributed system
+   * through RemoteTransportConfig.
    */
   public Object oldDSMembershipInfo() {
     if (this.quorumChecker != null) {
@@ -2363,8 +2431,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Returns true if this DS reconnected to the distributed system after
-   * a forced disconnect or loss of required-roles
+   * Returns true if this DS reconnected to the distributed system after a forced disconnect or loss
+   * of required-roles
    */
   public boolean reconnected() {
     return this.reconnected;
@@ -2383,11 +2451,12 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   private volatile boolean reconnectCancelled = false;
 
   /**
-   * Make sure this instance of DS never does a reconnect.
-   * Also if reconnect is in progress cancel it.
+   * Make sure this instance of DS never does a reconnect. Also if reconnect is in progress cancel
+   * it.
    */
   public void cancelReconnect() {
-    //    (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("cancelReconnect invoked", new Exception("stack trace"));
+    // (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("cancelReconnect invoked",
+    // new Exception("stack trace"));
     this.reconnectCancelled = true;
     if (isReconnecting()) {
       synchronized (this.reconnectLock) { // should the synchronized be first on this and
@@ -2403,8 +2472,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   private final Object reconnectLock = new Object();
 
   /**
-   * Tries to reconnect to the distributed system on role loss
-   * if configure to reconnect.
+   * Tries to reconnect to the distributed system on role loss if configure to reconnect.
+   * 
    * @param oldCache cache that has apparently failed
    */
   public boolean tryReconnect(boolean forcedDisconnect, String reason, GemFireCacheImpl oldCache) {
@@ -2412,11 +2481,13 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
     if (this.isReconnectingDS && forcedDisconnect) {
       return false;
     }
-    synchronized (CacheFactory.class) { // bug #51335 - deadlock with app thread trying to create a cache
+    synchronized (CacheFactory.class) { // bug #51335 - deadlock with app thread trying to create a
+                                        // cache
       synchronized (GemFireCacheImpl.class) {
         // bug 39329: must lock reconnectLock *after* the cache
         synchronized (reconnectLock) {
-          if (!forcedDisconnect && !oldCache.isClosed() && oldCache.getCachePerfStats().getReliableRegionsMissing() == 0) {
+          if (!forcedDisconnect && !oldCache.isClosed()
+              && oldCache.getCachePerfStats().getReliableRegionsMissing() == 0) {
             if (isDebugEnabled) {
               logger.debug("tryReconnect: No required roles are missing.");
             }
@@ -2443,29 +2514,27 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
 
   /**
-   * Returns the value for the number of time reconnect has been tried.
-   * Test method used by DUnit.
+   * Returns the value for the number of time reconnect has been tried. Test method used by DUnit.
    */
   public static int getReconnectAttemptCounter() {
     return reconnectAttemptCounter;
   }
 
   /**
-   * A reconnect is tried when gemfire is configured to reconnect in
-   * case of a required role loss. The reconnect will try reconnecting
-   * to the distributed system every max-time-out millseconds for
-   * max-number-of-tries configured in gemfire.properties file. It uses
-   * the cache.xml file to intialize the cache and create regions.
+   * A reconnect is tried when gemfire is configured to reconnect in case of a required role loss.
+   * The reconnect will try reconnecting to the distributed system every max-time-out millseconds
+   * for max-number-of-tries configured in gemfire.properties file. It uses the cache.xml file to
+   * intialize the cache and create regions.
    */
   private void reconnect(boolean forcedDisconnect, String reason) {
 
     // Collect all the state for cache
     // Collect all the state for Regions
-    //Close the cache,
+    // Close the cache,
     // loop trying to connect, waiting before each attempt
     //
     // If reconnecting for lost-roles the reconnected system's cache will decide
-    // whether the reconnected system should stay up.  After max-tries we will
+    // whether the reconnected system should stay up. After max-tries we will
     // give up.
     //
     // If reconnecting for forced-disconnect we ignore max-tries and keep attempting
@@ -2477,8 +2546,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       ids = this;
     }
 
-    // first save the current cache description.  This is created by
-    // the membership manager when forced-disconnect starts.  If we're
+    // first save the current cache description. This is created by
+    // the membership manager when forced-disconnect starts. If we're
     // reconnecting for lost roles then this will be null
     String cacheXML = null;
     List<CacheServerCreation> cacheServerCreation = null;
@@ -2538,9 +2607,13 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
           }
           if (reconnectAttemptCounter >= maxTries) {
             if (isDebugEnabled) {
-              logger.debug("Stopping the checkrequiredrole thread because reconnect : {} reached the max number of reconnect tries : {}", reconnectAttemptCounter, maxTries);
+              logger.debug(
+                  "Stopping the checkrequiredrole thread because reconnect : {} reached the max number of reconnect tries : {}",
+                  reconnectAttemptCounter, maxTries);
             }
-            throw new CacheClosedException(LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING.toLocalizedString());
+            throw new CacheClosedException(
+                LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
+                    .toLocalizedString());
           }
         }
 
@@ -2564,7 +2637,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
         try {
           reconnectLock.wait(timeOut);
         } catch (InterruptedException e) {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_WAITING_THREAD_FOR_RECONNECT_GOT_INTERRUPTED));
+          logger.warn(LocalizedMessage.create(
+              LocalizedStrings.InternalDistributedSystem_WAITING_THREAD_FOR_RECONNECT_GOT_INTERRUPTED));
           Thread.currentThread().interrupt();
           return;
         }
@@ -2574,7 +2648,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
         }
 
 
-        logger.info(LocalizedMessage.create(LocalizedStrings.DISTRIBUTED_SYSTEM_RECONNECTING, new Object[] { reconnectAttemptCounter }));
+        logger.info(LocalizedMessage.create(LocalizedStrings.DISTRIBUTED_SYSTEM_RECONNECTING,
+            new Object[] {reconnectAttemptCounter}));
 
         int savNumOfTries = reconnectAttemptCounter;
         try {
@@ -2622,7 +2697,10 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
           logger.debug("Attempt to reconnect failed with SystemConnectException");
 
           if (e.getMessage().contains("Rejecting the attempt of a member using an older version")) {
-            logger.warn(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT), e);
+            logger.warn(
+                LocalizedMessage.create(
+                    LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT),
+                e);
             attemptingToReconnect = false;
             return;
           }
@@ -2633,7 +2711,10 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
           }
           continue;
         } catch (Exception ee) {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT), ee);
+          logger.warn(
+              LocalizedMessage.create(
+                  LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CONNECT_THE_SYSTEM_DURING_RECONNECT),
+              ee);
           attemptingToReconnect = false;
           return;
         } finally {
@@ -2663,12 +2744,22 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
               } else {
                 // this try failed. The new cache will call reconnect again
               }
+            } catch (CacheXmlException e) {
+              logger.warn("Exception occured while trying to create the cache during reconnect", e);
+              reconnectDS.disconnect();
+              reconnectDS = null;
+              reconnectCancelled = true;
+              break;
             } catch (CancelException ignor) {
-              logger.warn("Exception occured while trying to create the cache during reconnect", ignor);
+              logger.warn("Exception occured while trying to create the cache during reconnect",
+                  ignor);
               reconnectDS.disconnect();
               reconnectDS = null;
             } catch (Exception e) {
-              logger.warn(LocalizedMessage.create(LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CREATE_THE_CACHE_DURING_RECONNECT), e);
+              logger.warn(
+                  LocalizedMessage.create(
+                      LocalizedStrings.InternalDistributedSystem_EXCEPTION_OCCURED_WHILE_TRYING_TO_CREATE_THE_CACHE_DURING_RECONNECT),
+                  e);
             }
           }
         }
@@ -2719,17 +2810,18 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       attemptingToReconnect = false;
       return;
     } else {
-      logger.info("Reconnect completed.\nNew DistributedSystem is {}\nNew Cache is {}", reconnectDS, cache);
+      logger.info("Reconnect completed.\nNew DistributedSystem is {}\nNew Cache is {}", reconnectDS,
+          cache);
     }
 
   }
 
 
   /**
-   * after an auto-reconnect we may need to recreate a cache server
-   * and start it
+   * after an auto-reconnect we may need to recreate a cache server and start it
    */
-  public void createAndStartCacheServers(List<CacheServerCreation> cacheServerCreation, GemFireCacheImpl cache) {
+  public void createAndStartCacheServers(List<CacheServerCreation> cacheServerCreation,
+      GemFireCacheImpl cache) {
 
     List<CacheServer> servers = cache.getCacheServers();
 
@@ -2749,7 +2841,9 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
           server.start();
         }
       } catch (IOException ex) {
-        throw new GemFireIOException(LocalizedStrings.CacheCreation_WHILE_STARTING_CACHE_SERVER_0.toLocalizedString(server), ex);
+        throw new GemFireIOException(
+            LocalizedStrings.CacheCreation_WHILE_STARTING_CACHE_SERVER_0.toLocalizedString(server),
+            ex);
       }
     }
 
@@ -2758,6 +2852,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   /**
    * Validates that the configuration provided is the same as the configuration for this
    * InternalDistributedSystem
+   * 
    * @param propsToCheck the Properties instance to compare with the existing Properties
    *
    * @throws java.lang.IllegalStateException when the configuration is not the same other returns
@@ -2795,11 +2890,14 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       }
 
       if (this.creationStack == null) {
-        throw new IllegalStateException(LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
-          .toLocalizedString(sb.toString()));
+        throw new IllegalStateException(
+            LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
+                .toLocalizedString(sb.toString()));
       } else {
-        throw new IllegalStateException(LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
-          .toLocalizedString(sb.toString()), this.creationStack);
+        throw new IllegalStateException(
+            LocalizedStrings.InternalDistributedSystem_A_CONNECTION_TO_A_DISTRIBUTED_SYSTEM_ALREADY_EXISTS_IN_THIS_VM_IT_HAS_THE_FOLLOWING_CONFIGURATION_0
+                .toLocalizedString(sb.toString()),
+            this.creationStack);
       }
     }
   }
@@ -2814,7 +2912,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
       buff.append(Array.get(obj, i).toString());
       buff.append(",");
     }
-    if(arrayLength > 0) {
+    if (arrayLength > 0) {
       buff.append(Array.get(obj, arrayLength - 1).toString());
     }
     buff.append("]");
@@ -2831,8 +2929,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * A listener that gets invoked whenever a connection is created to
-   * a distributed system
+   * A listener that gets invoked whenever a connection is created to a distributed system
    */
   public interface ConnectListener {
 
@@ -2861,6 +2958,7 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
   /**
    * see {@link org.apache.geode.admin.AdminDistributedSystemFactory}
+   * 
    * @since GemFire 5.7
    */
   public static void setEnableAdministrationOnly(boolean adminOnly) {
@@ -2877,10 +2975,11 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Provides synchronized time for this process based on other processes in
-   * this GemFire distributed system. GemFire distributed system coordinator
-   * adjusts each member's time by an offset. This offset for each member is
-   * calculated based on Berkeley Time Synchronization algorithm.
+   * Provides synchronized time for this process based on other processes in this GemFire
+   * distributed system. GemFire distributed system coordinator adjusts each member's time by an
+   * offset. This offset for each member is calculated based on Berkeley Time Synchronization
+   * algorithm.
+   * 
    * @return time in milliseconds.
    */
   public long systemTimeMillis() {
@@ -2923,7 +3022,8 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
 
   @Override
   public void stopReconnecting() {
-    //    (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("stopReconnecting invoked", new Exception("stack trace"));
+    // (new ManagerLogWriter(LogWriterImpl.FINE_LEVEL, System.out)).fine("stopReconnecting invoked",
+    // new Exception("stack trace"));
     this.reconnectCancelled = true;
     synchronized (this.reconnectLock) {
       this.reconnectLock.notify();
@@ -2933,10 +3033,9 @@ public class InternalDistributedSystem extends DistributedSystem implements OsSt
   }
 
   /**
-   * Provides hook for dunit to generate and store a detailed creation stack
-   * trace that includes the keys/values of DistributionConfig including
-   * security related attributes without introducing Privacy Violations that
-   * Fortify will complain about.
+   * Provides hook for dunit to generate and store a detailed creation stack trace that includes the
+   * keys/values of DistributionConfig including security related attributes without introducing
+   * Privacy Violations that Fortify will complain about.
    * </p>
    */
   public static interface CreationStackGenerator {

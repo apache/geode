@@ -1,20 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-package org.apache.geode.pdx.internal.json; 
+package org.apache.geode.pdx.internal.json;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -38,19 +37,18 @@ import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 /*
  * This class converts a PdxInstance into a JSON document.
  */
-public class PdxToJSON 
-{
-  public static boolean PDXTOJJSON_UNQUOTEFIELDNAMES = Boolean.getBoolean("pdxToJson.unQuoteFieldNames");
+public class PdxToJSON {
+  public static boolean PDXTOJJSON_UNQUOTEFIELDNAMES =
+      Boolean.getBoolean("pdxToJson.unQuoteFieldNames");
   private PdxInstance m_pdxInstance;
-  public PdxToJSON(PdxInstance pdx)
-  {
+
+  public PdxToJSON(PdxInstance pdx) {
     m_pdxInstance = pdx;
   }
-  
-  public String getJSON()
-  {
+
+  public String getJSON() {
     JsonFactory jf = new JsonFactory();
-   // OutputStream os = new ByteArrayOutputStream();
+    // OutputStream os = new ByteArrayOutputStream();
     HeapDataOutputStream hdos = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
     try {
       JsonGenerator jg = jf.createJsonGenerator(hdos, JsonEncoding.UTF8);
@@ -60,151 +58,117 @@ public class PdxToJSON
       return new String(hdos.toByteArray());
     } catch (IOException e) {
       throw new RuntimeException(e.getMessage());
-    }finally{
-        hdos.close();
+    } finally {
+      hdos.close();
     }
   }
-  
-  public byte[] getJSONByteArray()
-  {
+
+  public byte[] getJSONByteArray() {
     JsonFactory jf = new JsonFactory();
     HeapDataOutputStream hdos = new HeapDataOutputStream(org.apache.geode.internal.Version.CURRENT);
     try {
       JsonGenerator jg = jf.createJsonGenerator(hdos, JsonEncoding.UTF8);
       enableDisableJSONGeneratorFeature(jg);
       getJSONString(jg, m_pdxInstance);
-      jg.close();      
+      jg.close();
       return hdos.toByteArray();
     } catch (IOException e) {
       throw new RuntimeException(e.getMessage());
-    }finally {
+    } finally {
       hdos.close();
-    }    
+    }
   }
-  
+
   private void enableDisableJSONGeneratorFeature(JsonGenerator jg) {
     jg.enable(Feature.ESCAPE_NON_ASCII);
-    jg.disable(Feature.AUTO_CLOSE_TARGET); 
+    jg.disable(Feature.AUTO_CLOSE_TARGET);
     jg.setPrettyPrinter(new DefaultPrettyPrinter());
-    if(PDXTOJJSON_UNQUOTEFIELDNAMES)
+    if (PDXTOJJSON_UNQUOTEFIELDNAMES)
       jg.disable(Feature.QUOTE_FIELD_NAMES);
   }
-  
-  protected String convertPdxToJson(final PdxInstance pdxObj){
+
+  protected String convertPdxToJson(final PdxInstance pdxObj) {
     return (pdxObj != null ? JSONFormatter.toJSON(pdxObj) : null);
   }
-  
-  private void writeValue (JsonGenerator jg, Object value, String pf) throws JsonGenerationException, IOException {
-  
-    if(value == null)
-    {      
+
+  private void writeValue(JsonGenerator jg, Object value, String pf)
+      throws JsonGenerationException, IOException {
+
+    if (value == null) {
       jg.writeNull();
-    }
-    else if(value.getClass().equals(Boolean.class))
-    { 
-      boolean b = (Boolean)value;
-      jg.writeBoolean(b);  
-    }
-    else if(value.getClass().equals(Byte.class))
-    {  
-      Byte b = (Byte)value;
-      jg.writeNumber(b);  
-    }
-    else if(value.getClass().equals(Short.class))
-    { 
-      Short b = (Short)value;
-      jg.writeNumber(b);  
-    }
-    else if(value.getClass().equals(Integer.class))
-    { 
-      int i = (Integer)value;
+    } else if (value.getClass().equals(Boolean.class)) {
+      boolean b = (Boolean) value;
+      jg.writeBoolean(b);
+    } else if (value.getClass().equals(Byte.class)) {
+      Byte b = (Byte) value;
+      jg.writeNumber(b);
+    } else if (value.getClass().equals(Short.class)) {
+      Short b = (Short) value;
+      jg.writeNumber(b);
+    } else if (value.getClass().equals(Integer.class)) {
+      int i = (Integer) value;
       jg.writeNumber(i);
-    }
-    else if(value.getClass().equals(Long.class))
-    { 
-      long i = (Long)value;
+    } else if (value.getClass().equals(Long.class)) {
+      long i = (Long) value;
       jg.writeNumber(i);
-    }
-    else if(value.getClass().equals(BigInteger.class))
-    { 
-      BigInteger i = (BigInteger)value;
+    } else if (value.getClass().equals(BigInteger.class)) {
+      BigInteger i = (BigInteger) value;
       jg.writeNumber(i);
-    }
-    else if(value.getClass().equals(Float.class))
-    {
-      float i = (Float)value;
+    } else if (value.getClass().equals(Float.class)) {
+      float i = (Float) value;
       jg.writeNumber(i);
-    }
-    else if(value.getClass().equals(BigDecimal.class))
-    {
-      BigDecimal i = (BigDecimal)value;
+    } else if (value.getClass().equals(BigDecimal.class)) {
+      BigDecimal i = (BigDecimal) value;
       jg.writeNumber(i);
-    }
-    else if(value.getClass().equals(Double.class))
-    { 
-      double d = (Double)value;
+    } else if (value.getClass().equals(Double.class)) {
+      double d = (Double) value;
       jg.writeNumber(d);
-    }
-    else if(value.getClass().equals(String.class))
-    { 
-      String s = (String)value;
+    } else if (value.getClass().equals(String.class)) {
+      String s = (String) value;
       jg.writeString(s);
-    }
-    else if(value.getClass().isArray())
-    { 
+    } else if (value.getClass().isArray()) {
       getJSONStringFromArray(jg, value, pf);
-    }
-    else if(value.getClass().equals(EnumInfo.class))
-    { 
+    } else if (value.getClass().equals(EnumInfo.class)) {
       jg.writeString(value.toString());
-    }
-    else if(value.getClass().equals(PdxInstanceEnumInfo.class))
-    { 
+    } else if (value.getClass().equals(PdxInstanceEnumInfo.class)) {
       jg.writeString(value.toString());
-    }
-    else 
-    {
-      if(value instanceof PdxInstance)
-      {
-        getJSONString(jg, (PdxInstance)value);
-      }
-      else if(value instanceof Collection)
-      { 
-        getJSONStringFromCollection(jg, (Collection<?>)value, pf);
-      }
-      else if (value instanceof Map){ 
-        getJSONStringFromMap(jg, (Map)value, pf);
-      }
-      else
-      {
-        throw new IllegalStateException("PdxInstance returns unknwon pdxfield " + pf + " for type " + value);
+    } else {
+      if (value instanceof PdxInstance) {
+        getJSONString(jg, (PdxInstance) value);
+      } else if (value instanceof Collection) {
+        getJSONStringFromCollection(jg, (Collection<?>) value, pf);
+      } else if (value instanceof Map) {
+        getJSONStringFromMap(jg, (Map) value, pf);
+      } else {
+        throw new IllegalStateException(
+            "PdxInstance returns unknwon pdxfield " + pf + " for type " + value);
       }
     }
-  }  
-  
-  private void getJSONStringFromMap(JsonGenerator jg, Map map, String pf) throws JsonGenerationException, IOException{
-    
+  }
+
+  private void getJSONStringFromMap(JsonGenerator jg, Map map, String pf)
+      throws JsonGenerationException, IOException {
+
     jg.writeStartObject();
-    
+
     Iterator iter = (Iterator) map.entrySet().iterator();
-    while(iter.hasNext()) {
+    while (iter.hasNext()) {
       Map.Entry entry = (Map.Entry) iter.next();
-      
-      //Iterate over Map and write key-value
-      jg.writeFieldName(entry.getKey().toString()); //write Key in a Map
-      writeValue(jg, entry.getValue(), pf); //write value in a Map
+
+      // Iterate over Map and write key-value
+      jg.writeFieldName(entry.getKey().toString()); // write Key in a Map
+      writeValue(jg, entry.getValue(), pf); // write value in a Map
     }
     jg.writeEndObject();
   }
-  
-  private String getJSONString(JsonGenerator jg, PdxInstance pdxInstance) throws JsonGenerationException, IOException
-  {
+
+  private String getJSONString(JsonGenerator jg, PdxInstance pdxInstance)
+      throws JsonGenerationException, IOException {
     jg.writeStartObject();
-    
+
     List<String> pdxFields = pdxInstance.getFieldNames();
-    
-    for (String pf : pdxFields)
-    {
+
+    for (String pf : pdxFields) {
       Object value = pdxInstance.getField(pf);
       jg.writeFieldName(pf);
       writeValue(jg, value, pf);
@@ -212,109 +176,75 @@ public class PdxToJSON
     jg.writeEndObject();
     return null;
   }
-  
-  private void getJSONStringFromArray(JsonGenerator jg, Object value, String pf) throws JsonGenerationException, IOException {
-    
-    if(value.getClass().getName().equals("[Z")) 
-    {
-      JsonHelper.getJsonFromPrimitiveBoolArray(jg, (boolean[])value, pf);
-    }
-    else if(value.getClass().getName().equals("[B")) 
-    {
-      JsonHelper.getJsonFromPrimitiveByteArray(jg, (byte[])value, pf);
-    }
-    else if(value.getClass().getName().equals("[S")) 
-    {
-      JsonHelper.getJsonFromPrimitiveShortArray(jg, (short[])value, pf);
-    }
-    else if(value.getClass().getName().equals("[I")) 
-    {
-      JsonHelper.getJsonFromPrimitiveIntArray(jg, (int[])value, pf);
-    }
-    else if(value.getClass().getName().equals("[J")) 
-    {
-      JsonHelper.getJsonFromPrimitiveLongArray(jg, (long[])value, pf);
-    }
-    else if(value.getClass().getName().equals("[F"))
-    {
-      JsonHelper.getJsonFromPrimitiveFloatArray(jg, (float[])value, pf);
-    }
-    else if(value.getClass().getName().equals("[D")) 
-    {
-      JsonHelper.getJsonFromPrimitiveDoubleArray(jg, (double[])value, pf);
-    }
-    else if(value.getClass().equals(Boolean[].class))
-    {
-      JsonHelper.getJsonFromWrapperBoolArray(jg, (Boolean[])value, pf);
-    }
-    else if(value.getClass().equals(Byte[].class))
-    {
-      JsonHelper.getJsonFromWrapperByteArray(jg, (Byte[])value, pf);
-    }
-    else if(value.getClass().equals(Short[].class))
-    {
-      JsonHelper.getJsonFromWrapperShortArray(jg, (Short[])value, pf);
-    }
-    else if(value.getClass().equals(Integer[].class))
-    {
-      JsonHelper.getJsonFromWrapperIntArray(jg, (Integer[])value, pf);
-    }
-    else if(value.getClass().equals(Long[].class))
-    {
-      JsonHelper.getJsonFromWrapperLongArray(jg, (Long[])value, pf);
-    }
-    else if(value.getClass().equals(Float[].class))
-    {
-      JsonHelper.getJsonFromWrapperFloatArray(jg, (Float[])value, pf);
-    }
-    else if(value.getClass().equals(Double[].class))
-    {
-      JsonHelper.getJsonFromWrapperDoubleArray(jg, (Double[])value, pf);
-    }
-    else if(value.getClass().equals(BigInteger[].class))
-    {
-      JsonHelper.getJsonFromBigIntArray(jg, (BigInteger[])value, pf);
-    }
-    else if(value.getClass().equals(BigDecimal[].class))
-    {
-      JsonHelper.getJsonFromBigDecimalArray(jg, (BigDecimal[])value, pf);
-    }
-    else if(value.getClass().equals(String[].class))
-    {
-      JsonHelper.getJsonFromStringArray(jg, (String[])value, pf);
-    }else if (value.getClass().equals(Object[].class)) 
-    {
+
+  private void getJSONStringFromArray(JsonGenerator jg, Object value, String pf)
+      throws JsonGenerationException, IOException {
+
+    if (value.getClass().getName().equals("[Z")) {
+      JsonHelper.getJsonFromPrimitiveBoolArray(jg, (boolean[]) value, pf);
+    } else if (value.getClass().getName().equals("[B")) {
+      JsonHelper.getJsonFromPrimitiveByteArray(jg, (byte[]) value, pf);
+    } else if (value.getClass().getName().equals("[S")) {
+      JsonHelper.getJsonFromPrimitiveShortArray(jg, (short[]) value, pf);
+    } else if (value.getClass().getName().equals("[I")) {
+      JsonHelper.getJsonFromPrimitiveIntArray(jg, (int[]) value, pf);
+    } else if (value.getClass().getName().equals("[J")) {
+      JsonHelper.getJsonFromPrimitiveLongArray(jg, (long[]) value, pf);
+    } else if (value.getClass().getName().equals("[F")) {
+      JsonHelper.getJsonFromPrimitiveFloatArray(jg, (float[]) value, pf);
+    } else if (value.getClass().getName().equals("[D")) {
+      JsonHelper.getJsonFromPrimitiveDoubleArray(jg, (double[]) value, pf);
+    } else if (value.getClass().equals(Boolean[].class)) {
+      JsonHelper.getJsonFromWrapperBoolArray(jg, (Boolean[]) value, pf);
+    } else if (value.getClass().equals(Byte[].class)) {
+      JsonHelper.getJsonFromWrapperByteArray(jg, (Byte[]) value, pf);
+    } else if (value.getClass().equals(Short[].class)) {
+      JsonHelper.getJsonFromWrapperShortArray(jg, (Short[]) value, pf);
+    } else if (value.getClass().equals(Integer[].class)) {
+      JsonHelper.getJsonFromWrapperIntArray(jg, (Integer[]) value, pf);
+    } else if (value.getClass().equals(Long[].class)) {
+      JsonHelper.getJsonFromWrapperLongArray(jg, (Long[]) value, pf);
+    } else if (value.getClass().equals(Float[].class)) {
+      JsonHelper.getJsonFromWrapperFloatArray(jg, (Float[]) value, pf);
+    } else if (value.getClass().equals(Double[].class)) {
+      JsonHelper.getJsonFromWrapperDoubleArray(jg, (Double[]) value, pf);
+    } else if (value.getClass().equals(BigInteger[].class)) {
+      JsonHelper.getJsonFromBigIntArray(jg, (BigInteger[]) value, pf);
+    } else if (value.getClass().equals(BigDecimal[].class)) {
+      JsonHelper.getJsonFromBigDecimalArray(jg, (BigDecimal[]) value, pf);
+    } else if (value.getClass().equals(String[].class)) {
+      JsonHelper.getJsonFromStringArray(jg, (String[]) value, pf);
+    } else if (value.getClass().equals(Object[].class)) {
       jg.writeStartArray();
-      Object[] array = (Object[])value;
-      for (Object obj : array)
-      {
+      Object[] array = (Object[]) value;
+      for (Object obj : array) {
         writeValue(jg, obj, pf);
       }
       jg.writeEndArray();
-    } else{
-      throw new IllegalStateException("PdxInstance returns unknwon pdxfield " + pf + " for type " + value);
+    } else {
+      throw new IllegalStateException(
+          "PdxInstance returns unknwon pdxfield " + pf + " for type " + value);
     }
   }
-  
-  private <T> void  getJSONStringFromArray1(JsonGenerator jg, T[] array, String pf) throws JsonGenerationException, IOException {
+
+  private <T> void getJSONStringFromArray1(JsonGenerator jg, T[] array, String pf)
+      throws JsonGenerationException, IOException {
     jg.writeStartArray();
-    
-    for (T obj : array)
-    {
+
+    for (T obj : array) {
       writeValue(jg, obj, pf);
     }
     jg.writeEndArray();
   }
-  
-  
-  private void getJSONStringFromCollection(JsonGenerator jg, Collection<?> coll, String pf) throws JsonGenerationException, IOException
-  {
+
+
+  private void getJSONStringFromCollection(JsonGenerator jg, Collection<?> coll, String pf)
+      throws JsonGenerationException, IOException {
     jg.writeStartArray();
-    
-    for (Object obj : coll)
-    {
+
+    for (Object obj : coll) {
       writeValue(jg, obj, pf);
     }
-    jg.writeEndArray();    
+    jg.writeEndArray();
   }
 }

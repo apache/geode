@@ -1,24 +1,23 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 import org.apache.geode.redis.GeodeRedisServer;
@@ -47,7 +46,7 @@ public class HashesJUnitTest {
   public static void setUp() throws IOException {
     rand = new Random();
     CacheFactory cf = new CacheFactory();
-    //cf.set("log-file", "redis.log");
+    // cf.set("log-file", "redis.log");
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
@@ -78,7 +77,7 @@ public class HashesJUnitTest {
     }
     Set<String> keys = hash.keySet();
     Long count = 1L;
-    for (String field: keys) {
+    for (String field : keys) {
       Long res = jedis.hset(key, field, hash.get(field));
       assertTrue(res == 1L);
       assertEquals(count++, jedis.hlen(key));
@@ -131,6 +130,7 @@ public class HashesJUnitTest {
     assertTrue(retSet.containsAll(keys));
   }
 
+  @Category(FlakyTest.class) // GEODE-1942
   @Test
   public void testHIncrBy() {
     String key = randString();
@@ -147,7 +147,7 @@ public class HashesJUnitTest {
     assertTrue(response2 == incr);
 
     long response3 = jedis.hincrBy(key, field, incr);
-    assertTrue(response3 == 2*incr);
+    assertTrue(response3 == 2 * incr);
 
 
     String field1 = randString();
@@ -168,7 +168,7 @@ public class HashesJUnitTest {
     for (int i = 0; i < length; i++)
       rString.append((char) (rand.nextInt(57) + 65));
     return rString.toString();
-    //return Long.toHexString(Double.doubleToLongBits(Math.random()));
+    // return Long.toHexString(Double.doubleToLongBits(Math.random()));
   }
 
   @After

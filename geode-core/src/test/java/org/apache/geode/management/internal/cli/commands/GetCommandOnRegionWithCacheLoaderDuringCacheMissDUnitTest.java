@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -47,8 +45,9 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 /**
- * The GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest class is test suite of test cases testing the Gfsh
- * 'get' data command when a cache miss occurs on data in a Region with a CacheLoader defined.
+ * The GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest class is test suite of test cases
+ * testing the Gfsh 'get' data command when a cache miss occurs on data in a Region with a
+ * CacheLoader defined.
  *
  * @see org.apache.geode.management.internal.cli.commands.CliCommandTestBase
  * @see org.apache.geode.management.internal.cli.commands.DataCommands
@@ -65,8 +64,11 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
 
   @Override
   public final void postSetUpCliCommandTestBase() throws Exception {
-    Properties managerDistributedSystemProperties = createDistributedSystemProperties(GEMFIRE_MANAGER_NAME);
-    HeadlessGfsh gfsh = setUpJmxManagerOnVm0ThenConnect(managerDistributedSystemProperties); // vm 0 -- locator/manager
+    Properties managerDistributedSystemProperties =
+        createDistributedSystemProperties(GEMFIRE_MANAGER_NAME);
+    HeadlessGfsh gfsh = setUpJmxManagerOnVm0ThenConnect(managerDistributedSystemProperties); // vm 0
+                                                                                             // --
+                                                                                             // locator/manager
 
     assertNotNull(gfsh); // controller vm -- gfsh
     assertTrue(gfsh.isConnectedAndReady());
@@ -116,7 +118,8 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   }
 
   private static String getRegionPath(final String regionName) {
-    return (regionName.startsWith(Region.SEPARATOR) ? regionName : String.format("%1$s%2$s", Region.SEPARATOR, regionName));
+    return (regionName.startsWith(Region.SEPARATOR) ? regionName
+        : String.format("%1$s%2$s", Region.SEPARATOR, regionName));
   }
 
   private static String toString(final Result result) {
@@ -133,7 +136,8 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   }
 
   private void setupGemFire() throws Exception {
-    initializePeer(createPeer(getHost(0).getVM(1), createDistributedSystemProperties(GEMFIRE_SERVER_NAME)));
+    initializePeer(
+        createPeer(getHost(0).getVM(1), createDistributedSystemProperties(GEMFIRE_SERVER_NAME)));
   }
 
   private Properties createDistributedSystemProperties(final String gemfireName) {
@@ -150,14 +154,18 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   }
 
   private void initializePeer(final Peer peer) throws Exception {
-    peer.run(new SerializableRunnable(String.format("Initializes the '%1$s' with the '%2$s' Region having a CacheLoader.", GEMFIRE_SERVER_NAME, USERS_REGION_NAME)) {
+    peer.run(new SerializableRunnable(
+        String.format("Initializes the '%1$s' with the '%2$s' Region having a CacheLoader.",
+            GEMFIRE_SERVER_NAME, USERS_REGION_NAME)) {
       @Override
       public void run() {
-        // create the GemFire Distributed System with custom distribution configuration properties and settings
+        // create the GemFire Distributed System with custom distribution configuration properties
+        // and settings
         getSystem(peer.getConfiguration());
 
         Cache cache = getCache();
-        RegionFactory<String, User> regionFactory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+        RegionFactory<String, User> regionFactory =
+            cache.createRegionFactory(RegionShortcut.REPLICATE);
 
         regionFactory.setCacheLoader(new UserDataStoreCacheLoader());
         regionFactory.setInitialCapacity(51);
@@ -181,23 +189,28 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   }
 
   private void verifyGemFireSetup(final Peer manager) throws Exception {
-    manager.run(new SerializableRunnable("Verifies the GemFire Cluster was properly configured and initialized!") {
+    manager.run(new SerializableRunnable(
+        "Verifies the GemFire Cluster was properly configured and initialized!") {
       @Override
       public void run() {
-        final ManagementService managementService = ManagementService.getExistingManagementService(getCache());
+        final ManagementService managementService =
+            ManagementService.getExistingManagementService(getCache());
 
         WaitCriterion waitOnManagerCriterion = new WaitCriterion() {
           @Override
           public boolean done() {
             ManagerMXBean managerBean = managementService.getManagerMXBean();
-            DistributedRegionMXBean usersRegionBean = managementService.getDistributedRegionMXBean(getRegionPath(USERS_REGION_NAME));
+            DistributedRegionMXBean usersRegionBean =
+                managementService.getDistributedRegionMXBean(getRegionPath(USERS_REGION_NAME));
 
             return !(managerBean == null || usersRegionBean == null);
           }
 
           @Override
           public String description() {
-            return String.format("Probing for the GemFire Manager '%1$s' and '%2$s' Region MXBeans...", manager.getName(), USERS_REGION_NAME);
+            return String.format(
+                "Probing for the GemFire Manager '%1$s' and '%2$s' Region MXBeans...",
+                manager.getName(), USERS_REGION_NAME);
           }
         };
 
@@ -209,13 +222,13 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   private void doHousekeeping() {
     runCommand(CliStrings.LIST_MEMBER);
 
-    runCommand(new CommandStringBuilder(CliStrings.DESCRIBE_MEMBER).addOption(CliStrings.DESCRIBE_MEMBER__IDENTIFIER,
-        GEMFIRE_SERVER_NAME).toString());
+    runCommand(new CommandStringBuilder(CliStrings.DESCRIBE_MEMBER)
+        .addOption(CliStrings.DESCRIBE_MEMBER__IDENTIFIER, GEMFIRE_SERVER_NAME).toString());
 
     runCommand(CliStrings.LIST_REGION);
 
-    runCommand(new CommandStringBuilder(CliStrings.DESCRIBE_REGION).addOption(CliStrings.DESCRIBE_REGION__NAME,
-        USERS_REGION_NAME).toString());
+    runCommand(new CommandStringBuilder(CliStrings.DESCRIBE_REGION)
+        .addOption(CliStrings.DESCRIBE_REGION__NAME, USERS_REGION_NAME).toString());
   }
 
   private void log(final Result result) {
@@ -223,7 +236,7 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
   }
 
   private void log(final String tag, final String message) {
-    //System.out.printf("%1$s (%2$s)%n", tag, message);
+    // System.out.printf("%1$s (%2$s)%n", tag, message);
     getLogWriter().info(String.format("%1$s (%2$s)%n", tag, message));
   }
 
@@ -240,10 +253,12 @@ public class GetCommandOnRegionWithCacheLoaderDuringCacheMissDUnitTest extends C
 
   private void assertResult(final boolean expectedResult, final CommandResult commandResult) {
     if (ResultData.TYPE_COMPOSITE.equals(commandResult.getType())) {
-      boolean actualResult = (Boolean) ((CompositeResultData) commandResult.getResultData()).retrieveSectionByIndex(0).retrieveObject("Result");
+      boolean actualResult = (Boolean) ((CompositeResultData) commandResult.getResultData())
+          .retrieveSectionByIndex(0).retrieveObject("Result");
       assertEquals(expectedResult, actualResult);
     } else {
-      fail(String.format("Expected composite result data; but was '%1$s'!%n", commandResult.getType()));
+      fail(String.format("Expected composite result data; but was '%1$s'!%n",
+          commandResult.getType()));
     }
   }
 

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.wan.serial;
 
@@ -79,29 +77,27 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 public class SerialGatewaySenderQueue implements RegionQueue {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   /**
-   * The key into the <code>Region</code> used when taking entries from the
-   * queue. This value is either set when the queue is instantiated or read from
-   * the <code>Region</code> in the case where this queue takes over where a
-   * previous one left off.
+   * The key into the <code>Region</code> used when taking entries from the queue. This value is
+   * either set when the queue is instantiated or read from the <code>Region</code> in the case
+   * where this queue takes over where a previous one left off.
    */
   private long headKey = -1;
 
   /**
-   * The key into the <code>Region</code> used when putting entries onto the
-   * queue. This value is either set when the queue is instantiated or read from
-   * the <code>Region</code> in the case where this queue takes over where a
-   * previous one left off.
+   * The key into the <code>Region</code> used when putting entries onto the queue. This value is
+   * either set when the queue is instantiated or read from the <code>Region</code> in the case
+   * where this queue takes over where a previous one left off.
    */
   private final AtomicLong tailKey = new AtomicLong();
 
   /**
-   * The current key used to do put into the region. Once put is complete, then
-   * the {@link #tailKey} is reconciled with this value.
+   * The current key used to do put into the region. Once put is complete, then the {@link #tailKey}
+   * is reconciled with this value.
    */
   private long currentKey;
-  
+
   private final Deque<Long> peekedIds = new LinkedBlockingDeque<Long>();
 
   /**
@@ -125,11 +121,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   private int batchSize;
 
   /**
-   * The maximum amount of memory (MB) to allow in the queue before overflowing
-   * entries to disk
+   * The maximum amount of memory (MB) to allow in the queue before overflowing entries to disk
    */
   private int maximumQueueMemory;
-  
+
   /**
    * Whether conflation is enabled for this queue.
    */
@@ -139,19 +134,19 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * Whether persistence is enabled for this queue.
    */
   private boolean enablePersistence;
-  
+
   /**
    * Whether write to disk is synchronous.
    */
   private boolean isDiskSynchronous;
-  
+
 
   /**
-   * The <code>Map</code> mapping the regionName->key to the queue key. This
-   * index allows fast updating of entries in the queue for conflation.
+   * The <code>Map</code> mapping the regionName->key to the queue key. This index allows fast
+   * updating of entries in the queue for conflation.
    */
   private final Map<String, Map<Object, Long>> indexes;
-  
+
   private final GatewaySenderStats stats;
 
   /**
@@ -162,27 +157,27 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   /**
    * Whether the <code>Gateway</code> queue should be no-ack instead of ack.
    */
-  private static final boolean NO_ACK = Boolean
-      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "gateway-queue-no-ack");
-  
+  private static final boolean NO_ACK =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "gateway-queue-no-ack");
+
   private volatile long lastDispatchedKey = -1;
-  
+
   private volatile long lastDestroyedKey = -1;
-  
+
   public static final int DEFAULT_MESSAGE_SYNC_INTERVAL = 1;
 
   private static volatile int messageSyncInterval = DEFAULT_MESSAGE_SYNC_INTERVAL;
-  
+
   private BatchRemovalThread removalThread = null;
 
   private final boolean keyPutNoSync;
   private final int maxPendingPuts;
   private final PriorityQueue<Long> pendingPuts;
-  
-  private AbstractGatewaySender sender  = null;
 
-  public SerialGatewaySenderQueue(AbstractGatewaySender abstractSender,
-      String regionName, CacheListener listener) {
+  private AbstractGatewaySender sender = null;
+
+  public SerialGatewaySenderQueue(AbstractGatewaySender abstractSender, String regionName,
+      CacheListener listener) {
     // The queue starts out with headKey and tailKey equal to -1 to force
     // them to be initialized from the region.
     this.regionName = regionName;
@@ -203,8 +198,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       this.keyPutNoSync = false;
       this.maxPendingPuts = 0;
       this.pendingPuts = null;
-    }
-    else {
+    } else {
       this.keyPutNoSync = true;
       this.maxPendingPuts = Math.max(this.batchSize, 100);
       this.pendingPuts = new PriorityQueue<Long>(this.maxPendingPuts + 5);
@@ -214,14 +208,14 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     initializeRegion(abstractSender, listener);
     // Increment queue size. Fix for bug 51988.
     this.stats.incQueueSize(this.region.size());
-    this.removalThread = new BatchRemovalThread((GemFireCacheImpl)abstractSender.getCache());
+    this.removalThread = new BatchRemovalThread((GemFireCacheImpl) abstractSender.getCache());
     this.removalThread.start();
     this.sender = abstractSender;
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Contains {} elements", this, size());
     }
-    
-    
+
+
   }
 
   public Region<Long, AsyncEvent> getRegion() {
@@ -233,34 +227,33 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   }
 
   public synchronized boolean put(Object event) throws CacheException {
-    GatewaySenderEventImpl eventImpl = (GatewaySenderEventImpl)event;
+    GatewaySenderEventImpl eventImpl = (GatewaySenderEventImpl) event;
     final Region r = eventImpl.getRegion();
-    final boolean isPDXRegion = (r instanceof DistributedRegion && r.getName()
-        .equals(PeerTypeRegistration.REGION_NAME));
-    final boolean isWbcl = this.regionName
-        .startsWith(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX);
+    final boolean isPDXRegion =
+        (r instanceof DistributedRegion && r.getName().equals(PeerTypeRegistration.REGION_NAME));
+    final boolean isWbcl = this.regionName.startsWith(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX);
     if (!(isPDXRegion && isWbcl)) {
       // TODO: Kishor : after merging this change. AsyncEventQueue test failed
       // with data inconsistency. As of now going ahead with sync putandGetKey.
       // Need to work on this during cedar
-//      if (this.keyPutNoSync) {
-//        putAndGetKeyNoSync(event);
-//      }
-//      else {
-//        synchronized (this) {
-          putAndGetKey(event);
-          return true;
-        //}
-      //}
+      // if (this.keyPutNoSync) {
+      // putAndGetKeyNoSync(event);
+      // }
+      // else {
+      // synchronized (this) {
+      putAndGetKey(event);
+      return true;
+      // }
+      // }
     }
-    return false;    
+    return false;
   }
 
   private long putAndGetKey(Object object) throws CacheException {
     // Get the tail key
     Long key = Long.valueOf(getTailKey());
     // Put the object into the region at that key
-    this.region.put(key, (AsyncEvent)object);
+    this.region.put(key, (AsyncEvent) object);
 
     // Increment the tail key
     // It is important that we increment the tail
@@ -269,10 +262,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     incrementTailKey();
 
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Inserted {} -> {}",this, key, object);
+      logger.debug("{}: Inserted {} -> {}", this, key, object);
     }
     if (object instanceof Conflatable) {
-      removeOldEntry((Conflatable)object, key);
+      removeOldEntry((Conflatable) object, key);
     }
     return key.longValue();
   }
@@ -297,7 +290,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     try {
       // Put the object into the region at that key
-      this.region.put(key, (AsyncEvent)object);
+      this.region.put(key, (AsyncEvent) object);
 
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Inserted {} -> {}", this, key, object);
@@ -326,12 +319,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
                   incrementTailKey();
                   // removed something from pending queue, so notify any waiters
                   if (!notifyWaiters) {
-                    notifyWaiters =
-                        (this.pendingPuts.size() >= this.maxPendingPuts);
+                    notifyWaiters = (this.pendingPuts.size() >= this.maxPendingPuts);
                   }
                   itr.remove();
-                }
-                else {
+                } else {
                   break;
                 }
               }
@@ -340,12 +331,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
               sync.notifyAll();
             }
             break;
-          }
-          else if (this.pendingPuts.size() < this.maxPendingPuts) {
+          } else if (this.pendingPuts.size() < this.maxPendingPuts) {
             this.pendingPuts.add(key);
             break;
-          }
-          else {
+          } else {
             // wait for the queue size to go down
             boolean interrupted = Thread.interrupted();
             Throwable t = null;
@@ -358,8 +347,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
               if (interrupted) {
                 Thread.currentThread().interrupt();
               }
-              ((LocalRegion)this.region).getCancelCriterion()
-                  .checkCancelInProgress(t);
+              ((LocalRegion) this.region).getCancelCriterion().checkCancelInProgress(t);
             }
           }
         }
@@ -367,37 +355,37 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     }
 
     if (object instanceof Conflatable) {
-      removeOldEntry((Conflatable)object, key);
+      removeOldEntry((Conflatable) object, key);
     }
 
     return key.longValue();
   }
-  
+
   public synchronized AsyncEvent take() throws CacheException {
     // Unsupported since we have no callers.
     // If we do want to support it then each caller needs
     // to call freeOffHeapResources and the returned GatewaySenderEventImpl
     throw new UnsupportedOperationException();
-//     resetLastPeeked();
-//     AsyncEvent object = peekAhead();
-//     // If it is not null, destroy it and increment the head key
-//     if (object != null) {
-//       Long key = this.peekedIds.remove();
-//       if (logger.isTraceEnabled()) {
-//         logger.trace("{}: Retrieved {} -> {}",this, key, object);
-//       }
-//       // Remove the entry at that key with a callback arg signifying it is
-//       // a WAN queue so that AbstractRegionEntry.destroy can get the value
-//       // even if it has been evicted to disk. In the normal case, the
-//       // AbstractRegionEntry.destroy only gets the value in the VM.
-//       this.region.destroy(key, RegionQueue.WAN_QUEUE_TOKEN);
-//       updateHeadKey(key.longValue());
+    // resetLastPeeked();
+    // AsyncEvent object = peekAhead();
+    // // If it is not null, destroy it and increment the head key
+    // if (object != null) {
+    // Long key = this.peekedIds.remove();
+    // if (logger.isTraceEnabled()) {
+    // logger.trace("{}: Retrieved {} -> {}",this, key, object);
+    // }
+    // // Remove the entry at that key with a callback arg signifying it is
+    // // a WAN queue so that AbstractRegionEntry.destroy can get the value
+    // // even if it has been evicted to disk. In the normal case, the
+    // // AbstractRegionEntry.destroy only gets the value in the VM.
+    // this.region.destroy(key, RegionQueue.WAN_QUEUE_TOKEN);
+    // updateHeadKey(key.longValue());
 
-//       if (logger.isTraceEnabled()) {
-//         logger.trace("{}: Destroyed {} -> {}", this, key, object);
-//       }
-//     }
-//     return object;
+    // if (logger.isTraceEnabled()) {
+    // logger.trace("{}: Destroyed {} -> {}", this, key, object);
+    // }
+    // }
+    // return object;
   }
 
   public List<AsyncEvent> take(int batchSize) throws CacheException {
@@ -405,26 +393,25 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     // If we do want to support it then the callers
     // need to call freeOffHeapResources on each returned GatewaySenderEventImpl
     throw new UnsupportedOperationException();
-//     List<AsyncEvent> batch = new ArrayList<AsyncEvent>(
-//         batchSize * 2);
-//     for (int i = 0; i < batchSize; i++) {
-//       AsyncEvent obj = take();
-//       if (obj != null) {
-//         batch.add(obj);
-//       } else {
-//         break;
-//       }
-//     }
-//     if (logger.isTraceEnabled()) {
-//       logger.trace("{}: Took a batch of {} entries", this, batch.size());
-//     }
-//     return batch;
+    // List<AsyncEvent> batch = new ArrayList<AsyncEvent>(
+    // batchSize * 2);
+    // for (int i = 0; i < batchSize; i++) {
+    // AsyncEvent obj = take();
+    // if (obj != null) {
+    // batch.add(obj);
+    // } else {
+    // break;
+    // }
+    // }
+    // if (logger.isTraceEnabled()) {
+    // logger.trace("{}: Took a batch of {} entries", this, batch.size());
+    // }
+    // return batch;
   }
 
   /**
-   * This method removes the last entry. However, it will only let the user
-   * remove entries that they have peeked. If the entry was not peeked, this
-   * method will silently return.
+   * This method removes the last entry. However, it will only let the user remove entries that they
+   * have peeked. If the entry was not peeked, this method will silently return.
    */
   public synchronized void remove() throws CacheException {
     if (this.peekedIds.isEmpty()) {
@@ -441,12 +428,14 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       // AbstractRegionEntry.destroy only gets the value in the VM.
       this.region.localDestroy(key, WAN_QUEUE_TOKEN);
       this.stats.decQueueSize();
-      
+
     } catch (EntryNotFoundException ok) {
       // this is acceptable because the conflation can remove entries
       // out from underneath us.
       if (logger.isDebugEnabled()) {
-        logger.debug("{}: Did not destroy entry at {} it was not there. It should have been removed by conflation.", this, key);
+        logger.debug(
+            "{}: Did not destroy entry at {} it was not there. It should have been removed by conflation.",
+            this, key);
       }
     }
 
@@ -455,19 +444,19 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     if (wasEmpty) {
       this.notify();
     }
-    
+
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: Destroyed entry at key {} setting the lastDispatched Key to {}. The last destroyed entry was {}",
+      logger.debug(
+          "{}: Destroyed entry at key {} setting the lastDispatched Key to {}. The last destroyed entry was {}",
           this, key, this.lastDispatchedKey, this.lastDestroyedKey);
     }
   }
 
   /**
-   * This method removes batchSize entries from the queue. It will only remove
-   * entries that were previously peeked.
+   * This method removes batchSize entries from the queue. It will only remove entries that were
+   * previously peeked.
    * 
-   * @param size
-   *          the number of entries to remove
+   * @param size the number of entries to remove
    */
   public void remove(int size) throws CacheException {
     for (int i = 0; i < size; i++) {
@@ -477,14 +466,9 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       logger.trace("{}: Removed a batch of {} entries", this, size);
     }
   }
-  
-  public void remove(Object object)
-  {
-    remove();
-  }
 
   public Object peek() throws CacheException {
-    //resetLastPeeked();
+    // resetLastPeeked();
     Object object = peekAhead();
     if (logger.isTraceEnabled()) {
       logger.trace("{}: Peeked {} -> {}", this, peekedIds, object);
@@ -499,27 +483,20 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     return peek(size, -1);
   }
 
-  public List<AsyncEvent> peek(int size, int timeToWait)
-      throws CacheException {
+  public List<AsyncEvent> peek(int size, int timeToWait) throws CacheException {
     final boolean isTraceEnabled = logger.isTraceEnabled();
-    
+
     long start = System.currentTimeMillis();
     long end = start + timeToWait;
     if (isTraceEnabled) {
-      logger.trace("{}: Peek start time={} end time={} time to wait={}", this, start, end, timeToWait);
+      logger.trace("{}: Peek start time={} end time={} time to wait={}", this, start, end,
+          timeToWait);
     }
     List<AsyncEvent> batch = new ArrayList<AsyncEvent>(size * 2); // why
-                                                                                // *2?
-    //resetLastPeeked();
+                                                                  // *2?
+    // resetLastPeeked();
     while (batch.size() < size) {
       AsyncEvent object = peekAhead();
-      if (object != null && object instanceof GatewaySenderEventImpl) {
-        GatewaySenderEventImpl copy = ((GatewaySenderEventImpl)object).makeHeapCopyIfOffHeap();
-        if (copy == null) {
-          continue;
-        }
-        object = copy;
-      }
       // Conflate here
       if (object != null) {
         batch.add(object);
@@ -556,7 +533,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     // OFFHEAP: all returned AsyncEvent end up being removed from queue after the batch is sent
     // so no need to worry about off-heap refCount.
   }
-  
+
   @Override
   public String toString() {
     return "SerialGatewaySender queue :" + this.regionName;
@@ -577,18 +554,17 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   public void removeCacheListener() {
     AttributesMutator mutator = this.region.getAttributesMutator();
     CacheListener[] listeners = this.region.getAttributes().getCacheListeners();
-    for(int i=0; i < listeners.length; i++){
-      if(listeners[i] instanceof SerialSecondaryGatewayListener){
+    for (int i = 0; i < listeners.length; i++) {
+      if (listeners[i] instanceof SerialSecondaryGatewayListener) {
         mutator.removeCacheListener(listeners[i]);
         break;
       }
     }
   }
 
-  private boolean removeOldEntry(Conflatable object, Long tailKey)
-      throws CacheException {
+  private boolean removeOldEntry(Conflatable object, Long tailKey) throws CacheException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    
+
     boolean keepOldEntry = true;
 
     // Determine whether conflation is enabled for this queue and object
@@ -597,8 +573,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     // - the object can be conflated
     if (this.enableConflation && object.shouldBeConflated()) {
       if (isDebugEnabled) {
-        logger.debug("{}: Conflating {} at queue index={} queue size={} head={} tail={}",
-            this, object, tailKey, size(), this.headKey, tailKey);
+        logger.debug("{}: Conflating {} at queue index={} queue size={} head={} tail={}", this,
+            object, tailKey, size(), this.headKey, tailKey);
       }
 
       // Determine whether this region / key combination is already indexed.
@@ -609,18 +585,18 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       Long previousIndex;
 
       synchronized (this) {
-    	Map<Object, Long> latestIndexesForRegion = this.indexes.get(rName);
-    	if (latestIndexesForRegion == null) {
-    	  latestIndexesForRegion = new HashMap<Object, Long>();
-    	  this.indexes.put(rName, latestIndexesForRegion);
-    	}
+        Map<Object, Long> latestIndexesForRegion = this.indexes.get(rName);
+        if (latestIndexesForRegion == null) {
+          latestIndexesForRegion = new HashMap<Object, Long>();
+          this.indexes.put(rName, latestIndexesForRegion);
+        }
 
-    	previousIndex = latestIndexesForRegion.put(key, tailKey);
+        previousIndex = latestIndexesForRegion.put(key, tailKey);
       }
-      
+
       if (isDebugEnabled) {
-        logger.debug("{}: Adding index key={}->index={} for {} head={} tail={}",
-            this, key, tailKey, object, this.headKey, tailKey);
+        logger.debug("{}: Adding index key={}->index={} for {} head={} tail={}", this, key, tailKey,
+            object, this.headKey, tailKey);
       }
       // Test if the key is contained in the latest indexes map. If the key is
       // not contained in the latest indexes map, then it should be added to
@@ -633,14 +609,15 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       // peekedIds list prevents us from removing an entry that was not peeked.
       if (previousIndex != null) {
         if (isDebugEnabled) {
-          logger.debug("{}: Indexes contains index={} for key={} head={} tail={} and it can be used.",
-              this, previousIndex, key, this.headKey, tailKey);
+          logger.debug(
+              "{}: Indexes contains index={} for key={} head={} tail={} and it can be used.", this,
+              previousIndex, key, this.headKey, tailKey);
         }
         keepOldEntry = false;
       } else {
         if (isDebugEnabled) {
-          logger.debug("{}: No old entry for key={} head={} tail={} not removing old entry.",
-              this, key, this.headKey, tailKey);
+          logger.debug("{}: No old entry for key={} head={} tail={} not removing old entry.", this,
+              key, this.headKey, tailKey);
         }
         this.stats.incConflationIndexesMapSize();
         keepOldEntry = true;
@@ -648,23 +625,25 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
       // Replace the object's value into the queue if necessary
       if (!keepOldEntry) {
-        Conflatable previous = (Conflatable)this.region.remove(previousIndex);
-        this.stats.decQueueSize(1); 
+        Conflatable previous = (Conflatable) this.region.remove(previousIndex);
+        this.stats.decQueueSize(1);
         if (isDebugEnabled) {
-          logger.debug("{}: Previous conflatable at key={} head={} tail={}: {}",
-              this, previousIndex, this.headKey, tailKey, previous);
-          logger.debug("{}: Current conflatable at key={} head={} tail={}: {}",
-              this, tailKey, this.headKey, tailKey, object);
+          logger.debug("{}: Previous conflatable at key={} head={} tail={}: {}", this,
+              previousIndex, this.headKey, tailKey, previous);
+          logger.debug("{}: Current conflatable at key={} head={} tail={}: {}", this, tailKey,
+              this.headKey, tailKey, object);
           if (previous != null) {
-            logger.debug("{}: Removed {} and added {} for key={} head={} tail={} in queue for region={} old event={}",
-                this, previous.getValueToConflate(), object.getValueToConflate(),
-                key, this.headKey, tailKey, rName, previous);
+            logger.debug(
+                "{}: Removed {} and added {} for key={} head={} tail={} in queue for region={} old event={}",
+                this, previous.getValueToConflate(), object.getValueToConflate(), key, this.headKey,
+                tailKey, rName, previous);
           }
         }
       }
     } else {
       if (isDebugEnabled) {
-        logger.debug("{}: Not conflating {} queue size: {} head={} tail={}", this, object, size(), this.headKey, tailKey);
+        logger.debug("{}: Not conflating {} queue size: {} head={} tail={}", this, object, size(),
+            this.headKey, tailKey);
       }
     }
     return keepOldEntry;
@@ -674,22 +653,22 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * Does a get that gets the value without fault values in from disk.
    */
   private AsyncEvent optimalGet(Long k) {
-	// Get the object at that key (to remove the index).
-	LocalRegion lr = (LocalRegion)this.region;
-	Object o = null;
-	try {
-		o = lr.getValueInVMOrDiskWithoutFaultIn(k); 
-		if (o != null && o instanceof CachedDeserializable) { 
-			o = ((CachedDeserializable)o).getDeserializedValue(lr, lr.getRegionEntry(k));
-		}	
-	} catch (EntryNotFoundException ok) {
-		// just return null;
-	}
-	// bug #46023 do not return a destroyed entry marker
-	if (o == Token.TOMBSTONE) {
-		o = null;
-	}
-	return (AsyncEvent)o;
+    // Get the object at that key (to remove the index).
+    LocalRegion lr = (LocalRegion) this.region;
+    Object o = null;
+    try {
+      o = lr.getValueInVMOrDiskWithoutFaultIn(k);
+      if (o != null && o instanceof CachedDeserializable) {
+        o = ((CachedDeserializable) o).getDeserializedValue(lr, lr.getRegionEntry(k));
+      }
+    } catch (EntryNotFoundException ok) {
+      // just return null;
+    }
+    // bug #46023 do not return a destroyed entry marker
+    if (o == Token.TOMBSTONE) {
+      o = null;
+    }
+    return (AsyncEvent) o;
   }
 
   // No need to synchronize because it is called from a synchronized method
@@ -699,7 +678,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       // only call get after checking enableConflation for bug 40508
       Object o = optimalGet(qkey);
       if (o instanceof Conflatable) {
-        Conflatable object = (Conflatable)o;
+        Conflatable object = (Conflatable) o;
         if (object.shouldBeConflated()) {
           // Otherwise, remove the index from the indexes map.
           String rName = object.getRegionToConflate();
@@ -727,8 +706,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   }
 
   /**
-   * returns true if key a is before key b. This test handles keys that have
-   * wrapped around
+   * returns true if key a is before key b. This test handles keys that have wrapped around
    * 
    * @param a
    * @param b
@@ -746,8 +724,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   }
 
   /**
-   * Clear the list of peeked keys. The next peek will start again at the head
-   * key.
+   * Clear the list of peeked keys. The next peek will start again at the head key.
    * 
    */
   public void resetLastPeeked() {
@@ -759,20 +736,46 @@ public class SerialGatewaySenderQueue implements RegionQueue {
    * 
    * @throws CacheException
    */
+
+  private Long getCurrentKey() {
+    long currentKey;
+    if (this.peekedIds.isEmpty()) {
+      currentKey = getHeadKey();
+    } else {
+      Long lastPeek = this.peekedIds.peekLast();
+      if (lastPeek == null) {
+        return null;
+      }
+      currentKey = lastPeek.longValue() + 1;
+    }
+    return currentKey;
+  }
+
+  private AsyncEvent getObjectInSerialSenderQueue(Long currentKey) {
+    AsyncEvent object = optimalGet(currentKey);
+    if ((null != object) && logger.isDebugEnabled()) {
+      logger.debug("{}: Peeked {}->{}", this, currentKey, object);
+    }
+    if (object != null && object instanceof GatewaySenderEventImpl) {
+      GatewaySenderEventImpl copy = ((GatewaySenderEventImpl) object).makeHeapCopyIfOffHeap();
+      if (copy == null) {
+        logger.debug(
+            "Unable to make heap copy and will not be added to peekedIds for object" + " : {} ",
+            object.toString());
+      }
+      object = copy;
+    }
+    return object;
+  }
+
   private AsyncEvent peekAhead() throws CacheException {
     AsyncEvent object = null;
-    long currentKey = -1;
-    if (this.peekedIds.isEmpty()) {
-    	currentKey = getHeadKey(); 
-    } else {
-    	Long lastPeek = this.peekedIds.peekLast();
-    	if (lastPeek == null) {
-    		return null;
-    	}
-    	currentKey = lastPeek.longValue() + 1;
+    Long currentKey = getCurrentKey();
+    if (currentKey == null) {
+      return null;
     }
-    
-    
+
+
     // It's important here that we check where the current key
     // is in relation to the tail key before we check to see if the
     // object exists. The reason is that the tail key is basically
@@ -788,8 +791,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     // does not save anything since GatewayBatchOp needs to GatewayEventImpl
     // in object form.
     while (before(currentKey, getTailKey())
-    // use optimalGet here to fix bug 40654
-        && (object = optimalGet(Long.valueOf(currentKey))) == null) {
+        && (null == (object = getObjectInSerialSenderQueue(currentKey)))) {
       if (logger.isTraceEnabled()) {
         logger.trace("{}: Trying head key + offset: {}", this, currentKey);
       }
@@ -803,14 +805,14 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       logger.debug("{}: Peeked {}->{}", this, currentKey, object);
     }
     if (object != null) {
-      this.peekedIds.add(Long.valueOf(currentKey));
+      this.peekedIds.add(currentKey);
     }
     return object;
   }
 
   /**
-   * Returns the value of the tail key. The tail key points to an empty where
-   * the next queue entry will be stored.
+   * Returns the value of the tail key. The tail key points to an empty where the next queue entry
+   * will be stored.
    * 
    * @return the value of the tail key
    * @throws CacheException
@@ -843,21 +845,21 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   private void incrementTailKey() throws CacheException {
     this.tailKey.set(inc(this.tailKey.get()));
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: Incremented TAIL_KEY for region {} to {}", this, this.region.getName(), this.tailKey);
+      logger.trace("{}: Incremented TAIL_KEY for region {} to {}", this, this.region.getName(),
+          this.tailKey);
     }
   }
 
   /**
    * If the keys are not yet initialized, initialize them from the region .
    * 
-   * TODO - We could initialize the indexes maps at the time here. However, that
-   * would require iterating over the values of the region rather than the keys,
-   * which could be much more expensive if the region has overflowed to disk.
+   * TODO - We could initialize the indexes maps at the time here. However, that would require
+   * iterating over the values of the region rather than the keys, which could be much more
+   * expensive if the region has overflowed to disk.
    * 
-   * We do iterate over the values of the region in SerialGatewaySender at the
-   * time of failover. see SerialGatewaySender.handleFailover. So there's a
-   * possibility we can consolidate that code with this method and iterate over
-   * the region once.
+   * We do iterate over the values of the region in SerialGatewaySender at the time of failover. see
+   * SerialGatewaySender.handleFailover. So there's a possibility we can consolidate that code with
+   * this method and iterate over the region once.
    * 
    * @throws CacheException
    */
@@ -898,27 +900,28 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       // Here, I'm guessing that the head key should be greater than
       // MAXIMUM_KEY/2
       // and the head key - tail key > MAXIMUM/2.
-      if (smallestKeyGreaterThanHalfMax != -1
-          && largestKeyLessThanHalfMax != -1
+      if (smallestKeyGreaterThanHalfMax != -1 && largestKeyLessThanHalfMax != -1
           && (smallestKeyGreaterThanHalfMax - largestKeyLessThanHalfMax) > MAXIMUM_KEY / 2) {
         this.headKey = smallestKeyGreaterThanHalfMax;
         this.tailKey.set(inc(largestKeyLessThanHalfMax));
-        logger.info(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_0_DURING_FAILOVER_DETECTED_THAT_KEYS_HAVE_WRAPPED,
-                  new Object[] { this, this.tailKey, Long.valueOf(this.headKey) }));
+        logger.info(LocalizedMessage.create(
+            LocalizedStrings.SingleWriteSingleReadRegionQueue_0_DURING_FAILOVER_DETECTED_THAT_KEYS_HAVE_WRAPPED,
+            new Object[] {this, this.tailKey, Long.valueOf(this.headKey)}));
       } else {
         this.headKey = smallestKey == -1 ? 0 : smallestKey;
         this.tailKey.set(inc(largestKey));
       }
 
       if (logger.isDebugEnabled()) {
-        logger.debug("{}: Initialized tail key to: {}, head key to: {}", this, this.tailKey, this.headKey);
+        logger.debug("{}: Initialized tail key to: {}, head key to: {}", this, this.tailKey,
+            this.headKey);
       }
     }
   }
 
   /**
-   * Returns the value of the head key. The head key points to the next entry to
-   * be removed from the queue.
+   * Returns the value of the head key. The head key points to the next entry to be removed from the
+   * queue.
    * 
    * @return the value of the head key
    * @throws CacheException
@@ -950,37 +953,32 @@ public class SerialGatewaySenderQueue implements RegionQueue {
   private void updateHeadKey(long destroyedKey) throws CacheException {
     this.headKey = inc(destroyedKey);
     if (logger.isTraceEnabled()) {
-      logger.trace("{}: Incremented HEAD_KEY for region {} to {}", this, this.region.getName(), this.headKey);
+      logger.trace("{}: Incremented HEAD_KEY for region {} to {}", this, this.region.getName(),
+          this.headKey);
     }
   }
 
   /**
-   * Initializes the <code>Region</code> backing this queue. The
-   * <code>Region</code>'s scope is DISTRIBUTED_NO_ACK and mirror type is
-   * KEYS_VALUES and is set to overflow to disk based on the
+   * Initializes the <code>Region</code> backing this queue. The <code>Region</code>'s scope is
+   * DISTRIBUTED_NO_ACK and mirror type is KEYS_VALUES and is set to overflow to disk based on the
    * <code>GatewayQueueAttributes</code>.
    * 
-   * @param sender
-   *          The GatewaySender <code>SerialGatewaySenderImpl</code>
-   * @param listener
-   *          The GemFire <code>CacheListener</code>. The
-   *          <code>CacheListener</code> can be null.
+   * @param sender The GatewaySender <code>SerialGatewaySenderImpl</code>
+   * @param listener The GemFire <code>CacheListener</code>. The <code>CacheListener</code> can be
+   *        null.
    */
-  @SuppressWarnings({ "unchecked", "rawtypes" })
-  private void initializeRegion(AbstractGatewaySender sender,
-      CacheListener listener) {
-    final GemFireCacheImpl gemCache = (GemFireCacheImpl)sender.getCache();
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private void initializeRegion(AbstractGatewaySender sender, CacheListener listener) {
+    final GemFireCacheImpl gemCache = (GemFireCacheImpl) sender.getCache();
     this.region = gemCache.getRegion(this.regionName);
     if (this.region == null) {
       AttributesFactory<Long, AsyncEvent> factory = new AttributesFactory<Long, AsyncEvent>();
-      factory.setScope(NO_ACK ? Scope.DISTRIBUTED_NO_ACK
-          : Scope.DISTRIBUTED_ACK);
-      factory
-          .setDataPolicy(this.enablePersistence ? DataPolicy.PERSISTENT_REPLICATE
-              : DataPolicy.REPLICATE);
+      factory.setScope(NO_ACK ? Scope.DISTRIBUTED_NO_ACK : Scope.DISTRIBUTED_ACK);
+      factory.setDataPolicy(
+          this.enablePersistence ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE);
       if (logger.isDebugEnabled()) {
         logger.debug("The policy of region is {}",
-            (this.enablePersistence ? DataPolicy.PERSISTENT_REPLICATE: DataPolicy.REPLICATE));
+            (this.enablePersistence ? DataPolicy.PERSISTENT_REPLICATE : DataPolicy.REPLICATE));
       }
       // Set listener if it is not null. The listener will be non-null
       // when the user of this queue is a secondary VM.
@@ -988,53 +986,54 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         factory.addCacheListener(listener);
       }
       // allow for no overflow directory
-      EvictionAttributes ea = EvictionAttributes
-          .createLIFOMemoryAttributes(this.maximumQueueMemory,
-              EvictionAction.OVERFLOW_TO_DISK);
-      
+      EvictionAttributes ea = EvictionAttributes.createLIFOMemoryAttributes(this.maximumQueueMemory,
+          EvictionAction.OVERFLOW_TO_DISK);
+
       factory.setEvictionAttributes(ea);
       factory.setConcurrencyChecksEnabled(false);
 
-      
+
       factory.setDiskStoreName(this.diskStoreName);
       // TODO: Suranjan, can we do the following
       // In case of persistence write to disk sync and in case of eviction
       // write in async
       factory.setDiskSynchronous(this.isDiskSynchronous);
-      
+
       // Create the region
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Attempting to create queue region: {}", this, this.regionName);
       }
       final RegionAttributes<Long, AsyncEvent> ra = factory.create();
       try {
-        SerialGatewaySenderQueueMetaRegion meta = new SerialGatewaySenderQueueMetaRegion(
-            this.regionName, ra, null, gemCache, sender);
+        SerialGatewaySenderQueueMetaRegion meta =
+            new SerialGatewaySenderQueueMetaRegion(this.regionName, ra, null, gemCache, sender);
         try {
-          this.region = gemCache.createVMRegion(this.regionName, ra, new InternalRegionArguments().setInternalMetaRegion(meta)
-                                                                                                  .setDestroyLockFlag(true)
-                                                                                                  .setSnapshotInputStream(null)
-                                                                                                  .setImageTarget(null)
-                                                                                                  .setIsUsedForSerialGatewaySenderQueue(true)
-                                                                                                  .setInternalRegion(true)
-                                                                                                  .setSerialGatewaySender(sender));
+          this.region = gemCache.createVMRegion(this.regionName, ra,
+              new InternalRegionArguments().setInternalMetaRegion(meta).setDestroyLockFlag(true)
+                  .setSnapshotInputStream(null).setImageTarget(null)
+                  .setIsUsedForSerialGatewaySenderQueue(true).setInternalRegion(true)
+                  .setSerialGatewaySender(sender));
 
         } catch (IOException veryUnLikely) {
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
-                  this.getClass()), veryUnLikely);
+          logger.fatal(LocalizedMessage.create(
+              LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
+              this.getClass()), veryUnLikely);
         } catch (ClassNotFoundException alsoUnlikely) {
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
-                  this.getClass()), alsoUnlikely);
+          logger.fatal(LocalizedMessage.create(
+              LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
+              this.getClass()), alsoUnlikely);
         }
         if (logger.isDebugEnabled()) {
-          logger.debug("{}: Created queue region: {}",this, this.region);
+          logger.debug("{}: Created queue region: {}", this, this.region);
         }
       } catch (CacheException e) {
-        logger.fatal(LocalizedMessage.create(LocalizedStrings.SingleWriteSingleReadRegionQueue_0_THE_QUEUE_REGION_NAMED_1_COULD_NOT_BE_CREATED,
-                new Object[] { this, this.regionName }), e);
+        logger.fatal(LocalizedMessage.create(
+            LocalizedStrings.SingleWriteSingleReadRegionQueue_0_THE_QUEUE_REGION_NAMED_1_COULD_NOT_BE_CREATED,
+            new Object[] {this, this.regionName}), e);
       }
     } else {
-      throw new IllegalStateException("Queue region " + this.region.getFullPath() + " already exists.");
+      throw new IllegalStateException(
+          "Queue region " + this.region.getFullPath() + " already exists.");
     }
   }
 
@@ -1043,14 +1042,14 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       this.removalThread.shutdown();
     }
   }
-  
+
   public boolean isRemovalThreadAlive() {
     if (this.removalThread != null) {
       return this.removalThread.isAlive();
     }
     return false;
   }
-  
+
   @Override
   public void close() {
     Region r = getRegion();
@@ -1061,7 +1060,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       }
     }
   }
-  
+
   private class BatchRemovalThread extends Thread {
     /**
      * boolean to make a shutdown request
@@ -1121,9 +1120,10 @@ public class SerialGatewaySenderQueue implements RegionQueue {
             }
 
             if (logger.isDebugEnabled()) {
-              logger.debug("BatchRemovalThread about to send the last Dispatched key {}", lastDispatchedKey);
+              logger.debug("BatchRemovalThread about to send the last Dispatched key {}",
+                  lastDispatchedKey);
             }
-            
+
             long temp;
             synchronized (SerialGatewaySenderQueue.this) {
               temp = lastDispatchedKey;
@@ -1132,22 +1132,23 @@ public class SerialGatewaySenderQueue implements RegionQueue {
                 SerialGatewaySenderQueue.this.wait();
                 temp = lastDispatchedKey;
               }
-              if (wasEmpty) continue;
+              if (wasEmpty)
+                continue;
             }
             // release not needed since disallowOffHeapValues called
-            EntryEventImpl event = EntryEventImpl.create((LocalRegion)region,
-                Operation.DESTROY, (lastDestroyedKey + 1) , null/* newValue */, null, false,
-                cache.getMyId());
+            EntryEventImpl event = EntryEventImpl.create((LocalRegion) region, Operation.DESTROY,
+                (lastDestroyedKey + 1), null/* newValue */, null, false, cache.getMyId());
             event.disallowOffHeapValues();
             event.setTailKey(temp);
-            
-            BatchDestroyOperation op =  new BatchDestroyOperation(event);
+
+            BatchDestroyOperation op = new BatchDestroyOperation(event);
             op.distribute();
             if (logger.isDebugEnabled()) {
-              logger.debug("BatchRemovalThread completed destroy of keys from {} to {}", lastDestroyedKey, temp);
+              logger.debug("BatchRemovalThread completed destroy of keys from {} to {}",
+                  lastDestroyedKey, temp);
             }
             lastDestroyedKey = temp;
-            
+
           } // be somewhat tolerant of failures
           catch (CancelException e) {
             if (logger.isDebugEnabled()) {
@@ -1180,7 +1181,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
           logger.debug("BatchRemovalThread exiting due to cancellation: " + e);
         }
       } finally {
-        logger.info(LocalizedMessage.create(LocalizedStrings.HARegionQueue_THE_QUEUEREMOVALTHREAD_IS_DONE));
+        logger.info(
+            LocalizedMessage.create(LocalizedStrings.HARegionQueue_THE_QUEUEREMOVALTHREAD_IS_DONE));
       }
     }
 
@@ -1201,25 +1203,25 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         }
       }
       if (this.isAlive()) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.HARegionQueue_QUEUEREMOVALTHREAD_IGNORED_CANCELLATION));
+        logger.warn(LocalizedMessage
+            .create(LocalizedStrings.HARegionQueue_QUEUEREMOVALTHREAD_IGNORED_CANCELLATION));
       }
     }
   }
-  
-  public static class SerialGatewaySenderQueueMetaRegion extends
-      DistributedRegion {
+
+  public static class SerialGatewaySenderQueueMetaRegion extends DistributedRegion {
     AbstractGatewaySender sender = null;
-    protected SerialGatewaySenderQueueMetaRegion(String regionName,
-        RegionAttributes attrs, LocalRegion parentRegion,
-        GemFireCacheImpl cache, AbstractGatewaySender sender) {
+
+    protected SerialGatewaySenderQueueMetaRegion(String regionName, RegionAttributes attrs,
+        LocalRegion parentRegion, GemFireCacheImpl cache, AbstractGatewaySender sender) {
       super(regionName, attrs, parentRegion, cache,
-          new InternalRegionArguments().setDestroyLockFlag(true)
-              .setRecreateFlag(false).setSnapshotInputStream(null)
-              .setImageTarget(null).setIsUsedForSerialGatewaySenderQueue(true).setSerialGatewaySender(sender));
+          new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
+              .setSnapshotInputStream(null).setImageTarget(null)
+              .setIsUsedForSerialGatewaySenderQueue(true).setSerialGatewaySender(sender));
       this.sender = sender;
     }
 
-    //Prevent this region from using concurrency checks
+    // Prevent this region from using concurrency checks
     @Override
     final public boolean supportsConcurrencyChecks() {
       return false;
@@ -1238,8 +1240,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     // @override event tracker not needed for this type of region
     @Override
-    public void createEventTracker() {
-    }
+    public void createEventTracker() {}
 
     @Override
     final protected boolean shouldNotifyBridgeClients() {
@@ -1250,7 +1251,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     final public boolean generateEventID() {
       return false;
     }
-    
+
     @Override
     final public boolean isUsedForSerialGatewaySenderQueue() {
       return true;
@@ -1260,6 +1261,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     final public AbstractGatewaySender getSerialGatewaySender() {
       return sender;
     }
+
     @Override
     public void closeEntries() {
       OffHeapRegionEntryHelper.doWithOffHeapClear(new Runnable() {
@@ -1269,6 +1271,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
         }
       });
     }
+
     @Override
     public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
       final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
@@ -1280,26 +1283,37 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       });
       return result.get();
     }
+
     @Override
-    protected void basicDestroy(final EntryEventImpl event,
-        final boolean cacheWrite, Object expectedOldValue)
+    protected void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
+        Object expectedOldValue)
         throws EntryNotFoundException, CacheWriterException, TimeoutException {
-
-      super.basicDestroy(event, cacheWrite, expectedOldValue);
-      GatewaySenderEventImpl.release(event.getRawOldValue());
-    }
-    @Override
-    protected boolean virtualPut(EntryEventImpl event, boolean ifNew,
-        boolean ifOld, Object expectedOldValue, boolean requireOldValue,
-        long lastModified, boolean overwriteDestroyed) throws TimeoutException,
-        CacheWriterException {
-      boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue,
-          requireOldValue, lastModified, overwriteDestroyed);
-
-      if (success) {
+      try {
+        super.basicDestroy(event, cacheWrite, expectedOldValue);
+      } finally {
         GatewaySenderEventImpl.release(event.getRawOldValue());
       }
-      return success;
+    }
+
+    @Override
+    protected boolean virtualPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+        Object expectedOldValue, boolean requireOldValue, long lastModified,
+        boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
+      try {
+        boolean success = super.virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
+            lastModified, overwriteDestroyed);
+        if (!success) {
+          // release offheap reference if GatewaySenderEventImpl is not put into
+          // the region queue
+          GatewaySenderEventImpl.release(event.getRawNewValue());
+        }
+        return success;
+      } finally {
+        // GatewaySenderQueue probably only adding new events into the queue.
+        // Add the finally block just in case if there actually is an update
+        // in the sender queue or occurs in the the future.
+        GatewaySenderEventImpl.release(event.getRawOldValue());
+      }
     }
   }
 }

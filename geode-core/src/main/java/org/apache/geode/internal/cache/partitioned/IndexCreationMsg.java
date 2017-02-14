@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.partitioned;
 
@@ -62,22 +60,18 @@ public class IndexCreationMsg extends PartitionMessage {
   HashSet<IndexCreationData> indexDefinitions;
 
   /**
-   * Constructor for the index creation message to be sent over the wire
-   * with all the relevant information.
+   * Constructor for the index creation message to be sent over the wire with all the relevant
+   * information.
    * 
-   * @param recipients
-   *          members to which this message has to be sent
-   * @param regionId
-   *          partitioned region id
-   * @param processor
-   *          The processor to reply to
-   * @param indexDefinitions
-   *          definitions for the indexes
+   * @param recipients members to which this message has to be sent
+   * @param regionId partitioned region id
+   * @param processor The processor to reply to
+   * @param indexDefinitions definitions for the indexes
    *
    */
 
-  IndexCreationMsg(Set recipients, int regionId,
-      ReplyProcessor21 processor, HashSet<IndexCreationData> indexDefinitions) {
+  IndexCreationMsg(Set recipients, int regionId, ReplyProcessor21 processor,
+      HashSet<IndexCreationData> indexDefinitions) {
     super(recipients, regionId, processor);
     this.indexDefinitions = indexDefinitions;
   }
@@ -91,10 +85,9 @@ public class IndexCreationMsg extends PartitionMessage {
   }
 
   /**
-   * This message may be sent to nodes before the PartitionedRegion is
-   * completely initialized due to the RegionAdvisor(s) knowing about the
-   * existance of a partitioned region at a very early part of the
-   * initialization
+   * This message may be sent to nodes before the PartitionedRegion is completely initialized due to
+   * the RegionAdvisor(s) knowing about the existance of a partitioned region at a very early part
+   * of the initialization
    */
   @Override
   protected final boolean failIfRegionMissing() {
@@ -102,22 +95,17 @@ public class IndexCreationMsg extends PartitionMessage {
   }
 
   /**
-   * This method actually operates on the partitioned region and creates given
-   * list of indexes from a index creation message.
+   * This method actually operates on the partitioned region and creates given list of indexes from
+   * a index creation message.
    * 
-   * @param dm
-   *          distribution manager.
-   * @param pr
-   *          partitioned region on which to create an index.
-   * @throws CacheException
-   *           indicating a cache level error
-   * @throws ForceReattemptException
-   *           if the peer is no longer available
+   * @param dm distribution manager.
+   * @param pr partitioned region on which to create an index.
+   * @throws CacheException indicating a cache level error
+   * @throws ForceReattemptException if the peer is no longer available
    */
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm,
-      PartitionedRegion pr, long startTime) throws CacheException,
-      ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+      long startTime) throws CacheException, ForceReattemptException {
     // region exists
     ReplyException replyEx = null;
     boolean result = false;
@@ -129,31 +117,29 @@ public class IndexCreationMsg extends PartitionMessage {
       for (IndexCreationData icd : indexDefinitions) {
         sb.append(icd.getIndexName()).append(" ");
       }
-      logger.debug("Processing index creation message on this remote partitioned region vm for indexes: {}", sb);
+      logger.debug(
+          "Processing index creation message on this remote partitioned region vm for indexes: {}",
+          sb);
     }
 
     try {
       indexes = pr.createIndexes(true, indexDefinitions);
     } catch (IndexCreationException e1) {
       replyEx = new ReplyException(
-          LocalizedStrings.IndexCreationMsg_REMOTE_INDEX_CREAION_FAILED
-              .toLocalizedString(),
-          e1);
+          LocalizedStrings.IndexCreationMsg_REMOTE_INDEX_CREAION_FAILED.toLocalizedString(), e1);
     } catch (MultiIndexCreationException exx) {
       failedIndexNames.addAll(exx.getExceptionsMap().keySet());
-      
+
       if (logger.isDebugEnabled()) {
         StringBuffer exceptionMsgs = new StringBuffer();
-        for(Exception ex: exx.getExceptionsMap().values()) {
+        for (Exception ex : exx.getExceptionsMap().values()) {
           exceptionMsgs.append(ex.getMessage()).append("\n");
         }
         logger.debug("Got an MultiIndexCreationException with \n: {}", exceptionMsgs);
         logger.debug("{} indexes were created succesfully", failedIndexNames.size());
       }
       replyEx = new ReplyException(
-          LocalizedStrings.IndexCreationMsg_REMOTE_INDEX_CREAION_FAILED
-              .toLocalizedString(),
-          exx);
+          LocalizedStrings.IndexCreationMsg_REMOTE_INDEX_CREAION_FAILED.toLocalizedString(), exx);
     }
 
     if (null == replyEx) {
@@ -162,26 +148,29 @@ public class IndexCreationMsg extends PartitionMessage {
 
     if (result) {
       Map<String, Integer> indexBucketsMap = new HashMap<String, Integer>();
-      for(Index index : indexes) {
-        PartitionedIndex prIndex = (PartitionedIndex)index;
+      for (Index index : indexes) {
+        PartitionedIndex prIndex = (PartitionedIndex) index;
         indexBucketsMap.put(prIndex.getName(), prIndex.getNumberOfIndexedBuckets());
       }
-      sendReply(getSender(), getProcessorId(), dm, replyEx, result, indexBucketsMap, pr.getDataStore().getAllLocalBuckets().size());
+      sendReply(getSender(), getProcessorId(), dm, replyEx, result, indexBucketsMap,
+          pr.getDataStore().getAllLocalBuckets().size());
     } else {
       // add the indexes that were successfully created to the map
       Map<String, Integer> indexBucketsMap = new HashMap<String, Integer>();
       for (IndexCreationData icd : indexDefinitions) {
         // if the index was successfully created
-        if(!failedIndexNames.contains(icd.getIndexName())) {
-          PartitionedIndex prIndex = (PartitionedIndex)pr.getIndex(icd.getIndexName());
+        if (!failedIndexNames.contains(icd.getIndexName())) {
+          PartitionedIndex prIndex = (PartitionedIndex) pr.getIndex(icd.getIndexName());
           indexBucketsMap.put(icd.getIndexName(), prIndex.getNumberOfIndexedBuckets());
         }
       }
-      sendReply(getSender(), getProcessorId(), dm, replyEx, result, indexBucketsMap, pr.getDataStore().getAllLocalBuckets().size());
+      sendReply(getSender(), getProcessorId(), dm, replyEx, result, indexBucketsMap,
+          pr.getDataStore().getAllLocalBuckets().size());
     }
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Multi Index creation completed on remote host and has sent the reply to the originating vm.");
+      logger.debug(
+          "Multi Index creation completed on remote host and has sent the reply to the originating vm.");
     }
     return false;
   }
@@ -216,7 +205,8 @@ public class IndexCreationMsg extends PartitionMessage {
           while (wait && attempts < 30) { // max 30 seconds of wait.
             dm.getCancelCriterion().checkCancelInProgress(null);
             if (isDebugEnabled) {
-              logger.debug("Waiting for Partitioned Region to be intialized with id {}for processing index creation messages",
+              logger.debug(
+                  "Waiting for Partitioned Region to be intialized with id {}for processing index creation messages",
                   this.regionId);
             }
             try {
@@ -241,7 +231,9 @@ public class IndexCreationMsg extends PartitionMessage {
               attempts++;
             } catch (CancelException ignorAndLoopWait) {
               if (isDebugEnabled) {
-                logger.debug("IndexCreationMsg waiting for pr to be properly created with prId : {}", this.regionId);
+                logger.debug(
+                    "IndexCreationMsg waiting for pr to be properly created with prId : {}",
+                    this.regionId);
               }
             }
           }
@@ -251,7 +243,8 @@ public class IndexCreationMsg extends PartitionMessage {
         // Not sure if the CacheClosedException is still thrown in response
         // to the PR being initialized.
         if (logger.isDebugEnabled()) {
-          logger.debug("Waiting for notification from pr being properly created on {}", this.regionId);
+          logger.debug("Waiting for notification from pr being properly created on {}",
+              this.regionId);
         }
 
         boolean wait = true;
@@ -275,7 +268,8 @@ public class IndexCreationMsg extends PartitionMessage {
             }
           } catch (CancelException ignorAndLoopWait) {
             if (logger.isDebugEnabled()) {
-              logger.debug("IndexCreationMsg waiting for pr to be properly created with prId : {}", this.regionId);
+              logger.debug("IndexCreationMsg waiting for pr to be properly created with prId : {}",
+                  this.regionId);
             }
           }
         }
@@ -283,11 +277,11 @@ public class IndexCreationMsg extends PartitionMessage {
       }
 
       if (pr == null /* && failIfRegionMissing() */) {
-        String msg = LocalizedStrings.IndexCreationMsg_COULD_NOT_GET_PARTITIONED_REGION_FROM_ID_0_FOR_MESSAGE_1_RECEIVED_ON_MEMBER_2_MAP_3
-            .toLocalizedString(new Object[] { Integer.valueOf(this.regionId),
-                this, dm.getId(), PartitionedRegion.dumpPRId() });
-        throw new PartitionedRegionException(msg, new RegionNotFoundException(
-            msg));
+        String msg =
+            LocalizedStrings.IndexCreationMsg_COULD_NOT_GET_PARTITIONED_REGION_FROM_ID_0_FOR_MESSAGE_1_RECEIVED_ON_MEMBER_2_MAP_3
+                .toLocalizedString(new Object[] {Integer.valueOf(this.regionId), this, dm.getId(),
+                    PartitionedRegion.dumpPRId()});
+        throw new PartitionedRegionException(msg, new RegionNotFoundException(msg));
       }
       sendReply = operateOnPartitionedRegion(dm, pr, 0);
 
@@ -312,14 +306,18 @@ public class IndexCreationMsg extends PartitionMessage {
       if (this.processorId == 0) {
         logger.debug("{} exception while processing message:{}", this, t.getMessage(), t);
       } else if (logger.isDebugEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {
-        logger.debug(LogMarker.DM, "Exception caught while processing message: {}", t.getMessage(), t);
+        logger.debug(LogMarker.DM, "Exception caught while processing message: {}", t.getMessage(),
+            t);
       }
       if (t instanceof RegionDestroyedException && pr != null) {
         if (pr.isClosed) {
-          logger.info(LocalizedMessage.create(LocalizedStrings.IndexCreationMsg_REGION_IS_LOCALLY_DESTROYED_THROWING_REGIONDESTROYEDEXCEPTION_FOR__0, pr));
+          logger.info(LocalizedMessage.create(
+              LocalizedStrings.IndexCreationMsg_REGION_IS_LOCALLY_DESTROYED_THROWING_REGIONDESTROYEDEXCEPTION_FOR__0,
+              pr));
           thr = new RegionDestroyedException(
               LocalizedStrings.IndexCreationMsg_REGION_IS_LOCALLY_DESTROYED_ON_0
-                  .toLocalizedString(dm.getId()), pr.getFullPath());
+                  .toLocalizedString(dm.getId()),
+              pr.getFullPath());
         }
       } else {
         thr = t;
@@ -339,16 +337,13 @@ public class IndexCreationMsg extends PartitionMessage {
   /**
    * Methods that sends the actual index creation message to all the members.
    * 
-   * @param recipient
-   *          set of members.
-   * @param pr
-   *          partitoned region associated with the index.
-   * @param indexDefinitions
-   *          set of index definitions
+   * @param recipient set of members.
+   * @param pr partitoned region associated with the index.
+   * @param indexDefinitions set of index definitions
    * @return partitionresponse a response for the index creation
    */
-  public static PartitionResponse send(InternalDistributedMember recipient,
-      PartitionedRegion pr, HashSet<IndexCreationData> indexDefinitions) {
+  public static PartitionResponse send(InternalDistributedMember recipient, PartitionedRegion pr,
+      HashSet<IndexCreationData> indexDefinitions) {
 
     RegionAdvisor advisor = (RegionAdvisor) (pr.getDistributionAdvisor());
     final Set<InternalDistributedMember> recipients;
@@ -361,24 +356,25 @@ public class IndexCreationMsg extends PartitionMessage {
       recipients = new HashSet<InternalDistributedMember>();
       recipients.add(recipient);
     }
-    
+
     for (InternalDistributedMember rec : recipients) {
       if (rec.getVersionObject().compareTo(Version.GFE_81) < 0) {
-        throw new UnsupportedOperationException("Indexes should not be created during rolling upgrade");
+        throw new UnsupportedOperationException(
+            "Indexes should not be created during rolling upgrade");
       }
     }
-    
+
     IndexCreationResponse processor = null;
     if (logger.isDebugEnabled()) {
       logger.debug("Will be sending create index msg to : {}", recipients.toString());
     }
     if (recipients.size() > 0) {
-      processor = (IndexCreationResponse) (new IndexCreationMsg())
-          .createReplyProcessor(pr, recipients);
+      processor =
+          (IndexCreationResponse) (new IndexCreationMsg()).createReplyProcessor(pr, recipients);
     }
 
-    IndexCreationMsg indMsg = new IndexCreationMsg(recipients,
-        pr.getPRId(), processor, indexDefinitions);
+    IndexCreationMsg indMsg =
+        new IndexCreationMsg(recipients, pr.getPRId(), processor, indexDefinitions);
     if (logger.isDebugEnabled()) {
       logger.debug("Sending index creation message: {}, to member(s) {}.", indMsg, recipients);
     }
@@ -399,25 +395,17 @@ public class IndexCreationMsg extends PartitionMessage {
   /**
    * Send a reply for index creation message.
    * 
-   * @param member
-   *          representing the actual index creatro in the system
-   * @param procId
-   *          waiting processor
-   * @param dm
-   *          distribution manager to send the message
-   * @param ex
-   *          any exceptions
-   * @param result
-   *          represents index created properly or not.
-   * @param indexBucketsMap
-   *          Map of indexes created and number of buckets indexed
-   * @param numTotalBuckets
-   *          Number of total buckets in this vm
+   * @param member representing the actual index creatro in the system
+   * @param procId waiting processor
+   * @param dm distribution manager to send the message
+   * @param ex any exceptions
+   * @param result represents index created properly or not.
+   * @param indexBucketsMap Map of indexes created and number of buckets indexed
+   * @param numTotalBuckets Number of total buckets in this vm
    */
-  void sendReply(InternalDistributedMember member, int procId, DM dm,
-      ReplyException ex, boolean result, Map<String, Integer> indexBucketsMap, int numTotalBuckets) {
-    IndexCreationReplyMsg.send(member, procId, dm, ex, result,
-        indexBucketsMap, numTotalBuckets);
+  void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
+      boolean result, Map<String, Integer> indexBucketsMap, int numTotalBuckets) {
+    IndexCreationReplyMsg.send(member, procId, dm, ex, result, indexBucketsMap, numTotalBuckets);
   }
 
   public int getDSFID() {
@@ -425,17 +413,16 @@ public class IndexCreationMsg extends PartitionMessage {
   }
 
   @Override
-  public final void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
+  public final void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.indexDefinitions = DataSerializer.readHashSet(in);
   }
-  
+
   @Override
   public Version[] getSerializationVersions() {
     return null;
   }
-  
+
   @Override
   public final void toData(DataOutput out) throws IOException {
     super.toData(out);
@@ -455,9 +442,8 @@ public class IndexCreationMsg extends PartitionMessage {
   }
 
   /**
-   * Class representing index creation response. This class has all the
-   * information for successful or unsuccessful index creation on this member of
-   * the partitioned region.
+   * Class representing index creation response. This class has all the information for successful
+   * or unsuccessful index creation on this member of the partitioned region.
    * 
    * 
    */
@@ -472,10 +458,8 @@ public class IndexCreationMsg extends PartitionMessage {
     /**
      * Construtor for index creation response message.
      * 
-     * @param ds
-     *          distributed system for this member.
-     * @param recipients
-     *          all the member associated with the index
+     * @param ds distributed system for this member.
+     * @param recipients all the member associated with the index
      */
     IndexCreationResponse(InternalDistributedSystem ds, Set recipients) {
       super(ds, recipients);
@@ -484,14 +468,11 @@ public class IndexCreationMsg extends PartitionMessage {
     /**
      * Waits for the response from the members for index creation.
      * 
-     * @return IndexCreationResult for creation of  indexes
-     * @throws CacheException
-     *           indicating a cache level error
-     * @throws ForceReattemptException
-     *           if the peer is no longer available
+     * @return IndexCreationResult for creation of indexes
+     * @throws CacheException indicating a cache level error
+     * @throws ForceReattemptException if the peer is no longer available
      */
-    public IndexCreationResult waitForResult() throws CacheException,
-        ForceReattemptException {
+    public IndexCreationResult waitForResult() throws CacheException, ForceReattemptException {
       try {
         waitForCacheException();
       } catch (RuntimeException re) {
@@ -514,14 +495,12 @@ public class IndexCreationMsg extends PartitionMessage {
     /**
      * Sets the relevant information in the response.
      * 
-     * @param result
-     *          true if index created properly
-     * @param indexBucketsMap
-     *          Map of indexes created and number of buckets indexed
-     * @param numTotalBuckets
-     *          Number of total buckets in this vm
+     * @param result true if index created properly
+     * @param indexBucketsMap Map of indexes created and number of buckets indexed
+     * @param numTotalBuckets Number of total buckets in this vm
      */
-    public void setResponse(boolean result, Map<String, Integer> indexBucketsMap, int numTotalBuckets) {
+    public void setResponse(boolean result, Map<String, Integer> indexBucketsMap,
+        int numTotalBuckets) {
       this.indexBucketsMap = indexBucketsMap;
       this.numTotalBuckets = numTotalBuckets;
     }
@@ -542,10 +521,8 @@ public class IndexCreationMsg extends PartitionMessage {
     /**
      * Constructor for index creation result.
      * 
-     * @param indexBucketsMap
-     *          Map of indexes created and number of buckets indexed
-     * @param numTotalBuckets
-     *          Number of total buckets in this vm
+     * @param indexBucketsMap Map of indexes created and number of buckets indexed
+     * @param numTotalBuckets Number of total buckets in this vm
      */
     IndexCreationResult(Map<String, Integer> indexBucketsMap, int numTotalBuckets) {
       this.indexBucketsMap = indexBucketsMap;
@@ -565,8 +542,7 @@ public class IndexCreationMsg extends PartitionMessage {
   }
 
   /**
-   * Class for index creation reply. This class has the information about
-   * successful index creation.
+   * Class for index creation reply. This class has the information about successful index creation.
    * 
    * 
    */
@@ -591,19 +567,14 @@ public class IndexCreationMsg extends PartitionMessage {
     /**
      * Constructor for index creation reply message.
      * 
-     * @param processorId
-     *          processor id of the waiting processor
-     * @param ex
-     *          any exceptions
-     * @param result
-     *          true if index created properly else false
-     * @param indexBucketsMap
-     *          Map of indexes created and number of buckets indexed
-     * @param numTotalBuckets
-     *          Number of total buckets in this vm
+     * @param processorId processor id of the waiting processor
+     * @param ex any exceptions
+     * @param result true if index created properly else false
+     * @param indexBucketsMap Map of indexes created and number of buckets indexed
+     * @param numTotalBuckets Number of total buckets in this vm
      */
-    IndexCreationReplyMsg(int processorId, ReplyException ex,
-        boolean result, boolean isDataStore, Map<String, Integer> indexBucketsMap, int numTotalBuckets) {
+    IndexCreationReplyMsg(int processorId, ReplyException ex, boolean result, boolean isDataStore,
+        Map<String, Integer> indexBucketsMap, int numTotalBuckets) {
       super();
       super.setException(ex);
       this.result = result;
@@ -619,8 +590,7 @@ public class IndexCreationMsg extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.result = in.readBoolean();
       this.indexBucketsMap = DataSerializer.readObject(in);
@@ -641,26 +611,19 @@ public class IndexCreationMsg extends PartitionMessage {
     /**
      * Actual method sending the index creation reply message.
      * 
-     * @param recipient
-     *          the originator of index creation message
-     * @param processorId
-     *          waiting processor id
-     * @param dm
-     *          distribution manager
-     * @param ex
-     *          any exceptions
-     * @param result
-     *          true is index created successfully
-     * @param indexBucketsMap
-     *          Map of indexes created and number of buckets indexed
-     * @param numTotalBuckets
-     *          Number of total buckets in this vm
+     * @param recipient the originator of index creation message
+     * @param processorId waiting processor id
+     * @param dm distribution manager
+     * @param ex any exceptions
+     * @param result true is index created successfully
+     * @param indexBucketsMap Map of indexes created and number of buckets indexed
+     * @param numTotalBuckets Number of total buckets in this vm
      */
-    public static void send(InternalDistributedMember recipient,
-        int processorId, DM dm, ReplyException ex, boolean result,
-        Map<String, Integer> indexBucketsMap, int numTotalBuckets) {
-      IndexCreationReplyMsg indMsg = new IndexCreationReplyMsg(
-          processorId, ex, result, result, indexBucketsMap, numTotalBuckets);
+    public static void send(InternalDistributedMember recipient, int processorId, DM dm,
+        ReplyException ex, boolean result, Map<String, Integer> indexBucketsMap,
+        int numTotalBuckets) {
+      IndexCreationReplyMsg indMsg = new IndexCreationReplyMsg(processorId, ex, result, result,
+          indexBucketsMap, numTotalBuckets);
       indMsg.setRecipient(recipient);
       dm.putOutgoing(indMsg);
     }
@@ -668,8 +631,7 @@ public class IndexCreationMsg extends PartitionMessage {
     /**
      * Processes the index creation result.
      * 
-     * @param dm
-     *          distribution manager
+     * @param dm distribution manager
      */
     @Override
     public final void process(final DM dm, final ReplyProcessor21 p) {

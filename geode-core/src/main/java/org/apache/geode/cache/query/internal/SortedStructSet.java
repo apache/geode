@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -27,17 +25,15 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 
 /**
- * A TreeSet constrained to contain Structs of all the same type. To conserve on
- * objects, we store the StructType once and reuse it to generate Struct
- * instances on demand.
+ * A TreeSet constrained to contain Structs of all the same type. To conserve on objects, we store
+ * the StructType once and reuse it to generate Struct instances on demand.
  * 
- * The values in this set are stored as Object[] and get wrapped in Structs as
- * necessary.
+ * The values in this set are stored as Object[] and get wrapped in Structs as necessary.
  * 
  * @since GemFire 4.0
  */
-public final class SortedStructSet extends TreeSet implements SelectResults,
-    DataSerializableFixedID, Ordered, StructFields {
+public final class SortedStructSet extends TreeSet
+    implements SelectResults, DataSerializableFixedID, Ordered, StructFields {
   private static final long serialVersionUID = -1687142950781718159L;
 
   protected StructTypeImpl structType;
@@ -47,8 +43,7 @@ public final class SortedStructSet extends TreeSet implements SelectResults,
   private boolean modifiable = true;
 
   /** Creates a new instance of StructSet */
-  public SortedStructSet() {
-  };
+  public SortedStructSet() {};
 
   /** Creates a new instance of StructSet */
   private SortedStructSet(Comparator c) {
@@ -60,8 +55,7 @@ public final class SortedStructSet extends TreeSet implements SelectResults,
     this(c);
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_STRUCTTYPE_MUST_NOT_BE_NULL
-              .toLocalizedString());
+          LocalizedStrings.SortedStructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
     }
     this.structType = structType;
   }
@@ -70,8 +64,7 @@ public final class SortedStructSet extends TreeSet implements SelectResults,
   public SortedStructSet(StructTypeImpl structType) {
     if (structType == null) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_STRUCTTYPE_MUST_NOT_BE_NULL
-              .toLocalizedString());
+          LocalizedStrings.SortedStructSet_STRUCTTYPE_MUST_NOT_BE_NULL.toLocalizedString());
     }
     this.structType = structType;
   }
@@ -92,8 +85,7 @@ public final class SortedStructSet extends TreeSet implements SelectResults,
   public boolean add(Object obj) {
     if (!(obj instanceof StructImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL
-              .toLocalizedString());
+          LocalizedStrings.SortedStructSet_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL.toLocalizedString());
     }
     StructImpl s = (StructImpl) obj;
     if (!s.getStructType().equals(this.structType)) {
@@ -115,9 +107,8 @@ public final class SortedStructSet extends TreeSet implements SelectResults,
   /**
    * For internal use. Just add the Object[] values for a struct with same type
    * 
-   * public boolean addFieldValues(Object[] fieldValues) { //return
-   * super.add(fieldValues); StructImpl s = new StructImpl(this.structType,
-   * fieldValues); return super.add(s); }
+   * public boolean addFieldValues(Object[] fieldValues) { //return super.add(fieldValues);
+   * StructImpl s = new StructImpl(this.structType, fieldValues); return super.add(s); }
    */
 
   /** Does this set contain specified struct? */
@@ -134,19 +125,17 @@ public final class SortedStructSet extends TreeSet implements SelectResults,
   }
 
   /**
-   * Does this set contain a Struct of the correct type with the specified
-   * values?
+   * Does this set contain a Struct of the correct type with the specified values?
    */
   public boolean containsFieldValues(Object[] fieldValues) {
     return super.contains(fieldValues);
   }
 
   /**
-   * Does this set contain a Struct of the correct type with the specified
-   * values?
+   * Does this set contain a Struct of the correct type with the specified values?
    * 
-   * public boolean containsFieldValues(Object[] fieldValues) { return
-   * super.contains(fieldValues); }
+   * public boolean containsFieldValues(Object[] fieldValues) { return super.contains(fieldValues);
+   * }
    */
 
   /** Remove the specified Struct */
@@ -268,8 +257,7 @@ public final class SortedStructSet extends TreeSet implements SelectResults,
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.SortedStructSet_ELEMENT_TYPE_MUST_BE_STRUCT
-              .toLocalizedString());
+          LocalizedStrings.SortedStructSet_ELEMENT_TYPE_MUST_BE_STRUCT.toLocalizedString());
     }
     this.structType = (StructTypeImpl) elementType;
   }
@@ -298,8 +286,7 @@ public final class SortedStructSet extends TreeSet implements SelectResults,
   /**
    * Setter for property modifiable.
    * 
-   * @param modifiable
-   *          New value of property modifiable.
+   * @param modifiable New value of property modifiable.
    */
   public void setModifiable(boolean modifiable) {
     this.modifiable = modifiable;
@@ -379,6 +366,6 @@ public final class SortedStructSet extends TreeSet implements SelectResults,
 
   @Override
   public boolean dataPreordered() {
-     return false;
+    return false;
   }
 }

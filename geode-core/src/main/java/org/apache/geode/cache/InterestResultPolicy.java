@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 
@@ -23,9 +21,9 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 
 /**
- * Class <code>InterestResultPolicy</code> is an enumerated type for a
- * register interest result. The result of a call to Region.registerInterest
- * can be the keys and current values, just the keys or nothing.
+ * Class <code>InterestResultPolicy</code> is an enumerated type for a register interest result. The
+ * result of a call to Region.registerInterest can be the keys and current values, just the keys or
+ * nothing.
  *
  *
  * @see org.apache.geode.cache.Region#registerInterest(Object)
@@ -42,7 +40,8 @@ public class InterestResultPolicy implements Serializable {
 
   public static final InterestResultPolicy NONE = new InterestResultPolicyImpl("NONE");
   public static final InterestResultPolicy KEYS = new InterestResultPolicyImpl("KEYS");
-  public static final InterestResultPolicy KEYS_VALUES = new InterestResultPolicyImpl("KEYS_VALUES");
+  public static final InterestResultPolicy KEYS_VALUES =
+      new InterestResultPolicyImpl("KEYS_VALUES");
 
   /**
    * The <code>InterestResultPolicy</code> used by default; it is {@link #KEYS_VALUES}.
@@ -57,7 +56,7 @@ public class InterestResultPolicy implements Serializable {
   public final byte ordinal;
 
   protected Object readResolve() throws ObjectStreamException {
-    return VALUES[ordinal];  // Canonicalize
+    return VALUES[ordinal]; // Canonicalize
   }
 
 
@@ -72,7 +71,10 @@ public class InterestResultPolicy implements Serializable {
   public static InterestResultPolicy fromOrdinal(byte ordinal) {
     return VALUES[ordinal];
   }
-  /** Returns the ordinal value.
+
+  /**
+   * Returns the ordinal value.
+   * 
    * @since GemFire 5.0
    */
   public byte getOrdinal() {
@@ -81,6 +83,7 @@ public class InterestResultPolicy implements Serializable {
 
   /**
    * Returns true if this <code>InterestResultPolicy</code> is {@link #NONE}.
+   * 
    * @return true if this <code>InterestResultPolicy</code> is {@link #NONE}.
    */
   public boolean isNone() {
@@ -89,6 +92,7 @@ public class InterestResultPolicy implements Serializable {
 
   /**
    * Returns true if this <code>InterestResultPolicy</code> is {@link #KEYS}.
+   * 
    * @return true if this <code>InterestResultPolicy</code> is {@link #KEYS}.
    */
   public boolean isKeys() {
@@ -97,6 +101,7 @@ public class InterestResultPolicy implements Serializable {
 
   /**
    * Returns true if this <code>InterestResultPolicy</code> is {@link #KEYS_VALUES}.
+   * 
    * @return true if this <code>InterestResultPolicy</code> is {@link #KEYS_VALUES}.
    */
   public boolean isKeysValues() {
@@ -105,13 +110,16 @@ public class InterestResultPolicy implements Serializable {
 
   /**
    * Returns true if this <code>InterestResultPolicy</code> is the default.
+   * 
    * @return true if this <code>InterestResultPolicy</code> is the default.
    */
   public boolean isDefault() {
     return this == DEFAULT;
   }
 
-  /** Returns a string representation for this <code>InterestResultPolicy</code>.
+  /**
+   * Returns a string representation for this <code>InterestResultPolicy</code>.
+   * 
    * @return the name of this data policy.
    */
   @Override // GemStoneAddition

@@ -96,7 +96,7 @@ test {
 }
 
 tasks.withType(Test){
-  environment 'GEMFIRE', "$buildDir/install/${distributions.main.baseName}/lib"
+  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}/lib"
 }
 
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
@@ -126,56 +126,58 @@ task defaultCacheConfig(type: JavaExec, dependsOn: classes) {
 def cp = {
   // first add all the dependent project jars
   def jars = configurations.archives.dependencies.collect { it.dependencyProject }
-    .findAll { !it.name.contains('web') }
+    .findAll { !(it.name.contains('web') || it.name.contains('pulse')) }
     .collect { it.jar.archiveName }
     .join(' ')
 
   // then add all the dependencies of the dependent jars
   jars += ' ' + configurations.archives.dependencies.collect { 
-    it.dependencyProject.configurations.runtime.collect { it.getName() }.findAll {
-      // depedencies from geode-core
-      it.contains('antlr') ||
-      it.contains('commons-io') ||
-      it.contains('commons-lang') ||
-      it.contains('commons-logging') ||
-      it.contains('fastutil') ||
-      it.contains('jackson-annotations') ||
-      it.contains('jackson-core') ||
-      it.contains('jackson-databind') ||
-      it.contains('jansi') ||
-      it.contains('javax.resource-api') ||
-      it.contains('javax.servlet-api') ||
-      it.contains('javax.transaction-api') ||
-      it.contains('jetty-http') ||
-      it.contains('jetty-io') ||
-      it.contains('jetty-security') ||
-      it.contains('jetty-server') ||
-      it.contains('jetty-servlet') ||
-      it.contains('jetty-webapp') ||
-      it.contains('jetty-util') ||
-      it.contains('jetty-xml') ||
-      it.contains('jline') ||
-      it.contains('jna') ||
-      it.contains('jopt-simple') ||
-      it.contains('log4j-api') ||
-      it.contains('log4j-core') ||
-      it.contains('log4j-jcl') ||
-      it.contains('log4j-jul') ||
-      it.contains('log4j-slf4j-impl') ||
-      it.contains('shiro') ||
-      it.contains('slf4j-api') ||
-      it.contains('spring-core') ||
-      it.contains('spring-shell') ||
-      it.contains('snappy') ||
-      it.contains('hbase') ||
-      it.contains('jgroups') ||
-      it.contains('netty') ||
-      
-      // dependencies from geode-lucene
-      it.contains('lucene-analyzers-common') ||
-      it.contains('lucene-core') ||
-      it.contains('lucene-queries') ||
-      it.contains('lucene-queryparser')
+    it.dependencyProject.findAll { !(it.name.contains('web-api') || it.name.contains('pulse')) }
+      .collect { it.configurations.runtime.collect { it.getName() }.findAll {
+        // depedencies from geode-core
+        it.contains('antlr') ||
+        it.contains('commons-io') ||
+        it.contains('commons-lang') ||
+        it.contains('commons-logging') ||
+        it.contains('fastutil') ||
+        it.contains('jackson-annotations') ||
+        it.contains('jackson-core') ||
+        it.contains('jackson-databind') ||
+        it.contains('jansi') ||
+        it.contains('javax.resource-api') ||
+        it.contains('javax.servlet-api') ||
+        it.contains('javax.transaction-api') ||
+        it.contains('jetty-http') ||
+        it.contains('jetty-io') ||
+        it.contains('jetty-security') ||
+        it.contains('jetty-server') ||
+        it.contains('jetty-servlet') ||
+        it.contains('jetty-webapp') ||
+        it.contains('jetty-util') ||
+        it.contains('jetty-xml') ||
+        it.contains('jline') ||
+        it.contains('jna') ||
+        it.contains('jopt-simple') ||
+        it.contains('log4j-api') ||
+        it.contains('log4j-core') ||
+        it.contains('log4j-jcl') ||
+        it.contains('log4j-jul') ||
+        it.contains('log4j-slf4j-impl') ||
+        it.contains('shiro') ||
+        it.contains('slf4j-api') ||
+        it.contains('spring-core') ||
+        it.contains('spring-shell') ||
+        it.contains('snappy') ||
+        it.contains('hbase') ||
+        it.contains('jgroups') ||
+        it.contains('netty') ||
+
+        // dependencies from geode-lucene
+        it.contains('lucene-analyzers-common') ||
+        it.contains('lucene-core') ||
+        it.contains('lucene-queries') ||
+        it.contains('lucene-queryparser')
+      }
     }
   }.flatten().unique().join(' ')
 
@@ -290,9 +292,6 @@ distributions {
         exclude 'wrapper'
       }
 
-      into ('geode-examples') {
-        from project.file( 'src/src/dist/gradlew' )
-      }
     }
   }
 
@@ -383,7 +382,7 @@ distributions {
 def dependOnInstalledProduct = {
   dependsOn installDist
   def install = file("$buildDir/install/${distributions.main.baseName}")
-  environment ('GEMFIRE', install)
+  environment ('GEODE_HOME', install)
 }
 
 // Add the configuration closure to the test targets so they depend on the install directory
@@ -394,8 +393,6 @@ flakyTest dependOnInstalledProduct
 
 // Make build final task to generate all test and product resources
 build.dependsOn installDist
-
-precheckin.dependsOn ':buildExamples'
 
 installDist.dependsOn ':extensions/geode-modules-assembly:dist'
 

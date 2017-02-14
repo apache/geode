@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.persistence;
 
@@ -49,36 +47,37 @@ import org.apache.geode.internal.logging.LogService;
 /**
  *
  */
-public class RemovePersistentMemberMessage extends
-    HighPriorityDistributionMessage implements MessageWithReply {
+public class RemovePersistentMemberMessage extends HighPriorityDistributionMessage
+    implements MessageWithReply {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private String regionPath;
   private PersistentMemberID id;
   private int processorId;
   private PersistentMemberID initializingId;
 
   public RemovePersistentMemberMessage() {
-    
+
   }
-  
-  public RemovePersistentMemberMessage(String regionPath, PersistentMemberID id, PersistentMemberID initializingId, int processorId) {
+
+  public RemovePersistentMemberMessage(String regionPath, PersistentMemberID id,
+      PersistentMemberID initializingId, int processorId) {
     this.regionPath = regionPath;
     this.id = id;
     this.initializingId = initializingId;
     this.processorId = processorId;
   }
 
-  public static void send(
-      Set<InternalDistributedMember> members, DM dm, String regionPath,
+  public static void send(Set<InternalDistributedMember> members, DM dm, String regionPath,
       PersistentMemberID id, PersistentMemberID initializingId) throws ReplyException {
-    if(id == null && initializingId == null) {
-      //no need to do anything
+    if (id == null && initializingId == null) {
+      // no need to do anything
       return;
     }
     ReplyProcessor21 processor = new ReplyProcessor21(dm, members);
-    RemovePersistentMemberMessage msg = new RemovePersistentMemberMessage(regionPath, id, initializingId, processor.getProcessorId());
+    RemovePersistentMemberMessage msg = new RemovePersistentMemberMessage(regionPath, id,
+        initializingId, processor.getProcessorId());
     msg.setRecipients(members);
     dm.putOutgoing(msg);
     processor.waitForRepliesUninterruptibly();
@@ -86,8 +85,8 @@ public class RemovePersistentMemberMessage extends
 
   @Override
   protected void process(DistributionManager dm) {
-    int oldLevel =         // Set thread local flag to allow entrance through initialization Latch
-      LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+    int oldLevel = // Set thread local flag to allow entrance through initialization Latch
+        LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
 
     PersistentMemberState state = null;
     PersistentMemberID myId = null;
@@ -99,43 +98,40 @@ public class RemovePersistentMemberMessage extends
       Cache cache = CacheFactory.getInstance(dm.getSystem());
       Region region = cache.getRegion(this.regionPath);
       PersistenceAdvisor persistenceAdvisor = null;
-      if(region instanceof DistributedRegion) {
+      if (region instanceof DistributedRegion) {
         persistenceAdvisor = ((DistributedRegion) region).getPersistenceAdvisor();
-      } else if ( region == null) {
-        Bucket proxy = PartitionedRegionHelper.getProxyBucketRegion(GemFireCacheImpl.getInstance(), this.regionPath, false);
-        if(proxy != null) {
+      } else if (region == null) {
+        Bucket proxy = PartitionedRegionHelper.getProxyBucketRegion(GemFireCacheImpl.getInstance(),
+            this.regionPath, false);
+        if (proxy != null) {
           persistenceAdvisor = proxy.getPersistenceAdvisor();
         }
       }
-      
-      if(persistenceAdvisor != null) {
-        if(id != null) {
+
+      if (persistenceAdvisor != null) {
+        if (id != null) {
           persistenceAdvisor.removeMember(id);
         }
-        if(initializingId != null) {
+        if (initializingId != null) {
           persistenceAdvisor.removeMember(initializingId);
         }
       }
     } catch (RegionDestroyedException e) {
       logger.debug("<RegionDestroyed> {}", this);
-    }
-    catch (CancelException e) {
+    } catch (CancelException e) {
       logger.debug("<CancelException> {}", this);
-    }
-    catch(VirtualMachineError e) {
+    } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
-    }
-    catch(Throwable t) {
+    } catch (Throwable t) {
       SystemFailure.checkFailure();
       exception = new ReplyException(t);
-    }
-    finally {
+    } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
       ReplyMessage replyMsg = new ReplyMessage();
       replyMsg.setRecipient(getSender());
       replyMsg.setProcessorId(processorId);
-      if(exception != null) {
+      if (exception != null) {
         replyMsg.setException(exception);
       }
       dm.putOutgoing(replyMsg);
@@ -145,20 +141,19 @@ public class RemovePersistentMemberMessage extends
   public int getDSFID() {
     return REMOVE_PERSISTENT_MEMBER_REQUEST;
   }
-  
+
   @Override
-  public void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     regionPath = DataSerializer.readString(in);
     processorId = in.readInt();
     boolean hasId = in.readBoolean();
-    if(hasId) {
+    if (hasId) {
       id = new PersistentMemberID();
       InternalDataSerializer.invokeFromData(id, in);
     }
     boolean hasInitializingId = in.readBoolean();
-    if(hasInitializingId ) {
+    if (hasInitializingId) {
       initializingId = new PersistentMemberID();
       InternalDataSerializer.invokeFromData(initializingId, in);
     }
@@ -170,11 +165,11 @@ public class RemovePersistentMemberMessage extends
     DataSerializer.writeString(regionPath, out);
     out.writeInt(processorId);
     out.writeBoolean(id != null);
-    if(id != null) {
+    if (id != null) {
       InternalDataSerializer.invokeToData(id, out);
     }
     out.writeBoolean(initializingId != null);
-    if(initializingId != null) {
+    if (initializingId != null) {
       InternalDataSerializer.invokeToData(initializingId, out);
     }
   }

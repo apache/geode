@@ -1,5 +1,5 @@
-Apache Geode (incubating) 
-Copyright 2016 The Apache Software Foundation.
+Apache Geode
+Copyright 2016-2017 The Apache Software Foundation.
 
 This product includes software developed at
 The Apache Software Foundation (http://www.apache.org/).
@@ -19,3 +19,5 @@ Copyright 2016 AddThis
 
 This product includes software developed by the MX4J
 project (http://mx4j.sourceforge.net).
+
+This project includes software licensed under the JSON license.

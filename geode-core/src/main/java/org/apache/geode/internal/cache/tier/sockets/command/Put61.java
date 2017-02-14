@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  *
@@ -58,7 +56,7 @@ public class Put61 extends BaseCommand {
 
   @Override
   public void cmdExecute(Message msg, ServerConnection servConn, long p_start)
-    throws IOException, InterruptedException {
+      throws IOException, InterruptedException {
     long start = p_start;
     Part regionNamePart = null, keyPart = null, valuePart = null, callbackArgPart = null;
     String regionName = null;
@@ -111,8 +109,9 @@ public class Put61 extends BaseCommand {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
-      logger.debug("{}: Received 6.1{}put request ({} bytes) from {} for region {} key {}", servConn.getName(), (isDelta ? " delta " : " "), msg
-        .getPayloadLength(), servConn.getSocketString(), regionName, key);
+      logger.debug("{}: Received 6.1{}put request ({} bytes) from {} for region {} key {}",
+          servConn.getName(), (isDelta ? " delta " : " "), msg.getPayloadLength(),
+          servConn.getSocketString(), regionName, key);
     }
 
     // Process the put request
@@ -184,7 +183,8 @@ public class Put61 extends BaseCommand {
         }
         // Allow PUT operations on meta regions (bug #38961)
         else {
-          PutOperationContext putContext = authzRequest.putAuthorize(regionName, key, value, isObject, callbackArg);
+          PutOperationContext putContext =
+              authzRequest.putAuthorize(regionName, key, value, isObject, callbackArg);
           value = putContext.getValue();
           isObject = putContext.isObject();
           callbackArg = putContext.getCallbackArg();
@@ -199,19 +199,22 @@ public class Put61 extends BaseCommand {
         // Create the null entry. Since the value is null, the value of the
         // isObject
         // the true after null doesn't matter and is not used.
-        result = region.basicBridgeCreate(key, null, true, callbackArg, servConn.getProxyID(), true, new EventIDHolder(eventId), false);
+        result = region.basicBridgeCreate(key, null, true, callbackArg, servConn.getProxyID(), true,
+            new EventIDHolder(eventId), false);
       } else {
         // Put the entry
         byte[] delta = null;
         if (isDelta) {
           delta = valuePart.getSerializedForm();
         }
-        result = region.basicBridgePut(key, value, delta, isObject, callbackArg, servConn.getProxyID(), true, new EventIDHolder(eventId));
+        result = region.basicBridgePut(key, value, delta, isObject, callbackArg,
+            servConn.getProxyID(), true, new EventIDHolder(eventId));
       }
       if (result) {
         servConn.setModificationInfo(true, regionName, key);
       } else {
-        String message = servConn.getName() + ": Failed to 6.1 put entry for region " + regionName + " key " + key + " value " + valuePart;
+        String message = servConn.getName() + ": Failed to 6.1 put entry for region " + regionName
+            + " key " + key + " value " + valuePart;
         if (isDebugEnabled) {
           logger.debug(message);
         }
@@ -226,10 +229,9 @@ public class Put61 extends BaseCommand {
       servConn.setAsTrue(RESPONDED);
       return;
     } catch (InvalidDeltaException ide) {
-      logger.info(LocalizedMessage.create(LocalizedStrings.UpdateOperation_ERROR_APPLYING_DELTA_FOR_KEY_0_OF_REGION_1, new Object[] {
-        key,
-        regionName
-      }));
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.UpdateOperation_ERROR_APPLYING_DELTA_FOR_KEY_0_OF_REGION_1,
+          new Object[] {key, regionName}));
       writeException(msg, MessageType.PUT_DELTA_ERROR, ide, false, servConn);
       servConn.setAsTrue(RESPONDED);
       region.getCachePerfStats().incDeltaFullValuesRequested();
@@ -272,7 +274,8 @@ public class Put61 extends BaseCommand {
     }
     servConn.setAsTrue(RESPONDED);
     if (isDebugEnabled) {
-      logger.debug("{}: Sent 6.1 put response back to {} for region {} key {} value {}", servConn.getName(), servConn.getSocketString(), regionName, key, valuePart);
+      logger.debug("{}: Sent 6.1 put response back to {} for region {} key {} value {}",
+          servConn.getName(), servConn.getSocketString(), regionName, key, valuePart);
     }
     stats.incWritePutResponseTime(DistributionStats.getStatTime() - start);
   }

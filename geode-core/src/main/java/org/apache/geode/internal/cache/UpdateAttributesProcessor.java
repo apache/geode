@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -48,20 +46,20 @@ import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * This class is a bit misnamed. It really has more with pushing
- * a DistributionAdvisee's profile out to others and,
- * optionally if <code>profileExchange</code>,
- * fetching the profile of anyone who excepts the pushed profile.
+ * This class is a bit misnamed. It really has more with pushing a DistributionAdvisee's profile out
+ * to others and, optionally if <code>profileExchange</code>, fetching the profile of anyone who
+ * excepts the pushed profile.
  *
  */
 public class UpdateAttributesProcessor {
   private static final Logger logger = LogService.getLogger();
-  
+
   protected final DistributionAdvisee advisee;
   private boolean profileExchange = false;
   /**
-   * If true then sender is telling receiver to remove the sender's profile.
-   * No profile exchange is needed in this case.
+   * If true then sender is telling receiver to remove the sender's profile. No profile exchange is
+   * needed in this case.
+   * 
    * @since GemFire 5.7
    */
   private boolean removeProfile = false;
@@ -74,6 +72,7 @@ public class UpdateAttributesProcessor {
 
   /**
    * Creates a new instance of UpdateAttributesProcessor
+   * 
    * @since GemFire 5.7
    */
   public UpdateAttributesProcessor(DistributionAdvisee da, boolean removeProfile) {
@@ -82,16 +81,16 @@ public class UpdateAttributesProcessor {
   }
 
   /**
-   * Distribute new profile version without exchange of profiles. Same as 
-   * calling {@link #distribute(boolean)} with (false).
+   * Distribute new profile version without exchange of profiles. Same as calling
+   * {@link #distribute(boolean)} with (false).
    */
   void distribute() {
     distribute(false);
   }
 
-  /** 
-   * Distribute with optional exchange of profiles but do not create new 
-   * profile version.
+  /**
+   * Distribute with optional exchange of profiles but do not create new profile version.
+   * 
    * @param exchangeProfiles true if we want to receive profile replies
    */
   public void distribute(boolean exchangeProfiles) {
@@ -100,19 +99,18 @@ public class UpdateAttributesProcessor {
   }
 
   public void waitForProfileResponse() {
-    if(processor == null) {
+    if (processor == null) {
       return;
     }
     DM mgr = this.advisee.getDistributionManager();
     try {
       // bug 36983 - you can't loop on a reply processor
-          mgr.getCancelCriterion().checkCancelInProgress(null);
-          try {
-            processor.waitForRepliesUninterruptibly();
-          }
-          catch (ReplyException e) {
-            e.handleAsUnexpected();
-          }
+      mgr.getCancelCriterion().checkCancelInProgress(null);
+      try {
+        processor.waitForRepliesUninterruptibly();
+      } catch (ReplyException e) {
+        e.handleAsUnexpected();
+      }
     } finally {
       processor.cleanup();
     }
@@ -155,8 +153,8 @@ public class UpdateAttributesProcessor {
     }
 
     ReplyProcessor21 processor = null;
-//    Scope scope = this.region.scope;
-    
+    // Scope scope = this.region.scope;
+
     // always require an ack to prevent misordering of messages
     InternalDistributedSystem system = this.advisee.getSystem();
     processor = new UpdateAttributesReplyProcessor(system, recipients);
@@ -166,8 +164,7 @@ public class UpdateAttributesProcessor {
   }
 
 
-  UpdateAttributesMessage getUpdateAttributesMessage(ReplyProcessor21 processor,
-                                                     Set recipients) {
+  UpdateAttributesMessage getUpdateAttributesMessage(ReplyProcessor21 processor, Set recipients) {
 
     UpdateAttributesMessage msg = new UpdateAttributesMessage();
     msg.adviseePath = this.advisee.getFullPath();
@@ -186,10 +183,10 @@ public class UpdateAttributesProcessor {
     UpdateAttributesReplyProcessor(InternalDistributedSystem system, Set members) {
       super(system, members);
     }
-    
+
     /**
-     * Registers this processor as a membership listener and
-     * returns a set of the current members.
+     * Registers this processor as a membership listener and returns a set of the current members.
+     * 
      * @return a Set of the current members
      * @since GemFire 5.7
      */
@@ -197,14 +194,15 @@ public class UpdateAttributesProcessor {
     protected Set addListenerAndGetMembers() {
       DistributionAdvisor da = UpdateAttributesProcessor.this.advisee.getDistributionAdvisor();
       if (da.useAdminMembersForDefault()) {
-        return getDistributionManager()
-          .addAllMembershipListenerAndGetAllIds(this);
+        return getDistributionManager().addAllMembershipListenerAndGetAllIds(this);
       } else {
         return super.addListenerAndGetMembers();
       }
     }
+
     /**
      * Unregisters this processor as a membership listener
+     * 
      * @since GemFire 5.7
      */
     @Override
@@ -216,9 +214,10 @@ public class UpdateAttributesProcessor {
         super.removeListener();
       }
     }
+
     /**
-     * If this processor being used by controller then return
-     * ALL members; otherwise defer to super.
+     * If this processor being used by controller then return ALL members; otherwise defer to super.
+     * 
      * @return a Set of the current members
      * @since GemFire 5.7
      */
@@ -231,27 +230,25 @@ public class UpdateAttributesProcessor {
         return super.getDistributionManagerIds();
       }
     }
-    
+
     @Override
     public void process(DistributionMessage msg) {
       try {
         if (msg instanceof ProfilesReplyMessage) {
-          ProfilesReplyMessage reply =
-            (ProfilesReplyMessage)msg;
+          ProfilesReplyMessage reply = (ProfilesReplyMessage) msg;
           if (reply.profiles != null) {
-            for (int i=0; i < reply.profiles.length; i++) {
+            for (int i = 0; i < reply.profiles.length; i++) {
               // @todo Add putProfiles to DistributionAdvisor to do this
-              //       with one call atomically?
-              UpdateAttributesProcessor.this.advisee.
-                getDistributionAdvisor().putProfile(reply.profiles[i]);
+              // with one call atomically?
+              UpdateAttributesProcessor.this.advisee.getDistributionAdvisor()
+                  .putProfile(reply.profiles[i]);
             }
           }
         } else if (msg instanceof ProfileReplyMessage) {
-          ProfileReplyMessage reply =
-            (ProfileReplyMessage)msg;
+          ProfileReplyMessage reply = (ProfileReplyMessage) msg;
           if (reply.profile != null) {
-            UpdateAttributesProcessor.this.advisee.
-              getDistributionAdvisor().putProfile(reply.profile);
+            UpdateAttributesProcessor.this.advisee.getDistributionAdvisor()
+                .putProfile(reply.profile);
           }
         }
       } finally {
@@ -261,8 +258,8 @@ public class UpdateAttributesProcessor {
   }
 
 
-  public static final class UpdateAttributesMessage
-    extends HighPriorityDistributionMessage implements MessageWithReply {
+  public static final class UpdateAttributesMessage extends HighPriorityDistributionMessage
+      implements MessageWithReply {
 
     protected String adviseePath;
     protected int processorId = 0;
@@ -274,7 +271,7 @@ public class UpdateAttributesProcessor {
     public int getProcessorId() {
       return this.processorId;
     }
-    
+
     @Override
     public boolean sendViaUDP() {
       return true;
@@ -293,28 +290,24 @@ public class UpdateAttributesProcessor {
           this.profile.processIncoming(dm, this.adviseePath, this.removeProfile,
               this.exchangeProfiles, replyProfiles);
         }
-      }
-      catch (CancelException e) {
+      } catch (CancelException e) {
         if (logger.isDebugEnabled()) {
           logger.debug("<cache closed> ///{}", this);
         }
-      }
-      catch (VirtualMachineError err) {
+      } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
-        // If this ever returns, rethrow the error.  We're poisoned
+        // If this ever returns, rethrow the error. We're poisoned
         // now, so don't let this thread continue.
         throw err;
-      }
-      catch (Throwable t) {
+      } catch (Throwable t) {
         // Whenever you catch Error or Throwable, you must also
-        // catch VirtualMachineError (see above).  However, there is
+        // catch VirtualMachineError (see above). However, there is
         // _still_ a possibility that you are dealing with a cascading
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
         thr = t;
-      }
-      finally {
+      } finally {
         if (sendReply) {
           ReplyException rex = null;
           if (thr != null) {
@@ -326,12 +319,10 @@ public class UpdateAttributesProcessor {
               p = replyProfiles.get(0);
             }
             ProfileReplyMessage.send(getSender(), this.processorId, rex, dm, p);
-          }
-          else {
+          } else {
             Profile[] profiles = new Profile[replyProfiles.size()];
             replyProfiles.toArray(profiles);
-            ProfilesReplyMessage.send(getSender(), this.processorId, rex, dm,
-                profiles);
+            ProfilesReplyMessage.send(getSender(), this.processorId, rex, dm, profiles);
           }
         }
       }
@@ -361,8 +352,7 @@ public class UpdateAttributesProcessor {
     }
 
     @Override
-    public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.adviseePath = DataSerializer.readString(in);
       this.processorId = in.readInt();
@@ -390,18 +380,17 @@ public class UpdateAttributesProcessor {
     Profile profile;
 
     public static void send(InternalDistributedMember recipient, int processorId,
-                            ReplyException exception,
-                            DistributionManager dm, Profile profile) {
+        ReplyException exception, DistributionManager dm, Profile profile) {
       Assert.assertTrue(recipient != null, "Sending a ProfileReplyMessage to ALL");
       ProfileReplyMessage m = new ProfileReplyMessage();
 
       m.processorId = processorId;
       m.profile = profile;
       if (exception != null) {
-       m.setException(exception);
-       if (logger.isDebugEnabled()) {
-         logger.debug("Replying with exception: {}" + m, exception);
-       }
+        m.setException(exception);
+        if (logger.isDebugEnabled()) {
+          logger.debug("Replying with exception: {}" + m, exception);
+        }
       }
       m.setRecipient(recipient);
       dm.putOutgoing(m);
@@ -413,10 +402,9 @@ public class UpdateAttributesProcessor {
     }
 
     @Override
-    public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      this.profile = (Profile)DataSerializer.readObject(in);
+      this.profile = (Profile) DataSerializer.readObject(in);
     }
 
     @Override
@@ -437,13 +425,14 @@ public class UpdateAttributesProcessor {
       return buff.toString();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.geode.distributed.internal.ReplyMessage#getInlineProcess()
-     * ProfileReplyMessages must be processed in-line and not in a pool to
-     * keep partitioned region bucket profile exchange from swamping the
-     * high priority pool and not allowing other profile exchanges through.
-     * This is safe as long as ProfileReplyMessage obtains no extra synchronization
-     * locks.
+     * ProfileReplyMessages must be processed in-line and not in a pool to keep partitioned region
+     * bucket profile exchange from swamping the high priority pool and not allowing other profile
+     * exchanges through. This is safe as long as ProfileReplyMessage obtains no extra
+     * synchronization locks.
      */
     @Override
     public boolean getInlineProcess() {
@@ -453,14 +442,14 @@ public class UpdateAttributesProcessor {
   }
   /**
    * Used to return multiple profiles
+   * 
    * @since GemFire 5.7
    */
   public static class ProfilesReplyMessage extends ReplyMessage {
     Profile[] profiles;
 
     public static void send(InternalDistributedMember recipient, int processorId,
-                            ReplyException exception,
-                            DistributionManager dm, Profile[] profiles) {
+        ReplyException exception, DistributionManager dm, Profile[] profiles) {
       Assert.assertTrue(recipient != null, "Sending a ProfilesReplyMessage to ALL");
       ProfilesReplyMessage m = new ProfilesReplyMessage();
 
@@ -475,19 +464,18 @@ public class UpdateAttributesProcessor {
       m.setRecipient(recipient);
       dm.putOutgoing(m);
     }
-    
-    
+
+
 
     @Override
     public int getDSFID() {
-     return PROFILES_REPLY_MESSAGE;
+      return PROFILES_REPLY_MESSAGE;
     }
 
 
 
     @Override
-    public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       int length = in.readInt();
       if (length == -1) {
@@ -495,7 +483,7 @@ public class UpdateAttributesProcessor {
       } else {
         Profile[] array = new Profile[length];
         for (int i = 0; i < length; i++) {
-          array[i] = (Profile)DataSerializer.readObject(in);
+          array[i] = (Profile) DataSerializer.readObject(in);
         }
         this.profiles = array;
       }
@@ -529,13 +517,14 @@ public class UpdateAttributesProcessor {
       return buff.toString();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.geode.distributed.internal.ReplyMessage#getInlineProcess()
-     * ProfilesReplyMessages must be processed in-line and not in a pool to
-     * keep partitioned region bucket profile exchange from swamping the
-     * high priority pool and not allowing other profile exchanges through.
-     * This is safe as long as ProfilesReplyMessage obtains no extra synchronization
-     * locks.
+     * ProfilesReplyMessages must be processed in-line and not in a pool to keep partitioned region
+     * bucket profile exchange from swamping the high priority pool and not allowing other profile
+     * exchanges through. This is safe as long as ProfilesReplyMessage obtains no extra
+     * synchronization locks.
      */
     @Override
     public boolean getInlineProcess() {

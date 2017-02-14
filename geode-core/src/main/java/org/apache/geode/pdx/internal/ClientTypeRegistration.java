@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.pdx.internal;
 
@@ -20,6 +18,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
@@ -39,7 +39,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
 
 public class ClientTypeRegistration implements TypeRegistration {
 
@@ -63,7 +62,7 @@ public class ClientTypeRegistration implements TypeRegistration {
         sendTypeToPool(newType, newTypeId, pool);
         return newTypeId;
       } catch (ServerConnectivityException e) {
-        //ignore, try the next pool.
+        // ignore, try the next pool.
         lastException = e;
       }
     }
@@ -74,7 +73,8 @@ public class ClientTypeRegistration implements TypeRegistration {
     try {
       AddPDXTypeOp.execute((ExecutablePool) pool, id, type);
     } catch (ServerConnectivityException serverConnectivityException) {
-      logger.debug("Received an exception sending pdx type to pool {}, {}", pool, serverConnectivityException.getMessage(), serverConnectivityException);
+      logger.debug("Received an exception sending pdx type to pool {}, {}", pool,
+          serverConnectivityException.getMessage(), serverConnectivityException);
       throw serverConnectivityException;
     }
   }
@@ -90,8 +90,9 @@ public class ClientTypeRegistration implements TypeRegistration {
           return type;
         }
       } catch (ServerConnectivityException e) {
-        logger.debug("Received an exception getting pdx type from pool {}, {}", pool, e.getMessage(), e);
-        //ignore, try the next pool.
+        logger.debug("Received an exception getting pdx type from pool {}, {}", pool,
+            e.getMessage(), e);
+        // ignore, try the next pool.
         lastException = e;
       }
     }
@@ -106,7 +107,7 @@ public class ClientTypeRegistration implements TypeRegistration {
   private Collection<Pool> getAllPools() {
     Collection<Pool> pools = PoolManagerImpl.getPMI().getMap().values();
 
-    for (Iterator<Pool> itr = pools.iterator(); itr.hasNext(); ) {
+    for (Iterator<Pool> itr = pools.iterator(); itr.hasNext();) {
       PoolImpl pool = (PoolImpl) itr.next();
       if (pool.isUsedByGateway()) {
         itr.remove();
@@ -117,7 +118,8 @@ public class ClientTypeRegistration implements TypeRegistration {
       if (this.cache.isClosed()) {
         throw new CacheClosedException("PDX detected cache was closed");
       }
-      throw new CacheClosedException("Client pools have been closed so the PDX type registry is not available.");
+      throw new CacheClosedException(
+          "Client pools have been closed so the PDX type registry is not available.");
     }
     return pools;
   }
@@ -131,19 +133,19 @@ public class ClientTypeRegistration implements TypeRegistration {
   }
 
   public void initialize() {
-    //do nothing
+    // do nothing
   }
 
   public void gatewaySenderStarted(GatewaySender gatewaySender) {
-    //do nothing
+    // do nothing
   }
 
   public void creatingPersistentRegion() {
-    //do nothing
+    // do nothing
   }
 
   public void creatingPool() {
-    //do nothing
+    // do nothing
   }
 
   public int getEnumId(Enum<?> v) {
@@ -160,7 +162,7 @@ public class ClientTypeRegistration implements TypeRegistration {
         sendEnumIdToPool(enumInfo, result, pool);
         return result;
       } catch (ServerConnectivityException e) {
-        //ignore, try the next pool.
+        // ignore, try the next pool.
         lastException = e;
       }
     }
@@ -171,7 +173,8 @@ public class ClientTypeRegistration implements TypeRegistration {
     try {
       AddPDXEnumOp.execute((ExecutablePool) pool, id, enumInfo);
     } catch (ServerConnectivityException serverConnectivityException) {
-      logger.debug("Received an exception sending pdx type to pool {}, {}", pool, serverConnectivityException.getMessage(), serverConnectivityException);
+      logger.debug("Received an exception sending pdx type to pool {}, {}", pool,
+          serverConnectivityException.getMessage(), serverConnectivityException);
       throw serverConnectivityException;
     }
   }
@@ -195,8 +198,9 @@ public class ClientTypeRegistration implements TypeRegistration {
           return result;
         }
       } catch (ServerConnectivityException e) {
-        logger.debug("Received an exception getting pdx type from pool {}, {}", pool, e.getMessage(), e);
-        //ignore, try the next pool.
+        logger.debug("Received an exception getting pdx type from pool {}, {}", pool,
+            e.getMessage(), e);
+        // ignore, try the next pool.
         lastException = e;
       }
     }
@@ -204,7 +208,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     throw returnCorrectExceptionForFailure(pools, enumId, lastException);
   }
 
-  @SuppressWarnings({ "unchecked", "serial" })
+  @SuppressWarnings({"unchecked", "serial"})
   @Override
   public Map<Integer, PdxType> types() {
     Collection<Pool> pools = getAllPools();
@@ -220,7 +224,7 @@ public class ClientTypeRegistration implements TypeRegistration {
     return types;
   }
 
-  @SuppressWarnings({ "unchecked", "serial" })
+  @SuppressWarnings({"unchecked", "serial"})
   @Override
   public Map<Integer, EnumInfo> enums() {
     Collection<Pool> pools = getAllPools();
@@ -247,8 +251,7 @@ public class ClientTypeRegistration implements TypeRegistration {
   }
 
   @Override
-  public void testClearRegistry() {
-  }
+  public void testClearRegistry() {}
 
   @Override
   public boolean isClient() {
@@ -263,11 +266,13 @@ public class ClientTypeRegistration implements TypeRegistration {
     for (Pool pool : pools) {
       try {
         sendTypeToPool(importedType, typeId, pool);
-        return;
       } catch (ServerConnectivityException e) {
-        //ignore, try the next pool.
         lastException = e;
+        break;
       }
+    }
+    if (lastException == null) {
+      return;
     }
     throw returnCorrectExceptionForFailure(pools, typeId, lastException);
   }
@@ -281,15 +286,19 @@ public class ClientTypeRegistration implements TypeRegistration {
       try {
         sendEnumIdToPool(importedInfo, enumId, pool);
       } catch (ServerConnectivityException e) {
-        //ignore, try the next pool.
         lastException = e;
+        break;
       }
+    }
+    if (lastException == null) {
+      return;
     }
 
     throw returnCorrectExceptionForFailure(pools, enumId, lastException);
   }
 
-  private RuntimeException returnCorrectExceptionForFailure(final Collection<Pool> pools, final int typeId, final ServerConnectivityException lastException) {
+  private RuntimeException returnCorrectExceptionForFailure(final Collection<Pool> pools,
+      final int typeId, final ServerConnectivityException lastException) {
     if (lastException != null) {
       throw lastException;
     } else {

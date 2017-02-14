@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -39,8 +37,8 @@ public class CompositeConverter extends OpenTypeConverter {
   private final OpenTypeConverter[] getterConverters;
   private CompositeBuilder compositeBuilder;
 
-  CompositeConverter(Class targetClass, CompositeType compositeType,
-      String[] itemNames, Method[] getters) throws OpenDataException {
+  CompositeConverter(Class targetClass, CompositeType compositeType, String[] itemNames,
+      Method[] getters) throws OpenDataException {
     super(targetClass, compositeType, CompositeData.class);
 
     assert (itemNames.length == getters.length);
@@ -70,33 +68,28 @@ public class CompositeConverter extends OpenTypeConverter {
         Object got = getters[i].invoke(value, (Object[]) null);
         values[i] = getterConverters[i].toOpenValue(got);
       } catch (Exception e) {
-        throw openDataException("Error calling getter for " + itemNames[i]
-            + ": " + e, e);
+        throw openDataException("Error calling getter for " + itemNames[i] + ": " + e, e);
       }
     }
     return new CompositeDataSupport(ct, itemNames, values);
   }
 
   /**
-   * Determine how to convert back from the CompositeData into the original Java
-   * type. For a type that is not reconstructible, this method will fail every
-   * time, and will throw the right exception.
+   * Determine how to convert back from the CompositeData into the original Java type. For a type
+   * that is not reconstructible, this method will fail every time, and will throw the right
+   * exception.
    */
-  private synchronized void makeCompositeBuilder()
-      throws InvalidObjectException {
+  private synchronized void makeCompositeBuilder() throws InvalidObjectException {
     if (compositeBuilder != null)
       return;
 
     Class targetClass = (Class<?>) getTargetType();
 
-    CompositeBuilder[][] builders = {
-        { new CompositeBuilderViaFrom(targetClass, itemNames), },
-        { new CompositeBuilderViaConstructor(targetClass, itemNames), },
-        {
-            new CompositeBuilderCheckGetters(targetClass, itemNames,
-                getterConverters),
+    CompositeBuilder[][] builders = {{new CompositeBuilderViaFrom(targetClass, itemNames),},
+        {new CompositeBuilderViaConstructor(targetClass, itemNames),},
+        {new CompositeBuilderCheckGetters(targetClass, itemNames, getterConverters),
             new CompositeBuilderViaSetters(targetClass, itemNames),
-            new CompositeBuilderViaProxy(targetClass, itemNames), }, };
+            new CompositeBuilderViaProxy(targetClass, itemNames),},};
     CompositeBuilder foundBuilder = null;
 
     StringBuilder whyNots = new StringBuilder();
@@ -122,8 +115,8 @@ public class CompositeConverter extends OpenTypeConverter {
       }
     }
     if (foundBuilder == null) {
-      String msg = "Do not know how to make a " + targetClass.getName()
-          + " from a CompositeData: " + whyNots;
+      String msg = "Do not know how to make a " + targetClass.getName() + " from a CompositeData: "
+          + whyNots;
       if (possibleCause != null)
         msg += ". Remaining exceptions show a POSSIBLE cause.";
       throw invalidObjectException(msg, possibleCause);
@@ -135,11 +128,9 @@ public class CompositeConverter extends OpenTypeConverter {
     makeCompositeBuilder();
   }
 
-  public final Object fromNonNullOpenValue(Object value)
-      throws InvalidObjectException {
+  public final Object fromNonNullOpenValue(Object value) throws InvalidObjectException {
     makeCompositeBuilder();
-    return compositeBuilder.fromCompositeData((CompositeData) value, itemNames,
-        getterConverters);
+    return compositeBuilder.fromCompositeData((CompositeData) value, itemNames, getterConverters);
   }
 
 }

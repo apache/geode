@@ -1,22 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /*
- * CacheJUnitTest.java
- * JUnit based test
+ * CacheJUnitTest.java JUnit based test
  *
  * Created on March 28, 2005, 10:59 AM
  */
@@ -60,12 +57,11 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * This JUnit version is created from class
- * org.apache.geode.internal.jta.functional.CacheTest1. Tests functional
- * behavior. Assumes that CacheUtils.java always creates table(s) and inserts
- * data in the form: 1 => name1, 2 => name2, 3 => name3...as the values of ID
- * and name fields respectively. Test # 15 & 16 has the dependency to run on
- * CloudScape database only due to variations in DDL.
+ * This JUnit version is created from class org.apache.geode.internal.jta.functional.CacheTest1.
+ * Tests functional behavior. Assumes that CacheUtils.java always creates table(s) and inserts data
+ * in the form: 1 => name1, 2 => name2, 3 => name3...as the values of ID and name fields
+ * respectively. Test # 15 & 16 has the dependency to run on CloudScape database only due to
+ * variations in DDL.
  * 
  */
 @Category(IntegrationTest.class)
@@ -83,10 +79,10 @@ public class CacheJUnitTest {
   public void setUp() throws Exception {
     this.tblName = CacheUtils.init("CacheJUnitTest");
     assertFalse(this.tblName == null || this.tblName.equals(""));
-    
+
     this.cache = CacheUtils.getCache();
     assertNotNull(this.cache);
-    
+
     this.currRegion = this.cache.getRegion("root");
     assertTrue(this.currRegion.getFullPath().equals("/root"));
   }
@@ -105,9 +101,8 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario1 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Tests a simple
-   * User Transaction with Cache lookup.
+   * Test of testScenario1 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Tests a simple User Transaction with Cache lookup.
    */
   @Test
   public void testScenario1() throws Exception {
@@ -130,7 +125,8 @@ public class CacheJUnitTest {
 
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -156,9 +152,8 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario2 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Tests a simple
-   * User Transaction with Cache lookup but closing the Connection object before
+   * Test of testScenario2 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Tests a simple User Transaction with Cache lookup but closing the Connection object before
    * committing the Transaction.
    */
   @Test
@@ -185,7 +180,8 @@ public class CacheJUnitTest {
 
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -221,12 +217,11 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario3 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Tests whether a
-   * user transaction with cache lookup and with XAPooledDataSOurce supports
-   * Cache put and get operations accordingly. Put and get are done within the
-   * transaction block and also db updates are done. After committing we check
-   * whether commit is proper in db and also in Cache.
+   * Test of testScenario3 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Tests whether a user transaction with cache lookup and with XAPooledDataSOurce supports Cache
+   * put and get operations accordingly. Put and get are done within the transaction block and also
+   * db updates are done. After committing we check whether commit is proper in db and also in
+   * Cache.
    */
   @Test
   public void testScenario3() throws Exception {
@@ -253,7 +248,8 @@ public class CacheJUnitTest {
       jtaObj.getRegionFromCache("region1");
 
       String current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1", current_fullpath);
+      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1",
+          current_fullpath);
 
       jtaObj.put("key1", "value1");
 
@@ -262,7 +258,8 @@ public class CacheJUnitTest {
       assertEquals("get failed for corresponding put", "\"value1\"", tok);
 
       current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1", current_fullpath);
+      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1",
+          current_fullpath);
 
       DataSource da = (DataSource) ctx.lookup("java:/XAPooledDataSource");
 
@@ -270,7 +267,8 @@ public class CacheJUnitTest {
 
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -280,13 +278,13 @@ public class CacheJUnitTest {
       rollback_chances = false;
 
       current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current region fullpath after txn commit", "/" + DEFAULT_RGN + "/region1", current_fullpath);
+      assertEquals("failed retrieving current region fullpath after txn commit",
+          "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
       int ifAnyRows = jtaObj.getRows(this.tblName);
       assertEquals("rows retrieved is:" + ifAnyRows, 1, ifAnyRows);
       /*
-       * if (ifAnyRows == 0) { fail
-       * (" DB FAILURE: no rows retrieved even after txn commit."); }
+       * if (ifAnyRows == 0) { fail (" DB FAILURE: no rows retrieved even after txn commit."); }
        */
       // after jdbc commit cache value in region1 for key1 must retain...
       str = jtaObj.get("key1");
@@ -317,13 +315,11 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario4 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Tests whether a
-   * user transaction with cache lookup and with XAPooledDataSOurce supports
-   * Cache put and get operations accordingly along with JTA behavior. Put and
-   * get are done within the transaction block and also db updates are done.
-   * After rollback the transaction explicitly we check whether it was proper in
-   * db and also in Cache, which should also rollback.
+   * Test of testScenario4 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Tests whether a user transaction with cache lookup and with XAPooledDataSOurce supports Cache
+   * put and get operations accordingly along with JTA behavior. Put and get are done within the
+   * transaction block and also db updates are done. After rollback the transaction explicitly we
+   * check whether it was proper in db and also in Cache, which should also rollback.
    */
   @Test
   public void testScenario4() throws Exception {
@@ -346,7 +342,9 @@ public class CacheJUnitTest {
 
       jtaObj.getRegionFromCache("region1");
       String current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current region fullpath after doing getRegionFromCache(region1)", "/" + DEFAULT_RGN + "/region1", current_fullpath);
+      assertEquals(
+          "failed retrieving current region fullpath after doing getRegionFromCache(region1)",
+          "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
       jtaObj.put("key1", "test");
       ta.begin();
@@ -357,14 +355,16 @@ public class CacheJUnitTest {
       assertEquals("get value do not match with the put", "\"value1\"", tok);
 
       current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1", current_fullpath);
+      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1",
+          current_fullpath);
 
       DataSource da = (DataSource) ctx.lookup("java:/XAPooledDataSource");
 
       conn = da.getConnection();
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -374,7 +374,8 @@ public class CacheJUnitTest {
       rollback_chances = false;
 
       current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retirieving current region fullpath after txn rollback", "/" + DEFAULT_RGN + "/region1", current_fullpath);
+      assertEquals("failed retirieving current region fullpath after txn rollback",
+          "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
       int ifAnyRows = jtaObj.getRows(this.tblName);
       assertEquals("rows retrieved is: " + ifAnyRows, 0, ifAnyRows);
@@ -409,14 +410,12 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario5 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Tests whether a
-   * user transaction with cache lookup and with XAPooledDataSOurce supports
-   * Cache put and get operations accordingly along with JTA behavior. Put and
-   * get are done within the transaction block and also db updates are done. We
-   * try to rollback the transaction by violating primary key constraint in db
-   * table, nad then we check whether rollback was proper in db and also in
-   * Cache, which should also rollback.
+   * Test of testScenario5 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Tests whether a user transaction with cache lookup and with XAPooledDataSOurce supports Cache
+   * put and get operations accordingly along with JTA behavior. Put and get are done within the
+   * transaction block and also db updates are done. We try to rollback the transaction by violating
+   * primary key constraint in db table, nad then we check whether rollback was proper in db and
+   * also in Cache, which should also rollback.
    */
   @Test
   public void testScenario5() throws Exception {
@@ -444,7 +443,8 @@ public class CacheJUnitTest {
       // now current region should point to region1, as done from within
       // getRegionFromCache method...
       String current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retirieving current fullpath", "/" + DEFAULT_RGN + "/region1", current_fullpath);
+      assertEquals("failed retirieving current fullpath", "/" + DEFAULT_RGN + "/region1",
+          current_fullpath);
 
       jtaObj.put("key1", "test");
       ta.begin();
@@ -456,20 +456,23 @@ public class CacheJUnitTest {
       assertEquals("get value mismatch with put", "\"value1\"", tok);
 
       current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current fullpath, current fullpath: " + current_fullpath, "/" + DEFAULT_RGN + "/region1", current_fullpath);
+      assertEquals("failed retrieving current fullpath, current fullpath: " + current_fullpath,
+          "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
       DataSource da = (DataSource) ctx.lookup("java:/XAPooledDataSource");
 
       conn = da.getConnection();
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       rollback_chances = true;
 
       // capable of throwing SQLException during insert operation
-      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -503,7 +506,9 @@ public class CacheJUnitTest {
          */
         // intended error is checked w.r.t. cache second
         String current_fullpath = jtaObj.currRegion.getFullPath();
-        assertEquals("failed retrieving current fullpath after rollback, fullpath is: " + current_fullpath, "/" + DEFAULT_RGN + "/region1", current_fullpath);
+        assertEquals(
+            "failed retrieving current fullpath after rollback, fullpath is: " + current_fullpath,
+            "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
         // after jdbc rollback, cache value in region1 for key1 must vanish...
         String str1 = null;
@@ -533,11 +538,10 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario7 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Tests a user
-   * transaction with cache lookup and with XAPooledDataSource lookup. It does
-   * get and put operations on the cache within the transaction block and checks
-   * whether these operations are committed once the transaction is committed.
+   * Test of testScenario7 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Tests a user transaction with cache lookup and with XAPooledDataSource lookup. It does get and
+   * put operations on the cache within the transaction block and checks whether these operations
+   * are committed once the transaction is committed.
    */
   @Test
   public void testScenario7() throws Exception {
@@ -565,7 +569,8 @@ public class CacheJUnitTest {
       // now current region should point to region1, as done from within
       // getRegionFromCache method...
       String current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving the current region fullpath", "/" + DEFAULT_RGN + "/region1", current_fullpath);
+      assertEquals("failed retrieving the current region fullpath", "/" + DEFAULT_RGN + "/region1",
+          current_fullpath);
 
       jtaObj.put("key1", "value1");
 
@@ -575,7 +580,8 @@ public class CacheJUnitTest {
       assertEquals("get value mismatch with put", "\"value1\"", tok);
 
       current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1", current_fullpath);
+      assertEquals("failed retrieving current region fullpath", "/" + DEFAULT_RGN + "/region1",
+          current_fullpath);
 
       DataSource da = (DataSource) ctx.lookup("java:/XAPooledDataSource");
 
@@ -586,7 +592,8 @@ public class CacheJUnitTest {
       rollback_chances = false;
 
       current_fullpath = jtaObj.currRegion.getFullPath();
-      assertEquals("failed retrieving current region fullpath after txn commit, fullpath is: " + current_region, "/" + DEFAULT_RGN + "/region1", current_fullpath);
+      assertEquals("failed retrieving current region fullpath after txn commit, fullpath is: "
+          + current_region, "/" + DEFAULT_RGN + "/region1", current_fullpath);
 
       str = jtaObj.get("key1");
       tok = jtaObj.parseGetValue(str);
@@ -616,13 +623,12 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario9 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Tests a user
-   * transaction with cache lookup and with XAPooledDataSource lookup performing
-   * a db update within the transaction block and committing the transaction.
-   * Then agin we perform another db update with the same DataSource and finally
-   * close the Connection. The first update only should be committed in db and
-   * the second will not participate in transaction throwing an SQLException.
+   * Test of testScenario9 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Tests a user transaction with cache lookup and with XAPooledDataSource lookup performing a db
+   * update within the transaction block and committing the transaction. Then agin we perform
+   * another db update with the same DataSource and finally close the Connection. The first update
+   * only should be committed in db and the second will not participate in transaction throwing an
+   * SQLException.
    */
   @Test
   public void testScenario9() throws Exception {
@@ -648,7 +654,8 @@ public class CacheJUnitTest {
       conn = da.getConnection();
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
       ta.commit();
 
@@ -656,7 +663,8 @@ public class CacheJUnitTest {
 
       // intended test for failure-- capable of throwing SQLException
       this.tblIDFld += 1;
-      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -695,13 +703,11 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario10 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Test a user
-   * transaction with cache lookup and with XAPooledDataSource for multiple JDBC
-   * Connections. This should not be allowed for Facets datasource. For other
-   * relational DB the behaviour will be DB specific. For Oracle DB, n
-   * connections in a tranxn can be used provided , n-1 connections are closed
-   * before opening nth connection.
+   * Test of testScenario10 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Test a user transaction with cache lookup and with XAPooledDataSource for multiple JDBC
+   * Connections. This should not be allowed for Facets datasource. For other relational DB the
+   * behaviour will be DB specific. For Oracle DB, n connections in a tranxn can be used provided ,
+   * n-1 connections are closed before opening nth connection.
    */
   @Test
   public void testScenario10() throws Exception {
@@ -727,7 +733,8 @@ public class CacheJUnitTest {
 
       Statement stmt = conn1.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
       rows_inserted += 1;
 
@@ -738,7 +745,8 @@ public class CacheJUnitTest {
 
       this.tblIDFld += 1;
       field2 = this.tblIDFld;
-      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
 
       stmt.executeUpdate(sqlSTR);
       rows_inserted += 1;
@@ -793,10 +801,9 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario11 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Tests Simple
-   * DataSource lookup within a transaction. Things should not participate in
-   * the transaction.
+   * Test of testScenario11 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Tests Simple DataSource lookup within a transaction. Things should not participate in the
+   * transaction.
    */
   @Test
   public void testScenario11() throws Exception {
@@ -819,7 +826,8 @@ public class CacheJUnitTest {
       conn = da.getConnection();
       Statement stmt = conn.createStatement();
 
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       rollback_chances = true;
@@ -827,7 +835,8 @@ public class CacheJUnitTest {
       // try insert the same data once more and see if all info gets rolled
       // back...
       // capable of throwing SQLException
-      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
 
       stmt.close();
@@ -879,11 +888,10 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario14 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Tests a local
-   * Cache Loader with XADataSource lookup to get the connection. The Connection
-   * should not participate in the transaction and commit/rollback should take
-   * affect accordingly along with cache.
+   * Test of testScenario14 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Tests a local Cache Loader with XADataSource lookup to get the connection. The Connection
+   * should not participate in the transaction and commit/rollback should take affect accordingly
+   * along with cache.
    */
   @Test
   public void testScenario14() throws Exception {
@@ -915,9 +923,8 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario15 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Tests performing
-   * DDL operations by looking up a XAPooledDataSource and without transaction.
+   * Test of testScenario15 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Tests performing DDL operations by looking up a XAPooledDataSource and without transaction.
    */
   @Test
   public void testScenario15() throws Exception {
@@ -939,8 +946,7 @@ public class CacheJUnitTest {
     /*
      * try { ta = (UserTransaction)ctx.lookup("java:/UserTransaction");
      * 
-     * } catch (NamingException e) { fail ("user txn lookup failed: " +
-     * e.getMessage ()); }
+     * } catch (NamingException e) { fail ("user txn lookup failed: " + e.getMessage ()); }
      */
 
     try {
@@ -953,7 +959,8 @@ public class CacheJUnitTest {
       tbl = "my_table" + time;
       // String sql = "create table " + tbl +
       // " (my_id number primary key, my_name varchar2(50))";
-      String sql = "create table " + tbl + " (my_id integer NOT NULL, my_name varchar(50), CONSTRAINT my_keyx PRIMARY KEY(my_id))";
+      String sql = "create table " + tbl
+          + " (my_id integer NOT NULL, my_name varchar(50), CONSTRAINT my_keyx PRIMARY KEY(my_id))";
       ddl_return = stmt.executeUpdate(sql);
 
       // check whether the table was created properly
@@ -975,11 +982,9 @@ public class CacheJUnitTest {
 
       /** Code meant for Oracle DB **/
       /*
-       * tbl = tbl.toUpperCase(); sql =
-       * "select * from tab where tname like '%tbl%'"; ResultSet rs = null; rs =
-       * stmt.executeQuery(sql); rs.close(); sql = "drop table "+tbl; stmt =
-       * conn.createStatement(); stmt.execute(sql); System.out.println
-       * (this.space + "ok");
+       * tbl = tbl.toUpperCase(); sql = "select * from tab where tname like '%tbl%'"; ResultSet rs =
+       * null; rs = stmt.executeQuery(sql); rs.close(); sql = "drop table "+tbl; stmt =
+       * conn.createStatement(); stmt.execute(sql); System.out.println (this.space + "ok");
        */
       stmt.close();
       conn.close();
@@ -997,11 +1002,10 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario16 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Tests DDL
-   * operations on XAPooledDataSOurce lookup, without transaction but making
-   * auto commit false just before performing DDL queries and making it true
-   * before closing the Connection. The operations should be committed.
+   * Test of testScenario16 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Tests DDL operations on XAPooledDataSOurce lookup, without transaction but making auto commit
+   * false just before performing DDL queries and making it true before closing the Connection. The
+   * operations should be committed.
    */
   @Test
   public void testScenario16() throws Exception {
@@ -1029,7 +1033,8 @@ public class CacheJUnitTest {
       tbl = "my_table" + time;
       // String sql = "create table " + tbl +
       // " (my_id number primary key, my_name varchar2(50))";
-      String sql = "create table " + tbl + " (my_id integer NOT NULL, my_name varchar(50), CONSTRAINT my_key PRIMARY KEY(my_id))";
+      String sql = "create table " + tbl
+          + " (my_id integer NOT NULL, my_name varchar(50), CONSTRAINT my_key PRIMARY KEY(my_id))";
       ddl_return = stmt.executeUpdate(sql);
 
       sql = "select * from " + tbl;
@@ -1050,11 +1055,9 @@ public class CacheJUnitTest {
 
       /*** Code meant for Oracle DB ***/
       /*
-       * tbl = tbl.toUpperCase(); sql =
-       * "select * from tab where tname like '%tbl%'"; ResultSet rs = null; rs =
-       * stmt.executeQuery(sql); rs.close(); sql = "drop table "+tbl; stmt =
-       * conn.createStatement(); stmt.executeUpdate(sql); System.out.println
-       * (this.space + "ok");
+       * tbl = tbl.toUpperCase(); sql = "select * from tab where tname like '%tbl%'"; ResultSet rs =
+       * null; rs = stmt.executeQuery(sql); rs.close(); sql = "drop table "+tbl; stmt =
+       * conn.createStatement(); stmt.executeUpdate(sql); System.out.println (this.space + "ok");
        */
       conn.setAutoCommit(true);
       stmt.close();
@@ -1075,13 +1078,11 @@ public class CacheJUnitTest {
   }
 
   /**
-   * Test of testScenario18 method, of class
-   * org.apache.geode.internal.jta.functional.CacheTest1. Get a connection
-   * (conn1) outside a transaction with pooled datasource lookup and another
-   * connection (conn2) within the same transaction with XAPooled datasource
-   * lookup. After making updates we do a rollback on the transaction and close
-   * both connections in the order of opening them. The connection opened within
-   * transaction will only participate in the transaction.
+   * Test of testScenario18 method, of class org.apache.geode.internal.jta.functional.CacheTest1.
+   * Get a connection (conn1) outside a transaction with pooled datasource lookup and another
+   * connection (conn2) within the same transaction with XAPooled datasource lookup. After making
+   * updates we do a rollback on the transaction and close both connections in the order of opening
+   * them. The connection opened within transaction will only participate in the transaction.
    */
   @Test
   public void testScenario18() throws Exception {
@@ -1097,7 +1098,7 @@ public class CacheJUnitTest {
     Context ctx = cache.getJNDIContext();
 
     Connection conn2 = null; // connection within txn
-    
+
     DataSource da = (DataSource) ctx.lookup("java:/PooledDataSource");
     Connection conn1 = da.getConnection(); // connection outside txn
     UserTransaction ta = (UserTransaction) ctx.lookup("java:/UserTransaction");
@@ -1105,7 +1106,8 @@ public class CacheJUnitTest {
     try {
       ta.begin();
       Statement stmt = conn1.createStatement();
-      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      String sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
       stmt.close();
 
@@ -1119,7 +1121,8 @@ public class CacheJUnitTest {
       stmt = conn2.createStatement();
 
       this.tblIDFld += 1;
-      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'" + this.tblNameFld + "'" + ")";
+      sqlSTR = "insert into " + this.tblName + " values (" + this.tblIDFld + "," + "'"
+          + this.tblNameFld + "'" + ")";
       stmt.executeUpdate(sqlSTR);
       ta.rollback(); // intensional rollback
 
@@ -1179,9 +1182,11 @@ public class CacheJUnitTest {
         DataSource ds = (DataSource) ctx.lookup("java:/XAPooledDataSource");
         Connection conn = ds.getConnection();
         Statement stm = conn.createStatement();
-        String str = "update " + tableName + " set name ='newname' where id = (" + (new Integer(ob.toString())).intValue() + ")";
+        String str = "update " + tableName + " set name ='newname' where id = ("
+            + (new Integer(ob.toString())).intValue() + ")";
         stm.executeUpdate(str);
-        ResultSet rs = stm.executeQuery("select name from " + tableName + " where id = (" + (new Integer(ob.toString())).intValue() + ")");
+        ResultSet rs = stm.executeQuery("select name from " + tableName + " where id = ("
+            + (new Integer(ob.toString())).intValue() + ")");
         rs.next();
         obj = rs.getString(1);
         stm.close();
@@ -1192,7 +1197,6 @@ public class CacheJUnitTest {
       }
     }
 
-    public void close() {
-    }
+    public void close() {}
   }
 }

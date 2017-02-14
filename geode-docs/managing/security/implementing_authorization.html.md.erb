@@ -119,7 +119,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | create index                           | DATA:MANAGE:RegionName           |
 | create region                          | DATA:MANAGE                      |
 | define index                           | DATA:MANAGE:RegionName           |
-| deploy                                 | DATA:MANAGE                      |
+| deploy                                 | DATA:MANAGE, DATA:WRITE, CLUSTER:MANAGE, and CLUSTER:WRITE |
 | describe client                        | CLUSTER:READ                     |
 | describe config                        | CLUSTER:READ                     |
 | describe disk-store                    | CLUSTER:READ                     |
@@ -141,7 +141,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | export offline-disk-store              | CLUSTER:READ                     |
 | export stack-traces                    | CLUSTER:READ                     |
 | gc                                     | CLUSTER:MANAGE                   |
-| get --key=key1 --region=region1        | DATA:READ:RegionName:Key         |
+| get &#8209;key=key1 &#8209;region=region1        | DATA:READ:RegionName:Key         |
 | import data                            | DATA:WRITE:RegionName            |
 | import cluster-configuration           | DATA:MANAGE                      |
 | list async-event-queues                | CLUSTER:READ                     |
@@ -160,7 +160,7 @@ This table classifies the permissions assigned for `gfsh` operations.
 | pause gateway-sender                   | DATA:MANAGE                      |
 | pdx rename                             | DATA:MANAGE                      |
 | put --key=key1 --region=region1        | DATA:WRITE:RegionName:Key        |
-| query                                  | DATA:READ:RegionName             |
+| query                                  | DATA:READ                        |
 | rebalance                              | DATA:MANAGE                      |
 | remove                                 | DATA:WRITE:RegionName or DATA:WRITE:RegionName:Key |
 | resume gateway-sender                  | DATA:MANAGE                      |

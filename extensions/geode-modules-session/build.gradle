@@ -27,6 +27,9 @@ dependencies {
   }
   testCompile(group: 'org.eclipse.jetty', name: 'jetty-http', version: project.'jetty.version', classifier: 'tests')
   testCompile(group: 'org.eclipse.jetty', name: 'jetty-servlet', version: project.'jetty.version', classifier: 'tests')
+  testCompile ('org.httpunit:httpunit:' + project.'httpunit.version') {
+    exclude group: 'javax.servlet'
+  }
 
   testCompile project(path: ':geode-junit')
 }

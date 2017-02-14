@@ -16,7 +16,7 @@
   limitations under the License.
 -->
 
-<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 5.1//EN" "http://www.gemstone.com/dtd/cache5_1.dtd">
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN" "http://www.gemstone.com/dtd/cache7_0.dtd">
 <cache>
   <!--  nothing special here, we just want to make sure this file gets backed up, byte for byte. -->
   

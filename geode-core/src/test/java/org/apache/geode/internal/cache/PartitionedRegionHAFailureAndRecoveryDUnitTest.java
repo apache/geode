@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -49,12 +47,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * This is a Dunit test for PartitionedRegion cleanup on Node Failure through
- * Membership listener. This class contains following 2 tests: <br>
- * (1) testMetaDataCleanupOnSinglePRNodeFail - Test for PartitionedRegion
- * metadata cleanup for single failed node.</br> (2)
- * testMetaDataCleanupOnMultiplePRNodeFail - Test for PartitionedRegion metadata
- * cleanup for multiple failed nodes.</br>
+ * This is a Dunit test for PartitionedRegion cleanup on Node Failure through Membership listener.
+ * This class contains following 2 tests: <br>
+ * (1) testMetaDataCleanupOnSinglePRNodeFail - Test for PartitionedRegion metadata cleanup for
+ * single failed node.</br>
+ * (2) testMetaDataCleanupOnMultiplePRNodeFail - Test for PartitionedRegion metadata cleanup for
+ * multiple failed nodes.</br>
  */
 @Category(DistributedTest.class)
 public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedRegionDUnitTestCase {
@@ -66,11 +64,16 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
 
   /**
    * Test for PartitionedRegion metadata cleanup for single node failure. <br>
-   * <u>This test does the following:<u></br> <br>
-   * (1)Creates 4 Vms </br> <br>
-   * (2)Randomly create different number of PartitionedRegion on all 4 VMs</br><br>
-   * (3)Disconenct vm0 from the distributed system</br> <br>
-   * (4) Validate Failed node's config metadata </br> <br>
+   * <u>This test does the following:<u></br>
+   * <br>
+   * (1)Creates 4 Vms </br>
+   * <br>
+   * (2)Randomly create different number of PartitionedRegion on all 4 VMs</br>
+   * <br>
+   * (3)Disconenct vm0 from the distributed system</br>
+   * <br>
+   * (4) Validate Failed node's config metadata </br>
+   * <br>
    * (5) Validate Failed node's bucket2Node Region metadata. </br>
    */
   @Test
@@ -82,8 +85,10 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
     final int endIndexForRegion = 4;
     final int localMaxMemory = 200;
     final int redundancy = 1;
-    createPartitionRegionAsynch("testMetaDataCleanupOnSinglePRNodeFail_", startIndexForRegion, endIndexForRegion, localMaxMemory, redundancy, -1);
-    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnSinglePRNodeFail() - PartitionedRegion's created at all VM nodes");
+    createPartitionRegionAsynch("testMetaDataCleanupOnSinglePRNodeFail_", startIndexForRegion,
+        endIndexForRegion, localMaxMemory, redundancy, -1);
+    LogWriterUtils.getLogWriter().info(
+        "testMetaDataCleanupOnSinglePRNodeFail() - PartitionedRegion's created at all VM nodes");
 
     // Add a listener to the config meta data
     addConfigListeners();
@@ -91,22 +96,26 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
     // disconnect vm0.
     DistributedMember dsMember = (DistributedMember) vmArr[0].invoke(() -> disconnectMethod());
 
-    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnSinglePRNodeFail() - VM = " + dsMember + " disconnected from the distributed system ");
+    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnSinglePRNodeFail() - VM = " + dsMember
+        + " disconnected from the distributed system ");
 
     // validate that the metadata clean up is done at all the VM's.
     vmArr[1].invoke(validateNodeFailMetaDataCleanUp(dsMember));
     vmArr[2].invoke(validateNodeFailMetaDataCleanUp(dsMember));
     vmArr[3].invoke(validateNodeFailMetaDataCleanUp(dsMember));
-    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnSinglePRNodeFail() - Validation of Failed node config metadata complete");
+    LogWriterUtils.getLogWriter().info(
+        "testMetaDataCleanupOnSinglePRNodeFail() - Validation of Failed node config metadata complete");
 
     // validate that bucket2Node clean up is done at all the VM's.
     vmArr[1].invoke(validateNodeFailbucket2NodeCleanUp(dsMember));
     vmArr[2].invoke(validateNodeFailbucket2NodeCleanUp(dsMember));
     vmArr[3].invoke(validateNodeFailbucket2NodeCleanUp(dsMember));
 
-    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnSinglePRNodeFail() - Validation of Failed node bucket2Node Region metadata complete");
+    LogWriterUtils.getLogWriter().info(
+        "testMetaDataCleanupOnSinglePRNodeFail() - Validation of Failed node bucket2Node Region metadata complete");
 
-    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnSinglePRNodeFail() Completed Successfully ..........");
+    LogWriterUtils.getLogWriter()
+        .info("testMetaDataCleanupOnSinglePRNodeFail() Completed Successfully ..........");
   }
 
   private void addConfigListeners() {
@@ -117,7 +126,8 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
       public void run() {
         Cache c = getCache();
         Region rootReg = PartitionedRegionHelper.getPRRoot(c);
-        rootReg.getAttributesMutator().addCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
+        rootReg.getAttributesMutator()
+            .addCacheListener(new CertifiableTestCacheListener(LogWriterUtils.getLogWriter()));
       }
     };
 
@@ -128,23 +138,24 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
   }
 
   private void clearConfigListenerState(VM[] vmsToClear) {
-    final SerializableRunnable clearListener = new SerializableRunnable("clear the listener state") {
-      private static final long serialVersionUID = 1L;
+    final SerializableRunnable clearListener =
+        new SerializableRunnable("clear the listener state") {
+          private static final long serialVersionUID = 1L;
 
-      public void run() {
-        try {
-          Cache c = getCache();
-          Region rootReg = PartitionedRegionHelper.getPRRoot(c);
-          CacheListener[] cls = rootReg.getAttributes().getCacheListeners();
-          assertEquals(2, cls.length);
-          CertifiableTestCacheListener ctcl = (CertifiableTestCacheListener) cls[1];
-          ctcl.clearState();
-        } catch (CancelException possible) {
-          // If a member has been disconnected, we may get a CancelException
-          // in which case the config listener state has been cleared (in a big way)
-        }
-      }
-    };
+          public void run() {
+            try {
+              Cache c = getCache();
+              Region rootReg = PartitionedRegionHelper.getPRRoot(c);
+              CacheListener[] cls = rootReg.getAttributes().getCacheListeners();
+              assertEquals(2, cls.length);
+              CertifiableTestCacheListener ctcl = (CertifiableTestCacheListener) cls[1];
+              ctcl.clearState();
+            } catch (CancelException possible) {
+              // If a member has been disconnected, we may get a CancelException
+              // in which case the config listener state has been cleared (in a big way)
+            }
+          }
+        };
 
     for (int count = 0; count < vmsToClear.length; count++) {
       VM vm = vmsToClear[count];
@@ -154,11 +165,16 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
 
   /**
    * Test for PartitionedRegion metadata cleanup for multiple node failure. <br>
-   * <u>This test does the following:<u></br> <br>
-   * (1)Creates 4 Vms </br> <br>
-   * (2)Randomly create different number of PartitionedRegion on all 4 VMs</br><br>
-   * (3) Disconenct vm0 and vm1 from the distributed system</br> <br>
-   * (4) Validate all Failed node's config metadata </br> <br>
+   * <u>This test does the following:<u></br>
+   * <br>
+   * (1)Creates 4 Vms </br>
+   * <br>
+   * (2)Randomly create different number of PartitionedRegion on all 4 VMs</br>
+   * <br>
+   * (3) Disconenct vm0 and vm1 from the distributed system</br>
+   * <br>
+   * (4) Validate all Failed node's config metadata </br>
+   * <br>
    * (5) Validate all Failed node's bucket2Node Region metadata. </br>
    */
   @Test
@@ -170,15 +186,18 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
     final int endIndexForRegion = 4;
     final int localMaxMemory = 200;
     final int redundancy = 1;
-    createPartitionRegionAsynch("testMetaDataCleanupOnMultiplePRNodeFail_", startIndexForRegion, endIndexForRegion, localMaxMemory, redundancy, -1);
-    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnMultiplePRNodeFail() - PartitionedRegion's created at all VM nodes");
+    createPartitionRegionAsynch("testMetaDataCleanupOnMultiplePRNodeFail_", startIndexForRegion,
+        endIndexForRegion, localMaxMemory, redundancy, -1);
+    LogWriterUtils.getLogWriter().info(
+        "testMetaDataCleanupOnMultiplePRNodeFail() - PartitionedRegion's created at all VM nodes");
 
     addConfigListeners();
 
     // disconnect vm0
     DistributedMember dsMember = (DistributedMember) vmArr[0].invoke(() -> disconnectMethod());
 
-    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnMultiplePRNodeFail() - VM = " + dsMember + " disconnected from the distributed system ");
+    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnMultiplePRNodeFail() - VM = "
+        + dsMember + " disconnected from the distributed system ");
 
     // validate that the metadata clean up is done at all the VM's for first
     // failed node.
@@ -192,14 +211,15 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
     vmArr[2].invoke(validateNodeFailbucket2NodeCleanUp(dsMember));
     vmArr[3].invoke(validateNodeFailbucket2NodeCleanUp(dsMember));
 
-    // Clear state of listener, skipping the vmArr[0] which was disconnected 
-    VM[] vmsToClear = new VM[] { vmArr[1], vmArr[2], vmArr[3] };
+    // Clear state of listener, skipping the vmArr[0] which was disconnected
+    VM[] vmsToClear = new VM[] {vmArr[1], vmArr[2], vmArr[3]};
     clearConfigListenerState(vmsToClear);
 
-    //  disconnect vm1
+    // disconnect vm1
     DistributedMember dsMember2 = (DistributedMember) vmArr[1].invoke(() -> disconnectMethod());
 
-    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnMultiplePRNodeFail() - VM = " + dsMember2 + " disconnected from the distributed system ");
+    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnMultiplePRNodeFail() - VM = "
+        + dsMember2 + " disconnected from the distributed system ");
 
     // validate that the metadata clean up is done at all the VM's for first
     // failed node.
@@ -211,56 +231,63 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
     vmArr[2].invoke(validateNodeFailMetaDataCleanUp(dsMember2));
     vmArr[3].invoke(validateNodeFailMetaDataCleanUp(dsMember2));
 
-    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnMultiplePRNodeFail() - Validation of Failed nodes config metadata complete");
+    LogWriterUtils.getLogWriter().info(
+        "testMetaDataCleanupOnMultiplePRNodeFail() - Validation of Failed nodes config metadata complete");
 
     vmArr[2].invoke(validateNodeFailbucket2NodeCleanUp(dsMember2));
     vmArr[3].invoke(validateNodeFailbucket2NodeCleanUp(dsMember2));
 
-    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnMultiplePRNodeFail() - Validation of Failed nodes bucket2Node Region metadata complete");
+    LogWriterUtils.getLogWriter().info(
+        "testMetaDataCleanupOnMultiplePRNodeFail() - Validation of Failed nodes bucket2Node Region metadata complete");
 
-    LogWriterUtils.getLogWriter().info("testMetaDataCleanupOnMultiplePRNodeFail() Completed Successfully ..........");
+    LogWriterUtils.getLogWriter()
+        .info("testMetaDataCleanupOnMultiplePRNodeFail() Completed Successfully ..........");
   }
 
   /**
-   * Returns CacheSerializableRunnable to validate the Failed node config
-   * metadata.
+   * Returns CacheSerializableRunnable to validate the Failed node config metadata.
    *
    * @param dsMember Failed DistributedMember
    *
    * @return CacheSerializableRunnable
    */
-  private CacheSerializableRunnable validateNodeFailMetaDataCleanUp(final DistributedMember dsMember) {
-    SerializableRunnable validator = new CacheSerializableRunnable("validateNodeFailMetaDataCleanUp") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        Region rootReg = PartitionedRegionHelper.getPRRoot(cache);
-        CacheListener[] cls = rootReg.getAttributes().getCacheListeners();
-        assertEquals(2, cls.length);
-        CertifiableTestCacheListener ctcl = (CertifiableTestCacheListener) cls[1];
+  private CacheSerializableRunnable validateNodeFailMetaDataCleanUp(
+      final DistributedMember dsMember) {
+    SerializableRunnable validator =
+        new CacheSerializableRunnable("validateNodeFailMetaDataCleanUp") {
+          public void run2() throws CacheException {
+            Cache cache = getCache();
+            Region rootReg = PartitionedRegionHelper.getPRRoot(cache);
+            CacheListener[] cls = rootReg.getAttributes().getCacheListeners();
+            assertEquals(2, cls.length);
+            CertifiableTestCacheListener ctcl = (CertifiableTestCacheListener) cls[1];
 
-        LogWriterUtils.getLogWriter().info("Listener update (" + ctcl.updates.size() + "): " + ctcl.updates);
-        LogWriterUtils.getLogWriter().info("Listener destroy: (" + ctcl.destroys.size() + "): " + ctcl.destroys);
+            LogWriterUtils.getLogWriter()
+                .info("Listener update (" + ctcl.updates.size() + "): " + ctcl.updates);
+            LogWriterUtils.getLogWriter()
+                .info("Listener destroy: (" + ctcl.destroys.size() + "): " + ctcl.destroys);
 
-        Iterator itrator = rootReg.keySet().iterator();
-        for (Iterator itr = itrator; itr.hasNext(); ) {
-          String prName = (String) itr.next();
-          ctcl.waitForUpdated(prName);
+            Iterator itrator = rootReg.keySet().iterator();
+            for (Iterator itr = itrator; itr.hasNext();) {
+              String prName = (String) itr.next();
+              ctcl.waitForUpdated(prName);
 
-          Object obj = rootReg.get(prName);
-          if (obj != null) {
-            PartitionRegionConfig prConf = (PartitionRegionConfig) obj;
-            Set<Node> nodeList = prConf.getNodes();
-            Iterator itr2 = nodeList.iterator();
-            while (itr2.hasNext()) {
-              DistributedMember member = ((Node) itr2.next()).getMemberId();
-              if (member.equals(dsMember)) {
-                fail("Failed DistributedMember's = " + member + " global meta data not cleared. For PR Region = " + prName);
+              Object obj = rootReg.get(prName);
+              if (obj != null) {
+                PartitionRegionConfig prConf = (PartitionRegionConfig) obj;
+                Set<Node> nodeList = prConf.getNodes();
+                Iterator itr2 = nodeList.iterator();
+                while (itr2.hasNext()) {
+                  DistributedMember member = ((Node) itr2.next()).getMemberId();
+                  if (member.equals(dsMember)) {
+                    fail("Failed DistributedMember's = " + member
+                        + " global meta data not cleared. For PR Region = " + prName);
+                  }
+                }
               }
             }
           }
-        }
-      }
-    };
+        };
     return (CacheSerializableRunnable) validator;
   }
 
@@ -271,31 +298,35 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
    *
    * @return CacheSerializableRunnable
    */
-  private CacheSerializableRunnable validateNodeFailbucket2NodeCleanUp(final DistributedMember dsMember) {
-    SerializableRunnable createPRs = new CacheSerializableRunnable("validateNodeFailbucket2NodeCleanUp") {
+  private CacheSerializableRunnable validateNodeFailbucket2NodeCleanUp(
+      final DistributedMember dsMember) {
+    SerializableRunnable createPRs =
+        new CacheSerializableRunnable("validateNodeFailbucket2NodeCleanUp") {
 
-      public void run2() throws CacheException {
-        getCache();
-        Map prIDmap = PartitionedRegion.prIdToPR;
-        Iterator itr = prIDmap.values().iterator();
-        while (itr.hasNext()) {
-          Object o = itr.next();
-          if (o == PartitionedRegion.PRIdMap.DESTROYED) {
-            continue;
-          }
-          PartitionedRegion prRegion = (PartitionedRegion) o;
+          public void run2() throws CacheException {
+            getCache();
+            Map prIDmap = PartitionedRegion.prIdToPR;
+            Iterator itr = prIDmap.values().iterator();
+            while (itr.hasNext()) {
+              Object o = itr.next();
+              if (o == PartitionedRegion.PRIdMap.DESTROYED) {
+                continue;
+              }
+              PartitionedRegion prRegion = (PartitionedRegion) o;
 
-          Iterator bukI = prRegion.getRegionAdvisor().getBucketSet().iterator();
-          while (bukI.hasNext()) {
-            Integer bucketId = (Integer) bukI.next();
-            Set bucketOwners = prRegion.getRegionAdvisor().getBucketOwners(bucketId.intValue());
-            if (bucketOwners.contains(dsMember)) {
-              fail("Failed DistributedMember's = " + dsMember + " bucket [" + prRegion.bucketStringForLogs(bucketId.intValue()) + "] meta-data not cleared for partitioned region " + prRegion);
+              Iterator bukI = prRegion.getRegionAdvisor().getBucketSet().iterator();
+              while (bukI.hasNext()) {
+                Integer bucketId = (Integer) bukI.next();
+                Set bucketOwners = prRegion.getRegionAdvisor().getBucketOwners(bucketId.intValue());
+                if (bucketOwners.contains(dsMember)) {
+                  fail("Failed DistributedMember's = " + dsMember + " bucket ["
+                      + prRegion.bucketStringForLogs(bucketId.intValue())
+                      + "] meta-data not cleared for partitioned region " + prRegion);
+                }
+              }
             }
           }
-        }
-      }
-    };
+        };
     return (CacheSerializableRunnable) createPRs;
   }
 
@@ -315,8 +346,8 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
    * @return Disconnected DistributedMember
    */
   private DistributedMember disconnectMethod() {
-    DistributedMember dsMember = ((InternalDistributedSystem) getCache().getDistributedSystem()).getDistributionManager()
-                                                                                                .getId();
+    DistributedMember dsMember = ((InternalDistributedSystem) getCache().getDistributedSystem())
+        .getDistributionManager().getId();
     getCache().getDistributedSystem().disconnect();
     LogWriterUtils.getLogWriter().info("disconnectMethod() completed ..");
     return dsMember;
@@ -325,16 +356,14 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
   /**
    * This function creates multiple partition regions on specified nodes.
    */
-  private void createPartitionRegionAsynch(final String regionPrefix,
-                                           final int startIndexForRegion,
-                                           final int endIndexForRegion,
-                                           final int localMaxMemory,
-                                           final int redundancy,
-                                           final int recoveryDelay) throws Exception {
+  private void createPartitionRegionAsynch(final String regionPrefix, final int startIndexForRegion,
+      final int endIndexForRegion, final int localMaxMemory, final int redundancy,
+      final int recoveryDelay) throws Exception {
     final AsyncInvocation[] async = new AsyncInvocation[vmArr.length];
     for (int count = 0; count < vmArr.length; count++) {
       VM vm = vmArr[count];
-      async[count] = vm.invokeAsync(getCreateMultiplePRregion(regionPrefix, endIndexForRegion, redundancy, localMaxMemory, recoveryDelay));
+      async[count] = vm.invokeAsync(getCreateMultiplePRregion(regionPrefix, endIndexForRegion,
+          redundancy, localMaxMemory, recoveryDelay));
     }
     for (int count2 = 0; count2 < async.length; count2++) {
       ThreadUtils.join(async[count2], 30 * 1000);
@@ -362,54 +391,59 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
     createPartitionRegionAsynch(uniqName, 0, numRegions, 20, redundantCopies, 0);
 
     // Create some buckets, pick one and get one of the members hosting it
-    final DistributedMember bucketHost = (DistributedMember) this.vmArr[0].invoke(new SerializableCallable("Populate PR-" + getUniqueName()) {
-      public Object call() throws Exception {
-        PartitionedRegion r = (PartitionedRegion) getCache().getRegion(uniqName + "0");
-        // Create some buckets
-        int i = 0;
-        final int bucketTarget = 2;
-        while (r.getRegionAdvisor().getBucketSet().size() < bucketTarget) {
-          if (i > r.getTotalNumberOfBuckets()) {
-            fail("Expected there to be " + bucketTarget + " buckets after " + i + " iterations");
+    final DistributedMember bucketHost = (DistributedMember) this.vmArr[0]
+        .invoke(new SerializableCallable("Populate PR-" + getUniqueName()) {
+          public Object call() throws Exception {
+            PartitionedRegion r = (PartitionedRegion) getCache().getRegion(uniqName + "0");
+            // Create some buckets
+            int i = 0;
+            final int bucketTarget = 2;
+            while (r.getRegionAdvisor().getBucketSet().size() < bucketTarget) {
+              if (i > r.getTotalNumberOfBuckets()) {
+                fail(
+                    "Expected there to be " + bucketTarget + " buckets after " + i + " iterations");
+              }
+              Object k = new Integer(i++);
+              r.put(k, k.toString());
+            }
+
+            // Grab a bucket id
+            Integer bucketId = r.getRegionAdvisor().getBucketSet().iterator().next();
+            assertNotNull(bucketId);
+
+            // Find a host for the bucket
+            Set bucketOwners = r.getRegionAdvisor().getBucketOwners(bucketId.intValue());
+            assertEquals(bucketOwners.size(), redundantCopies + 1);
+            DistributedMember bucketOwner = (DistributedMember) bucketOwners.iterator().next();
+            assertNotNull(bucketOwner);
+            LogWriterUtils.getLogWriter().info("Selected distributed member " + bucketOwner
+                + " to disconnect because it hosts bucketId " + bucketId);
+            return bucketOwner;
           }
-          Object k = new Integer(i++);
-          r.put(k, k.toString());
-        }
-
-        // Grab a bucket id
-        Integer bucketId = r.getRegionAdvisor().getBucketSet().iterator().next();
-        assertNotNull(bucketId);
-
-        // Find a host for the bucket 
-        Set bucketOwners = r.getRegionAdvisor().getBucketOwners(bucketId.intValue());
-        assertEquals(bucketOwners.size(), redundantCopies + 1);
-        DistributedMember bucketOwner = (DistributedMember) bucketOwners.iterator().next();
-        assertNotNull(bucketOwner);
-        LogWriterUtils.getLogWriter()
-                      .info("Selected distributed member " + bucketOwner + " to disconnect because it hosts bucketId " + bucketId);
-        return bucketOwner;
-      }
-    });
+        });
     assertNotNull(bucketHost);
 
-    // Disconnect the selected host 
-    Map stillHasDS = Invoke.invokeInEveryVM(new SerializableCallable("Disconnect provided bucketHost") {
-      public Object call() throws Exception {
-        if (getSystem().getDistributedMember().equals(bucketHost)) {
-          LogWriterUtils.getLogWriter().info("Disconnecting distributed member " + getSystem().getDistributedMember());
-          disconnectFromDS();
-          return Boolean.FALSE;
-        }
-        return Boolean.TRUE;
-      }
-    });
+    // Disconnect the selected host
+    Map stillHasDS =
+        Invoke.invokeInEveryVM(new SerializableCallable("Disconnect provided bucketHost") {
+          public Object call() throws Exception {
+            if (getSystem().getDistributedMember().equals(bucketHost)) {
+              LogWriterUtils.getLogWriter()
+                  .info("Disconnecting distributed member " + getSystem().getDistributedMember());
+              disconnectFromDS();
+              return Boolean.FALSE;
+            }
+            return Boolean.TRUE;
+          }
+        });
 
     // Wait for each PR instance on each VM to finish recovery of redundancy
     // for the selected bucket
     final int MAX_SECONDS_TO_WAIT = 120;
     for (int count = 0; count < vmArr.length; count++) {
       VM vm = vmArr[count];
-      // only wait on the remaining VMs (prevent creating a new distributed system on the disconnected VM)
+      // only wait on the remaining VMs (prevent creating a new distributed system on the
+      // disconnected VM)
       if (((Boolean) stillHasDS.get(vm)).booleanValue()) {
         vm.invoke(new SerializableRunnable("Wait for PR region recovery") {
           public void run() {
@@ -420,12 +454,14 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
               PartitionedRegionStats prs = pr.getPrStats();
               // Wait for recovery
               final long start = NanoTimer.getTime();
-              for (; ; ) {
+              for (;;) {
                 if (prs.getLowRedundancyBucketCount() == 0) {
-                  break;  // buckets have been recovered from this VM's point of view
+                  break; // buckets have been recovered from this VM's point of view
                 }
-                if (TimeUnit.NANOSECONDS.toSeconds(NanoTimer.getTime() - start) > MAX_SECONDS_TO_WAIT) {
-                  fail("Test waited more than " + MAX_SECONDS_TO_WAIT + " seconds for redundancy recover");
+                if (TimeUnit.NANOSECONDS
+                    .toSeconds(NanoTimer.getTime() - start) > MAX_SECONDS_TO_WAIT) {
+                  fail("Test waited more than " + MAX_SECONDS_TO_WAIT
+                      + " seconds for redundancy recover");
                 }
                 try {
                   TimeUnit.MILLISECONDS.sleep(250);
@@ -442,7 +478,7 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
     // Validate all buckets have proper redundancy
     for (int count = 0; count < vmArr.length; count++) {
       VM vm = vmArr[count];
-      // only validate buckets on remaining VMs 
+      // only validate buckets on remaining VMs
       // (prevent creating a new distributed system on the disconnected VM)
       if (((Boolean) stillHasDS.get(vm)).booleanValue()) {
         vm.invoke(new SerializableRunnable("Validate all bucket redundancy") {
@@ -458,7 +494,8 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
                     assertEquals(pr.getRedundantCopies() + 1, owners.size());
                     break; // retry loop
                   } catch (ForceReattemptException retryIt) {
-                    LogWriterUtils.getLogWriter().info("Need to retry validation for bucket in PR " + pr, retryIt);
+                    LogWriterUtils.getLogWriter()
+                        .info("Need to retry validation for bucket in PR " + pr, retryIt);
                   }
                 } while (true); // retry loop
               } // bucketId loop
@@ -466,6 +503,6 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
           }
         });
       }
-    } // VM loop    
+    } // VM loop
   } // end redundancy recovery test
 }

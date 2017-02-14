@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.lucene.internal;
 
@@ -39,6 +35,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
@@ -46,7 +43,7 @@ import static org.junit.Assert.assertTrue;
 
 @Category(IntegrationTest.class)
 public class LuceneIndexRecoveryHAIntegrationTest {
-  String[] indexedFields = new String[] { "txt" };
+  String[] indexedFields = new String[] {"txt"};
   HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
   Analyzer analyzer = new StandardAnalyzer();
 
@@ -56,7 +53,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
 
   @Before
   public void setup() {
-    indexedFields = new String[] { "txt" };
+    indexedFields = new String[] {"txt"};
     mapper = new HeterogeneousLuceneSerializer(indexedFields);
     analyzer = new StandardAnalyzer();
     LuceneServiceImpl.registerDataSerializables();
@@ -73,38 +70,43 @@ public class LuceneIndexRecoveryHAIntegrationTest {
   }
 
   /**
-   * On rebalance, new repository manager will be created. It will try to read fileRegion and construct index. This test
-   * simulates the same.
+   * On rebalance, new repository manager will be created. It will try to read fileRegion and
+   * construct index. This test simulates the same.
    */
-//  @Test
-  public void recoverRepoInANewNode() throws BucketNotFoundException, IOException {
-    LuceneServiceImpl service = (LuceneServiceImpl)LuceneServiceProvider.get(cache);
+  // @Test
+  public void recoverRepoInANewNode()
+      throws BucketNotFoundException, IOException, InterruptedException {
+    LuceneServiceImpl service = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
     service.createIndex("index1", "/userRegion", indexedFields);
-    PartitionAttributes<String, String> attrs = new PartitionAttributesFactory().setTotalNumBuckets(1).create();
-    RegionFactory<String, String> regionfactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+    PartitionAttributes<String, String> attrs =
+        new PartitionAttributesFactory().setTotalNumBuckets(1).create();
+    RegionFactory<String, String> regionfactory =
+        cache.createRegionFactory(RegionShortcut.PARTITION);
     regionfactory.setPartitionAttributes(attrs);
 
     PartitionedRegion userRegion = (PartitionedRegion) regionfactory.create("userRegion");
-    LuceneIndexForPartitionedRegion index = (LuceneIndexForPartitionedRegion)service.getIndex("index1", "/userRegion");
+    LuceneIndexForPartitionedRegion index =
+        (LuceneIndexForPartitionedRegion) service.getIndex("index1", "/userRegion");
     // put an entry to create the bucket
     userRegion.put("rebalance", "test");
-    index.waitUntilFlushed(30000);
+    index.waitUntilFlushed(30000, TimeUnit.MILLISECONDS);
 
-    RepositoryManager manager = new PartitionedRepositoryManager((LuceneIndexImpl)index, mapper);
+    RepositoryManager manager = new PartitionedRepositoryManager((LuceneIndexImpl) index, mapper);
     IndexRepository repo = manager.getRepository(userRegion, 0, null);
     assertNotNull(repo);
 
     repo.create("rebalance", "test");
     repo.commit();
 
-    // close the region to simulate bucket movement. New node will create repo using data persisted by old region
-//    ((PartitionedRegion)index.fileRegion).close();
-//    ((PartitionedRegion)index.chunkRegion).close();
+    // close the region to simulate bucket movement. New node will create repo using data persisted
+    // by old region
+    // ((PartitionedRegion)index.fileRegion).close();
+    // ((PartitionedRegion)index.chunkRegion).close();
     userRegion.close();
 
     userRegion = (PartitionedRegion) regionfactory.create("userRegion");
     userRegion.put("rebalance", "test");
-    manager = new PartitionedRepositoryManager((LuceneIndexImpl)index, mapper);
+    manager = new PartitionedRepositoryManager((LuceneIndexImpl) index, mapper);
     IndexRepository newRepo = manager.getRepository(userRegion, 0, null);
 
     Assert.assertNotEquals(newRepo, repo);
@@ -112,10 +114,10 @@ public class LuceneIndexRecoveryHAIntegrationTest {
 
 
 
-
-  private void verifyIndexFinishFlushing(String indexName, String regionName) {
+  private void verifyIndexFinishFlushing(String indexName, String regionName)
+      throws InterruptedException {
     LuceneIndex index = LuceneServiceProvider.get(cache).getIndex(indexName, regionName);
-    boolean flushed = index.waitUntilFlushed(60000);
+    boolean flushed = index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
     assertTrue(flushed);
   }
 }

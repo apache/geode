@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.security;
 
@@ -42,22 +40,18 @@ import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
-@Category({ DistributedTest.class, SecurityTest.class })
+@Category({DistributedTest.class, SecurityTest.class})
 public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
 
-  private static final String[] serverIgnoredExceptions = {
-      AuthenticationRequiredException.class.getName(),
-      AuthenticationFailedException.class.getName(),
-      GemFireSecurityException.class.getName(),
-      ClassNotFoundException.class.getName(),
-      IOException.class.getName(),
-      SSLException.class.getName(),
-      SSLHandshakeException.class.getName()};
+  private static final String[] serverIgnoredExceptions =
+      {AuthenticationRequiredException.class.getName(),
+          AuthenticationFailedException.class.getName(), GemFireSecurityException.class.getName(),
+          ClassNotFoundException.class.getName(), IOException.class.getName(),
+          SSLException.class.getName(), SSLHandshakeException.class.getName()};
 
-  private static final String[] clientIgnoredExceptions = {
-      AuthenticationRequiredException.class.getName(),
-      AuthenticationFailedException.class.getName(),
-      SSLHandshakeException.class.getName()};
+  private static final String[] clientIgnoredExceptions =
+      {AuthenticationRequiredException.class.getName(),
+          AuthenticationFailedException.class.getName(), SSLHandshakeException.class.getName()};
 
   @Test
   public void testSingleUserUnsupportedAPIs() {
@@ -97,7 +91,8 @@ public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
 
     } else { // multiuser mode
       Region realRegion = GemFireCacheImpl.getInstance().getRegion(SecurityTestUtils.REGION_NAME);
-      Region proxyRegion = SecurityTestUtils.getProxyCaches(0).getRegion(SecurityTestUtils.REGION_NAME);
+      Region proxyRegion =
+          SecurityTestUtils.getProxyCaches(0).getRegion(SecurityTestUtils.REGION_NAME);
       Pool pool = PoolManagerImpl.getPMI().find("testPool");
 
       for (int i = 0; i <= 27; i++) {
@@ -201,25 +196,30 @@ public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
             // QueryService.newQuery().execute()/newCq().execute/executeWithInitialResults()
             case 20:
               op = "QueryService.newQuery.execute()";
-              Query query = pool.getQueryService().newQuery("SELECT * FROM /" + SecurityTestUtils.REGION_NAME);
+              Query query = pool.getQueryService()
+                  .newQuery("SELECT * FROM /" + SecurityTestUtils.REGION_NAME);
               query.execute();
               break;
             case 21:
               op = "QueryService.newCq.execute()";
-              CqQuery cqQuery = pool.getQueryService().newCq("SELECT * FROM /" + SecurityTestUtils.REGION_NAME, new CqAttributesFactory().create());
+              CqQuery cqQuery =
+                  pool.getQueryService().newCq("SELECT * FROM /" + SecurityTestUtils.REGION_NAME,
+                      new CqAttributesFactory().create());
               try {
                 cqQuery.execute();
               } catch (CqException ce) {
-                throw (Exception)ce.getCause();
+                throw (Exception) ce.getCause();
               }
               break;
             case 22:
               op = "QueryService.newCq.executeWithInitialResults()";
-              cqQuery = pool.getQueryService().newCq("SELECT * FROM /" + SecurityTestUtils.REGION_NAME, new CqAttributesFactory().create());
+              cqQuery =
+                  pool.getQueryService().newCq("SELECT * FROM /" + SecurityTestUtils.REGION_NAME,
+                      new CqAttributesFactory().create());
               try {
                 cqQuery.executeWithInitialResults();
               } catch (CqException ce) {
-                throw (Exception)ce.getCause();
+                throw (Exception) ce.getCause();
               }
               break;
             // Attempt ProxyQueryService.getIndex/createIndex/removeIndex() and
@@ -230,7 +230,7 @@ public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
               break;
             case 24:
               op = "ProxyQueryService().createIndex()";
-              SecurityTestUtils.getProxyCaches(0).getQueryService().createIndex(null, null, null );
+              SecurityTestUtils.getProxyCaches(0).getQueryService().createIndex(null, null, null);
               break;
             case 25:
               op = "ProxyQueryService().removeIndexes()";
@@ -275,22 +275,28 @@ public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
     int locPort2 = SecurityTestUtils.getLocatorPort();
     String locString = SecurityTestUtils.getAndClearLocatorString();
 
-    int port1 = server1.invoke(() -> createCacheServer(locPort1, locString, authenticator, extraProps, javaProps));
-    int port2 = server2.invoke(() -> createCacheServer(locPort2, locString, authenticator, extraProps, javaProps));
+    int port1 = server1
+        .invoke(() -> createCacheServer(locPort1, locString, authenticator, extraProps, javaProps));
+    int port2 = server2
+        .invoke(() -> createCacheServer(locPort2, locString, authenticator, extraProps, javaProps));
 
     // Start the clients with valid credentials
     Properties credentials1 = gen.getValidCredentials(1);
     Properties javaProps1 = gen.getJavaProperties();
-    getLogWriter().info("testValidCredentials: For first client credentials: " + credentials1 + " : " + javaProps1);
+    getLogWriter().info(
+        "testValidCredentials: For first client credentials: " + credentials1 + " : " + javaProps1);
 
     Properties credentials2 = gen.getValidCredentials(2);
     Properties javaProps2 = gen.getJavaProperties();
-    getLogWriter().info("testValidCredentials: For second client credentials: " + credentials2 + " : " + javaProps2);
+    getLogWriter().info("testValidCredentials: For second client credentials: " + credentials2
+        + " : " + javaProps2);
 
-    client1.invoke(() -> createCacheClient(authInit, credentials1, javaProps1, port1, port2, 0, multiUser, NO_EXCEPTION));
+    client1.invoke(() -> createCacheClient(authInit, credentials1, javaProps1, port1, port2, 0,
+        multiUser, NO_EXCEPTION));
   }
 
-  private int createCacheServer(final int dsPort, final String locatorString, final String authenticator, final Properties extraProps, final Properties javaProps) {
+  private int createCacheServer(final int dsPort, final String locatorString,
+      final String authenticator, final Properties extraProps, final Properties javaProps) {
     Properties authProps = new Properties();
     if (extraProps != null) {
       authProps.putAll(extraProps);
@@ -300,16 +306,23 @@ public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {
       authProps.setProperty(ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR, authenticator);
     }
 
-    return SecurityTestUtils.createCacheServer(authProps, javaProps, dsPort, locatorString, 0, NO_EXCEPTION);
+    return SecurityTestUtils.createCacheServer(authProps, javaProps, dsPort, locatorString, 0,
+        NO_EXCEPTION);
   }
 
   // a
-  protected static void createCacheClient(final String authInit, final Properties authProps, final Properties javaProps, final int[] ports, final int numConnections, final boolean multiUserMode, final int expectedResult) {
-    SecurityTestUtils.createCacheClient(authInit, authProps, javaProps, ports, numConnections, multiUserMode, expectedResult); // invokes SecurityTestUtils 2
+  protected static void createCacheClient(final String authInit, final Properties authProps,
+      final Properties javaProps, final int[] ports, final int numConnections,
+      final boolean multiUserMode, final int expectedResult) {
+    SecurityTestUtils.createCacheClient(authInit, authProps, javaProps, ports, numConnections,
+        multiUserMode, expectedResult); // invokes SecurityTestUtils 2
   }
 
   // b
-  private void createCacheClient(final String authInit, final Properties authProps, final Properties javaProps, final int port1, final int port2, final int numConnections, final boolean multiUserMode, final int expectedResult) {
-    createCacheClient(authInit, authProps, javaProps, new int[] {port1, port2}, numConnections, multiUserMode, expectedResult); // invokes a
+  private void createCacheClient(final String authInit, final Properties authProps,
+      final Properties javaProps, final int port1, final int port2, final int numConnections,
+      final boolean multiUserMode, final int expectedResult) {
+    createCacheClient(authInit, authProps, javaProps, new int[] {port1, port2}, numConnections,
+        multiUserMode, expectedResult); // invokes a
   }
 }

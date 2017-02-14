@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal;
 
@@ -33,14 +31,15 @@ import java.util.Properties;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.security.templates.SamplePostProcessor;
-import org.apache.geode.security.templates.SampleSecurityManager;
+import org.apache.geode.security.TestPostProcessor;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category(UnitTest.class)
+@Category({UnitTest.class, MembershipTest.class})
 public class DistributionConfigJUnitTest {
 
   private Map<Class<?>, Class<?>> classMap;
@@ -109,7 +108,8 @@ public class DistributionConfigJUnitTest {
     System.out.println();
     System.out.println("otherList: " + otherList);
 
-    //TODO - This makes no sense. One has no idea what the correct expected number of attributes are.
+    // TODO - This makes no sense. One has no idea what the correct expected number of attributes
+    // are.
     assertEquals(29, boolList.size());
     assertEquals(33, intList.size());
     assertEquals(85, stringList.size());
@@ -121,7 +121,8 @@ public class DistributionConfigJUnitTest {
   public void testAttributeDesc() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
     for (String attName : attNames) {
-      assertTrue("Does not contain description for attribute " + attName, AbstractDistributionConfig.dcAttDescriptions.containsKey(attName));
+      assertTrue("Does not contain description for attribute " + attName,
+          AbstractDistributionConfig.dcAttDescriptions.containsKey(attName));
     }
     List<String> attList = Arrays.asList(attNames);
     for (Object attName : AbstractDistributionConfig.dcAttDescriptions.keySet()) {
@@ -184,7 +185,8 @@ public class DistributionConfigJUnitTest {
       assertNotNull("every getter should have a corresponding setter " + attr, setter);
       String setterName = setter.getName();
       String getterName = getter.getName();
-      assertEquals(setterName.substring(setterName.indexOf("set") + 3), getterName.substring(getterName.indexOf("get") + 3));
+      assertEquals(setterName.substring(setterName.indexOf("set") + 3),
+          getterName.substring(getterName.indexOf("get") + 3));
       assertEquals(setter.getParameterTypes()[0], getter.getReturnType());
     }
 
@@ -225,9 +227,10 @@ public class DistributionConfigJUnitTest {
       assertTrue(attributes.containsKey(att));
       Method checker = checkers.get(att);
       assertEquals(checker.getParameterCount(), 1);
-      assertEquals("invalid checker: " + checker.getName(), checker.getReturnType(), checker.getParameterTypes()[0]);
+      assertEquals("invalid checker: " + checker.getName(), checker.getReturnType(),
+          checker.getParameterTypes()[0]);
 
-      //TODO assert checker and setter accepts this same type of parameter
+      // TODO assert checker and setter accepts this same type of parameter
     }
   }
 
@@ -305,7 +308,7 @@ public class DistributionConfigJUnitTest {
   public void testValidLocatorAddress() {
     String address = "81.240.0.1[7056]";
     config.modifiable = true;
-    config.setAttributeObject(START_LOCATOR,address,ConfigSource.api());
+    config.setAttributeObject(START_LOCATOR, address, ConfigSource.api());
     assertEquals(config.getStartLocator(), address);
   }
 
@@ -313,8 +316,8 @@ public class DistributionConfigJUnitTest {
   public void testInvalidLocatorAddress() {
     String address = "bad.bad[7056]";
     config.modifiable = true;
-//    config.setStartLocator(address);
-    config.setAttributeObject(START_LOCATOR,address,ConfigSource.api());
+    // config.setStartLocator(address);
+    config.setAttributeObject(START_LOCATOR, address, ConfigSource.api());
   }
 
   @Test
@@ -331,8 +334,8 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testSecurityProps() {
     Properties props = new Properties();
-    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-    props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    props.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
+    props.put(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
     props.put(SECURITY_LOG_LEVEL, "config");
     // add another non-security property to verify it won't get put in the security properties
     props.put(ACK_WAIT_THRESHOLD, 2);
@@ -345,8 +348,8 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testSecurityPropsWithNoSetter() {
     Properties props = new Properties();
-    props.put(SECURITY_MANAGER, SampleSecurityManager.class.getName());
-    props.put(SECURITY_POST_PROCESSOR, SamplePostProcessor.class.getName());
+    props.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
+    props.put(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
     props.put(SECURITY_LOG_LEVEL, "config");
     // add another non-security property to verify it won't get put in the security properties
     props.put(ACK_WAIT_THRESHOLD, 2);
@@ -376,6 +379,7 @@ public class DistributionConfigJUnitTest {
 
     DistributionConfig config = new DistributionConfigImpl(props);
   }
+
   @Test
   public void testSSLEnabledComponentsLegacyPass() {
     Properties props = new Properties();

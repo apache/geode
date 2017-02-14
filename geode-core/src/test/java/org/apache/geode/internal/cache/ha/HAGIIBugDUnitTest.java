@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.ha;
 
@@ -22,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -55,15 +54,14 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * This test points out the bug when GII of HARegion Queue is happening and at the same time it is receiving puts from peer to peer.
- * The test performs following operations in sequence
- * 1. Create HARegion Queue on vm0
- * 2. Perform put operations on fixed keys from vm0.
- * 4. Start vm1 and create HARegion Queue asynchronously and notify vm0 after its creation
- * 5. Put the data from vm0 asynchronously till HARegion Queue gets created in vm1.
- * 6. Validate the data. Puts happened during GII should be missed.
+ * This test points out the bug when GII of HARegion Queue is happening and at the same time it is
+ * receiving puts from peer to peer. The test performs following operations in sequence 1. Create
+ * HARegion Queue on vm0 2. Perform put operations on fixed keys from vm0. 4. Start vm1 and create
+ * HARegion Queue asynchronously and notify vm0 after its creation 5. Put the data from vm0
+ * asynchronously till HARegion Queue gets created in vm1. 6. Validate the data. Puts happened
+ * during GII should be missed.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;
@@ -125,11 +123,14 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     vm2.invoke(() -> HAGIIBugDUnitTest.closeCache());
     vm3.invoke(() -> HAGIIBugDUnitTest.closeCache());
     cache = null;
-    Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() { cache = null; } });
+    Invoke.invokeInEveryVM(new SerializableRunnable() {
+      public void run() {
+        cache = null;
+      }
+    });
   }
 
-  protected void createCache(Properties props) throws Exception
-  {
+  protected void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     assertNotNull(ds);
     ds.disconnect();
@@ -145,8 +146,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(putFromVmBeforeGII("vm0_1"));
     populateKeySet("vm0_1");
     Thread t1 = new Thread() {
-      public void run()
-      {
+      public void run() {
         try {
 
           createCache(new Properties());
@@ -157,21 +157,19 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
           factory.setCacheListener(regionListener);
           RegionAttributes attrs = factory.create();
           Region region = cache.createRegion(REGION_NAME, attrs);
-          LogWriterUtils.getLogWriter().info(
-              "Name of the region is : " + region.getFullPath());
+          LogWriterUtils.getLogWriter().info("Name of the region is : " + region.getFullPath());
 
           HARegionQueueAttributes hattr = new HARegionQueueAttributes();
           // setting expiry time for the regionqueue.
           hattr.setExpiryTime(12000000);
           RegionQueue regionqueue = null;
-          regionqueue = HARegionQueue.getHARegionQueueInstance(regionQueueName,
-              cache, hattr, HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+          regionqueue = HARegionQueue.getHARegionQueueInstance(regionQueueName, cache, hattr,
+              HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
           isHARegionQueueUp = true;
           vm0.invoke(setStopFlag());
           assertNotNull(regionqueue);
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
 
           isTestFailed = true;
           e.printStackTrace();
@@ -204,19 +202,17 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     validationFlag = true;
     validateResults(validationFlag);
     LogWriterUtils.getLogWriter().info(
-        "No. of keys that are missed by HARegion Queue during GII "
-            + keys_set_after_gii.size());
+        "No. of keys that are missed by HARegion Queue during GII " + keys_set_after_gii.size());
 
     if (keys_set_after_gii.size() != 0)
       fail("Set of the keys are missed by HARegion Queue during GII");
 
   }
 
-  private void populate_keys_after_gii()
-  {
-//    int k = 0;
+  private void populate_keys_after_gii() {
+    // int k = 0;
     for (int i = 0; i < 1; i++) {
-      long totalPuts = ((Long)total_no_puts[i]).longValue() - 3 * NO_OF_PUTS;
+      long totalPuts = ((Long) total_no_puts[i]).longValue() - 3 * NO_OF_PUTS;
       LogWriterUtils.getLogWriter().info("Total no of puts expectesd " + totalPuts);
       for (int j = 0; j < totalPuts; j++) {
         keys_set_after_gii.add("vm" + i + "_2" + j);
@@ -225,42 +221,35 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private void populateKeySet(String whichKey)
-  {
+  private void populateKeySet(String whichKey) {
     for (int i = 0; i < NO_OF_PUTS_BEFORE_GII; i++) {
       keys_set_before_gii.add(whichKey + i);
     }
 
   }
 
-  
-  private void validateResults(boolean isSecond)
-  {
-    HARegion regionForQueue = (HARegion)cache.getRegion(Region.SEPARATOR
-        + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
-    LogWriterUtils.getLogWriter().info(
-        "Region Queue size : " + regionForQueue.keys().size());
+
+  private void validateResults(boolean isSecond) {
+    HARegion regionForQueue = (HARegion) cache.getRegion(
+        Region.SEPARATOR + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
+    LogWriterUtils.getLogWriter().info("Region Queue size : " + regionForQueue.keys().size());
     Iterator itr = regionForQueue.entries(false).iterator();
     while (itr.hasNext()) {
-      Entry entry = (Entry)itr.next();
+      Entry entry = (Entry) itr.next();
       if (entry.getKey() instanceof Long) {
-        String strValue = (String)((ConflatableObject)entry.getValue())
-            .getKey();
+        String strValue = (String) ((ConflatableObject) entry.getValue()).getKey();
         if (isSecond) {
           if (strValue.indexOf("_2") != -1) {
-            if (keys_set_after_gii.contains(((ConflatableObject)entry
-                .getValue()).getKey())) {
+            if (keys_set_after_gii.contains(((ConflatableObject) entry.getValue()).getKey())) {
               keys_set_after_gii.remove(strValue);
             }
           }
-        }
-        else {
+        } else {
           if (strValue.indexOf("_1") != -1) {
             if (!keys_set_before_gii.contains(strValue)) {
-              fail("Key " + ((ConflatableObject)entry.getValue()).getKey()
+              fail("Key " + ((ConflatableObject) entry.getValue()).getKey()
                   + " not present in the region queue before GII");
-            }
-            else {
+            } else {
               keys_set_before_gii.remove(strValue);
 
             }
@@ -270,20 +259,16 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static Object getTotalNoPuts()
-  {
+  public static Object getTotalNoPuts() {
 
     return new Long(TOTAL_NO_OF_PUTS);
 
   }
 
-  private CacheSerializableRunnable putFromVmBeforeGII(final String whichVm)
-  {
+  private CacheSerializableRunnable putFromVmBeforeGII(final String whichVm) {
 
-    CacheSerializableRunnable putBeforeGII = new CacheSerializableRunnable(
-        "putBeforeGII") {
-      public void run2() throws CacheException
-      {
+    CacheSerializableRunnable putBeforeGII = new CacheSerializableRunnable("putBeforeGII") {
+      public void run2() throws CacheException {
 
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         for (int i = 0; i < NO_OF_PUTS_BEFORE_GII; i++) {
@@ -296,13 +281,10 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   }
 
-  private CacheSerializableRunnable putFrmVm(final String whichVm)
-  {
+  private CacheSerializableRunnable putFrmVm(final String whichVm) {
 
-    CacheSerializableRunnable putFromVM = new CacheSerializableRunnable(
-        "putFromVM") {
-      public void run2() throws CacheException
-      {
+    CacheSerializableRunnable putFromVM = new CacheSerializableRunnable("putFromVM") {
+      public void run2() throws CacheException {
         Region region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
         int j = 0;
         while (true) {
@@ -321,11 +303,9 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     return putFromVM;
   }
 
-  protected CacheSerializableRunnable setStopFlag()
-  {
+  protected CacheSerializableRunnable setStopFlag() {
     CacheSerializableRunnable setFlag = new CacheSerializableRunnable("setFlag") {
-      public void run2() throws CacheException
-      {
+      public void run2() throws CacheException {
         isStop = true;
       }
     };
@@ -333,14 +313,13 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     return setFlag;
   }
 
-  public static void createRegionQueue() throws Exception
-  {
+  public static void createRegionQueue() throws Exception {
     new HAGIIBugDUnitTest().createCache(new Properties());
     HARegionQueueAttributes hattr = new HARegionQueueAttributes();
     // setting expiry time for the regionqueue.
     hattr.setExpiryTime(12000000);
-    RegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(
-        regionQueueName, cache, hattr, HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+    RegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(regionQueueName, cache, hattr,
+        HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
     assertNotNull(regionqueue);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -352,8 +331,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   }
 
-  public static void closeCache()
-  {
+  public static void closeCache() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
@@ -362,46 +340,40 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
 }
 
+
 /**
  * This listener performs the put of Conflatable object in the regionqueue.
  */
 
-class vmListenerToPutInHARegionQueue extends CacheListenerAdapter
-{
-  public void afterCreate(EntryEvent event)
-  {
+class vmListenerToPutInHARegionQueue extends CacheListenerAdapter {
+  public void afterCreate(EntryEvent event) {
 
     Cache cache = event.getRegion().getCache();
-    HARegion regionForQueue = (HARegion)cache.getRegion(Region.SEPARATOR
-        + HARegionQueue.createRegionName(HAGIIBugDUnitTest.regionQueueName));
+    HARegion regionForQueue = (HARegion) cache.getRegion(
+        Region.SEPARATOR + HARegionQueue.createRegionName(HAGIIBugDUnitTest.regionQueueName));
     HARegionQueue regionqueue = regionForQueue.getOwner();
 
     try {
-      regionqueue.put(new ConflatableObject(event.getKey(),
-          event.getNewValue(), ((EntryEventImpl)event).getEventId(),
-          false, "region1"));
-    }
-    catch (Exception e) {
+      regionqueue.put(new ConflatableObject(event.getKey(), event.getNewValue(),
+          ((EntryEventImpl) event).getEventId(), false, "region1"));
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
 }
 
-class vmListenerToCheckHARegionQueue extends CacheListenerAdapter
-{
-  public void afterCreate(EntryEvent event)
-  {
+
+class vmListenerToCheckHARegionQueue extends CacheListenerAdapter {
+  public void afterCreate(EntryEvent event) {
     if (HAGIIBugDUnitTest.isHARegionQueueUp) {
       Cache cache = event.getRegion().getCache();
-      HARegion regionForQueue = (HARegion)cache.getRegion(Region.SEPARATOR
-          + HARegionQueue.createRegionName(HAGIIBugDUnitTest.regionQueueName));
+      HARegion regionForQueue = (HARegion) cache.getRegion(
+          Region.SEPARATOR + HARegionQueue.createRegionName(HAGIIBugDUnitTest.regionQueueName));
       HARegionQueue regionqueue = regionForQueue.getOwner();
       try {
-        regionqueue.put(new ConflatableObject(event.getKey(),
-            event.getNewValue(), ((EntryEventImpl)event).getEventId(),
-            false, "region1"));
-      }
-      catch (Exception e) {
+        regionqueue.put(new ConflatableObject(event.getKey(), event.getNewValue(),
+            ((EntryEventImpl) event).getEventId(), false, "region1"));
+      } catch (Exception e) {
         e.printStackTrace();
       }
     }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -56,7 +54,8 @@ public class HTTPServiceSSLSupportJUnitTest {
   }
 
   private static File findTrustedJKS() {
-    return new File(TestUtil.getResourcePath(HTTPServiceSSLSupportJUnitTest.class, "/ssl/trusted.keystore"));
+    return new File(
+        TestUtil.getResourcePath(HTTPServiceSSLSupportJUnitTest.class, "/ssl/trusted.keystore"));
   }
 
   public static String makePath(String[] strings) {
@@ -68,7 +67,7 @@ public class HTTPServiceSSLSupportJUnitTest {
     return sb.toString();
   }
 
-  //  @Ignore("disabled for unknown reason")
+  // @Ignore("disabled for unknown reason")
   @Test
   public void testSSLWithClusterSSL() throws Exception {
 
@@ -101,13 +100,17 @@ public class HTTPServiceSSLSupportJUnitTest {
     Properties localProps = new Properties();
     localProps.setProperty(MCAST_PORT, "0");
     localProps.setProperty(CLUSTER_SSL_ENABLED, "true");
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStore", jks.getCanonicalPath());
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword", "password");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStore",
+        jks.getCanonicalPath());
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.keyStorePassword",
+        "password");
 
     localProps.setProperty(CLUSTER_SSL_PROTOCOLS, "SSL");
     localProps.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, "true");
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStore", jks.getCanonicalPath());
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword", "password");
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStore",
+        jks.getCanonicalPath());
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "javax.net.ssl.trustStorePassword",
+        "password");
 
     DistributionConfigImpl config = new DistributionConfigImpl(localProps);
 
@@ -115,11 +118,15 @@ public class HTTPServiceSSLSupportJUnitTest {
     assertEquals("SSL", config.getHttpServiceSSLProtocols());
     assertEquals(true, config.getHttpServiceSSLRequireAuthentication());
 
-    assertEquals(jks.getCanonicalPath(), config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStore"));
-    assertEquals("password", config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStorePassword"));
+    assertEquals(jks.getCanonicalPath(),
+        config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStore"));
+    assertEquals("password",
+        config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStorePassword"));
     // assertIndexDetailsEquals(system.getConfig().getHttpServiceSSLKeyStoreType(),"JKS");
-    assertEquals(jks.getCanonicalPath(), config.getHttpServiceSSLProperties().get("javax.net.ssl.trustStore"));
-    assertEquals("password", config.getHttpServiceSSLProperties().get("javax.net.ssl.trustStorePassword"));
+    assertEquals(jks.getCanonicalPath(),
+        config.getHttpServiceSSLProperties().get("javax.net.ssl.trustStore"));
+    assertEquals("password",
+        config.getHttpServiceSSLProperties().get("javax.net.ssl.trustStorePassword"));
 
   }
 
@@ -147,10 +154,14 @@ public class HTTPServiceSSLSupportJUnitTest {
     assertEquals(config.getHttpServiceSSLProtocols(), "SSL");
     assertEquals(config.getHttpServiceSSLRequireAuthentication(), true);
 
-    assertEquals(jks.getCanonicalPath(), config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStore"));
-    assertEquals("password", config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStorePassword"));
-    assertEquals(jks.getCanonicalPath(), config.getHttpServiceSSLProperties().get("javax.net.ssl.trustStore"));
-    assertEquals("password", config.getHttpServiceSSLProperties().get("javax.net.ssl.trustStorePassword"));
+    assertEquals(jks.getCanonicalPath(),
+        config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStore"));
+    assertEquals("password",
+        config.getHttpServiceSSLProperties().get("javax.net.ssl.keyStorePassword"));
+    assertEquals(jks.getCanonicalPath(),
+        config.getHttpServiceSSLProperties().get("javax.net.ssl.trustStore"));
+    assertEquals("password",
+        config.getHttpServiceSSLProperties().get("javax.net.ssl.trustStorePassword"));
 
   }
 

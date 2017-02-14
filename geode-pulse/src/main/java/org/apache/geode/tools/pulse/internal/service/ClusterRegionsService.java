@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -85,9 +83,8 @@ public class ClusterRegionsService implements PulseService {
   }
 
   /**
-   * This method is used to get various regions associated with the given
-   * cluster and create json for each region fields and returns Array List for
-   * all the regions associated with given cluster
+   * This method is used to get various regions associated with the given cluster and create json
+   * for each region fields and returns Array List for all the regions associated with given cluster
    * 
    * @param cluster
    * @return JSONObject Array List
@@ -163,25 +160,19 @@ public class ClusterRegionsService implements PulseService {
         regionJSON.put("compressionCodec", this.VALUE_NA);
       }
 
-      if (PulseConstants.PRODUCT_NAME_SQLFIRE.equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-        // Convert region path to dot separated region path
-        regionJSON.put("regionPath",
-            StringUtils.getTableNameFromRegionName(reg.getFullPath()));
-        regionJSON.put("id",
-            StringUtils.getTableNameFromRegionName(reg.getFullPath()));
-      } else {
-        regionJSON.put("regionPath", reg.getFullPath());
-        regionJSON.put("id", reg.getFullPath());
-      }
 
-      regionJSON.put("memoryReadsTrend",
-          mapper.valueToTree(reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_GETS_PER_SEC_TREND)));
-      regionJSON.put("memoryWritesTrend",
-          mapper.valueToTree(reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_PUTS_PER_SEC_TREND)));
-      regionJSON.put("diskReadsTrend",
-          mapper.valueToTree(reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_READS_PER_SEC_TREND)));
-      regionJSON.put("diskWritesTrend",
-          mapper.valueToTree(reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_WRITES_PER_SEC_TREND)));
+      regionJSON.put("regionPath", reg.getFullPath());
+      regionJSON.put("id", reg.getFullPath());
+
+
+      regionJSON.put("memoryReadsTrend", mapper
+          .valueToTree(reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_GETS_PER_SEC_TREND)));
+      regionJSON.put("memoryWritesTrend", mapper
+          .valueToTree(reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_PUTS_PER_SEC_TREND)));
+      regionJSON.put("diskReadsTrend", mapper.valueToTree(
+          reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_READS_PER_SEC_TREND)));
+      regionJSON.put("diskWritesTrend", mapper.valueToTree(
+          reg.getRegionStatisticTrend(Cluster.Region.REGION_STAT_DISK_WRITES_PER_SEC_TREND)));
       regionJSON.put("emptyNodes", reg.getEmptyNode());
       Long entrySize = reg.getEntrySize();
       DecimalFormat form = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN_2);

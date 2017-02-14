@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache.execute;
@@ -49,20 +47,19 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
   private ServerToClientFunctionResultSender sender;
 
   private boolean executeOnBucketSet = false;
-  
+
   private boolean isPRSingleHop = false;
-  
+
   public PartitionedRegionFunctionExecutor(Region r) {
     if (r == null) {
       throw new IllegalArgumentException(
           LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
               .toLocalizedString("region"));
     }
-    this.pr = (PartitionedRegion)r;
+    this.pr = (PartitionedRegion) r;
   }
 
-  private PartitionedRegionFunctionExecutor(
-      PartitionedRegionFunctionExecutor prfe) {
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe) {
     super(prfe);
     this.pr = prfe.pr;
     this.executeOnBucketSet = prfe.executeOnBucketSet;
@@ -77,12 +74,11 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     }
   }
 
-  private PartitionedRegionFunctionExecutor(
-      PartitionedRegionFunctionExecutor prfe,
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
       MemberMappedArgument argument) {
     // super copies args, rc and memberMappedArgument
     super(prfe);
-    
+
     this.pr = prfe.pr;
     this.executeOnBucketSet = prfe.executeOnBucketSet;
     this.isPRSingleHop = prfe.isPRSingleHop;
@@ -94,12 +90,11 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     this.isMemberMappedArgument = true;
   }
 
-  private PartitionedRegionFunctionExecutor(
-      PartitionedRegionFunctionExecutor prfe,
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
       ResultCollector rs) {
-    // super copies args, rc and memberMappedArgument 
+    // super copies args, rc and memberMappedArgument
     super(prfe);
-    
+
     this.pr = prfe.pr;
     this.executeOnBucketSet = prfe.executeOnBucketSet;
     this.isPRSingleHop = prfe.isPRSingleHop;
@@ -110,11 +105,10 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     this.rc = rs;
   }
 
-  private PartitionedRegionFunctionExecutor(
-      PartitionedRegionFunctionExecutor prfe,
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
       Object arguments) {
-    
-    // super copies args, rc and memberMappedArgument 
+
+    // super copies args, rc and memberMappedArgument
     super(prfe);
     this.pr = prfe.pr;
     this.executeOnBucketSet = prfe.executeOnBucketSet;
@@ -125,11 +119,9 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     // override arguments
     this.args = arguments;
   }
-  
-  private PartitionedRegionFunctionExecutor(
-      PartitionedRegionFunctionExecutor prfe,
-      Set filter2) {
-    // super copies args, rc and memberMappedArgument 
+
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe, Set filter2) {
+    // super copies args, rc and memberMappedArgument
     super(prfe);
     this.pr = prfe.pr;
     this.executeOnBucketSet = prfe.executeOnBucketSet;
@@ -139,11 +131,10 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     this.filter.addAll(filter2);
     this.isReExecute = prfe.isReExecute;
   }
-  
-  private PartitionedRegionFunctionExecutor(
-      PartitionedRegionFunctionExecutor prfe,
+
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
       Set<Integer> bucketsAsFilter, boolean executeOnBucketSet) {
-    // super copies args, rc and memberMappedArgument 
+    // super copies args, rc and memberMappedArgument
     super(prfe);
     this.pr = prfe.pr;
     this.executeOnBucketSet = executeOnBucketSet;
@@ -153,9 +144,9 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     this.filter.addAll(bucketsAsFilter);
     this.isReExecute = prfe.isReExecute;
   }
-  
-  private PartitionedRegionFunctionExecutor(
-      PartitionedRegionFunctionExecutor prfe, boolean isReExecute) {
+
+  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
+      boolean isReExecute) {
     super(prfe);
     this.pr = prfe.pr;
     this.executeOnBucketSet = prfe.executeOnBucketSet;
@@ -176,56 +167,52 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
   }
 
   public PartitionedRegionFunctionExecutor(PartitionedRegion region, Set filter2, Object args,
-      MemberMappedArgument memberMappedArg, 
-      ServerToClientFunctionResultSender resultSender, Set failedNodes,
-      boolean executeOnBucketSet) {
+      MemberMappedArgument memberMappedArg, ServerToClientFunctionResultSender resultSender,
+      Set failedNodes, boolean executeOnBucketSet) {
     this.pr = region;
     this.sender = resultSender;
-    this.isClientServerMode = true ;
+    this.isClientServerMode = true;
     this.executeOnBucketSet = executeOnBucketSet;
     if (filter2 != null) {
       this.filter.clear();
       this.filter.addAll(filter2);
     }
-    
+
     if (args != null) {
       this.args = args;
-    }
-    else if (memberMappedArg != null) {
+    } else if (memberMappedArg != null) {
       this.memberMappedArg = memberMappedArg;
       this.isMemberMappedArgument = true;
     }
-    
+
     if (failedNodes != null) {
       this.failedNodes.clear();
       this.failedNodes.addAll(failedNodes);
-    }  
-    
+    }
+
   }
-  
-  
-  public PartitionedRegionFunctionExecutor(PartitionedRegion region,
-      Set filter2, Object args, MemberMappedArgument memberMappedArg,
-      ServerToClientFunctionResultSender resultSender, Set failedNodes,
-      boolean executeOnBucketSet, boolean isPRSingleHop) {
+
+
+  public PartitionedRegionFunctionExecutor(PartitionedRegion region, Set filter2, Object args,
+      MemberMappedArgument memberMappedArg, ServerToClientFunctionResultSender resultSender,
+      Set failedNodes, boolean executeOnBucketSet, boolean isPRSingleHop) {
     this.pr = region;
     this.sender = resultSender;
-    this.isClientServerMode = true ;
+    this.isClientServerMode = true;
     this.executeOnBucketSet = executeOnBucketSet;
     this.isPRSingleHop = isPRSingleHop;
     if (filter2 != null) {
       this.filter.clear();
       this.filter.addAll(filter2);
     }
-    
+
     if (args != null) {
       this.args = args;
-    }
-    else if (memberMappedArg != null) {
+    } else if (memberMappedArg != null) {
       this.memberMappedArg = memberMappedArg;
       this.isMemberMappedArgument = true;
     }
-    
+
     if (failedNodes != null) {
       this.failedNodes.clear();
       this.failedNodes.addAll(failedNodes);
@@ -235,15 +222,12 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
   public ResultCollector executeFunction(final Function function) {
     if (function.hasResult()) {
       if (this.rc == null) {
-        return this.pr.executeFunction(function, this,
-            new DefaultResultCollector(), this.executeOnBucketSet);
-      }
-      else {
-        return this.pr.executeFunction(function, this, rc,
+        return this.pr.executeFunction(function, this, new DefaultResultCollector(),
             this.executeOnBucketSet);
+      } else {
+        return this.pr.executeFunction(function, this, rc, this.executeOnBucketSet);
       }
-    }
-    else { /* NO RESULT:fire-n-forget */
+    } else { /* NO RESULT:fire-n-forget */
       this.pr.executeFunction(function, this, null, this.executeOnBucketSet);
       return new NoResult();
     }
@@ -258,22 +242,21 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     this.executeOnBucketSet = false;
     return new PartitionedRegionFunctionExecutor(this, filter);
   }
-  
-  
+
+
   public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
     if (bucketIDs == null) {
       throw new FunctionException(
           LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
               .toLocalizedString("buckets as filter"));
+    } else if (bucketIDs.isEmpty()) {
+      throw new FunctionException("Bucket IDs list is empty");
     }
-    else if (bucketIDs.isEmpty()) {
-    	throw new FunctionException("Bucket IDs list is empty");
-    }
-    
+
     Set<Integer> actualBucketSet = pr.getRegionAdvisor().getBucketSet();
-    
+
     bucketIDs.retainAll(actualBucketSet);
-   
+
     Iterator<Integer> it = bucketIDs.iterator();
     while (it.hasNext()) {
       int bid = it.next();
@@ -290,17 +273,18 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
   public LocalRegion getRegion() {
     return this.pr;
   }
-  
+
   public ServerToClientFunctionResultSender getServerResultSender() {
     return this.sender;
   }
+
   public Execution withArgs(Object args) {
     if (args == null) {
       throw new FunctionException(
           LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
               .toLocalizedString("args"));
     }
-    return new PartitionedRegionFunctionExecutor(this, args); 
+    return new PartitionedRegionFunctionExecutor(this, args);
   }
 
   public Execution withCollector(ResultCollector rs) {
@@ -311,23 +295,22 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     }
     return new PartitionedRegionFunctionExecutor(this, rs);
   }
-  
+
   public AbstractExecution setIsReExecute() {
     return new PartitionedRegionFunctionExecutor(this, true);
   }
-  
-  public boolean isPrSingleHop(){
+
+  public boolean isPrSingleHop() {
     return this.isPRSingleHop;
   }
-  
-  public InternalExecution withMemberMappedArgument(
-      MemberMappedArgument argument) {
+
+  public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(
           LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
               .toLocalizedString("MemberMapped arg"));
     }
-    return new PartitionedRegionFunctionExecutor(this,argument);
+    return new PartitionedRegionFunctionExecutor(this, argument);
   }
 
   @Override
@@ -343,35 +326,44 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     buf.append("]");
     return buf.toString();
   }
-  /* (non-Javadoc)
-   * @see org.apache.geode.internal.cache.execute.AbstractExecution#validateExecution(org.apache.geode.cache.execute.Function, java.util.Set)
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.apache.geode.internal.cache.execute.AbstractExecution#validateExecution(org.apache.geode.
+   * cache.execute.Function, java.util.Set)
    */
   @Override
   public void validateExecution(Function function, Set targetMembers) {
     GemFireCacheImpl cache = pr.getGemFireCache();
     if (cache != null && cache.getTxManager().getTXState() != null) {
       if (targetMembers.size() > 1) {
-        throw new TransactionException(LocalizedStrings.PartitionedRegion_TX_FUNCTION_ON_MORE_THAN_ONE_NODE
-            .toLocalizedString());
+        throw new TransactionException(
+            LocalizedStrings.PartitionedRegion_TX_FUNCTION_ON_MORE_THAN_ONE_NODE
+                .toLocalizedString());
       } else {
         assert targetMembers.size() == 1;
-        DistributedMember funcTarget = (DistributedMember)targetMembers.iterator().next();
+        DistributedMember funcTarget = (DistributedMember) targetMembers.iterator().next();
         DistributedMember target = cache.getTxManager().getTXState().getTarget();
         if (target == null) {
           cache.getTxManager().getTXState().setTarget(funcTarget);
         } else if (!target.equals(funcTarget)) {
-          throw new TransactionDataRebalancedException(LocalizedStrings.PartitionedRegion_TX_FUNCTION_EXECUTION_NOT_COLOCATED_0_1
-              .toLocalizedString(new Object[] {target,funcTarget}));
+          throw new TransactionDataRebalancedException(
+              LocalizedStrings.PartitionedRegion_TX_FUNCTION_EXECUTION_NOT_COLOCATED_0_1
+                  .toLocalizedString(new Object[] {target, funcTarget}));
         }
       }
     }
-    if (function.optimizeForWrite() && cache.getResourceManager().getHeapMonitor().
-        containsHeapCriticalMembers(targetMembers) &&
-        !MemoryThresholds.isLowMemoryExceptionDisabled()) {
-      Set<InternalDistributedMember> hcm  = cache.getResourceAdvisor().adviseCritialMembers();
+    if (function.optimizeForWrite()
+        && cache.getResourceManager().getHeapMonitor().containsHeapCriticalMembers(targetMembers)
+        && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
+      Set<InternalDistributedMember> hcm = cache.getResourceAdvisor().adviseCritialMembers();
       Set<DistributedMember> sm = SetUtils.intersection(hcm, targetMembers);
-      throw new LowMemoryException(LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1.toLocalizedString(
-          new Object[] {function.getId(), sm}), sm);
+      throw new LowMemoryException(
+          LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
+              .toLocalizedString(new Object[] {function.getId(), sm}),
+          sm);
     }
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.test.junit.rules;
 
@@ -26,9 +24,10 @@ import org.apache.geode.test.junit.Retry;
 
 /**
  * JUnit Rule that enables retrying a failed test up to a maximum number of retries.
- * </p> 
- * RetryRule can be used globally for all tests in a test case by specifying a 
- * retryCount when instantiating it:
+ * </p>
+ * RetryRule can be used globally for all tests in a test case by specifying a retryCount when
+ * instantiating it:
+ * 
  * <pre>
  * {@literal @}Rule
  * public final RetryRule retryRule = new RetryRule(3);
@@ -38,11 +37,12 @@ import org.apache.geode.test.junit.Retry;
  *   ...
  * }
  * </pre>
- * </p> 
+ * </p>
  * The above will result in 3 retries for every test in the test case.
- * </p> 
- * RetryRule can be used locally for specific tests by annotating the test 
- * method with {@literal @}Rule and specifying a retryCount for that test:
+ * </p>
+ * RetryRule can be used locally for specific tests by annotating the test method with
+ * {@literal @}Rule and specifying a retryCount for that test:
+ * 
  * <pre>
  * {@literal @}Rule
  * public final RetryRule retryRule = new RetryRule();
@@ -54,16 +54,15 @@ import org.apache.geode.test.junit.Retry;
  * }
  * </pre>
  * </p>
- * This version of RetryRule will retry a test that fails because of any kind 
- * of Throwable.
+ * This version of RetryRule will retry a test that fails because of any kind of Throwable.
  */
 public class RetryRule implements TestRule, Serializable {
-  
+
   /**
    * Enables printing of failures to System.err even if test passes on a retry
    */
   private static final boolean LOG = false;
-  
+
   private final AbstractRetryRule implementation;
 
   public RetryRule() {
@@ -80,14 +79,15 @@ public class RetryRule implements TestRule, Serializable {
   }
 
   protected abstract class AbstractRetryRule implements TestRule, Serializable {
-    protected AbstractRetryRule() {
-    }
-    protected void evaluate(final Statement base, final Description description, final int retryCount) throws Throwable {
+    protected AbstractRetryRule() {}
+
+    protected void evaluate(final Statement base, final Description description,
+        final int retryCount) throws Throwable {
       if (retryCount == 0) {
-        
+
       }
       Throwable caughtThrowable = null;
-      
+
       for (int count = 0; count < retryCount; count++) {
         try {
           base.evaluate();
@@ -97,22 +97,23 @@ public class RetryRule implements TestRule, Serializable {
           debug(description.getDisplayName() + ": run " + (count + 1) + " failed");
         }
       }
-      
+
       debug(description.getDisplayName() + ": giving up after " + retryCount + " failures");
       throw caughtThrowable;
     }
+
     private void debug(final String message) {
       if (LOG) {
         System.err.println(message);
       }
     }
   }
-  
+
   /**
    * Implementation of RetryRule for all test methods in a test case
    */
   protected class GlobalRetryRule extends AbstractRetryRule {
-    
+
     private final int retryCount;
 
     protected GlobalRetryRule(final int retryCount) {
@@ -121,7 +122,7 @@ public class RetryRule implements TestRule, Serializable {
       }
       this.retryCount = retryCount;
     }
-    
+
     @Override
     public Statement apply(final Statement base, final Description description) {
       return new Statement() {
@@ -132,7 +133,8 @@ public class RetryRule implements TestRule, Serializable {
       };
     }
 
-    protected void evaluatePerCase(final Statement base, final Description description) throws Throwable {
+    protected void evaluatePerCase(final Statement base, final Description description)
+        throws Throwable {
       evaluate(base, description, this.retryCount);
     }
   }
@@ -141,21 +143,21 @@ public class RetryRule implements TestRule, Serializable {
    * Implementation of RetryRule for test methods annotated with Retry
    */
   protected class LocalRetryRule extends AbstractRetryRule {
-    
-    protected LocalRetryRule() {
-    }
-    
+
+    protected LocalRetryRule() {}
+
     @Override
     public Statement apply(final Statement base, final Description description) {
       return new Statement() {
-        @Override 
+        @Override
         public void evaluate() throws Throwable {
           LocalRetryRule.this.evaluatePerTest(base, description);
         }
       };
     }
 
-    protected void evaluatePerTest(final Statement base, final Description description) throws Throwable {
+    protected void evaluatePerTest(final Statement base, final Description description)
+        throws Throwable {
       if (isTest(description)) {
         Retry retry = description.getAnnotation(Retry.class);
         int retryCount = getRetryCount(retry);

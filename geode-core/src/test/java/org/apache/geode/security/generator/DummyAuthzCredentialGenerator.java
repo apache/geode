@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.security.generator;
 
@@ -61,8 +59,7 @@ public class DummyAuthzCredentialGenerator extends AuthzCredentialGenerator {
     }
     if (requiresReader) {
       roleType = READER_ROLE;
-    }
-    else if (requiresWriter) {
+    } else if (requiresWriter) {
       roleType = WRITER_ROLE;
     }
     return roleType;
@@ -71,7 +68,8 @@ public class DummyAuthzCredentialGenerator extends AuthzCredentialGenerator {
   @Override
   protected Properties init() throws IllegalArgumentException {
     if (!this.generator.classCode().isDummy()) {
-      throw new IllegalArgumentException("DummyAuthorization module only works with DummyAuthenticator");
+      throw new IllegalArgumentException(
+          "DummyAuthorization module only works with DummyAuthenticator");
     }
     return null;
   }
@@ -87,13 +85,15 @@ public class DummyAuthzCredentialGenerator extends AuthzCredentialGenerator {
   }
 
   @Override
-  protected Principal getAllowedPrincipal(final OperationCode[] opCodes, final String[] regionNames, final int index) {
+  protected Principal getAllowedPrincipal(final OperationCode[] opCodes, final String[] regionNames,
+      final int index) {
     final byte roleType = getRequiredRole(opCodes);
     return getPrincipal(roleType, index);
   }
 
   @Override
-  protected Principal getDisallowedPrincipal(final OperationCode[] opCodes, final String[] regionNames, final int index) {
+  protected Principal getDisallowedPrincipal(final OperationCode[] opCodes,
+      final String[] regionNames, final int index) {
     byte roleType = getRequiredRole(opCodes);
     byte disallowedRoleType;
     switch (roleType) {
@@ -111,12 +111,12 @@ public class DummyAuthzCredentialGenerator extends AuthzCredentialGenerator {
   }
 
   @Override
-  protected int getNumPrincipalTries(final OperationCode[] opCodes,  final String[] regionNames) {
+  protected int getNumPrincipalTries(final OperationCode[] opCodes, final String[] regionNames) {
     return 5;
   }
 
   private Principal getPrincipal(final byte roleType, final int index) {
-    String[] admins = new String[] { "root", "admin", "administrator" };
+    String[] admins = new String[] {"root", "admin", "administrator"};
     switch (roleType) {
       case READER_ROLE:
         return new UsernamePrincipal("reader" + index);

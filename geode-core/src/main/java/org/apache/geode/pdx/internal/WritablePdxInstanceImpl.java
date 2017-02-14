@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.pdx.internal;
 
@@ -25,8 +23,7 @@ import org.apache.geode.pdx.PdxFieldDoesNotExistException;
 import org.apache.geode.pdx.PdxFieldTypeMismatchException;
 import org.apache.geode.pdx.WritablePdxInstance;
 
-public class WritablePdxInstanceImpl extends PdxInstanceImpl implements
-    WritablePdxInstance {
+public class WritablePdxInstanceImpl extends PdxInstanceImpl implements WritablePdxInstance {
   private static final long serialVersionUID = 7398999150097596214L;
   private static final Object NULL_TOKEN = new Object();
   private Object[] dirtyFields = null;
@@ -45,6 +42,7 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements
     this.dirtyFields[f.getFieldIndex()] = value;
     clearCachedState();
   }
+
   /**
    * Flush pending writes if the given field is dirty.
    */
@@ -60,7 +58,7 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements
     }
     return new PdxReaderImpl(this);
   }
-  
+
   @Override
   public synchronized Object getCachedObject() {
     return super.getCachedObject();
@@ -82,13 +80,14 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements
       if (getPdxType().getHasDeletedField()) {
         // Need a new type that does not have the deleted field
         PdxType pt = new PdxType(getPdxType().getClassName(), !getPdxType().getNoDomainClass());
-        GemFireCacheImpl gfc = GemFireCacheImpl.getForPdx("PDX registry is unavailable because the Cache has been closed.");
+        GemFireCacheImpl gfc = GemFireCacheImpl
+            .getForPdx("PDX registry is unavailable because the Cache has been closed.");
         TypeRegistry tr = gfc.getPdxRegistry();
         writer = new PdxWriterImpl(pt, tr, os);
       } else {
         writer = new PdxWriterImpl(getPdxType(), os);
       }
-      for (PdxField f: getPdxType().getFields()) {
+      for (PdxField f : getPdxType().getFields()) {
         if (f.isDeleted()) {
           continue;
         }
@@ -114,171 +113,194 @@ public class WritablePdxInstanceImpl extends PdxInstanceImpl implements
   public void setField(String fieldName, Object value) {
     PdxField f = getPdxType().getPdxField(fieldName);
     if (f == null) {
-      throw new PdxFieldDoesNotExistException("A field named " + fieldName + " does not exist on " + getPdxType());
+      throw new PdxFieldDoesNotExistException(
+          "A field named " + fieldName + " does not exist on " + getPdxType());
     }
     if (value != null) {
       switch (f.getFieldType()) {
-      case CHAR:
-        if (!(value instanceof Character)) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a Character but was a " + value.getClass());
-        }
-        break;
-      case BOOLEAN:
-        if (!(value instanceof Boolean)) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a Boolean but was a " + value.getClass());
-        }
-        break;
-      case BYTE:
-        if (!(value instanceof Byte)) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a Byte but was a " + value.getClass());
-        }
-        break;
-      case SHORT:
-        if (!(value instanceof Short)) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a Short but was a " + value.getClass());
-        }
-        break;
-      case INT:
-        if (!(value instanceof Integer)) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a Integer but was a " + value.getClass());
-        }
-        break;
-      case LONG:
-        if (!(value instanceof Long)) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a Long but was a " + value.getClass());
-        }
-        break;
-      case FLOAT:
-        if (!(value instanceof Float)) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a Float but was a " + value.getClass());
-        }
-        break;
-      case DOUBLE:
-        if (!(value instanceof Double)) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a Double but was a " + value.getClass());
-        }
-        break;
-      case STRING:
-        if (!(value instanceof String)) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a String but was a " + value.getClass());
-        }
-        break;
-      case BOOLEAN_ARRAY:
-        if (!(value instanceof boolean[])) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a boolean[] but was a " + value.getClass());
-        }
-        break;
-      case CHAR_ARRAY:
-        if (!(value instanceof char[])) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a char[] but was a " + value.getClass());
-        }
-        break;
-      case BYTE_ARRAY:
-        if (!(value instanceof byte[])) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a byte[] but was a " + value.getClass());
-        }
-        break;
-      case SHORT_ARRAY:
-        if (!(value instanceof short[])) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a short[] but was a " + value.getClass());
-        }
-        break;
-      case INT_ARRAY:
-        if (!(value instanceof int[])) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a int[] but was a " + value.getClass());
-        }
-        break;
-      case LONG_ARRAY:
-        if (!(value instanceof long[])) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a long[] but was a " + value.getClass());
-        }
-        break;
-      case FLOAT_ARRAY:
-        if (!(value instanceof float[])) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a float[] but was a " + value.getClass());
-        }
-        break;
-      case DOUBLE_ARRAY:
-        if (!(value instanceof double[])) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a double[] but was a " + value.getClass());
-        }
-        break;
-      case STRING_ARRAY:
-        if (!(value instanceof String[])) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a String[] but was a " + value.getClass());
-        }
-        break;
-      case ARRAY_OF_BYTE_ARRAYS:
-        if (!(value instanceof byte[][])) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a byte[][] but was a " + value.getClass());
-        }
-        break;
-      case OBJECT_ARRAY:
-        if (!(value instanceof Object[])) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a Object[] but was a " + value.getClass());
-        }
-        break;
-      case OBJECT:
-        // no check needed
-        break;
-      // All of the following classes are not final. We only support the exact class in this case; not subclasses.
-      case DATE:
-        if (!Date.class.equals(value.getClass())) {
-          throw new PdxFieldTypeMismatchException("Values for this field must be a Date but was a " + value.getClass());
-        }
-        break;
-      default:
-        throw new InternalGemFireException("Unhandled field type " + f.getFieldType());
+        case CHAR:
+          if (!(value instanceof Character)) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a Character but was a " + value.getClass());
+          }
+          break;
+        case BOOLEAN:
+          if (!(value instanceof Boolean)) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a Boolean but was a " + value.getClass());
+          }
+          break;
+        case BYTE:
+          if (!(value instanceof Byte)) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a Byte but was a " + value.getClass());
+          }
+          break;
+        case SHORT:
+          if (!(value instanceof Short)) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a Short but was a " + value.getClass());
+          }
+          break;
+        case INT:
+          if (!(value instanceof Integer)) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a Integer but was a " + value.getClass());
+          }
+          break;
+        case LONG:
+          if (!(value instanceof Long)) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a Long but was a " + value.getClass());
+          }
+          break;
+        case FLOAT:
+          if (!(value instanceof Float)) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a Float but was a " + value.getClass());
+          }
+          break;
+        case DOUBLE:
+          if (!(value instanceof Double)) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a Double but was a " + value.getClass());
+          }
+          break;
+        case STRING:
+          if (!(value instanceof String)) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a String but was a " + value.getClass());
+          }
+          break;
+        case BOOLEAN_ARRAY:
+          if (!(value instanceof boolean[])) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a boolean[] but was a " + value.getClass());
+          }
+          break;
+        case CHAR_ARRAY:
+          if (!(value instanceof char[])) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a char[] but was a " + value.getClass());
+          }
+          break;
+        case BYTE_ARRAY:
+          if (!(value instanceof byte[])) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a byte[] but was a " + value.getClass());
+          }
+          break;
+        case SHORT_ARRAY:
+          if (!(value instanceof short[])) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a short[] but was a " + value.getClass());
+          }
+          break;
+        case INT_ARRAY:
+          if (!(value instanceof int[])) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a int[] but was a " + value.getClass());
+          }
+          break;
+        case LONG_ARRAY:
+          if (!(value instanceof long[])) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a long[] but was a " + value.getClass());
+          }
+          break;
+        case FLOAT_ARRAY:
+          if (!(value instanceof float[])) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a float[] but was a " + value.getClass());
+          }
+          break;
+        case DOUBLE_ARRAY:
+          if (!(value instanceof double[])) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a double[] but was a " + value.getClass());
+          }
+          break;
+        case STRING_ARRAY:
+          if (!(value instanceof String[])) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a String[] but was a " + value.getClass());
+          }
+          break;
+        case ARRAY_OF_BYTE_ARRAYS:
+          if (!(value instanceof byte[][])) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a byte[][] but was a " + value.getClass());
+          }
+          break;
+        case OBJECT_ARRAY:
+          if (!(value instanceof Object[])) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a Object[] but was a " + value.getClass());
+          }
+          break;
+        case OBJECT:
+          // no check needed
+          break;
+        // All of the following classes are not final. We only support the exact class in this case;
+        // not subclasses.
+        case DATE:
+          if (!Date.class.equals(value.getClass())) {
+            throw new PdxFieldTypeMismatchException(
+                "Values for this field must be a Date but was a " + value.getClass());
+          }
+          break;
+        default:
+          throw new InternalGemFireException("Unhandled field type " + f.getFieldType());
       }
     } else {
       switch (f.getFieldType()) {
-      case CHAR:
-        value = Character.valueOf((char)0);
-        break;
-      case BOOLEAN:
-        value = Boolean.valueOf(false);
-        break;
-      case BYTE:
-        value = Byte.valueOf((byte)0);
-        break;
-      case SHORT:
-        value = Short.valueOf((short)0);
-        break;
-      case INT:
-        value = Integer.valueOf(0);
-        break;
-      case FLOAT:
-        value = Float.valueOf(0.0f);
-        break;
-      case DOUBLE:
-        value = Double.valueOf(0.0);
-        break;
-      case LONG:
-        value = Long.valueOf(0L);
-        break;
-      case DATE:
-      case STRING:
-      case BOOLEAN_ARRAY:
-      case CHAR_ARRAY:
-      case BYTE_ARRAY:
-      case SHORT_ARRAY:
-      case INT_ARRAY:
-      case LONG_ARRAY:
-      case FLOAT_ARRAY:
-      case DOUBLE_ARRAY:
-      case STRING_ARRAY:
-      case ARRAY_OF_BYTE_ARRAYS:
-      case OBJECT_ARRAY:
-      case OBJECT:
-        // null ok
-        break;
-      default:
-        throw new InternalGemFireException("Unhandled field type " + f.getFieldType());
+        case CHAR:
+          value = Character.valueOf((char) 0);
+          break;
+        case BOOLEAN:
+          value = Boolean.valueOf(false);
+          break;
+        case BYTE:
+          value = Byte.valueOf((byte) 0);
+          break;
+        case SHORT:
+          value = Short.valueOf((short) 0);
+          break;
+        case INT:
+          value = Integer.valueOf(0);
+          break;
+        case FLOAT:
+          value = Float.valueOf(0.0f);
+          break;
+        case DOUBLE:
+          value = Double.valueOf(0.0);
+          break;
+        case LONG:
+          value = Long.valueOf(0L);
+          break;
+        case DATE:
+        case STRING:
+        case BOOLEAN_ARRAY:
+        case CHAR_ARRAY:
+        case BYTE_ARRAY:
+        case SHORT_ARRAY:
+        case INT_ARRAY:
+        case LONG_ARRAY:
+        case FLOAT_ARRAY:
+        case DOUBLE_ARRAY:
+        case STRING_ARRAY:
+        case ARRAY_OF_BYTE_ARRAYS:
+        case OBJECT_ARRAY:
+        case OBJECT:
+          // null ok
+          break;
+        default:
+          throw new InternalGemFireException("Unhandled field type " + f.getFieldType());
       }
     }
     dirtyField(f, value);
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     // no need to compare dirtyFields

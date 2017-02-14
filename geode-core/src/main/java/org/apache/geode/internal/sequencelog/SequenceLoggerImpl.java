@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.sequencelog;
 
@@ -33,30 +31,31 @@ public class SequenceLoggerImpl implements SequenceLogger {
 
   private static final SequenceLoggerImpl INSTANCE;
 
-  public static final String ENABLED_TYPES_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "GraphLoggerImpl.ENABLED_TYPES";
+  public static final String ENABLED_TYPES_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "GraphLoggerImpl.ENABLED_TYPES";
 
   private final EnumSet<GraphType> enabledTypes;
-  
+
   static {
     SequenceLoggerImpl logger = new SequenceLoggerImpl();
     logger.start();
     INSTANCE = logger;
   }
-  
-  //TODO - this might be too much synchronization for recording all region
-  //operations. Maybe we should use a ConcurrentLinkedQueue instead?
+
+  // TODO - this might be too much synchronization for recording all region
+  // operations. Maybe we should use a ConcurrentLinkedQueue instead?
   private final LinkedBlockingQueue<Transition> edges = new LinkedBlockingQueue<Transition>();
-  
+
   private volatile OutputStreamAppender appender;
 
   private ConsumerThread consumerThread;
-  
+
   public static SequenceLogger getInstance() {
     return INSTANCE;
   }
 
   /**
-   * Should be invoked when GemFire cache is closing or closed. 
+   * Should be invoked when GemFire cache is closing or closed.
    */
   public static void signalCacheClose() {
     if (INSTANCE != null && INSTANCE.consumerThread != null) {
@@ -68,14 +67,14 @@ public class SequenceLoggerImpl implements SequenceLogger {
     return enabledTypes.contains(type);
   }
 
-  public void logTransition(GraphType type, Object graphName, Object edgeName,
-      Object state, Object source, Object dest) {
-    if(isEnabled(type)) {
+  public void logTransition(GraphType type, Object graphName, Object edgeName, Object state,
+      Object source, Object dest) {
+    if (isEnabled(type)) {
       Transition edge = new Transition(type, graphName, edgeName, state, source, dest);
       edges.add(edge);
     }
   }
-  
+
   public void flush() throws InterruptedException {
     FlushToken token = new FlushToken();
     edges.add(token);
@@ -85,7 +84,7 @@ public class SequenceLoggerImpl implements SequenceLogger {
   private SequenceLoggerImpl() {
     String enabledTypesString = System.getProperty(ENABLED_TYPES_PROPERTY, "");
     this.enabledTypes = GraphType.parse(enabledTypesString);
-    if(!enabledTypes.isEmpty()) {
+    if (!enabledTypes.isEmpty()) {
       try {
         String name = "states" + OSProcess.getId() + ".graph";
         appender = new OutputStreamAppender(new File(name));
@@ -93,16 +92,16 @@ public class SequenceLoggerImpl implements SequenceLogger {
       }
     }
   }
-  
+
   private void start() {
-    if(!enabledTypes.isEmpty()) {
+    if (!enabledTypes.isEmpty()) {
       consumerThread = new ConsumerThread();
       consumerThread.start();
     }
   }
 
   private class ConsumerThread extends Thread {
-    
+
     public ConsumerThread() {
       super("State Logger Consumer Thread");
       setDaemon(true);
@@ -111,19 +110,19 @@ public class SequenceLoggerImpl implements SequenceLogger {
     @Override
     public void run() {
       Transition edge;
-      while(true) {
+      while (true) {
         try {
           edge = edges.take();
-          if(edge instanceof FlushToken) {
+          if (edge instanceof FlushToken) {
             ((FlushToken) edge).cdl.countDown();
             continue;
           }
 
-          if(appender != null) {
+          if (appender != null) {
             appender.write(edge);
           }
         } catch (InterruptedException e) {
-          //do nothing
+          // do nothing
         } catch (Throwable t) {
           t.printStackTrace();
           appender.close();
@@ -132,10 +131,10 @@ public class SequenceLoggerImpl implements SequenceLogger {
       }
     }
   }
-  
+
   private static class FlushToken extends Transition {
     CountDownLatch cdl = new CountDownLatch(1);
-    
+
     public FlushToken() {
       super(null, null, null, null, null, null);
     }

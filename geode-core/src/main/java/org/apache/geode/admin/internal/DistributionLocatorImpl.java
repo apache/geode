@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.admin.internal;
@@ -37,10 +35,9 @@ import java.util.*;
 /**
  * Default administrative implementation of a DistributionLocator.
  *
- * @since GemFire     3.5
+ * @since GemFire 3.5
  */
-public class DistributionLocatorImpl
-    implements DistributionLocator, InternalManagedEntity {
+public class DistributionLocatorImpl implements DistributionLocator, InternalManagedEntity {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -49,7 +46,7 @@ public class DistributionLocatorImpl
    */
   private static int newLocators = 0;
 
-  ////////////////////  Instance Fields  ////////////////////
+  //////////////////// Instance Fields ////////////////////
 
   /**
    * The configuration object for this locator
@@ -72,12 +69,12 @@ public class DistributionLocatorImpl
   private AdminDistributedSystemImpl system;
 
   // -------------------------------------------------------------------------
-  //   constructor(s)...
+  // constructor(s)...
   // -------------------------------------------------------------------------
 
   /**
-   * Constructs new instance of <code>DistributionLocatorImpl</code>
-   * that is a member of the given distributed system.
+   * Constructs new instance of <code>DistributionLocatorImpl</code> that is a member of the given
+   * distributed system.
    */
   public DistributionLocatorImpl(DistributionLocatorConfig config,
       AdminDistributedSystemImpl system) {
@@ -90,7 +87,7 @@ public class DistributionLocatorImpl
   }
 
   // -------------------------------------------------------------------------
-  //   Attribute accessors/mutators...
+  // Attribute accessors/mutators...
   // -------------------------------------------------------------------------
 
   public String getId() {
@@ -117,26 +114,24 @@ public class DistributionLocatorImpl
   }
 
   /**
-   * Unfortunately, it doesn't make much sense to maintain the state
-   * of a locator.  The admin API does not receive notification when
-   * the locator actually starts and stops.  If we try to guess, we'll
-   * just end up with race conditions galore.  So, we can't fix bug
-   * 32455 for locators.
+   * Unfortunately, it doesn't make much sense to maintain the state of a locator. The admin API
+   * does not receive notification when the locator actually starts and stops. If we try to guess,
+   * we'll just end up with race conditions galore. So, we can't fix bug 32455 for locators.
    */
   public int setState(int state) {
-    throw new UnsupportedOperationException(LocalizedStrings.DistributionLocatorImpl_CAN_NOT_SET_THE_STATE_OF_A_LOCATOR.toLocalizedString());
+    throw new UnsupportedOperationException(
+        LocalizedStrings.DistributionLocatorImpl_CAN_NOT_SET_THE_STATE_OF_A_LOCATOR
+            .toLocalizedString());
   }
 
   // -------------------------------------------------------------------------
-  //   Operations...
+  // Operations...
   // -------------------------------------------------------------------------
 
   /**
-   * Polls to determine whether or not this managed entity has
-   * started.
+   * Polls to determine whether or not this managed entity has started.
    */
-  public boolean waitToStart(long timeout)
-      throws InterruptedException {
+  public boolean waitToStart(long timeout) throws InterruptedException {
 
     if (Thread.interrupted())
       throw new InterruptedException();
@@ -151,17 +146,15 @@ public class DistributionLocatorImpl
       }
     }
 
-    logger.info(LocalizedMessage.create(
-        LocalizedStrings.DistributionLocatorImpl_DONE_WAITING_FOR_LOCATOR));
+    logger.info(
+        LocalizedMessage.create(LocalizedStrings.DistributionLocatorImpl_DONE_WAITING_FOR_LOCATOR));
     return this.isRunning();
   }
 
   /**
-   * Polls to determine whether or not this managed entity has
-   * stopped.
+   * Polls to determine whether or not this managed entity has stopped.
    */
-  public boolean waitToStop(long timeout)
-      throws InterruptedException {
+  public boolean waitToStop(long timeout) throws InterruptedException {
 
     if (Thread.interrupted())
       throw new InterruptedException();
@@ -195,8 +188,10 @@ public class DistributionLocatorImpl
 
     boolean found = false;
     Map<InternalDistributedMember, Collection<String>> hostedLocators = dm.getAllHostedLocators();
-    for (Iterator<InternalDistributedMember> memberIter = hostedLocators.keySet().iterator(); memberIter.hasNext(); ) {
-      for (Iterator<String> locatorIter = hostedLocators.get(memberIter.next()).iterator(); locatorIter.hasNext(); ) {
+    for (Iterator<InternalDistributedMember> memberIter =
+        hostedLocators.keySet().iterator(); memberIter.hasNext();) {
+      for (Iterator<String> locatorIter =
+          hostedLocators.get(memberIter.next()).iterator(); locatorIter.hasNext();) {
         DistributionLocatorId locator = new DistributionLocatorId(locatorIter.next());
         found = found || locator.getHost().getHostAddress().equals(host);
         found = found || locator.getHost().getHostName().equals(host);
@@ -250,7 +245,7 @@ public class DistributionLocatorImpl
     return "DistributionLocator " + getId();
   }
 
-  ////////////////////////  Command execution  ////////////////////////
+  //////////////////////// Command execution ////////////////////////
 
   public ManagedEntityConfig getEntityConfig() {
     return this.getConfig();
@@ -281,8 +276,7 @@ public class DistributionLocatorImpl
     }
     sb.append(" ");
 
-    String sslArgs =
-        this.controller.buildSSLArguments(this.system.getConfig());
+    String sslArgs = this.controller.buildSSLArguments(this.system.getConfig());
     if (sslArgs != null) {
       sb.append(sslArgs);
     }
@@ -305,8 +299,7 @@ public class DistributionLocatorImpl
     }
     sb.append(" ");
 
-    String sslArgs =
-        this.controller.buildSSLArguments(this.system.getConfig());
+    String sslArgs = this.controller.buildSSLArguments(this.system.getConfig());
     if (sslArgs != null) {
       sb.append(sslArgs);
     }

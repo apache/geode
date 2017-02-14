@@ -1,26 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionAdvisee;
+import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 
@@ -35,11 +40,12 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
   private final int serialNumber;
   private final GemFireCacheImpl cache;
   private JmxManagerProfile myMostRecentProfile;
-  
+
   public JmxManagerAdvisee(GemFireCacheImpl cache) {
     this.serialNumber = DistributionAdvisor.createSerialNumber();
     this.cache = cache;
   }
+
   @Override
   public DM getDistributionManager() {
     return this.cache.getDistributionManager();
@@ -90,7 +96,8 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
     int port = 0;
     boolean ssl = false;
     boolean started = false;
-    SystemManagementService service = (SystemManagementService)ManagementService.getExistingManagementService(this.cache);
+    SystemManagementService service =
+        (SystemManagementService) ManagementService.getExistingManagementService(this.cache);
     if (service != null) {
       jmxManager = service.isManagerCreated();
       started = service.isManager();
@@ -110,7 +117,9 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
       }
       if (port != 0) {
         if (!usingJdkConfig) {
-          ssl = dc.getJmxManagerSSLEnabled();
+          SSLConfig jmxSSL =
+              SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.JMX);
+          ssl = jmxSSL.isEnabled();
           host = dc.getJmxManagerHostnameForClients();
           if (host == null || host.equals("")) {
             host = dc.getJmxManagerBindAddress();
@@ -133,10 +142,11 @@ public class JmxManagerAdvisee implements DistributionAdvisee {
   public int getSerialNumber() {
     return this.serialNumber;
   }
-  
+
   public JmxManagerProfile getMyMostRecentProfile() {
     return this.myMostRecentProfile;
   }
+
   void initProfile(JmxManagerProfile p) {
     this.myMostRecentProfile = p;
   }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.dunit;
 
@@ -85,15 +83,13 @@ public class GroupByPartitionedQueryDUnitTest extends GroupByDUnitImpl {
     });
   }
 
-  private void createPR(VM vm, final String regionName,
-      final Class valueConstraint) {
+  private void createPR(VM vm, final String regionName, final Class valueConstraint) {
     vm.invoke(new SerializableRunnable("create data store") {
       public void run() {
         Cache cache = getCache();
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         paf.setTotalNumBuckets(10);
-        cache.createRegionFactory(RegionShortcut.PARTITION)
-            .setValueConstraint(valueConstraint)
+        cache.createRegionFactory(RegionShortcut.PARTITION).setValueConstraint(valueConstraint)
             .setPartitionAttributes(paf.create()).create(regionName);
       }
     });
@@ -106,8 +102,8 @@ public class GroupByPartitionedQueryDUnitTest extends GroupByDUnitImpl {
     paf.setTotalNumBuckets(10);
     paf.setLocalMaxMemory(0);
     return cache.createRegionFactory(RegionShortcut.PARTITION_PROXY)
-        .setValueConstraint(valueConstraint)
-        .setPartitionAttributes(paf.create()).create(regionName);
+        .setValueConstraint(valueConstraint).setPartitionAttributes(paf.create())
+        .create(regionName);
   }
 
 

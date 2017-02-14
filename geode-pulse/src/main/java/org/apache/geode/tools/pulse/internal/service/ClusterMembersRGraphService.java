@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -40,8 +38,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 /**
  * Class ClusterMembersRGraphService
  * 
- * This class contains implementations of getting List of Cluster members and
- * their details
+ * This class contains implementations of getting List of Cluster members and their details
  * 
  * @since GemFire version 7.5
  */
@@ -106,15 +103,14 @@ public class ClusterMembersRGraphService implements PulseService {
   }
 
   /**
-   * function used for getting all members details in format of JSON Object
-   * array defined under a cluster. This function create json based on the
-   * relation of physical host and members related to it.
+   * function used for getting all members details in format of JSON Object array defined under a
+   * cluster. This function create json based on the relation of physical host and members related
+   * to it.
    * 
    * @param cluster
    * @param host
    * @param port
-   * @return Array list of JSON objects for required fields of members in
-   *         cluster
+   * @return Array list of JSON objects for required fields of members in cluster
    */
   private ObjectNode getPhysicalServerJson(Cluster cluster, String host, String port) {
     Map<String, List<Cluster.Member>> physicalToMember = cluster.getPhysicalToMember();
@@ -164,19 +160,16 @@ public class ClusterMembersRGraphService implements PulseService {
         if (usedHeapSize > 0) {
           double heapUsage = (currentHeap.doubleValue() / usedHeapSize.doubleValue()) * 100;
 
-          memberData.put(this.MEMORY_USAGE,
-              Double.valueOf(df2.format(heapUsage)));
+          memberData.put(this.MEMORY_USAGE, Double.valueOf(df2.format(heapUsage)));
         } else
           memberData.put(this.MEMORY_USAGE, 0);
 
         double currentCPUUsage = member.getCpuUsage();
 
-        memberData.put(this.CPU_USAGE,
-            Double.valueOf(df2.format(currentCPUUsage)));
+        memberData.put(this.CPU_USAGE, Double.valueOf(df2.format(currentCPUUsage)));
         memberData.put(this.REGIONS, member.getMemberRegions().size());
         memberData.put(this.HOST, member.getHost());
-        if ((member.getMemberPort() == null)
-            || (member.getMemberPort().equals(""))) {
+        if ((member.getMemberPort() == null) || (member.getMemberPort().equals(""))) {
           memberData.put(this.PORT, "-");
         } else {
           memberData.put(this.PORT, member.getMemberPort());
@@ -204,8 +197,7 @@ public class ClusterMembersRGraphService implements PulseService {
           }
         } else if (errorAlertsList.contains(member.getName())) {
           // for error alerts
-          memberNodeType = getMemberNodeType(member,
-              this.MEMBER_NODE_TYPE_ERROR);
+          memberNodeType = getMemberNodeType(member, this.MEMBER_NODE_TYPE_ERROR);
           if (!hostError) {
             hostError = true;
           }
@@ -271,10 +263,8 @@ public class ClusterMembersRGraphService implements PulseService {
   /**
    * used for getting member node type based on member's current state
    * 
-   * @param member
-   *          Member
-   * @param memberState
-   *          i.e Severe, Error, Warning or Normal
+   * @param member Member
+   * @param memberState i.e Severe, Error, Warning or Normal
    * @return
    */
   private String getMemberNodeType(Cluster.Member member, String memberState) {
@@ -282,34 +272,27 @@ public class ClusterMembersRGraphService implements PulseService {
 
     if ((member.isLocator()) && (member.isServer()) && (member.isManager())) {
       memberNodeType = "memberLocatorManagerServer" + memberState + "Node";
-    } else if ((member.isLocator()) && (member.isServer())
-        && !(member.isManager())) {
+    } else if ((member.isLocator()) && (member.isServer()) && !(member.isManager())) {
       memberNodeType = "memberLocatorServer" + memberState + "Node";
-    } else if ((member.isLocator()) && !(member.isServer())
-        && (member.isManager())) {
+    } else if ((member.isLocator()) && !(member.isServer()) && (member.isManager())) {
       memberNodeType = "memberLocatorManager" + memberState + "Node";
-    } else if ((member.isLocator()) && !(member.isServer())
-        && !(member.isManager())) {
+    } else if ((member.isLocator()) && !(member.isServer()) && !(member.isManager())) {
       memberNodeType = "memberLocator" + memberState + "Node";
-    } else if (!(member.isLocator()) && (member.isServer())
-        && (member.isManager())) {
+    } else if (!(member.isLocator()) && (member.isServer()) && (member.isManager())) {
       memberNodeType = "memberManagerServer" + memberState + "Node";
-    } else if (!(member.isLocator()) && (member.isServer())
-        && !(member.isManager())) {
+    } else if (!(member.isLocator()) && (member.isServer()) && !(member.isManager())) {
       memberNodeType = "memberServer" + memberState + "Node";
-    } else if (!(member.isLocator()) && !(member.isServer())
-        && (member.isManager())) {
+    } else if (!(member.isLocator()) && !(member.isServer()) && (member.isManager())) {
       memberNodeType = "memberManager" + memberState + "Node";
-    } else if (!(member.isLocator()) && !(member.isServer())
-        && !(member.isManager())) {
+    } else if (!(member.isLocator()) && !(member.isServer()) && !(member.isManager())) {
       memberNodeType = "member" + memberState + "Node";
     }
     return memberNodeType;
   }
 
   /**
-   * function used for getting list of all the alerts and save the member names
-   * in respective error, warning and severe alert lists
+   * function used for getting list of all the alerts and save the member names in respective error,
+   * warning and severe alert lists
    * 
    * @param cluster
    */

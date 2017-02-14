@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -26,8 +24,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * This listener is added to the cache when a node becomes Managing node. It
- * then starts to listen on various membership events to take steps accordingly
+ * This listener is added to the cache when a node becomes Managing node. It then starts to listen
+ * on various membership events to take steps accordingly
  * 
  * 
  */
@@ -35,11 +33,12 @@ import org.apache.geode.internal.logging.LogService;
 public class ManagementMembershipListener implements MembershipListener {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   /**
    * Resource Manager
    */
   private SystemManagementService service;
+
   public ManagementMembershipListener(SystemManagementService service) {
     this.service = service;
   }
@@ -51,11 +50,11 @@ public class ManagementMembershipListener implements MembershipListener {
     }
     if (service.isManager()) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Removing member artifacts for {} from manager ",  id.getId());
+        logger.debug("Removing member artifacts for {} from manager ", id.getId());
       }
       service.getFederatingManager().removeMember(id, crashed);
     }
-    
+
     service.getUniversalListenerContainer().memberDeparted(id, crashed);
   }
 
@@ -75,7 +74,8 @@ public class ManagementMembershipListener implements MembershipListener {
   }
 
   @Override
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected, String reason) {
+  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
+      String reason) {
 
     if (logger.isDebugEnabled()) {
       logger.debug("ManagementMembershipListener member suspected .. {}", id.getId());
@@ -88,6 +88,6 @@ public class ManagementMembershipListener implements MembershipListener {
     }
   }
 
-  public void quorumLost(Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
-  }
+  public void quorumLost(Set<InternalDistributedMember> failures,
+      List<InternalDistributedMember> remaining) {}
 }

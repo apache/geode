@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.process;
 
@@ -31,17 +29,18 @@ import org.apache.geode.internal.logging.LogService;
 final class ControlFileWatchdog implements Runnable {
   private static final Logger logger = LogService.getLogger();
 
-  private static final long STOP_TIMEOUT_MILLIS = 60*1000;
+  private static final long STOP_TIMEOUT_MILLIS = 60 * 1000;
   private static final long SLEEP_MILLIS = 1000;
-  
+
   private final File workingDir;
   private final File file;
   private final ControlRequestHandler requestHandler;
   private final boolean stopAfterRequest;
   private Thread thread;
   private boolean alive;
-  
-  ControlFileWatchdog(final File workingDir, final String fileName, final ControlRequestHandler requestHandler, final boolean stopAfterRequest) {
+
+  ControlFileWatchdog(final File workingDir, final String fileName,
+      final ControlRequestHandler requestHandler, final boolean stopAfterRequest) {
     this.workingDir = workingDir;
     this.file = new File(this.workingDir, fileName);
     this.requestHandler = requestHandler;
@@ -67,7 +66,9 @@ final class ControlFileWatchdog implements Runnable {
           Thread.currentThread().interrupt();
           // allow to loop around and check isAlive()
         } catch (IOException e) {
-          logger.error("Unable to control process with {}. Please add tools.jar from JDK to classpath for improved process control.", this.file);
+          logger.error(
+              "Unable to control process with {}. Please add tools.jar from JDK to classpath for improved process control.",
+              this.file);
           // allow to loop around and check isAlive()
         }
       }
@@ -77,7 +78,7 @@ final class ControlFileWatchdog implements Runnable {
       }
     }
   }
-  
+
   private void work() throws IOException {
     try { // always delete file after invoking handler
       this.requestHandler.handleRequest();
@@ -89,7 +90,7 @@ final class ControlFileWatchdog implements Runnable {
       }
     }
   }
-  
+
   void start() {
     synchronized (this) {
       if (this.thread == null) {
@@ -117,13 +118,13 @@ final class ControlFileWatchdog implements Runnable {
       stopping.join(STOP_TIMEOUT_MILLIS);
     }
   }
-  
+
   boolean isAlive() {
     synchronized (this) {
       return this.alive;
     }
   }
-  
+
   private void stopMe() {
     synchronized (this) {
       if (this.thread != null) {
@@ -143,11 +144,12 @@ final class ControlFileWatchdog implements Runnable {
     sb.append(", stopAfterRequest=").append(this.stopAfterRequest);
     return sb.append("}").toString();
   }
-  
+
   private String createThreadName() {
-    return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) + " monitoring " + this.file.getName();
+    return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) + " monitoring "
+        + this.file.getName();
   }
-  
+
   /**
    * Defines the callback to be invoked when the control file exists.
    */

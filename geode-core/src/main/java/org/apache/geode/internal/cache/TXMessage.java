@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -45,19 +43,19 @@ import org.apache.geode.internal.logging.LogService;
  * 
  *
  */
-public abstract class TXMessage extends SerialDistributionMessage 
-  implements MessageWithReply, TransactionMessage {
+public abstract class TXMessage extends SerialDistributionMessage
+    implements MessageWithReply, TransactionMessage {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private int processorId;
   private int txUniqId;
   private InternalDistributedMember txMemberId = null;
 
-  public TXMessage() {
-  }
+  public TXMessage() {}
 
-  public TXMessage(int txUniqueId, InternalDistributedMember onBehalfOfMember, ReplyProcessor21 processor) {
+  public TXMessage(int txUniqueId, InternalDistributedMember onBehalfOfMember,
+      ReplyProcessor21 processor) {
     this.txUniqId = txUniqueId;
     this.txMemberId = onBehalfOfMember;
     this.processorId = processor == null ? 0 : processor.getProcessorId();
@@ -76,8 +74,9 @@ public abstract class TXMessage extends SerialDistributionMessage
         logger.debug("processing {}", this);
       }
       GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      if(checkCacheClosing(cache) || checkDSClosing(cache.getDistributedSystem())) {
-        thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0.toLocalizedString(dm.getId()));
+      if (checkCacheClosing(cache) || checkDSClosing(cache.getDistributedSystem())) {
+        thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+            .toLocalizedString(dm.getId()));
         return;
       }
       TXManagerImpl txMgr = cache.getTXMgr();
@@ -86,7 +85,7 @@ public abstract class TXMessage extends SerialDistributionMessage
         assert this.txUniqId != TXManagerImpl.NOTX;
         TXId txId = new TXId(getMemberToMasqueradeAs(), this.txUniqId);
         tx = txMgr.masqueradeAs(this);
-        sendReply = operateOnTx(txId,dm);
+        sendReply = operateOnTx(txId, dm);
       } finally {
         txMgr.unmasquerade(tx);
       }
@@ -98,15 +97,16 @@ public abstract class TXMessage extends SerialDistributionMessage
         logger.debug("shutdown caught, abandoning message: " + se);
       }
     } catch (RegionDestroyedException rde) {
-        thr = new ForceReattemptException(LocalizedStrings.PartitionMessage_REGION_IS_DESTROYED_IN_0.toLocalizedString(dm.getDistributionManagerId()), rde);
+      thr = new ForceReattemptException(LocalizedStrings.PartitionMessage_REGION_IS_DESTROYED_IN_0
+          .toLocalizedString(dm.getDistributionManagerId()), rde);
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
+      // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
       throw err;
     } catch (Throwable t) {
       // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
+      // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
@@ -143,26 +143,27 @@ public abstract class TXMessage extends SerialDistributionMessage
   public String toString() {
     StringBuffer buff = new StringBuffer();
     String className = getClass().getName();
-//    className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1);  // partition.<foo> more generic version 
-    buff.append(className.substring(className.indexOf(PartitionMessage.PN_TOKEN) + PartitionMessage.PN_TOKEN.length())); // partition.<foo>
-    buff.append("(txId=").append(this.txUniqId)
-      .append("; txMbr=").append(this.txMemberId)
-      .append("; sender=").append(getSender())
-      .append("; processorId=").append(this.processorId);
+    // className.substring(className.lastIndexOf('.', className.lastIndexOf('.') - 1) + 1); //
+    // partition.<foo> more generic version
+    buff.append(className.substring(
+        className.indexOf(PartitionMessage.PN_TOKEN) + PartitionMessage.PN_TOKEN.length())); // partition.<foo>
+    buff.append("(txId=").append(this.txUniqId).append("; txMbr=").append(this.txMemberId)
+        .append("; sender=").append(getSender()).append("; processorId=").append(this.processorId);
     appendFields(buff);
     buff.append(")");
     return buff.toString();
   }
-  
-  public void appendFields(StringBuffer buff) {
-  }
-    
+
+  public void appendFields(StringBuffer buff) {}
+
   /**
    * Transaction operations override this method to do actual work
+   * 
    * @param txId The transaction Id to operate on
    * @return true if {@link TXMessage} should send a reply false otherwise
    */
-  protected abstract boolean operateOnTx(TXId txId,DistributionManager dm) throws RemoteOperationException;
+  protected abstract boolean operateOnTx(TXId txId, DistributionManager dm)
+      throws RemoteOperationException;
 
   public int getTXUniqId() {
     return this.txUniqId;
@@ -173,7 +174,7 @@ public abstract class TXMessage extends SerialDistributionMessage
     super.toData(out);
     out.writeInt(this.processorId);
     out.writeInt(this.txUniqId);
-    DataSerializer.writeObject(this.txMemberId,out);
+    DataSerializer.writeObject(this.txMemberId, out);
   }
 
   @Override
@@ -185,13 +186,13 @@ public abstract class TXMessage extends SerialDistributionMessage
   }
 
   public final InternalDistributedMember getMemberToMasqueradeAs() {
-    if(txMemberId==null) {
+    if (txMemberId == null) {
       return getSender();
     }
     return txMemberId;
   }
 
-  
+
   @Override
   public int getProcessorId() {
     return this.processorId;
@@ -200,7 +201,7 @@ public abstract class TXMessage extends SerialDistributionMessage
   public InternalDistributedMember getTXOriginatorClient() {
     return this.txMemberId;
   }
-  
+
   @Override
   public boolean canParticipateInTransaction() {
     return true;

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.sequence;
 
@@ -37,40 +35,40 @@ public class HydraLineMapper implements LineMapper {
   private static final Pattern DISK_DIR_PATTERN = Pattern.compile("vm_(\\d+).*_disk_1");
   private final Map<String, String> processIdToVMName = new HashMap<String, String>();
   private final DefaultLineMapper defaultMapper = new DefaultLineMapper();
-  
+
   public HydraLineMapper(File[] graphFiles) {
     File firstFile = graphFiles[0];
     File directory = firstFile.getParentFile();
-    if(directory == null || ! new File(directory, "latest.prop").exists()) {
+    if (directory == null || !new File(directory, "latest.prop").exists()) {
       directory = new File(".");
     }
     String[] files = directory.list();
-    for(String file : files) {
+    for (String file : files) {
       Matcher matcher = VM_NAME_PATTERN.matcher(file);
-      if(matcher.matches()) {
+      if (matcher.matches()) {
         processIdToVMName.put(matcher.group(2), matcher.group(1));
       }
     }
-    
-    for(String file : files) {
+
+    for (String file : files) {
       Matcher matcher = DISK_DIR_PATTERN.matcher(file);
-      if(matcher.matches()) {
-        
+      if (matcher.matches()) {
+
         String storeId = getDiskStoreId(file);
-        if(storeId != null) {
+        if (storeId != null) {
           processIdToVMName.put(storeId, "disk_" + matcher.group(1));
         }
       }
     }
-    
-    
+
+
   }
 
   private String getDiskStoreId(String diskStoreDir) {
     File dir = new File(diskStoreDir);
     String[] files = dir.list();
-    for(String fileName : files) {
-      if(fileName.endsWith(".if")) {
+    for (String fileName : files) {
+      if (fileName.endsWith(".if")) {
         try {
           return getDiskStoreIdFromInitFile(dir, fileName);
         } catch (Exception e) {
@@ -78,7 +76,7 @@ public class HydraLineMapper implements LineMapper {
         }
       }
     }
-    
+
     return null;
   }
 
@@ -89,7 +87,7 @@ public class HydraLineMapper implements LineMapper {
       byte[] bytes = new byte[1 + 8 + 8];
       fis.read(bytes);
       ByteBuffer buffer = ByteBuffer.wrap(bytes);
-      //Skip the record type.
+      // Skip the record type.
       buffer.get();
       long least = buffer.getLong();
       long most = buffer.getLong();
@@ -102,21 +100,21 @@ public class HydraLineMapper implements LineMapper {
 
   public String getShortNameForLine(String lineName) {
     String name = defaultMapper.getShortNameForLine(lineName);
-    if(processIdToVMName.containsKey(name)) {
+    if (processIdToVMName.containsKey(name)) {
       return processIdToVMName.get(name);
     } else {
       return name;
     }
   }
-  
+
   public static boolean isInHydraRun(File[] graphFiles) {
-    if(graphFiles.length == 0) {
+    if (graphFiles.length == 0) {
       return false;
     }
     File firstFile = graphFiles[0];
     File parentFile = firstFile.getParentFile();
-    for(File file : graphFiles) {
-      if(parentFile == null && file.getParentFile() == null) {
+    for (File file : graphFiles) {
+      if (parentFile == null && file.getParentFile() == null) {
         return true;
       }
       if (parentFile == null || file.getParentFile() == null
@@ -124,11 +122,10 @@ public class HydraLineMapper implements LineMapper {
         return false;
       }
     }
-    
-    return new File(parentFile, "latest.prop").exists() 
-      || new File("latest.prop").exists();
-    
-    
+
+    return new File(parentFile, "latest.prop").exists() || new File("latest.prop").exists();
+
+
   }
 
 }

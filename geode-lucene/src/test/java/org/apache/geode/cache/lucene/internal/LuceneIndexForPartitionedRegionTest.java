@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.lucene.internal;
 
@@ -60,7 +56,8 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     assertEquals(name, index.getName());
   }
 
@@ -69,7 +66,8 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     assertEquals(regionPath, index.getRegionPath());
   }
 
@@ -79,7 +77,8 @@ public class LuceneIndexForPartitionedRegionTest {
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
     PartitionedRegion region = mock(PartitionedRegion.class);
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     String fileRegionName = index.createFileRegionName();
     when(cache.getRegion(fileRegionName)).thenReturn(region);
 
@@ -91,7 +90,8 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     String fileRegionName = index.createFileRegionName();
     when(cache.getRegion(fileRegionName)).thenReturn(null);
 
@@ -104,7 +104,8 @@ public class LuceneIndexForPartitionedRegionTest {
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
     PartitionedRegion region = mock(PartitionedRegion.class);
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     String chunkRegionName = index.createChunkRegionName();
     when(cache.getRegion(chunkRegionName)).thenReturn(region);
 
@@ -116,7 +117,8 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     String chunkRegionName = index.createChunkRegionName();
     when(cache.getRegion(chunkRegionName)).thenReturn(null);
 
@@ -128,13 +130,14 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
-    final Region region =Fakes.region(regionPath, cache);
-    RegionAttributes attributes  = region.getAttributes();
+    final Region region = Fakes.region(regionPath, cache);
+    RegionAttributes attributes = region.getAttributes();
     when(attributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
     AsyncEventQueueFactoryImpl aeqFactory = mock(AsyncEventQueueFactoryImpl.class);
     when(cache.createAsyncEventQueueFactory()).thenReturn(aeqFactory);
 
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     index.createAEQ(region);
 
     verify(aeqFactory).setPersistent(eq(true));
@@ -146,23 +149,26 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
-    final Region region =Fakes.region(regionPath, cache);
+    final Region region = Fakes.region(regionPath, cache);
     AsyncEventQueueFactoryImpl aeqFactory = mock(AsyncEventQueueFactoryImpl.class);
     when(cache.createAsyncEventQueueFactory()).thenReturn(aeqFactory);
 
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     index.createAEQ(region);
 
     verify(aeqFactory, never()).setPersistent(eq(true));
     verify(aeqFactory).create(any(), any());
   }
 
-  private Region initializeScenario(final boolean withPersistence, final String regionPath, final Cache cache) {
+  private Region initializeScenario(final boolean withPersistence, final String regionPath,
+      final Cache cache) {
     int defaultLocalMemory = 100;
     return initializeScenario(withPersistence, regionPath, cache, defaultLocalMemory);
   }
 
-  private RegionAttributes createRegionAttributes(final boolean withPersistence, PartitionAttributes  partitionAttributes) {
+  private RegionAttributes createRegionAttributes(final boolean withPersistence,
+      PartitionAttributes partitionAttributes) {
     AttributesFactory factory = new AttributesFactory();
     if (withPersistence) {
       factory.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
@@ -174,11 +180,13 @@ public class LuceneIndexForPartitionedRegionTest {
     return ra;
   }
 
-  private Region initializeScenario(final boolean withPersistence, final String regionPath, final Cache cache, int localMaxMemory) {
+  private Region initializeScenario(final boolean withPersistence, final String regionPath,
+      final Cache cache, int localMaxMemory) {
     PartitionedRegion region = mock(PartitionedRegion.class);
-    PartitionAttributes partitionAttributes = new PartitionAttributesFactory().
-        setLocalMaxMemory(localMaxMemory).setTotalNumBuckets(103).create();
-    RegionAttributes regionAttributes = spy(createRegionAttributes(withPersistence, partitionAttributes));
+    PartitionAttributes partitionAttributes = new PartitionAttributesFactory()
+        .setLocalMaxMemory(localMaxMemory).setTotalNumBuckets(103).create();
+    RegionAttributes regionAttributes =
+        spy(createRegionAttributes(withPersistence, partitionAttributes));
     ExtensionPoint extensionPoint = mock(ExtensionPoint.class);
     when(cache.getRegion(regionPath)).thenReturn(region);
     when(cache.getRegionAttributes(any())).thenReturn(regionAttributes);
@@ -205,16 +213,16 @@ public class LuceneIndexForPartitionedRegionTest {
   }
 
   @Test
-  public void initializeWithNoLocalMemoryThrowsException() {
-    expectedExceptions.expect(IllegalStateException.class);
-    expectedExceptions.expectMessage("The data region to create lucene index should be with storage");
+  public void initializeWithNoLocalMemoryShouldSucceed() {
     boolean withPersistence = false;
     String name = "indexName";
     String regionPath = "regionName";
     Cache cache = Fakes.cache();
-    initializeScenario(withPersistence, regionPath, cache, 0);
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    index.initialize();
+    Region region = initializeScenario(withPersistence, regionPath, cache, 0);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion spy = setupSpy(region, index);
+    spy.initialize();
   }
 
   @Test
@@ -225,15 +233,22 @@ public class LuceneIndexForPartitionedRegionTest {
     Cache cache = Fakes.cache();
     Region region = initializeScenario(withPersistence, regionPath, cache);
 
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    index.setSearchableFields(new String[]{"field"});
-    LuceneIndexForPartitionedRegion spy = spy(index);
-    doReturn(null).when(spy).createFileRegion(any(), any(), any(), any());
-    doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQ(eq(region));
-    spy.initialize();
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion spy = setupSpy(region, index);
 
     verify(spy).createAEQ(eq(region));
+  }
+
+  protected LuceneIndexForPartitionedRegion setupSpy(final Region region,
+      final LuceneIndexForPartitionedRegion index) {
+    index.setSearchableFields(new String[] {"field"});
+    LuceneIndexForPartitionedRegion spy = spy(index);
+    doReturn(null).when(spy).createFileRegion(any(), any(), any(), any());
+    doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any(), any(), any());
+    doReturn(null).when(spy).createAEQ(eq(region));
+    spy.initialize();
+    return spy;
   }
 
   @Test
@@ -244,15 +259,12 @@ public class LuceneIndexForPartitionedRegionTest {
     Cache cache = Fakes.cache();
     Region region = initializeScenario(withPersistence, regionPath, cache);
 
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    index.setSearchableFields(new String[]{"field"});
-    LuceneIndexForPartitionedRegion spy = spy(index);
-    doReturn(null).when(spy).createFileRegion(any(), any(), any(),any());
-    doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any(),any());
-    doReturn(null).when(spy).createAEQ(eq(region));
-    spy.initialize();
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion spy = setupSpy(region, index);
 
-    verify(spy).createChunkRegion(eq(RegionShortcut.PARTITION), eq(index.createFileRegionName()), any(), eq(index.createChunkRegionName()),any());
+    verify(spy).createChunkRegion(eq(RegionShortcut.PARTITION), eq(index.createFileRegionName()),
+        any(), eq(index.createChunkRegionName()), any(), any());
   }
 
   @Test
@@ -263,45 +275,50 @@ public class LuceneIndexForPartitionedRegionTest {
     Cache cache = Fakes.cache();
     Region region = initializeScenario(withPersistence, regionPath, cache);
 
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    index.setSearchableFields(new String[]{"field"});
-    LuceneIndexForPartitionedRegion spy = spy(index);
-    doReturn(null).when(spy).createFileRegion(any(), any(), any(),any());
-    doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any(),any());
-    doReturn(null).when(spy).createAEQ(eq(region));
-    spy.initialize();
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion spy = setupSpy(region, index);
 
-    verify(spy).createFileRegion(eq(RegionShortcut.PARTITION), eq(index.createFileRegionName()), any(),any());
+    verify(spy).createFileRegion(eq(RegionShortcut.PARTITION), eq(index.createFileRegionName()),
+        any(), any());
   }
 
   @Test
-  public void createFileRegionWithPartitionShortcutCreatesRegionUsingCreateVMRegion() throws Exception {
+  public void createFileRegionWithPartitionShortcutCreatesRegionUsingCreateVMRegion()
+      throws Exception {
     String name = "indexName";
     String regionPath = "regionName";
     GemFireCacheImpl cache = Fakes.cache();
     RegionAttributes regionAttributes = mock(RegionAttributes.class);
     PartitionAttributes partitionAttributes = initializeAttributes(cache);
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     LuceneIndexForPartitionedRegion indexSpy = spy(index);
-    indexSpy.createFileRegion(RegionShortcut.PARTITION, index.createFileRegionName(), partitionAttributes, regionAttributes);
+    indexSpy.createFileRegion(RegionShortcut.PARTITION, index.createFileRegionName(),
+        partitionAttributes, regionAttributes);
     String fileRegionName = index.createFileRegionName();
-    verify(indexSpy).createRegion(fileRegionName, RegionShortcut.PARTITION, regionPath, partitionAttributes, regionAttributes);
+    verify(indexSpy).createRegion(fileRegionName, RegionShortcut.PARTITION, regionPath,
+        partitionAttributes, regionAttributes, null);
     verify(cache).createVMRegion(eq(fileRegionName), any(), any());
   }
 
   @Test
-  public void createChunkRegionWithPartitionShortcutCreatesRegionUsingCreateVMRegion() throws Exception {
+  public void createChunkRegionWithPartitionShortcutCreatesRegionUsingCreateVMRegion()
+      throws Exception {
     String name = "indexName";
     String regionPath = "regionName";
     GemFireCacheImpl cache = Fakes.cache();
     PartitionAttributes partitionAttributes = initializeAttributes(cache);
     RegionAttributes regionAttributes = mock(RegionAttributes.class);
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     LuceneIndexForPartitionedRegion indexSpy = spy(index);
     String chunkRegionName = index.createChunkRegionName();
     String fileRegionName = index.createFileRegionName();
-    indexSpy.createChunkRegion(RegionShortcut.PARTITION, fileRegionName, partitionAttributes, chunkRegionName, regionAttributes);
-    verify(indexSpy).createRegion(chunkRegionName, RegionShortcut.PARTITION, fileRegionName, partitionAttributes, regionAttributes);
+    indexSpy.createChunkRegion(RegionShortcut.PARTITION, fileRegionName, partitionAttributes,
+        chunkRegionName, regionAttributes, null);
+    verify(indexSpy).createRegion(chunkRegionName, RegionShortcut.PARTITION, fileRegionName,
+        partitionAttributes, regionAttributes, null);
     verify(cache).createVMRegion(eq(chunkRegionName), any(), any());
   }
 
@@ -313,15 +330,17 @@ public class LuceneIndexForPartitionedRegionTest {
     Cache cache = Fakes.cache();
     initializeScenario(withPersistence, regionPath, cache);
 
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    index.setSearchableFields(new String[]{"field"});
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    index.setSearchableFields(new String[] {"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any(), any());
-    doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any(), any());
+    doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any(), any(), any());
     doReturn(null).when(spy).createAEQ(any());
     spy.initialize();
 
-    verify(spy).createChunkRegion(eq(RegionShortcut.PARTITION_PERSISTENT), eq(index.createFileRegionName()), any(), eq(index.createChunkRegionName()), any());
+    verify(spy).createChunkRegion(eq(RegionShortcut.PARTITION_PERSISTENT),
+        eq(index.createFileRegionName()), any(), eq(index.createChunkRegionName()), any(), any());
   }
 
   @Test
@@ -332,15 +351,17 @@ public class LuceneIndexForPartitionedRegionTest {
     Cache cache = Fakes.cache();
     initializeScenario(withPersistence, regionPath, cache);
 
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    index.setSearchableFields(new String[]{"field"});
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    index.setSearchableFields(new String[] {"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any(), any());
-    doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any(), any());
+    doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any(), any(), any());
     doReturn(null).when(spy).createAEQ(any());
     spy.initialize();
 
-    verify(spy).createFileRegion(eq(RegionShortcut.PARTITION_PERSISTENT), eq(index.createFileRegionName()), any(), any());
+    verify(spy).createFileRegion(eq(RegionShortcut.PARTITION_PERSISTENT),
+        eq(index.createFileRegionName()), any(), any());
   }
 
   @Test
@@ -351,16 +372,18 @@ public class LuceneIndexForPartitionedRegionTest {
     Cache cache = Fakes.cache();
     initializeScenario(withPersistence, regionPath, cache);
 
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
-    index.setSearchableFields(new String[]{"field"});
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    index.setSearchableFields(new String[] {"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createFileRegion(any(), any(), any(), any());
-    doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any(), any());
+    doReturn(null).when(spy).createChunkRegion(any(), any(), any(), any(), any(), any());
     doReturn(null).when(spy).createAEQ(any());
     spy.initialize();
     spy.initialize();
 
-    verify(spy).createFileRegion(eq(RegionShortcut.PARTITION_PERSISTENT), eq(index.createFileRegionName()), any(), any());
+    verify(spy).createFileRegion(eq(RegionShortcut.PARTITION_PERSISTENT),
+        eq(index.createFileRegionName()), any(), any());
   }
 
   @Test
@@ -368,14 +391,15 @@ public class LuceneIndexForPartitionedRegionTest {
     boolean withPersistence = false;
     String name = "indexName";
     String regionPath = "regionName";
-    String [] fields = new String[] {"field1", "field2"};
+    String[] fields = new String[] {"field1", "field2"};
     Cache cache = Fakes.cache();
     initializeScenario(withPersistence, regionPath, cache);
 
     AsyncEventQueue aeq = mock(AsyncEventQueue.class);
     DumpDirectoryFiles function = new DumpDirectoryFiles();
     FunctionService.registerFunction(function);
-    LuceneIndexForPartitionedRegion index = new LuceneIndexForPartitionedRegion(name, regionPath, cache);
+    LuceneIndexForPartitionedRegion index =
+        new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     index = spy(index);
     when(index.getFieldNames()).thenReturn(fields);
     doReturn(aeq).when(index).createAEQ(any());

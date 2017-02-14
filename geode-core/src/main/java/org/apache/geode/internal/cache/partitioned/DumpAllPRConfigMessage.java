@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.partitioned;
 
@@ -28,37 +26,35 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
- * A message used for debugging purposes.  For example if a test
- * fails it can call {@link org.apache.geode.internal.cache.PartitionedRegion#sendDumpAllPartitionedRegions()} 
- * which sends this message to all VMs that have that PartitionedRegion defined.
+ * A message used for debugging purposes. For example if a test fails it can call
+ * {@link org.apache.geode.internal.cache.PartitionedRegion#sendDumpAllPartitionedRegions()} which
+ * sends this message to all VMs that have that PartitionedRegion defined.
  * 
  * @see org.apache.geode.internal.cache.PartitionedRegion#sendDumpAllPartitionedRegions()
  */
-public final class DumpAllPRConfigMessage extends PartitionMessage
-  {
+public final class DumpAllPRConfigMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
-  
+
   public DumpAllPRConfigMessage() {}
 
   private DumpAllPRConfigMessage(Set recipients, int regionId, ReplyProcessor21 processor) {
     super(recipients, regionId, processor);
   }
 
-  public static PartitionResponse send(Set recipients, PartitionedRegion r) 
-      {
+  public static PartitionResponse send(Set recipients, PartitionedRegion r) {
     PartitionResponse p = new PartitionResponse(r.getSystem(), recipients);
     DumpAllPRConfigMessage m = new DumpAllPRConfigMessage(recipients, r.getPRId(), p);
 
-    /*Set failures = */r.getDistributionManager().putOutgoing(m);
-//    if (failures != null && failures.size() > 0) {
-//      throw new PartitionedRegionCommunicationException("Failed sending ", m);
-//    }
+    /* Set failures = */r.getDistributionManager().putOutgoing(m);
+    // if (failures != null && failures.size() > 0) {
+    // throw new PartitionedRegionCommunicationException("Failed sending ", m);
+    // }
     return p;
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, 
-      PartitionedRegion pr, long startTime) throws CacheException {
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+      long startTime) throws CacheException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "DumpAllPRConfigMessage operateOnRegion: {}", pr.getFullPath());
     }

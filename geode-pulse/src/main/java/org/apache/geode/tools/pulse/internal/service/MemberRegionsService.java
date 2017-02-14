@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -81,12 +79,7 @@ public class MemberRegionsService implements PulseService {
         ObjectNode regionJSON = mapper.createObjectNode();
         regionJSON.put(this.NAME, memberRegion.getName());
 
-        if (PulseConstants.PRODUCT_NAME_SQLFIRE.equalsIgnoreCase(PulseController.getPulseProductSupport())) {
-          // Convert region path to dot separated region path
-          regionJSON.put("fullPath", StringUtils.getTableNameFromRegionName(memberRegion.getFullPath()));
-        } else {
-          regionJSON.put("fullPath", memberRegion.getFullPath());
-        }
+        regionJSON.put("fullPath", memberRegion.getFullPath());
 
         regionJSON.put("type", memberRegion.getRegionType());
         regionJSON.put("entryCount", memberRegion.getSystemRegionEntryCount());
@@ -104,8 +97,7 @@ public class MemberRegionsService implements PulseService {
         String diskStoreName = memberRegion.getDiskStoreName();
         if (StringUtils.isNotNullNotEmptyNotWhiteSpace(diskStoreName)) {
           regionJSON.put(this.DISC_STORE_NAME, diskStoreName);
-          regionJSON.put(this.DISC_SYNCHRONOUS,
-              memberRegion.isDiskSynchronous());
+          regionJSON.put(this.DISC_SYNCHRONOUS, memberRegion.isDiskSynchronous());
         } else {
           regionJSON.put(this.DISC_SYNCHRONOUS, this.VALUE_NA);
           regionJSON.put(this.DISC_STORE_NAME, "");

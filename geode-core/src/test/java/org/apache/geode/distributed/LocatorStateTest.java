@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed;
 
@@ -60,63 +58,55 @@ public class LocatorStateTest {
   public void fromJsonWithEmptyStringThrowsIllegalArgumentException() throws Exception {
     // given: empty string
     String emptyString = "";
-    
+
     // when: passed to fromJson
     verifyException(this).fromJson(emptyString);
-    
+
     // then: throws IllegalArgumentException with cause of GfJsonException
-    assertThat((Exception)caughtException())
-        .isInstanceOf(IllegalArgumentException.class)
+    assertThat((Exception) caughtException()).isInstanceOf(IllegalArgumentException.class)
         .hasCauseInstanceOf(GfJsonException.class);
-    
-    assertThat(caughtException().getCause())
-        .isInstanceOf(GfJsonException.class)
-        .hasNoCause();
+
+    assertThat(caughtException().getCause()).isInstanceOf(GfJsonException.class).hasNoCause();
   }
-  
+
   @Test
   public void fromJsonWithWhiteSpaceStringThrowsIllegalArgumentException() throws Exception {
     // given: white space string
     String whiteSpaceString = "      ";
-    
+
     // when: passed to fromJson
     verifyException(this).fromJson(whiteSpaceString);
 
     // then: throws IllegalArgumentException with cause of GfJsonException
-    assertThat((Exception)caughtException())
-        .isInstanceOf(IllegalArgumentException.class)
+    assertThat((Exception) caughtException()).isInstanceOf(IllegalArgumentException.class)
         .hasCauseInstanceOf(GfJsonException.class);
-    
-    assertThat(caughtException().getCause())
-        .isInstanceOf(GfJsonException.class)
-        .hasNoCause();
+
+    assertThat(caughtException().getCause()).isInstanceOf(GfJsonException.class).hasNoCause();
   }
-  
+
   @Test
   public void fromJsonWithNullStringThrowsNullPointerException() throws Exception {
     // given: null string
     String nullString = null;
-    
+
     // when: passed to fromJson
     verifyException(this).fromJson(nullString);
-    
+
     // then: throws NullPointerException
-    assertThat((Exception)caughtException())
-        .isInstanceOf(NullPointerException.class)
-        .hasNoCause();
+    assertThat((Exception) caughtException()).isInstanceOf(NullPointerException.class).hasNoCause();
   }
-  
+
   @Test
   public void fromJsonWithValidJsonStringReturnsLocatorState() throws Exception {
     // given: valid json string
     String jsonString = createStatusJson();
-    
+
     // when: passed to fromJson
     LocatorState value = fromJson(jsonString);
-    
+
     // then: return valid instance of LocatorState
     assertThat(value).isInstanceOf(LocatorState.class);
-    
+
     assertThat(value.getClasspath()).isEqualTo(getClasspath());
     assertThat(value.getGemFireVersion()).isEqualTo(getGemFireVersion());
     assertThat(value.getHost()).isEqualTo(getHost());
@@ -133,7 +123,7 @@ public class LocatorStateTest {
     assertThat(value.getUptime()).isEqualTo(getUptime());
     assertThat(value.getWorkingDirectory()).isEqualTo(getWorkingDirectory());
   }
-  
+
   protected LocatorState fromJson(final String value) {
     return LocatorState.fromJson(value);
   }

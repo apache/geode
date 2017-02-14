@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -50,8 +48,7 @@ public final class TableConverter extends OpenTypeConverter {
     if (valueMap instanceof SortedMap) {
       Comparator comparator = ((SortedMap) valueMap).comparator();
       if (comparator != null) {
-        final String msg = "Cannot convert SortedMap with non-null comparator: "
-            + comparator;
+        final String msg = "Cannot convert SortedMap with non-null comparator: " + comparator;
         IllegalArgumentException iae = new IllegalArgumentException(msg);
         OpenDataException ode = new OpenDataException(msg);
         ode.initCause(iae);
@@ -65,20 +62,17 @@ public final class TableConverter extends OpenTypeConverter {
       final Object openKey = keyConverter.toOpenValue(entry.getKey());
       final Object openValue = valueConverter.toOpenValue(entry.getValue());
       final CompositeData row;
-      row = new CompositeDataSupport(rowType, keyValueArray, new Object[] {
-          openKey, openValue });
+      row = new CompositeDataSupport(rowType, keyValueArray, new Object[] {openKey, openValue});
       table.put(row);
     }
     return table;
   }
 
-  public final Object fromNonNullOpenValue(Object openValue)
-      throws InvalidObjectException {
+  public final Object fromNonNullOpenValue(Object openValue) throws InvalidObjectException {
     final TabularData table = (TabularData) openValue;
-    final Collection<CompositeData> rows = (Collection<CompositeData>) table
-        .values();
-    final Map<Object, Object> valueMap = sortedMap ? OpenTypeUtil
-        .newSortedMap() : OpenTypeUtil.newMap();
+    final Collection<CompositeData> rows = (Collection<CompositeData>) table.values();
+    final Map<Object, Object> valueMap =
+        sortedMap ? OpenTypeUtil.newSortedMap() : OpenTypeUtil.newMap();
     for (CompositeData row : rows) {
       final Object key = keyConverter.fromOpenValue(row.get("key"));
       final Object value = valueConverter.fromOpenValue(row.get("value"));

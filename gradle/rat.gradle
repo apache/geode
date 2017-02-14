@@ -49,8 +49,8 @@ rat {
     'geode-examples/gradle/wrapper/**',
 
     // IDE
-    'etc/eclipseFormatterProfile.xml',
-    'etc/intellijIdeaCodeStyle.xml',
+    'etc/eclipse-java-google-style.xml',
+    'etc/intellij-java-google-style.xml',
     'etc/eclipseOrganizeImports.importorder',
     '**/.project',
     '**/.classpath',
@@ -124,25 +124,19 @@ rat {
     'geode-site/website/content/js/jquery-1.10.1.min.js',
     'geode-site/website/content/js/jquery.icheck.js',
     'geode-site/website/content/js/respond.min.js',
-    'geode-site/website/content/js/bootstrap.min.js',
     'geode-site/website/content/css/bootflat-extensions.css',
     'geode-site/website/content/css/bootflat-square.css',
     'geode-site/website/content/css/bootflat.css',
-    'geode-site/website/content/bootstrap/bootstrap.min.css',
     'geode-site/website/content/css/font-awesome.min.css',
     'geode-site/website/lib/pandoc.template',
     'geode-site/website/content/font/**',
+    'geode-site/website/content/fonts/**',
+    'geode-site/website/content/stylesheets/**',
     'geode-site/content/**',
     // compiled logs and locks
     'geode-site/website/tmp/**',
     'geode-site/website/layouts/**',
 
-
-    // ANTLR generated files
-    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLLexer.java',
-    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLLexerTokenTypes.java',
-    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLParser.java',
-    'geode-core/src/main/java/org/apache/geode/cache/query/internal/parse/OQLLexerTokenTypes.txt',
 
     // Service META-INF
     '**/META-INF/services/org.xml.sax.ext.EntityResolver2',
@@ -154,7 +148,6 @@ rat {
     // --- Other Licenses ---
 
     // Public Domain http://meyerweb.com/eric/tools/css/reset/
-    'geode-web-api/src/main/webapp/docs/css/reset.css',
     'geode-pulse/src/main/webapp/scripts/lib/tooltip.js',
 
     // JSON License - permissive, used for Good, not Evil
@@ -178,12 +171,6 @@ rat {
     'geode-json/src/main/java/org/json/XMLTokener.java',
 
     // MIT License
-    'geode-web-api/src/main/webapp/docs/lib/backbone-min.js',
-    'geode-web-api/src/main/webapp/docs/lib/jquery-1.8.0.min.js',
-    'geode-web-api/src/main/webapp/docs/lib/jquery.ba-bbq.min.js',
-    'geode-web-api/src/main/webapp/docs/lib/jquery.slideto.min.js',
-    'geode-web-api/src/main/webapp/docs/lib/jquery.wiggle.min.js',
-    'geode-web-api/src/main/webapp/docs/lib/underscore-min.js',
     'geode-site/src/jbake/**',
     'geode-pulse/src/main/webapp/scripts/lib/jquery.jqGrid.src.js',
     'geode-pulse/src/main/webapp/scripts/lib/grid.locale-en.js',
@@ -209,23 +196,11 @@ rat {
     'geode-pulse/src/main/webapp/css/jquery.ztreestyle.css',
     'geode-pulse/src/main/webapp/css/jquery-ui.css',
 
-    // MIT or ISC
-    'geode-web-api/src/main/webapp/docs/lib/shred.bundle.js',
-    'geode-web-api/src/main/webapp/docs/lib/shred/content.js',
-
     // BSD License
-    'geode-web-api/src/main/webapp/docs/lib/highlight.7.3.pack.js',
     'geode-core/src/main/java/org/apache/geode/management/internal/cli/shell/jline/ANSIBuffer.java',
     'geode-pulse/src/main/webapp/scripts/lib/jquery.sparkline.js',
 
     // Apache License
-    'geode-web-api/src/main/webapp/docs/o2c.html',
-    'geode-web-api/src/main/webapp/docs/index.html',
-    'geode-web-api/src/main/webapp/docs/lib/swagger-oauth.js',
-    'geode-web-api/src/main/webapp/docs/lib/swagger.js',
-    'geode-web-api/src/main/webapp/docs/css/screen.css',
-    'geode-web-api/src/main/webapp/docs/swagger-ui.js',
-    'geode-web-api/src/main/webapp/docs/swagger-ui.min.js',
     'geode-pulse/src/main/webapp/scripts/multiselect/prettify.js',
 
     // MX4J License

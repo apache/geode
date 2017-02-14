@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.util;
 
@@ -44,8 +42,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 /**
- * IntegrationTests for AutoBalancer that include usage of Cache, StatSampler
- * and DistributedLockService.
+ * IntegrationTests for AutoBalancer that include usage of Cache, StatSampler and
+ * DistributedLockService.
  */
 @Category(IntegrationTest.class)
 public class AutoBalancerIntegrationJUnitTest {
@@ -72,7 +70,8 @@ public class AutoBalancerIntegrationJUnitTest {
 
     if (cache != null && !cache.isClosed()) {
       try {
-        final HostStatSampler statSampler = ((InternalDistributedSystem) cache.getDistributedSystem()).getStatSampler();
+        final HostStatSampler statSampler =
+            ((InternalDistributedSystem) cache.getDistributedSystem()).getStatSampler();
         cache.close();
         // wait for the stat sampler to stand down
         await().atMost(TIMEOUT_SECONDS, SECONDS).until(isAlive(statSampler), equalTo(false));
@@ -142,31 +141,33 @@ public class AutoBalancerIntegrationJUnitTest {
 
   @Test
   public void testInitializerCacheXML() {
-    String configStr = "<cache xmlns=\"http://geode.apache.org/schema/cache\"                          "
-        + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"                                      "
-        + " xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\""
-        + " version=\"1.0\">                                                                             "
-        + "   <initializer>                                                                              "
-        + "     <class-name>org.apache.geode.cache.util.AutoBalancer</class-name>                    "
-        + "     <parameter name=\"schedule\">                                                            "
-        + "       <string>* * * * * ? </string>                                                          "
-        + "     </parameter>                                                                             "
-        + "   </initializer>                                                                             "
-        + " </cache>";
+    String configStr =
+        "<cache xmlns=\"http://geode.apache.org/schema/cache\"                          "
+            + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"                                      "
+            + " xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\""
+            + " version=\"1.0\">                                                                             "
+            + "   <initializer>                                                                              "
+            + "     <class-name>org.apache.geode.cache.util.AutoBalancer</class-name>                    "
+            + "     <parameter name=\"schedule\">                                                            "
+            + "       <string>* * * * * ? </string>                                                          "
+            + "     </parameter>                                                                             "
+            + "   </initializer>                                                                             "
+            + " </cache>";
 
     cache.loadCacheXml(new ByteArrayInputStream(configStr.getBytes()));
   }
 
   @Test(expected = GemFireConfigException.class)
   public void testInitFailOnMissingScheduleConf() {
-    String configStr = "<cache xmlns=\"http://geode.apache.org/schema/cache\"                          "
-        + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"                                      "
-        + " xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\""
-        + " version=\"1.0\">                                                                             "
-        + "   <initializer>                                                                              "
-        + "     <class-name>org.apache.geode.cache.util.AutoBalancer</class-name>                    "
-        + "   </initializer>                                                                             "
-        + " </cache>";
+    String configStr =
+        "<cache xmlns=\"http://geode.apache.org/schema/cache\"                          "
+            + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"                                      "
+            + " xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\""
+            + " version=\"1.0\">                                                                             "
+            + "   <initializer>                                                                              "
+            + "     <class-name>org.apache.geode.cache.util.AutoBalancer</class-name>                    "
+            + "   </initializer>                                                                             "
+            + " </cache>";
 
     cache.loadCacheXml(new ByteArrayInputStream(configStr.getBytes()));
   }

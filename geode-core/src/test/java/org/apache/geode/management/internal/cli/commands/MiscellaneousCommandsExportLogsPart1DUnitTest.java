@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -36,7 +34,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -57,7 +55,8 @@ public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTes
         // no need to close cache as it will be closed as part of teardown2
         Cache cache = getCache();
 
-        RegionFactory<Integer, Integer> dataRegionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+        RegionFactory<Integer, Integer> dataRegionFactory =
+            cache.createRegionFactory(RegionShortcut.PARTITION);
         Region region = dataRegionFactory.create("testRegion");
         for (int i = 0; i < 5; i++) {
           region.put("key" + (i + 200), "value" + (i + 200));
@@ -89,8 +88,8 @@ public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTes
     MiscellaneousCommands misc = new MiscellaneousCommands();
     getCache();
 
-    Result cmdResult = misc.exportLogsPreprocessing("./testExportLogs" + dir, null, null, logLevel, false, false, start,
-        end, 1);
+    Result cmdResult = misc.exportLogsPreprocessing("./testExportLogs" + dir, null, null, logLevel,
+        false, false, start, end, 1);
 
     getLogWriter().info("testExportLogs command result =" + cmdResult);
 
@@ -104,6 +103,7 @@ public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTes
     FileUtil.delete(new File("./testExportLogs" + dir));
   }
 
+  @Category(FlakyTest.class) // GEODE-1477 (http)
   @Test
   public void testExportLogsForMerge() throws IOException {
     setupForExportLogs();
@@ -120,8 +120,8 @@ public class MiscellaneousCommandsExportLogsPart1DUnitTest extends CliCommandTes
     MiscellaneousCommands misc = new MiscellaneousCommands();
     getCache();
 
-    Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForMerge" + dir, null, null, logLevel, false, true,
-        start, end, 1);
+    Result cmdResult = misc.exportLogsPreprocessing("./testExportLogsForMerge" + dir, null, null,
+        logLevel, false, true, start, end, 1);
     getLogWriter().info("testExportLogsForMerge command=" + cmdResult);
 
     if (cmdResult != null) {

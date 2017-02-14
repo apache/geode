@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.shared;
@@ -52,21 +50,19 @@ import java.util.HashMap;
 
 
 /**
- * Implementation of {@link NativeCalls} interface that encapsulates native C
- * calls via JNA. To obtain an instance of JNA based implementation for the
- * current platform, use {@link NativeCallsJNAImpl#getInstance()}.
+ * Implementation of {@link NativeCalls} interface that encapsulates native C calls via JNA. To
+ * obtain an instance of JNA based implementation for the current platform, use
+ * {@link NativeCallsJNAImpl#getInstance()}.
  * 
- * BridJ is supposed to be cleaner, faster but it does not support Solaris/SPARC
- * yet and its not a mature library yet, so not using it. Can revisit once this
- * changes.
+ * BridJ is supposed to be cleaner, faster but it does not support Solaris/SPARC yet and its not a
+ * mature library yet, so not using it. Can revisit once this changes.
  * 
  * @since GemFire 8.0
  */
 public final class NativeCallsJNAImpl {
 
   // no instance allowed
-  private NativeCallsJNAImpl() {
-  }
+  private NativeCallsJNAImpl() {}
 
   /**
    * The static instance of the JNA based implementation for this platform.
@@ -93,8 +89,7 @@ public final class NativeCallsJNAImpl {
   }
 
   /**
-   * Get an instance of JNA based implementation of {@link NativeCalls} for the
-   * current platform.
+   * Get an instance of JNA based implementation of {@link NativeCalls} for the current platform.
    */
   public static NativeCalls getInstance() {
     return instance;
@@ -118,8 +113,7 @@ public final class NativeCallsJNAImpl {
 
     public static native int getpid();
 
-    public static native int kill(int processId, int signal)
-        throws LastErrorException;
+    public static native int kill(int processId, int signal) throws LastErrorException;
 
     public static native int setsid() throws LastErrorException;
 
@@ -127,13 +121,13 @@ public final class NativeCallsJNAImpl {
 
     public static native int signal(int signum, SignalHandler handler);
 
-    public static native int setsockopt(int sockfd, int level, int optName,
-        IntByReference optVal, int optSize) throws LastErrorException;
+    public static native int setsockopt(int sockfd, int level, int optName, IntByReference optVal,
+        int optSize) throws LastErrorException;
 
     public static native int close(int fd) throws LastErrorException;
 
     public static native int isatty(int fd) throws LastErrorException;
-    
+
     static final int EPERM = 1;
     static final int ENOSPC = 28;
 
@@ -145,15 +139,14 @@ public final class NativeCallsJNAImpl {
     }
 
     /**
-     * holds a reference of {@link SignalHandler} installed in
-     * {@link #daemonize} for SIGHUP to avoid it being GCed. Assumes that the
-     * NativeCalls instance itself is a singleton and never GCed.
+     * holds a reference of {@link SignalHandler} installed in {@link #daemonize} for SIGHUP to
+     * avoid it being GCed. Assumes that the NativeCalls instance itself is a singleton and never
+     * GCed.
      */
     SignalHandler hupHandler;
 
     /**
-     * the {@link RehashServerOnSIGHUP} instance sent to
-     * {@link #daemonize}
+     * the {@link RehashServerOnSIGHUP} instance sent to {@link #daemonize}
      */
     RehashServerOnSIGHUP rehashCallback;
 
@@ -169,35 +162,30 @@ public final class NativeCallsJNAImpl {
      * @see NativeCalls#setEnvironment(String, String)
      */
     @Override
-    public synchronized void setEnvironment(final String name,
-        final String value) {
+    public synchronized void setEnvironment(final String name, final String value) {
       if (name == null) {
-        throw new UnsupportedOperationException(
-            "setEnvironment() for name=NULL");
+        throw new UnsupportedOperationException("setEnvironment() for name=NULL");
       }
       int res = -1;
       Throwable cause = null;
       try {
         if (value != null) {
           res = setenv(name, value, 1);
-        }
-        else {
+        } else {
           res = unsetenv(name);
         }
       } catch (LastErrorException le) {
-        cause = new NativeErrorException(le.getMessage(), le.getErrorCode(),
-            le.getCause());
+        cause = new NativeErrorException(le.getMessage(), le.getErrorCode(), le.getCause());
       }
       if (res != 0) {
-        throw new IllegalArgumentException("setEnvironment: given name=" + name
-            + " (value=" + value + ')', cause);
+        throw new IllegalArgumentException(
+            "setEnvironment: given name=" + name + " (value=" + value + ')', cause);
       }
       // also change in java cached map
       if (javaEnv != null) {
         if (value != null) {
           javaEnv.put(name, value);
-        }
-        else {
+        } else {
           javaEnv.remove(name);
         }
       }
@@ -209,8 +197,7 @@ public final class NativeCallsJNAImpl {
     @Override
     public synchronized String getEnvironment(final String name) {
       if (name == null) {
-        throw new UnsupportedOperationException(
-            "getEnvironment() for name=NULL");
+        throw new UnsupportedOperationException("getEnvironment() for name=NULL");
       }
       return getenv(name);
     }
@@ -255,17 +242,15 @@ public final class NativeCallsJNAImpl {
      * {@inheritDoc}
      */
     @Override
-    public void daemonize(RehashServerOnSIGHUP callback)
-        throws UnsupportedOperationException {
+    public void daemonize(RehashServerOnSIGHUP callback) throws UnsupportedOperationException {
       UnsupportedOperationException err = null;
       try {
         setsid();
       } catch (LastErrorException le) {
         // errno=EPERM indicates already group leader
         if (le.getErrorCode() != EPERM) {
-          err = new UnsupportedOperationException(
-              "Failed in setsid() in daemonize() due to " + le.getMessage()
-                  + " (errno=" + le.getErrorCode() + ')');
+          err = new UnsupportedOperationException("Failed in setsid() in daemonize() due to "
+              + le.getMessage() + " (errno=" + le.getErrorCode() + ')');
         }
       }
       // set umask to something consistent for servers
@@ -297,16 +282,14 @@ public final class NativeCallsJNAImpl {
     }
 
     @Override
-    public void preBlow(String path, long maxSize, boolean preAllocate)
-        throws IOException {
-      final org.apache.geode.LogWriter logger; 
+    public void preBlow(String path, long maxSize, boolean preAllocate) throws IOException {
+      final org.apache.geode.LogWriter logger;
       if (InternalDistributedSystem.getAnyInstance() != null) {
         logger = InternalDistributedSystem.getAnyInstance().getLogWriter();
-      }
-      else {
+      } else {
         logger = null;
       }
-      
+
       if (logger != null && logger.fineEnabled()) {
         logger.fine("DEBUG preBlow called for path = " + path);
       }
@@ -324,8 +307,8 @@ public final class NativeCallsJNAImpl {
         if (!isOnLocalFileSystem(path)) {
           super.preBlow(path, maxSize, preAllocate);
           if (logger != null && logger.fineEnabled()) {
-            logger.fine("DEBUG preBlow super.preBlow 2 called as path = "
-                + path + " not on local file system");
+            logger.fine("DEBUG preBlow super.preBlow 2 called as path = " + path
+                + " not on local file system");
           }
           if (DiskStoreImpl.TEST_NO_FALLOC_DIRS != null) {
             DiskStoreImpl.TEST_NO_FALLOC_DIRS.add(path);
@@ -337,18 +320,19 @@ public final class NativeCallsJNAImpl {
           DiskStoreImpl.TEST_CHK_FALLOC_DIRS.add(path);
         }
         if (logger != null && logger.fineEnabled()) {
-          logger.fine("DEBUG preBlow posix_fallocate called for path = " + path + " and ret = 0 maxsize = " + maxSize);
+          logger.fine("DEBUG preBlow posix_fallocate called for path = " + path
+              + " and ret = 0 maxsize = " + maxSize);
         }
       } catch (LastErrorException le) {
         if (logger != null && logger.fineEnabled()) {
-          logger.fine("DEBUG preBlow posix_fallocate called for path = " + path + " and ret = " + le.getErrorCode() + " maxsize = " + maxSize);
+          logger.fine("DEBUG preBlow posix_fallocate called for path = " + path + " and ret = "
+              + le.getErrorCode() + " maxsize = " + maxSize);
         }
         // check for no space left on device
         if (le.getErrorCode() == ENOSPC) {
           unknownError = false;
           throw new IOException("Not enough space left on device");
-        }
-        else {
+        } else {
           unknownError = true;
         }
       } finally {
@@ -376,8 +360,7 @@ public final class NativeCallsJNAImpl {
       throw new UnsupportedOperationException("not expected to be invoked");
     }
 
-    protected void fallocateFD(int fd, long offset, long len)
-        throws LastErrorException {
+    protected void fallocateFD(int fd, long offset, long len) throws LastErrorException {
       throw new UnsupportedOperationException("not expected to be invoked");
     }
 
@@ -385,25 +368,21 @@ public final class NativeCallsJNAImpl {
      * {@inheritDoc}
      */
     @Override
-    public Map<TCPSocketOptions, Throwable> setSocketOptions(Socket sock,
-        InputStream sockStream, Map<TCPSocketOptions, Object> optValueMap)
-        throws UnsupportedOperationException {
+    public Map<TCPSocketOptions, Throwable> setSocketOptions(Socket sock, InputStream sockStream,
+        Map<TCPSocketOptions, Object> optValueMap) throws UnsupportedOperationException {
       return super.setGenericSocketOptions(sock, sockStream, optValueMap);
     }
 
     @Override
-    protected int setPlatformSocketOption(int sockfd, int level, int optName,
-        TCPSocketOptions opt, Integer optVal, int optSize)
-        throws NativeErrorException {
+    protected int setPlatformSocketOption(int sockfd, int level, int optName, TCPSocketOptions opt,
+        Integer optVal, int optSize) throws NativeErrorException {
       try {
-        return setsockopt(sockfd, level, optName,
-            new IntByReference(optVal.intValue()), optSize);
+        return setsockopt(sockfd, level, optName, new IntByReference(optVal.intValue()), optSize);
       } catch (LastErrorException le) {
-        throw new NativeErrorException(le.getMessage(), le.getErrorCode(),
-            le.getCause());
+        throw new NativeErrorException(le.getMessage(), le.getErrorCode(), le.getCause());
       }
     }
-    
+
     public boolean isTTY() {
       try {
         return isatty(0) == 1;
@@ -411,7 +390,7 @@ public final class NativeCallsJNAImpl {
         throw new RuntimeException("Couldn't find tty impl. ", e);
       }
     }
-    
+
   }
 
   /**
@@ -436,8 +415,7 @@ public final class NativeCallsJNAImpl {
     /** posix_fallocate returns error number rather than setting errno */
     public static native int posix_fallocate64(int fd, long offset, long len);
 
-    public static native int creat64(String path, int flags)
-        throws LastErrorException;
+    public static native int creat64(String path, int flags) throws LastErrorException;
 
     /**
      * {@inheritDoc}
@@ -448,8 +426,7 @@ public final class NativeCallsJNAImpl {
     }
 
     @Override
-    protected int getPlatformOption(TCPSocketOptions opt)
-        throws UnsupportedOperationException {
+    protected int getPlatformOption(TCPSocketOptions opt) throws UnsupportedOperationException {
       switch (opt) {
         case OPT_KEEPIDLE:
           return OPT_TCP_KEEPIDLE;
@@ -465,25 +442,29 @@ public final class NativeCallsJNAImpl {
     @Override
     protected boolean isNoProtocolOptionCode(int errno) {
       switch (errno) {
-        case ENOPROTOOPT: return true;
-        case ENOPROTOOPT_ALPHA: return true;
-        case ENOPROTOOPT_MIPS: return true;
-        case ENOPROTOOPT_PARISC: return true;
-        default: return false;
+        case ENOPROTOOPT:
+          return true;
+        case ENOPROTOOPT_ALPHA:
+          return true;
+        case ENOPROTOOPT_MIPS:
+          return true;
+        case ENOPROTOOPT_PARISC:
+          return true;
+        default:
+          return false;
       }
     }
-    
+
     static {
       if (Platform.is64Bit()) {
         StatFS64.dummy();
-      }
-      else {
+      } else {
         StatFS.dummy();
       }
     }
-    
+
     private ThreadLocal<Structure> tSpecs = new ThreadLocal<Structure>();
-    
+
     private static boolean isStatFSEnabled;
 
     public static class FSIDIntArr2 extends Structure {
@@ -491,7 +472,7 @@ public final class NativeCallsJNAImpl {
       public int[] fsid = new int[2];
 
       protected List getFieldOrder() {
-        return Arrays.asList(new String[] { "fsid" });
+        return Arrays.asList(new String[] {"fsid"});
       }
     }
 
@@ -500,7 +481,7 @@ public final class NativeCallsJNAImpl {
       public int[] fspare = new int[5];
 
       protected List getFieldOrder() {
-        return Arrays.asList(new String[] { "fspare" });
+        return Arrays.asList(new String[] {"fspare"});
       }
     }
 
@@ -534,8 +515,7 @@ public final class NativeCallsJNAImpl {
           int ret = statfs(".", struct);
           if (ret == 0) {
             isStatFSEnabled = true;
-          }
-          else {
+          } else {
             isStatFSEnabled = false;
           }
         } catch (VirtualMachineError e) {
@@ -547,14 +527,12 @@ public final class NativeCallsJNAImpl {
         }
       }
 
-      public static native int statfs(String path, StatFS statfs)
-          throws LastErrorException;
+      public static native int statfs(String path, StatFS statfs) throws LastErrorException;
 
       @Override
       protected List getFieldOrder() {
-        return Arrays.asList(new String[] { "f_type", "f_bsize", "f_blocks",
-            "f_bfree", "f_bavail", "f_files", "f_ffree", "f_fsid", "f_namelen",
-            "f_frsize", "f_spare" });
+        return Arrays.asList(new String[] {"f_type", "f_bsize", "f_blocks", "f_bfree", "f_bavail",
+            "f_files", "f_ffree", "f_fsid", "f_namelen", "f_frsize", "f_spare"});
       }
 
       // KN: TODO need to add more types which are type of remote.
@@ -562,22 +540,24 @@ public final class NativeCallsJNAImpl {
       // COH, DEVFS, ISOFS, OPENPROM_SUPER_MAGIC, PROC_SUPER_MAGIC, UDF_SUPER_MAGIC
       // Do man 2 statfs on linux and will give all the file types.
       // Following identified as remote file system types
-      // CIFS_MAGIC_NUMBER, CODA_SUPER_MAGIC, NCP_SUPER_MAGIC, NFS_SUPER_MAGIC, SMB_SUPER_MAGIC, TMPFS_MAGIC
-      // 0xFF534D42       , 0x73757245      , 0x564c         , 0x6969         , 0x517B         , 0x01021994
-      // 4283649346       , 1937076805      , 22092          , 26985          , 20859          , 16914836
-      private static int[] REMOTE_TYPES= new int[] { /*4283649346,*/ 1937076805, 22092, 26985, 20859, 16914836 };
-      
+      // CIFS_MAGIC_NUMBER, CODA_SUPER_MAGIC, NCP_SUPER_MAGIC, NFS_SUPER_MAGIC, SMB_SUPER_MAGIC,
+      // TMPFS_MAGIC
+      // 0xFF534D42 , 0x73757245 , 0x564c , 0x6969 , 0x517B , 0x01021994
+      // 4283649346 , 1937076805 , 22092 , 26985 , 20859 , 16914836
+      private static int[] REMOTE_TYPES =
+          new int[] { /* 4283649346, */ 1937076805, 22092, 26985, 20859, 16914836};
+
       public boolean isTypeLocal() {
-        for(int i=0; i<REMOTE_TYPES.length; i++) {
+        for (int i = 0; i < REMOTE_TYPES.length; i++) {
           if (REMOTE_TYPES[i] == f_type) {
             return false;
           }
         }
         return true;
       }
-      
+
       public static void dummy() {
-        
+
       }
     }
 
@@ -586,7 +566,7 @@ public final class NativeCallsJNAImpl {
       public long[] fspare = new long[5];
 
       protected List getFieldOrder() {
-        return Arrays.asList(new String[] { "fspare" });
+        return Arrays.asList(new String[] {"fspare"});
       }
     }
 
@@ -618,11 +598,13 @@ public final class NativeCallsJNAImpl {
       // COH, DEVFS, ISOFS, OPENPROM_SUPER_MAGIC, PROC_SUPER_MAGIC, UDF_SUPER_MAGIC
       // Do man 2 statfs on linux and will give all the file types.
       // Following identified as remote file system types
-      // CIFS_MAGIC_NUMBER, CODA_SUPER_MAGIC, NCP_SUPER_MAGIC, NFS_SUPER_MAGIC, SMB_SUPER_MAGIC, TMPFS_MAGIC
-      // 0xFF534D42       , 0x73757245      , 0x564c         , 0x6969         , 0x517B         , 0x01021994
-      // 4283649346       , 1937076805      , 22092          , 26985          , 20859          , 16914836
-      private static long[] REMOTE_TYPES= new long[] { 4283649346l, 1937076805l, 22092l, 26985l, 20859l, 16914836l };
-      
+      // CIFS_MAGIC_NUMBER, CODA_SUPER_MAGIC, NCP_SUPER_MAGIC, NFS_SUPER_MAGIC, SMB_SUPER_MAGIC,
+      // TMPFS_MAGIC
+      // 0xFF534D42 , 0x73757245 , 0x564c , 0x6969 , 0x517B , 0x01021994
+      // 4283649346 , 1937076805 , 22092 , 26985 , 20859 , 16914836
+      private static long[] REMOTE_TYPES =
+          new long[] {4283649346l, 1937076805l, 22092l, 26985l, 20859l, 16914836l};
+
       static {
         try {
           Native.register("rt");
@@ -630,8 +612,7 @@ public final class NativeCallsJNAImpl {
           int ret = statfs(".", struct);
           if (ret == 0) {
             isStatFSEnabled = true;
-          }
-          else {
+          } else {
             isStatFSEnabled = false;
           }
         } catch (Throwable t) {
@@ -641,34 +622,33 @@ public final class NativeCallsJNAImpl {
         }
       }
 
-      public static native int statfs(String path, StatFS64 statfs)
-          throws LastErrorException;
+      public static native int statfs(String path, StatFS64 statfs) throws LastErrorException;
 
       @Override
       protected List getFieldOrder() {
-        return Arrays.asList(new String[] { "f_type", "f_bsize", "f_blocks",
-            "f_bfree", "f_bavail", "f_files", "f_ffree", "f_fsid", "f_namelen",
-            "f_frsize", "f_spare" });
+        return Arrays.asList(new String[] {"f_type", "f_bsize", "f_blocks", "f_bfree", "f_bavail",
+            "f_files", "f_ffree", "f_fsid", "f_namelen", "f_frsize", "f_spare"});
       }
 
-      
+
       public boolean isTypeLocal() {
-        for(int i=0; i<REMOTE_TYPES.length; i++) {
+        for (int i = 0; i < REMOTE_TYPES.length; i++) {
           if (REMOTE_TYPES[i] == f_type) {
             return false;
           }
         }
         return true;
       }
-      
+
       public static void dummy() {
-        
+
       }
     }
 
     /**
-     * Get the file store type of a path.
-     * for example, /dev/sdd1(store name) /w2-gst-dev40d(mount point) ext4(type)
+     * Get the file store type of a path. for example, /dev/sdd1(store name) /w2-gst-dev40d(mount
+     * point) ext4(type)
+     * 
      * @param path
      * @return file store type
      */
@@ -690,26 +670,23 @@ public final class NativeCallsJNAImpl {
     }
 
     /**
-     * This will return whether the path passed in as arg is
-     * part of a local file system or a remote file system.
-     * This method is mainly used by the DiskCapacityMonitor thread
-     * and we don't want to monitor remote fs available space as
-     * due to network problems/firewall issues the call to getUsableSpace
-     * can hang. See bug #49155. On platforms other than Linux this will
-     * return false even if it on local file system for now.
+     * This will return whether the path passed in as arg is part of a local file system or a remote
+     * file system. This method is mainly used by the DiskCapacityMonitor thread and we don't want
+     * to monitor remote fs available space as due to network problems/firewall issues the call to
+     * getUsableSpace can hang. See bug #49155. On platforms other than Linux this will return false
+     * even if it on local file system for now.
      */
     public boolean isOnLocalFileSystem(final String path) {
-      final org.apache.geode.LogWriter logger; 
+      final org.apache.geode.LogWriter logger;
       if (InternalDistributedSystem.getAnyInstance() != null) {
         logger = InternalDistributedSystem.getAnyInstance().getLogWriter();
-      }
-      else {
+      } else {
         logger = null;
       }
       if (!isStatFSEnabled) {
-//        if (logger != null && logger.fineEnabled()) {
-//          logger.info("DEBUG isOnLocalFileSystem returning false 1 for path = " + path);
-//        }
+        // if (logger != null && logger.fineEnabled()) {
+        // logger.info("DEBUG isOnLocalFileSystem returning false 1 for path = " + path);
+        // }
         return false;
       }
       final int numTries = 10;
@@ -718,24 +695,25 @@ public final class NativeCallsJNAImpl {
           if (Platform.is64Bit()) {
             StatFS64 stat = new StatFS64();
             StatFS64.statfs(path, stat);
-//            if (logger != null && logger.fineEnabled()) {
-//              logger.info("DEBUG 64 isOnLocalFileSystem returning " + stat.isTypeLocal() + " for path = " + path);
-//            }
+            // if (logger != null && logger.fineEnabled()) {
+            // logger.info("DEBUG 64 isOnLocalFileSystem returning " + stat.isTypeLocal() + " for
+            // path = " + path);
+            // }
             return stat.isTypeLocal();
-          }
-          else {
+          } else {
             StatFS stat = new StatFS();
             StatFS.statfs(path, stat);
-//            if (logger != null && logger.fineEnabled()) {
-//              logger.fine("DEBUG 32 isOnLocalFileSystem returning " + stat.isTypeLocal() + " for path = " + path);
-//            }
+            // if (logger != null && logger.fineEnabled()) {
+            // logger.fine("DEBUG 32 isOnLocalFileSystem returning " + stat.isTypeLocal() + " for
+            // path = " + path);
+            // }
             return stat.isTypeLocal();
           }
         } catch (LastErrorException le) {
-           // ignoring it as NFS mounted can give this exception
-           // and we just want to retry to remove transient problem.
+          // ignoring it as NFS mounted can give this exception
+          // and we just want to retry to remove transient problem.
           if (logger != null && logger.fineEnabled()) {
-            logger.fine("DEBUG isOnLocalFileSystem got ex = "+ le + " msg = " + le.getMessage());
+            logger.fine("DEBUG isOnLocalFileSystem got ex = " + le + " msg = " + le.getMessage());
           }
         }
       }
@@ -747,7 +725,7 @@ public final class NativeCallsJNAImpl {
     @Override
     protected boolean hasFallocate(String path) {
       String fstype = getFileStoreType(path);
-      for (String type:FallocateFileSystems) {
+      for (String type : FallocateFileSystems) {
         if (type.equalsIgnoreCase(fstype)) {
           return true;
         }
@@ -761,8 +739,7 @@ public final class NativeCallsJNAImpl {
     }
 
     @Override
-    protected void fallocateFD(int fd, long offset, long len)
-        throws LastErrorException {
+    protected void fallocateFD(int fd, long offset, long len) throws LastErrorException {
       int errno = posix_fallocate64(fd, offset, len);
       if (errno != 0) {
         throw new LastErrorException(errno);
@@ -797,8 +774,7 @@ public final class NativeCallsJNAImpl {
     }
 
     @Override
-    protected int getPlatformOption(TCPSocketOptions opt)
-        throws UnsupportedOperationException {
+    protected int getPlatformOption(TCPSocketOptions opt) throws UnsupportedOperationException {
       switch (opt) {
         case OPT_KEEPIDLE:
           return OPT_TCP_KEEPALIVE_THRESHOLD;
@@ -811,30 +787,25 @@ public final class NativeCallsJNAImpl {
     }
 
     @Override
-    protected int setPlatformSocketOption(int sockfd, int level, int optName,
-        TCPSocketOptions opt, Integer optVal, int optSize)
-        throws NativeErrorException {
+    protected int setPlatformSocketOption(int sockfd, int level, int optName, TCPSocketOptions opt,
+        Integer optVal, int optSize) throws NativeErrorException {
       try {
         switch (optName) {
           case OPT_TCP_KEEPALIVE_THRESHOLD:
             // value required is in millis
-            final IntByReference timeout = new IntByReference(
-                optVal.intValue() * 1000);
+            final IntByReference timeout = new IntByReference(optVal.intValue() * 1000);
             int result = setsockopt(sockfd, level, optName, timeout, optSize);
             if (result == 0) {
               // setting ABORT_THRESHOLD to be same as KEEPALIVE_THRESHOLD
-              return setsockopt(sockfd, level,
-                  OPT_TCP_KEEPALIVE_ABORT_THRESHOLD, timeout, optSize);
-            }
-            else {
+              return setsockopt(sockfd, level, OPT_TCP_KEEPALIVE_ABORT_THRESHOLD, timeout, optSize);
+            } else {
               return result;
             }
           default:
             throw new UnsupportedOperationException("unsupported option " + opt);
         }
       } catch (LastErrorException le) {
-        throw new NativeErrorException(le.getMessage(), le.getErrorCode(),
-            le.getCause());
+        throw new NativeErrorException(le.getMessage(), le.getErrorCode(), le.getCause());
       }
     }
 
@@ -863,8 +834,7 @@ public final class NativeCallsJNAImpl {
     }
 
     @Override
-    protected int getPlatformOption(TCPSocketOptions opt)
-        throws UnsupportedOperationException {
+    protected int getPlatformOption(TCPSocketOptions opt) throws UnsupportedOperationException {
       switch (opt) {
         case OPT_KEEPIDLE:
           return OPT_TCP_KEEPALIVE;
@@ -903,8 +873,7 @@ public final class NativeCallsJNAImpl {
     }
 
     @Override
-    protected int getPlatformOption(TCPSocketOptions opt)
-        throws UnsupportedOperationException {
+    protected int getPlatformOption(TCPSocketOptions opt) throws UnsupportedOperationException {
       switch (opt) {
         case OPT_KEEPIDLE:
           return OPT_TCP_KEEPALIVE;
@@ -941,15 +910,13 @@ public final class NativeCallsJNAImpl {
 
       @Override
       protected List<?> getFieldOrder() {
-        return Arrays.asList(new String[] { "onoff", "keepalivetime",
-            "keepaliveinterval" });
+        return Arrays.asList(new String[] {"onoff", "keepalivetime", "keepaliveinterval"});
       }
     }
 
-    public static native int WSAIoctl(NativeLong sock, int controlCode,
-        TcpKeepAlive value, int valueSize, Pointer outValue, int outValueSize,
-        IntByReference bytesReturned, Pointer overlapped,
-        Pointer completionRoutine) throws LastErrorException;
+    public static native int WSAIoctl(NativeLong sock, int controlCode, TcpKeepAlive value,
+        int valueSize, Pointer outValue, int outValueSize, IntByReference bytesReturned,
+        Pointer overlapped, Pointer completionRoutine) throws LastErrorException;
 
     static final int WSAENOPROTOOPT = 10042;
     static final int SIO_KEEPALIVE_VALS = -1744830460;
@@ -959,12 +926,9 @@ public final class NativeCallsJNAImpl {
       static {
         // kernel32 requires stdcall calling convention
         Map<String, Object> kernel32Options = new HashMap<String, Object>();
-        kernel32Options.put(Library.OPTION_CALLING_CONVENTION,
-            StdCallLibrary.STDCALL_CONVENTION);
-        kernel32Options.put(Library.OPTION_FUNCTION_MAPPER,
-            StdCallLibrary.FUNCTION_MAPPER);
-        final NativeLibrary kernel32Lib = NativeLibrary.getInstance("kernel32",
-            kernel32Options);
+        kernel32Options.put(Library.OPTION_CALLING_CONVENTION, StdCallLibrary.STDCALL_CONVENTION);
+        kernel32Options.put(Library.OPTION_FUNCTION_MAPPER, StdCallLibrary.FUNCTION_MAPPER);
+        final NativeLibrary kernel32Lib = NativeLibrary.getInstance("kernel32", kernel32Options);
         Native.register(kernel32Lib);
       }
 
@@ -977,29 +941,26 @@ public final class NativeCallsJNAImpl {
       static final int STILL_ACTIVE = 259;
       static final int INVALID_HANDLE = -1;
 
-      public static native boolean SetEnvironmentVariableA(String name,
-          String value) throws LastErrorException;
+      public static native boolean SetEnvironmentVariableA(String name, String value)
+          throws LastErrorException;
 
-      public static native int GetEnvironmentVariableA(String name,
-          byte[] pvalue, int psize);
+      public static native int GetEnvironmentVariableA(String name, byte[] pvalue, int psize);
 
       public static native int GetCurrentProcessId();
 
-      public static native Pointer OpenProcess(int desiredAccess,
-          boolean inheritHandle, int processId) throws LastErrorException;
+      public static native Pointer OpenProcess(int desiredAccess, boolean inheritHandle,
+          int processId) throws LastErrorException;
 
-      public static native boolean TerminateProcess(Pointer processHandle,
-          int exitCode) throws LastErrorException;
+      public static native boolean TerminateProcess(Pointer processHandle, int exitCode)
+          throws LastErrorException;
 
       public static native boolean GetExitCodeProcess(Pointer processHandle,
           IntByReference exitCode) throws LastErrorException;
 
-      public static native boolean CloseHandle(Pointer handle)
-          throws LastErrorException;
+      public static native boolean CloseHandle(Pointer handle) throws LastErrorException;
     }
 
-    private static final Map<String, String> javaEnv =
-        getModifiableJavaEnvWIN();
+    private static final Map<String, String> javaEnv = getModifiableJavaEnvWIN();
 
     /**
      * @see NativeCalls#getOSType()
@@ -1013,11 +974,9 @@ public final class NativeCallsJNAImpl {
      * @see NativeCalls#setEnvironment(String, String)
      */
     @Override
-    public synchronized void setEnvironment(final String name,
-        final String value) {
+    public synchronized void setEnvironment(final String name, final String value) {
       if (name == null) {
-        throw new UnsupportedOperationException(
-            "setEnvironment() for name=NULL");
+        throw new UnsupportedOperationException("setEnvironment() for name=NULL");
       }
       boolean res = false;
       Throwable cause = null;
@@ -1028,22 +987,19 @@ public final class NativeCallsJNAImpl {
         // found so ignore
         if (value == null && le.getErrorCode() == 203) {
           res = true;
-        }
-        else {
-          cause = new NativeErrorException(le.getMessage(), le.getErrorCode(),
-              le.getCause());
+        } else {
+          cause = new NativeErrorException(le.getMessage(), le.getErrorCode(), le.getCause());
         }
       }
       if (!res) {
-        throw new IllegalArgumentException("setEnvironment: given name=" + name
-            + " (value=" + value + ')', cause);
+        throw new IllegalArgumentException(
+            "setEnvironment: given name=" + name + " (value=" + value + ')', cause);
       }
       // also change in java cached map
       if (javaEnv != null) {
         if (value != null) {
           javaEnv.put(name, value);
-        }
-        else {
+        } else {
           javaEnv.remove(name);
         }
       }
@@ -1055,8 +1011,7 @@ public final class NativeCallsJNAImpl {
     @Override
     public synchronized String getEnvironment(final String name) {
       if (name == null) {
-        throw new UnsupportedOperationException(
-            "getEnvironment() for name=NULL");
+        throw new UnsupportedOperationException("getEnvironment() for name=NULL");
       }
       int psize = Kernel32.GetEnvironmentVariableA(name, null, 0);
       if (psize > 0) {
@@ -1065,13 +1020,11 @@ public final class NativeCallsJNAImpl {
           psize = Kernel32.GetEnvironmentVariableA(name, result, psize);
           if (psize == (result.length - 1)) {
             return new String(result, 0, psize);
-          }
-          else if (psize <= 0) {
+          } else if (psize <= 0) {
             return null;
           }
         }
-      }
-      else {
+      } else {
         return null;
       }
     }
@@ -1090,17 +1043,16 @@ public final class NativeCallsJNAImpl {
     @Override
     public boolean isProcessActive(final int processId) {
       try {
-        final Pointer procHandle = Kernel32.OpenProcess(
-            Kernel32.PROCESS_QUERY_INFORMATION, false, processId);
+        final Pointer procHandle =
+            Kernel32.OpenProcess(Kernel32.PROCESS_QUERY_INFORMATION, false, processId);
         final long hval;
-        if (procHandle == null || (hval = Pointer.nativeValue(procHandle)) ==
-            Kernel32.INVALID_HANDLE || hval == 0) {
+        if (procHandle == null
+            || (hval = Pointer.nativeValue(procHandle)) == Kernel32.INVALID_HANDLE || hval == 0) {
           return false;
-        }
-        else {
+        } else {
           final IntByReference status = new IntByReference();
-          final boolean result = Kernel32.GetExitCodeProcess(procHandle, status)
-              && status != null && status.getValue() == Kernel32.STILL_ACTIVE;
+          final boolean result = Kernel32.GetExitCodeProcess(procHandle, status) && status != null
+              && status.getValue() == Kernel32.STILL_ACTIVE;
           Kernel32.CloseHandle(procHandle);
           return result;
         }
@@ -1116,14 +1068,13 @@ public final class NativeCallsJNAImpl {
     @Override
     public boolean killProcess(final int processId) {
       try {
-        final Pointer procHandle = Kernel32.OpenProcess(
-            Kernel32.PROCESS_TERMINATE, false, processId);
+        final Pointer procHandle =
+            Kernel32.OpenProcess(Kernel32.PROCESS_TERMINATE, false, processId);
         final long hval;
-        if (procHandle == null || (hval = Pointer.nativeValue(procHandle)) ==
-            Kernel32.INVALID_HANDLE || hval == 0) {
+        if (procHandle == null
+            || (hval = Pointer.nativeValue(procHandle)) == Kernel32.INVALID_HANDLE || hval == 0) {
           return false;
-        }
-        else {
+        } else {
           final boolean result = Kernel32.TerminateProcess(procHandle, -1);
           Kernel32.CloseHandle(procHandle);
           return result;
@@ -1140,17 +1091,15 @@ public final class NativeCallsJNAImpl {
     @Override
     public void daemonize(RehashServerOnSIGHUP callback)
         throws UnsupportedOperationException, IllegalStateException {
-      throw new IllegalStateException(
-          "daemonize() not applicable for Windows platform");
+      throw new IllegalStateException("daemonize() not applicable for Windows platform");
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Map<TCPSocketOptions, Throwable> setSocketOptions(Socket sock,
-        InputStream sockStream, Map<TCPSocketOptions, Object> optValueMap)
-        throws UnsupportedOperationException {
+    public Map<TCPSocketOptions, Throwable> setSocketOptions(Socket sock, InputStream sockStream,
+        Map<TCPSocketOptions, Object> optValueMap) throws UnsupportedOperationException {
       final TcpKeepAlive optValue = new TcpKeepAlive();
       final int optSize = (Integer.SIZE / Byte.SIZE) * 3;
       TCPSocketOptions errorOpt = null;
@@ -1161,24 +1110,22 @@ public final class NativeCallsJNAImpl {
         // all options currently require an integer argument
         if (value == null || !(value instanceof Integer)) {
           throw new IllegalArgumentException("bad argument type "
-              + (value != null ? value.getClass().getName() : "NULL") + " for "
-              + opt);
+              + (value != null ? value.getClass().getName() : "NULL") + " for " + opt);
         }
         switch (opt) {
           case OPT_KEEPIDLE:
             optValue.onoff = 1;
             // in millis
-            optValue.keepalivetime = ((Integer)value).intValue() * 1000;
+            optValue.keepalivetime = ((Integer) value).intValue() * 1000;
             break;
           case OPT_KEEPINTVL:
             optValue.onoff = 1;
             // in millis
-            optValue.keepaliveinterval = ((Integer)value).intValue() * 1000;
+            optValue.keepaliveinterval = ((Integer) value).intValue() * 1000;
             break;
           case OPT_KEEPCNT:
             errorOpt = opt;
-            error = new UnsupportedOperationException(
-                getUnsupportedSocketOptionMessage(opt));
+            error = new UnsupportedOperationException(getUnsupportedSocketOptionMessage(opt));
             break;
           default:
             throw new UnsupportedOperationException("unknown option " + opt);
@@ -1187,30 +1134,25 @@ public final class NativeCallsJNAImpl {
       final int sockfd = getSocketKernelDescriptor(sock, sockStream);
       final IntByReference nBytes = new IntByReference(0);
       try {
-        if (WSAIoctl(new NativeLong(sockfd), SIO_KEEPALIVE_VALS, optValue,
-            optSize, null, 0, nBytes, null, null) != 0) {
+        if (WSAIoctl(new NativeLong(sockfd), SIO_KEEPALIVE_VALS, optValue, optSize, null, 0, nBytes,
+            null, null) != 0) {
           errorOpt = TCPSocketOptions.OPT_KEEPIDLE; // using some option here
-          error = new SocketException(getOSType() + ": error setting options: "
-              + optValueMap);
+          error = new SocketException(getOSType() + ": error setting options: " + optValueMap);
         }
       } catch (LastErrorException le) {
         // check if the error indicates that option is not supported
         errorOpt = TCPSocketOptions.OPT_KEEPIDLE; // using some option here
         if (le.getErrorCode() == WSAENOPROTOOPT) {
-          error = new UnsupportedOperationException(
-              getUnsupportedSocketOptionMessage(errorOpt),
-              new NativeErrorException(le.getMessage(), le.getErrorCode(),
-                  le.getCause()));
-        }
-        else {
-          final SocketException se = new SocketException(getOSType()
-              + ": failed to set options: " + optValueMap);
+          error = new UnsupportedOperationException(getUnsupportedSocketOptionMessage(errorOpt),
+              new NativeErrorException(le.getMessage(), le.getErrorCode(), le.getCause()));
+        } else {
+          final SocketException se =
+              new SocketException(getOSType() + ": failed to set options: " + optValueMap);
           se.initCause(le);
           error = se;
         }
       }
-      return errorOpt != null ? Collections.singletonMap(errorOpt, error)
-          : null;
+      return errorOpt != null ? Collections.singletonMap(errorOpt, error) : null;
     }
   }
 }

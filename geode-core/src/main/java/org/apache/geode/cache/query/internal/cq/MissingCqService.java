@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal.cq;
 
@@ -44,15 +42,14 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 public class MissingCqService implements CqService {
 
   @Override
-  public ClientCQ newCq(String cqName, String queryString,
-      CqAttributes cqAttributes, InternalPool serverProxy, boolean isDurable)
+  public ClientCQ newCq(String cqName, String queryString, CqAttributes cqAttributes,
+      InternalPool serverProxy, boolean isDurable)
       throws QueryInvalidException, CqExistsException, CqException {
     throw new IllegalStateException("CqService is not available.");
   }
 
   @Override
-  public CqQuery getClientCqFromServer(ClientProxyMembershipID clientProxyId,
-      String clientCqName) {
+  public CqQuery getClientCqFromServer(ClientProxyMembershipID clientProxyId, String clientCqName) {
     throw new IllegalStateException("CqService is not available.");
   }
 
@@ -72,12 +69,10 @@ public class MissingCqService implements CqService {
   }
 
   @Override
-  public void executeAllClientCqs() throws CqException {
-  }
+  public void executeAllClientCqs() throws CqException {}
 
   @Override
-  public void executeAllRegionCqs(String regionName) throws CqException {
-  }
+  public void executeAllRegionCqs(String regionName) throws CqException {}
 
   @Override
   public void executeCqs(Collection<? extends InternalCqQuery> cqs) throws CqException {
@@ -85,12 +80,10 @@ public class MissingCqService implements CqService {
   }
 
   @Override
-  public void stopAllClientCqs() throws CqException {
-  }
+  public void stopAllClientCqs() throws CqException {}
 
   @Override
-  public void stopAllRegionCqs(String regionName) throws CqException {
-  }
+  public void stopAllRegionCqs(String regionName) throws CqException {}
 
   @Override
   public void stopCqs(Collection<? extends InternalCqQuery> cqs) throws CqException {
@@ -98,12 +91,10 @@ public class MissingCqService implements CqService {
   }
 
   @Override
-  public void closeCqs(String regionName) throws CqException {
-  }
+  public void closeCqs(String regionName) throws CqException {}
 
   @Override
-  public void closeCq(String cqName, ClientProxyMembershipID clientProxyId)
-      throws CqException {
+  public void closeCq(String cqName, ClientProxyMembershipID clientProxyId) throws CqException {
     throw new IllegalStateException("CqService is not available.");
   }
 
@@ -120,35 +111,32 @@ public class MissingCqService implements CqService {
 
   @Override
   public CqServiceStatistics getCqStatistics() {
-    return new MissingCqServiceStatistics(); 
+    return new MissingCqServiceStatistics();
   }
 
   @Override
-  public void closeClientCqs(ClientProxyMembershipID clientProxyId)
+  public void closeClientCqs(ClientProxyMembershipID clientProxyId) throws CqException {}
+
+  @Override
+  public List<ServerCQ> getAllClientCqs(ClientProxyMembershipID clientProxyId) {
+    return Collections.EMPTY_LIST;
+  }
+
+  @Override
+  public List<String> getAllDurableClientCqs(ClientProxyMembershipID clientProxyId)
       throws CqException {
-  }
-
-  @Override
-  public List<ServerCQ> getAllClientCqs(
-      ClientProxyMembershipID clientProxyId) {
     return Collections.EMPTY_LIST;
   }
 
   @Override
-  public List<String> getAllDurableClientCqs(
-      ClientProxyMembershipID clientProxyId) throws CqException {
-    return Collections.EMPTY_LIST;
-  }
-
-  @Override
-  public void dispatchCqListeners(HashMap cqs, int messageType, Object key,
-      Object value, byte[] delta, QueueManager qManager, EventID eventId) {
+  public void dispatchCqListeners(HashMap cqs, int messageType, Object key, Object value,
+      byte[] delta, QueueManager qManager, EventID eventId) {
     throw new IllegalStateException("CqService is not available.");
   }
 
   @Override
-  public void processEvents(CacheEvent event, Profile localProfile,
-      Profile[] profiles, FilterRoutingInfo frInfo) throws CqException {
+  public void processEvents(CacheEvent event, Profile localProfile, Profile[] profiles,
+      FilterRoutingInfo frInfo) throws CqException {
     throw new IllegalStateException("CqService is not available.");
   }
 
@@ -158,8 +146,7 @@ public class MissingCqService implements CqService {
   }
 
   @Override
-  public void close() {
-  }
+  public void close() {}
 
   @Override
   public boolean isRunning() {
@@ -172,38 +159,31 @@ public class MissingCqService implements CqService {
   }
 
   @Override
-  public String constructServerCqName(String cqName,
-      ClientProxyMembershipID clientProxyId) {
+  public String constructServerCqName(String cqName, ClientProxyMembershipID clientProxyId) {
     throw new IllegalStateException("CqService is not available.");
   }
 
   @Override
-  public void stopCq(String cqName, ClientProxyMembershipID clientId)
-      throws CqException {
+  public void stopCq(String cqName, ClientProxyMembershipID clientId) throws CqException {
     throw new IllegalStateException("CqService is not available.");
   }
 
   @Override
-  public void cqsDisconnected(Pool pool) {
-  }
+  public void cqsDisconnected(Pool pool) {}
 
   @Override
-  public void cqsConnected(Pool pool) {
-  }
+  public void cqsConnected(Pool pool) {}
 
   @Override
   public ServerCQ executeCq(String cqName, String queryString, int cqState,
-      ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn,
-      boolean isDurable, boolean manageEmptyRegions, int regionDataPolicy,
-      Map emptyRegionsMap) throws CqException, RegionNotFoundException,
-      CqClosedException {
+      ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn, boolean isDurable,
+      boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap)
+      throws CqException, RegionNotFoundException, CqClosedException {
     throw new IllegalStateException("CqService is not available.");
   }
 
   @Override
-  public void closeNonDurableClientCqs(ClientProxyMembershipID clientProxyId)
-      throws CqException {
-  }
+  public void closeNonDurableClientCqs(ClientProxyMembershipID clientProxyId) throws CqException {}
 
   @Override
   public List<String> getAllDurableCqsFromServer(InternalPool pool) {

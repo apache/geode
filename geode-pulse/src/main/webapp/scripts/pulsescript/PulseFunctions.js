@@ -43,7 +43,7 @@ function PulseFunctions() {
 PulseFunctions.prototype.pulseVersion = function(responseBack) {
     var po = new Object();
     po.traceNo = UUIDv4();
-    ajaxPost("pulse/pulseVersion", po, responseBack);
+    ajaxPost("pulseVersion", po, responseBack);
 };
 
 PulseFunctions.prototype.CluserAlertNotificationFunc = function (funcName, postData) {

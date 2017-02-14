@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -38,8 +36,7 @@ import static org.junit.Assert.*;
  * 
  */
 @Category(IntegrationTest.class)
-public class Bug37244JUnitTest
-{
+public class Bug37244JUnitTest {
 
   private static Cache cache = null;
 
@@ -50,8 +47,7 @@ public class Bug37244JUnitTest
   /**
    * Method for intializing the VM
    */
-  private static void initializeVM() throws Exception
-  {
+  private static void initializeVM() throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -66,8 +62,8 @@ public class Bug37244JUnitTest
     File dir = new File("testingDirectoryDefault");
     dir.mkdir();
     dir.deleteOnExit();
-    File[] dirs = { dir };
-    dsf.setDiskDirsAndSizes(dirs, new int[] { Integer.MAX_VALUE });
+    File[] dirs = {dir};
+    dsf.setDiskDirsAndSizes(dirs, new int[] {Integer.MAX_VALUE});
 
     dsf.setAutoCompact(false);
     DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = true;
@@ -79,27 +75,23 @@ public class Bug37244JUnitTest
     factory.setDiskSynchronous(true);
     factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
 
-    factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(
-        1, EvictionAction.OVERFLOW_TO_DISK));
+    factory.setEvictionAttributes(
+        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
     RegionAttributes attr = factory.create();
-    DistributedRegion distRegion = new DistributedRegion(regionName, attr,
-        null, (GemFireCacheImpl)cache, new InternalRegionArguments()
-            .setDestroyLockFlag(true).setRecreateFlag(false)
-            .setSnapshotInputStream(null).setImageTarget(null));
+    DistributedRegion distRegion = new DistributedRegion(regionName, attr, null,
+        (GemFireCacheImpl) cache, new InternalRegionArguments().setDestroyLockFlag(true)
+            .setRecreateFlag(false).setSnapshotInputStream(null).setImageTarget(null));
     assertNotNull(distRegion);
-    ((AbstractLRURegionMap)distRegion.entries)
-        ._setLruList((new TestLRUClockHand(distRegion,
-            ((AbstractLRURegionMap)distRegion.entries)._getCCHelper())));
-    ((GemFireCacheImpl)cache).createVMRegion(regionName, attr,
-        new InternalRegionArguments().setInternalMetaRegion(distRegion)
-            .setDestroyLockFlag(true).setSnapshotInputStream(null)
-            .setImageTarget(null));
+    ((AbstractLRURegionMap) distRegion.entries)._setLruList((new TestLRUClockHand(distRegion,
+        ((AbstractLRURegionMap) distRegion.entries)._getCCHelper())));
+    ((GemFireCacheImpl) cache).createVMRegion(regionName, attr,
+        new InternalRegionArguments().setInternalMetaRegion(distRegion).setDestroyLockFlag(true)
+            .setSnapshotInputStream(null).setImageTarget(null));
 
   }
 
   @Test
-  public void testPutWhileclear()
-  {
+  public void testPutWhileclear() {
     try {
       initializeVM();
 
@@ -107,24 +99,22 @@ public class Bug37244JUnitTest
       Region rgn = cache.getRegion(regionName);
       assertNotNull(rgn);
 
-      //put two entries into the region 
+      // put two entries into the region
       for (int i = 0; i < 2; i++) {
         rgn.put(new Long(i), new Long(i));
       }
 
-      //get an entry back 
-      Long value = (Long)rgn.get(new Long(0));
+      // get an entry back
+      Long value = (Long) rgn.get(new Long(0));
 
-      //check for entry value
+      // check for entry value
       assertTrue("Test failed ", value.equals(new Long(0)));
 
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       ex.printStackTrace();
       fail("Test failed");
 
-    }
-    finally {
+    } finally {
       assertNotNull(cache);
       Region rgn = cache.getRegion(regionName);
       assertNotNull(rgn);
@@ -142,12 +132,11 @@ public class Bug37244JUnitTest
    * 
    */
 
-  static public class TestLRUClockHand extends NewLRUClockHand
-  {
+  static public class TestLRUClockHand extends NewLRUClockHand {
 
     protected static Object mutex = new Object();
 
-//    private String regionName = "TestRegion";
+    // private String regionName = "TestRegion";
 
     protected static boolean EXECUTE_AFTER_GET_CALL = false;
 
@@ -158,19 +147,18 @@ public class Bug37244JUnitTest
      * @param ccHelper
      */
     public TestLRUClockHand(Region region, EnableLRU ccHelper) {
-      super(region, ccHelper,new InternalRegionArguments());
+      super(region, ccHelper, new InternalRegionArguments());
 
     }
 
     /**
      * Overridden getLRUEntry method
      */
-    public LRUClockNode getLRUEntry()
-    {
+    public LRUClockNode getLRUEntry() {
       if (EXECUTE_AFTER_GET_CALL) {
         Cache cache = CacheFactory.getAnyInstance();
         Assert.assertTrue(cache != null);
-        LocalRegion region = (LocalRegion)cache.getRegion(regionName);
+        LocalRegion region = (LocalRegion) cache.getRegion(regionName);
         Assert.assertTrue(region != null);
         Thread clearThread = new Thread(new clearThread(region));
         clearThread.start();
@@ -178,11 +166,9 @@ public class Bug37244JUnitTest
           synchronized (mutex) {
             mutex.wait(10000);
           }
-        }
-        catch (InterruptedException ie) {
+        } catch (InterruptedException ie) {
           if (cache.getLogger().fineEnabled()) {
-            cache.getLogger().fine(
-                "TestLRUClockHand#getLRUEntry Got an interrupted Exception");
+            cache.getLogger().fine("TestLRUClockHand#getLRUEntry Got an interrupted Exception");
           }
           fail("interrupted");
         }
@@ -197,8 +183,7 @@ public class Bug37244JUnitTest
      * clearThread
      * 
      */
-    protected static class clearThread implements Runnable
-    {
+    protected static class clearThread implements Runnable {
       LocalRegion region = null;
 
       clearThread(LocalRegion rgn) {
@@ -207,8 +192,7 @@ public class Bug37244JUnitTest
 
       }
 
-      public void run()
-      {
+      public void run() {
         Cache cache = CacheFactory.getAnyInstance();
         region.getDiskRegion().acquireWriteLock();
         try {
@@ -221,18 +205,14 @@ public class Bug37244JUnitTest
           Thread.sleep(5000);
 
           region.clear();
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
           if (cache.getLogger().fineEnabled()) {
-            cache.getLogger().fine(
-                "TestLRUClockHand#clearThread Got an interrupted Exception");
+            cache.getLogger().fine("TestLRUClockHand#clearThread Got an interrupted Exception");
           }
           fail("interrupted");
-        }
-        catch (Exception ie) {
+        } catch (Exception ie) {
           fail("TestLRUClockHand#clearThread Got an Exception");
-        }
-        finally {
+        } finally {
           region.getDiskRegion().releaseWriteLock();
         }
 
@@ -245,8 +225,7 @@ public class Bug37244JUnitTest
      * 
      */
 
-    protected static class putThread implements Runnable
-    {
+    protected static class putThread implements Runnable {
       LocalRegion region = null;
 
       putThread(LocalRegion rgn) {
@@ -255,8 +234,7 @@ public class Bug37244JUnitTest
 
       }
 
-      public void run()
-      {
+      public void run() {
         region.put(new Long(1), "2");
 
       }

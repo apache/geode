@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache.tier.sockets;
@@ -109,10 +107,9 @@ import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
 
 /**
- * Class <code>CacheClientProxy</code> represents the server side of the
- * {@link CacheClientUpdater}. It queues messages to be sent from the server to
- * the client. It then reads those messages from the queue and sends them to the
- * client.
+ * Class <code>CacheClientProxy</code> represents the server side of the {@link CacheClientUpdater}.
+ * It queues messages to be sent from the server to the client. It then reads those messages from
+ * the queue and sends them to the client.
  *
  *
  * @since GemFire 4.2
@@ -120,12 +117,12 @@ import org.apache.shiro.util.ThreadState;
 @SuppressWarnings("synthetic-access")
 public class CacheClientProxy implements ClientSession {
   private static final Logger logger = LogService.getLogger();
-  
+
   /**
    * The socket between the server and the client
    */
   protected Socket _socket;
-  
+
   private final AtomicBoolean _socketClosed = new AtomicBoolean();
 
   /**
@@ -142,12 +139,12 @@ public class CacheClientProxy implements ClientSession {
    * Concurrency: protected by synchronization of {@link #isMarkedForRemovalLock}
    */
   protected volatile boolean isMarkedForRemoval = false;
-  
+
   /**
    * @see #isMarkedForRemoval
    */
   protected final Object isMarkedForRemovalLock = new Object();
-  
+
   /**
    * The proxy id of the client represented by this proxy
    */
@@ -159,11 +156,10 @@ public class CacheClientProxy implements ClientSession {
   protected final GemFireCacheImpl _cache;
 
   /**
-   * The list of keys that the client represented by this proxy is interested in
-   * (stored by region)
+   * The list of keys that the client represented by this proxy is interested in (stored by region)
    */
   protected final ClientInterestList[] cils = new ClientInterestList[2];
-  
+
   /**
    * A thread that dispatches messages to the client
    */
@@ -187,11 +183,11 @@ public class CacheClientProxy implements ClientSession {
    * True if we are connected to a client.
    */
   private volatile boolean connected = false;
-//  /**
-//   * A string representing interest in all keys
-//   */
-//  protected static final String ALL_KEYS = "ALL_KEYS";
-//
+  // /**
+  // * A string representing interest in all keys
+  // */
+  // protected static final String ALL_KEYS = "ALL_KEYS";
+  //
   /**
    * True if a marker message is still in the ha queue.
    */
@@ -200,7 +196,8 @@ public class CacheClientProxy implements ClientSession {
   /**
    * The number of times to peek on shutdown before giving up and shutting down
    */
-  protected static final int MAXIMUM_SHUTDOWN_PEEKS = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAXIMUM_SHUTDOWN_PEEKS", 50).intValue();
+  protected static final int MAXIMUM_SHUTDOWN_PEEKS = Integer
+      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAXIMUM_SHUTDOWN_PEEKS", 50).intValue();
 
   /**
    * The number of milliseconds to wait for an offering to the message queue
@@ -210,14 +207,13 @@ public class CacheClientProxy implements ClientSession {
   /**
    * The default maximum message queue size
    */
-//   protected static final int MESSAGE_QUEUE_SIZE_DEFAULT = 230000;
+  // protected static final int MESSAGE_QUEUE_SIZE_DEFAULT = 230000;
 
   /** The message queue size */
   protected final int _maximumMessageCount;
 
   /**
-   * The time (in seconds ) after which a message in the client queue will
-   * expire.
+   * The time (in seconds ) after which a message in the client queue will expire.
    */
   protected final int _messageTimeToLive;
 
@@ -227,12 +223,11 @@ public class CacheClientProxy implements ClientSession {
   protected final CacheClientNotifier _cacheClientNotifier;
 
   /**
-   * Defaults to true; meaning do some logging of dropped client notification
-   * messages. Set the system property to true to cause dropped messages to NOT
-   * be logged.
+   * Defaults to true; meaning do some logging of dropped client notification messages. Set the
+   * system property to true to cause dropped messages to NOT be logged.
    */
-  protected static final boolean LOG_DROPPED_MSGS = !Boolean
-      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableNotificationWarnings");
+  protected static final boolean LOG_DROPPED_MSGS =
+      !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disableNotificationWarnings");
 
   /**
    * for testing purposes, delays the start of the dispatcher thread
@@ -245,16 +240,15 @@ public class CacheClientProxy implements ClientSession {
   private static final long DEFAULT_SLOW_STARTING_TIME = 5000;
 
   /**
-   * Key in the system property from which the slow starting time value will be
-   * retrieved
+   * Key in the system property from which the slow starting time value will be retrieved
    */
   private static final String KEY_SLOW_START_TIME_FOR_TESTING = "slowStartTimeForTesting";
 
   private boolean isPrimary;
-  
+
   /** @since GemFire 5.7 */
   protected byte clientConflation = HandShake.CONFLATION_DEFAULT;
-  
+
   /**
    * Flag to indicate whether to keep a durable client's queue alive
    */
@@ -267,19 +261,18 @@ public class CacheClientProxy implements ClientSession {
    * For multiuser environment..
    */
   private ClientUserAuths clientUserAuths;
-  
+
   private final Object clientUserAuthsLock = new Object();
-  
+
   /**
    * The version of the client
    */
-  private Version clientVersion;  
+  private Version clientVersion;
 
   /**
-   * A map of region name as key and integer as its value. Basically, it stores
-   * the names of the regions with <code>DataPolicy</code> as EMPTY. If an 
-   * event's region name is present in this map, it's full value (and not 
-   * delta) is sent to the client represented by this proxy.
+   * A map of region name as key and integer as its value. Basically, it stores the names of the
+   * regions with <code>DataPolicy</code> as EMPTY. If an event's region name is present in this
+   * map, it's full value (and not delta) is sent to the client represented by this proxy.
    *
    * @since GemFire 6.1
    */
@@ -289,46 +282,46 @@ public class CacheClientProxy implements ClientSession {
    * A debug flag used for testing Backward compatibility
    */
   public static boolean AFTER_MESSAGE_CREATION_FLAG = false;
-  
+
   /**
-   * Notify the region when a client interest registration occurs. This tells
-   * the region to update access time when an update is to be pushed to a
-   * client. It is enabled only for <code>PartitionedRegion</code>s
-   * currently.
+   * Notify the region when a client interest registration occurs. This tells the region to update
+   * access time when an update is to be pushed to a client. It is enabled only for
+   * <code>PartitionedRegion</code>s currently.
    */
-  protected static final boolean NOTIFY_REGION_ON_INTEREST = Boolean
-      .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "updateAccessTimeOnClientInterest");
-  
+  protected static final boolean NOTIFY_REGION_ON_INTEREST =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "updateAccessTimeOnClientInterest");
+
   /**
    * The AcceptorImpl identifier to which the proxy is connected.
    */
   private final long _acceptorId;
-  
+
   /** acceptor's setting for notifyBySubscription */
   private final boolean notifyBySubscription;
-  
-  /** To queue the events arriving during message dispatcher initialization */ 
-  private volatile ConcurrentLinkedQueue<Conflatable> queuedEvents = new ConcurrentLinkedQueue<Conflatable>();
-  
+
+  /** To queue the events arriving during message dispatcher initialization */
+  private volatile ConcurrentLinkedQueue<Conflatable> queuedEvents =
+      new ConcurrentLinkedQueue<Conflatable>();
+
   private final Object queuedEventsSync = new Object();
-  
+
   private volatile boolean messageDispatcherInit = false;
 
   /**
-   * A counter that keeps track of how many task iterations that have occurred
-   * since the last ping or message. The
-   * {@linkplain CacheClientNotifier#scheduleClientPingTask ping task}
-   * increments it. Normal messages sent to the client reset it. If the counter
-   * reaches 3, a ping is sent.
+   * A counter that keeps track of how many task iterations that have occurred since the last ping
+   * or message. The {@linkplain CacheClientNotifier#scheduleClientPingTask ping task} increments
+   * it. Normal messages sent to the client reset it. If the counter reaches 3, a ping is sent.
    */
   private final AtomicInteger pingCounter = new AtomicInteger();
-  
-  
+
+
   /** Date on which this instances was created */
   private Date creationDate;
 
-  /** true when the durable client associated with this proxy is being 
-   * restarted and prevents cqs from being closed and drained**/
+  /**
+   * true when the durable client associated with this proxy is being restarted and prevents cqs
+   * from being closed and drained
+   **/
   private boolean drainLocked = false;
   private final Object drainLock = new Object();
 
@@ -337,66 +330,60 @@ public class CacheClientProxy implements ClientSession {
   private final Object drainsInProgressLock = new Object();
 
   private SecurityService securityService = SecurityService.getSecurityService();
-  
+
   /**
    * Constructor.
    *
-   * @param ccn
-   *          The <code>CacheClientNotifier</code> registering this proxy
-   * @param socket
-   *          The socket between the server and the client
-   * @param proxyID
-   *          representing the Connection Proxy of the clien
-   * @param isPrimary
-   *          The boolean stating whether this prozxy is primary
+   * @param ccn The <code>CacheClientNotifier</code> registering this proxy
+   * @param socket The socket between the server and the client
+   * @param proxyID representing the Connection Proxy of the clien
+   * @param isPrimary The boolean stating whether this prozxy is primary
    * @throws CacheException {
    */
   protected CacheClientProxy(CacheClientNotifier ccn, Socket socket,
-      ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation, 
-      Version clientVersion, long acceptorId, boolean notifyBySubscription)
-      throws CacheException {
+      ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation,
+      Version clientVersion, long acceptorId, boolean notifyBySubscription) throws CacheException {
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     this._cacheClientNotifier = ccn;
-    this._cache = (GemFireCacheImpl)ccn.getCache();
-    this._maximumMessageCount = ccn.getMaximumMessageCount();    
+    this._cache = (GemFireCacheImpl) ccn.getCache();
+    this._maximumMessageCount = ccn.getMaximumMessageCount();
     this._messageTimeToLive = ccn.getMessageTimeToLive();
     this._acceptorId = acceptorId;
     this.notifyBySubscription = notifyBySubscription;
     StatisticsFactory factory = this._cache.getDistributedSystem();
-    this._statistics = new CacheClientProxyStats(factory, 
-        "id_"+this.proxyID.getDistributedMember().getId()+ "_at_"+ this._remoteHostAddress + ":" + this._socket.getPort());
+    this._statistics =
+        new CacheClientProxyStats(factory, "id_" + this.proxyID.getDistributedMember().getId()
+            + "_at_" + this._remoteHostAddress + ":" + this._socket.getPort());
 
     // Create the interest list
     this.cils[RegisterInterestTracker.interestListIndex] =
-      new ClientInterestList(this, this.proxyID);
+        new ClientInterestList(this, this.proxyID);
     // Create the durable interest list
     this.cils[RegisterInterestTracker.durableInterestListIndex] =
-      new ClientInterestList(this, this.getDurableId());
+        new ClientInterestList(this, this.getDurableId());
     this.postAuthzCallback = null;
     this._cacheClientNotifier.getAcceptorStats().incCurrentQueueConnections();
     this.creationDate = new Date();
     initializeClientAuths();
   }
-  
-  private void initializeClientAuths()
-  {
-    if(AcceptorImpl.isPostAuthzCallbackPresent())
+
+  private void initializeClientAuths() {
+    if (AcceptorImpl.isPostAuthzCallbackPresent())
       this.clientUserAuths = ServerConnection.getClientUserAuths(this.proxyID);
   }
 
-  private void reinitializeClientAuths()
-  {
+  private void reinitializeClientAuths() {
     if (this.clientUserAuths != null && AcceptorImpl.isPostAuthzCallbackPresent()) {
       synchronized (this.clientUserAuthsLock) {
         ClientUserAuths newClientAuth = ServerConnection.getClientUserAuths(this.proxyID);
         newClientAuth.fillPreviousCQAuth(this.clientUserAuths);
         this.clientUserAuths = newClientAuth;
-      }        
+      }
     }
   }
-  
+
   public void setPostAuthzCallback(AccessControl authzCallback) {
-    //TODO:hitesh synchronization
+    // TODO:hitesh synchronization
     synchronized (this.clientUserAuthsLock) {
       if (this.postAuthzCallback != null)
         this.postAuthzCallback.close();
@@ -405,7 +392,7 @@ public class CacheClientProxy implements ClientSession {
   }
 
   public void setSubject(Subject subject) {
-    //TODO:hitesh synchronization
+    // TODO:hitesh synchronization
     synchronized (this.clientUserAuthsLock) {
       if (this.subject != null) {
         subject.logout();
@@ -413,18 +400,17 @@ public class CacheClientProxy implements ClientSession {
       this.subject = subject;
     }
   }
-  
-  public void setCQVsUserAuth(String cqName, long uniqueId, boolean isDurable)
-  {
-    if(postAuthzCallback == null) //only for multiuser
+
+  public void setCQVsUserAuth(String cqName, long uniqueId, boolean isDurable) {
+    if (postAuthzCallback == null) // only for multiuser
     {
-      if(this.clientUserAuths != null)
+      if (this.clientUserAuths != null)
         this.clientUserAuths.setUserAuthAttributesForCq(cqName, uniqueId, isDurable);
     }
   }
 
-  private void initializeTransientFields(Socket socket,
-      ClientProxyMembershipID pid, boolean ip,  byte cc, Version vers) {
+  private void initializeTransientFields(Socket socket, ClientProxyMembershipID pid, boolean ip,
+      byte cc, Version vers) {
     this._socket = socket;
     this.proxyID = pid;
     this.connected = true;
@@ -453,7 +439,7 @@ public class CacheClientProxy implements ClientSession {
     markerEnqueued = bool;
   }
 
-  public long getAcceptorId(){
+  public long getAcceptorId() {
     return this._acceptorId;
   }
 
@@ -464,63 +450,60 @@ public class CacheClientProxy implements ClientSession {
     return this.notifyBySubscription;
   }
 
-  
+
   /**
    * Returns the DistributedMember represented by this proxy
    */
-  public ClientProxyMembershipID getProxyID()
-  {
+  public ClientProxyMembershipID getProxyID() {
     return this.proxyID;
   }
-  
+
   // the following code was commented out simply because it was not used
-//   /**
-//    * Determines if the proxy represents the client host (and only the host, not
-//    * necessarily the exact VM running on the host)
-//    *
-//    * @return Whether the proxy represents the client host
-//    */
-//   protected boolean representsClientHost(String clientHost)
-//   {
-//     // [bruce] TODO BUGBUGBUG: this should compare InetAddresses, not Strings
-//     return this._remoteHostAddress.equals(clientHost);
-//   }
+  // /**
+  // * Determines if the proxy represents the client host (and only the host, not
+  // * necessarily the exact VM running on the host)
+  // *
+  // * @return Whether the proxy represents the client host
+  // */
+  // protected boolean representsClientHost(String clientHost)
+  // {
+  // // [bruce] TODO BUGBUGBUG: this should compare InetAddresses, not Strings
+  // return this._remoteHostAddress.equals(clientHost);
+  // }
 
-//   protected boolean representsClientVM(DistributedMember remoteMember)
-//   {
-//     // logger.warn("Is input port " + clientPort + " contained in " +
-//     // logger.warn("Does input host " + clientHost + " equal " +
-//     // this._remoteHostAddress+ ": " + representsClientHost(clientHost));
-//     // logger.warn("representsClientVM: " +
-//     // (representsClientHost(clientHost) && containsPort(clientPort)));
-//     return (proxyID.getDistributedMember().equals(remoteMember));
-//   }
+  // protected boolean representsClientVM(DistributedMember remoteMember)
+  // {
+  // // logger.warn("Is input port " + clientPort + " contained in " +
+  // // logger.warn("Does input host " + clientHost + " equal " +
+  // // this._remoteHostAddress+ ": " + representsClientHost(clientHost));
+  // // logger.warn("representsClientVM: " +
+  // // (representsClientHost(clientHost) && containsPort(clientPort)));
+  // return (proxyID.getDistributedMember().equals(remoteMember));
+  // }
 
-//   /**
-//    * Determines if the CacheClientUpdater proxied by this instance is listening
-//    * on the input clientHost and clientPort
-//    *
-//    * @param clientHost
-//    *          The host name of the client to compare
-//    * @param clientPort
-//    *          The port number of the client to compare
-//    *
-//    * @return Whether the CacheClientUpdater proxied by this instance is
-//    *         listening on the input clientHost and clientPort
-//    */
-//   protected boolean representsCacheClientUpdater(String clientHost,
-//       int clientPort)
-//   {
-//     return (clientPort == this._socket.getPort() && representsClientHost(clientHost));
-//   }
+  // /**
+  // * Determines if the CacheClientUpdater proxied by this instance is listening
+  // * on the input clientHost and clientPort
+  // *
+  // * @param clientHost
+  // * The host name of the client to compare
+  // * @param clientPort
+  // * The port number of the client to compare
+  // *
+  // * @return Whether the CacheClientUpdater proxied by this instance is
+  // * listening on the input clientHost and clientPort
+  // */
+  // protected boolean representsCacheClientUpdater(String clientHost,
+  // int clientPort)
+  // {
+  // return (clientPort == this._socket.getPort() && representsClientHost(clientHost));
+  // }
 
-  protected boolean isMember(ClientProxyMembershipID memberId)
-  {
+  protected boolean isMember(ClientProxyMembershipID memberId) {
     return this.proxyID.equals(memberId);
   }
 
-  protected boolean isSameDSMember(ClientProxyMembershipID memberId)
-  {
+  protected boolean isSameDSMember(ClientProxyMembershipID memberId) {
     return this.proxyID.isSameDSMember(memberId);
   }
 
@@ -538,16 +521,14 @@ public class CacheClientProxy implements ClientSession {
    *
    * @return the socket between the server and the client
    */
-  protected Socket getSocket()
-  {
+  protected Socket getSocket() {
     return this._socket;
   }
-  
-  public String getSocketHost()
-  {
+
+  public String getSocketHost() {
     return this._socket.getInetAddress().getHostAddress();
   }
-  
+
   protected ByteBuffer getCommBuffer() {
     return this._commBuffer;
   }
@@ -557,8 +538,7 @@ public class CacheClientProxy implements ClientSession {
    *
    * @return the remote host's IP address string
    */
-  protected String getRemoteHostAddress()
-  {
+  protected String getRemoteHostAddress() {
     return this._remoteHostAddress;
   }
 
@@ -567,8 +547,7 @@ public class CacheClientProxy implements ClientSession {
    *
    * @return the remote host's port
    */
-  public int getRemotePort()
-  {
+  public int getRemotePort() {
     return this._socket.getPort();
   }
 
@@ -583,6 +562,7 @@ public class CacheClientProxy implements ClientSession {
 
   /**
    * Mark the receiver as needing removal
+   * 
    * @return true if it was already marked for removal
    */
   protected boolean startRemoval() {
@@ -593,10 +573,10 @@ public class CacheClientProxy implements ClientSession {
     }
     return result;
   }
-  
+
   /**
-   * Wait until the receiver's removal has completed before
-   * returning.
+   * Wait until the receiver's removal has completed before returning.
+   * 
    * @return true if the proxy was initially marked for removal
    */
   protected boolean waitRemoval() {
@@ -611,14 +591,12 @@ public class CacheClientProxy implements ClientSession {
           }
           try {
             this.isMarkedForRemovalLock.wait();
-          }
-          catch (InterruptedException e) {
+          } catch (InterruptedException e) {
             interrupted = true;
             this._cache.getCancelCriterion().checkCancelInProgress(e);
           }
         } // while
-      }
-      finally {
+      } finally {
         if (interrupted) {
           Thread.currentThread().interrupt();
         }
@@ -626,7 +604,7 @@ public class CacheClientProxy implements ClientSession {
     } // synchronized
     return result;
   }
-  
+
   /**
    * Indicate that removal has completed on this instance
    */
@@ -636,39 +614,38 @@ public class CacheClientProxy implements ClientSession {
       this.isMarkedForRemovalLock.notifyAll();
     }
   }
-  
+
   /**
    * Returns the GemFire cache
    *
    * @return the GemFire cache
    */
-  public GemFireCacheImpl getCache()
-  {
+  public GemFireCacheImpl getCache() {
     return this._cache;
   }
 
   public Set<String> getInterestRegisteredRegions() {
     HashSet<String> regions = new HashSet<String>();
-    for(int i=0; i < this.cils.length; i++){
+    for (int i = 0; i < this.cils.length; i++) {
       if (!this.cils[i].regions.isEmpty()) {
         regions.addAll(this.cils[i].regions);
       }
     }
     return regions;
   }
-  
+
   /**
    * Returns the proxy's statistics
    *
    * @return the proxy's statistics
    */
-  public CacheClientProxyStats getStatistics()
-  {
+  public CacheClientProxyStats getStatistics() {
     return this._statistics;
   }
 
   /**
    * Returns this proxy's <code>CacheClientNotifier</code>.
+   * 
    * @return this proxy's <code>CacheClientNotifier</code>
    */
   protected CacheClientNotifier getCacheClientNotifier() {
@@ -676,41 +653,38 @@ public class CacheClientProxy implements ClientSession {
   }
 
   /**
-   * Returns the size of the queue for heuristic purposes.  This
-   * size may be changing concurrently if puts/gets are occurring
-   * at the same time.
+   * Returns the size of the queue for heuristic purposes. This size may be changing concurrently if
+   * puts/gets are occurring at the same time.
    */
   public int getQueueSize() {
-    return this._messageDispatcher == null ? 0
-        : this._messageDispatcher.getQueueSize();
+    return this._messageDispatcher == null ? 0 : this._messageDispatcher.getQueueSize();
   }
-  
-  /** 
+
+  /**
    * returns the queue size calculated through stats
    */
   public int getQueueSizeStat() {
-    return this._messageDispatcher == null ? 0
-        : this._messageDispatcher.getQueueSizeStat();  
+    return this._messageDispatcher == null ? 0 : this._messageDispatcher.getQueueSizeStat();
   }
-  
-      
+
+
   public boolean drainInProgress() {
-    synchronized(drainsInProgressLock) {
+    synchronized (drainsInProgressLock) {
       return numDrainsInProgress > 0;
     }
   }
-  
-  //Called from CacheClientNotifier when attempting to restart paused proxy
-  //locking the drain lock requires that no drains are in progress 
-  //when the lock was acquired.
+
+  // Called from CacheClientNotifier when attempting to restart paused proxy
+  // locking the drain lock requires that no drains are in progress
+  // when the lock was acquired.
   public boolean lockDrain() {
-    synchronized(drainsInProgressLock) {
+    synchronized (drainsInProgressLock) {
       if (!drainInProgress()) {
-        synchronized(drainLock) {
+        synchronized (drainLock) {
           if (testHook != null) {
             testHook.doTestHook("PRE_ACQUIRE_DRAIN_LOCK_UNDER_SYNC");
           }
-          //prevent multiple lockings of drain lock
+          // prevent multiple lockings of drain lock
           if (!drainLocked) {
             drainLocked = true;
             return true;
@@ -720,58 +694,62 @@ public class CacheClientProxy implements ClientSession {
     }
     return false;
   }
-  
-  //Called from CacheClientNotifier when completed restart of proxy
+
+  // Called from CacheClientNotifier when completed restart of proxy
   public void unlockDrain() {
     if (testHook != null) {
       testHook.doTestHook("PRE_RELEASE_DRAIN_LOCK");
     }
-    synchronized(drainLock) {
+    synchronized (drainLock) {
       drainLocked = false;
     }
   }
-  
-  //Only close the client cq if it is paused and no one is attempting to restart the proxy
+
+  // Only close the client cq if it is paused and no one is attempting to restart the proxy
   public boolean closeClientCq(String clientCQName) throws CqException {
     if (testHook != null) {
       testHook.doTestHook("PRE_DRAIN_IN_PROGRESS");
     }
-    synchronized(drainsInProgressLock) {
-      numDrainsInProgress ++;
+    synchronized (drainsInProgressLock) {
+      numDrainsInProgress++;
     }
     if (testHook != null) {
       testHook.doTestHook("DRAIN_IN_PROGRESS_BEFORE_DRAIN_LOCK_CHECK");
     }
     try {
-      //If the drain lock was acquired, the other thread did so before we could bump up
-      //the numDrainsInProgress.  That means we need to stop.
+      // If the drain lock was acquired, the other thread did so before we could bump up
+      // the numDrainsInProgress. That means we need to stop.
       if (drainLocked) {
         // someone is trying to restart a paused proxy
-        String msg = LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_RESTARTING_DURABLE_CLIENT.toLocalizedString(clientCQName, proxyID.getDurableId());
+        String msg =
+            LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_RESTARTING_DURABLE_CLIENT
+                .toLocalizedString(clientCQName, proxyID.getDurableId());
         logger.info(msg);
         throw new CqException(msg);
       }
-      //isConnected is to protect against the case where a durable client has reconnected
-      //but has not yet sent a ready for events message
-      //we can probably remove the isPaused check
+      // isConnected is to protect against the case where a durable client has reconnected
+      // but has not yet sent a ready for events message
+      // we can probably remove the isPaused check
       if (isPaused() && !isConnected()) {
         CqService cqService = getCache().getCqService();
         if (cqService != null) {
-          InternalCqQuery  cqToClose = cqService.getCq(cqService.constructServerCqName(
-              clientCQName, this.proxyID));
+          InternalCqQuery cqToClose =
+              cqService.getCq(cqService.constructServerCqName(clientCQName, this.proxyID));
           // close and drain
           if (cqToClose != null) {
             cqService.closeCq(clientCQName, this.proxyID);
             this._messageDispatcher.drainClientCqEvents(this.proxyID, cqToClose);
-          }
-          else {
-            String msg = LocalizedStrings.CqService_CQ_NOT_FOUND_FAILED_TO_CLOSE_THE_SPECIFIED_CQ_0.toLocalizedString(clientCQName);
+          } else {
+            String msg = LocalizedStrings.CqService_CQ_NOT_FOUND_FAILED_TO_CLOSE_THE_SPECIFIED_CQ_0
+                .toLocalizedString(clientCQName);
             logger.info(msg);
             throw new CqException(msg);
           }
         }
       } else {
-        String msg = LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_ACTIVE_DURABLE_CLIENT.toLocalizedString(clientCQName, proxyID.getDurableId());
+        String msg =
+            LocalizedStrings.CacheClientProxy_COULD_NOT_DRAIN_CQ_DUE_TO_ACTIVE_DURABLE_CLIENT
+                .toLocalizedString(clientCQName, proxyID.getDurableId());
         logger.info(msg);
         throw new CqException(msg);
       }
@@ -786,16 +764,15 @@ public class CacheClientProxy implements ClientSession {
     }
     return true;
   }
-  
-  
+
+
   /**
-   * Returns whether the proxy is alive. It is alive if its message dispatcher
-   * is processing messages.
+   * Returns whether the proxy is alive. It is alive if its message dispatcher is processing
+   * messages.
    *
    * @return whether the proxy is alive
    */
-  protected boolean isAlive()
-  {
+  protected boolean isAlive() {
     if (this._messageDispatcher == null) {
       return false;
     }
@@ -803,8 +780,8 @@ public class CacheClientProxy implements ClientSession {
   }
 
   /**
-   * Returns whether the proxy is paused. It is paused if its message dispatcher
-   * is paused. This only applies to durable clients.
+   * Returns whether the proxy is paused. It is paused if its message dispatcher is paused. This
+   * only applies to durable clients.
    *
    * @return whether the proxy is paused
    *
@@ -819,30 +796,26 @@ public class CacheClientProxy implements ClientSession {
   }
 
   /**
-   * Closes the proxy. This method checks the message queue for any unprocessed
-   * messages and processes them for MAXIMUM_SHUTDOWN_PEEKS.
+   * Closes the proxy. This method checks the message queue for any unprocessed messages and
+   * processes them for MAXIMUM_SHUTDOWN_PEEKS.
    *
    * @see CacheClientProxy#MAXIMUM_SHUTDOWN_PEEKS
    */
-  protected void close()
-  {
+  protected void close() {
     close(true, false);
   }
 
   /**
-   * Set to true once this proxy starts being closed.
-   * Remains true for the rest of its existence.
+   * Set to true once this proxy starts being closed. Remains true for the rest of its existence.
    */
   private final AtomicBoolean closing = new AtomicBoolean(false);
 
   /**
    * Close the <code>CacheClientProxy</code>.
    *
-   * @param checkQueue
-   *          Whether to message check the queue and process any contained
-   *          messages (up to MAXIMUM_SHUTDOWN_PEEKS).
-   * @param stoppedNormally
-   *          Whether client stopped normally
+   * @param checkQueue Whether to message check the queue and process any contained messages (up to
+   *        MAXIMUM_SHUTDOWN_PEEKS).
+   * @param stoppedNormally Whether client stopped normally
    *
    * @return whether to keep this <code>CacheClientProxy</code>
    * @see CacheClientProxy#MAXIMUM_SHUTDOWN_PEEKS
@@ -852,8 +825,7 @@ public class CacheClientProxy implements ClientSession {
     // If the client is durable and either (a) it hasn't stopped normally or (b) it
     // has stopped normally but it is configured to be kept alive, set pauseDurable
     // to true
-    if (isDurable()
-        && (!stoppedNormally || (getDurableKeepAlive() && stoppedNormally))) {
+    if (isDurable() && (!stoppedNormally || (getDurableKeepAlive() && stoppedNormally))) {
       pauseDurable = true;
     }
 
@@ -871,18 +843,18 @@ public class CacheClientProxy implements ClientSession {
     // Close the Authorization callback (if any)
     try {
       if (!pauseDurable) {
-        if (this.postAuthzCallback != null) {//for single user
+        if (this.postAuthzCallback != null) {// for single user
           this.postAuthzCallback.close();
           this.postAuthzCallback = null;
-        }else if(this.clientUserAuths != null) {//for multiple users
+        } else if (this.clientUserAuths != null) {// for multiple users
           this.clientUserAuths.cleanup(true);
           this.clientUserAuths = null;
         }
       }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       if (this._cache.getSecurityLoggerI18n().warningEnabled()) {
-        this._cache.getSecurityLoggerI18n().warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, ex});
+        this._cache.getSecurityLoggerI18n().warning(LocalizedStrings.TWO_ARG_COLON,
+            new Object[] {this, ex});
       }
     }
     // Notify the caller whether to keep this proxy. If the proxy is durable
@@ -891,7 +863,7 @@ public class CacheClientProxy implements ClientSession {
   }
 
   protected void pauseDispatching() {
-    if (this._messageDispatcher == null){
+    if (this._messageDispatcher == null) {
       return;
     }
 
@@ -900,8 +872,8 @@ public class CacheClientProxy implements ClientSession {
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Pausing processing", this);
     }
-    //BUGFIX for BUG#38234
-    if(!testAndSetPaused(true) && this.isPrimary) {
+    // BUGFIX for BUG#38234
+    if (!testAndSetPaused(true) && this.isPrimary) {
       if (this._messageDispatcher != Thread.currentThread()) {
         // don't interrupt ourself to fix bug 40611
         this._messageDispatcher.interrupt();
@@ -919,99 +891,100 @@ public class CacheClientProxy implements ClientSession {
   }
 
   private boolean testAndSetPaused(boolean newValue) {
-    
-    synchronized(this._messageDispatcher._pausedLock) {
+
+    synchronized (this._messageDispatcher._pausedLock) {
       if (this._isPaused != newValue) {
         this._isPaused = newValue;
         this._messageDispatcher._pausedLock.notifyAll();
         return !this._isPaused;
-      }
-      else {
+      } else {
         this._messageDispatcher._pausedLock.notifyAll();
         return this._isPaused;
       }
     }
   }
+
   protected void terminateDispatching(boolean checkQueue) {
-    if (this._messageDispatcher == null){
+    if (this._messageDispatcher == null) {
       return;
     }
-    
+
     try {
-    if (logger.isDebugEnabled()) {
-      logger.debug("{}: Terminating processing", this);
-    }
-    if (this._messageDispatcher == Thread.currentThread()) {
-      // I'm not even sure this is possible but if the dispatcher
-      // calls us then at least call stopDispatching
-      // the old code did this (I'm not even sure it is safe to do).
-      // This needs to be done without testing OR setting "closing".
-      this._messageDispatcher.stopDispatching(checkQueue);
+      if (logger.isDebugEnabled()) {
+        logger.debug("{}: Terminating processing", this);
+      }
+      if (this._messageDispatcher == Thread.currentThread()) {
+        // I'm not even sure this is possible but if the dispatcher
+        // calls us then at least call stopDispatching
+        // the old code did this (I'm not even sure it is safe to do).
+        // This needs to be done without testing OR setting "closing".
+        this._messageDispatcher.stopDispatching(checkQueue);
+        this.cils[RegisterInterestTracker.interestListIndex].clearClientInterestList();
+        this.cils[RegisterInterestTracker.durableInterestListIndex].clearClientInterestList();
+        // VJR: bug 37487 fix
+        destroyRQ();
+        return;
+      }
+
+      if (!this.closing.compareAndSet(false, true)) {
+        // must already be closing so just return
+        // this is part of the fix for 37684
+        return;
+      }
+      // Unregister interest in all interests (if necessary)
       this.cils[RegisterInterestTracker.interestListIndex].clearClientInterestList();
       this.cils[RegisterInterestTracker.durableInterestListIndex].clearClientInterestList();
-      // VJR: bug 37487 fix
-      destroyRQ();
-      return;
-    }
 
-    if (!this.closing.compareAndSet(false, true)) {
-      // must already be closing so just return
-      // this is part of the fix for 37684
-      return;
-    }
-    // Unregister interest in all interests (if necessary) 
-    this.cils[RegisterInterestTracker.interestListIndex].clearClientInterestList();
-    this.cils[RegisterInterestTracker.durableInterestListIndex].clearClientInterestList();
-
-    // If the message dispatcher is paused, unpause it. The next bit of
-    // code will interrupt the waiter.
-    if (this.testAndSetPaused(false)) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("{}: Paused but terminating processing", this);
+      // If the message dispatcher is paused, unpause it. The next bit of
+      // code will interrupt the waiter.
+      if (this.testAndSetPaused(false)) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}: Paused but terminating processing", this);
+        }
+        // Cancel the expiration task
+        cancelDurableExpirationTask(false);
       }
-      // Cancel the expiration task
-      cancelDurableExpirationTask(false);
-    }
 
-    boolean alreadyDestroyed = false;
-    boolean gotInterrupt = Thread.interrupted(); // clears the flag
-    try {
-      // Stop the message dispatcher
-      this._messageDispatcher.stopDispatching(checkQueue);
+      boolean alreadyDestroyed = false;
+      boolean gotInterrupt = Thread.interrupted(); // clears the flag
+      try {
+        // Stop the message dispatcher
+        this._messageDispatcher.stopDispatching(checkQueue);
 
-      gotInterrupt |= Thread.interrupted(); // clears the flag
+        gotInterrupt |= Thread.interrupted(); // clears the flag
 
-      // to fix bug 37684
-      // 1. check to see if dispatcher is still alive
-      if (this._messageDispatcher.isAlive()) {
-        closeSocket();
-        destroyRQ();
-        alreadyDestroyed = true;
-        this._messageDispatcher.interrupt();
+        // to fix bug 37684
+        // 1. check to see if dispatcher is still alive
         if (this._messageDispatcher.isAlive()) {
-          try {
-            this._messageDispatcher.join(1000);
-          } catch (InterruptedException ex) {
-            gotInterrupt = true;
-          }
-          // if it is still alive then warn and move on
+          closeSocket();
+          destroyRQ();
+          alreadyDestroyed = true;
+          this._messageDispatcher.interrupt();
           if (this._messageDispatcher.isAlive()) {
-            //org.apache.geode.internal.OSProcess.printStacks(org.apache.geode.internal.OSProcess.getId());
-            logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_COULD_NOT_STOP_MESSAGE_DISPATCHER_THREAD, this));
+            try {
+              this._messageDispatcher.join(1000);
+            } catch (InterruptedException ex) {
+              gotInterrupt = true;
+            }
+            // if it is still alive then warn and move on
+            if (this._messageDispatcher.isAlive()) {
+              // org.apache.geode.internal.OSProcess.printStacks(org.apache.geode.internal.OSProcess.getId());
+              logger.warn(LocalizedMessage.create(
+                  LocalizedStrings.CacheClientProxy_0_COULD_NOT_STOP_MESSAGE_DISPATCHER_THREAD,
+                  this));
+            }
           }
         }
+      } finally {
+        if (gotInterrupt) {
+          Thread.currentThread().interrupt();
+        }
+        if (!alreadyDestroyed) {
+          destroyRQ();
+        }
       }
-    }
-    finally {
-      if (gotInterrupt) {
-        Thread.currentThread().interrupt();
-      }
-      if (!alreadyDestroyed) {
-        destroyRQ();
-      }
-    }
     } finally {
-      //  Close the statistics
+      // Close the statistics
       this._statistics.close(); // fix for bug 40105
       closeTransientFields(); // make sure this happens
     }
@@ -1020,11 +993,12 @@ public class CacheClientProxy implements ClientSession {
   private void closeSocket() {
     if (this._socketClosed.compareAndSet(false, true)) {
       // Close the socket
-      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, this._remoteHostAddress, null);
+      this._cacheClientNotifier.getSocketCloser().asyncClose(this._socket, this._remoteHostAddress,
+          null);
       getCacheClientNotifier().getAcceptorStats().decCurrentQueueConnections();
     }
   }
-  
+
   private void closeTransientFields() {
     closeSocket();
 
@@ -1040,14 +1014,14 @@ public class CacheClientProxy implements ClientSession {
     }
     try {
       this.cils[RegisterInterestTracker.interestListIndex].clearClientInterestList();
-    } catch (CacheClosedException e) {
+    } catch (CancelException e) {
       // ignore if cache is shutting down
     }
     // Commented to fix bug 40259
-    //this.clientVersion = null;
-    closeNonDurableCqs();    
+    // this.clientVersion = null;
+    closeNonDurableCqs();
   }
-  
+
   private void releaseCommBuffer() {
     ByteBuffer bb = this._commBuffer;
     if (bb != null) {
@@ -1056,18 +1030,19 @@ public class CacheClientProxy implements ClientSession {
     }
   }
 
-  private void closeNonDurableCqs(){
+  private void closeNonDurableCqs() {
     CqService cqService = getCache().getCqService();
     if (cqService != null) {
       try {
         cqService.closeNonDurableClientCqs(getProxyID());
-      }
-      catch (CqException ex) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_CQEXCEPTION_WHILE_CLOSING_NON_DURABLE_CQS_0, ex.getLocalizedMessage()));
+      } catch (CqException ex) {
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.CacheClientProxy_CQEXCEPTION_WHILE_CLOSING_NON_DURABLE_CQS_0,
+            ex.getLocalizedMessage()));
       }
     }
   }
-  
+
   private void destroyRQ() {
     if (this._messageDispatcher == null) {
       return;
@@ -1082,97 +1057,95 @@ public class CacheClientProxy implements ClientSession {
       // if (!rq.getRegion().isDestroyed()) {
       // rq.getRegion().destroyRegion();
       // }
-    }
-    catch (RegionDestroyedException rde) {
-//      throw rde;
-    }
-    catch (CancelException e) {
-//      throw e;
-    }
-    catch (Exception warning) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_EXCEPTION_IN_CLOSING_THE_UNDERLYING_HAREGION_OF_THE_HAREGIONQUEUE, this), warning);
+    } catch (RegionDestroyedException rde) {
+      // throw rde;
+    } catch (CancelException e) {
+      // throw e;
+    } catch (Exception warning) {
+      logger.warn(LocalizedMessage.create(
+          LocalizedStrings.CacheClientProxy_0_EXCEPTION_IN_CLOSING_THE_UNDERLYING_HAREGION_OF_THE_HAREGIONQUEUE,
+          this), warning);
     }
   }
 
-  public void registerInterestRegex(String regionName, String regex,
-      boolean isDurable) {
+  public void registerInterestRegex(String regionName, String regex, boolean isDurable) {
     registerInterestRegex(regionName, regex, isDurable, true);
   }
-  
-  public void registerInterestRegex(String regionName, String regex,
-      boolean isDurable, boolean receiveValues) {
+
+  public void registerInterestRegex(String regionName, String regex, boolean isDurable,
+      boolean receiveValues) {
     if (this.isPrimary) {
       // Notify all secondaries and client of change in interest
-      notifySecondariesAndClient(regionName, regex, InterestResultPolicy.NONE,
-          isDurable, receiveValues, InterestType.REGULAR_EXPRESSION);
+      notifySecondariesAndClient(regionName, regex, InterestResultPolicy.NONE, isDurable,
+          receiveValues, InterestType.REGULAR_EXPRESSION);
     } else {
-      throw new IllegalStateException(LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
     }
   }
 
-  public void registerInterest(String regionName, Object keyOfInterest,
-      InterestResultPolicy policy, boolean isDurable) {
+  public void registerInterest(String regionName, Object keyOfInterest, InterestResultPolicy policy,
+      boolean isDurable) {
     registerInterest(regionName, keyOfInterest, policy, isDurable, true);
   }
-  
-  public void registerInterest(String regionName, Object keyOfInterest,
-      InterestResultPolicy policy, boolean isDurable,
-      boolean receiveValues) {
+
+  public void registerInterest(String regionName, Object keyOfInterest, InterestResultPolicy policy,
+      boolean isDurable, boolean receiveValues) {
     if (keyOfInterest instanceof String && keyOfInterest.equals("ALL_KEYS")) {
       registerInterestRegex(regionName, ".*", isDurable, receiveValues);
     } else if (keyOfInterest instanceof List) {
       if (this.isPrimary) {
-        notifySecondariesAndClient(regionName, keyOfInterest, policy,
-            isDurable, receiveValues, InterestType.KEY);
+        notifySecondariesAndClient(regionName, keyOfInterest, policy, isDurable, receiveValues,
+            InterestType.KEY);
       } else {
-        throw new IllegalStateException(LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
+        throw new IllegalStateException(
+            LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
       }
     } else {
       if (this.isPrimary) {
         // Notify all secondaries and client of change in interest
-        notifySecondariesAndClient(regionName, keyOfInterest, policy,
-            isDurable, receiveValues, InterestType.KEY);
-        
+        notifySecondariesAndClient(regionName, keyOfInterest, policy, isDurable, receiveValues,
+            InterestType.KEY);
+
         // Enqueue the initial value message for the client if necessary
         if (policy == InterestResultPolicy.KEYS_VALUES) {
           enqueueInitialValue(null, regionName, keyOfInterest);
         }
         // Add the client to the region's filters
-        //addFilterRegisteredClients(regionName, keyOfInterest);
+        // addFilterRegisteredClients(regionName, keyOfInterest);
       } else {
-        throw new IllegalStateException(LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
+        throw new IllegalStateException(
+            LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
       }
     }
   }
 
-  private void notifySecondariesAndClient(String regionName,
-      Object keyOfInterest, InterestResultPolicy policy, boolean isDurable,
-      boolean receiveValues, int interestType) {
+  private void notifySecondariesAndClient(String regionName, Object keyOfInterest,
+      InterestResultPolicy policy, boolean isDurable, boolean receiveValues, int interestType) {
     // Create a client interest message for the keyOfInterest
     ClientInterestMessageImpl message = new ClientInterestMessageImpl(
-        new EventID(this._cache.getDistributedSystem()), regionName,
-        keyOfInterest, interestType, policy.getOrdinal(), isDurable,
-        !receiveValues, ClientInterestMessageImpl.REGISTER);
+        new EventID(this._cache.getDistributedSystem()), regionName, keyOfInterest, interestType,
+        policy.getOrdinal(), isDurable, !receiveValues, ClientInterestMessageImpl.REGISTER);
 
     // Notify all secondary proxies of a change in interest
     notifySecondariesOfInterestChange(message);
 
     // Modify interest registration
     if (keyOfInterest instanceof List) {
-      registerClientInterestList(regionName, (List) keyOfInterest, isDurable,
-          !receiveValues, true);
+      registerClientInterestList(regionName, (List) keyOfInterest, isDurable, !receiveValues, true);
     } else {
-      registerClientInterest(regionName, keyOfInterest, interestType,
-          isDurable, !receiveValues, true);
+      registerClientInterest(regionName, keyOfInterest, interestType, isDurable, !receiveValues,
+          true);
     }
 
     // Enqueue the interest registration message for the client.
     enqueueInterestRegistrationMessage(message);
   }
 
-  private void enqueueInitialValue(ClientInterestMessageImpl clientInterestMessage, String regionName, Object keyOfInterest) {
+  private void enqueueInitialValue(ClientInterestMessageImpl clientInterestMessage,
+      String regionName, Object keyOfInterest) {
     // Get the initial value
-    Get70 request = (Get70)Get70.getCommand();
+    Get70 request = (Get70) Get70.getCommand();
     LocalRegion lr = (LocalRegion) this._cache.getRegion(regionName);
     Get70.Entry entry = request.getValueAndIsObject(lr, keyOfInterest, null, null);
     boolean isObject = entry.isObject;
@@ -1181,12 +1154,14 @@ public class CacheClientProxy implements ClientSession {
     // If the initial value is not null, add it to the client's queue
     if (entry.value != null) {
       if (entry.value instanceof byte[]) {
-        value = (byte[])entry.value;
+        value = (byte[]) entry.value;
       } else {
         try {
           value = CacheServerHelper.serialize(entry.value);
         } catch (IOException e) {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_THE_FOLLOWING_EXCEPTION_OCCURRED_0, entry.value), e);
+          logger.warn(LocalizedMessage.create(
+              LocalizedStrings.CacheClientProxy_THE_FOLLOWING_EXCEPTION_OCCURRED_0, entry.value),
+              e);
         }
       }
       VersionTag tag = entry.versionTag;
@@ -1197,19 +1172,20 @@ public class CacheClientProxy implements ClientSession {
         // If the clientInterestMessage is null, create a new event id
         eventId = new EventID(this._cache.getDistributedSystem());
       } else {
-        // If the clientInterestMessage is not null, base the event id off its event id to fix GEM-794.
-        // This will cause the updateMessage created below to have the same event id as the one created
+        // If the clientInterestMessage is not null, base the event id off its event id to fix
+        // GEM-794.
+        // This will cause the updateMessage created below to have the same event id as the one
+        // created
         // in the primary.
         eventId = new EventID(clientInterestMessage.getEventId(), 1);
       }
-      ClientUpdateMessage updateMessage = new ClientUpdateMessageImpl(
-          EnumListenerEvent.AFTER_CREATE, lr, keyOfInterest, value, null,
-          (isObject ? (byte) 0x01 : (byte) 0x00), null, this.proxyID,
-          eventId, tag);
+      ClientUpdateMessage updateMessage =
+          new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_CREATE, lr, keyOfInterest, value,
+              null, (isObject ? (byte) 0x01 : (byte) 0x00), null, this.proxyID, eventId, tag);
       CacheClientNotifier.routeSingleClientMessage(updateMessage, this.proxyID);
     }
   }
-  
+
   private void enqueueInterestRegistrationMessage(ClientInterestMessageImpl message) {
     // Enqueue the interest registration message for the client.
     // If the client is not 7.0.1 or greater and the key of interest is a list,
@@ -1219,136 +1195,115 @@ public class CacheClientProxy implements ClientSession {
         && message.getKeyOfInterest() instanceof List) {
       for (Iterator i = ((List) message.getKeyOfInterest()).iterator(); i.hasNext();) {
         this._messageDispatcher.enqueueMessage(new ClientInterestMessageImpl(message, i.next()));
-     }
+      }
     } else {
       this._messageDispatcher.enqueueMessage(message);
     }
   }
 
-  public void unregisterInterestRegex(String regionName, String regex,
-      boolean isDurable) {
+  public void unregisterInterestRegex(String regionName, String regex, boolean isDurable) {
     unregisterInterestRegex(regionName, regex, isDurable, true);
   }
-  
-  public void unregisterInterestRegex(String regionName, String regex,
-      boolean isDurable, boolean receiveValues) {
+
+  public void unregisterInterestRegex(String regionName, String regex, boolean isDurable,
+      boolean receiveValues) {
     if (this.isPrimary) {
       notifySecondariesAndClient(regionName, regex, isDurable, receiveValues,
           InterestType.REGULAR_EXPRESSION);
     } else {
-      throw new IllegalStateException(LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
     }
   }
-  
-  public void unregisterInterest(String regionName, Object keyOfInterest,
-      boolean isDurable) {
+
+  public void unregisterInterest(String regionName, Object keyOfInterest, boolean isDurable) {
     unregisterInterest(regionName, keyOfInterest, isDurable, true);
   }
-  
-  public void unregisterInterest(String regionName, Object keyOfInterest,
-      boolean isDurable, boolean receiveValues) {
+
+  public void unregisterInterest(String regionName, Object keyOfInterest, boolean isDurable,
+      boolean receiveValues) {
     if (keyOfInterest instanceof String && keyOfInterest.equals("ALL_KEYS")) {
       unregisterInterestRegex(regionName, ".*", isDurable, receiveValues);
     } else {
       if (this.isPrimary) {
-        notifySecondariesAndClient(regionName, keyOfInterest, isDurable,
-            receiveValues, InterestType.KEY);
+        notifySecondariesAndClient(regionName, keyOfInterest, isDurable, receiveValues,
+            InterestType.KEY);
       } else {
-        throw new IllegalStateException(LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
+        throw new IllegalStateException(
+            LocalizedStrings.CacheClientProxy_NOT_PRIMARY.toLocalizedString());
       }
     }
   }
 
-  private void notifySecondariesAndClient(String regionName,
-      Object keyOfInterest, boolean isDurable, boolean receiveValues,
-      int interestType) {
+  private void notifySecondariesAndClient(String regionName, Object keyOfInterest,
+      boolean isDurable, boolean receiveValues, int interestType) {
     // Notify all secondary proxies of a change in interest
     ClientInterestMessageImpl message = new ClientInterestMessageImpl(
-        new EventID(this._cache.getDistributedSystem()), regionName,
-        keyOfInterest, interestType, (byte) 0, isDurable, !receiveValues,
-        ClientInterestMessageImpl.UNREGISTER);
+        new EventID(this._cache.getDistributedSystem()), regionName, keyOfInterest, interestType,
+        (byte) 0, isDurable, !receiveValues, ClientInterestMessageImpl.UNREGISTER);
     notifySecondariesOfInterestChange(message);
- 
+
     // Modify interest registration
     if (keyOfInterest instanceof List) {
       unregisterClientInterest(regionName, (List) keyOfInterest, false);
     } else {
-      unregisterClientInterest(regionName, keyOfInterest, interestType,
-          false);
+      unregisterClientInterest(regionName, keyOfInterest, interestType, false);
     }
- 
+
     // Enqueue the interest unregistration message for the client.
     enqueueInterestRegistrationMessage(message);
   }
-  
+
   protected void notifySecondariesOfInterestChange(ClientInterestMessageImpl message) {
     if (logger.isDebugEnabled()) {
       StringBuffer subBuffer = new StringBuffer();
       if (message.isRegister()) {
-        subBuffer
-          .append("register ")
-          .append(message.getIsDurable() ? "" : "non-")
-          .append("durable interest in ");
+        subBuffer.append("register ").append(message.getIsDurable() ? "" : "non-")
+            .append("durable interest in ");
       } else {
         subBuffer.append("unregister interest in ");
       }
       StringBuffer buffer = new StringBuffer();
-      buffer
-        .append(this)
-        .append(": Notifying secondary proxies to ")
-        .append(subBuffer.toString())
-        .append(message.getRegionName())
-        .append("->")
-        .append(message.getKeyOfInterest())
-        .append("->")
-        .append(InterestType.getString(message.getInterestType()));
+      buffer.append(this).append(": Notifying secondary proxies to ").append(subBuffer.toString())
+          .append(message.getRegionName()).append("->").append(message.getKeyOfInterest())
+          .append("->").append(InterestType.getString(message.getInterestType()));
       logger.debug(buffer.toString());
     }
     this._cacheClientNotifier.deliverInterestChange(this.proxyID, message);
   }
 
   /*
-  protected void addFilterRegisteredClients(String regionName,
-      Object keyOfInterest) {
-    try {
-      this._cacheClientNotifier.addFilterRegisteredClients(regionName,
-          this.proxyID);
-    } catch (RegionDestroyedException e) {
-      logger.warn(LocalizedStrings.CacheClientProxy_0_INTEREST_REG_FOR_0_FAILED, regionName + "->" + keyOfInterest, e);
-    }
-  }
-  */
-  
+   * protected void addFilterRegisteredClients(String regionName, Object keyOfInterest) { try {
+   * this._cacheClientNotifier.addFilterRegisteredClients(regionName, this.proxyID); } catch
+   * (RegionDestroyedException e) {
+   * logger.warn(LocalizedStrings.CacheClientProxy_0_INTEREST_REG_FOR_0_FAILED, regionName + "->" +
+   * keyOfInterest, e); } }
+   */
+
   /**
    * Registers interest in the input region name and key
    *
-   * @param regionName
-   *          The fully-qualified name of the region in which to register
-   *          interest
-   * @param keyOfInterest
-   *          The key in which to register interest
+   * @param regionName The fully-qualified name of the region in which to register interest
+   * @param keyOfInterest The key in which to register interest
    */
-  protected void registerClientInterest(String regionName,
-      Object keyOfInterest, int interestType, boolean isDurable,
-      boolean sendUpdatesAsInvalidates, boolean flushState)
-  {
+  protected void registerClientInterest(String regionName, Object keyOfInterest, int interestType,
+      boolean isDurable, boolean sendUpdatesAsInvalidates, boolean flushState) {
     ClientInterestList cil =
-      this.cils[RegisterInterestTracker.getInterestLookupIndex(
-          isDurable, false)];
+        this.cils[RegisterInterestTracker.getInterestLookupIndex(isDurable, false)];
     cil.registerClientInterest(regionName, keyOfInterest, interestType, sendUpdatesAsInvalidates);
     if (flushState) {
-      flushForInterestRegistration(regionName, this._cache.getDistributedSystem().getDistributedMember());
+      flushForInterestRegistration(regionName,
+          this._cache.getDistributedSystem().getDistributedMember());
     }
     HARegionQueue queue = getHARegionQueue();
     if (queue != null) { // queue is null during initialization
       queue.setHasRegisteredInterest(true);
     }
   }
-  
+
   /**
-   * flush other regions to the given target.  This is usually the member
-   * that is registering the interest.  During queue creation it is the
-   * queue's image provider.
+   * flush other regions to the given target. This is usually the member that is registering the
+   * interest. During queue creation it is the queue's image provider.
    */
   public void flushForInterestRegistration(String regionName, DistributedMember target) {
     Region r = this._cache.getRegion(regionName);
@@ -1357,18 +1312,17 @@ public class CacheClientProxy implements ClientSession {
         logger.debug("Unable to find region '{}' to flush for interest registration", regionName);
       }
     } else if (r.getAttributes().getScope().isDistributed()) {
-      if (logger.isDebugEnabled()){
+      if (logger.isDebugEnabled()) {
         logger.debug("Flushing region '{}' for interest registration", regionName);
       }
-      CacheDistributionAdvisee cd = (CacheDistributionAdvisee)r;
+      CacheDistributionAdvisee cd = (CacheDistributionAdvisee) r;
       final StateFlushOperation sfo;
       if (r instanceof PartitionedRegion) {
-        // need to flush all buckets.  SFO should be changed to target buckets
+        // need to flush all buckets. SFO should be changed to target buckets
         // belonging to a particular PR, but it doesn't have that option right now
-        sfo = new StateFlushOperation(
-            this._cache.getDistributedSystem().getDistributionManager());
+        sfo = new StateFlushOperation(this._cache.getDistributedSystem().getDistributionManager());
       } else {
-        sfo = new StateFlushOperation((DistributedRegion)r);
+        sfo = new StateFlushOperation((DistributedRegion) r);
       }
       try {
         // bug 41681 - we need to flush any member that may have a cache operation
@@ -1380,9 +1334,7 @@ public class CacheClientProxy implements ClientSession {
         recips.addAll(advice.getEmpties());
         recips.addAll(advice.getPreloaded());
         recips.addAll(advice.getOthers());
-        sfo.flush(recips,
-            target,
-            DistributionManager.HIGH_PRIORITY_EXECUTOR, true);
+        sfo.flush(recips, target, DistributionManager.HIGH_PRIORITY_EXECUTOR, true);
       } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
         return;
@@ -1393,50 +1345,40 @@ public class CacheClientProxy implements ClientSession {
   /**
    * Unregisters interest in the input region name and key
    *
-   * @param regionName
-   *          The fully-qualified name of the region in which to unregister
-   *          interest
-   * @param keyOfInterest
-   *          The key in which to unregister interest
-   * @param isClosing
-   *          Whether the caller is closing
+   * @param regionName The fully-qualified name of the region in which to unregister interest
+   * @param keyOfInterest The key in which to unregister interest
+   * @param isClosing Whether the caller is closing
    */
-  protected void unregisterClientInterest(String regionName,
-      Object keyOfInterest, int interestType, boolean isClosing)
-  {
+  protected void unregisterClientInterest(String regionName, Object keyOfInterest, int interestType,
+      boolean isClosing) {
     // only unregister durable interest if isClosing and !keepalive
     if (!isClosing /* explicit unregister */
-        || !getDurableKeepAlive() /* close and no keepAlive*/) {
-      this.cils[RegisterInterestTracker.durableInterestListIndex].
-        unregisterClientInterest(regionName, keyOfInterest, interestType);
+        || !getDurableKeepAlive() /* close and no keepAlive */) {
+      this.cils[RegisterInterestTracker.durableInterestListIndex]
+          .unregisterClientInterest(regionName, keyOfInterest, interestType);
     }
     // always unregister non durable interest
-    this.cils[RegisterInterestTracker.interestListIndex].
-      unregisterClientInterest(regionName, keyOfInterest, interestType);
+    this.cils[RegisterInterestTracker.interestListIndex].unregisterClientInterest(regionName,
+        keyOfInterest, interestType);
   }
 
   /**
    * Registers interest in the input region name and list of keys
    *
-   * @param regionName
-   *          The fully-qualified name of the region in which to register
-   *          interest
-   * @param keysOfInterest
-   *          The list of keys in which to register interest
+   * @param regionName The fully-qualified name of the region in which to register interest
+   * @param keysOfInterest The list of keys in which to register interest
    */
-  protected void registerClientInterestList(String regionName,
-      List keysOfInterest, boolean isDurable, boolean sendUpdatesAsInvalidates,
-      boolean flushState)
-  {
+  protected void registerClientInterestList(String regionName, List keysOfInterest,
+      boolean isDurable, boolean sendUpdatesAsInvalidates, boolean flushState) {
     // we only use two interest lists to map the non-durable and durable
     // identifiers to their interest settings
-    ClientInterestList cil =
-      this.cils[RegisterInterestTracker.getInterestLookupIndex(
-          isDurable, false/*sendUpdatesAsInvalidates*/)];
+    ClientInterestList cil = this.cils[RegisterInterestTracker.getInterestLookupIndex(isDurable,
+        false/* sendUpdatesAsInvalidates */)];
     cil.registerClientInterestList(regionName, keysOfInterest, sendUpdatesAsInvalidates);
     if (getHARegionQueue() != null) {
       if (flushState) {
-        flushForInterestRegistration(regionName, this._cache.getDistributedSystem().getDistributedMember());
+        flushForInterestRegistration(regionName,
+            this._cache.getDistributedSystem().getDistributedMember());
       }
       getHARegionQueue().setHasRegisteredInterest(true);
     }
@@ -1445,104 +1387,87 @@ public class CacheClientProxy implements ClientSession {
   /**
    * Unregisters interest in the input region name and list of keys
    *
-   * @param regionName
-   *          The fully-qualified name of the region in which to unregister
-   *          interest
-   * @param keysOfInterest
-   *          The list of keys in which to unregister interest
-   * @param isClosing
-   *          Whether the caller is closing
+   * @param regionName The fully-qualified name of the region in which to unregister interest
+   * @param keysOfInterest The list of keys in which to unregister interest
+   * @param isClosing Whether the caller is closing
    */
-  protected void unregisterClientInterest(String regionName,
-      List keysOfInterest, boolean isClosing)
-  {
+  protected void unregisterClientInterest(String regionName, List keysOfInterest,
+      boolean isClosing) {
     // only unregister durable interest if isClosing and !keepalive
     if (!isClosing /* explicit unregister */
-        || !getDurableKeepAlive() /* close and no keepAlive*/) {
-      this.cils[RegisterInterestTracker.durableInterestListIndex].
-        unregisterClientInterestList(regionName, keysOfInterest);
+        || !getDurableKeepAlive() /* close and no keepAlive */) {
+      this.cils[RegisterInterestTracker.durableInterestListIndex]
+          .unregisterClientInterestList(regionName, keysOfInterest);
     }
     // always unregister non durable interest
-    this.cils[RegisterInterestTracker.interestListIndex].
-      unregisterClientInterestList(regionName, keysOfInterest);
+    this.cils[RegisterInterestTracker.interestListIndex].unregisterClientInterestList(regionName,
+        keysOfInterest);
   }
 
 
   /** sent by the cache client notifier when there is an interest registration change */
-  protected void processInterestMessage(ClientInterestMessageImpl message) { 
+  protected void processInterestMessage(ClientInterestMessageImpl message) {
     // Register or unregister interest depending on the interest type
-    int interestType = message.getInterestType(); 
-    String regionName = message.getRegionName(); 
-    Object key = message.getKeyOfInterest(); 
+    int interestType = message.getInterestType();
+    String regionName = message.getRegionName();
+    Object key = message.getKeyOfInterest();
     if (message.isRegister()) {
       // Register interest in this region->key
       if (key instanceof List) {
-        registerClientInterestList(regionName, (List) key,
-            message.getIsDurable(), message.getForUpdatesAsInvalidates(), true);
+        registerClientInterestList(regionName, (List) key, message.getIsDurable(),
+            message.getForUpdatesAsInvalidates(), true);
       } else {
-        registerClientInterest(regionName, key, interestType,
-            message.getIsDurable(), message.getForUpdatesAsInvalidates(), true);
+        registerClientInterest(regionName, key, interestType, message.getIsDurable(),
+            message.getForUpdatesAsInvalidates(), true);
       }
-       
-      // Add the client to the region's filters 
-      //addFilterRegisteredClients(regionName, key); 
- 
-      if (logger.isDebugEnabled()) { 
+
+      // Add the client to the region's filters
+      // addFilterRegisteredClients(regionName, key);
+
+      if (logger.isDebugEnabled()) {
         StringBuffer buffer = new StringBuffer();
-        buffer 
-          .append(this) 
-          .append(": Interest listener registered ") 
-          .append(message.getIsDurable() ? "" : "non-") 
-          .append("durable interest in ") 
-          .append(message.getRegionName()) 
-          .append("->") 
-          .append(message.getKeyOfInterest())
-          .append("->")
-          .append(InterestType.getString(message.getInterestType()));
-        logger.debug(buffer.toString()); 
-      } 
-    } else { 
-      // Unregister interest in this region->key 
+        buffer.append(this).append(": Interest listener registered ")
+            .append(message.getIsDurable() ? "" : "non-").append("durable interest in ")
+            .append(message.getRegionName()).append("->").append(message.getKeyOfInterest())
+            .append("->").append(InterestType.getString(message.getInterestType()));
+        logger.debug(buffer.toString());
+      }
+    } else {
+      // Unregister interest in this region->key
       if (key instanceof List) {
         unregisterClientInterest(regionName, (List) key, false);
       } else {
         unregisterClientInterest(regionName, key, interestType, false);
       }
-       
-      if (logger.isDebugEnabled()) { 
-        StringBuffer buffer = new StringBuffer(); 
-        buffer 
-          .append(this) 
-          .append(": Interest listener unregistered interest in ") 
-          .append(message.getRegionName()) 
-          .append("->") 
-          .append(message.getKeyOfInterest())
-          .append("->")
-          .append(InterestType.getString(message.getInterestType()));
-        logger.debug(buffer.toString()); 
-      } 
+
+      if (logger.isDebugEnabled()) {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append(this).append(": Interest listener unregistered interest in ")
+            .append(message.getRegionName()).append("->").append(message.getKeyOfInterest())
+            .append("->").append(InterestType.getString(message.getInterestType()));
+        logger.debug(buffer.toString());
+      }
     }
-    
+
     // Enqueue the interest message in this secondary proxy (fix for bug #52088)
     enqueueInterestRegistrationMessage(message);
-    
-    // Enqueue the initial value if the message is register on a key that is not a list (fix for bug #52088)
-    if (message.isRegister()
-        && message.getInterestType() == InterestType.KEY
-        && !(key instanceof List)
-        && InterestResultPolicy.fromOrdinal(message.getInterestResultPolicy()) == InterestResultPolicy.KEYS_VALUES) {
+
+    // Enqueue the initial value if the message is register on a key that is not a list (fix for bug
+    // #52088)
+    if (message.isRegister() && message.getInterestType() == InterestType.KEY
+        && !(key instanceof List) && InterestResultPolicy
+            .fromOrdinal(message.getInterestResultPolicy()) == InterestResultPolicy.KEYS_VALUES) {
       enqueueInitialValue(message, regionName, key);
     }
-  } 
+  }
 
   private boolean postDeliverAuthCheckPassed(ClientUpdateMessage clientMessage) {
     // Before adding it in the queue for dispatching, check for post
     // process authorization
-    if (AcceptorImpl.isAuthenticationRequired()
-        && this.postAuthzCallback == null
+    if (AcceptorImpl.isAuthenticationRequired() && this.postAuthzCallback == null
         && AcceptorImpl.isPostAuthzCallbackPresent()) {
       // security is on and callback is null: it means multiuser mode.
-      ClientUpdateMessageImpl cumi = (ClientUpdateMessageImpl)clientMessage;
+      ClientUpdateMessageImpl cumi = (ClientUpdateMessageImpl) clientMessage;
 
       CqNameToOp clientCq = cumi.getClientCq(this.proxyID);
 
@@ -1551,8 +1476,7 @@ public class CacheClientProxy implements ClientSession {
           logger.debug("CCP clientCq size before processing auth {}", clientCq.size());
         }
         String[] regionNameHolder = new String[1];
-        OperationContext opctxt = getOperationContext(clientMessage,
-            regionNameHolder);
+        OperationContext opctxt = getOperationContext(clientMessage, regionNameHolder);
         if (opctxt == null) {
           logger.warn(LocalizedMessage.create(
               LocalizedStrings.CacheClientProxy__0_NOT_ADDING_MESSAGE_TO_QUEUE_1_BECAUSE_THE_OPERATION_CONTEXT_OBJECT_COULD_NOT_BE_OBTAINED_FOR_THIS_CLIENT_MESSAGE,
@@ -1571,33 +1495,29 @@ public class CacheClientProxy implements ClientSession {
             }
             boolean isAuthorized = false;
 
-            if (this.proxyID.isDurable() && this.getDurableKeepAlive()
-                && this._isPaused) {
+            if (this.proxyID.isDurable() && this.getDurableKeepAlive() && this._isPaused) {
               // need to take lock as we may be reinitializing proxy cache
               synchronized (this.clientUserAuthsLock) {
-                AuthorizeRequestPP postAuthCallback = this.clientUserAuths
-                    .getUserAuthAttributes(cqNames[i]).getPostAuthzRequest();
+                AuthorizeRequestPP postAuthCallback =
+                    this.clientUserAuths.getUserAuthAttributes(cqNames[i]).getPostAuthzRequest();
                 if (logger.isDebugEnabled() && postAuthCallback == null) {
                   logger.debug("CCP clientCq post callback is null");
                 }
-                if (postAuthCallback != null && postAuthCallback
-                    .getPostAuthzCallback().authorizeOperation(
-                        regionNameHolder[0], opctxt)) {
+                if (postAuthCallback != null && postAuthCallback.getPostAuthzCallback()
+                    .authorizeOperation(regionNameHolder[0], opctxt)) {
                   isAuthorized = true;
                 }
               }
             } else {
-              UserAuthAttributes userAuthAttributes = this.clientUserAuths
-                  .getUserAuthAttributes(cqNames[i]);
+              UserAuthAttributes userAuthAttributes =
+                  this.clientUserAuths.getUserAuthAttributes(cqNames[i]);
 
-              AuthorizeRequestPP postAuthCallback = userAuthAttributes
-                  .getPostAuthzRequest();
+              AuthorizeRequestPP postAuthCallback = userAuthAttributes.getPostAuthzRequest();
               if (postAuthCallback == null && logger.isDebugEnabled()) {
                 logger.debug("CCP clientCq post callback is null");
               }
-              if (postAuthCallback != null && postAuthCallback
-                  .getPostAuthzCallback().authorizeOperation(
-                      regionNameHolder[0], opctxt)) {
+              if (postAuthCallback != null && postAuthCallback.getPostAuthzCallback()
+                  .authorizeOperation(regionNameHolder[0], opctxt)) {
                 isAuthorized = true;
               }
             }
@@ -1619,37 +1539,38 @@ public class CacheClientProxy implements ClientSession {
         if (!clientMessage.hasCqs(this.proxyID)) {
           this._statistics.incMessagesNotQueuedNotInterested();
           if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
-            logger.debug("{}: Not adding message to queue. It is not interested in this region and key: {}", clientMessage);
+            logger.debug(
+                "{}: Not adding message to queue. It is not interested in this region and key: {}",
+                clientMessage);
           }
           return false;
         }
       }
-    }
-    else if (this.postAuthzCallback != null) {
+    } else if (this.postAuthzCallback != null) {
       String[] regionNameHolder = new String[1];
       boolean isAuthorize = false;
-      OperationContext opctxt = getOperationContext(clientMessage,
-          regionNameHolder);
+      OperationContext opctxt = getOperationContext(clientMessage, regionNameHolder);
       if (opctxt == null) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy__0_NOT_ADDING_MESSAGE_TO_QUEUE_1_BECAUSE_THE_OPERATION_CONTEXT_OBJECT_COULD_NOT_BE_OBTAINED_FOR_THIS_CLIENT_MESSAGE, new Object[] {this, clientMessage}));
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.CacheClientProxy__0_NOT_ADDING_MESSAGE_TO_QUEUE_1_BECAUSE_THE_OPERATION_CONTEXT_OBJECT_COULD_NOT_BE_OBTAINED_FOR_THIS_CLIENT_MESSAGE,
+            new Object[] {this, clientMessage}));
         return false;
       }
-      if (logger.isTraceEnabled()){
+      if (logger.isTraceEnabled()) {
         logger.trace("{}: Invoking authorizeOperation for message: {}", this, clientMessage);
       }
 
-      if (this.proxyID.isDurable() && this.getDurableKeepAlive()
-          && this._isPaused) {
+      if (this.proxyID.isDurable() && this.getDurableKeepAlive() && this._isPaused) {
         synchronized (this.clientUserAuthsLock) {
-          isAuthorize = this.postAuthzCallback.authorizeOperation(
-              regionNameHolder[0], opctxt);
+          isAuthorize = this.postAuthzCallback.authorizeOperation(regionNameHolder[0], opctxt);
         }
       } else {
-        isAuthorize = this.postAuthzCallback.authorizeOperation(
-            regionNameHolder[0], opctxt);
+        isAuthorize = this.postAuthzCallback.authorizeOperation(regionNameHolder[0], opctxt);
       }
       if (!isAuthorize) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy__0_NOT_ADDING_MESSAGE_TO_QUEUE_1_BECAUSE_AUTHORIZATION_FAILED, new Object[] {this, clientMessage}));
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.CacheClientProxy__0_NOT_ADDING_MESSAGE_TO_QUEUE_1_BECAUSE_AUTHORIZATION_FAILED,
+            new Object[] {this, clientMessage}));
         return false;
       }
     }
@@ -1659,24 +1580,25 @@ public class CacheClientProxy implements ClientSession {
 
   /**
    * Delivers the message to the client representing this client proxy.
-   * @param conflatable 
+   * 
+   * @param conflatable
    */
-  protected void deliverMessage(Conflatable conflatable)
-  {
+  protected void deliverMessage(Conflatable conflatable) {
     ThreadState state = this.securityService.bindSubject(this.subject);
     ClientUpdateMessage clientMessage = null;
-    if(conflatable instanceof HAEventWrapper) {
-      clientMessage = ((HAEventWrapper)conflatable).getClientUpdateMessage();
+    if (conflatable instanceof HAEventWrapper) {
+      clientMessage = ((HAEventWrapper) conflatable).getClientUpdateMessage();
     } else {
-      clientMessage = (ClientUpdateMessage)conflatable;
-    } 
+      clientMessage = (ClientUpdateMessage) conflatable;
+    }
 
     this._statistics.incMessagesReceived();
 
     // post process
-    if(this.securityService.needPostProcess()) {
+    if (this.securityService.needPostProcess()) {
       Object oldValue = clientMessage.getValue();
-      Object newValue = securityService.postProcess(clientMessage.getRegionName(), clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
+      Object newValue = securityService.postProcess(clientMessage.getRegionName(),
+          clientMessage.getKeyOfInterest(), oldValue, clientMessage.valueIsObject());
       clientMessage.setLatestValue(newValue);
     }
 
@@ -1684,56 +1606,60 @@ public class CacheClientProxy implements ClientSession {
       // If dispatcher is getting initialized, add the event to temporary queue.
       if (this.messageDispatcherInit) {
         synchronized (this.queuedEventsSync) {
-          if (this.messageDispatcherInit) {  // Check to see value did not changed while getting the synchronize lock.
+          if (this.messageDispatcherInit) { // Check to see value did not changed while getting the
+                                            // synchronize lock.
             if (logger.isDebugEnabled()) {
-              logger.debug("Message dispatcher for proxy {} is getting initialized. Adding message to the queuedEvents.", this);
+              logger.debug(
+                  "Message dispatcher for proxy {} is getting initialized. Adding message to the queuedEvents.",
+                  this);
             }
             this.queuedEvents.add(conflatable);
             return;
           }
         }
       }
-      
+
       if (this._messageDispatcher != null) {
         this._messageDispatcher.enqueueMessage(conflatable);
       } else {
         this._statistics.incMessagesFailedQueued();
         if (logger.isDebugEnabled()) {
-          logger.debug("Message is not added to the queue. Message dispatcher for proxy: {} doesn't exist.", this);
+          logger.debug(
+              "Message is not added to the queue. Message dispatcher for proxy: {} doesn't exist.",
+              this);
         }
       }
     } else {
       this._statistics.incMessagesFailedQueued();
     }
 
-    if(state!=null)
+    if (state != null)
       state.clear();
   }
 
   protected void sendMessageDirectly(ClientMessage message) {
     // Send the message directly if the connection exists
     // (do not go through the queue).
-    if (logger.isDebugEnabled()){
+    if (logger.isDebugEnabled()) {
       logger.debug("About to send message directly to {}", this);
     }
     if (this._messageDispatcher != null && this._socket != null && !this._socket.isClosed()) {
       // If the socket is open, send the message to it
       this._messageDispatcher.sendMessageDirectly(message);
-      if (logger.isDebugEnabled()){
+      if (logger.isDebugEnabled()) {
         logger.debug("Sent message directly to {}", this);
       }
     } else {
       // Otherwise just reset the ping counter
       resetPingCounter();
-      if (logger.isDebugEnabled()){
+      if (logger.isDebugEnabled()) {
         logger.debug("Skipped sending message directly to {}", this);
       }
     }
   }
-  
-  private OperationContext getOperationContext(ClientMessage cmsg,
-      String[] regionNameHolder) {
-    ClientUpdateMessageImpl cmsgimpl = (ClientUpdateMessageImpl)cmsg;
+
+  private OperationContext getOperationContext(ClientMessage cmsg, String[] regionNameHolder) {
+    ClientUpdateMessageImpl cmsgimpl = (ClientUpdateMessageImpl) cmsg;
     OperationContext opctxt = null;
     // TODO SW: Special handling for DynamicRegions; this should be reworked
     // when DynamicRegion API is deprecated
@@ -1741,50 +1667,42 @@ public class CacheClientProxy implements ClientSession {
     regionNameHolder[0] = regionName;
     if (cmsgimpl.isCreate()) {
       if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
-        regionNameHolder[0] = (String)cmsgimpl.getKeyOfInterest();
+        regionNameHolder[0] = (String) cmsgimpl.getKeyOfInterest();
         opctxt = new RegionCreateOperationContext(true);
-      }
-      else {
-        PutOperationContext tmp = new PutOperationContext(cmsgimpl.getKeyOfInterest(), cmsgimpl
-            .getValue(), cmsgimpl.valueIsObject(), PutOperationContext.CREATE,
-            true);
+      } else {
+        PutOperationContext tmp = new PutOperationContext(cmsgimpl.getKeyOfInterest(),
+            cmsgimpl.getValue(), cmsgimpl.valueIsObject(), PutOperationContext.CREATE, true);
         tmp.setCallbackArg(cmsgimpl.getCallbackArgument());
         opctxt = tmp;
       }
-    }
-    else if (cmsgimpl.isUpdate()) {
+    } else if (cmsgimpl.isUpdate()) {
       if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
-        regionNameHolder[0] = (String)cmsgimpl.getKeyOfInterest();
+        regionNameHolder[0] = (String) cmsgimpl.getKeyOfInterest();
         opctxt = new RegionCreateOperationContext(true);
-      }
-      else {
-        PutOperationContext tmp = new PutOperationContext(cmsgimpl.getKeyOfInterest(), cmsgimpl
-            .getValue(), cmsgimpl.valueIsObject(), PutOperationContext.UPDATE,
-            true);
+      } else {
+        PutOperationContext tmp = new PutOperationContext(cmsgimpl.getKeyOfInterest(),
+            cmsgimpl.getValue(), cmsgimpl.valueIsObject(), PutOperationContext.UPDATE, true);
         tmp.setCallbackArg(cmsgimpl.getCallbackArgument());
         opctxt = tmp;
       }
-    }
-    else if (cmsgimpl.isDestroy()) {
+    } else if (cmsgimpl.isDestroy()) {
       if (DynamicRegionFactory.regionIsDynamicRegionList(regionName)) {
-        regionNameHolder[0] = (String)cmsgimpl.getKeyOfInterest();
+        regionNameHolder[0] = (String) cmsgimpl.getKeyOfInterest();
         opctxt = new RegionDestroyOperationContext(true);
-      }
-      else {
-        DestroyOperationContext tmp = new DestroyOperationContext(cmsgimpl.getKeyOfInterest(), true);
+      } else {
+        DestroyOperationContext tmp =
+            new DestroyOperationContext(cmsgimpl.getKeyOfInterest(), true);
         tmp.setCallbackArg(cmsgimpl.getCallbackArgument());
         opctxt = tmp;
       }
-    }
-    else if (cmsgimpl.isDestroyRegion()) {
+    } else if (cmsgimpl.isDestroyRegion()) {
       opctxt = new RegionDestroyOperationContext(true);
-    }
-    else if (cmsgimpl.isInvalidate()) {
-      InvalidateOperationContext tmp = new InvalidateOperationContext(cmsgimpl.getKeyOfInterest(), true);
+    } else if (cmsgimpl.isInvalidate()) {
+      InvalidateOperationContext tmp =
+          new InvalidateOperationContext(cmsgimpl.getKeyOfInterest(), true);
       tmp.setCallbackArg(cmsgimpl.getCallbackArgument());
       opctxt = tmp;
-    }
-    else if (cmsgimpl.isClearRegion()) {
+    } else if (cmsgimpl.isClearRegion()) {
       RegionClearOperationContext tmp = new RegionClearOperationContext(true);
       tmp.setCallbackArg(cmsgimpl.getCallbackArgument());
       opctxt = tmp;
@@ -1793,40 +1711,41 @@ public class CacheClientProxy implements ClientSession {
   }
 
   /**
-   * Initializes the message dispatcher thread. The
-   * <code>MessageDispatcher</code> processes the message queue.
+   * Initializes the message dispatcher thread. The <code>MessageDispatcher</code> processes the
+   * message queue.
    *
    * @throws CacheException
    */
-  public void initializeMessageDispatcher() throws CacheException
-  {
+  public void initializeMessageDispatcher() throws CacheException {
     this.messageDispatcherInit = true; // Initialization process.
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("{}: Initializing message dispatcher with capacity of {} entries", this, _maximumMessageCount);
+        logger.debug("{}: Initializing message dispatcher with capacity of {} entries", this,
+            _maximumMessageCount);
       }
-      String name = "Client Message Dispatcher for "
-        + getProxyID().getDistributedMember() + (isDurable()? " (" + getDurableId()+")" : "");
+      String name = "Client Message Dispatcher for " + getProxyID().getDistributedMember()
+          + (isDurable() ? " (" + getDurableId() + ")" : "");
       this._messageDispatcher = new MessageDispatcher(this, name);
-      
-      //Fix for 41375 - drain as many of the queued events
-      //as we can without synchronization.
+
+      // Fix for 41375 - drain as many of the queued events
+      // as we can without synchronization.
       if (logger.isDebugEnabled()) {
-        logger.debug("{} draining {} events from init queue into intialized queue", this, this.queuedEvents.size());
+        logger.debug("{} draining {} events from init queue into intialized queue", this,
+            this.queuedEvents.size());
       }
       Conflatable nextEvent;
-      while((nextEvent = queuedEvents.poll()) != null) {
+      while ((nextEvent = queuedEvents.poll()) != null) {
         this._messageDispatcher.enqueueMessage(nextEvent);
       }
-      
-      //Now finish emptying the queue with synchronization to make
-      //sure we don't miss any events.
-      synchronized (this.queuedEventsSync){
-          while((nextEvent = queuedEvents.poll()) != null) {
-            this._messageDispatcher.enqueueMessage(nextEvent);
-          }
-          
-          this.messageDispatcherInit = false; // Done initialization.
+
+      // Now finish emptying the queue with synchronization to make
+      // sure we don't miss any events.
+      synchronized (this.queuedEventsSync) {
+        while ((nextEvent = queuedEvents.poll()) != null) {
+          this._messageDispatcher.enqueueMessage(nextEvent);
+        }
+
+        this.messageDispatcherInit = false; // Done initialization.
       }
     } finally {
       if (this.messageDispatcherInit) { // If its not successfully completed.
@@ -1857,8 +1776,7 @@ public class CacheClientProxy implements ClientSession {
               logger.debug("{}: Starting dispatcher", this);
             }
             this._messageDispatcher.start();
-          }
-          else {
+          } else {
             // ARB: Initialize transient fields.
             this._messageDispatcher.initializeTransients();
             if (logger.isDebugEnabled()) {
@@ -1877,72 +1795,62 @@ public class CacheClientProxy implements ClientSession {
   }
 
   /*
-   * Returns whether the client represented by this <code> CacheClientProxy
-   * </code> has registered interest in anything. @return whether the client
-   * represented by this <code> CacheClientProxy </code> has registered interest
-   * in anything
+   * Returns whether the client represented by this <code> CacheClientProxy </code> has registered
+   * interest in anything. @return whether the client represented by this <code> CacheClientProxy
+   * </code> has registered interest in anything
    */
-  protected boolean hasRegisteredInterested()
-  {
-    return
-    this.cils[RegisterInterestTracker.interestListIndex].hasInterest() ||
-    this.cils[RegisterInterestTracker.durableInterestListIndex].hasInterest();
+  protected boolean hasRegisteredInterested() {
+    return this.cils[RegisterInterestTracker.interestListIndex].hasInterest()
+        || this.cils[RegisterInterestTracker.durableInterestListIndex].hasInterest();
   }
 
   /**
    * Returns a string representation of the proxy
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("CacheClientProxy[")
-      // .append("client proxy id=")
-      .append(this.proxyID)
-      // .append("; client host name=")
-      // .append(this._socket.getInetAddress().getCanonicalHostName())
-      // .append("; client host address=")
-      // .append(this._remoteHostAddress)
-      .append("; port=").append(this._socket.getPort())
-      .append("; primary=").append(isPrimary)
-      .append("; version=").append(clientVersion)
-      .append("]");
-    return buffer.toString();
-  }
-  
-  public String getState(){
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("CacheClientProxy[")
-      // .append("client proxy id=")
-      .append(this.proxyID)
-      // .append("; client host name=")
-      // .append(this._socket.getInetAddress().getCanonicalHostName())
-      // .append("; client host address=")
-      // .append(this._remoteHostAddress)
-      .append("; port=").append(this._socket.getPort())
-      .append("; primary=").append(isPrimary)
-      .append("; version=").append(clientVersion)
-      .append("; paused=").append(isPaused())
-      .append("; alive=").append(isAlive())
-      .append("; connected=").append(isConnected())
-      .append("; isMarkedForRemoval=").append(isMarkedForRemoval)
-      .append("]");
-    
-    if(_messageDispatcher != null && isAlive()) {
-     buffer.append( LogWriterImpl.getStackTrace(_messageDispatcher));
-    }
-      
+        // .append("client proxy id=")
+        .append(this.proxyID)
+        // .append("; client host name=")
+        // .append(this._socket.getInetAddress().getCanonicalHostName())
+        // .append("; client host address=")
+        // .append(this._remoteHostAddress)
+        .append("; port=").append(this._socket.getPort()).append("; primary=").append(isPrimary)
+        .append("; version=").append(clientVersion).append("]");
     return buffer.toString();
   }
 
-  public boolean isPrimary()
-  {
-    //boolean primary = this._messageDispatcher.isAlive()
-    //    || this._messageDispatcher._messageQueue.isPrimary();
+  public String getState() {
+    StringBuffer buffer = new StringBuffer();
+    buffer.append("CacheClientProxy[")
+        // .append("client proxy id=")
+        .append(this.proxyID)
+        // .append("; client host name=")
+        // .append(this._socket.getInetAddress().getCanonicalHostName())
+        // .append("; client host address=")
+        // .append(this._remoteHostAddress)
+        .append("; port=").append(this._socket.getPort()).append("; primary=").append(isPrimary)
+        .append("; version=").append(clientVersion).append("; paused=").append(isPaused())
+        .append("; alive=").append(isAlive()).append("; connected=").append(isConnected())
+        .append("; isMarkedForRemoval=").append(isMarkedForRemoval).append("]");
+
+    if (_messageDispatcher != null && isAlive()) {
+      buffer.append(LogWriterImpl.getStackTrace(_messageDispatcher));
+    }
+
+    return buffer.toString();
+  }
+
+  public boolean isPrimary() {
+    // boolean primary = this._messageDispatcher.isAlive()
+    // || this._messageDispatcher._messageQueue.isPrimary();
     boolean primary = this.isPrimary;
-    //System.out.println(this + ": DISPATCHER IS ALIVE: " + this._messageDispatcher.isAlive());
-    //System.out.println(this + ": DISPATCHER QUEUE IS PRIMARY: " + this._messageDispatcher._messageQueue.isPrimary());
-    //System.out.println(this + ": IS PRIMARY: " + primary);
+    // System.out.println(this + ": DISPATCHER IS ALIVE: " + this._messageDispatcher.isAlive());
+    // System.out.println(this + ": DISPATCHER QUEUE IS PRIMARY: " +
+    // this._messageDispatcher._messageQueue.isPrimary());
+    // System.out.println(this + ": IS PRIMARY: " + primary);
     return primary;
     // return this.isPrimary ;
   }
@@ -1963,25 +1871,25 @@ public class CacheClientProxy implements ClientSession {
   // }
   /*
    * Return this client's HA region queue
+   * 
    * @returns - HARegionQueue of the client
    */
-   public HARegionQueue getHARegionQueue() {
-     if (this._messageDispatcher != null){
-       return _messageDispatcher._messageQueue;
-     }
-     return null;
-   }
+  public HARegionQueue getHARegionQueue() {
+    if (this._messageDispatcher != null) {
+      return _messageDispatcher._messageQueue;
+    }
+    return null;
+  }
 
 
   /**
    * Reinitialize a durable <code>CacheClientProxy</code> with a new client.
-   * @param socket
-   *          The socket between the server and the client
-   * @param ip
-   *          whether this proxy represents the primary
+   * 
+   * @param socket The socket between the server and the client
+   * @param ip whether this proxy represents the primary
    */
-  protected void reinitialize(Socket socket, ClientProxyMembershipID proxyId,
-      Cache cache, boolean ip, byte cc, Version ver) {
+  protected void reinitialize(Socket socket, ClientProxyMembershipID proxyId, Cache cache,
+      boolean ip, byte cc, Version ver) {
     // Re-initialize transient fields
     initializeTransientFields(socket, proxyId, ip, cc, ver);
     getCacheClientNotifier().getAcceptorStats().incCurrentQueueConnections();
@@ -2025,17 +1933,19 @@ public class CacheClientProxy implements ClientSession {
   public Region getHARegion() {
     return this._messageDispatcher._messageQueue.getRegion();
   }
-  
+
   public Version getVersion() {
     return this.clientVersion;
   }
-  
+
   protected void scheduleDurableExpirationTask() {
     SystemTimer.SystemTimerTask task = new SystemTimer.SystemTimerTask() {
       @Override
       public void run2() {
         _durableExpirationTask.compareAndSet(this, null);
-        logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0__THE_EXPIRATION_TASK_HAS_FIRED_SO_THIS_PROXY_IS_BEING_TERMINATED, CacheClientProxy.this));
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.CacheClientProxy_0__THE_EXPIRATION_TASK_HAS_FIRED_SO_THIS_PROXY_IS_BEING_TERMINATED,
+            CacheClientProxy.this));
         // Remove the proxy from the CacheClientNofier's registry
         getCacheClientNotifier().removeClientProxy(CacheClientProxy.this);
         getCacheClientNotifier().durableClientTimedOut(CacheClientProxy.this.proxyID);
@@ -2045,31 +1955,28 @@ public class CacheClientProxy implements ClientSession {
         _cacheClientNotifier._statistics.incQueueDroppedCount();
 
         /**
-         * Setting the expiration task to null again and cancelling existing
-         * one, if any. See #50894.
+         * Setting the expiration task to null again and cancelling existing one, if any. See
+         * #50894.
          * <p/>
-         * The message dispatcher may again set the expiry task in below path:
-         * <code>
+         * The message dispatcher may again set the expiry task in below path: <code>
          *  org.apache.geode.internal.cache.tier.sockets.CacheClientProxy.scheduleDurableExpirationTask(CacheClientProxy.java:2020)
          *  org.apache.geode.internal.cache.tier.sockets.CacheClientProxy.pauseDispatching(CacheClientProxy.java:924)
          *  org.apache.geode.internal.cache.tier.sockets.CacheClientProxy$MessageDispatcher.pauseOrUnregisterProxy(CacheClientProxy.java:2813)
          *  org.apache.geode.internal.cache.tier.sockets.CacheClientProxy$MessageDispatcher.run(CacheClientProxy.java:2692)
          * </code>
          * <p/>
-         * This is because message dispatcher may get an IOException with
-         * "Proxy closing due to socket being closed locally" during/after
-         * terminateDispatching(false) above.
+         * This is because message dispatcher may get an IOException with "Proxy closing due to
+         * socket being closed locally" during/after terminateDispatching(false) above.
          */
         Object task = _durableExpirationTask.getAndSet(null);
         if (task != null) {
-          ((SystemTimerTask)task).cancel();
+          ((SystemTimerTask) task).cancel();
         }
       }
 
     };
-    if(this._durableExpirationTask.compareAndSet(null, task)) {
-      _cache.getCCPTimer().schedule(task,
-          getDurableTimeout()*1000L);
+    if (this._durableExpirationTask.compareAndSet(null, task)) {
+      _cache.getCCPTimer().schedule(task, getDurableTimeout() * 1000L);
     }
   }
 
@@ -2077,28 +1984,29 @@ public class CacheClientProxy implements ClientSession {
     SystemTimer.SystemTimerTask task = (SystemTimerTask) _durableExpirationTask.getAndSet(null);
     if (task != null) {
       if (logMessage) {
-        logger.info(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_CANCELLING_EXPIRATION_TASK_SINCE_THE_CLIENT_HAS_RECONNECTED, this));
+        logger.info(LocalizedMessage.create(
+            LocalizedStrings.CacheClientProxy_0_CANCELLING_EXPIRATION_TASK_SINCE_THE_CLIENT_HAS_RECONNECTED,
+            this));
       }
       task.cancel();
     }
   }
 
   /**
-   * Class <code>ClientInterestList</code> provides a convenient interface
-   * for manipulating client interest information.
+   * Class <code>ClientInterestList</code> provides a convenient interface for manipulating client
+   * interest information.
    */
-  static protected class ClientInterestList
-   {
-    
+  static protected class ClientInterestList {
+
     final CacheClientProxy ccp;
-    
+
     final Object id;
 
-     /**
+    /**
      * An object used for synchronizing the interest lists
      */
     final private Object interestListLock = new Object();
-    
+
     /**
      * Regions that this client is interested in
      */
@@ -2116,37 +2024,39 @@ public class CacheClientProxy implements ClientSession {
     /**
      * Registers interest in the input region name and key
      */
-    protected void registerClientInterest(String regionName,
-        Object keyOfInterest, int interestType, boolean sendUpdatesAsInvalidates)
-    {
+    protected void registerClientInterest(String regionName, Object keyOfInterest, int interestType,
+        boolean sendUpdatesAsInvalidates) {
       if (logger.isDebugEnabled()) {
         logger.debug("{}: registerClientInterest region={} key={}", ccp, regionName, keyOfInterest);
       }
       Set keysRegistered = null;
-      synchronized(this.interestListLock) {
-        LocalRegion r = (LocalRegion)this.ccp._cache.getRegion(regionName, true);
+      synchronized (this.interestListLock) {
+        LocalRegion r = (LocalRegion) this.ccp._cache.getRegion(regionName, true);
         if (r == null) {
-          throw new RegionDestroyedException("Region could not be found for interest registration", regionName);
+          throw new RegionDestroyedException("Region could not be found for interest registration",
+              regionName);
         }
-        if ( ! (r instanceof CacheDistributionAdvisee) ) {
-          throw new IllegalArgumentException("region " + regionName + " is not distributed and does not support interest registration");
+        if (!(r instanceof CacheDistributionAdvisee)) {
+          throw new IllegalArgumentException("region " + regionName
+              + " is not distributed and does not support interest registration");
         }
         FilterProfile p = r.getFilterProfile();
-        keysRegistered = p.registerClientInterest(id, keyOfInterest, interestType, sendUpdatesAsInvalidates);
+        keysRegistered =
+            p.registerClientInterest(id, keyOfInterest, interestType, sendUpdatesAsInvalidates);
         regions.add(regionName);
       }
-      // Perform actions if any keys were registered  
+      // Perform actions if any keys were registered
       if ((keysRegistered != null) && containsInterestRegistrationListeners()
           && !keysRegistered.isEmpty()) {
         handleInterestEvent(regionName, keysRegistered, interestType, true);
-      } 
+      }
     }
-    
-    
+
+
     protected FilterProfile getProfile(String regionName) {
       try {
         return this.ccp._cache.getFilterProfile(regionName);
-      } catch (CacheClosedException e) {
+      } catch (CancelException e) {
         return null;
       }
     }
@@ -2154,24 +2064,20 @@ public class CacheClientProxy implements ClientSession {
     /**
      * Unregisters interest in the input region name and key
      *
-     * @param regionName
-     *          The fully-qualified name of the region in which to unregister
-     *          interest
-     * @param keyOfInterest
-     *          The key in which to unregister interest
+     * @param regionName The fully-qualified name of the region in which to unregister interest
+     * @param keyOfInterest The key in which to unregister interest
      */
-    protected void unregisterClientInterest(String regionName,
-        Object keyOfInterest, int interestType)
-    {
+    protected void unregisterClientInterest(String regionName, Object keyOfInterest,
+        int interestType) {
       if (logger.isDebugEnabled()) {
-        logger.debug("{}: unregisterClientInterest region={} key={}", ccp, regionName, keyOfInterest);
+        logger.debug("{}: unregisterClientInterest region={} key={}", ccp, regionName,
+            keyOfInterest);
       }
       FilterProfile p = getProfile(regionName);
       Set keysUnregistered = null;
-      synchronized(this.interestListLock) {
+      synchronized (this.interestListLock) {
         if (p != null) {
-          keysUnregistered = p.unregisterClientInterest(
-            id, keyOfInterest, interestType);
+          keysUnregistered = p.unregisterClientInterest(id, keyOfInterest, interestType);
           if (!p.hasInterestFor(id)) {
             this.regions.remove(regionName);
           }
@@ -2179,55 +2085,47 @@ public class CacheClientProxy implements ClientSession {
           this.regions.remove(regionName);
         }
       }
-      if (keysUnregistered != null && !keysUnregistered.isEmpty()) { 
-        handleInterestEvent(regionName, keysUnregistered, interestType, false); 
-      } 
+      if (keysUnregistered != null && !keysUnregistered.isEmpty()) {
+        handleInterestEvent(regionName, keysUnregistered, interestType, false);
+      }
     }
 
     /**
      * Registers interest in the input region name and list of keys
      *
-     * @param regionName
-     *          The fully-qualified name of the region in which to register
-     *          interest
-     * @param keysOfInterest
-     *          The list of keys in which to register interest
+     * @param regionName The fully-qualified name of the region in which to register interest
+     * @param keysOfInterest The list of keys in which to register interest
      */
-    protected void registerClientInterestList(String regionName,
-        List keysOfInterest, boolean sendUpdatesAsInvalidates) {
+    protected void registerClientInterestList(String regionName, List keysOfInterest,
+        boolean sendUpdatesAsInvalidates) {
       FilterProfile p = getProfile(regionName);
       if (p == null) {
-        throw new RegionDestroyedException("Region not found during client interest registration", regionName);
+        throw new RegionDestroyedException("Region not found during client interest registration",
+            regionName);
       }
       Set keysRegistered = null;
-      synchronized(this.interestListLock) {
+      synchronized (this.interestListLock) {
         keysRegistered = p.registerClientInterestList(id, keysOfInterest, sendUpdatesAsInvalidates);
         regions.add(regionName);
       }
-      // Perform actions if any keys were registered 
+      // Perform actions if any keys were registered
       if (containsInterestRegistrationListeners() && !keysRegistered.isEmpty()) {
         handleInterestEvent(regionName, keysRegistered, InterestType.KEY, true);
-      } 
+      }
     }
 
     /**
      * Unregisters interest in the input region name and list of keys
      *
-     * @param regionName
-     *          The fully-qualified name of the region in which to unregister
-     *          interest
-     * @param keysOfInterest
-     *          The list of keys in which to unregister interest
+     * @param regionName The fully-qualified name of the region in which to unregister interest
+     * @param keysOfInterest The list of keys in which to unregister interest
      */
-    protected void unregisterClientInterestList(String regionName,
-        List keysOfInterest)
-    {
+    protected void unregisterClientInterestList(String regionName, List keysOfInterest) {
       FilterProfile p = getProfile(regionName);
       Set keysUnregistered = null;
-      synchronized(this.interestListLock) {
+      synchronized (this.interestListLock) {
         if (p != null) {
-          keysUnregistered = p.unregisterClientInterestList(
-              id, keysOfInterest);
+          keysUnregistered = p.unregisterClientInterestList(id, keysOfInterest);
           if (!p.hasInterestFor(id)) {
             regions.remove(regionName);
           }
@@ -2235,17 +2133,16 @@ public class CacheClientProxy implements ClientSession {
           regions.remove(regionName);
         }
       }
-     // Perform actions if any keys were unregistered
-      if (!keysUnregistered.isEmpty()) { 
-        handleInterestEvent(regionName, keysUnregistered, InterestType.KEY,false); 
-      } 
+      // Perform actions if any keys were unregistered
+      if (!keysUnregistered.isEmpty()) {
+        handleInterestEvent(regionName, keysUnregistered, InterestType.KEY, false);
+      }
     }
 
     /*
-     * Returns whether this interest list has any keys, patterns or filters of
-     * interest. It answers the question: Are any clients being notified because
-     * of this interest list? @return whether this interest list has any keys,
-     * patterns or filters of interest
+     * Returns whether this interest list has any keys, patterns or filters of interest. It answers
+     * the question: Are any clients being notified because of this interest list? @return whether
+     * this interest list has any keys, patterns or filters of interest
      */
     protected boolean hasInterest() {
       return regions.size() > 0;
@@ -2253,9 +2150,9 @@ public class CacheClientProxy implements ClientSession {
 
     protected void clearClientInterestList() {
       boolean isClosed = ccp.getCache().isClosed();
-      
-      synchronized(this.interestListLock) {
-        for (String regionName: regions) {
+
+      synchronized (this.interestListLock) {
+        for (String regionName : regions) {
           FilterProfile p = getProfile(regionName);
           if (p == null) {
             continue;
@@ -2265,16 +2162,13 @@ public class CacheClientProxy implements ClientSession {
               Set allKeys = new HashSet();
               allKeys.add(".*");
               allKeys = Collections.unmodifiableSet(allKeys);
-              handleInterestEvent(regionName, allKeys,
-                  InterestType.REGULAR_EXPRESSION, false);
+              handleInterestEvent(regionName, allKeys, InterestType.REGULAR_EXPRESSION, false);
             }
             Set keysOfInterest = p.getKeysOfInterestFor(id);
             if (keysOfInterest != null && keysOfInterest.size() > 0) {
-              handleInterestEvent(regionName, keysOfInterest,
-                  InterestType.KEY, false);
+              handleInterestEvent(regionName, keysOfInterest, InterestType.KEY, false);
             }
-            Map<String,Pattern> patternsOfInterest =
-              p.getPatternsOfInterestFor(id);
+            Map<String, Pattern> patternsOfInterest = p.getPatternsOfInterestFor(id);
             if (patternsOfInterest != null && patternsOfInterest.size() > 0) {
               handleInterestEvent(regionName, patternsOfInterest.keySet(),
                   InterestType.REGULAR_EXPRESSION, false);
@@ -2287,81 +2181,75 @@ public class CacheClientProxy implements ClientSession {
     }
 
 
-    private void handleInterestEvent(String regionName, Set keysOfInterest,
-        int interestType, boolean isRegister) {
+    private void handleInterestEvent(String regionName, Set keysOfInterest, int interestType,
+        boolean isRegister) {
       // Notify the region about this register interest event if:
       // - the application has requested it
       // - this is a primary CacheClientProxy (otherwise multiple notifications
       // may occur)
       // - it is a key interest type (regex is currently not supported)
       InterestRegistrationEvent event = null;
-      if (NOTIFY_REGION_ON_INTEREST && this.ccp.isPrimary()
-          && interestType == InterestType.KEY) {
-        event = new InterestRegistrationEventImpl(this.ccp, regionName,
-            keysOfInterest, interestType, isRegister);
+      if (NOTIFY_REGION_ON_INTEREST && this.ccp.isPrimary() && interestType == InterestType.KEY) {
+        event = new InterestRegistrationEventImpl(this.ccp, regionName, keysOfInterest,
+            interestType, isRegister);
         try {
           notifyRegionOfInterest(event);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           logger.warn(LocalizedStrings.CacheClientProxy_REGION_NOTIFICATION_OF_INTEREST_FAILED, e);
         }
       }
       // Invoke interest registration listeners
       if (containsInterestRegistrationListeners()) {
         if (event == null) {
-          event = new InterestRegistrationEventImpl(this.ccp, regionName,
-              keysOfInterest, interestType, isRegister);
+          event = new InterestRegistrationEventImpl(this.ccp, regionName, keysOfInterest,
+              interestType, isRegister);
         }
         notifyInterestRegistrationListeners(event);
-      }      
+      }
     }
 
     private void notifyRegionOfInterest(InterestRegistrationEvent event) {
       this.ccp.getCacheClientNotifier().handleInterestEvent(event);
     }
 
-    private void notifyInterestRegistrationListeners(
-        InterestRegistrationEvent event) {
-      this.ccp.getCacheClientNotifier().notifyInterestRegistrationListeners(
-          event);
+    private void notifyInterestRegistrationListeners(InterestRegistrationEvent event) {
+      this.ccp.getCacheClientNotifier().notifyInterestRegistrationListeners(event);
     }
 
     private boolean containsInterestRegistrationListeners() {
-      return this.ccp.getCacheClientNotifier()
-          .containsInterestRegistrationListeners();
+      return this.ccp.getCacheClientNotifier().containsInterestRegistrationListeners();
     }
   }
 
 
   /**
-   * Class <code>MessageDispatcher</code> is a <code>Thread</code> that
-   * processes messages bound for the client by taking messsages from the
-   * message queue and sending them to the client over the socket.
+   * Class <code>MessageDispatcher</code> is a <code>Thread</code> that processes messages bound for
+   * the client by taking messsages from the message queue and sending them to the client over the
+   * socket.
    */
-  static class MessageDispatcher extends Thread
-   {
+  static class MessageDispatcher extends Thread {
 
     /**
      * The queue of messages to be sent to the client
      */
     protected final HARegionQueue _messageQueue;
 
-//    /**
-//     * An int used to keep track of the number of messages dropped for logging
-//     * purposes. If greater than zero then a warning has been logged about
-//     * messages being dropped.
-//     */
-//    private int _numberOfMessagesDropped = 0;
+    // /**
+    // * An int used to keep track of the number of messages dropped for logging
+    // * purposes. If greater than zero then a warning has been logged about
+    // * messages being dropped.
+    // */
+    // private int _numberOfMessagesDropped = 0;
 
     /**
      * The proxy for which this dispatcher is processing messages
      */
     private final CacheClientProxy _proxy;
 
-//    /**
-//     * The conflator faciliates message conflation
-//     */
-//     protected BridgeEventConflator _eventConflator;
+    // /**
+    // * The conflator faciliates message conflation
+    // */
+    // protected BridgeEventConflator _eventConflator;
 
     /**
      * Whether the dispatcher is stopped
@@ -2371,8 +2259,8 @@ public class CacheClientProxy implements ClientSession {
     /**
      * guarded.By _pausedLock
      */
-    //boolean _isPausedDispatcher = false;
-    
+    // boolean _isPausedDispatcher = false;
+
     /**
      * A lock object used to control pausing this dispatcher
      */
@@ -2386,18 +2274,17 @@ public class CacheClientProxy implements ClientSession {
     private final ReadWriteLock socketLock = new ReentrantReadWriteLock();
 
     private final Lock socketWriteLock = socketLock.writeLock();
-//    /**
-//     * A boolean verifying whether a warning has already been issued if the
-//     * message queue has reached its capacity.
-//     */
-//    private boolean _messageQueueCapacityReachedWarning = false;
+    // /**
+    // * A boolean verifying whether a warning has already been issued if the
+    // * message queue has reached its capacity.
+    // */
+    // private boolean _messageQueueCapacityReachedWarning = false;
 
     /**
      * Constructor.
      *
-     * @param proxy
-     *          The <code>CacheClientProxy</code> for which this dispatcher is
-     *          processing messages
+     * @param proxy The <code>CacheClientProxy</code> for which this dispatcher is processing
+     *        messages
      * @param name thread name for this dispatcher
      * @throws CacheException
      */
@@ -2413,58 +2300,57 @@ public class CacheClientProxy implements ClientSession {
 
       // Create the message queue
       try {
-        HARegionQueueAttributes harq= new HARegionQueueAttributes();
+        HARegionQueueAttributes harq = new HARegionQueueAttributes();
         harq.setBlockingQueueCapacity(proxy._maximumMessageCount);
         harq.setExpiryTime(proxy._messageTimeToLive);
-        ((HAContainerWrapper)proxy._cacheClientNotifier.getHaContainer())
-            .putProxy(HARegionQueue.createRegionName(getProxy()
-                .getHARegionName()), getProxy());
-        boolean createDurableQueue = proxy.proxyID.isDurable();            
+        ((HAContainerWrapper) proxy._cacheClientNotifier.getHaContainer())
+            .putProxy(HARegionQueue.createRegionName(getProxy().getHARegionName()), getProxy());
+        boolean createDurableQueue = proxy.proxyID.isDurable();
         boolean canHandleDelta = (proxy.clientVersion.compareTo(Version.GFE_61) >= 0)
-            && InternalDistributedSystem.getAnyInstance().getConfig()
-                .getDeltaPropagation()
+            && InternalDistributedSystem.getAnyInstance().getConfig().getDeltaPropagation()
             && !(this._proxy.clientConflation == HandShake.CONFLATION_ON);
         if ((createDurableQueue || canHandleDelta) && logger.isDebugEnabled()) {
           logger.debug("Creating a durable HA queue");
         }
-        this._messageQueue = 
-          HARegionQueue.getHARegionQueueInstance(
-              getProxy().getHARegionName(), getCache(), harq,
-              HARegionQueue.BLOCKING_HA_QUEUE, createDurableQueue, 
-              proxy._cacheClientNotifier.getHaContainer(),
-              proxy.getProxyID(),
-              this._proxy.clientConflation,
-              this._proxy.isPrimary(), canHandleDelta);
+        this._messageQueue = HARegionQueue.getHARegionQueueInstance(getProxy().getHARegionName(),
+            getCache(), harq, HARegionQueue.BLOCKING_HA_QUEUE, createDurableQueue,
+            proxy._cacheClientNotifier.getHaContainer(), proxy.getProxyID(),
+            this._proxy.clientConflation, this._proxy.isPrimary(), canHandleDelta);
         // Check if interests were registered during HARegion GII.
         if (this._proxy.hasRegisteredInterested()) {
           this._messageQueue.setHasRegisteredInterest(true);
         }
-      }
-      catch (CancelException e) {
+      } catch (CancelException e) {
         throw e;
-      }
-      catch (RegionExistsException ree) {
+      } catch (RegionExistsException ree) {
         throw ree;
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         getCache().getCancelCriterion().checkCancelInProgress(e);
-        throw new CacheException(LocalizedStrings.CacheClientProxy_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CREATE_A_MESSAGE_QUEUE.toLocalizedString(), e) {
-          private static final long serialVersionUID = 0L;};
+        throw new CacheException(
+            LocalizedStrings.CacheClientProxy_EXCEPTION_OCCURRED_WHILE_TRYING_TO_CREATE_A_MESSAGE_QUEUE
+                .toLocalizedString(),
+            e) {
+          private static final long serialVersionUID = 0L;
+        };
       }
     }
-    
+
     private CacheClientProxy getProxy() {
       return this._proxy;
     }
+
     private GemFireCacheImpl getCache() {
       return getProxy().getCache();
     }
+
     private Socket getSocket() {
       return getProxy().getSocket();
     }
+
     private ByteBuffer getCommBuffer() {
       return getProxy().getCommBuffer();
     }
+
     private CacheClientProxyStats getStatistics() {
       return getProxy().getStatistics();
     }
@@ -2485,15 +2371,13 @@ public class CacheClientProxy implements ClientSession {
     /**
      * Notifies the dispatcher to stop dispatching.
      *
-     * @param checkQueue
-     *          Whether to check the message queue for any unprocessed messages
-     *          and process them for MAXIMUM_SHUTDOWN_PEEKS.
+     * @param checkQueue Whether to check the message queue for any unprocessed messages and process
+     *        them for MAXIMUM_SHUTDOWN_PEEKS.
      *
      * @see CacheClientProxy#MAXIMUM_SHUTDOWN_PEEKS
      */
-    protected synchronized void stopDispatching(boolean checkQueue)
-    {
-      if (isStopped()) {     
+    protected synchronized void stopDispatching(boolean checkQueue) {
+      if (isStopped()) {
         return;
       }
 
@@ -2508,38 +2392,35 @@ public class CacheClientProxy implements ClientSession {
       // Stay alive until the queue is empty or a number of peeks is reached.
       List events = null;
       try {
-        for (int numberOfPeeks = 0; numberOfPeeks < MAXIMUM_SHUTDOWN_PEEKS;
-            ++numberOfPeeks) {
+        for (int numberOfPeeks = 0; numberOfPeeks < MAXIMUM_SHUTDOWN_PEEKS; ++numberOfPeeks) {
           boolean interrupted = Thread.interrupted();
           try {
             events = this._messageQueue.peek(1, -1);
             if (events == null || events.size() == 0) {
               break;
             }
-            if (logger.isDebugEnabled()){
-           logger.debug("Waiting for client to drain queue: {}", _proxy.proxyID);
+            if (logger.isDebugEnabled()) {
+              logger.debug("Waiting for client to drain queue: {}", _proxy.proxyID);
             }
             Thread.sleep(500);
-          }
-          catch (InterruptedException e) {
+          } catch (InterruptedException e) {
             interrupted = true;
-            /*GemFireCache c = (GemFireCache)_cache;
-            c.getDistributedSystem().getCancelCriterion().checkCancelInProgress(e);*/
-          }
-          catch (CancelException e) {
+            /*
+             * GemFireCache c = (GemFireCache)_cache;
+             * c.getDistributedSystem().getCancelCriterion().checkCancelInProgress(e);
+             */
+          } catch (CancelException e) {
             break;
-          }
-          catch (CacheException e) {
+          } catch (CacheException e) {
             if (logger.isDebugEnabled()) {
               logger.debug("{}: Exception occurred while trying to stop dispatching", this, e);
             }
-          }
-          finally {
-            if (interrupted) Thread.currentThread().interrupt();
+          } finally {
+            if (interrupted)
+              Thread.currentThread().interrupt();
           }
         } // for
-      }
-      finally {
+      } finally {
         basicStopDispatching();
       }
     }
@@ -2549,47 +2430,48 @@ public class CacheClientProxy implements ClientSession {
      *
      * @return whether the dispatcher is stopped
      */
-    protected boolean isStopped()
-    {
+    protected boolean isStopped() {
       return this._isStopped;
     }
 
     /**
-     * Returns the size of the queue for heuristic purposes. This size may be
-     * changing concurrently if puts / gets are occurring at the same time.
+     * Returns the size of the queue for heuristic purposes. This size may be changing concurrently
+     * if puts / gets are occurring at the same time.
      *
      * @return the size of the queue
      */
-    protected int getQueueSize()
-    {
+    protected int getQueueSize() {
       return this._messageQueue == null ? 0 : this._messageQueue.size();
     }
-    
+
     /**
-     * Returns the size of the queue calculated through stats
-     * This includes events that have dispatched but have yet been removed
+     * Returns the size of the queue calculated through stats This includes events that have
+     * dispatched but have yet been removed
+     * 
      * @return the size of the queue
      */
-    protected int getQueueSizeStat()
-    {
+    protected int getQueueSizeStat() {
       if (this._messageQueue != null) {
         HARegionQueueStats stats = this._messageQueue.getStatistics();
-        return ((int)(stats.getEventsEnqued() - stats.getEventsRemoved() - stats.getEventsConflated() - stats.getMarkerEventsConflated() - stats.getEventsExpired() - stats.getEventsRemovedByQrm() - stats.getEventsTaken() - stats.getNumVoidRemovals()));
+        return ((int) (stats.getEventsEnqued() - stats.getEventsRemoved()
+            - stats.getEventsConflated() - stats.getMarkerEventsConflated()
+            - stats.getEventsExpired() - stats.getEventsRemovedByQrm() - stats.getEventsTaken()
+            - stats.getNumVoidRemovals()));
       }
       return 0;
     }
-    
-    protected void drainClientCqEvents(ClientProxyMembershipID clientId, InternalCqQuery cqToClose) {
-        this._messageQueue.closeClientCq(clientId, cqToClose);
+
+    protected void drainClientCqEvents(ClientProxyMembershipID clientId,
+        InternalCqQuery cqToClose) {
+      this._messageQueue.closeClientCq(clientId, cqToClose);
     }
-    
+
     /**
-     * Runs the dispatcher by taking a message from the queue and sending it to
-     * the client attached to this proxy.
+     * Runs the dispatcher by taking a message from the queue and sending it to the client attached
+     * to this proxy.
      */
     @Override
-    public void run()
-    {
+    public void run() {
       boolean exceptionOccured = false;
       this._isStopped = false;
 
@@ -2598,15 +2480,14 @@ public class CacheClientProxy implements ClientSession {
       }
       // for testing purposes
       if (isSlowStartForTesting) {
-        long slowStartTimeForTesting = Long.getLong(KEY_SLOW_START_TIME_FOR_TESTING,
-            DEFAULT_SLOW_STARTING_TIME).longValue();
+        long slowStartTimeForTesting =
+            Long.getLong(KEY_SLOW_START_TIME_FOR_TESTING, DEFAULT_SLOW_STARTING_TIME).longValue();
         long elapsedTime = 0;
         long startTime = System.currentTimeMillis();
         while ((slowStartTimeForTesting > elapsedTime) && isSlowStartForTesting) {
           try {
             Thread.sleep(500);
-          }
-          catch (InterruptedException ignore) {
+          } catch (InterruptedException ignore) {
             if (logger.isDebugEnabled()) {
               logger.debug("Slow start for testing interrupted");
             }
@@ -2614,57 +2495,62 @@ public class CacheClientProxy implements ClientSession {
           }
           elapsedTime = System.currentTimeMillis() - startTime;
         }
-        if(slowStartTimeForTesting < elapsedTime) {
+        if (slowStartTimeForTesting < elapsedTime) {
           isSlowStartForTesting = false;
         }
       }
 
       ClientMessage clientMessage = null;
       while (!isStopped()) {
-//        SystemFailure.checkFailure(); DM's stopper does this
+        // SystemFailure.checkFailure(); DM's stopper does this
         if (this._proxy._cache.getCancelCriterion().isCancelInProgress()) {
           break;
         }
         try {
           // If paused, wait to be told to resume (or interrupted if stopped)
           if (getProxy().isPaused()) {
-            // ARB: Before waiting for resumption, process acks from client. 
+            // ARB: Before waiting for resumption, process acks from client.
             // This will reduce the number of duplicates that a client receives after
             // reconnecting.
             synchronized (_pausedLock) {
               try {
-                logger.info("available ids = " + this._messageQueue.size()+ " , isEmptyAckList =" + this._messageQueue.isEmptyAckList() 
-                            + ", peekInitialized = " + this._messageQueue.isPeekInitialized());
-                while (!this._messageQueue.isEmptyAckList()&& this._messageQueue.isPeekInitialized()) {
+                logger.info("available ids = " + this._messageQueue.size() + " , isEmptyAckList ="
+                    + this._messageQueue.isEmptyAckList() + ", peekInitialized = "
+                    + this._messageQueue.isPeekInitialized());
+                while (!this._messageQueue.isEmptyAckList()
+                    && this._messageQueue.isPeekInitialized()) {
                   this._messageQueue.remove();
                 }
-              }
-              catch (InterruptedException ex) {
-                logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_SLEEP_INTERRUPTED, this));
+              } catch (InterruptedException ex) {
+                logger.warn(LocalizedMessage
+                    .create(LocalizedStrings.CacheClientProxy_0_SLEEP_INTERRUPTED, this));
               }
             }
             waitForResumption();
           }
           try {
-            clientMessage = (ClientMessage)this._messageQueue.peek();
-          }
-          catch (RegionDestroyedException skipped) {
+            clientMessage = (ClientMessage) this._messageQueue.peek();
+          } catch (RegionDestroyedException skipped) {
             break;
           }
           getStatistics().setQueueSize(this._messageQueue.size());
           if (isStopped()) {
             break;
           }
-          // Process the message
-          long start = getStatistics().startTime();
-          //// BUGFIX for BUG#38206 and BUG#37791
-          boolean isDispatched = dispatchMessage(clientMessage);
-          getStatistics().endMessage(start);
-          if(isDispatched){
-            this._messageQueue.remove();
-            if (clientMessage instanceof ClientMarkerMessageImpl) {
-              getProxy().markerEnqueued = false;
+          if (clientMessage != null) {
+            // Process the message
+            long start = getStatistics().startTime();
+            //// BUGFIX for BUG#38206 and BUG#37791
+            boolean isDispatched = dispatchMessage(clientMessage);
+            getStatistics().endMessage(start);
+            if (isDispatched) {
+              this._messageQueue.remove();
+              if (clientMessage instanceof ClientMarkerMessageImpl) {
+                getProxy().markerEnqueued = false;
+              }
             }
+          } else {
+            this._messageQueue.remove();
           }
           clientMessage = null;
         } catch (MessageTooLargeException e) {
@@ -2678,24 +2564,32 @@ public class CacheClientProxy implements ClientSession {
             // the client is dead and stop processing.
             if (!isStopped() && !getProxy().isPaused()) {
               if ("Broken pipe".equals(e.getMessage())) {
-                logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_UNEXPECTED_BROKEN_PIPE_ON_SOCKET_CONNECTION, this));
+                logger.warn(LocalizedMessage.create(
+                    LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_UNEXPECTED_BROKEN_PIPE_ON_SOCKET_CONNECTION,
+                    this));
               } else if ("Connection reset".equals(e.getMessage())) {
-                logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_UNEXPECTED_RESET_ON_SOCKET_CONNECTION, this));
-              }
-              else if ("Connection reset by peer".equals(e.getMessage())) {
-                logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_UNEXPECTED_RESET_BY_PEER_ON_SOCKET_CONNECTION, this));
-              }
-              else if ("Socket is closed".equals(e.getMessage()) || "Socket Closed".equals(e.getMessage())) {
-                logger.info(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_SOCKET_BEING_CLOSED_LOCALLY, this));
-              }
-              else {
-                logger.warn(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_AN_UNEXPECTED_IOEXCEPTION_OCCURRED_SO_THE_PROXY_WILL_BE_CLOSED, this), e);
+                logger.warn(LocalizedMessage.create(
+                    LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_UNEXPECTED_RESET_ON_SOCKET_CONNECTION,
+                    this));
+              } else if ("Connection reset by peer".equals(e.getMessage())) {
+                logger.warn(LocalizedMessage.create(
+                    LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_UNEXPECTED_RESET_BY_PEER_ON_SOCKET_CONNECTION,
+                    this));
+              } else if ("Socket is closed".equals(e.getMessage())
+                  || "Socket Closed".equals(e.getMessage())) {
+                logger.info(LocalizedMessage.create(
+                    LocalizedStrings.CacheClientProxy_0_PROXY_CLOSING_DUE_TO_SOCKET_BEING_CLOSED_LOCALLY,
+                    this));
+              } else {
+                logger.warn(LocalizedMessage.create(
+                    LocalizedStrings.CacheClientProxy_0_AN_UNEXPECTED_IOEXCEPTION_OCCURRED_SO_THE_PROXY_WILL_BE_CLOSED,
+                    this), e);
               }
               // Let the CacheClientNotifier discover the proxy is not alive.
               // See isAlive().
               // getProxy().close(false);
 
-              pauseOrUnregisterProxy();
+              pauseOrUnregisterProxy(e);
             } // _isStopped
           } // synchronized
           exceptionOccured = true;
@@ -2705,7 +2599,9 @@ public class CacheClientProxy implements ClientSession {
           // continue. The proxy is null if stopDispatching has been called.
           if (getProxy().isPaused()) {
             if (logger.isDebugEnabled()) {
-              logger.debug("{}: interrupted because it is being paused. It will continue and wait for resumption.", this);
+              logger.debug(
+                  "{}: interrupted because it is being paused. It will continue and wait for resumption.",
+                  this);
             }
             Thread.interrupted();
             continue;
@@ -2716,80 +2612,83 @@ public class CacheClientProxy implements ClientSession {
             logger.debug("{}: interrupted", this);
           }
           break;
-        }
-        catch (CancelException e) {
+        } catch (CancelException e) {
           if (logger.isDebugEnabled()) {
             logger.debug("{}: shutting down due to cancellation", this);
           }
           exceptionOccured = true; // message queue is defunct, don't try to read it.
           break;
-        }
-        catch (RegionDestroyedException e) {
+        } catch (RegionDestroyedException e) {
           if (logger.isDebugEnabled()) {
             logger.debug("{}: shutting down due to loss of message queue", this);
           }
           exceptionOccured = true; // message queue is defunct, don't try to read it.
           break;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           // An exception occured while processing a message. Since it
           // is not an IOException, the client may still be alive, so
           // continue processing.
           if (!isStopped()) {
-            logger.fatal(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0__AN_UNEXPECTED_EXCEPTION_OCCURRED, this), e);
+            logger.fatal(
+                LocalizedMessage.create(
+                    LocalizedStrings.CacheClientProxy_0__AN_UNEXPECTED_EXCEPTION_OCCURRED, this),
+                e);
           }
         }
       }
 
       // Processing gets here if isStopped=true. What is this code below doing?
       List list = null;
-      if(!exceptionOccured) {
-      try {
-        // Clear the interrupt status if any,
-        Thread.interrupted();
-        int size = this._messageQueue.size();
-        list = this._messageQueue.peek(size);
-        if (logger.isDebugEnabled()) {
-          logger.debug("{}: After flagging the dispatcher to stop , the residual List of messages to be dispatched={} size={}", this, list, list.size());
-        }
-        if (list.size() > 0) {
-          long start = getStatistics().startTime();
-          Iterator itr = list.iterator();
-          while (itr.hasNext()) {
-            dispatchMessage((ClientMessage)itr.next());
-            getStatistics().endMessage(start);
-            // @todo asif: shouldn't we call itr.remove() since the current msg
-            //             has been sent? That way list will be more accurate
-            //             if we have an exception.
+      if (!exceptionOccured) {
+        try {
+          // Clear the interrupt status if any,
+          Thread.interrupted();
+          int size = this._messageQueue.size();
+          list = this._messageQueue.peek(size);
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+                "{}: After flagging the dispatcher to stop , the residual List of messages to be dispatched={} size={}",
+                this, list, list.size());
           }
-          this._messageQueue.remove();
-        }
-      }
-      catch (CancelException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("CacheClientNotifier stopped due to cancellation");
-        }
-      }
-      catch (Exception ignore) {
-        //if (logger.isInfoEnabled()) {
+          if (list.size() > 0) {
+            long start = getStatistics().startTime();
+            Iterator itr = list.iterator();
+            while (itr.hasNext()) {
+              dispatchMessage((ClientMessage) itr.next());
+              getStatistics().endMessage(start);
+              // @todo asif: shouldn't we call itr.remove() since the current msg
+              // has been sent? That way list will be more accurate
+              // if we have an exception.
+            }
+            this._messageQueue.remove();
+          }
+        } catch (CancelException e) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("CacheClientNotifier stopped due to cancellation");
+          }
+        } catch (Exception ignore) {
+          // if (logger.isInfoEnabled()) {
           StringId extraMsg = null;
-          
-          if ("Broken pipe".equals(ignore.getMessage())) {            
+
+          if ("Broken pipe".equals(ignore.getMessage())) {
             extraMsg = LocalizedStrings.CacheClientProxy_PROBLEM_CAUSED_BY_BROKEN_PIPE_ON_SOCKET;
+          } else if (ignore instanceof RegionDestroyedException) {
+            extraMsg =
+                LocalizedStrings.CacheClientProxy_PROBLEM_CAUSED_BY_MESSAGE_QUEUE_BEING_CLOSED;
           }
-          else if (ignore instanceof RegionDestroyedException) {
-            extraMsg = LocalizedStrings.CacheClientProxy_PROBLEM_CAUSED_BY_MESSAGE_QUEUE_BEING_CLOSED;
-          }
-          final Object[] msgArgs = new Object[] {
-              ((!isStopped()) ? this.toString() + ": " : ""),
-              ((list == null) ? 0 : list.size())};        
+          final Object[] msgArgs = new Object[] {((!isStopped()) ? this.toString() + ": " : ""),
+              ((list == null) ? 0 : list.size())};
           if (extraMsg != null) {
-            //Dont print exception details, but add on extraMsg
-            logger.info(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_POSSIBILITY_OF_NOT_BEING_ABLE_TO_SEND_SOME_OR_ALL_THE_MESSAGES_TO_CLIENTS_TOTAL_MESSAGES_CURRENTLY_PRESENT_IN_THE_LIST_1, msgArgs));
+            // Dont print exception details, but add on extraMsg
+            logger.info(LocalizedMessage.create(
+                LocalizedStrings.CacheClientProxy_0_POSSIBILITY_OF_NOT_BEING_ABLE_TO_SEND_SOME_OR_ALL_THE_MESSAGES_TO_CLIENTS_TOTAL_MESSAGES_CURRENTLY_PRESENT_IN_THE_LIST_1,
+                msgArgs));
             logger.info(extraMsg);
           } else {
-            //Print full stacktrace
-            logger.info(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_POSSIBILITY_OF_NOT_BEING_ABLE_TO_SEND_SOME_OR_ALL_THE_MESSAGES_TO_CLIENTS_TOTAL_MESSAGES_CURRENTLY_PRESENT_IN_THE_LIST_1, msgArgs), ignore);
+            // Print full stacktrace
+            logger.info(LocalizedMessage.create(
+                LocalizedStrings.CacheClientProxy_0_POSSIBILITY_OF_NOT_BEING_ABLE_TO_SEND_SOME_OR_ALL_THE_MESSAGES_TO_CLIENTS_TOTAL_MESSAGES_CURRENTLY_PRESENT_IN_THE_LIST_1,
+                msgArgs), ignore);
           }
         }
 
@@ -2797,7 +2696,7 @@ public class CacheClientProxy implements ClientSession {
           logger.trace("Messages remaining in the list are: {}", list);
         }
 
-      //}
+        // }
       }
       if (logger.isTraceEnabled()) {
         logger.trace("{}: Dispatcher thread is ending", this);
@@ -2805,7 +2704,7 @@ public class CacheClientProxy implements ClientSession {
 
     }
 
-    private void pauseOrUnregisterProxy() {
+    private void pauseOrUnregisterProxy(Throwable t) {
       if (getProxy().isDurable()) {
         try {
           getProxy().pauseDispatching();
@@ -2817,8 +2716,7 @@ public class CacheClientProxy implements ClientSession {
             logger.debug("{}: {}", this, ex);
           }
         }
-      }
-      else {
+      } else {
         this._isStopped = true;
       }
 
@@ -2833,25 +2731,22 @@ public class CacheClientProxy implements ClientSession {
       // been caught and here, so the _proxy will be null.
       if (chm != null) {
         ClientProxyMembershipID proxyID = getProxy().proxyID;
-        chm.removeAllConnectionsAndUnregisterClient(proxyID);
+        chm.removeAllConnectionsAndUnregisterClient(proxyID, t);
         if (!getProxy().isDurable()) {
           getProxy().getCacheClientNotifier().unregisterClient(proxyID, false);
         }
       }
     }
-    
+
     /**
      * Sends a message to the client attached to this proxy
      *
-     * @param clientMessage
-     *          The <code>ClientMessage</code> to send to the client
+     * @param clientMessage The <code>ClientMessage</code> to send to the client
      *
      * @throws IOException
      */
-    protected boolean dispatchMessage(ClientMessage clientMessage)
-        throws IOException
-    {
-      boolean isDispatched = false ;
+    protected boolean dispatchMessage(ClientMessage clientMessage) throws IOException {
+      boolean isDispatched = false;
       if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
         logger.trace(LogMarker.BRIDGE_SERVER, "Dispatching {}", clientMessage);
       }
@@ -2860,12 +2755,12 @@ public class CacheClientProxy implements ClientSession {
       // byte[] latestValue =
       // this._eventConflator.getLatestValue(clientMessage);
 
-     if (clientMessage instanceof ClientUpdateMessage) {
-        byte[] latestValue = (byte[])((ClientUpdateMessage)clientMessage).getValue();
+      if (clientMessage instanceof ClientUpdateMessage) {
+        byte[] latestValue = (byte[]) ((ClientUpdateMessage) clientMessage).getValue();
         if (logger.isTraceEnabled()) {
           StringBuilder msg = new StringBuilder(100);
           msg.append(this).append(": Using latest value: ").append(Arrays.toString(latestValue));
-          if (((ClientUpdateMessage)clientMessage).valueIsObject()) {
+          if (((ClientUpdateMessage) clientMessage).valueIsObject()) {
             if (latestValue != null) {
               msg.append(" (").append(deserialize(latestValue)).append(")");
             }
@@ -2873,64 +2768,63 @@ public class CacheClientProxy implements ClientSession {
           }
           logger.trace(msg.toString());
         }
-        
-        message = ((ClientUpdateMessageImpl)clientMessage).getMessage(getProxy(),
-            latestValue);
-        
+
+        message = ((ClientUpdateMessageImpl) clientMessage).getMessage(getProxy(), latestValue);
+
         if (AFTER_MESSAGE_CREATION_FLAG) {
           ClientServerObserver bo = ClientServerObserverHolder.getInstance();
           bo.afterMessageCreation(message);
         }
-     }
-     else {
-       message = clientMessage.getMessage(getProxy(), true /* notify */);
-     }
-
-      // //////////////////////////////
-      // TEST CODE BEGIN (Throws exception to test closing proxy)
-      // if (true) throw new IOException("test");
-      // TEST CODE END
-      // //////////////////////////////
-     // Message message = ((ClientUpdateMessageImpl)clientMessage).getMessage(getProxy().proxyID, latestValue);
-     //Message message = clientMessage.getMessage(); removed during merge.
-     // BugFix for BUG#38206 and BUG#37791
-     if (!this._proxy.isPaused()) {
-       sendMessage(message);
-
-      // //////////////////////////////
-      // TEST CODE BEGIN (Throws exception to test closing proxy)
-      // if (true) throw new IOException("test");
-      // TEST CODE END
-      // //////////////////////////////
-      //Message message = ((ClientUpdateMessageImpl)clientMessage).getMessage(getProxy().proxyID, latestValue);
-      //Message message = clientMessage.getMessage(); removed during merge.
-      //message.setComms(getSocket(), getCommBuffer(), getStatistics());
-      //message.send();
-
-      // //////////////////////////////
-      // TEST CODE BEGIN (Introduces random wait in client)
-      // Sleep a random number of ms
-      // java.util.Random rand = new java.util.Random();
-      // try {Thread.sleep(rand.nextInt(5));} catch (InterruptedException e) {}
-      // TEST CODE END
-      // //////////////////////////////
-
-      if (logger.isTraceEnabled()) {
-        logger.trace("{}: Dispatched {}", this, clientMessage);
+      } else {
+        message = clientMessage.getMessage(getProxy(), true /* notify */);
       }
-      isDispatched = true;
-     }
-     else {
-       if (logger.isDebugEnabled()) {
-         logger.debug("Message Dispatcher of a Paused CCProxy is trying to dispatch message");
-       }
-     }
-     if (isDispatched) {
-       this._messageQueue.getStatistics().incEventsDispatched();
-     }
-     return isDispatched;
+
+      // //////////////////////////////
+      // TEST CODE BEGIN (Throws exception to test closing proxy)
+      // if (true) throw new IOException("test");
+      // TEST CODE END
+      // //////////////////////////////
+      // Message message = ((ClientUpdateMessageImpl)clientMessage).getMessage(getProxy().proxyID,
+      // latestValue);
+      // Message message = clientMessage.getMessage(); removed during merge.
+      // BugFix for BUG#38206 and BUG#37791
+      if (!this._proxy.isPaused()) {
+        sendMessage(message);
+
+        // //////////////////////////////
+        // TEST CODE BEGIN (Throws exception to test closing proxy)
+        // if (true) throw new IOException("test");
+        // TEST CODE END
+        // //////////////////////////////
+        // Message message = ((ClientUpdateMessageImpl)clientMessage).getMessage(getProxy().proxyID,
+        // latestValue);
+        // Message message = clientMessage.getMessage(); removed during merge.
+        // message.setComms(getSocket(), getCommBuffer(), getStatistics());
+        // message.send();
+
+        // //////////////////////////////
+        // TEST CODE BEGIN (Introduces random wait in client)
+        // Sleep a random number of ms
+        // java.util.Random rand = new java.util.Random();
+        // try {Thread.sleep(rand.nextInt(5));} catch (InterruptedException e) {}
+        // TEST CODE END
+        // //////////////////////////////
+
+        if (logger.isTraceEnabled()) {
+          logger.trace("{}: Dispatched {}", this, clientMessage);
+        }
+        isDispatched = true;
+      } else {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Message Dispatcher of a Paused CCProxy is trying to dispatch message");
+        }
+      }
+      if (isDispatched) {
+        this._messageQueue.getStatistics().incEventsDispatched();
+      }
+      return isDispatched;
     }
-    
+
     private void sendMessage(Message message) throws IOException {
       if (message == null) {
         return;
@@ -2951,32 +2845,31 @@ public class CacheClientProxy implements ClientSession {
     /**
      * Add the input client message to the message queue
      *
-     * @param clientMessage
-     *          The <code>Conflatable</code> to add to the queue
+     * @param clientMessage The <code>Conflatable</code> to add to the queue
      */
-    protected void enqueueMessage(Conflatable clientMessage)
-    {
+    protected void enqueueMessage(Conflatable clientMessage) {
       try {
-          this._messageQueue.put(clientMessage);
-          if(this._proxy.isPaused() && this._proxy.isDurable()){
-            this._proxy._cacheClientNotifier._statistics.incEventEnqueuedWhileClientAwayCount();
-            if (logger.isDebugEnabled()) {
-              logger.debug("{}: Queued message while Durable Client is away {}", this, clientMessage);
-            }
-          } else {
-// [bruce] we don't really know that it was added, so don't log this
-//            if (logger.isDebugEnabled() || BridgeServerImpl.VERBOSE) {
-//              logger.debug(LocalizedStrings.DEBUG, this + " added message to queue: " + clientMessage);
-//          }
-      }
-      }
-      catch (CancelException e) {
+        this._messageQueue.put(clientMessage);
+        if (this._proxy.isPaused() && this._proxy.isDurable()) {
+          this._proxy._cacheClientNotifier._statistics.incEventEnqueuedWhileClientAwayCount();
+          if (logger.isDebugEnabled()) {
+            logger.debug("{}: Queued message while Durable Client is away {}", this, clientMessage);
+          }
+        } else {
+          // [bruce] we don't really know that it was added, so don't log this
+          // if (logger.isDebugEnabled() || BridgeServerImpl.VERBOSE) {
+          // logger.debug(LocalizedStrings.DEBUG, this + " added message to queue: " +
+          // clientMessage);
+          // }
+        }
+      } catch (CancelException e) {
         throw e;
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         if (!isStopped()) {
           this._proxy._statistics.incMessagesFailedQueued();
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0_EXCEPTION_OCCURRED_WHILE_ATTEMPTING_TO_ADD_MESSAGE_TO_QUEUE, this), e);
+          logger.fatal(LocalizedMessage.create(
+              LocalizedStrings.CacheClientProxy_0_EXCEPTION_OCCURRED_WHILE_ATTEMPTING_TO_ADD_MESSAGE_TO_QUEUE,
+              this), e);
         }
       }
     }
@@ -2985,19 +2878,21 @@ public class CacheClientProxy implements ClientSession {
     protected void enqueueMarker(ClientMessage message) {
       try {
         if (logger.isDebugEnabled()) {
-          logger.debug("{}: Queueing marker message. <{}>. The queue contains {} entries.", this, message, getQueueSize());
+          logger.debug("{}: Queueing marker message. <{}>. The queue contains {} entries.", this,
+              message, getQueueSize());
         }
         this._messageQueue.put(message);
         if (logger.isDebugEnabled()) {
-          logger.debug("{}: Queued marker message. The queue contains {} entries.", this, getQueueSize());
+          logger.debug("{}: Queued marker message. The queue contains {} entries.", this,
+              getQueueSize());
         }
-      }
-      catch (CancelException e) {
+      } catch (CancelException e) {
         throw e;
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         if (!isStopped()) {
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0__EXCEPTION_OCCURRED_WHILE_ATTEMPTING_TO_ADD_MESSAGE_TO_QUEUE, this), e);
+          logger.fatal(LocalizedMessage.create(
+              LocalizedStrings.CacheClientProxy_0__EXCEPTION_OCCURRED_WHILE_ATTEMPTING_TO_ADD_MESSAGE_TO_QUEUE,
+              this), e);
         }
       }
     }
@@ -3022,20 +2917,25 @@ public class CacheClientProxy implements ClientSession {
         synchronized (this._stopDispatchingLock) {
           // Pause or unregister proxy
           if (!isStopped() && !getProxy().isPaused()) {
-            logger.fatal(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0__AN_UNEXPECTED_EXCEPTION_OCCURRED, this), e);
-            pauseOrUnregisterProxy();
+            logger.fatal(
+                LocalizedMessage.create(
+                    LocalizedStrings.CacheClientProxy_0__AN_UNEXPECTED_EXCEPTION_OCCURRED, this),
+                e);
+            pauseOrUnregisterProxy(e);
           }
         }
       } catch (Exception e) {
         if (!isStopped()) {
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0__AN_UNEXPECTED_EXCEPTION_OCCURRED, this), e);
+          logger.fatal(LocalizedMessage.create(
+              LocalizedStrings.CacheClientProxy_0__AN_UNEXPECTED_EXCEPTION_OCCURRED, this), e);
         }
       }
     }
 
     protected void waitForResumption() throws InterruptedException {
       synchronized (this._pausedLock) {
-        logger.info(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0__PAUSING_PROCESSING, this));
+        logger.info(
+            LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0__PAUSING_PROCESSING, this));
         if (!getProxy().isPaused()) {
           return;
         }
@@ -3048,36 +2948,33 @@ public class CacheClientProxy implements ClientSession {
     }
 
     protected void resumeDispatching() {
-        logger.info(LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0__RESUMING_PROCESSING, this));
+      logger.info(
+          LocalizedMessage.create(LocalizedStrings.CacheClientProxy_0__RESUMING_PROCESSING, this));
 
-        // Notify thread to resume
-        this._pausedLock.notifyAll();
+      // Notify thread to resume
+      this._pausedLock.notifyAll();
     }
 
-    protected Object deserialize(byte[] serializedBytes)
-    {
+    protected Object deserialize(byte[] serializedBytes) {
       Object deserializedObject = serializedBytes;
       // This is a debugging method so ignore all exceptions like
       // ClassNotFoundException
       try {
-        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(
-            serializedBytes));
+        DataInputStream dis = new DataInputStream(new ByteArrayInputStream(serializedBytes));
         deserializedObject = DataSerializer.readObject(dis);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
       }
       return deserializedObject;
     }
-    
-    protected void initializeTransients()
-    {
-        while (!this._messageQueue.isEmptyAckList()&& this._messageQueue.isPeekInitialized()) {
-            try {
-                this._messageQueue.remove();
-            }catch(InterruptedException e){
-                e.printStackTrace();
-            }
+
+    protected void initializeTransients() {
+      while (!this._messageQueue.isEmptyAckList() && this._messageQueue.isPeekInitialized()) {
+        try {
+          this._messageQueue.remove();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
         }
+      }
       this._messageQueue.initializeTransients();
     }
   }
@@ -3097,7 +2994,7 @@ public class CacheClientProxy implements ClientSession {
    * Increment the number of CQs the client installed
    *
    */
-  public  void incCqCount() {
+  public void incCqCount() {
     synchronized (this) {
       this._statistics.incCqCount();
     }
@@ -3154,8 +3051,7 @@ public class CacheClientProxy implements ClientSession {
   }
 
   /**
-   * Returns the number of seconds that have elapsed since the Client proxy
-   * created.
+   * Returns the number of seconds that have elapsed since the Client proxy created.
    * 
    * @since GemFire 7.0
    */
@@ -3166,5 +3062,6 @@ public class CacheClientProxy implements ClientSession {
   public interface TestHook {
     public void doTestHook(String spot);
   }
+
   public static TestHook testHook;
 }

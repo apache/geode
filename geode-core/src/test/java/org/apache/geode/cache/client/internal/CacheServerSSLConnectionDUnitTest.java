@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal;
 
@@ -40,15 +38,17 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 /**
- * Tests cacheserver ssl support added. See https://svn.gemstone.com/trac/gemfire/ticket/48995 for details
+ * Tests cacheserver ssl support added. See https://svn.gemstone.com/trac/gemfire/ticket/48995 for
+ * details
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String TRUSTED_STORE = "trusted.keystore";
@@ -57,7 +57,8 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   private static final String SERVER_KEY_STORE = "cacheserver.keystore";
   private static final String SERVER_TRUST_STORE = "cacheserver.truststore";
 
-  private static CacheServerSSLConnectionDUnitTest instance = new CacheServerSSLConnectionDUnitTest(); // TODO: memory leak
+  private static CacheServerSSLConnectionDUnitTest instance =
+      new CacheServerSSLConnectionDUnitTest(); // TODO: memory leak
 
   private Cache cache;
   private CacheServer cacheServer;
@@ -102,34 +103,40 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   }
 
   @SuppressWarnings("rawtypes")
-  public void setUpServerVM(final boolean cacheServerSslenabled, final boolean legacy) throws Exception {
+  public void setUpServerVM(final boolean cacheServerSslenabled, final boolean legacy)
+      throws Exception {
     Properties gemFireProps = new Properties();
 
     String cacheServerSslprotocols = "any";
     String cacheServerSslciphers = "any";
     boolean cacheServerSslRequireAuth = true;
     if (!legacy) {
-      gemFireProps.put(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.CLUSTER + "," + SecurableCommunicationChannel.SERVER);
+      gemFireProps.put(SSL_ENABLED_COMPONENTS,
+          SecurableCommunicationChannel.CLUSTER + "," + SecurableCommunicationChannel.SERVER);
       gemFireProps.put(SSL_PROTOCOLS, cacheServerSslprotocols);
       gemFireProps.put(SSL_CIPHERS, cacheServerSslciphers);
       gemFireProps.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
 
-      String keyStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
-      String trustStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
+      String keyStore =
+          TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
+      String trustStore =
+          TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
       gemFireProps.put(SSL_KEYSTORE_TYPE, "jks");
       gemFireProps.put(SSL_KEYSTORE, keyStore);
       gemFireProps.put(SSL_KEYSTORE_PASSWORD, "password");
       gemFireProps.put(SSL_TRUSTSTORE, trustStore);
       gemFireProps.put(SSL_TRUSTSTORE_PASSWORD, "password");
-    }
-    else{
+    } else {
       gemFireProps.put(CLUSTER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
       gemFireProps.put(CLUSTER_SSL_PROTOCOLS, cacheServerSslprotocols);
       gemFireProps.put(CLUSTER_SSL_CIPHERS, cacheServerSslciphers);
-      gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
+      gemFireProps.put(CLUSTER_SSL_REQUIRE_AUTHENTICATION,
+          String.valueOf(cacheServerSslRequireAuth));
 
-      String keyStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
-      String trustStore = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
+      String keyStore =
+          TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
+      String trustStore =
+          TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
       gemFireProps.put(CLUSTER_SSL_KEYSTORE_TYPE, "jks");
       gemFireProps.put(CLUSTER_SSL_KEYSTORE, keyStore);
       gemFireProps.put(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
@@ -147,22 +154,19 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     r.put("serverkey", "servervalue");
   }
 
-  public void setUpClientVM(String host,
-                            int port,
-                            boolean cacheServerSslenabled,
-                            boolean cacheServerSslRequireAuth,
-                            String keyStore,
-                            String trustStore,
-                            boolean subscription) {
+  public void setUpClientVM(String host, int port, boolean cacheServerSslenabled,
+      boolean cacheServerSslRequireAuth, String keyStore, String trustStore, boolean subscription) {
 
     Properties gemFireProps = new Properties();
 
     String cacheServerSslprotocols = "any";
     String cacheServerSslciphers = "any";
 
-    String keyStorePath = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, keyStore);
-    String trustStorePath = TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, trustStore);
-    //using new server-ssl-* properties
+    String keyStorePath =
+        TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, keyStore);
+    String trustStorePath =
+        TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, trustStore);
+    // using new server-ssl-* properties
     gemFireProps.put(SERVER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
     gemFireProps.put(SERVER_SSL_PROTOCOLS, cacheServerSslprotocols);
     gemFireProps.put(SERVER_SSL_CIPHERS, cacheServerSslciphers);
@@ -183,7 +187,8 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     clientCacheFactory.setPoolSubscriptionEnabled(subscription).addPoolServer(host, port);
     clientCache = clientCacheFactory.create();
 
-    ClientRegionFactory<String, String> regionFactory = clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+    ClientRegionFactory<String, String> regionFactory =
+        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
     Region<String, String> region = regionFactory.create("serverRegion");
     assertNotNull(region);
   }
@@ -202,7 +207,8 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
   }
 
 
-  public static void setUpServerVMTask(boolean cacheServerSslenabled, boolean legacy) throws Exception {
+  public static void setUpServerVMTask(boolean cacheServerSslenabled, boolean legacy)
+      throws Exception {
     instance.setUpServerVM(cacheServerSslenabled, legacy);
   }
 
@@ -210,22 +216,17 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     return instance.createServer();
   }
 
-  public static void setUpClientVMTask(String host,
-                                       int port,
-                                       boolean cacheServerSslenabled,
-                                       boolean cacheServerSslRequireAuth,
-                                       String keyStore,
-                                       String trustStore) throws Exception {
-    instance.setUpClientVM(host, port, cacheServerSslenabled, cacheServerSslRequireAuth, keyStore, trustStore, true);
+  public static void setUpClientVMTask(String host, int port, boolean cacheServerSslenabled,
+      boolean cacheServerSslRequireAuth, String keyStore, String trustStore) throws Exception {
+    instance.setUpClientVM(host, port, cacheServerSslenabled, cacheServerSslRequireAuth, keyStore,
+        trustStore, true);
   }
 
-  public static void setUpClientVMTaskNoSubscription(String host,
-                                                     int port,
-                                                     boolean cacheServerSslenabled,
-                                                     boolean cacheServerSslRequireAuth,
-                                                     String keyStore,
-                                                     String trustStore) throws Exception {
-    instance.setUpClientVM(host, port, cacheServerSslenabled, cacheServerSslRequireAuth, keyStore, trustStore, false);
+  public static void setUpClientVMTaskNoSubscription(String host, int port,
+      boolean cacheServerSslenabled, boolean cacheServerSslRequireAuth, String keyStore,
+      String trustStore) throws Exception {
+    instance.setUpClientVM(host, port, cacheServerSslenabled, cacheServerSslRequireAuth, keyStore,
+        trustStore, false);
   }
 
   public static void doClientRegionTestTask() {
@@ -270,7 +271,8 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
 
     String hostName = host.getHostName();
 
-    clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
+    clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+        cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
     clientVM.invoke(() -> doClientRegionTestTask());
     serverVM.invoke(() -> doServerRegionTestTask());
   }
@@ -290,7 +292,8 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
 
     String hostName = host.getHostName();
 
-    clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
+    clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+        cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
     clientVM.invoke(() -> doClientRegionTestTask());
     serverVM.invoke(() -> doServerRegionTestTask());
   }
@@ -312,23 +315,25 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     String hostName = (String) array[0];
     int port = (Integer) array[1];
 
-    IgnoredException expect = IgnoredException.addIgnoredException("javax.net.ssl.SSLException", serverVM);
+    IgnoredException expect =
+        IgnoredException.addIgnoredException("javax.net.ssl.SSLException", serverVM);
     IgnoredException expect2 = IgnoredException.addIgnoredException("IOException", serverVM);
     try {
-      clientVM.invoke(() -> setUpClientVMTaskNoSubscription(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE));
+      clientVM.invoke(() -> setUpClientVMTaskNoSubscription(hostName, port, cacheClientSslenabled,
+          cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE));
       clientVM.invoke(() -> doClientRegionTestTask());
       serverVM.invoke(() -> doServerRegionTestTask());
       fail("Test should fail as non-ssl client is trying to connect to ssl configured server");
 
     } catch (Exception rmiException) {
       Throwable e = rmiException.getCause();
-      //getLogWriter().info("ExceptionCause at clientVM " + e);
+      // getLogWriter().info("ExceptionCause at clientVM " + e);
       if (e instanceof org.apache.geode.cache.client.ServerOperationException) {
         Throwable t = e.getCause();
-        //getLogWriter().info("Cause is " + t);
+        // getLogWriter().info("Cause is " + t);
         assertTrue(t instanceof org.apache.geode.security.AuthenticationRequiredException);
       } else {
-        //getLogWriter().error("Unexpected exception ", e);
+        // getLogWriter().error("Unexpected exception ", e);
         fail("Unexpected Exception: " + e + " expected: " + AuthenticationRequiredException.class);
       }
     } finally {
@@ -355,19 +360,20 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     int port = (Integer) array[1];
 
     try {
-      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
+      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+          cacheClientSslRequireAuth, CLIENT_KEY_STORE, CLIENT_TRUST_STORE));
       clientVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doClientRegionTestTask());
       serverVM.invoke(() -> CacheServerSSLConnectionDUnitTest.doServerRegionTestTask());
 
     } catch (Exception rmiException) {
       Throwable e = rmiException.getCause();
-      //getLogWriter().info("ExceptionCause at clientVM " + e);
+      // getLogWriter().info("ExceptionCause at clientVM " + e);
       if (e instanceof org.apache.geode.cache.client.ServerOperationException) {
         Throwable t = e.getCause();
-        //getLogWriter().info("Cause is " + t);
+        // getLogWriter().info("Cause is " + t);
         assertTrue(t instanceof org.apache.geode.security.AuthenticationRequiredException);
       } else {
-        //getLogWriter().error("Unexpected exception ", e);
+        // getLogWriter().error("Unexpected exception ", e);
         fail("Unexpected Exception...expected " + AuthenticationRequiredException.class);
       }
     }
@@ -390,15 +396,18 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     String hostName = (String) array[0];
     int port = (Integer) array[1];
 
-    IgnoredException expect = IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException", serverVM);
+    IgnoredException expect =
+        IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException", serverVM);
     try {
-      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled, cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE));
+      clientVM.invoke(() -> setUpClientVMTask(hostName, port, cacheClientSslenabled,
+          cacheClientSslRequireAuth, TRUSTED_STORE, TRUSTED_STORE));
       clientVM.invoke(() -> doClientRegionTestTask());
       serverVM.invoke(() -> doServerRegionTestTask());
-      fail("Test should fail as ssl client with ssl enabled is trying to connect to server with ssl disabled");
+      fail(
+          "Test should fail as ssl client with ssl enabled is trying to connect to server with ssl disabled");
 
     } catch (Exception rmiException) {
-      //ignore
+      // ignore
     } finally {
       expect.remove();
     }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.operations.internal;
 
@@ -23,11 +21,10 @@ import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
- * This subclass's job is to keep customers from getting a reference to a value
- * that is off-heap. Any access to an off-heap value should appear to the customer
- * as a serialized value.
- * 
+ * This subclass's job is to keep customers from getting a reference to a value that is off-heap.
+ * Any access to an off-heap value should appear to the customer as a serialized value.
  *
+ * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
 public class GetOperationContextImpl extends GetOperationContext implements Releasable {
 
@@ -43,12 +40,13 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
   public @Unretained Object getRawValue() {
     return super.getValue();
   }
-  
+
   @Override
   public Object getObject() {
     Object result = super.getObject();
     if (result instanceof StoredObject) {
-      // For off-heap object act as if they are serialized forcing them to call getSerializedValue or getValue
+      // For off-heap object act as if they are serialized forcing them to call getSerializedValue
+      // or getValue
       result = null;
     }
     return result;
@@ -69,10 +67,11 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
   private void checkForReleasedOffHeapValue(StoredObject so) {
     // Note that we only care about stored objects with a ref count
     if (this.released && so.hasRefCount()) {
-      throw new IllegalStateException("Attempt to access off-heap value after the OperationContext callback returned.");
+      throw new IllegalStateException(
+          "Attempt to access off-heap value after the OperationContext callback returned.");
     }
   }
-  
+
   @Override
   public byte[] getSerializedValue() {
     byte[] result = super.getSerializedValue();
@@ -104,7 +103,8 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
     if (result instanceof StoredObject) {
       StoredObject so = (StoredObject) result;
       checkForReleasedOffHeapValue(so);
-      // since they called getValue they don't care if it is serialized or deserialized so return it as serialized
+      // since they called getValue they don't care if it is serialized or deserialized so return it
+      // as serialized
       result = so.getValueAsHeapByteArray();
     }
     return result;

@@ -32,8 +32,32 @@ The Geode package, `org.apache.geode`, includes the following interfaces for def
 
 The statistics interfaces are instantiated using statistics factory methods that are included in the package. For coding examples, see the online Java API documentation for `StatisticsFactory` and `StatisticsTypeFactory`.
 
-As an example, an application server might collect statistics on each client session in order to gauge whether client requests are being processed in a satisfactory manner. Long request queues or long server response times could prompt some capacity-management action such as starting additional application servers. To set this up, each session-state data point is identified and defined in a `StatisticDescriptor` instance. One instance might be a `RequestsInQueue` gauge, a non-negative integer that increments and decrements. Another could be a `RequestCount` counter, an integer that always increments. A list of these descriptors is used to instantiate a `SessionStateStats` `StatisticsType`. When a client connects, the application server uses the `StatisticsType` object to create a session-specific `Statistics` object. The server then uses the `Statistics` methods to modify and retrieve the client’s statistics. This figure illustrates the relationships between the statistics interfaces and shows the implementation of this use case.
+As an example, an application server might collect statistics on each client session in order to
+gauge whether client requests are being processed in a satisfactory manner. Long request queues or
+long server response times could prompt some capacity-management action such as starting additional
+application servers. To set this up, each session-state data point is identified and defined in a
+`StatisticDescriptor` instance. One instance might be a `RequestsInQueue` gauge, a non-negative
+integer that increments and decrements. Another could be a `RequestCount` counter, an integer that
+always increments. A list of these descriptors is used to instantiate a `SessionStateStats`
+`StatisticsType`. When a client connects, the application server uses the `StatisticsType` object to
+create a session-specific `Statistics` object. The server then uses the `Statistics` methods to
+modify and retrieve the client’s statistics. The figures below illustrate the relationships between the
+statistics interfaces and show the implementation of this use case.
 
-<img src="../../images/statistics-1.gif" id="application_defined_statistics__image_1fb717d9-4fe3-43c2-aeaa-bdceda5639d8" class="image" />
+<img src="../../images/Statistics-interfaces.png" class="image" />
+
+*The Statistics Interfaces*
+
+Each `StatisticDescriptor` contains one piece of statistical information. `StatisticalDesriptor` objects
+are collected into a `StatisticsType`. The `StatisticsType` is instantiated to create a `Statistics`
+object.
+
+<img src="../../images/Statistics-implementation.png" class="image" />
+
+*Statistics Implementation*
+
+The `StatisticDescriptor` objects shown here hold three pieces of statistical information about client
+session state. These are collected into a `SessionStateStats StatisticsType`. With this type, the
+server creates a `Statistics` object for each client that connects.
 
 

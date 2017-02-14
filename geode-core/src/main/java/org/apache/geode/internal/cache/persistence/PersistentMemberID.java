@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.persistence;
 
@@ -31,19 +29,20 @@ import org.apache.geode.internal.cache.versions.VersionSource;
  */
 public class PersistentMemberID implements DataSerializable {
   private static final long serialVersionUID = 7037022320499508045L;
-  
+
   public InetAddress host;
   public String directory;
   public long timeStamp;
   public short version;
   public DiskStoreID diskStoreId;
   public String name;
-  
+
   public PersistentMemberID() {
-    
+
   }
 
-  public PersistentMemberID(DiskStoreID diskStoreId, InetAddress host, String directory, String name, long timeStamp, short version) {
+  public PersistentMemberID(DiskStoreID diskStoreId, InetAddress host, String directory,
+      String name, long timeStamp, short version) {
     this.diskStoreId = diskStoreId;
     this.host = host;
     this.directory = directory;
@@ -52,31 +51,30 @@ public class PersistentMemberID implements DataSerializable {
     this.version = version;
   }
 
-  public PersistentMemberID(DiskStoreID diskStoreId, InetAddress host, String directory, long timeStamp, short version) {
+  public PersistentMemberID(DiskStoreID diskStoreId, InetAddress host, String directory,
+      long timeStamp, short version) {
     this.diskStoreId = diskStoreId;
     this.host = host;
     this.directory = directory;
     this.timeStamp = timeStamp;
     this.version = version;
   }
-  
+
   /**
-   * Indicate that this persistent member id is from the same disk store,
-   * and is older than, or equal to, the passed in disk store.
+   * Indicate that this persistent member id is from the same disk store, and is older than, or
+   * equal to, the passed in disk store.
    * 
-   * This is an older version if it has an older timestamp, or the
-   * same timestamp and an older version
+   * This is an older version if it has an older timestamp, or the same timestamp and an older
+   * version
    */
   public boolean isOlderOrEqualVersionOf(PersistentMemberID id) {
-    return (id != null)
-        && (diskStoreId.equals(id.diskStoreId)) 
-       && (timeStamp <= id.timeStamp 
-       && (timeStamp < id.timeStamp || version <= id.version));
+    return (id != null) && (diskStoreId.equals(id.diskStoreId))
+        && (timeStamp <= id.timeStamp && (timeStamp < id.timeStamp || version <= id.version));
   }
 
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    long diskStoreIdHigh =  in.readLong();
-    long diskStoreIdLow =  in.readLong();
+    long diskStoreIdHigh = in.readLong();
+    long diskStoreIdLow = in.readLong();
     this.diskStoreId = new DiskStoreID(diskStoreIdHigh, diskStoreIdLow);
     this.host = DataSerializer.readInetAddress(in);
     this.directory = DataSerializer.readString(in);
@@ -86,8 +84,8 @@ public class PersistentMemberID implements DataSerializable {
   }
 
   public void fromData662(DataInput in) throws IOException, ClassNotFoundException {
-    long diskStoreIdHigh =  in.readLong();
-    long diskStoreIdLow =  in.readLong();
+    long diskStoreIdHigh = in.readLong();
+    long diskStoreIdLow = in.readLong();
     this.diskStoreId = new DiskStoreID(diskStoreIdHigh, diskStoreIdLow);
     this.host = DataSerializer.readInetAddress(in);
     this.directory = DataSerializer.readString(in);
@@ -157,9 +155,10 @@ public class PersistentMemberID implements DataSerializable {
 
   @Override
   public String toString() {
-    return host + ":" + directory + " created at timestamp " + timeStamp + " version " + version +" diskStoreId " + diskStoreId + " name " + name;
+    return host + ":" + directory + " created at timestamp " + timeStamp + " version " + version
+        + " diskStoreId " + diskStoreId + " name " + name;
   }
-  
+
   public String abbrev() {
     return diskStoreId.abbrev();
   }

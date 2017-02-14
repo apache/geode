@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
@@ -47,8 +45,9 @@ public class Services {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final ThreadGroup threadGroup = LoggingThreadGroup.createThreadGroup("GemFire Membership", logger); 
-  
+  private static final ThreadGroup threadGroup =
+      LoggingThreadGroup.createThreadGroup("GemFire Membership", logger);
+
   private static InternalLogWriter staticLogWriter;
   private static InternalLogWriter staticSecurityLogWriter;
 
@@ -67,10 +66,10 @@ public class Services {
 
   private InternalLogWriter logWriter;
   private InternalLogWriter securityLogWriter;
-  
+
   private final Timer timer = new Timer("Geode Membership Timer", true);
-  
-  
+
+
 
   /**
    * A common logger for membership classes
@@ -85,18 +84,18 @@ public class Services {
   public static ThreadGroup getThreadGroup() {
     return threadGroup;
   }
-  
+
   /**
    * a timer used for membership tasks
    */
   public Timer getTimer() {
     return this.timer;
   }
-  
+
   public boolean isStopped() {
     return this.stopped;
   }
-  
+
 
   /**
    * for testing only - create a non-functional Services object with a Stopper
@@ -112,8 +111,7 @@ public class Services {
     this.auth = null;
   }
 
-  public Services(
-      DistributedMembershipListener listener, DistributionConfig config,
+  public Services(DistributedMembershipListener listener, DistributionConfig config,
       RemoteTransportConfig transport, DMStats stats) {
     this.cancelCriterion = new Stopper();
     this.stats = stats;
@@ -124,7 +122,7 @@ public class Services {
     this.messenger = new JGroupsMessenger();
     this.auth = new GMSAuthenticator();
   }
-  
+
   protected void init() {
     // InternalDistributedSystem establishes this log writer at boot time
     // TODO fix this so that IDS doesn't know about Services
@@ -137,14 +135,14 @@ public class Services {
     this.manager.init(this);
     this.joinLeave.init(this);
     this.healthMon.init(this);
-    InternalLocator l = (InternalLocator)org.apache.geode.distributed.Locator.getLocator();
+    InternalLocator l = (InternalLocator) org.apache.geode.distributed.Locator.getLocator();
     if (l != null && l.getLocatorHandler() != null) {
-      if (l.getLocatorHandler().setMembershipManager((MembershipManager)this.manager)) {
-        this.locator = (Locator)l.getLocatorHandler();
+      if (l.getLocatorHandler().setMembershipManager((MembershipManager) this.manager)) {
+        this.locator = (Locator) l.getLocatorHandler();
       }
     }
   }
-  
+
   protected void start() {
     boolean started = false;
     try {
@@ -186,7 +184,7 @@ public class Services {
       throw e;
     }
   }
-  
+
   public void emergencyClose() {
     if (stopping) {
       return;
@@ -217,7 +215,7 @@ public class Services {
       }
     }
   }
-  
+
   public void stop() {
     if (stopping) {
       return;
@@ -267,7 +265,7 @@ public class Services {
   public InternalLogWriter getSecurityLogWriter() {
     return this.securityLogWriter;
   }
-  
+
   public Authenticator getAuthenticator() {
     return auth;
   }
@@ -285,8 +283,9 @@ public class Services {
     messenger.installView(v);
     manager.installView(v);
   }
-  
-  public void memberSuspected(InternalDistributedMember initiator, InternalDistributedMember suspect, String reason) {
+
+  public void memberSuspected(InternalDistributedMember initiator,
+      InternalDistributedMember suspect, String reason) {
     try {
       joinLeave.memberSuspected(initiator, suspect, reason);
     } finally {
@@ -329,42 +328,42 @@ public class Services {
   public ServiceConfig getConfig() {
     return this.config;
   }
-  
+
   public Messenger getMessenger() {
     return this.messenger;
   }
-  
+
   public DMStats getStatistics() {
     return this.stats;
   }
-  
+
   public Stopper getCancelCriterion() {
     return this.cancelCriterion;
   }
-  
+
   public void setShutdownCause(Exception e) {
     this.shutdownCause = e;
   }
-  
+
   public Exception getShutdownCause() {
     return shutdownCause;
   }
-  
+
   public boolean isShutdownDueToForcedDisconnect() {
     return shutdownCause instanceof ForcedDisconnectException;
   }
-  
+
   public boolean isAutoReconnectEnabled() {
     return !getConfig().getDistributionConfig().getDisableAutoReconnect();
   }
 
   public byte[] getPublicKey(InternalDistributedMember mbr) {
-    if(locator != null) {
-      return ((GMSLocator)locator).getPublicKey(mbr);
-    } 
+    if (locator != null) {
+      return ((GMSLocator) locator).getPublicKey(mbr);
+    }
     return null;
   }
-  
+
   public class Stopper extends CancelCriterion {
     volatile String reasonForStopping = null;
 
@@ -374,7 +373,7 @@ public class Services {
 
     @Override
     public String cancelInProgress() {
-      if(Services.this.shutdownCause != null)
+      if (Services.this.shutdownCause != null)
         return Services.this.shutdownCause.toString();
       return reasonForStopping;
     }
@@ -384,8 +383,7 @@ public class Services {
       String reason = cancelInProgress();
       if (reason == null) {
         return null;
-      }
-      else {
+      } else {
         if (e == null) {
           return new DistributedSystemDisconnectedException(reason);
         } else {

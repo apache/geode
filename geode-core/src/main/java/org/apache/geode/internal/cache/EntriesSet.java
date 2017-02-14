@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -49,10 +47,11 @@ public class EntriesSet extends AbstractSet {
   final boolean rememberReads;
 
   private boolean keepSerialized = false;
-  
+
   protected boolean ignoreCopyOnReadForQuery = false;
-  
-  EntriesSet(LocalRegion region, boolean recursive, IteratorType viewType, boolean allowTombstones) {
+
+  EntriesSet(LocalRegion region, boolean recursive, IteratorType viewType,
+      boolean allowTombstones) {
     this.topRegion = region;
     this.recursive = recursive;
     this.iterType = viewType;
@@ -77,7 +76,7 @@ public class EntriesSet extends AbstractSet {
       }
     }
   }
-  
+
   @Override
   public Iterator<Object> iterator() {
     checkTX();
@@ -96,7 +95,7 @@ public class EntriesSet extends AbstractSet {
 
     // keep track of look-ahead on hasNext() call, used to filter out null
     // values
-    Object nextElem; 
+    Object nextElem;
 
     Iterator<?> currItr;
 
@@ -111,8 +110,7 @@ public class EntriesSet extends AbstractSet {
         // FIFO queue of regions
         this.regions = new ArrayList<LocalRegion>(topRegion.subregions(true));
         this.numSubRegions = this.regions.size();
-      }
-      else {
+      } else {
         this.regions = null;
         this.numSubRegions = 0;
       }
@@ -121,8 +119,8 @@ public class EntriesSet extends AbstractSet {
     }
 
     public void remove() {
-      throw new UnsupportedOperationException(LocalizedStrings
-          .LocalRegion_THIS_ITERATOR_DOES_NOT_SUPPORT_MODIFICATION
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_THIS_ITERATOR_DOES_NOT_SUPPORT_MODIFICATION
               .toLocalizedString());
     }
 
@@ -151,35 +149,34 @@ public class EntriesSet extends AbstractSet {
           this.keyInfo.setKey(currKey);
           if (this.additionalKeysFromView != null) {
             if (currKey instanceof AbstractRegionEntry) {
-              this.additionalKeysFromView.remove(((AbstractRegionEntry)currKey)
-                  .getKey());
-            }
-            else {
+              this.additionalKeysFromView.remove(((AbstractRegionEntry) currKey).getKey());
+            } else {
               this.additionalKeysFromView.remove(currKey);
             }
           }
           if (iterType == IteratorType.KEYS) {
-            result = view.getKeyForIterator(this.keyInfo, this.currRgn,
-                rememberReads, allowTombstones);
+            result =
+                view.getKeyForIterator(this.keyInfo, this.currRgn, rememberReads, allowTombstones);
             if (result != null) {
               return result;
             }
-          }
-          else if (iterType == IteratorType.ENTRIES) {
-            result = view.getEntryForIterator(this.keyInfo, this.currRgn,
-                rememberReads, allowTombstones);
+          } else if (iterType == IteratorType.ENTRIES) {
+            result = view.getEntryForIterator(this.keyInfo, this.currRgn, rememberReads,
+                allowTombstones);
             if (result != null) {
               return result;
             }
-          }
-          else {
-            Region.Entry re = (Region.Entry) view.getEntryForIterator(this.keyInfo, currRgn, rememberReads, allowTombstones);
+          } else {
+            Region.Entry re = (Region.Entry) view.getEntryForIterator(this.keyInfo, currRgn,
+                rememberReads, allowTombstones);
             if (re != null) {
               try {
-                if(keepSerialized){
-                  result = ((NonTXEntry)re).getRawValue(); // OFFHEAP: need to either copy into a cd or figure out when result will be released.
-                } else if (ignoreCopyOnReadForQuery){
-                  result = ((NonTXEntry)re).getValue(true);
+                if (keepSerialized) {
+                  result = ((NonTXEntry) re).getRawValue(); // OFFHEAP: need to either copy into a
+                                                            // cd or figure out when result will be
+                                                            // released.
+                } else if (ignoreCopyOnReadForQuery) {
+                  result = ((NonTXEntry) re).getValue(true);
                 } else {
                   result = re.getValue();
                 }
@@ -196,17 +193,14 @@ public class EntriesSet extends AbstractSet {
             }
             // key disappeared or is invalid, go on to next
           }
-        }
-        else if (this.additionalKeysFromView != null) {
+        } else if (this.additionalKeysFromView != null) {
           this.currItr = this.additionalKeysFromView.iterator();
           this.additionalKeysFromView = null;
-        }
-        else if (this.regionsIndex < this.numSubRegions) {
+        } else if (this.regionsIndex < this.numSubRegions) {
           // advance to next region
           createIterator(this.regions.get(this.regionsIndex));
           ++this.regionsIndex;
-        }
-        else {
+        } else {
           return null;
         }
       }
@@ -228,16 +222,13 @@ public class EntriesSet extends AbstractSet {
       // if this is a values-view, then we have to filter out nulls to
       // determine the correct size
       int s = 0;
-      for (Iterator<Object> itr = new EntriesIterator(); itr.hasNext(); itr
-          .next()) {
+      for (Iterator<Object> itr = new EntriesIterator(); itr.hasNext(); itr.next()) {
         s++;
       }
       return s;
-    }
-    else if (this.recursive) {
+    } else if (this.recursive) {
       return this.topRegion.allEntriesSize();
-    }
-    else {
+    } else {
       return view.entryCount(this.topRegion);
     }
   }
@@ -257,26 +248,25 @@ public class EntriesSet extends AbstractSet {
     }
     if (array == null) {
       return temp.toArray();
-    }
-    else {
+    } else {
       return temp.toArray(array);
     }
   }
-  
-  
+
+
   public void setKeepSerialized(boolean keepSerialized) {
     this.keepSerialized = keepSerialized;
   }
 
-  
+
   public boolean isKeepSerialized() {
     return this.keepSerialized;
   }
-  
+
   public void setIgnoreCopyOnReadForQuery(boolean ignoreCopyOnReadForQuery) {
     this.ignoreCopyOnReadForQuery = ignoreCopyOnReadForQuery;
   }
-  
+
   public boolean isIgnoreCopyOnReadForQuery() {
     return this.ignoreCopyOnReadForQuery;
   }

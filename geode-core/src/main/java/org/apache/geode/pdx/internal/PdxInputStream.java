@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -38,9 +36,12 @@ import org.apache.geode.internal.tcp.ImmutableByteBufferInputStream;
 public class PdxInputStream extends ImmutableByteBufferInputStream {
 
   /**
-   * Create a pdx input stream by whose contents are the first length
-   * bytes from the given input stream.
-   * @param existing the input stream whose content will go into this stream. Note that this existing stream will be read by this class (a copy is not made) so it should not be changed externally.
+   * Create a pdx input stream by whose contents are the first length bytes from the given input
+   * stream.
+   * 
+   * @param existing the input stream whose content will go into this stream. Note that this
+   *        existing stream will be read by this class (a copy is not made) so it should not be
+   *        changed externally.
    * @param length the number of bytes to put in this stream
    */
   public PdxInputStream(ByteBufferInputStream existing, int length) {
@@ -49,7 +50,9 @@ public class PdxInputStream extends ImmutableByteBufferInputStream {
 
   /**
    * Create a pdx input stream whose contents are the given bytes
-   * @param bytes the content of this stream. Note that this byte array will be read by this class (a copy is not made) so it should not be changed externally.
+   * 
+   * @param bytes the content of this stream. Note that this byte array will be read by this class
+   *        (a copy is not made) so it should not be changed externally.
    */
   public PdxInputStream(byte[] bytes) {
     super(bytes);
@@ -57,7 +60,9 @@ public class PdxInputStream extends ImmutableByteBufferInputStream {
 
   /**
    * Create a pdx input stream whose contents are the given bytes
-   * @param bb the content of this stream. Note that bb will be read by this class (a copy is not made) so it should not be changed externally.
+   * 
+   * @param bb the content of this stream. Note that bb will be read by this class (a copy is not
+   *        made) so it should not be changed externally.
    */
   public PdxInputStream(ByteBuffer bb) {
     super(bb);
@@ -65,12 +70,14 @@ public class PdxInputStream extends ImmutableByteBufferInputStream {
 
   /**
    * Create a pdx input stream by copying another. A somewhat shallow copy is made.
-   * @param copy the input stream to copy. Note that this copy stream will be read by this class (a copy is not made) so it should not be changed externally.
+   * 
+   * @param copy the input stream to copy. Note that this copy stream will be read by this class (a
+   *        copy is not made) so it should not be changed externally.
    */
   public PdxInputStream(PdxInputStream copy) {
     super(copy);
   }
-  
+
   public PdxInputStream() {
     // for serialization
   }
@@ -80,68 +87,68 @@ public class PdxInputStream extends ImmutableByteBufferInputStream {
   }
 
   public String readString(int positionForField) {
-      position(positionForField);
-      return readString();
+    position(positionForField);
+    return readString();
   }
 
   public Object readObject(int positionForField) {
-      position(positionForField);
-      return readObject();
+    position(positionForField);
+    return readObject();
   }
 
   public char[] readCharArray(int positionForField) {
-      position(positionForField);
-      return readCharArray();
+    position(positionForField);
+    return readCharArray();
   }
 
   public boolean[] readBooleanArray(int positionForField) {
-      position(positionForField);
-      return readBooleanArray();
+    position(positionForField);
+    return readBooleanArray();
   }
 
   public byte[] readByteArray(int positionForField) {
-      position(positionForField);
-      return readByteArray();
+    position(positionForField);
+    return readByteArray();
   }
 
   public short[] readShortArray(int positionForField) {
-      position(positionForField);
-      return readShortArray();
+    position(positionForField);
+    return readShortArray();
   }
 
   public int[] readIntArray(int positionForField) {
-      position(positionForField);
-      return readIntArray();
+    position(positionForField);
+    return readIntArray();
   }
 
   public long[] readLongArray(int positionForField) {
-      position(positionForField);
-      return readLongArray();
+    position(positionForField);
+    return readLongArray();
   }
 
   public float[] readFloatArray(int positionForField) {
-      position(positionForField);
-      return readFloatArray();
+    position(positionForField);
+    return readFloatArray();
   }
 
   public double[] readDoubleArray(int positionForField) {
-      position(positionForField);
-      return readDoubleArray();
+    position(positionForField);
+    return readDoubleArray();
   }
 
   public String[] readStringArray(int positionForField) {
-      position(positionForField);
-      return readStringArray();
+    position(positionForField);
+    return readStringArray();
   }
 
   public Object[] readObjectArray(int positionForField) {
-      position(positionForField);
-      return readObjectArray();
+    position(positionForField);
+    return readObjectArray();
   }
 
   public byte[][] readArrayOfByteArrays(int positionForField) {
-      position(positionForField);
-      return readArrayOfByteArrays();
+    position(positionForField);
+    return readArrayOfByteArrays();
   }
 
   public Date readDate(int offset) {
@@ -337,8 +344,8 @@ public class PdxInputStream extends ImmutableByteBufferInputStream {
     } catch (IOException e) {
       throw new PdxSerializationException("Exception deserializing a PDX field", e);
     } catch (ClassNotFoundException ex) {
-      throw new InternalGemFireException(
-          "ClassNotFoundException should never be thrown but it was", ex);
+      throw new InternalGemFireException("ClassNotFoundException should never be thrown but it was",
+          ex);
     }
   }
 
@@ -418,13 +425,14 @@ public class PdxInputStream extends ImmutableByteBufferInputStream {
       throw new PdxSerializationException("Failed reading a PDX short field", e);
     }
   }
-  
+
   @Override
   public ByteSource slice(int startOffset, int endOffset) {
     try {
       return super.slice(startOffset, endOffset);
     } catch (IllegalArgumentException e) {
-      throw new PdxSerializationException("Internal error; failed to slice start=" + startOffset + " end="+ endOffset, e);
+      throw new PdxSerializationException(
+          "Internal error; failed to slice start=" + startOffset + " end=" + endOffset, e);
     }
   }
 

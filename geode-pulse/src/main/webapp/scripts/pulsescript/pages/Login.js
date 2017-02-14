@@ -18,31 +18,7 @@
  */
 
 $(document).ready(function() {
-  
-  // determine pulse back end product
-  $.ajax({
-    url : 'pulse/pulseProductSupport',
-    type : 'GET',
-    dataType : 'json',
-    async : true,
-    success : function(data) {
-      // Set product name in cookie
-      setCookie('productname', data.product, 1);
-
-      // modify UI text as per requirement
       customizeUI();
-      
-    },
-    error: function(jqXHR, textStatus, errorThrown){
-
-      $('#user_name').prop('disabled', true);
-      $('#user_password').prop('disabled', true);
-      $('input[type="submit"]').prop('disabled', true);
-      $("#errorText").html("Unable to determine backend product [Gemfire / SQLfire]<br>"+textStatus);
-      $("#errorMasterBlock").show();
-    }
-  });
-  
 });
 
 // this function is called when login page loads
@@ -50,7 +26,7 @@ function pageOnLoad(){
   // get Pulse Version Details
   getPulseVersion();
   
-  $.getJSON("pulse/authenticateUser", function(data) {
+  $.getJSON("authenticateUser", function(data) {
     
     // return isUserLoggedIn
     if(data.isUserLoggedIn){

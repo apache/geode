@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.jta;
 
@@ -45,7 +43,7 @@ import static org.junit.Assert.assertNotNull;
 @Category(IntegrationTest.class)
 public class BlockingTimeOutJUnitTest {
   private static final Logger logger = LogService.getLogger();
-  
+
   private static final int BLOCKING_TIMEOUT = 1;
 
   private static final int RANDOM = new Random().nextInt();
@@ -61,9 +59,9 @@ public class BlockingTimeOutJUnitTest {
       sb.append(nextLine);
       //
       // note:
-      //   BufferedReader strips the EOL character.
+      // BufferedReader strips the EOL character.
       //
-      //    sb.append(lineSep);
+      // sb.append(lineSep);
     }
     logger.debug("***********\n " + sb);
     return sb.toString();
@@ -73,41 +71,37 @@ public class BlockingTimeOutJUnitTest {
     String search = "<jndi-binding type=\"XAPooledDataSource\"";
     String last_search = "</jndi-binding>";
     String newDB = "newDB_" + RANDOM;
-    String jndi_str = "<jndi-binding type=\"XAPooledDataSource\" jndi-name=\"XAPooledDataSource\"		              jdbc-driver-class=\"org.apache.derby.jdbc.EmbeddedDriver\" init-pool-size=\"1\" max-pool-size=\"2\" idle-timeout-seconds=\"600\" blocking-timeout-seconds=\"" + BLOCKING_TIMEOUT + "\" login-timeout-seconds=\"25\" conn-pooled-datasource-class=\"org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource\" xa-datasource-class=\"org.apache.derby.jdbc.EmbeddedXADataSource\" user-name=\"mitul\" password=\"83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a\" connection-url=\"jdbc:derby:"+ newDB + ";create=true\" >";
+    String jndi_str =
+        "<jndi-binding type=\"XAPooledDataSource\" jndi-name=\"XAPooledDataSource\"		              jdbc-driver-class=\"org.apache.derby.jdbc.EmbeddedDriver\" init-pool-size=\"1\" max-pool-size=\"2\" idle-timeout-seconds=\"600\" blocking-timeout-seconds=\""
+            + BLOCKING_TIMEOUT
+            + "\" login-timeout-seconds=\"25\" conn-pooled-datasource-class=\"org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource\" xa-datasource-class=\"org.apache.derby.jdbc.EmbeddedXADataSource\" user-name=\"mitul\" password=\"83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a\" connection-url=\"jdbc:derby:"
+            + newDB + ";create=true\" >";
     String config_prop = "<config-property>"
         + "<config-property-name>description</config-property-name>"
         + "<config-property-type>java.lang.String</config-property-type>"
-        + "<config-property-value>hi</config-property-value>"
-        + "</config-property>"
-        + "<config-property>"
-        + "<config-property-name>user</config-property-name>"
+        + "<config-property-value>hi</config-property-value>" + "</config-property>"
+        + "<config-property>" + "<config-property-name>user</config-property-name>"
         + "<config-property-type>java.lang.String</config-property-type>"
-        + "<config-property-value>mitul</config-property-value>"
-        + "</config-property>"
-        + "<config-property>"
-        + "<config-property-name>password</config-property-name>"
+        + "<config-property-value>mitul</config-property-value>" + "</config-property>"
+        + "<config-property>" + "<config-property-name>password</config-property-name>"
         + "<config-property-type>java.lang.String</config-property-type>"
         + "<config-property-value>83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a</config-property-value>	"
         + "</config-property>" + "<config-property>"
         + "<config-property-name>databaseName</config-property-name>"
         + "<config-property-type>java.lang.String</config-property-type>"
-        + "<config-property-value>"+newDB+"</config-property-value>"
-        + "</config-property>\n";
+        + "<config-property-value>" + newDB + "</config-property-value>" + "</config-property>\n";
     String new_str = jndi_str + config_prop;
     /*
-     * String new_str = " <jndi-binding type=\"XAPooledDataSource\"
-     * jndi-name=\"XAPooledDataSource\"
+     * String new_str = " <jndi-binding type=\"XAPooledDataSource\" jndi-name=\"XAPooledDataSource\"
      * jdbc-driver-class=\"org.apache.derby.jdbc.EmbeddedDriver\"
      * init-pool-size=\"5\" max-pool-size=\"30\" idle-timeout-seconds=\"600\"
      * blocking-timeout-seconds=\"60\" login-timeout-seconds=\"25\"
      * conn-pooled-datasource-class=\"org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource\"
-     * xa-datasource-class=\"org.apache.derby.jdbc.EmbeddedXADataSource\"
-     * user-name=\"mitul\"
+     * xa-datasource-class=\"org.apache.derby.jdbc.EmbeddedXADataSource\" user-name=\"mitul\"
      * password=\"83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a\"
      * connection-url=\"jdbc:derby:"+newDB+";create=true\" > <property
      * key=\"description\" value=\"hi\"/> <property key=\"databaseName\"
-     * value=\""+newDB+"\"/> <property key=\"user\" value=\"mitul\"/> <property
-     * key=\"password\"
+     * value=\""+newDB+"\"/> <property key=\"user\" value=\"mitul\"/> <property key=\"password\"
      * value=\"83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a\"/>";
      */
     int n1 = str.indexOf(search);
@@ -158,7 +152,8 @@ public class BlockingTimeOutJUnitTest {
   private static void createTable(String tableName) throws Exception {
     Context ctx = cache.getJNDIContext();
     DataSource ds = (DataSource) ctx.lookup("java:/SimpleDataSource");
-    String sql = "create table " + tableName + " (id integer NOT NULL, name varchar(50), CONSTRAINT the_key PRIMARY KEY(id))";
+    String sql = "create table " + tableName
+        + " (id integer NOT NULL, name varchar(50), CONSTRAINT the_key PRIMARY KEY(id))";
     logger.debug(sql);
     Connection conn = ds.getConnection();
     Statement sm = conn.createStatement();
@@ -185,16 +180,13 @@ public class BlockingTimeOutJUnitTest {
       Statement sm = conn.createStatement();
       sm.execute(sql);
       conn.close();
-    }
-    catch (NamingException ne) {
+    } catch (NamingException ne) {
       logger.debug("destroy table naming exception: " + ne);
       throw ne;
-    }
-    catch (SQLException se) {
+    } catch (SQLException se) {
       logger.debug("destroy table sql exception: " + se);
       throw se;
-    }
-    finally {
+    } finally {
       closeCache();
     }
   }
@@ -204,8 +196,7 @@ public class BlockingTimeOutJUnitTest {
       if (!cache.isClosed()) {
         cache.close();
       }
-    }
-    finally {
+    } finally {
       InternalDistributedSystem ids = InternalDistributedSystem.getAnyInstance();
       if (ids != null) {
         ids.disconnect();
@@ -224,7 +215,7 @@ public class BlockingTimeOutJUnitTest {
   public void tearDown() throws Exception {
     destroyTable();
   }
-  
+
   private static void fail(String str, Throwable thr) {
     throw new AssertionError(str, thr);
   }
@@ -241,13 +232,11 @@ public class BlockingTimeOutJUnitTest {
     try {
       Context ctx = cache.getJNDIContext();
       ds = (DataSource) ctx.lookup("java:/XAPooledDataSource");
-    }
-    catch (NamingException e) {
+    } catch (NamingException e) {
       logger.debug("Naming Exception caught in lookup: " + e);
       fail("failed in naming lookup: ", e);
       return;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       logger.debug("Exception caught during naming lookup: " + e);
       fail("failed in naming lookup: ", e);
       return;
@@ -256,12 +245,10 @@ public class BlockingTimeOutJUnitTest {
       for (int count = 0; count < MAX_CONNECTIONS; count++) {
         ds.getConnection();
       }
-    }
-    catch (SQLException e) {
+    } catch (SQLException e) {
       logger.debug("Success SQLException caught in runTest1: " + e);
       fail("runTest1 SQL Exception caught: ", e);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       logger.debug("Exception caught in runTest1: " + e);
       fail("Exception caught in runTest1: ", e);
       e.printStackTrace();
@@ -276,12 +263,10 @@ public class BlockingTimeOutJUnitTest {
     try {
       Context ctx = cache.getJNDIContext();
       ds = (DataSource) ctx.lookup("java:/XAPooledDataSource");
-    }
-    catch (NamingException e) {
+    } catch (NamingException e) {
       logger.debug("Exception caught during naming lookup: " + e);
       fail("failed in naming lookup: ", e);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       logger.debug("Exception caught during naming lookup: " + e);
       fail("failed in because of unhandled excpetion: ", e);
     }
@@ -289,15 +274,13 @@ public class BlockingTimeOutJUnitTest {
       for (int count = 0; count < MAX_CONNECTIONS; count++) {
         Connection con = ds.getConnection();
         assertNotNull("Connection object is null", con);
-        
+
         logger.debug("runTest2 :acquired connection #" + count);
       }
-    }
-    catch (SQLException sqle) {
+    } catch (SQLException sqle) {
       logger.debug("SQLException caught in runTest2: " + sqle);
       fail("failed because of SQL exception : ", sqle);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       logger.debug("Exception caught in runTest2: " + e);
       fail("failed because of unhandled exception : ", e);
     }

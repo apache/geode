@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.security;
 
@@ -36,7 +34,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Unit tests for {@link GemFireSecurityException}.
  */
-@Category({ UnitTest.class, SecurityTest.class })
+@Category({UnitTest.class, SecurityTest.class})
 public class GemFireSecurityExceptionTest {
 
   private String message;
@@ -67,16 +65,17 @@ public class GemFireSecurityExceptionTest {
 
   private void assertPreConditions() {
     catchException(this).clone(this.nonSerializableNamingException);
-    assertThat((Throwable)caughtException()).isNotNull();
-    assertThat((Throwable)caughtException().getCause()).isInstanceOf(NotSerializableException.class);
+    assertThat((Throwable) caughtException()).isNotNull();
+    assertThat((Throwable) caughtException().getCause())
+        .isInstanceOf(NotSerializableException.class);
 
     catchException(this).clone(this.serializableNamingException);
-    assertThat((Throwable)caughtException()).isNull();
+    assertThat((Throwable) caughtException()).isNull();
 
     assertThat(this.nonSerializableResolvedObj).isNotInstanceOf(Serializable.class);
 
     catchException(this).clone(this.serializableResolvedObj);
-    assertThat((Throwable)caughtException()).isNull();
+    assertThat((Throwable) caughtException()).isNull();
   }
 
   @Test
@@ -106,7 +105,8 @@ public class GemFireSecurityExceptionTest {
 
   @Test
   public void serializesWithNonSerializableNamingException() throws Exception {
-    GemFireSecurityException instance = new GemFireSecurityException(this.message, this.nonSerializableNamingException);
+    GemFireSecurityException instance =
+        new GemFireSecurityException(this.message, this.nonSerializableNamingException);
 
     GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
 
@@ -118,7 +118,8 @@ public class GemFireSecurityExceptionTest {
 
   @Test
   public void serializesWithSerializableNamingException() throws Exception {
-    GemFireSecurityException instance = new GemFireSecurityException(this.message, this.serializableNamingException);
+    GemFireSecurityException instance =
+        new GemFireSecurityException(this.message, this.serializableNamingException);
 
     GemFireSecurityException cloned = (GemFireSecurityException) SerializationUtils.clone(instance);
 
@@ -130,12 +131,14 @@ public class GemFireSecurityExceptionTest {
 
   @Test
   public void isSerializableReturnsTrueForSerializableClass() throws Exception {
-    assertThat(new GemFireSecurityException("").isSerializable(this.serializableResolvedObj)).isTrue();
+    assertThat(new GemFireSecurityException("").isSerializable(this.serializableResolvedObj))
+        .isTrue();
   }
 
   @Test
   public void isSerializableReturnsFalseForNonSerializableClass() throws Exception {
-    assertThat(new GemFireSecurityException("").isSerializable(this.nonSerializableResolvedObj)).isFalse();
+    assertThat(new GemFireSecurityException("").isSerializable(this.nonSerializableResolvedObj))
+        .isFalse();
   }
 
   public Object clone(final Serializable object) {
@@ -152,8 +155,10 @@ public class GemFireSecurityExceptionTest {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
+      if (this == o)
+        return true;
+      if (o == null || getClass() != o.getClass())
+        return false;
 
       SerializableObject that = (SerializableObject) o;
 

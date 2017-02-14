@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -33,9 +31,9 @@ import org.apache.geode.internal.logging.LogService;
  */
 public class WaitForViewInstallation extends HighPriorityDistributionMessage
     implements MessageWithReply {
-  
+
   private static final Logger logger = LogService.getLogger();
-  
+
   public static void send(DistributionManager dm) throws InterruptedException {
     long viewId = dm.getMembershipManager().getView().getViewId();
     ReplyProcessor21 rp = new ReplyProcessor21(dm, dm.getOtherDistributionManagerIds());
@@ -44,17 +42,17 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
     try {
       rp.waitForReplies();
     } catch (ReplyException e) {
-      if (e.getCause() != null  &&  !(e.getCause() instanceof CancelException)) {
+      if (e.getCause() != null && !(e.getCause() instanceof CancelException)) {
         if (logger.isDebugEnabled()) {
           logger.debug("Reply to WaitForViewInstallation received odd exception", e.getCause());
         }
       }
     }
     // this isn't necessary for TXFailoverCommand, which is the only use of this
-    // message right now.  TXFailoverCommand performs messaging to all servers,
+    // message right now. TXFailoverCommand performs messaging to all servers,
     // which will force us to wait for the view containing the crash of another
     // server to be processed.
-//    dm.waitForViewInstallation(viewId);
+    // dm.waitForViewInstallation(viewId);
   }
 
   @Override
@@ -71,33 +69,34 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
   private int processorId;
 
   /** for deserialization */
-  public WaitForViewInstallation() {
-  }
-  
+  public WaitForViewInstallation() {}
+
   private WaitForViewInstallation(long viewId, int processorId) {
     this.viewId = viewId;
     this.processorId = processorId;
   }
-  
+
   @Override
   public int getProcessorId() {
     return this.processorId;
   }
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {
     return WAIT_FOR_VIEW_INSTALLATION;
   }
-  
+
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     out.writeLong(this.viewId);
     out.writeInt(this.processorId);
   }
-  
+
   @Override
   public void fromData(DataInput in) throws ClassNotFoundException, IOException {
     super.fromData(in);
@@ -105,8 +104,12 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
     this.processorId = in.readInt();
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.distributed.internal.DistributionManager)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.distributed.
+   * internal.DistributionManager)
    */
   @Override
   protected void process(DistributionManager dm) {
@@ -117,8 +120,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
       interrupted = true;
     } finally {
       if (!interrupted) {
-        ReplyMessage.send(getSender(), this.processorId, null,
-            getReplySender(dm));
+        ReplyMessage.send(getSender(), this.processorId, null, getReplySender(dm));
       }
     }
   }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.management.internal;
@@ -40,11 +38,11 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.ManagementService;
 
 /**
- * Agent implementation that controls the HTTP server end points used for REST
- * clients to connect gemfire data node.
+ * Agent implementation that controls the HTTP server end points used for REST clients to connect
+ * gemfire data node.
  * <p>
- * The RestAgent is used to start http service in embedded mode on any non
- * manager data node with developer REST APIs service enabled.
+ * The RestAgent is used to start http service in embedded mode on any non manager data node with
+ * developer REST APIs service enabled.
  *
  * @since GemFire 8.0
  */
@@ -63,10 +61,10 @@ public class RestAgent {
   }
 
   private boolean isManagementRestServiceRunning(GemFireCacheImpl cache) {
-    final SystemManagementService managementService = (SystemManagementService) ManagementService
-        .getManagementService(cache);
-    return (managementService.getManagementAgent() != null && managementService
-        .getManagementAgent().isHttpServiceRunning());
+    final SystemManagementService managementService =
+        (SystemManagementService) ManagementService.getManagementService(cache);
+    return (managementService.getManagementAgent() != null
+        && managementService.getManagementAgent().isHttpServiceRunning());
 
   }
 
@@ -108,39 +106,44 @@ public class RestAgent {
   private AgentUtil agentUtil = new AgentUtil(GEMFIRE_VERSION);
 
   private boolean isRunningInTomcat() {
-    return (System.getProperty("catalina.base") != null || System.getProperty("catalina.home") != null);
+    return (System.getProperty("catalina.base") != null
+        || System.getProperty("catalina.home") != null);
   }
 
   // Start HTTP service in embedded mode
   public void startHttpService() {
     // TODO: add a check that will make sure that we start HTTP service on
     // non-manager data node
-    String httpServiceBindAddress = getBindAddressForHttpService();
+    String httpServiceBindAddress = getBindAddressForHttpService(this.config);
     logger.info("Attempting to start HTTP service on port ({}) at bind-address ({})...",
         this.config.getHttpServicePort(), httpServiceBindAddress);
 
     // Find the developer REST WAR file
     final String gemfireAPIWar = agentUtil.findWarLocation("geode-web-api");
     if (gemfireAPIWar == null) {
-      logger.info("Unable to find GemFire Developer REST API WAR file; the Developer REST Interface for GemFire will not be accessible.");
+      logger.info(
+          "Unable to find GemFire Developer REST API WAR file; the Developer REST Interface for GemFire will not be accessible.");
     }
 
     try {
       // Check if we're already running inside Tomcat
       if (isRunningInTomcat()) {
-        logger.warn("Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire Developer REST API, please deploy the /geode-web-api WAR file in your application server."); 
+        logger.warn(
+            "Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire Developer REST API, please deploy the /geode-web-api WAR file in your application server.");
       } else if (agentUtil.isWebApplicationAvailable(gemfireAPIWar)) {
 
         final int port = this.config.getHttpServicePort();
 
-        this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port, SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
+        this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port,
+            SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
 
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar);
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar);
 
         if (logger.isDebugEnabled()) {
           logger.info("Starting HTTP embedded server on port ({}) at bind-address ({})...",
-              ((ServerConnector) this.httpServer.getConnectors()[0]).getPort(), httpServiceBindAddress);
+              ((ServerConnector) this.httpServer.getConnectors()[0]).getPort(),
+              httpServiceBindAddress);
         }
 
         this.httpServer = JettyHelper.startJetty(this.httpServer);
@@ -154,24 +157,25 @@ public class RestAgent {
     }
   }
 
-  private String getBindAddressForHttpService() {
-    java.lang.String bindAddress = this.config.getHttpServiceBindAddress();
-    if (StringUtils.isBlank(bindAddress)) {
-      if (StringUtils.isBlank(this.config.getServerBindAddress())) {
-        if (StringUtils.isBlank(this.config.getBindAddress())) {
-          try {
-            bindAddress = SocketCreator.getLocalHost().getHostAddress();
-            logger.info("RestAgent.getBindAddressForHttpService.localhost: " + SocketCreator.getLocalHost().getHostAddress());
-          } catch (UnknownHostException e) {
-            logger.error("LocalHost could not be found.", e);
-            return bindAddress;
-          }
-        } else {
-          bindAddress = this.config.getBindAddress();
-        }
-      } else {
-        bindAddress = this.config.getServerBindAddress();
-      }
+  public static String getBindAddressForHttpService(DistributionConfig config) {
+    String bindAddress = config.getHttpServiceBindAddress();
+    if (!StringUtils.isBlank(bindAddress))
+      return bindAddress;
+
+    bindAddress = config.getServerBindAddress();
+    if (!StringUtils.isBlank(bindAddress))
+      return bindAddress;
+
+    bindAddress = config.getBindAddress();
+    if (!StringUtils.isBlank(bindAddress))
+      return bindAddress;
+
+    try {
+      bindAddress = SocketCreator.getLocalHost().getHostAddress();
+      logger.info("RestAgent.getBindAddressForHttpService.localhost: "
+          + SocketCreator.getLocalHost().getHostAddress());
+    } catch (UnknownHostException e) {
+      logger.error("LocalHost could not be found.", e);
     }
     return bindAddress;
   }
@@ -199,9 +203,9 @@ public class RestAgent {
   }
 
   /**
-   * This method will create a REPLICATED region named _ParameterizedQueries__.
-   * In developer REST APIs, this region will be used to store the queryId and
-   * queryString as a key and value respectively.
+   * This method will create a REPLICATED region named _ParameterizedQueries__. In developer REST
+   * APIs, this region will be used to store the queryId and queryString as a key and value
+   * respectively.
    */
   public static void createParameterizedQueryRegion() {
     try {
@@ -213,7 +217,8 @@ public class RestAgent {
         // cache.getCacheConfig().setPdxReadSerialized(true);
         final InternalRegionArguments regionArguments = new InternalRegionArguments();
         regionArguments.setIsUsedForMetaRegion(true);
-        final AttributesFactory<String, String> attributesFactory = new AttributesFactory<String, String>();
+        final AttributesFactory<String, String> attributesFactory =
+            new AttributesFactory<String, String>();
 
         attributesFactory.setConcurrencyChecksEnabled(false);
         attributesFactory.setDataPolicy(DataPolicy.REPLICATE);
@@ -233,8 +238,8 @@ public class RestAgent {
       }
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Error creating __ParameterizedQueries__ Region with cause {}",
-            e.getMessage(), e);
+        logger.debug("Error creating __ParameterizedQueries__ Region with cause {}", e.getMessage(),
+            e);
       }
     }
   }

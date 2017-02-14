@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.internal;
 
@@ -28,28 +26,28 @@ import java.util.*;
 /**
  * View of a GemFire system member's cache.
  *
- * @since GemFire     3.5
+ * @since GemFire 3.5
  */
 public class SystemMemberCacheImpl implements SystemMemberCache {
   protected final GemFireVM vm;
   protected CacheInfo info;
   protected Statistic[] statistics;
 
-  /** Maps the id of a bridge server to its SystemMemberBridgeServer */ 
+  /** Maps the id of a bridge server to its SystemMemberBridgeServer */
   private ObjIdMap bridgeServers = new ObjIdMap();
-  
+
   // constructors
-  public SystemMemberCacheImpl(GemFireVM vm)
-    throws CacheDoesNotExistException
-  {
+  public SystemMemberCacheImpl(GemFireVM vm) throws CacheDoesNotExistException {
     this.vm = vm;
     this.info = vm.getCacheInfo();
     if (this.info == null) {
-      throw new CacheDoesNotExistException(LocalizedStrings.SystemMemberCacheImpl_THE_VM_0_DOES_NOT_CURRENTLY_HAVE_A_CACHE.toLocalizedString(vm.getId()));
+      throw new CacheDoesNotExistException(
+          LocalizedStrings.SystemMemberCacheImpl_THE_VM_0_DOES_NOT_CURRENTLY_HAVE_A_CACHE
+              .toLocalizedString(vm.getId()));
     }
     initStats();
   }
-  
+
   // attributes
   /**
    * The name of the cache.
@@ -61,6 +59,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     }
     return result;
   }
+
   /**
    * Value that uniquely identifies an instance of a cache for a given member.
    */
@@ -71,27 +70,35 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   public boolean isClosed() {
     return this.info.isClosed();
   }
+
   public int getLockTimeout() {
     return this.info.getLockTimeout();
   }
+
   public void setLockTimeout(int seconds) throws AdminException {
     this.info = this.vm.setCacheLockTimeout(this.info, seconds);
   }
+
   public int getLockLease() {
     return this.info.getLockLease();
   }
+
   public void setLockLease(int seconds) throws AdminException {
     this.info = this.vm.setCacheLockLease(this.info, seconds);
   }
+
   public int getSearchTimeout() {
     return this.info.getSearchTimeout();
   }
+
   public void setSearchTimeout(int seconds) throws AdminException {
     this.info = this.vm.setCacheSearchTimeout(this.info, seconds);
   }
+
   public int getUpTime() {
     return this.info.getUpTime();
   }
+
   public java.util.Set getRootRegionNames() {
     Set set = this.info.getRootRegionNames();
     if (set == null) {
@@ -115,29 +122,25 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     }
   }
 
-  public GemFireMemberStatus getSnapshot()
-  {
-	  //System.out.println(">>>SystemMemberCacheJmxImpl::getSnapshot:pre::: " + this.vm);
-	  GemFireMemberStatus stat = this.vm.getSnapshot();
-	  //System.out.println(">>>SystemMemberCacheJmxImpl::getSnapshot:post::: " + stat);
-	  return stat;
+  public GemFireMemberStatus getSnapshot() {
+    // System.out.println(">>>SystemMemberCacheJmxImpl::getSnapshot:pre::: " + this.vm);
+    GemFireMemberStatus stat = this.vm.getSnapshot();
+    // System.out.println(">>>SystemMemberCacheJmxImpl::getSnapshot:post::: " + stat);
+    return stat;
   }
 
-  public RegionSubRegionSnapshot getRegionSnapshot()
-  {
-	  //System.out.println(">>>SystemMemberCacheJmxImpl::getRegionSnapshot:pre::: " + this.vm);
-	  RegionSubRegionSnapshot snap = this.vm.getRegionSnapshot();
-	  //System.out.println(">>>SystemMemberCacheJmxImpl::getRegionSnapshot:post::: " + snap);
-	  return snap;
+  public RegionSubRegionSnapshot getRegionSnapshot() {
+    // System.out.println(">>>SystemMemberCacheJmxImpl::getRegionSnapshot:pre::: " + this.vm);
+    RegionSubRegionSnapshot snap = this.vm.getRegionSnapshot();
+    // System.out.println(">>>SystemMemberCacheJmxImpl::getRegionSnapshot:post::: " + snap);
+    return snap;
   }
-  
+
   public Statistic[] getStatistics() {
     return this.statistics;
   }
 
-  public SystemMemberRegion getRegion(String path)
-    throws org.apache.geode.admin.AdminException
-  {
+  public SystemMemberRegion getRegion(String path) throws org.apache.geode.admin.AdminException {
     Region r = this.vm.getRegion(this.info, path);
     if (r == null) {
       return null;
@@ -146,10 +149,8 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     }
   }
 
-  public SystemMemberRegion createRegion(String name,
-                                         RegionAttributes attrs)
-    throws AdminException
-  {
+  public SystemMemberRegion createRegion(String name, RegionAttributes attrs)
+      throws AdminException {
     Region r = this.vm.createVMRootRegion(this.info, name, attrs);
     if (r == null) {
       return null;
@@ -158,11 +159,9 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
       return createSystemMemberRegion(r);
     }
   }
-  
-  public SystemMemberRegion createVMRegion(String name,
-                                           RegionAttributes attrs)
-    throws AdminException
-  {
+
+  public SystemMemberRegion createVMRegion(String name, RegionAttributes attrs)
+      throws AdminException {
     return createRegion(name, attrs);
   }
 
@@ -181,7 +180,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
       this.statistics = new Statistic[0];
       return;
     }
-    
+
     // define new statistics instances...
     List statList = new ArrayList();
     for (int i = 0; i < stats.length; i++) {
@@ -189,6 +188,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     }
     this.statistics = (Statistic[]) statList.toArray(new Statistic[statList.size()]);
   }
+
   private void updateStats() {
     StatResource resource = this.info.getPerfStats();
     if (resource == null) {
@@ -201,7 +201,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     if (stats == null || stats.length < 1) {
       return;
     }
-    
+
     for (int i = 0; i < stats.length; i++) {
       updateStatistic(stats[i]);
     }
@@ -210,7 +210,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   private void updateStatistic(Stat stat) {
     for (int i = 0; i < this.statistics.length; i++) {
       if (this.statistics[i].getName().equals(stat.getName())) {
-        ((StatisticImpl)this.statistics[i]).setStat(stat);
+        ((StatisticImpl) this.statistics[i]).setStat(stat);
         return;
       }
     }
@@ -218,9 +218,8 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   }
 
   /**
-   * Returns the <code>CacheInfo</code> that describes this cache.
-   * Note that this operation does not {@link #refresh} the
-   * <code>CacheInfo</code>. 
+   * Returns the <code>CacheInfo</code> that describes this cache. Note that this operation does not
+   * {@link #refresh} the <code>CacheInfo</code>.
    */
   public CacheInfo getCacheInfo() {
     return this.info;
@@ -233,33 +232,29 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   protected Statistic createStatistic(Stat stat) {
     return new StatisticImpl(stat);
   }
+
   protected SystemMemberRegion createSystemMemberRegion(Region r)
-    throws org.apache.geode.admin.AdminException
-  {
+      throws org.apache.geode.admin.AdminException {
     SystemMemberRegionImpl sysMemberRegion = new SystemMemberRegionImpl(this, r);
     sysMemberRegion.refresh();
     return sysMemberRegion;
   }
 
-  public SystemMemberCacheServer addCacheServer()
-    throws AdminException {
+  public SystemMemberCacheServer addCacheServer() throws AdminException {
 
     AdminBridgeServer bridge = this.vm.addCacheServer(this.info);
-    SystemMemberCacheServer admin =
-      createSystemMemberBridgeServer(bridge);
+    SystemMemberCacheServer admin = createSystemMemberBridgeServer(bridge);
     bridgeServers.put(bridge.getId(), admin);
     return admin;
   }
 
-  private Collection getCacheServersCollection()
-    throws AdminException {
+  private Collection getCacheServersCollection() throws AdminException {
     Collection bridges = new ArrayList();
 
     int[] bridgeIds = this.info.getBridgeServerIds();
     for (int i = 0; i < bridgeIds.length; i++) {
       int id = bridgeIds[i];
-      SystemMemberBridgeServer bridge =
-        (SystemMemberBridgeServer) bridgeServers.get(id);
+      SystemMemberBridgeServer bridge = (SystemMemberBridgeServer) bridgeServers.get(id);
       if (bridge == null) {
         AdminBridgeServer info = this.vm.getBridgeInfo(this.info, id);
         if (info != null) {
@@ -275,21 +270,17 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     return bridges;
   }
 
-  public SystemMemberCacheServer[] getCacheServers()
-    throws AdminException {
+  public SystemMemberCacheServer[] getCacheServers() throws AdminException {
     Collection bridges = getCacheServersCollection();
-    SystemMemberCacheServer[] array =
-      new SystemMemberCacheServer[bridges.size()];
+    SystemMemberCacheServer[] array = new SystemMemberCacheServer[bridges.size()];
     return (SystemMemberCacheServer[]) bridges.toArray(array);
   };
 
   /**
-   * Creates a new instance of <Code>SystemMemberBridgeServer</code>
-   * with the given configuration.
+   * Creates a new instance of <Code>SystemMemberBridgeServer</code> with the given configuration.
    */
-  protected SystemMemberBridgeServerImpl
-    createSystemMemberBridgeServer(AdminBridgeServer bridge) 
-    throws AdminException {
+  protected SystemMemberBridgeServerImpl createSystemMemberBridgeServer(AdminBridgeServer bridge)
+      throws AdminException {
 
     return new SystemMemberBridgeServerImpl(this, bridge);
   }
@@ -297,8 +288,8 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
   public boolean isServer() throws AdminException {
     return this.info.isServer();
   }
-  
-  
+
+
   /**
    * Returns a string representation of the object.
    * 
@@ -306,7 +297,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
    */
   @Override
   public String toString() {
-	return getName();
+    return getName();
   }
 }
 

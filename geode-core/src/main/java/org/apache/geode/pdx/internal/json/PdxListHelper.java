@@ -1,20 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-package org.apache.geode.pdx.internal.json; 
+package org.apache.geode.pdx.internal.json;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.LinkedList;
@@ -32,159 +31,141 @@ import org.apache.geode.internal.logging.LogService;
  */
 public class PdxListHelper {
   private static final Logger logger = LogService.getLogger();
-  
+
   String m_name;
   PdxListHelper m_parent;
   List list = new LinkedList();
-  
-  public PdxListHelper(PdxListHelper parent, String name)
-  {
-    GemFireCacheImpl gci = (GemFireCacheImpl)CacheFactory.getAnyInstance();
+
+  public PdxListHelper(PdxListHelper parent, String name) {
+    GemFireCacheImpl gci = (GemFireCacheImpl) CacheFactory.getAnyInstance();
     m_name = name;
-    if(logger.isTraceEnabled()) {
-      logger.trace("PdxListHelper name: {}", name  );
+    if (logger.isTraceEnabled()) {
+      logger.trace("PdxListHelper name: {}", name);
     }
     m_parent = parent;
   }
-  
-  public PdxListHelper getParent()
-  {
+
+  public PdxListHelper getParent() {
     return m_parent;
   }
-  
-  public void setListName(String fieldName)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("setListName fieldName: {}", fieldName  );
+
+  public void setListName(String fieldName) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("setListName fieldName: {}", fieldName);
     }
     m_name = fieldName;
   }
-  public void addStringField(String fieldValue)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("addStringField fieldValue: {}", fieldValue  );
+
+  public void addStringField(String fieldValue) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("addStringField fieldValue: {}", fieldValue);
     }
     list.add(fieldValue);
   }
-  
-  public void addByteField(byte fieldValue)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("addByteField fieldValue: {}", fieldValue  );
+
+  public void addByteField(byte fieldValue) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("addByteField fieldValue: {}", fieldValue);
     }
     list.add(fieldValue);
   }
-  
-  public void addShortField(short fieldValue)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("addShortField fieldValue: {}", fieldValue  );
+
+  public void addShortField(short fieldValue) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("addShortField fieldValue: {}", fieldValue);
     }
     list.add(fieldValue);
   }
-  
-  public void addIntField(int fieldValue)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("addIntField fieldValue: {}", fieldValue  );
+
+  public void addIntField(int fieldValue) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("addIntField fieldValue: {}", fieldValue);
     }
     list.add(fieldValue);
   }
-  
-  public void addLongField(long fieldValue)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("addLongField fieldValue: {}", fieldValue  );
+
+  public void addLongField(long fieldValue) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("addLongField fieldValue: {}", fieldValue);
     }
     list.add(fieldValue);
   }
-  
-  public void addBigIntegerField(BigInteger fieldValue)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("addBigIntegerField fieldValue: {}", fieldValue  );
+
+  public void addBigIntegerField(BigInteger fieldValue) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("addBigIntegerField fieldValue: {}", fieldValue);
     }
     list.add(fieldValue);
   }
-  
-  public void addBooleanField(boolean fieldValue)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("addBooleanField fieldValue: {}", fieldValue );
+
+  public void addBooleanField(boolean fieldValue) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("addBooleanField fieldValue: {}", fieldValue);
     }
     list.add(fieldValue);
   }
-  
-  public void addFloatField(float fieldValue)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("addFloatField fieldValue: {}", fieldValue );
+
+  public void addFloatField(float fieldValue) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("addFloatField fieldValue: {}", fieldValue);
     }
     list.add(fieldValue);
   }
-  
-  public void addDoubleField(double fieldValue)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("addDoubleField fieldValue: {}", fieldValue );
+
+  public void addDoubleField(double fieldValue) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("addDoubleField fieldValue: {}", fieldValue);
     }
     list.add(fieldValue);
   }
-  
-  public void addBigDecimalField(BigDecimal fieldValue)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("addBigDecimalField fieldValue: {}", fieldValue );
+
+  public void addBigDecimalField(BigDecimal fieldValue) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("addBigDecimalField fieldValue: {}", fieldValue);
     }
     list.add(fieldValue);
   }
-  
-  public void addNullField(Object fieldValue)
-  {
-    if(logger.isTraceEnabled()) {
-      logger.trace("addNULLField fieldValue: {}",fieldValue   );
+
+  public void addNullField(Object fieldValue) {
+    if (logger.isTraceEnabled()) {
+      logger.trace("addNULLField fieldValue: {}", fieldValue);
     }
     list.add(fieldValue);
   }
-  
-  public PdxListHelper addListField()
-  {
-    if(logger.isTraceEnabled()) {
+
+  public PdxListHelper addListField() {
+    if (logger.isTraceEnabled()) {
       logger.trace("addListField");
     }
     PdxListHelper tmp = new PdxListHelper(this, "no-name");
     list.add(tmp.getList());
     return tmp;
   }
-  
-  public PdxListHelper endListField()
-  {
-    if(logger.isTraceEnabled()) {
+
+  public PdxListHelper endListField() {
+    if (logger.isTraceEnabled()) {
       logger.trace("endListField");
     }
     return m_parent;
   }
-  
-  public void addObjectField(String fieldName, PdxInstanceHelper dpi)
-  {
-    if(fieldName != null)
+
+  public void addObjectField(String fieldName, JSONToPdxMapper dpi) {
+    if (fieldName != null)
       throw new IllegalStateException("addObjectField:list should have object no fieldname");
-    if(logger.isTraceEnabled()) {
+    if (logger.isTraceEnabled()) {
       logger.trace("addObjectField fieldName: {}", fieldName);
     }
-    //dpi.setPdxFieldName(fieldName);
+    // dpi.setPdxFieldName(fieldName);
     list.add(dpi.getPdxInstance());
   }
-  
-  public void endObjectField(String fieldName)
-  {
-    if(logger.isTraceEnabled()) {
+
+  public void endObjectField(String fieldName) {
+    if (logger.isTraceEnabled()) {
       logger.trace("endObjectField fieldName: {}", fieldName);
     }
   }
-  
-  public List getList()
-  {
+
+  public List getList() {
     return list;
   }
 }

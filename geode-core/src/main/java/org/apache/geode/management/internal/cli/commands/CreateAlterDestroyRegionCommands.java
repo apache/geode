@@ -1,47 +1,25 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
-
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.regex.Pattern;
-
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
-import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
@@ -81,21 +59,40 @@ import org.apache.geode.management.internal.cli.result.CommandResultException;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.RegionPath;
-import org.apache.geode.management.internal.configuration.SharedConfigurationWriter;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
+import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 /**
- *
  * @since GemFire 7.0
  */
 public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
-  public static final Set<RegionShortcut> PERSISTENT_OVERFLOW_SHORTCUTS = new TreeSet<RegionShortcut>();
+  public static final Set<RegionShortcut> PERSISTENT_OVERFLOW_SHORTCUTS =
+      new TreeSet<RegionShortcut>();
 
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();
-  
+
   static {
     PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.PARTITION_PERSISTENT);
     PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.PARTITION_REDUNDANT_PERSISTENT);
@@ -111,252 +108,223 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     PERSISTENT_OVERFLOW_SHORTCUTS.add(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW);
   }
 
-  @CliCommand (value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
-  @CliMetaData (relatedTopic = CliStrings.TOPIC_GEODE_REGION, writesToSharedConfiguration = true)
+  @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result createRegion(
-      @CliOption (key = CliStrings.CREATE_REGION__REGION,
-                  mandatory = true,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__REGION__HELP)
-      String regionPath,
-      @CliOption (key = CliStrings.CREATE_REGION__REGIONSHORTCUT,
-                  mandatory = false,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__REGIONSHORTCUT__HELP)
-      RegionShortcut regionShortcut,
-      @CliOption (key = CliStrings.CREATE_REGION__USEATTRIBUTESFROM,
-                  optionContext = ConverterHint.REGIONPATH,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__USEATTRIBUTESFROM__HELP)
-      String useAttributesFrom, 
-      @CliOption (key = CliStrings.CREATE_REGION__GROUP,
-                  optionContext = ConverterHint.MEMBERGROUP,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__GROUP__HELP)
-      @CliMetaData (valueSeparator = ",")
-      String[] groups,
-      @CliOption (key = CliStrings.CREATE_REGION__SKIPIFEXISTS,
-                  unspecifiedDefaultValue = "true",
-                  specifiedDefaultValue = "true",
-                  help = CliStrings.CREATE_REGION__SKIPIFEXISTS__HELP)
-      boolean skipIfExists,
-      
+      @CliOption(key = CliStrings.CREATE_REGION__REGION, mandatory = true,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__REGION__HELP) String regionPath,
+      @CliOption(key = CliStrings.CREATE_REGION__REGIONSHORTCUT, mandatory = false,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__REGIONSHORTCUT__HELP) RegionShortcut regionShortcut,
+      @CliOption(key = CliStrings.CREATE_REGION__USEATTRIBUTESFROM,
+          optionContext = ConverterHint.REGIONPATH,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__USEATTRIBUTESFROM__HELP) String useAttributesFrom,
+      @CliOption(key = CliStrings.CREATE_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__GROUP__HELP) @CliMetaData(
+              valueSeparator = ",") String[] groups,
+      @CliOption(key = CliStrings.CREATE_REGION__SKIPIFEXISTS, unspecifiedDefaultValue = "true",
+          specifiedDefaultValue = "true",
+          help = CliStrings.CREATE_REGION__SKIPIFEXISTS__HELP) boolean skipIfExists,
+
       // the following should all be in alphabetical order according to
       // their key string
-      @CliOption (key = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
-                  help = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID__HELP)
-      @CliMetaData (valueSeparator = ",") 
-      String[] asyncEventQueueIds,
-      @CliOption (key = CliStrings.CREATE_REGION__CACHELISTENER,
-                  help = CliStrings.CREATE_REGION__CACHELISTENER__HELP)
-      @CliMetaData (valueSeparator = ",") 
-      String[] cacheListener,
-      @CliOption (key = CliStrings.CREATE_REGION__CACHELOADER,
-                  help = CliStrings.CREATE_REGION__CACHELOADER__HELP)
-      String cacheLoader,
-      @CliOption (key = CliStrings.CREATE_REGION__CACHEWRITER,
-                  help = CliStrings.CREATE_REGION__CACHEWRITER__HELP)
-      String cacheWriter,
-      @CliOption (key = CliStrings.CREATE_REGION__COLOCATEDWITH,
-                  optionContext = ConverterHint.REGIONPATH,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__COLOCATEDWITH__HELP)
-      String prColocatedWith,
-      @CliOption (key = CliStrings.CREATE_REGION__COMPRESSOR,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__COMPRESSOR__HELP)
-      String compressor,
-      @CliOption (key = CliStrings.CREATE_REGION__CONCURRENCYLEVEL,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__CONCURRENCYLEVEL__HELP)
-      Integer concurrencyLevel,
-      @CliOption (key = CliStrings.CREATE_REGION__DISKSTORE,
-                  help = CliStrings.CREATE_REGION__DISKSTORE__HELP)
-      String diskStore,
-      @CliOption (key = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION__HELP)
-      Boolean enableAsyncConflation,
-      @CliOption (key = CliStrings.CREATE_REGION__CLONINGENABLED,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__CLONINGENABLED__HELP)
-      Boolean cloningEnabled,
-      @CliOption (key = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED__HELP)
-      Boolean concurrencyChecksEnabled,
-      @CliOption (key = CliStrings.CREATE_REGION__MULTICASTENABLED,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__MULTICASTENABLED__HELP)
-      Boolean mcastEnabled,
-      @CliOption (key = CliStrings.CREATE_REGION__STATISTICSENABLED,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__STATISTICSENABLED__HELP)
-      Boolean statisticsEnabled,
-      @CliOption (key = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION__HELP)
-      Boolean enableSubscriptionConflation,
-      @CliOption (key = CliStrings.CREATE_REGION__DISKSYNCHRONOUS,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__DISKSYNCHRONOUS__HELP)
-      Boolean diskSynchronous,
-      @CliOption (key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME__HELP)
-      Integer entryExpirationIdleTime,
-      @CliOption (key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
-                  help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP)
-      String entryExpirationIdleTimeAction,
-      @CliOption (key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP)
-      Integer entryExpirationTTL,
-      @CliOption (key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
-                  help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP)
-      String entryExpirationTTLAction,
-      @CliOption (key = CliStrings.CREATE_REGION__GATEWAYSENDERID,
-                  help = CliStrings.CREATE_REGION__GATEWAYSENDERID__HELP)
-      @CliMetaData (valueSeparator = ",") 
-      String[] gatewaySenderIds,
-      @CliOption (key = CliStrings.CREATE_REGION__KEYCONSTRAINT,
-                  help = CliStrings.CREATE_REGION__KEYCONSTRAINT__HELP)
-      String keyConstraint,
-      @CliOption (key = CliStrings.CREATE_REGION__LOCALMAXMEMORY,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__LOCALMAXMEMORY__HELP)
-      Integer prLocalMaxMemory, 
-      @CliOption (key = CliStrings.CREATE_REGION__OFF_HEAP,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "true",
-                  help = CliStrings.CREATE_REGION__OFF_HEAP__HELP)
-      Boolean offHeap,
-      @CliOption (key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME__HELP)
-      Integer regionExpirationIdleTime,
-      @CliOption (key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION,
-                  help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP)
-      String regionExpirationIdleTimeAction,
-      @CliOption (key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL__HELP)
-      Integer regionExpirationTTL,
-      @CliOption (key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION,
-                  help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION__HELP)
-      String regionExpirationTTLAction,      
-      @CliOption (key = CliStrings.CREATE_REGION__RECOVERYDELAY,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__RECOVERYDELAY__HELP)
-      Long prRecoveryDelay,
-      @CliOption (key = CliStrings.CREATE_REGION__REDUNDANTCOPIES,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__REDUNDANTCOPIES__HELP)
-      Integer prRedundantCopies, 
-      @CliOption (key = CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY__HELP)
-      Long prStartupRecoveryDelay,
-      @CliOption (key = CliStrings.CREATE_REGION__TOTALMAXMEMORY,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__TOTALMAXMEMORY__HELP)
-      Long prTotalMaxMemory, 
-      @CliOption (key = CliStrings.CREATE_REGION__TOTALNUMBUCKETS,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.CREATE_REGION__TOTALNUMBUCKETS__HELP)
-      Integer prTotalNumBuckets,      
-      @CliOption (key = CliStrings.CREATE_REGION__VALUECONSTRAINT,
-                  help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP)
-      String valueConstraint
-      // NOTICE: keep the region attributes params in alphabetical order
-) {
+      @CliOption(key = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
+          help = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID__HELP) @CliMetaData(
+              valueSeparator = ",") String[] asyncEventQueueIds,
+      @CliOption(key = CliStrings.CREATE_REGION__CACHELISTENER,
+          help = CliStrings.CREATE_REGION__CACHELISTENER__HELP) @CliMetaData(
+              valueSeparator = ",") String[] cacheListener,
+      @CliOption(key = CliStrings.CREATE_REGION__CACHELOADER,
+          help = CliStrings.CREATE_REGION__CACHELOADER__HELP) String cacheLoader,
+      @CliOption(key = CliStrings.CREATE_REGION__CACHEWRITER,
+          help = CliStrings.CREATE_REGION__CACHEWRITER__HELP) String cacheWriter,
+      @CliOption(key = CliStrings.CREATE_REGION__COLOCATEDWITH,
+          optionContext = ConverterHint.REGIONPATH,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__COLOCATEDWITH__HELP) String prColocatedWith,
+      @CliOption(key = CliStrings.CREATE_REGION__COMPRESSOR,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__COMPRESSOR__HELP) String compressor,
+      @CliOption(key = CliStrings.CREATE_REGION__CONCURRENCYLEVEL,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__CONCURRENCYLEVEL__HELP) Integer concurrencyLevel,
+      @CliOption(key = CliStrings.CREATE_REGION__DISKSTORE,
+          help = CliStrings.CREATE_REGION__DISKSTORE__HELP) String diskStore,
+      @CliOption(key = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__ENABLEASYNCCONFLATION__HELP) Boolean enableAsyncConflation,
+      @CliOption(key = CliStrings.CREATE_REGION__CLONINGENABLED,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__CLONINGENABLED__HELP) Boolean cloningEnabled,
+      @CliOption(key = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__CONCURRENCYCHECKSENABLED__HELP) Boolean concurrencyChecksEnabled,
+      @CliOption(key = CliStrings.CREATE_REGION__MULTICASTENABLED,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__MULTICASTENABLED__HELP) Boolean mcastEnabled,
+      @CliOption(key = CliStrings.CREATE_REGION__STATISTICSENABLED,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__STATISTICSENABLED__HELP) Boolean statisticsEnabled,
+      @CliOption(key = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__ENABLESUBSCRIPTIONCONFLATION__HELP) Boolean enableSubscriptionConflation,
+      @CliOption(key = CliStrings.CREATE_REGION__DISKSYNCHRONOUS,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__DISKSYNCHRONOUS__HELP) Boolean diskSynchronous,
+      @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME__HELP) Integer entryExpirationIdleTime,
+      @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
+          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) String entryExpirationIdleTimeAction,
+      @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
+      @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
+          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) String entryExpirationTTLAction,
+      @CliOption(key = CliStrings.CREATE_REGION__GATEWAYSENDERID,
+          help = CliStrings.CREATE_REGION__GATEWAYSENDERID__HELP) @CliMetaData(
+              valueSeparator = ",") String[] gatewaySenderIds,
+      @CliOption(key = CliStrings.CREATE_REGION__KEYCONSTRAINT,
+          help = CliStrings.CREATE_REGION__KEYCONSTRAINT__HELP) String keyConstraint,
+      @CliOption(key = CliStrings.CREATE_REGION__LOCALMAXMEMORY,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__LOCALMAXMEMORY__HELP) Integer prLocalMaxMemory,
+      @CliOption(key = CliStrings.CREATE_REGION__OFF_HEAP,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          specifiedDefaultValue = "true",
+          help = CliStrings.CREATE_REGION__OFF_HEAP__HELP) Boolean offHeap,
+      @CliOption(key = CliStrings.CREATE_REGION__PARTITION_RESOLVER,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__PARTITION_RESOLVER__HELP) String partitionResolver,
+      @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
+      @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION,
+          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) String regionExpirationIdleTimeAction,
+      @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL__HELP) Integer regionExpirationTTL,
+      @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION,
+          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION__HELP) String regionExpirationTTLAction,
+      @CliOption(key = CliStrings.CREATE_REGION__RECOVERYDELAY,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__RECOVERYDELAY__HELP) Long prRecoveryDelay,
+      @CliOption(key = CliStrings.CREATE_REGION__REDUNDANTCOPIES,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__REDUNDANTCOPIES__HELP) Integer prRedundantCopies,
+      @CliOption(key = CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__STARTUPRECOVERYDDELAY__HELP) Long prStartupRecoveryDelay,
+      @CliOption(key = CliStrings.CREATE_REGION__TOTALMAXMEMORY,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__TOTALMAXMEMORY__HELP) Long prTotalMaxMemory,
+      @CliOption(key = CliStrings.CREATE_REGION__TOTALNUMBUCKETS,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CREATE_REGION__TOTALNUMBUCKETS__HELP) Integer prTotalNumBuckets,
+      @CliOption(key = CliStrings.CREATE_REGION__VALUECONSTRAINT,
+          help = CliStrings.CREATE_REGION__VALUECONSTRAINT__HELP) String valueConstraint
+  // NOTICE: keep the region attributes params in alphabetical order
+  ) {
     Result result = null;
-    XmlEntity xmlEntity = null;
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     try {
       Cache cache = CacheFactory.getAnyInstance();
 
       if (regionShortcut != null && useAttributesFrom != null) {
-        throw new IllegalArgumentException(CliStrings.CREATE_REGION__MSG__ONLY_ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_CAN_BE_SPECIFIED);
+        throw new IllegalArgumentException(
+            CliStrings.CREATE_REGION__MSG__ONLY_ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_CAN_BE_SPECIFIED);
       } else if (regionShortcut == null && useAttributesFrom == null) {
-        throw new IllegalArgumentException(CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_IS_REQUIRED);
+        throw new IllegalArgumentException(
+            CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUESFROM_IS_REQUIRED);
       }
-      
+
       validateRegionPathAndParent(cache, regionPath);
       validateGroups(cache, groups);
 
       RegionFunctionArgs.ExpirationAttrs entryIdle = null;
       if (entryExpirationIdleTime != null) {
-        entryIdle = new RegionFunctionArgs.ExpirationAttrs(RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_IDLE, entryExpirationIdleTime, entryExpirationIdleTimeAction);
+        entryIdle = new RegionFunctionArgs.ExpirationAttrs(
+            RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_IDLE, entryExpirationIdleTime,
+            entryExpirationIdleTimeAction);
       }
       RegionFunctionArgs.ExpirationAttrs entryTTL = null;
       if (entryExpirationTTL != null) {
-        entryTTL = new RegionFunctionArgs.ExpirationAttrs(RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_TTL, entryExpirationTTL, entryExpirationTTLAction);
+        entryTTL = new RegionFunctionArgs.ExpirationAttrs(
+            RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_TTL, entryExpirationTTL,
+            entryExpirationTTLAction);
       }
       RegionFunctionArgs.ExpirationAttrs regionIdle = null;
       if (regionExpirationIdleTime != null) {
-        regionIdle = new RegionFunctionArgs.ExpirationAttrs(RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_IDLE, regionExpirationIdleTime, regionExpirationIdleTimeAction);
+        regionIdle = new RegionFunctionArgs.ExpirationAttrs(
+            RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_IDLE, regionExpirationIdleTime,
+            regionExpirationIdleTimeAction);
       }
       RegionFunctionArgs.ExpirationAttrs regionTTL = null;
       if (regionExpirationTTL != null) {
-        regionTTL = new RegionFunctionArgs.ExpirationAttrs(RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_TTL, regionExpirationTTL, regionExpirationTTLAction);
+        regionTTL = new RegionFunctionArgs.ExpirationAttrs(
+            RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_TTL, regionExpirationTTL,
+            regionExpirationTTLAction);
       }
-      
+
       RegionFunctionArgs regionFunctionArgs = null;
       if (useAttributesFrom != null) {
         if (!regionExists(cache, useAttributesFrom)) {
-          throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND, new Object[] {CliStrings.CREATE_REGION__USEATTRIBUTESFROM, useAttributesFrom}));
+          throw new IllegalArgumentException(CliStrings.format(
+              CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
+              new Object[] {CliStrings.CREATE_REGION__USEATTRIBUTESFROM, useAttributesFrom}));
         }
-        
-        
-        FetchRegionAttributesFunctionResult<Object, Object> regionAttributesResult = getRegionAttributes(cache, useAttributesFrom);
+
+        FetchRegionAttributesFunctionResult<Object, Object> regionAttributesResult =
+            getRegionAttributes(cache, useAttributesFrom);
         RegionAttributes<?, ?> regionAttributes = regionAttributesResult.getRegionAttributes();
-           
-        
+
         // give preference to user specified plugins than the ones retrieved from other region
-        String[] cacheListenerClasses = cacheListener != null && cacheListener.length != 0 ? cacheListener : regionAttributesResult.getCacheListenerClasses();
-        String cacheLoaderClass = cacheLoader != null ? cacheLoader : regionAttributesResult.getCacheLoaderClass();
-        String cacheWriterClass = cacheWriter != null ? cacheWriter : regionAttributesResult.getCacheWriterClass();;
+        String[] cacheListenerClasses = cacheListener != null && cacheListener.length != 0
+            ? cacheListener : regionAttributesResult.getCacheListenerClasses();
+        String cacheLoaderClass =
+            cacheLoader != null ? cacheLoader : regionAttributesResult.getCacheLoaderClass();
+        String cacheWriterClass =
+            cacheWriter != null ? cacheWriter : regionAttributesResult.getCacheWriterClass();;
 
-        regionFunctionArgs = new RegionFunctionArgs(regionPath,
-            useAttributesFrom, skipIfExists, keyConstraint, valueConstraint,
-            statisticsEnabled, entryIdle, entryTTL, regionIdle,
+        regionFunctionArgs = new RegionFunctionArgs(regionPath, useAttributesFrom, skipIfExists,
+            keyConstraint, valueConstraint, statisticsEnabled, entryIdle, entryTTL, regionIdle,
             regionTTL, diskStore, diskSynchronous, enableAsyncConflation,
-            enableSubscriptionConflation, cacheListenerClasses, cacheLoaderClass,
-            cacheWriterClass, asyncEventQueueIds, gatewaySenderIds,
-            concurrencyChecksEnabled, cloningEnabled, concurrencyLevel, 
-            prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
-            prRedundantCopies, prStartupRecoveryDelay,
-            prTotalMaxMemory, prTotalNumBuckets,
-            offHeap, mcastEnabled, regionAttributes);
-        
+            enableSubscriptionConflation, cacheListenerClasses, cacheLoaderClass, cacheWriterClass,
+            asyncEventQueueIds, gatewaySenderIds, concurrencyChecksEnabled, cloningEnabled,
+            concurrencyLevel, prColocatedWith, prLocalMaxMemory, prRecoveryDelay, prRedundantCopies,
+            prStartupRecoveryDelay, prTotalMaxMemory, prTotalNumBuckets, offHeap, mcastEnabled,
+            regionAttributes, partitionResolver);
 
-        if (regionAttributes.getPartitionAttributes() == null && regionFunctionArgs.hasPartitionAttributes()) {
-          throw new IllegalArgumentException(
-              CliStrings.format(CliStrings.CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION, 
-                                regionFunctionArgs.getPartitionArgs().getUserSpecifiedPartitionAttributes()) + " " +
-              CliStrings.format(CliStrings.CREATE_REGION__MSG__0_IS_NOT_A_PARITIONEDREGION, 
-                                    useAttributesFrom));
+        if (regionAttributes.getPartitionAttributes() == null
+            && regionFunctionArgs.hasPartitionAttributes()) {
+          throw new IllegalArgumentException(CliStrings.format(
+              CliStrings.CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION,
+              regionFunctionArgs.getPartitionArgs().getUserSpecifiedPartitionAttributes()) + " "
+              + CliStrings.format(CliStrings.CREATE_REGION__MSG__0_IS_NOT_A_PARITIONEDREGION,
+                  useAttributesFrom));
         }
       } else {
-        regionFunctionArgs = new RegionFunctionArgs(
-          regionPath, regionShortcut, useAttributesFrom, skipIfExists,
-          keyConstraint, valueConstraint, statisticsEnabled, entryIdle, entryTTL,
-          regionIdle, regionTTL, diskStore, diskSynchronous,
-          enableAsyncConflation, enableSubscriptionConflation, cacheListener,
-          cacheLoader, cacheWriter, asyncEventQueueIds, gatewaySenderIds,
-          concurrencyChecksEnabled, cloningEnabled, concurrencyLevel, 
-          prColocatedWith, prLocalMaxMemory, prRecoveryDelay,
-          prRedundantCopies, prStartupRecoveryDelay,
-          prTotalMaxMemory, prTotalNumBuckets, null,compressor, offHeap , mcastEnabled);
-        
-        if (!regionShortcut.name().startsWith("PARTITION") && regionFunctionArgs.hasPartitionAttributes()) {
-          throw new IllegalArgumentException(
-              CliStrings.format(CliStrings.CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION, 
-                                regionFunctionArgs.getPartitionArgs().getUserSpecifiedPartitionAttributes()) + " " +
-              CliStrings.format(CliStrings.CREATE_REGION__MSG__0_IS_NOT_A_PARITIONEDREGION, 
-                                    useAttributesFrom));
+        regionFunctionArgs = new RegionFunctionArgs(regionPath, regionShortcut, useAttributesFrom,
+            skipIfExists, keyConstraint, valueConstraint, statisticsEnabled, entryIdle, entryTTL,
+            regionIdle, regionTTL, diskStore, diskSynchronous, enableAsyncConflation,
+            enableSubscriptionConflation, cacheListener, cacheLoader, cacheWriter,
+            asyncEventQueueIds, gatewaySenderIds, concurrencyChecksEnabled, cloningEnabled,
+            concurrencyLevel, prColocatedWith, prLocalMaxMemory, prRecoveryDelay, prRedundantCopies,
+            prStartupRecoveryDelay, prTotalMaxMemory, prTotalNumBuckets, null, compressor, offHeap,
+            mcastEnabled, partitionResolver);
+
+        if (!regionShortcut.name().startsWith("PARTITION")
+            && regionFunctionArgs.hasPartitionAttributes()) {
+          throw new IllegalArgumentException(CliStrings.format(
+              CliStrings.CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION,
+              regionFunctionArgs.getPartitionArgs().getUserSpecifiedPartitionAttributes()) + " "
+              + CliStrings.format(CliStrings.CREATE_REGION__MSG__0_IS_NOT_A_PARITIONEDREGION,
+                  useAttributesFrom));
         }
       }
 
@@ -368,7 +336,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         // have only normal members from the group
         for (Iterator<DistributedMember> it = membersToCreateRegionOn.iterator(); it.hasNext();) {
           DistributedMember distributedMember = it.next();
-          if ( ((InternalDistributedMember)distributedMember).getVmKind() == DistributionManager.LOCATOR_DM_TYPE ) {
+          if (((InternalDistributedMember) distributedMember)
+              .getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
             it.remove();
           }
         }
@@ -380,25 +349,27 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_CACHING_MEMBERS_FOUND_MESSAGE);
       }
 
-      ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(RegionCreateFunction.INSTANCE, regionFunctionArgs, membersToCreateRegionOn);
+      ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(RegionCreateFunction.INSTANCE,
+          regionFunctionArgs, membersToCreateRegionOn);
       @SuppressWarnings("unchecked")
-      List<CliFunctionResult> regionCreateResults = (List<CliFunctionResult>) resultCollector.getResult();
+      List<CliFunctionResult> regionCreateResults =
+          (List<CliFunctionResult>) resultCollector.getResult();
 
       TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
       final String errorPrefix = "ERROR: ";
       for (CliFunctionResult regionCreateResult : regionCreateResults) {
-        boolean success  = regionCreateResult.isSuccessful();
+        boolean success = regionCreateResult.isSuccessful();
         tabularResultData.accumulate("Member", regionCreateResult.getMemberIdOrName());
-        tabularResultData.accumulate("Status", (success ? "" : errorPrefix) + regionCreateResult.getMessage());
-        
+        tabularResultData.accumulate("Status",
+            (success ? "" : errorPrefix) + regionCreateResult.getMessage());
+
         if (success) {
-          xmlEntity = regionCreateResult.getXmlEntity();
+          xmlEntity.set(regionCreateResult.getXmlEntity());
         }
       }
-      
       result = ResultBuilder.buildResult(tabularResultData);
-      verifyDistributedRegionMbean(cache, regionPath); 
-      
+      verifyDistributedRegionMbean(cache, regionPath);
+
     } catch (IllegalArgumentException e) {
       LogWrapper.getInstance().info(e.getMessage());
       result = ResultBuilder.createUserErrorResult(e.getMessage());
@@ -408,132 +379,110 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     } catch (RuntimeException e) {
       LogWrapper.getInstance().info(e.getMessage(), e);
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
-      
+
     }
-    if (xmlEntity != null) {
-      result.setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, groups));
+    if (xmlEntity.get() != null) {
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
     }
+
     return result;
   }
-  
-  
-  public boolean verifyDistributedRegionMbean(Cache cache, String regionName){
-    GemFireCacheImpl gemfireCache = (GemFireCacheImpl) cache;
-    int federationInterval = gemfireCache.getDistributedSystem().getConfig().getJmxManagerUpdateRate();    
-    long timeEnd = System.currentTimeMillis() + federationInterval + 50;   
 
-    for( ; System.currentTimeMillis() <= timeEnd ; ){
-      try{
-        DistributedRegionMXBean bean = ManagementService.getManagementService(cache).getDistributedRegionMXBean(regionName);
-        if (bean == null){
-          bean = ManagementService.getManagementService(cache).getDistributedRegionMXBean(Region.SEPARATOR + regionName);
-        }        
-        if(bean != null){
-          return true;
-        }else{
-          Thread.sleep(2);         
+
+  public boolean verifyDistributedRegionMbean(Cache cache, String regionName) {
+    GemFireCacheImpl gemfireCache = (GemFireCacheImpl) cache;
+    int federationInterval =
+        gemfireCache.getDistributedSystem().getConfig().getJmxManagerUpdateRate();
+    long timeEnd = System.currentTimeMillis() + federationInterval + 50;
+
+    for (; System.currentTimeMillis() <= timeEnd;) {
+      try {
+        DistributedRegionMXBean bean =
+            ManagementService.getManagementService(cache).getDistributedRegionMXBean(regionName);
+        if (bean == null) {
+          bean = ManagementService.getManagementService(cache)
+              .getDistributedRegionMXBean(Region.SEPARATOR + regionName);
         }
-      }catch(Exception ex){
+        if (bean != null) {
+          return true;
+        } else {
+          Thread.sleep(2);
+        }
+      } catch (Exception ex) {
         continue;
       }
-    }       
+    }
     return false;
-  }  
-  
-  @CliCommand (value = CliStrings.ALTER_REGION, help = CliStrings.ALTER_REGION__HELP)
-  @CliMetaData (relatedTopic = CliStrings.TOPIC_GEODE_REGION, writesToSharedConfiguration = true)
+  }
+
+  @CliCommand(value = CliStrings.ALTER_REGION, help = CliStrings.ALTER_REGION__HELP)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   public Result alterRegion(
-      @CliOption (key = CliStrings.ALTER_REGION__REGION,
-                  mandatory = true,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.ALTER_REGION__REGION__HELP)
-      String regionPath,
-      @CliOption (key = CliStrings.ALTER_REGION__GROUP,
-                  optionContext = ConverterHint.MEMBERGROUP,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  help = CliStrings.ALTER_REGION__GROUP__HELP)
-      @CliMetaData (valueSeparator = ",")
-      String[] groups, 
-      @CliOption (key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "-1",
-                  help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME__HELP)
-      Integer entryExpirationIdleTime,
-      @CliOption (key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "INVALIDATE",
-                  help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP)
-      String entryExpirationIdleTimeAction,
-      @CliOption (key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "-1",
-                  help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP)
-      Integer entryExpirationTTL,
-      @CliOption (key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "INVALIDATE",
-                  help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION__HELP)
-      String entryExpirationTTLAction,
-      @CliOption (key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "-1",
-                  help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME__HELP)
-      Integer regionExpirationIdleTime, 
-      @CliOption (key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "INVALIDATE",
-                  help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP)
-      String regionExpirationIdleTimeAction,
-      @CliOption (key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "-1",
-                  help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL__HELP)
-      Integer regionExpirationTTL, 
-      @CliOption (key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "INVALIDATE",
-                  help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION__HELP)
-      String regionExpirationTTLAction,          
-      @CliOption (key = CliStrings.ALTER_REGION__CACHELISTENER,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "",
-                  help = CliStrings.ALTER_REGION__CACHELISTENER__HELP)
-      @CliMetaData (valueSeparator = ",") 
-      String[] cacheListeners,
-      @CliOption (key = CliStrings.ALTER_REGION__CACHELOADER,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "null",
-                  help = CliStrings.ALTER_REGION__CACHELOADER__HELP)
-      String cacheLoader,
-      @CliOption (key = CliStrings.ALTER_REGION__CACHEWRITER,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "null",
-                  help = CliStrings.ALTER_REGION__CACHEWRITER__HELP)
-      String cacheWriter,
-      @CliOption (key = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "",
-                  help = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID__HELP)
-      @CliMetaData (valueSeparator = ",") 
-      String[] asyncEventQueueIds,
-      @CliOption (key = CliStrings.ALTER_REGION__GATEWAYSENDERID,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "",
-                  help = CliStrings.ALTER_REGION__GATEWAYSENDERID__HELP)
-      @CliMetaData (valueSeparator = ",") 
-      String[] gatewaySenderIds,
-      @CliOption (key = CliStrings.ALTER_REGION__CLONINGENABLED,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "false",
-                  help = CliStrings.ALTER_REGION__CLONINGENABLED__HELP)
-      Boolean cloningEnabled,
-      @CliOption (key = CliStrings.ALTER_REGION__EVICTIONMAX,
-                  unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-                  specifiedDefaultValue = "0",
-                  help = CliStrings.ALTER_REGION__EVICTIONMAX__HELP)
-      Integer evictionMax) {
+      @CliOption(key = CliStrings.ALTER_REGION__REGION, mandatory = true,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.ALTER_REGION__REGION__HELP) String regionPath,
+      @CliOption(key = CliStrings.ALTER_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.ALTER_REGION__GROUP__HELP) @CliMetaData(
+              valueSeparator = ",") String[] groups,
+      @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "-1",
+          help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME__HELP) Integer entryExpirationIdleTime,
+      @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          specifiedDefaultValue = "INVALIDATE",
+          help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) String entryExpirationIdleTimeAction,
+      @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "-1",
+          help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
+      @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          specifiedDefaultValue = "INVALIDATE",
+          help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION__HELP) String entryExpirationTTLAction,
+      @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "-1",
+          help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
+      @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          specifiedDefaultValue = "INVALIDATE",
+          help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) String regionExpirationIdleTimeAction,
+      @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "-1",
+          help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTL__HELP) Integer regionExpirationTTL,
+      @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          specifiedDefaultValue = "INVALIDATE",
+          help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION__HELP) String regionExpirationTTLAction,
+      @CliOption(key = CliStrings.ALTER_REGION__CACHELISTENER,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
+          help = CliStrings.ALTER_REGION__CACHELISTENER__HELP) @CliMetaData(
+              valueSeparator = ",") String[] cacheListeners,
+      @CliOption(key = CliStrings.ALTER_REGION__CACHELOADER,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          specifiedDefaultValue = "null",
+          help = CliStrings.ALTER_REGION__CACHELOADER__HELP) String cacheLoader,
+      @CliOption(key = CliStrings.ALTER_REGION__CACHEWRITER,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          specifiedDefaultValue = "null",
+          help = CliStrings.ALTER_REGION__CACHEWRITER__HELP) String cacheWriter,
+      @CliOption(key = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
+          help = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID__HELP) @CliMetaData(
+              valueSeparator = ",") String[] asyncEventQueueIds,
+      @CliOption(key = CliStrings.ALTER_REGION__GATEWAYSENDERID,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
+          help = CliStrings.ALTER_REGION__GATEWAYSENDERID__HELP) @CliMetaData(
+              valueSeparator = ",") String[] gatewaySenderIds,
+      @CliOption(key = CliStrings.ALTER_REGION__CLONINGENABLED,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          specifiedDefaultValue = "false",
+          help = CliStrings.ALTER_REGION__CLONINGENABLED__HELP) Boolean cloningEnabled,
+      @CliOption(key = CliStrings.ALTER_REGION__EVICTIONMAX,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "0",
+          help = CliStrings.ALTER_REGION__EVICTIONMAX__HELP) Integer evictionMax) {
     Result result = null;
-    XmlEntity xmlEntity = null;
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     this.securityService.authorizeRegionManage(regionPath);
 
@@ -552,8 +501,9 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         if (CliMetaData.ANNOTATION_DEFAULT_VALUE.equals(entryExpirationIdleTimeAction)) {
           entryExpirationIdleTimeAction = ExpirationAttributes.DEFAULT.getAction().toString();
         }
-        entryIdle = new RegionFunctionArgs.ExpirationAttrs(RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_IDLE,
-            entryExpirationIdleTime, entryExpirationIdleTimeAction);
+        entryIdle = new RegionFunctionArgs.ExpirationAttrs(
+            RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_IDLE, entryExpirationIdleTime,
+            entryExpirationIdleTimeAction);
       }
       RegionFunctionArgs.ExpirationAttrs entryTTL = null;
       if (entryExpirationTTL != null || entryExpirationTTLAction != null) {
@@ -563,19 +513,21 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         if (CliMetaData.ANNOTATION_DEFAULT_VALUE.equals(entryExpirationTTLAction)) {
           entryExpirationTTLAction = ExpirationAttributes.DEFAULT.getAction().toString();
         }
-        entryTTL = new RegionFunctionArgs.ExpirationAttrs(RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_TTL,
-            entryExpirationTTL, entryExpirationTTLAction);
+        entryTTL = new RegionFunctionArgs.ExpirationAttrs(
+            RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_TTL, entryExpirationTTL,
+            entryExpirationTTLAction);
       }
       RegionFunctionArgs.ExpirationAttrs regionIdle = null;
       if (regionExpirationIdleTime != null || regionExpirationIdleTimeAction != null) {
-        if (regionExpirationIdleTime != null  && regionExpirationIdleTime == -1) {
+        if (regionExpirationIdleTime != null && regionExpirationIdleTime == -1) {
           regionExpirationIdleTime = ExpirationAttributes.DEFAULT.getTimeout();
         }
         if (CliMetaData.ANNOTATION_DEFAULT_VALUE.equals(regionExpirationIdleTimeAction)) {
           regionExpirationIdleTimeAction = ExpirationAttributes.DEFAULT.getAction().toString();
         }
-        regionIdle = new RegionFunctionArgs.ExpirationAttrs(RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_IDLE,
-            regionExpirationIdleTime, regionExpirationIdleTimeAction);
+        regionIdle = new RegionFunctionArgs.ExpirationAttrs(
+            RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_IDLE, regionExpirationIdleTime,
+            regionExpirationIdleTimeAction);
       }
       RegionFunctionArgs.ExpirationAttrs regionTTL = null;
       if (regionExpirationTTL != null || regionExpirationTTLAction != null) {
@@ -585,17 +537,19 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         if (CliMetaData.ANNOTATION_DEFAULT_VALUE.equals(regionExpirationTTLAction)) {
           regionExpirationTTLAction = ExpirationAttributes.DEFAULT.getAction().toString();
         }
-        regionTTL = new RegionFunctionArgs.ExpirationAttrs(RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_TTL,
-            regionExpirationTTL, regionExpirationTTLAction);
+        regionTTL = new RegionFunctionArgs.ExpirationAttrs(
+            RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_TTL, regionExpirationTTL,
+            regionExpirationTTLAction);
       }
 
       cacheLoader = convertDefaultValue(cacheLoader, StringUtils.EMPTY_STRING);
       cacheWriter = convertDefaultValue(cacheWriter, StringUtils.EMPTY_STRING);
 
       RegionFunctionArgs regionFunctionArgs = null;
-      regionFunctionArgs = new RegionFunctionArgs(regionPath, null, null, false, null, null, null, entryIdle, entryTTL,
-        regionIdle, regionTTL, null, null, null, null, cacheListeners, cacheLoader, cacheWriter, asyncEventQueueIds,
-        gatewaySenderIds, null, cloningEnabled, null, null, null, null, null, null, null, null, evictionMax, null, null, null);
+      regionFunctionArgs = new RegionFunctionArgs(regionPath, null, null, false, null, null, null,
+          entryIdle, entryTTL, regionIdle, regionTTL, null, null, null, null, cacheListeners,
+          cacheLoader, cacheWriter, asyncEventQueueIds, gatewaySenderIds, null, cloningEnabled,
+          null, null, null, null, null, null, null, null, evictionMax, null, null, null, null);
 
       Set<String> cacheListenersSet = regionFunctionArgs.getCacheListeners();
       if (cacheListenersSet != null && !cacheListenersSet.isEmpty()) {
@@ -603,44 +557,49 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           if (!isClassNameValid(cacheListener)) {
             throw new IllegalArgumentException(CliStrings.format(
                 CliStrings.ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELISTENER_0_IS_INVALID,
-                new Object[] { cacheListener }));
+                new Object[] {cacheListener}));
           }
         }
       }
 
       if (cacheLoader != null && !isClassNameValid(cacheLoader)) {
         throw new IllegalArgumentException(CliStrings.format(
-            CliStrings.ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELOADER_0_IS_INVALID, new Object[] { cacheLoader }));
+            CliStrings.ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELOADER_0_IS_INVALID,
+            new Object[] {cacheLoader}));
       }
 
       if (cacheWriter != null && !isClassNameValid(cacheWriter)) {
         throw new IllegalArgumentException(CliStrings.format(
-            CliStrings.ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHEWRITER_0_IS_INVALID, new Object[] { cacheWriter }));
+            CliStrings.ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHEWRITER_0_IS_INVALID,
+            new Object[] {cacheWriter}));
       }
-              
+
       if (evictionMax != null && evictionMax < 0) {
         throw new IllegalArgumentException(CliStrings.format(
-            CliStrings.ALTER_REGION__MSG__SPECIFY_POSITIVE_INT_FOR_EVICTIONMAX_0_IS_NOT_VALID, new Object[] { evictionMax }));
+            CliStrings.ALTER_REGION__MSG__SPECIFY_POSITIVE_INT_FOR_EVICTIONMAX_0_IS_NOT_VALID,
+            new Object[] {evictionMax}));
       }
 
       Set<DistributedMember> targetMembers;
       try {
-        targetMembers = CliUtil.findAllMatchingMembers(groups, null);
+        targetMembers = CliUtil.findMembersOrThrow(groups, null);
       } catch (CommandResultException crex) {
         return crex.getResult();
       }
 
-      ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(new RegionAlterFunction(), regionFunctionArgs, targetMembers);
-      List<CliFunctionResult> regionAlterResults = (List<CliFunctionResult>) resultCollector.getResult();
+      ResultCollector<?, ?> resultCollector =
+          CliUtil.executeFunction(new RegionAlterFunction(), regionFunctionArgs, targetMembers);
+      List<CliFunctionResult> regionAlterResults =
+          (List<CliFunctionResult>) resultCollector.getResult();
 
       TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
       final String errorPrefix = "ERROR: ";
       for (CliFunctionResult regionAlterResult : regionAlterResults) {
-        boolean success  = regionAlterResult.isSuccessful();
+        boolean success = regionAlterResult.isSuccessful();
         tabularResultData.accumulate("Member", regionAlterResult.getMemberIdOrName());
         if (success) {
           tabularResultData.accumulate("Status", regionAlterResult.getMessage());
-          xmlEntity = regionAlterResult.getXmlEntity();
+          xmlEntity.set(regionAlterResult.getXmlEntity());
         } else {
           tabularResultData.accumulate("Status", errorPrefix + regionAlterResult.getMessage());
           tabularResultData.setStatus(Status.ERROR);
@@ -657,12 +616,14 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       LogWrapper.getInstance().info(e.getMessage(), e);
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
-    if (xmlEntity != null) {
-      result.setCommandPersisted((new SharedConfigurationWriter()).addXmlEntity(xmlEntity, groups));
+
+    if (xmlEntity.get() != null) {
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
     }
     return result;
   }
-  
+
   private static boolean regionExists(Cache cache, String regionPath) {
     boolean regionFound = false;
     if (regionPath != null && !Region.SEPARATOR.equals(regionPath)) {
@@ -679,7 +640,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     }
     return regionFound;
   }
-  
+
   private void validateRegionPathAndParent(Cache cache, String regionPath) {
     if (regionPath == null || "".equals(regionPath)) {
       throw new IllegalArgumentException(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
@@ -689,7 +650,9 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     String parentRegionPath = regionPathData.getParent();
     if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
       if (!regionExists(cache, parentRegionPath)) {
-        throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOESNOT_EXIST, new Object[] {regionPath}));
+        throw new IllegalArgumentException(
+            CliStrings.format(CliStrings.CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOESNOT_EXIST,
+                new Object[] {regionPath}));
       }
     }
   }
@@ -705,9 +668,11 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       }
       List<String> groupsList = new ArrayList<String>(Arrays.asList(groups));
       groupsList.removeAll(existingGroups);
-  
+
       if (!groupsList.isEmpty()) {
-        throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID, new Object[] {String.valueOf(groupsList)}));
+        throw new IllegalArgumentException(
+            CliStrings.format(CliStrings.CREATE_REGION__MSG__GROUPS_0_ARE_INVALID,
+                new Object[] {String.valueOf(groupsList)}));
       }
     }
   }
@@ -721,12 +686,18 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     DistributedSystemMXBean dsMBean = managementService.getDistributedSystemMXBean();
 
     String useAttributesFrom = regionFunctionArgs.getUseAttributesFrom();
-    if (useAttributesFrom != null && !useAttributesFrom.isEmpty() && regionExists(cache, useAttributesFrom)) {
+    if (useAttributesFrom != null && !useAttributesFrom.isEmpty()
+        && regionExists(cache, useAttributesFrom)) {
       if (!regionExists(cache, useAttributesFrom)) { // check already done in createRegion !!!
-        throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND, new Object[] {CliStrings.CREATE_REGION__USEATTRIBUTESFROM, useAttributesFrom}));
+        throw new IllegalArgumentException(CliStrings.format(
+            CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
+            new Object[] {CliStrings.CREATE_REGION__USEATTRIBUTESFROM, useAttributesFrom}));
       }
-      if (!regionFunctionArgs.isSetUseAttributesFrom() || regionFunctionArgs.getRegionAttributes() == null) {
-        throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_VERIFY_REGION_EXISTS, useAttributesFrom));
+      if (!regionFunctionArgs.isSetUseAttributesFrom()
+          || regionFunctionArgs.getRegionAttributes() == null) {
+        throw new IllegalArgumentException(CliStrings.format(
+            CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_VERIFY_REGION_EXISTS,
+            useAttributesFrom));
       }
     }
 
@@ -743,25 +714,35 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           }
         }
         if (foundRegionPath == null) {
-          throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND, new Object[] {CliStrings.CREATE_REGION__COLOCATEDWITH, colocatedWith}));
+          throw new IllegalArgumentException(CliStrings.format(
+              CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
+              new Object[] {CliStrings.CREATE_REGION__COLOCATEDWITH, colocatedWith}));
         }
         ManagementService mgmtService = ManagementService.getExistingManagementService(cache);
-        DistributedRegionMXBean distributedRegionMXBean = mgmtService.getDistributedRegionMXBean(foundRegionPath);
+        DistributedRegionMXBean distributedRegionMXBean =
+            mgmtService.getDistributedRegionMXBean(foundRegionPath);
         String regionType = distributedRegionMXBean.getRegionType();
-        if ( ! ( DataPolicy.PARTITION.toString().equals(regionType) || DataPolicy.PERSISTENT_PARTITION.toString().equals(regionType) ) ) {
-          throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_IS_NOT_PARTITIONEDREGION, new Object[] {colocatedWith}));
+        if (!(DataPolicy.PARTITION.toString().equals(regionType)
+            || DataPolicy.PERSISTENT_PARTITION.toString().equals(regionType))) {
+          throw new IllegalArgumentException(CliStrings.format(
+              CliStrings.CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_IS_NOT_PARTITIONEDREGION,
+              new Object[] {colocatedWith}));
         }
       }
       if (partitionArgs.isSetPRLocalMaxMemory()) {
         int prLocalMaxMemory = partitionArgs.getPrLocalMaxMemory();
         if (prLocalMaxMemory < 0) {
-          throw new IllegalArgumentException(LocalizedStrings.AttributesFactory_PARTITIONATTRIBUTES_LOCALMAXMEMORY_MUST_NOT_BE_NEGATIVE.toLocalizedString());
+          throw new IllegalArgumentException(
+              LocalizedStrings.AttributesFactory_PARTITIONATTRIBUTES_LOCALMAXMEMORY_MUST_NOT_BE_NEGATIVE
+                  .toLocalizedString());
         }
       }
       if (partitionArgs.isSetPRTotalMaxMemory()) {
         long prTotalMaxMemory = partitionArgs.getPrTotalMaxMemory();
         if (prTotalMaxMemory <= 0) {
-          throw new IllegalArgumentException(LocalizedStrings.AttributesFactory_TOTAL_SIZE_OF_PARTITION_REGION_MUST_BE_0.toLocalizedString());
+          throw new IllegalArgumentException(
+              LocalizedStrings.AttributesFactory_TOTAL_SIZE_OF_PARTITION_REGION_MUST_BE_0
+                  .toLocalizedString());
         }
       }
       if (partitionArgs.isSetPRRedundantCopies()) {
@@ -773,114 +754,145 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           case 3:
             break;
           default:
-            throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__REDUNDANT_COPIES_SHOULD_BE_ONE_OF_0123, new Object[] {prRedundantCopies}));
+            throw new IllegalArgumentException(CliStrings.format(
+                CliStrings.CREATE_REGION__MSG__REDUNDANT_COPIES_SHOULD_BE_ONE_OF_0123,
+                new Object[] {prRedundantCopies}));
         }
       }
-//      Validation for the following is not known yet
-//      if (partitionArgs.isSetPRTotalNumBuckets()) {
-//        int prTotalNumBuckets = partitionArgs.getPrTotalNumBuckets();
-//      }
-//      if (partitionArgs.isSetPRStartupRecoveryDelay()) {
-//        long prStartupRecoveryDelay = partitionArgs.getPrStartupRecoveryDelay();
-//      }
-//      if (partitionArgs.isSetPRRecoveryDelay()) {
-//        long prRecoveryDelay = partitionArgs.getPrRecoveryDelay();
-//      }
+      // Validation for the following is not known yet
+      // if (partitionArgs.isSetPRTotalNumBuckets()) {
+      // int prTotalNumBuckets = partitionArgs.getPrTotalNumBuckets();
+      // }
+      // if (partitionArgs.isSetPRStartupRecoveryDelay()) {
+      // long prStartupRecoveryDelay = partitionArgs.getPrStartupRecoveryDelay();
+      // }
+      // if (partitionArgs.isSetPRRecoveryDelay()) {
+      // long prRecoveryDelay = partitionArgs.getPrRecoveryDelay();
+      // }
     }
 
     String keyConstraint = regionFunctionArgs.getKeyConstraint();
     if (keyConstraint != null && !isClassNameValid(keyConstraint)) {
-      throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_KEYCONSTRAINT_0_IS_INVALID, new Object[] {keyConstraint}));
+      throw new IllegalArgumentException(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_KEYCONSTRAINT_0_IS_INVALID,
+          new Object[] {keyConstraint}));
     }
 
     String valueConstraint = regionFunctionArgs.getValueConstraint();
     if (valueConstraint != null && !isClassNameValid(valueConstraint)) {
-      throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_VALUECONSTRAINT_0_IS_INVALID, new Object[] {valueConstraint}));
+      throw new IllegalArgumentException(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_VALUECONSTRAINT_0_IS_INVALID,
+          new Object[] {valueConstraint}));
     }
 
     Set<String> cacheListeners = regionFunctionArgs.getCacheListeners();
     if (cacheListeners != null && !cacheListeners.isEmpty()) {
       for (String cacheListener : cacheListeners) {
         if (!isClassNameValid(cacheListener)) {
-          throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELISTENER_0_IS_INVALID, new Object[] {cacheListener}));
+          throw new IllegalArgumentException(CliStrings.format(
+              CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELISTENER_0_IS_INVALID,
+              new Object[] {cacheListener}));
         }
       }
     }
 
     String cacheLoader = regionFunctionArgs.getCacheLoader();
     if (cacheLoader != null && !isClassNameValid(cacheLoader)) {
-      throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELOADER_0_IS_INVALID, new Object[] {cacheLoader}));
+      throw new IllegalArgumentException(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELOADER_0_IS_INVALID,
+          new Object[] {cacheLoader}));
     }
 
     String cacheWriter = regionFunctionArgs.getCacheWriter();
     if (cacheWriter != null && !isClassNameValid(cacheWriter)) {
-      throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHEWRITER_0_IS_INVALID, new Object[] {cacheWriter}));
+      throw new IllegalArgumentException(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHEWRITER_0_IS_INVALID,
+          new Object[] {cacheWriter}));
     }
 
     Set<String> gatewaySenderIds = regionFunctionArgs.getGatewaySenderIds();
     if (gatewaySenderIds != null && !gatewaySenderIds.isEmpty()) {
       String[] gatewaySenders = dsMBean.listGatewaySenders();
       if (gatewaySenders.length == 0) {
-        throw new IllegalArgumentException(CliStrings.CREATE_REGION__MSG__NO_GATEWAYSENDERS_IN_THE_SYSTEM);
+        throw new IllegalArgumentException(
+            CliStrings.CREATE_REGION__MSG__NO_GATEWAYSENDERS_IN_THE_SYSTEM);
       } else {
         List<String> gatewaySendersList = new ArrayList<String>(Arrays.asList(gatewaySenders));
         gatewaySenderIds = new HashSet<String>(gatewaySenderIds);
         gatewaySenderIds.removeAll(gatewaySendersList);
         if (!gatewaySenderIds.isEmpty()) {
-          throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_GATEWAYSENDER_ID_UNKNOWN_0, new Object[] {gatewaySenderIds}));
+          throw new IllegalArgumentException(CliStrings.format(
+              CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_GATEWAYSENDER_ID_UNKNOWN_0,
+              new Object[] {gatewaySenderIds}));
         }
       }
     }
-    
+
     if (regionFunctionArgs.isSetConcurrencyLevel()) {
       int concurrencyLevel = regionFunctionArgs.getConcurrencyLevel();
       if (concurrencyLevel < 0) {
-        throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_POSITIVE_INT_FOR_CONCURRENCYLEVEL_0_IS_NOT_VALID, new Object[] {concurrencyLevel}));
+        throw new IllegalArgumentException(CliStrings.format(
+            CliStrings.CREATE_REGION__MSG__SPECIFY_POSITIVE_INT_FOR_CONCURRENCYLEVEL_0_IS_NOT_VALID,
+            new Object[] {concurrencyLevel}));
       }
     }
-    
+
     String diskStore = regionFunctionArgs.getDiskStore();
     if (diskStore != null) {
       RegionShortcut regionShortcut = regionFunctionArgs.getRegionShortcut();
       if (regionShortcut != null && !PERSISTENT_OVERFLOW_SHORTCUTS.contains(regionShortcut)) {
-        String subMessage = LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString();
-        String message = subMessage + ". " +  CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ONE_OF_THESE_SHORTCUTS_0, new Object[] {String.valueOf(PERSISTENT_OVERFLOW_SHORTCUTS)});
-        
+        String subMessage =
+            LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString();
+        String message = subMessage + ". "
+            + CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ONE_OF_THESE_SHORTCUTS_0,
+                new Object[] {String.valueOf(PERSISTENT_OVERFLOW_SHORTCUTS)});
+
         throw new IllegalArgumentException(message);
       }
 
       RegionAttributes<?, ?> regionAttributes = regionFunctionArgs.getRegionAttributes();
       if (regionAttributes != null && !regionAttributes.getDataPolicy().withPersistence()) {
-        String subMessage = LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString();
-        String message = subMessage+ ". " + CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ATTRIBUTES_FROM_REGION_0_IS_NOT_WITH_PERSISTENCE, 
-                                                              new Object[] { String.valueOf(regionFunctionArgs.getUseAttributesFrom()) });
+        String subMessage =
+            LocalizedStrings.DiskStore_IS_USED_IN_NONPERSISTENT_REGION.toLocalizedString();
+        String message = subMessage + ". "
+            + CliStrings.format(
+                CliStrings.CREATE_REGION__MSG__USE_ATTRIBUTES_FROM_REGION_0_IS_NOT_WITH_PERSISTENCE,
+                new Object[] {String.valueOf(regionFunctionArgs.getUseAttributesFrom())});
 
         throw new IllegalArgumentException(message);
       }
-      
+
       if (!diskStoreExists(cache, diskStore)) {
-        throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_DISKSTORE_UNKNOWN_DISKSTORE_0, new Object[] {diskStore}));
+        throw new IllegalArgumentException(CliStrings.format(
+            CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_DISKSTORE_UNKNOWN_DISKSTORE_0,
+            new Object[] {diskStore}));
       }
     }
-    
-    RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime = regionFunctionArgs.getEntryExpirationIdleTime();
-    RegionFunctionArgs.ExpirationAttrs entryExpirationTTL = regionFunctionArgs.getEntryExpirationTTL();
-    RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime = regionFunctionArgs.getRegionExpirationIdleTime();
-    RegionFunctionArgs.ExpirationAttrs regionExpirationTTL = regionFunctionArgs.getRegionExpirationTTL();
-    
+
+    RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime =
+        regionFunctionArgs.getEntryExpirationIdleTime();
+    RegionFunctionArgs.ExpirationAttrs entryExpirationTTL =
+        regionFunctionArgs.getEntryExpirationTTL();
+    RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime =
+        regionFunctionArgs.getRegionExpirationIdleTime();
+    RegionFunctionArgs.ExpirationAttrs regionExpirationTTL =
+        regionFunctionArgs.getRegionExpirationTTL();
+
     if ((!regionFunctionArgs.isSetStatisticsEnabled() || !regionFunctionArgs.isStatisticsEnabled())
         && (entryExpirationIdleTime != null || entryExpirationTTL != null
             || regionExpirationIdleTime != null || regionExpirationTTL != null)) {
-      String message = LocalizedStrings.AttributesFactory_STATISTICS_MUST_BE_ENABLED_FOR_EXPIRATION.toLocalizedString();
+      String message = LocalizedStrings.AttributesFactory_STATISTICS_MUST_BE_ENABLED_FOR_EXPIRATION
+          .toLocalizedString();
       throw new IllegalArgumentException(message + ".");
     }
-    
+
     boolean compressorFailure = false;
-    if(regionFunctionArgs.isSetCompressor()) {
+    if (regionFunctionArgs.isSetCompressor()) {
       String compressorClassName = regionFunctionArgs.getCompressor();
       Object compressor = null;
       try {
-        Class<?> compressorClass = (Class<?>) ClassPathLoader.getLatest().forName(compressorClassName);
+        Class<?> compressorClass =
+            (Class<?>) ClassPathLoader.getLatest().forName(compressorClassName);
         compressor = compressorClass.newInstance();
       } catch (InstantiationException e) {
         compressorFailure = true;
@@ -889,34 +901,54 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       } catch (ClassNotFoundException e) {
         compressorFailure = true;
       }
-      
+
       if (compressorFailure || !(compressor instanceof Compressor)) {
-        throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_COMPRESSOR,
-            new Object[] { regionFunctionArgs.getCompressor() }));
+        throw new IllegalArgumentException(
+            CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_COMPRESSOR,
+                new Object[] {regionFunctionArgs.getCompressor()}));
+      }
+    }
+
+    if (regionFunctionArgs.hasPartitionAttributes()) {
+      if (regionFunctionArgs.isPartitionResolverSet()) {
+        String partitionResolverClassName = regionFunctionArgs.getPartitionResolver();
+        try {
+          Class<PartitionResolver> resolverClass = (Class<PartitionResolver>) ClassPathLoader
+              .getLatest().forName(partitionResolverClassName);
+          PartitionResolver partitionResolver = resolverClass.newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+          throw new IllegalArgumentException(
+              CliStrings.format(CliStrings.CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER,
+                  new Object[] {regionFunctionArgs.getCompressor()}),
+              e);
+        }
       }
     }
   }
-  
+
   private boolean diskStoreExists(Cache cache, String diskStoreName) {
     ManagementService managementService = ManagementService.getExistingManagementService(cache);
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
     Map<String, String[]> diskstore = dsMXBean.listMemberDiskstore();
-    
+
     Set<Entry<String, String[]>> entrySet = diskstore.entrySet();
-    
+
     for (Entry<String, String[]> entry : entrySet) {
       String[] value = entry.getValue();
       if (CliUtil.contains(value, diskStoreName)) {
         return true;
       }
     }
-    
+
     return false;
   }
 
-  private static <K, V> FetchRegionAttributesFunctionResult<K, V> getRegionAttributes(Cache cache, String regionPath) {
+  private static <K, V> FetchRegionAttributesFunctionResult<K, V> getRegionAttributes(Cache cache,
+      String regionPath) {
     if (!isClusterwideSameConfig(cache, regionPath)) {
-      throw new IllegalStateException(CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ATTRIBUTES_FORM_REGIONS_EXISTS_BUT_DIFFERENT_SCOPE_OR_DATAPOLICY_USE_DESCRIBE_REGION_FOR_0, regionPath));
+      throw new IllegalStateException(CliStrings.format(
+          CliStrings.CREATE_REGION__MSG__USE_ATTRIBUTES_FORM_REGIONS_EXISTS_BUT_DIFFERENT_SCOPE_OR_DATAPOLICY_USE_DESCRIBE_REGION_FOR_0,
+          regionPath));
     }
     FetchRegionAttributesFunctionResult<K, V> attributes = null;
 
@@ -930,12 +962,14 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
     if (attributes == null) {
       // find first member which has the region
-      Set<DistributedMember> regionAssociatedMembers = CliUtil.getRegionAssociatedMembers(regionPath, cache, false);
+      Set<DistributedMember> regionAssociatedMembers =
+          CliUtil.getRegionAssociatedMembers(regionPath, cache, false);
       if (regionAssociatedMembers != null && !regionAssociatedMembers.isEmpty()) {
         DistributedMember distributedMember = regionAssociatedMembers.iterator().next();
-        ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(FetchRegionAttributesFunction.INSTANCE, regionPath, distributedMember);
+        ResultCollector<?, ?> resultCollector = CliUtil
+            .executeFunction(FetchRegionAttributesFunction.INSTANCE, regionPath, distributedMember);
         List<?> resultsList = (List<?>) resultCollector.getResult();
-        
+
         if (resultsList != null && !resultsList.isEmpty()) {
           for (int i = 0; i < resultsList.size(); i++) {
             Object object = resultsList.get(i);
@@ -944,47 +978,53 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
             } else if (object instanceof Throwable) {
               Throwable th = (Throwable) object;
               LogWrapper.getInstance().info(CliUtil.stackTraceAsString((th)));
-              throw new IllegalArgumentException(CliStrings.format(CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_REASON_1, new Object[] {regionPath, th.getMessage()}));
+              throw new IllegalArgumentException(CliStrings.format(
+                  CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_REASON_1,
+                  new Object[] {regionPath, th.getMessage()}));
             } else { // has to be RegionAttributes
               @SuppressWarnings("unchecked") // to avoid warning :(
-              FetchRegionAttributesFunctionResult<K, V> regAttr = ((FetchRegionAttributesFunctionResult<K, V>) object);
+              FetchRegionAttributesFunctionResult<K, V> regAttr =
+                  ((FetchRegionAttributesFunctionResult<K, V>) object);
               if (attributes == null) {
                 attributes = regAttr;
                 break;
-              } //attributes null check
-            }// not IllegalArgumentException or other throwable
-          }// iterate over list - there should be only one result in the list
-        }// result list is not null or mpty
-      }// regionAssociatedMembers is not-empty
-    }// attributes are null because do not exist on local member
-    
-    
+              } // attributes null check
+            } // not IllegalArgumentException or other throwable
+          } // iterate over list - there should be only one result in the list
+        } // result list is not null or mpty
+      } // regionAssociatedMembers is not-empty
+    } // attributes are null because do not exist on local member
+
     return attributes;
   }
 
   private static boolean isClusterwideSameConfig(Cache cache, String regionPath) {
     ManagementService managementService = ManagementService.getExistingManagementService(cache);
-    
+
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
-    
+
     Set<DistributedMember> allMembers = CliUtil.getAllNormalMembers(cache);
-    
+
     RegionAttributesData regionAttributesToValidateAgainst = null;
     for (DistributedMember distributedMember : allMembers) {
       ObjectName regionObjectName;
       try {
-        regionObjectName = dsMXBean.fetchRegionObjectName(CliUtil.getMemberNameOrId(distributedMember), regionPath);
-        RegionMXBean regionMBean = managementService.getMBeanInstance(regionObjectName, RegionMXBean.class);
+        regionObjectName = dsMXBean
+            .fetchRegionObjectName(CliUtil.getMemberNameOrId(distributedMember), regionPath);
+        RegionMXBean regionMBean =
+            managementService.getMBeanInstance(regionObjectName, RegionMXBean.class);
         RegionAttributesData regionAttributes = regionMBean.listRegionAttributes();
 
         if (regionAttributesToValidateAgainst == null) {
           regionAttributesToValidateAgainst = regionAttributes;
-        } else if ( !(regionAttributesToValidateAgainst.getScope().equals(regionAttributes.getScope()) ||
-            regionAttributesToValidateAgainst.getDataPolicy().equals(regionAttributes.getDataPolicy())) ) {
+        } else if (!(regionAttributesToValidateAgainst.getScope()
+            .equals(regionAttributes.getScope())
+            || regionAttributesToValidateAgainst.getDataPolicy()
+                .equals(regionAttributes.getDataPolicy()))) {
           return false;
         }
       } catch (Exception e) {
-        //ignore
+        // ignore
       }
     }
 
@@ -995,32 +1035,30 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     if (fqcn.isEmpty()) {
       return true;
     }
-    
+
     String regex = "([\\p{L}_$][\\p{L}\\p{N}_$]*\\.)*[\\p{L}_$][\\p{L}\\p{N}_$]*";
     return Pattern.matches(regex, fqcn);
   }
 
-  @CliCommand(value = { CliStrings.DESTROY_REGION }, help = CliStrings.DESTROY_REGION__HELP)
-  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION, writesToSharedConfiguration = true)
-  @ResourceOperation(resource=Resource.DATA, operation = Operation.MANAGE)
+  @CliCommand(value = {CliStrings.DESTROY_REGION}, help = CliStrings.DESTROY_REGION__HELP)
+  @CliMetaData(shellOnly = false, relatedTopic = CliStrings.TOPIC_GEODE_REGION)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result destroyRegion(
-      @CliOption(key = CliStrings.DESTROY_REGION__REGION,
-          optionContext = ConverterHint.REGIONPATH,
-          mandatory = true,
-          help = CliStrings.DESTROY_REGION__REGION__HELP)
-      String regionPath) {
+      @CliOption(key = CliStrings.DESTROY_REGION__REGION, optionContext = ConverterHint.REGIONPATH,
+          mandatory = true, help = CliStrings.DESTROY_REGION__REGION__HELP) String regionPath) {
 
     if (regionPath == null) {
-      return ResultBuilder.createInfoResult(CliStrings.DESTROY_REGION__MSG__SPECIFY_REGIONPATH_TO_DESTROY);
+      return ResultBuilder
+          .createInfoResult(CliStrings.DESTROY_REGION__MSG__SPECIFY_REGIONPATH_TO_DESTROY);
     }
 
     if (regionPath.trim().isEmpty() || regionPath.equals(Region.SEPARATOR)) {
-      return ResultBuilder.createInfoResult(
-          CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGIONPATH_0_NOT_VALID, new Object[]{regionPath}));
+      return ResultBuilder.createInfoResult(CliStrings.format(
+          CliStrings.DESTROY_REGION__MSG__REGIONPATH_0_NOT_VALID, new Object[] {regionPath}));
     }
 
     Result result = null;
-    XmlEntity xmlEntity = null;
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
     try {
       String message = "";
       Cache cache = CacheFactory.getAnyInstance();
@@ -1031,37 +1069,40 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         regionPathToUse = Region.SEPARATOR + regionPathToUse;
       }
 
-      Set<DistributedMember> regionMembersList = findMembersForRegion(cache, managementService, regionPathToUse);
+      Set<DistributedMember> regionMembersList =
+          findMembersForRegion(cache, managementService, regionPathToUse);
 
       if (regionMembersList.size() == 0) {
         return ResultBuilder.createUserErrorResult(
             CliStrings.format(CliStrings.DESTROY_REGION__MSG__COULDNOT_FIND_REGIONPATH_0_IN_GEODE,
-                new Object[]{regionPath, "jmx-manager-update-rate milliseconds"}));
+                new Object[] {regionPath, "jmx-manager-update-rate milliseconds"}));
       }
 
       CliFunctionResult destroyRegionResult = null;
 
-      ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(RegionDestroyFunction.INSTANCE, regionPath,
-          regionMembersList);
+      ResultCollector<?, ?> resultCollector =
+          CliUtil.executeFunction(RegionDestroyFunction.INSTANCE, regionPath, regionMembersList);
       List<CliFunctionResult> resultsList = (List<CliFunctionResult>) resultCollector.getResult();
       message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__REGION_0_1_DESTROYED,
-          new Object[]{regionPath, /*subRegionMessage*/""});
+          new Object[] {regionPath, /* subRegionMessage */""});
 
       // Only if there is an error is this set to false
       boolean isRegionDestroyed = true;
       for (int i = 0; i < resultsList.size(); i++) {
         destroyRegionResult = resultsList.get(i);
         if (destroyRegionResult.isSuccessful()) {
-          xmlEntity = destroyRegionResult.getXmlEntity();
+          xmlEntity.set(destroyRegionResult.getXmlEntity());
         } else if (destroyRegionResult.getThrowable() != null) {
           Throwable t = destroyRegionResult.getThrowable();
           LogWrapper.getInstance().info(t.getMessage(), t);
-          message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__ERROR_OCCURRED_WHILE_DESTROYING_0_REASON_1,
-              new Object[]{regionPath, t.getMessage()});
+          message = CliStrings.format(
+              CliStrings.DESTROY_REGION__MSG__ERROR_OCCURRED_WHILE_DESTROYING_0_REASON_1,
+              new Object[] {regionPath, t.getMessage()});
           isRegionDestroyed = false;
         } else {
-          message = CliStrings.format(CliStrings.DESTROY_REGION__MSG__UNKNOWN_RESULT_WHILE_DESTROYING_REGION_0_REASON_1,
-              new Object[]{regionPath, destroyRegionResult.getMessage()});
+          message = CliStrings.format(
+              CliStrings.DESTROY_REGION__MSG__UNKNOWN_RESULT_WHILE_DESTROYING_REGION_0_REASON_1,
+              new Object[] {regionPath, destroyRegionResult.getMessage()});
           isRegionDestroyed = false;
         }
       }
@@ -1071,24 +1112,25 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         result = ResultBuilder.createUserErrorResult(message);
       }
     } catch (IllegalStateException e) {
-      result = ResultBuilder.createUserErrorResult(
-          CliStrings.format(CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1,
-              new Object[]{regionPath, e.getMessage()}));
+      result = ResultBuilder.createUserErrorResult(CliStrings.format(
+          CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1,
+          new Object[] {regionPath, e.getMessage()}));
     } catch (Exception e) {
-      result = ResultBuilder.createGemFireErrorResult(
-          CliStrings.format(CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1,
-              new Object[]{regionPath, e.getMessage()}));
+      result = ResultBuilder.createGemFireErrorResult(CliStrings.format(
+          CliStrings.DESTROY_REGION__MSG__ERROR_WHILE_DESTROYING_REGION_0_REASON_1,
+          new Object[] {regionPath, e.getMessage()}));
     }
 
-    if (xmlEntity != null) {
-      result.setCommandPersisted((new SharedConfigurationWriter()).deleteXmlEntity(xmlEntity, null));
+    if (xmlEntity.get() != null) {
+      persistClusterConfiguration(result,
+          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), null));
     }
+
     return result;
   }
 
   private Set<DistributedMember> findMembersForRegion(Cache cache,
-                                                      ManagementService managementService,
-                                                      String regionPath) {
+      ManagementService managementService, String regionPath) {
     Set<DistributedMember> membersList = new HashSet<>();
     Set<String> regionMemberIds = new HashSet<>();
     MBeanServer mbeanServer = MBeanJMXAdapter.mbeanServer;
@@ -1098,7 +1140,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       regionPath = "\"" + regionPath + "\"";
     }
 
-    String queryExp = MessageFormat.format(MBeanJMXAdapter.OBJECTNAME__REGION_MXBEAN, regionPath, "*");
+    String queryExp =
+        MessageFormat.format(MBeanJMXAdapter.OBJECTNAME__REGION_MXBEAN, regionPath, "*");
 
     try {
       ObjectName queryExpON = new ObjectName(queryExp);
@@ -1110,7 +1153,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       boolean addedOneRemote = false;
       for (ObjectName regionMBeanObjectName : queryNames) {
         try {
-          RegionMXBean regionMXBean = managementService.getMBeanInstance(regionMBeanObjectName, RegionMXBean.class);
+          RegionMXBean regionMXBean =
+              managementService.getMBeanInstance(regionMBeanObjectName, RegionMXBean.class);
           if (regionMXBean != null) {
             RegionAttributesData regionAttributes = regionMXBean.listRegionAttributes();
             String scope = regionAttributes.getScope();
@@ -1129,7 +1173,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
         } catch (ClassCastException e) {
           LogWriter logger = cache.getLogger();
           if (logger.finerEnabled()) {
-            logger.finer(regionMBeanObjectName + " is not a " + RegionMXBean.class.getSimpleName(), e);
+            logger.finer(regionMBeanObjectName + " is not a " + RegionMXBean.class.getSimpleName(),
+                e);
           }
         }
       }
@@ -1152,7 +1197,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
 
       for (String memberId : memberIds) {
         for (DistributedMember distributedMember : allNormalMembers) {
-          if (memberId.equals(distributedMember.getId()) || memberId.equals(distributedMember.getName())) {
+          if (memberId.equals(distributedMember.getId())
+              || memberId.equals(distributedMember.getName())) {
             foundMembers.add(distributedMember);
           }
         }
@@ -1161,7 +1207,8 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
     return foundMembers;
   }
 
-  @CliAvailabilityIndicator({ CliStrings.ALTER_REGION, CliStrings.CREATE_REGION, CliStrings.DESTROY_REGION })
+  @CliAvailabilityIndicator({CliStrings.ALTER_REGION, CliStrings.CREATE_REGION,
+      CliStrings.DESTROY_REGION})
   public boolean isRegionCommandAvailable() {
     boolean isAvailable = true; // always available on server
     if (CliUtil.isGfshVM()) { // in gfsh check if connected //TODO - Abhishek: make this better

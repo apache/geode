@@ -21,7 +21,7 @@ REM GF_JAVA - java executable path.
 REM
 REM JAVA_ARGS - java arguments, i.e., -Xms1024m -Xmx1024m ... 
 REM
-REM GEMFIRE - GemFire product Directory
+REM GEODE_HOME - Geode product Directory
 REM
 REM
 
@@ -31,13 +31,13 @@ REM
 REM echo %gf%
 REM echo %scriptdir%
 @if exist "%gf%\lib\geode-dependencies.jar" @goto gfok
-@echo Could not determine GEMFIRE location
+@echo Could not determine GEODE_HOME location
 @verify other 2>nul
 @goto done
 :gfok
-@set GEMFIRE=%gf%
+@set GEODE_HOME=%gf%
 
-@set GFSH_JARS=%GEMFIRE%\lib\gfsh-dependencies.jar
+@set GFSH_JARS=%GEODE_HOME%\lib\gfsh-dependencies.jar
 REM if a system level classpath is set, append it to the classes gfsh will need
 @if defined CLASSPATH (
     @set DEPENDENCIES=%GFSH_JARS%;%CLASSPATH%
@@ -58,7 +58,7 @@ REM
 REM Copy default .gfshrc to the home directory. Uncomment if needed.
 REM
 REM @if not exist "%USERPROFILE%\.gemfire\.gfsh2rc" (
-REM @xcopy /q "%GEMFIRE%\defaultConfigs\.gfsh2rc" "%USERPROFILE%\.gemfire"
+REM @xcopy /q "%GEODE_HOME%\defaultConfigs\.gfsh2rc" "%USERPROFILE%\.gemfire"
 REM )
 
 REM
@@ -82,5 +82,5 @@ REM  Expect to find the tools.jar from the JDK
 )
 
 REM Call java with our classpath
-@"%GF_JAVA%" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml -classpath %DEPENDENCIES% %JAVA_ARGS% %LAUNCHER% %*
+@"%GF_JAVA%" -Dgfsh=true -Dlog4j.configurationFile=classpath:log4j2-cli.xml -classpath "%DEPENDENCIES%" %JAVA_ARGS% %LAUNCHER% %*
 :done

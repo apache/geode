@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.util;
 
 import org.apache.geode.cache.Cache;
@@ -37,7 +35,8 @@ public class BootstrappingFunction implements Function, MembershipListener {
 
   public static final String ID = "bootstrapping-function";
 
-  private static final int TIME_TO_WAIT_FOR_CACHE = Integer.getInteger("gemfiremodules.timeToWaitForCache", 30000);
+  private static final int TIME_TO_WAIT_FOR_CACHE =
+      Integer.getInteger("gemfiremodules.timeToWaitForCache", 30000);
 
   @Override
   public void execute(FunctionContext context) {
@@ -64,7 +63,7 @@ public class BootstrappingFunction implements Function, MembershipListener {
         cache = CacheFactory.getAnyInstance();
         break;
       } catch (Exception ignore) {
-        //keep trying and hope for the best
+        // keep trying and hope for the best
       }
       try {
         Thread.sleep(250);
@@ -169,8 +168,7 @@ public class BootstrappingFunction implements Function, MembershipListener {
   }
 
   @Override
-  public void memberDeparted(InternalDistributedMember id, boolean crashed) {
-  }
+  public void memberDeparted(InternalDistributedMember id, boolean crashed) {}
 
   @Override
   public void memberJoined(InternalDistributedMember id) {
@@ -178,11 +176,10 @@ public class BootstrappingFunction implements Function, MembershipListener {
   }
 
   @Override
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected, String reason) {
-  }
+  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
+      String reason) {}
 
   @Override
   public void quorumLost(Set<InternalDistributedMember> internalDistributedMembers,
-      List<InternalDistributedMember> internalDistributedMembers2) {
-  }
+      List<InternalDistributedMember> internalDistributedMembers2) {}
 }

@@ -145,7 +145,13 @@ See <a href="../../managing/autoreconnect/member-reconnect.html">Handling Forced
 </tr>
 <tr class="even">
 <td>distributed-system-id</td>
-<td>Identifier used to distinguish messages from different distributed systems. Set this to different values for different systems in a multi-site (WAN) configuration. This is required for Portable Data eXchange (PDX) data serialization. This setting must be the same for every member in the same distributed system and unique to the distributed system within the WAN installation. -1 means no setting. Valid values are integers in the range -1...255.</td>
+<td>Identifier used to distinguish messages from different distributed systems. 
+This is required for Portable Data eXchange (PDX) data serialization. 
+Set <code class="ph codeph">distributed-system-id</code> to different values for different systems in a multi-site (WAN) configuration, and to different values for production vs. development environments.
+This setting must be the same for every member of a given distributed system and unique to each distributed system within a WAN installation. 
+<br/>Valid values are integers in the range -1...255.
+-1 means no setting. 
+</td>
 <td>-1</td>
 </tr>
 <tr class="odd">
@@ -160,8 +166,8 @@ See <a href="../../managing/autoreconnect/member-reconnect.html">Handling Forced
 </tr>
 <tr class="odd">
 <td>enable-network-partition-detection</td>
-<td>Boolean instructing the system to detect and handle splits in the distributed system, typically caused by a partitioning of the network (split brain) where the distributed system is running. We recommend setting this property to <code class="ph codeph">true</code>. You must set this property to the same value across all your distributed system members. In addition, you must set this property to <code class="ph codeph">true</code> if you are using persistent regions and configure your regions to use DISTRIBUTED_ACK or GLOBAL scope to avoid potential data conflicts.</td>
-<td>false</td>
+<td>Boolean instructing the system to detect and handle splits in the distributed system, typically caused by a partitioning of the network (split brain) where the distributed system is running. You must set this property to the same value across all your distributed system members. In addition, this property must be set to <code class="ph codeph">true</code> if you are using persistent regions and configure your regions to use DISTRIBUTED_ACK or GLOBAL scope to avoid potential data conflicts.</td>
+<td>true</td>
 </tr>
 <tr class="even">
 <td>enable-cluster-configuration</td>
@@ -423,21 +429,19 @@ See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Co
 </tr>
 <tr class="odd">
 <td>security-*</td>
-<td>Used for authentication. Any custom properties needed by your <code class="ph codeph">AuthInitialize</code> or <code class="ph codeph">Authenticator</code> callbacks.
-<div class="note note">
-**Note:**
-<p>Any security-related (properties that begin with <code class="ph codeph">security-*</code>) configuration properties that are normally configured in <code class="ph codeph">gemfire.properties</code> can be moved to a separate <code class="ph codeph">gfsecurity.properties</code> file. Placing these configuration settings in a separate file allows you to restrict access to security configuration data. This way, you can still allow read or write access for your <code class="ph codeph">gemfire.properties</code> file.</p>
-</div></td>
+<td>
+Any security-related (properties that begin with <code class="ph codeph">security-</code>) configuration properties that are normally configured in <code class="ph codeph">gemfire.properties</code> can be moved to a separate <code class="ph codeph">gfsecurity.properties</code> file. Placing these configuration settings in a separate file allows you to restrict access to security configuration data. This way, you can still allow read or write access for your <code class="ph codeph">gemfire.properties</code> file.
+</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>security-client-accessor</td>
-<td>Used for authorization. Static creation method returning an <code class="ph codeph">AccessControl</code> object, which determines authorization of client-server cache operations. This specifies the callback that should be invoked in the pre-operation phase, which is when the request for the operation is received from the client.</td>
+<td><b>Deprecated.</b> Used for authorization. Static creation method returning an <code class="ph codeph">AccessControl</code> object, which determines authorization of client-server cache operations. This specifies the callback that should be invoked in the pre-operation phase, which is when the request for the operation is received from the client.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>security-client-accessor-pp</td>
-<td>Used for authorization. The callback that should be invoked in the post-operation phase, which is when the operation has completed on the server but before the result is sent to the client. The post-operation callback is also invoked for the updates that are sent from server to client through the notification channel.</td>
+<td><b>Deprecated.</b> Used for authorization. The callback that should be invoked in the post-operation phase, which is when the operation has completed on the server but before the result is sent to the client. The post-operation callback is also invoked for the updates that are sent from server to client through the notification channel.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
@@ -447,7 +451,7 @@ See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Co
 </tr>
 <tr class="odd">
 <td>security-client-authenticator</td>
-<td>Used for authentication. Static creation method returning an <code class="ph codeph">Authenticator</code> object, which is used by a peer to verify the credentials of the connecting peer.</td>
+<td><b>Deprecated.</b> Used for authentication. Static creation method returning an <code class="ph codeph">Authenticator</code> object, which is used by a peer to verify the credentials of the connecting peer.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
@@ -466,20 +470,30 @@ See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Co
 <p>Valid values from lowest to highest are fine, config, info, warning, error, severe, and none.</p></td>
 <td>config</td>
 </tr>
+<tr class="even">
+<td>security-manager</td>
+<td>Specifies the implementation of the <code>SecurityManager</code> interface that implements the callbacks that do authentication and authorization.</td>
+<td><em>not set</em></td>
+</tr>
 <tr class="odd">
 <td>security-peer-auth-init</td>
-<td>Used with authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a distributed system. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
+<td><b>Deprecated.</b> Used with authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a distributed system. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>security-peer-authenticator</td>
-<td>Used with authentication. Static creation method returning an <code class="ph codeph">Authenticator</code> object, which is used by a peer to verify the credentials of the connecting peer.</td>
+<td><b>Deprecated.</b> Used with authentication. Static creation method returning an <code class="ph codeph">Authenticator</code> object, which is used by a peer to verify the credentials of the connecting peer.</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>security-peer-verifymember-timeout</td>
 <td>Used with authentication. Timeout in milliseconds used by a peer to verify membership of an unknown authenticated peer requesting a secure connection.</td>
 <td>1000</td>
+</tr>
+<tr class="even">
+<td>security-post-processor</td>
+<td>Specifies the implementation of the <code>PostProcessor</code> interface that implements user-defined callbacks that can change the returned results of region get operations.</td>
+<td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>server-bind-address</td>

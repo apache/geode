@@ -28,28 +28,31 @@
 		<csrf disabled="true"/>
 		<!-- Can be invoked w/o auth -->
 		<intercept-url pattern="/Login.html" access="permitAll"  />
-		<intercept-url pattern="/pulse/pulseVersion" access="permitAll" />
-		<intercept-url pattern="/pulse/authenticateUser" access="permitAll" />
-		<intercept-url pattern="/pulse/pulseProductSupport" access="permitAll" />
+		<intercept-url pattern="/authenticateUser" access="permitAll" />
 		<!-- Can be invoked w/o auth -->
 
 		<!-- Restricted urls -->
-		<intercept-url pattern="/clusterDetail.html" access="hasRole('CLUSTER:READ')" />
+        <intercept-url pattern="/*" access="hasRole('CLUSTER:READ')" />
+        <intercept-url pattern="/clusterDetail.html" access="hasRole('CLUSTER:READ')" />
 		<intercept-url pattern="/MemberDetails.html" access="hasRole('CLUSTER:READ')" />
 		<intercept-url pattern="/regionDetail.html" access="hasRole('CLUSTER:READ')" />
-		<intercept-url pattern="/pulse/*" access="hasRole('CLUSTER:READ')" />
 		<intercept-url pattern="/clearAlerts" access="hasRole('CLUSTER:READ')" />
 		<intercept-url pattern="/acknowledgeAlert" access="hasRole('CLUSTER:READ')" />
-		<!-- /dataBrowserRegions, /dataBrowserQuery, /dataBrowserQueryHistory, /dataBrowserExport -->
 		<intercept-url pattern="/dataBrowser*" access="hasRole('CLUSTER:READ') and hasRole('DATA:READ')" />
 		<intercept-url pattern="/getQueryStatisticsGridModel/*" access="hasRole('CLUSTER:READ') and hasRole('DATA:READ')" />
 		
 		<!-- Restricted urls -->
-		<form-login login-page="/Login.html"
-			authentication-failure-handler-ref="authenticationFailureHandler"
-			default-target-url="/clusterDetail.html" />
+        <form-login login-page="/Login.html"
+                    authentication-failure-handler-ref="authenticationFailureHandler"
+                    default-target-url="/clusterDetail.html"
+                    always-use-default-target="true"/>
+		<headers>
+			<frame-options policy="DENY" />
+			<content-type-options  />
+			<xss-protection enabled="true" block="true" />
+		</headers>
 		
-		<logout logout-url="/pulse/clusterLogout" success-handler-ref="customLogoutSuccessHandler"/>
+		<logout logout-url="/clusterLogout" success-handler-ref="customLogoutSuccessHandler"/>
 		
 	</http>
 

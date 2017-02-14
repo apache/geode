@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.util;
 
@@ -40,6 +38,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Test class for testing the contract and functionality of the IOUtils class.
  * <p/>
+ * 
  * @see org.apache.geode.internal.util.IOUtils
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery
@@ -53,9 +52,11 @@ public class IOUtilsJUnitTest {
 
   @Before
   public void setup() {
-    mockContext = new Mockery() {{
-      setImposteriser(ClassImposteriser.INSTANCE);
-    }};
+    mockContext = new Mockery() {
+      {
+        setImposteriser(ClassImposteriser.INSTANCE);
+      }
+    };
   }
 
   @After
@@ -67,6 +68,7 @@ public class IOUtilsJUnitTest {
   /**
    * Gets a fully-qualified path anchored at root.
    * <p/>
+   * 
    * @param pathElements a String array containing the elements of the path.
    * @return a fully-qualified pathname as a String value.
    */
@@ -92,17 +94,19 @@ public class IOUtilsJUnitTest {
     assertEquals(File.separator, IOUtils.appendToPath(File.separator));
     assertEquals(toPathname("bin", "a.out"), IOUtils.appendToPath(null, "bin", "a.out"));
     assertEquals(toPathname("bin", "a.out"), IOUtils.appendToPath(File.separator, "bin", "a.out"));
-    assertEquals(toPathname("usr", "local", "bin", "a.out"), IOUtils
-      .appendToPath(toPathname("usr", "local"), "bin", "a.out"));
+    assertEquals(toPathname("usr", "local", "bin", "a.out"),
+        IOUtils.appendToPath(toPathname("usr", "local"), "bin", "a.out"));
   }
 
   @Test
   public void testClose() throws IOException {
     final Closeable mockCloseable = mockContext.mock(Closeable.class, "Closeable");
 
-    mockContext.checking(new Expectations() {{
-      oneOf(mockCloseable).close();
-    }});
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockCloseable).close();
+      }
+    });
 
     IOUtils.close(mockCloseable);
   }
@@ -111,15 +115,16 @@ public class IOUtilsJUnitTest {
   public void testCloseIgnoresIOException() throws IOException {
     final Closeable mockCloseable = mockContext.mock(Closeable.class, "Closeable");
 
-    mockContext.checking(new Expectations() {{
-      oneOf(mockCloseable).close();
-      will(throwException(new IOException("test")));
-    }});
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockCloseable).close();
+        will(throwException(new IOException("test")));
+      }
+    });
 
     try {
       IOUtils.close(mockCloseable);
-    }
-    catch (Throwable unexpected) {
+    } catch (Throwable unexpected) {
       if (unexpected instanceof IOException) {
         fail("Calling close on a Closeable object unexpectedly threw an IOException!");
       }
@@ -129,19 +134,19 @@ public class IOUtilsJUnitTest {
   @Test
   public void testCreatePath() {
     assertEquals("", IOUtils.createPath());
-    assertEquals("/path/to/file.test".replace("/", File.separator), IOUtils.createPath("path", "to", "file.test"));
-    assertEquals("/path/to/a/directory".replace("/", File.separator), IOUtils.createPath("path", "to", "a", "directory"));
+    assertEquals("/path/to/file.test".replace("/", File.separator),
+        IOUtils.createPath("path", "to", "file.test"));
+    assertEquals("/path/to/a/directory".replace("/", File.separator),
+        IOUtils.createPath("path", "to", "a", "directory"));
   }
 
   @Test
   public void testCreatePathWithSeparator() {
     assertEquals("", IOUtils.createPath(new String[0], "-"));
-    assertEquals("-path-to-file.ext".replace("/", File.separator), IOUtils.createPath(new String[] {
-      "path",
-      "to",
-      "file.ext"
-    }, "-"));
-    assertEquals("-path-to-a-directory", IOUtils.createPath(new String[] { "path", "to", "a", "directory" }, "-"));
+    assertEquals("-path-to-file.ext".replace("/", File.separator),
+        IOUtils.createPath(new String[] {"path", "to", "file.ext"}, "-"));
+    assertEquals("-path-to-a-directory",
+        IOUtils.createPath(new String[] {"path", "to", "a", "directory"}, "-"));
   }
 
   @Test
@@ -153,8 +158,10 @@ public class IOUtilsJUnitTest {
     assertEquals("a.ext", IOUtils.getFilename("a.ext"));
     assertEquals("b.ext", IOUtils.getFilename(toPathname("b.ext")));
     assertEquals("c.ext", IOUtils.getFilename(toPathname("path", "to", "c.ext")));
-    assertEquals("filename.ext", IOUtils.getFilename(toPathname("export", "path", "to", "some", "filename.ext")));
-    assertEquals("", IOUtils.getFilename(toPathname("path", "to", "a", "directory") + File.separator));
+    assertEquals("filename.ext",
+        IOUtils.getFilename(toPathname("export", "path", "to", "some", "filename.ext")));
+    assertEquals("",
+        IOUtils.getFilename(toPathname("path", "to", "a", "directory") + File.separator));
   }
 
   @Test
@@ -191,7 +198,8 @@ public class IOUtilsJUnitTest {
     assertNotNull(piBytes);
     assertTrue(piBytes.length != 0);
 
-    final Object piObj = IOUtils.deserializeObject(piBytes, IOUtilsJUnitTest.class.getClassLoader());
+    final Object piObj =
+        IOUtils.deserializeObject(piBytes, IOUtilsJUnitTest.class.getClassLoader());
 
     assertTrue(piObj instanceof BigDecimal);
     assertEquals(pi, piObj);
@@ -199,7 +207,7 @@ public class IOUtilsJUnitTest {
 
   @Test
   public void testToByteArray() throws IOException {
-    final byte[] expected = new byte[] { (byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE };
+    final byte[] expected = new byte[] {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE};
 
     final byte[] actual = IOUtils.toByteArray(new ByteArrayInputStream(expected));
 
@@ -213,13 +221,16 @@ public class IOUtilsJUnitTest {
 
   @Test(expected = IOException.class)
   public void testToByteArrayThrowsIOException() throws IOException {
-    final InputStream mockIn = mockContext.mock(InputStream.class, "testToByteArrayThrowsIOException");
+    final InputStream mockIn =
+        mockContext.mock(InputStream.class, "testToByteArrayThrowsIOException");
 
-    mockContext.checking(new Expectations() {{
-      oneOf(mockIn).read(with(aNonNull(byte[].class)));
-      will(throwException(new IOException("test")));
-      oneOf(mockIn).close();
-    }});
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockIn).read(with(aNonNull(byte[].class)));
+        will(throwException(new IOException("test")));
+        oneOf(mockIn).close();
+      }
+    });
 
     IOUtils.toByteArray(mockIn);
   }
@@ -228,8 +239,7 @@ public class IOUtilsJUnitTest {
   public void testToByteArrayWithNull() throws IOException {
     try {
       IOUtils.toByteArray(null);
-    }
-    catch (AssertionError expected) {
+    } catch (AssertionError expected) {
       assertEquals("The input stream to read bytes from cannot be null!", expected.getMessage());
       throw expected;
     }
@@ -238,7 +248,7 @@ public class IOUtilsJUnitTest {
   @Test
   public void testTryGetCanonicalFileElseGetAbsoluteFile() throws Exception {
     final MockFile file = (MockFile) IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(
-      new MockFile("/path/to/non_existing/file.test", null));
+        new MockFile("/path/to/non_existing/file.test", null));
 
     assertNotNull(file);
     assertFalse(file.exists());
@@ -249,7 +259,7 @@ public class IOUtilsJUnitTest {
   @Test
   public void testTryGetCanonicalFileElseGetAbsoluteFileHandlesIOException() throws Exception {
     final MockFile file = (MockFile) IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(
-      new MockFile(System.getProperty("user.home"), new IOException("test")));
+        new MockFile(System.getProperty("user.home"), new IOException("test")));
 
     assertNotNull(file);
     assertTrue(file.exists());
@@ -259,17 +269,17 @@ public class IOUtilsJUnitTest {
 
   @Test
   public void testVerifyPathnameExists() throws FileNotFoundException {
-    assertEquals(System.getProperty("java.io.tmpdir"), IOUtils.verifyPathnameExists(
-      System.getProperty("java.io.tmpdir")));
+    assertEquals(System.getProperty("java.io.tmpdir"),
+        IOUtils.verifyPathnameExists(System.getProperty("java.io.tmpdir")));
   }
 
   @Test(expected = FileNotFoundException.class)
   public void testVerifyPathnameExistsWithNonExistingPathname() throws FileNotFoundException {
     try {
       IOUtils.verifyPathnameExists("/path/to/non_existing/file.test");
-    }
-    catch (FileNotFoundException expected) {
-      assertEquals("Pathname (/path/to/non_existing/file.test) could not be found!", expected.getMessage());
+    } catch (FileNotFoundException expected) {
+      assertEquals("Pathname (/path/to/non_existing/file.test) could not be found!",
+          expected.getMessage());
       throw expected;
     }
   }

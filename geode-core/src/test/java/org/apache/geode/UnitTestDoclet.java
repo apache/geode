@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode;
 
@@ -29,10 +27,9 @@ import junit.framework.TestCase;
 import perffmwk.Formatter;
 
 /**
- * This class is a Javadoc <A
- * href="http://java.sun.com/j2se/1.4.2/docs/tooldocs/javadoc/overview.html">doclet</A> 
- * that generates a text file that summarizes unit test classes and
- * methods. 
+ * This class is a Javadoc
+ * <A href="http://java.sun.com/j2se/1.4.2/docs/tooldocs/javadoc/overview.html">doclet</A> that
+ * generates a text file that summarizes unit test classes and methods.
  *
  * @see com.sun.javadoc.Doclet
  *
@@ -42,8 +39,7 @@ import perffmwk.Formatter;
 public class UnitTestDoclet {
 
   /**
-   * Returns the number of arguments for the given command option
-   * (include the option itself)
+   * Returns the number of arguments for the given command option (include the option itself)
    */
   public static int optionLength(String option) {
     if (option.equals("-output")) {
@@ -55,8 +51,7 @@ public class UnitTestDoclet {
     }
   }
 
-  public static boolean validOptions(String[][] options,
-                                     DocErrorReporter reporter) {
+  public static boolean validOptions(String[][] options, DocErrorReporter reporter) {
     boolean sawOutput = false;
 
     for (int i = 0; i < options.length; i++) {
@@ -65,8 +60,7 @@ public class UnitTestDoclet {
       if (option[0].equals("-output")) {
         File output = new File(option[1]);
         if (output.exists() && output.isDirectory()) {
-          reporter.printError("Output file " + output +
-                              " is a directory");
+          reporter.printError("Output file " + output + " is a directory");
           return false;
 
         } else {
@@ -88,7 +82,7 @@ public class UnitTestDoclet {
    */
   public static boolean start(RootDoc root) {
     String[][] options = root.options();
-    
+
     File outputFile = null;
     for (int i = 0; i < options.length; i++) {
       String[] option = options[i];
@@ -106,20 +100,19 @@ public class UnitTestDoclet {
     }
 
     try {
-      PrintWriter pw =
-        new PrintWriter(new FileWriter(outputFile));
+      PrintWriter pw = new PrintWriter(new FileWriter(outputFile));
       Formatter.center("GemFire Unit Test Summary", pw);
       Formatter.center(new Date().toString(), pw);
       pw.println("");
 
       ClassDoc[] classes = root.classes();
       Arrays.sort(classes, new Comparator() {
-          public int compare(Object o1, Object o2) {
-            ClassDoc c1 = (ClassDoc) o1;
-            ClassDoc c2 = (ClassDoc) o2;
-            return c1.qualifiedName().compareTo(c2.qualifiedName());
-          }
-        });
+        public int compare(Object o1, Object o2) {
+          ClassDoc c1 = (ClassDoc) o1;
+          ClassDoc c2 = (ClassDoc) o2;
+          return c1.qualifiedName().compareTo(c2.qualifiedName());
+        }
+      });
       for (int i = 0; i < classes.length; i++) {
         ClassDoc c = classes[i];
         if (!c.isAbstract() && isUnitTest(c)) {
@@ -141,8 +134,8 @@ public class UnitTestDoclet {
   }
 
   /**
-   * Returns whether or not a class is a unit test.  That is, whether
-   * or not it is a subclass of {@link junit.framework.TestCase}.
+   * Returns whether or not a class is a unit test. That is, whether or not it is a subclass of
+   * {@link junit.framework.TestCase}.
    */
   private static boolean isUnitTest(ClassDoc c) {
     if (c == null) {
@@ -159,8 +152,7 @@ public class UnitTestDoclet {
   /**
    * Summarizes the test methods of the given class
    */
-  public static void document(ClassDoc c, PrintWriter pw) 
-    throws IOException {
+  public static void document(ClassDoc c, PrintWriter pw) throws IOException {
 
     pw.println(c.qualifiedName());
 
@@ -178,7 +170,7 @@ public class UnitTestDoclet {
       MethodDoc method = methods[i];
       pw.print("  ");
       pw.println(method.name());
-      
+
       String comment = method.commentText();
       if (comment != null && !comment.equals("")) {
         pw.println("");
@@ -191,8 +183,8 @@ public class UnitTestDoclet {
   }
 
   /**
-   * Returns an array containing all of the "test" methods (including
-   * those that are inherited) for the given class.
+   * Returns an array containing all of the "test" methods (including those that are inherited) for
+   * the given class.
    */
   private static MethodDoc[] getTestMethods(ClassDoc c) {
     Set set = new TreeSet();
@@ -200,8 +192,8 @@ public class UnitTestDoclet {
       MethodDoc[] methods = c.methods();
       for (int i = 0; i < methods.length; i++) {
         MethodDoc method = methods[i];
-        if (method.isPublic() && method.parameters().length == 0 &&
-            method.name().startsWith("test")) {
+        if (method.isPublic() && method.parameters().length == 0
+            && method.name().startsWith("test")) {
           set.add(method);
         }
       }
@@ -215,8 +207,7 @@ public class UnitTestDoclet {
   /**
    * Indents a block of text a given amount.
    */
-  private static void indent(String text, final int indent,
-                             PrintWriter pw) {
+  private static void indent(String text, final int indent, PrintWriter pw) {
     StringBuffer sb = new StringBuffer();
     for (int i = 0; i < indent; i++) {
       sb.append(" ");
@@ -231,8 +222,7 @@ public class UnitTestDoclet {
     BreakIterator boundary = BreakIterator.getWordInstance();
     boundary.setText(text);
     int start = boundary.first();
-    for (int end = boundary.next(); end != BreakIterator.DONE; 
-         start = end, end = boundary.next()) {
+    for (int end = boundary.next(); end != BreakIterator.DONE; start = end, end = boundary.next()) {
 
       String word = text.substring(start, end);
 
@@ -246,8 +236,7 @@ public class UnitTestDoclet {
       if (word.charAt(word.length() - 1) == '\n') {
         pw.write(word, 0, word.length() - 1);
 
-      } else if (firstWord &&
-                 Character.isWhitespace(word.charAt(0))) {
+      } else if (firstWord && Character.isWhitespace(word.charAt(0))) {
         pw.write(word, 1, word.length() - 1);
 
       } else {

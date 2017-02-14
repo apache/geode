@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.jta.dunit;
 
@@ -60,7 +58,7 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
   private static String tblName;
 
   private static String readFile(String filename) throws IOException {
-//    String lineSep = System.getProperty("\n");
+    // String lineSep = System.getProperty("\n");
     BufferedReader br = new BufferedReader(new FileReader(filename));
     String nextLine = "";
     StringBuffer sb = new StringBuffer();
@@ -68,9 +66,9 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
       sb.append(nextLine);
       //
       // note:
-      //   BufferedReader strips the EOL character.
+      // BufferedReader strips the EOL character.
       //
-      //    sb.append(lineSep);
+      // sb.append(lineSep);
     }
     LogWriterUtils.getLogWriter().info("***********\n " + sb);
     return sb.toString();
@@ -84,41 +82,35 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
     String search = "<jndi-binding type=\"XAPooledDataSource\"";
     String last_search = "</jndi-binding>";
     String newDB = "newDB_" + OSProcess.getId();
-    String jndi_str = "<jndi-binding type=\"XAPooledDataSource\" jndi-name=\"XAPooledDataSource\" jdbc-driver-class=\"org.apache.derby.jdbc.EmbeddedDriver\" init-pool-size=\"5\" max-pool-size=\"30\" idle-timeout-seconds=\"300\" blocking-timeout-seconds=\"10\" login-timeout-seconds=\"25\" conn-pooled-datasource-class=\"org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource\" xa-datasource-class=\"org.apache.derby.jdbc.EmbeddedXADataSource\" user-name=\"mitul\" password=\"83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a\" connection-url=\"jdbc:derby:"+newDB+";create=true\" >";
+    String jndi_str =
+        "<jndi-binding type=\"XAPooledDataSource\" jndi-name=\"XAPooledDataSource\" jdbc-driver-class=\"org.apache.derby.jdbc.EmbeddedDriver\" init-pool-size=\"5\" max-pool-size=\"30\" idle-timeout-seconds=\"300\" blocking-timeout-seconds=\"10\" login-timeout-seconds=\"25\" conn-pooled-datasource-class=\"org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource\" xa-datasource-class=\"org.apache.derby.jdbc.EmbeddedXADataSource\" user-name=\"mitul\" password=\"83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a\" connection-url=\"jdbc:derby:"
+            + newDB + ";create=true\" >";
     String config_prop = "<config-property>"
         + "<config-property-name>description</config-property-name>"
         + "<config-property-type>java.lang.String</config-property-type>"
-        + "<config-property-value>hi</config-property-value>"
-        + "</config-property>"
-        + "<config-property>"
-        + "<config-property-name>user</config-property-name>"
+        + "<config-property-value>hi</config-property-value>" + "</config-property>"
+        + "<config-property>" + "<config-property-name>user</config-property-name>"
         + "<config-property-type>java.lang.String</config-property-type>"
-        + "<config-property-value>mitul</config-property-value>"
-        + "</config-property>"
-        + "<config-property>"
-        + "<config-property-name>password</config-property-name>"
+        + "<config-property-value>mitul</config-property-value>" + "</config-property>"
+        + "<config-property>" + "<config-property-name>password</config-property-name>"
         + "<config-property-type>java.lang.String</config-property-type>"
         + "<config-property-value>83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a</config-property-value>        "
         + "</config-property>" + "<config-property>"
         + "<config-property-name>databaseName</config-property-name>"
         + "<config-property-type>java.lang.String</config-property-type>"
-        + "<config-property-value>"+newDB+"</config-property-value>"
-        + "</config-property>\n";
+        + "<config-property-value>" + newDB + "</config-property-value>" + "</config-property>\n";
     String new_str = jndi_str + config_prop;
     /*
-     * String new_str = " <jndi-binding type=\"XAPooledDataSource\"
-     * jndi-name=\"XAPooledDataSource\"
+     * String new_str = " <jndi-binding type=\"XAPooledDataSource\" jndi-name=\"XAPooledDataSource\"
      * jdbc-driver-class=\"org.apache.derby.jdbc.EmbeddedDriver\"
      * init-pool-size=\"5\" max-pool-size=\"30\" idle-timeout-seconds=\"300\"
      * blocking-timeout-seconds=\"10\" login-timeout-seconds=\"25\"
      * conn-pooled-datasource-class=\"org.apache.derby.jdbc.EmbeddedConnectionPoolDataSource\"
-     * xa-datasource-class=\"org.apache.derby.jdbc.EmbeddedXADataSource\"
-     * user-name=\"mitul\"
+     * xa-datasource-class=\"org.apache.derby.jdbc.EmbeddedXADataSource\" user-name=\"mitul\"
      * password=\"83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a\"
      * connection-url=\"jdbc:derby:"+newDB+";create=true\" > <property
      * key=\"description\" value=\"hi\"/> <property key=\"databaseName\"
-     * value=\""+newDB+"\"/> <property key=\"user\" value=\"mitul\"/> <property
-     * key=\"password\"
+     * value=\""+newDB+"\"/> <property key=\"user\" value=\"mitul\"/> <property key=\"password\"
      * value=\"83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a\"/>";
      */
     int n1 = str.indexOf(search);
@@ -149,9 +141,9 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
     wr.close();
     props.setProperty(CACHE_XML_FILE, path);
     String tableName = "";
-    //	        props.setProperty(DistributionConfig.ConfigurationProperties.MCAST_PORT, "10339");
+    // props.setProperty(DistributionConfig.ConfigurationProperties.MCAST_PORT, "10339");
     try {
-      //	  	      ds = DistributedSystem.connect(props);
+      // ds = DistributedSystem.connect(props);
       ds = (new IdleTimeOutDUnitTest()).getSystem(props);
       cache = CacheFactory.create(ds);
       if (className != null && !className.equals("")) {
@@ -159,8 +151,7 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
         tableName = className + time;
         createTable(tableName);
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       e.printStackTrace(System.err);
       throw new Exception("" + e);
     }
@@ -168,17 +159,16 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
     return tableName;
   }
 
-  public static void createTable(String tableName) throws NamingException,
-      SQLException {
+  public static void createTable(String tableName) throws NamingException, SQLException {
     Context ctx = cache.getJNDIContext();
     DataSource ds = (DataSource) ctx.lookup("java:/SimpleDataSource");
-    //String sql = "create table " + tableName + " (id number primary key, name
+    // String sql = "create table " + tableName + " (id number primary key, name
     // varchar2(50))";
-    //String sql = "create table " + tableName + " (id integer primary key,
+    // String sql = "create table " + tableName + " (id integer primary key,
     // name varchar(50))";
-    String sql = "create table "
-        + tableName
-        + " (id integer NOT NULL, name varchar(50), CONSTRAINT "+tableName+"_key PRIMARY KEY(id))";
+    String sql =
+        "create table " + tableName + " (id integer NOT NULL, name varchar(50), CONSTRAINT "
+            + tableName + "_key PRIMARY KEY(id))";
     LogWriterUtils.getLogWriter().info(sql);
     Connection conn = ds.getConnection();
     Statement sm = conn.createStatement();
@@ -205,16 +195,13 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
       Statement sm = conn.createStatement();
       sm.execute(sql);
       conn.close();
-    }
-    catch (NamingException ne) {
+    } catch (NamingException ne) {
       LogWriterUtils.getLogWriter().info("destroy table naming exception: " + ne);
       throw ne;
-    }
-    catch (SQLException se) {
+    } catch (SQLException se) {
       LogWriterUtils.getLogWriter().info("destroy table sql exception: " + se);
       throw se;
-    }
-    finally {
+    } finally {
       closeCache();
     }
   }
@@ -228,8 +215,7 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
       if (cache.isClosed()) {
         cache = CacheFactory.create(ds);
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
   }
@@ -239,14 +225,12 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
       if (!cache.isClosed()) {
         cache.close();
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
     try {
       ds.disconnect();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LogWriterUtils.getLogWriter().info("Error in disconnecting from Distributed System");
     }
   }
@@ -273,9 +257,9 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(() -> IdleTimeOutDUnitTest.runTest1());
     AsyncInvocation asyncObj = vm0.invokeAsync(() -> IdleTimeOutDUnitTest.runTest2());
     ThreadUtils.join(asyncObj, 30 * 1000);
-    if(asyncObj.exceptionOccurred()){
+    if (asyncObj.exceptionOccurred()) {
       Assert.fail("asyncObj failed", asyncObj.getException());
-    }				   
+    }
   }
 
   public static void runTest1() throws Exception {
@@ -284,13 +268,11 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
     try {
       Context ctx = cache.getJNDIContext();
       ds = (DataSource) ctx.lookup("java:/XAPooledDataSource");
-    }
-    catch (NamingException e) {
+    } catch (NamingException e) {
       LogWriterUtils.getLogWriter().info("Naming Exception caught in lookup: " + e);
       fail("failed in naming lookup: " + e);
       return;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LogWriterUtils.getLogWriter().info("Exception caught during naming lookup: " + e);
       fail("failed in naming lookup: " + e);
       return;
@@ -300,12 +282,10 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
         ds.getConnection();
         LogWriterUtils.getLogWriter().info("runTest1 :acquired connection #" + count);
       }
-    }
-    catch (SQLException e) {
+    } catch (SQLException e) {
       LogWriterUtils.getLogWriter().info("Success SQLException caught in runTest1: " + e);
       fail("runTest1 SQL Exception caught: " + e);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LogWriterUtils.getLogWriter().info("Exception caught in runTest1: " + e);
       fail("Exception caught in runTest1: " + e);
       e.printStackTrace();
@@ -314,19 +294,17 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
 
   public static void runTest2() throws Exception {
     final int MAX_CONNECTIONS = 30;
-//     getLogWriter().info("runTest2 sleeping for 20 sec");
-//     Thread.sleep(20 * 1000);
+    // getLogWriter().info("runTest2 sleeping for 20 sec");
+    // Thread.sleep(20 * 1000);
     DataSource ds = null;
     try {
       Context ctx = cache.getJNDIContext();
       ds = (DataSource) ctx.lookup("java:/XAPooledDataSource");
-    }
-    catch (NamingException e) {
+    } catch (NamingException e) {
       LogWriterUtils.getLogWriter().info("Exception caught during naming lookup: " + e);
       fail("failed in naming lookup: " + e);
       return;
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LogWriterUtils.getLogWriter().info("Exception caught during naming lookup: " + e);
       fail("failed in because of unhandled excpetion: " + e);
       return;
@@ -337,13 +315,11 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
         assertNotNull("Connection object is null", con);
         LogWriterUtils.getLogWriter().info("runTest2 :acquired connection #" + count);
       }
-    }
-    catch (SQLException sqle) {
+    } catch (SQLException sqle) {
       LogWriterUtils.getLogWriter().info("SQLException caught in runTest2: " + sqle);
       fail("failed because of SQL exception : " + sqle);
       sqle.printStackTrace();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       LogWriterUtils.getLogWriter().info("Exception caught in runTest2: " + e);
       fail("failed because of unhandled exception : " + e);
       e.printStackTrace();

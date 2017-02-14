@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.extension;
 
@@ -39,8 +37,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class SimpleExtensionPointJUnitTest {
 
   /**
-   * Test method for
-   * {@link SimpleExtensionPoint#SimpleExtensionPoint(Extensible, Object)} .
+   * Test method for {@link SimpleExtensionPoint#SimpleExtensionPoint(Extensible, Object)} .
    */
   @Test
   public void testSimpleExtensionPoint() {
@@ -132,7 +129,8 @@ public class SimpleExtensionPointJUnitTest {
     assertEquals(0, m.extensionPoint.extensions.size());
 
     // extensions should be empty
-    final Iterable<Extension<MockInterface>> extensionsRemoved = m.getExtensionPoint().getExtensions();
+    final Iterable<Extension<MockInterface>> extensionsRemoved =
+        m.getExtensionPoint().getExtensions();
     try {
       extensionsRemoved.iterator().next();
       fail("Expected NoSuchElementException");
@@ -213,7 +211,8 @@ public class SimpleExtensionPointJUnitTest {
 
   private static class MockImpl implements MockInterface, Extensible<MockInterface> {
 
-    private SimpleExtensionPoint<MockInterface> extensionPoint = new SimpleExtensionPoint<SimpleExtensionPointJUnitTest.MockInterface>(this, this);
+    private SimpleExtensionPoint<MockInterface> extensionPoint =
+        new SimpleExtensionPoint<SimpleExtensionPointJUnitTest.MockInterface>(this, this);
 
     @Override
     public ExtensionPoint<MockInterface> getExtensionPoint() {
@@ -221,8 +220,7 @@ public class SimpleExtensionPointJUnitTest {
     }
 
     @Override
-    public void method1() {
-    }
+    public void method1() {}
 
   }
 

@@ -16,6 +16,7 @@
  */
 rootProject.name = 'geode'
 
+include 'geode-old-versions'
 include 'geode-common'
 include 'geode-json'
 include 'geode-junit'
@@ -29,12 +30,14 @@ include 'geode-lucene'
 include 'geode-old-client-support'
 include 'geode-wan'
 include 'geode-cq'
+include 'geode-benchmarks'
 include 'extensions/geode-modules'
 include 'extensions/geode-modules-tomcat7'
 include 'extensions/geode-modules-tomcat8'
 include 'extensions/geode-modules-session-internal'
 include 'extensions/geode-modules-session'
 include 'extensions/geode-modules-assembly'
+
 
 if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
   throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)

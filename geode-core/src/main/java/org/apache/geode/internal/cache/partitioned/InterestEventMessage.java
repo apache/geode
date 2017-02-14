@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache.partitioned;
@@ -42,22 +40,21 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
- * This message is used as the notification that a client interest registration or
- * unregistration event occurred.
+ * This message is used as the notification that a client interest registration or unregistration
+ * event occurred.
  *
  * @since GemFire 5.8BetaSUISSE
  */
 public class InterestEventMessage extends PartitionMessage {
   private static final Logger logger = LogService.getLogger();
-  
-  /** The <code>InterestRegistrationEvent</code>  */
+
+  /** The <code>InterestRegistrationEvent</code> */
   private InterestRegistrationEvent event;
 
   /**
    * Empty constructor to satisfy {@link DataSerializer} requirements
    */
-  public InterestEventMessage() {
-  }
+  public InterestEventMessage() {}
 
   private InterestEventMessage(Set recipients, int regionId, int processorId,
       final InterestRegistrationEvent event, ReplyProcessor21 processor) {
@@ -65,15 +62,14 @@ public class InterestEventMessage extends PartitionMessage {
     this.event = event;
   }
 
-  @Override  
+  @Override
   final public int getProcessorType() {
     return DistributionManager.STANDARD_EXECUTOR;
   }
 
-  @Override  
-  protected final boolean operateOnPartitionedRegion(
-      final DistributionManager dm, PartitionedRegion r, long startTime)
-      throws ForceReattemptException {
+  @Override
+  protected final boolean operateOnPartitionedRegion(final DistributionManager dm,
+      PartitionedRegion r, long startTime) throws ForceReattemptException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.debug("InterestEventMessage operateOnPartitionedRegion: {}", r.getFullPath());
     }
@@ -85,21 +81,13 @@ public class InterestEventMessage extends PartitionMessage {
         ds.handleInterestEvent(this.event);
         r.getPrStats().endPartitionMessagesProcessing(startTime);
         InterestEventReplyMessage.send(getSender(), getProcessorId(), dm);
-      }
-      catch (Exception e) {
-        sendReply(
-            getSender(),
-            getProcessorId(),
-            dm,
-            new ReplyException(new ForceReattemptException(
-                "Caught exception during interest registration processing:", e)),
-            r, startTime);
+      } catch (Exception e) {
+        sendReply(getSender(), getProcessorId(), dm, new ReplyException(new ForceReattemptException(
+            "Caught exception during interest registration processing:", e)), r, startTime);
         return false;
       }
-    }
-    else {
-      throw new InternalError(
-          "InterestEvent message was sent to a member with no storage.");
+    } else {
+      throw new InternalError("InterestEvent message was sent to a member with no storage.");
     }
 
     // Unless there was an exception thrown, this message handles sending the
@@ -113,13 +101,13 @@ public class InterestEventMessage extends PartitionMessage {
     buff.append("; event=").append(this.event);
   }
 
-  @Override  
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.event = (InterestRegistrationEvent)DataSerializer.readObject(in);
+    this.event = (InterestRegistrationEvent) DataSerializer.readObject(in);
   }
 
-  @Override  
+  @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
     DataSerializer.writeObject(this.event, out);
@@ -128,28 +116,21 @@ public class InterestEventMessage extends PartitionMessage {
   /**
    * Sends an InterestEventMessage message
    *
-   * @param recipients
-   *          the Set of members that the get message is being sent to
-   * @param region
-   *          the PartitionedRegion for which interest event was received
-   * @param event
-   *          the InterestRegistrationEvent to send
+   * @param recipients the Set of members that the get message is being sent to
+   * @param region the PartitionedRegion for which interest event was received
+   * @param event the InterestRegistrationEvent to send
    * @return the InterestEventResponse
-   * @throws ForceReattemptException
-   *           if the peer is no longer available
+   * @throws ForceReattemptException if the peer is no longer available
    */
-  public static InterestEventResponse send(Set recipients,
-      PartitionedRegion region, final InterestRegistrationEvent event)
-      throws ForceReattemptException {
-    InterestEventResponse response = new InterestEventResponse(region
-        .getSystem(), recipients);
-    InterestEventMessage m = new InterestEventMessage(recipients, region
-        .getPRId(), response.getProcessorId(), event, response);
+  public static InterestEventResponse send(Set recipients, PartitionedRegion region,
+      final InterestRegistrationEvent event) throws ForceReattemptException {
+    InterestEventResponse response = new InterestEventResponse(region.getSystem(), recipients);
+    InterestEventMessage m = new InterestEventMessage(recipients, region.getPRId(),
+        response.getProcessorId(), event, response);
 
     Set failures = region.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
-      throw new ForceReattemptException("Failed sending <" + m + "> to "
-          + failures);
+      throw new ForceReattemptException("Failed sending <" + m + "> to " + failures);
     }
     return response;
   }
@@ -159,46 +140,43 @@ public class InterestEventMessage extends PartitionMessage {
    *
    * @since GemFire 5.8BetaSUISSE
    */
-  public static class InterestEventReplyMessage extends
-      HighPriorityDistributionMessage {
+  public static class InterestEventReplyMessage extends HighPriorityDistributionMessage {
     /** The shared obj id of the ReplyProcessor */
     private int processorId;
 
     /**
      * Empty constructor to conform to DataSerializable interface
      */
-    public InterestEventReplyMessage() {
-    }
+    public InterestEventReplyMessage() {}
 
     private InterestEventReplyMessage(int processorId) {
       this.processorId = processorId;
     }
 
     /** Send an ack */
-    public static void send(InternalDistributedMember recipient,
-        int processorId, DM dm) throws ForceReattemptException {
+    public static void send(InternalDistributedMember recipient, int processorId, DM dm)
+        throws ForceReattemptException {
       InterestEventReplyMessage m = new InterestEventReplyMessage(processorId);
       m.setRecipient(recipient);
       dm.putOutgoing(m);
     }
 
     /**
-     * Processes this message. This method is invoked by the receiver of the
-     * message.
+     * Processes this message. This method is invoked by the receiver of the message.
      *
-     * @param dm
-     *          the distribution manager that is processing the message.
+     * @param dm the distribution manager that is processing the message.
      */
-    @Override  
+    @Override
     protected void process(final DistributionManager dm) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "InterestEventReplyMessage process invoking reply processor with processorId: {}", this.processorId);
+        logger.trace(LogMarker.DM,
+            "InterestEventReplyMessage process invoking reply processor with processorId: {}",
+            this.processorId);
       }
 
       try {
-        ReplyProcessor21 processor = ReplyProcessor21
-            .getProcessor(this.processorId);
+        ReplyProcessor21 processor = ReplyProcessor21.getProcessor(this.processorId);
 
         if (processor == null) {
           if (logger.isTraceEnabled(LogMarker.DM)) {
@@ -211,31 +189,28 @@ public class InterestEventMessage extends PartitionMessage {
         if (logger.isTraceEnabled(LogMarker.DM)) {
           logger.debug("{} processed {}", processor, this);
         }
-      }
-      finally {
-        dm.getStats().incReplyMessageTime(
-            DistributionStats.getStatTime() - startTime);
+      } finally {
+        dm.getStats().incReplyMessageTime(DistributionStats.getStatTime() - startTime);
       }
     }
 
-    @Override  
+    @Override
     public void toData(DataOutput out) throws IOException {
       super.toData(out);
       out.writeInt(processorId);
     }
 
-    @Override  
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.processorId = in.readInt();
     }
 
-    @Override  
+    @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer().append("InterestEventReplyMessage ")
-          .append("processorid=").append(this.processorId).append(
-              " reply to sender ").append(this.getSender());
+      StringBuffer sb =
+          new StringBuffer().append("InterestEventReplyMessage ").append("processorid=")
+              .append(this.processorId).append(" reply to sender ").append(this.getSender());
       return sb.toString();
     }
 
@@ -245,8 +220,8 @@ public class InterestEventMessage extends PartitionMessage {
   }
 
   /**
-   * A processor to capture the value returned by {@link
-   * org.apache.geode.internal.cache.partitioned.InterestEventMessage.InterestEventReplyMessage}
+   * A processor to capture the value returned by
+   * {@link org.apache.geode.internal.cache.partitioned.InterestEventMessage.InterestEventReplyMessage}
    *
    * @since GemFire 5.1
    */
@@ -262,13 +237,13 @@ public class InterestEventMessage extends PartitionMessage {
     public void waitForResponse() throws ForceReattemptException {
       try {
         waitForCacheException();
-      }
-      catch (ForceReattemptException e) {
-        logger.debug("InterestEventResponse got ForceReattemptException; rethrowing {}", e.getMessage(), e);
+      } catch (ForceReattemptException e) {
+        logger.debug("InterestEventResponse got ForceReattemptException; rethrowing {}",
+            e.getMessage(), e);
         throw e;
-      }
-      catch (CacheException e) {
-        final String msg = "InterestEventResponse got remote CacheException, throwing ForceReattemptException";
+      } catch (CacheException e) {
+        final String msg =
+            "InterestEventResponse got remote CacheException, throwing ForceReattemptException";
         logger.debug(msg, e);
         throw new ForceReattemptException(msg, e);
       }

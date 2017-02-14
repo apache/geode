@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin.remote;
 
@@ -54,12 +52,11 @@ import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * Provides an implementation of RegionAttributes that can be used from a VM
- * remote from the vm that created the cache.
+ * Provides an implementation of RegionAttributes that can be used from a VM remote from the vm that
+ * created the cache.
  */
-public class RemoteRegionAttributes implements RegionAttributes,
-    DataSerializable {
-  
+public class RemoteRegionAttributes implements RegionAttributes, DataSerializable {
+
   private static final long serialVersionUID = -4989613295006261809L;
   private String cacheLoaderDesc;
   private String cacheWriterDesc;
@@ -132,8 +129,8 @@ public class RemoteRegionAttributes implements RegionAttributes,
     this.initialCapacity = attr.getInitialCapacity();
     this.earlyAck = attr.getEarlyAck();
     this.multicastEnabled = attr.getMulticastEnabled();
-//    this.enableGateway = attr.getEnableGateway();
-//    this.gatewayHubId = attr.getGatewayHubId();
+    // this.enableGateway = attr.getEnableGateway();
+    // this.gatewayHubId = attr.getGatewayHubId();
     this.enableSubscriptionConflation = attr.getEnableSubscriptionConflation();
     this.publisher = attr.getPublisher();
     this.enableAsyncConflation = attr.getEnableAsyncConflation();
@@ -162,17 +159,14 @@ public class RemoteRegionAttributes implements RegionAttributes,
   /**
    * For use only by DataExternalizable mechanism
    */
-  public RemoteRegionAttributes() {
-  }
+  public RemoteRegionAttributes() {}
 
   public CacheLoader getCacheLoader() {
-    return cacheLoaderDesc.equals("") ? null : new RemoteCacheLoader(
-        cacheLoaderDesc);
+    return cacheLoaderDesc.equals("") ? null : new RemoteCacheLoader(cacheLoaderDesc);
   }
 
   public CacheWriter getCacheWriter() {
-    return cacheWriterDesc.equals("") ? null : new RemoteCacheWriter(
-        cacheWriterDesc);
+    return cacheWriterDesc.equals("") ? null : new RemoteCacheWriter(cacheWriterDesc);
   }
 
   public Class getKeyConstraint() {
@@ -196,24 +190,22 @@ public class RemoteRegionAttributes implements RegionAttributes,
   }
 
   public CustomExpiry getCustomEntryTimeToLive() {
-    return customEttlDesc.equals("") ? null : new RemoteCustomExpiry(
-        customEttlDesc);
+    return customEttlDesc.equals("") ? null : new RemoteCustomExpiry(customEttlDesc);
   }
-  
+
   public ExpirationAttributes getEntryIdleTimeout() {
     return eIdleTimeout;
   }
-  
+
   public CustomExpiry getCustomEntryIdleTimeout() {
-    return customEIdleDesc.equals("") ? null : new RemoteCustomExpiry(
-        customEIdleDesc);
+    return customEIdleDesc.equals("") ? null : new RemoteCustomExpiry(customEIdleDesc);
   }
 
-  
+
   public String getPoolName() {
     return poolName;
   }
-  
+
   public Scope getScope() {
     return scope;
   }
@@ -225,16 +217,20 @@ public class RemoteRegionAttributes implements RegionAttributes,
     } else if (listeners.length == 1) {
       return listeners[0];
     } else {
-      throw new IllegalStateException(LocalizedStrings.RemoteRegionAttributes_MORE_THAN_ONE_CACHE_LISTENER_EXISTS.toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.RemoteRegionAttributes_MORE_THAN_ONE_CACHE_LISTENER_EXISTS
+              .toLocalizedString());
     }
   }
+
   private static final CacheListener[] EMPTY_LISTENERS = new CacheListener[0];
+
   public CacheListener[] getCacheListeners() {
     if (this.cacheListenerDescs == null || this.cacheListenerDescs.length == 0) {
       return EMPTY_LISTENERS;
     } else {
       CacheListener[] result = new CacheListener[this.cacheListenerDescs.length];
-      for (int i=0; i < result.length; i++) {
+      for (int i = 0; i < result.length; i++) {
         result[i] = new RemoteCacheListener(this.cacheListenerDescs[i]);
       }
       return result;
@@ -253,7 +249,7 @@ public class RemoteRegionAttributes implements RegionAttributes,
   public int getConcurrencyLevel() {
     return concurrencyLevel;
   }
-  
+
   public boolean getConcurrencyChecksEnabled() {
     return this.concurrencyChecksEnabled;
   }
@@ -328,21 +324,24 @@ public class RemoteRegionAttributes implements RegionAttributes,
 
   public int[] getDiskDirSizes() {
     return this.diskSizes;
-   }
-  
+  }
+
   public MirrorType getMirrorType() {
-    //checkReadiness();
-    if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded()
-        || this.dataPolicy.isEmpty() || this.dataPolicy.withPartitioning()) {
+    // checkReadiness();
+    if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded() || this.dataPolicy.isEmpty()
+        || this.dataPolicy.withPartitioning()) {
       return MirrorType.NONE;
     } else if (this.dataPolicy.withReplication()) {
       return MirrorType.KEYS_VALUES;
     } else {
-      throw new IllegalStateException(LocalizedStrings.RemoteRegionAttributes_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0.toLocalizedString(this.dataPolicy));
+      throw new IllegalStateException(
+          LocalizedStrings.RemoteRegionAttributes_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
+              .toLocalizedString(this.dataPolicy));
     }
   }
+
   public DataPolicy getDataPolicy() {
-    //checkReadiness();
+    // checkReadiness();
     return this.dataPolicy;
   }
 
@@ -359,14 +358,13 @@ public class RemoteRegionAttributes implements RegionAttributes,
   }
 
   public Compressor getCompressor() {
-    return compressorDesc.equals("") ? null : new RemoteCompressor(
-        compressorDesc);
+    return compressorDesc.equals("") ? null : new RemoteCompressor(compressorDesc);
   }
-  
+
   public boolean getOffHeap() {
     return this.offHeap;
   }
-  
+
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(this.cacheLoaderDesc, out);
     DataSerializer.writeString(this.cacheWriterDesc, out);
@@ -406,13 +404,13 @@ public class RemoteRegionAttributes implements RegionAttributes,
     out.writeBoolean(this.isDiskSynchronous);
     DataSerializer.writeStringArray(this.gatewaySendersDescs, out);
     out.writeBoolean(this.isGatewaySenderEnabled);
-    
+
     out.writeBoolean(this.concurrencyChecksEnabled);
-  
+
     DataSerializer.writeString(this.compressorDesc, out);
     out.writeBoolean(this.offHeap);
   }
-  
+
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.cacheLoaderDesc = DataSerializer.readString(in);
     this.cacheWriterDesc = DataSerializer.readString(in);
@@ -441,14 +439,11 @@ public class RemoteRegionAttributes implements RegionAttributes,
 
     this.diskWriteAttributes = (DiskWriteAttributes) DataSerializer.readObject(in);
     this.diskDirs = (File[]) DataSerializer.readObject(in);
-    this.diskSizes = (int[] )DataSerializer.readObject(in);
+    this.diskSizes = (int[]) DataSerializer.readObject(in);
     this.indexMaintenanceSynchronous = in.readBoolean();
-    this.partitionAttributes = (PartitionAttributes) DataSerializer
-    .readObject(in);
-    this.membershipAttributes = (MembershipAttributes) DataSerializer
-        .readObject(in);
-    this.subscriptionAttributes = (SubscriptionAttributes) DataSerializer
-        .readObject(in);
+    this.partitionAttributes = (PartitionAttributes) DataSerializer.readObject(in);
+    this.membershipAttributes = (MembershipAttributes) DataSerializer.readObject(in);
+    this.subscriptionAttributes = (SubscriptionAttributes) DataSerializer.readObject(in);
     this.evictionAttributes = (EvictionAttributesImpl) DataSerializer.readObject(in);
     this.cloningEnable = in.readBoolean();
     this.diskStoreName = DataSerializer.readString(in);
@@ -456,30 +451,29 @@ public class RemoteRegionAttributes implements RegionAttributes,
     this.gatewaySendersDescs = DataSerializer.readStringArray(in);
     this.isGatewaySenderEnabled = in.readBoolean();
     this.concurrencyChecksEnabled = in.readBoolean();
-  
+
     this.compressorDesc = DataSerializer.readString(in);
     this.offHeap = in.readBoolean();
   }
-  
+
   private String[] getDescs(Object[] l) {
     if (l == null) {
       return new String[0];
     } else {
       String[] result = new String[l.length];
-      for (int i=0; i < l.length; i++) {
+      for (int i = 0; i < l.length; i++) {
         result[i] = getDesc(l[i]);
       }
       return result;
     }
   }
+
   private String getDesc(Object o) {
     if (o == null) {
       return "";
-    }
-    else if (o instanceof RemoteCacheCallback) {
+    } else if (o instanceof RemoteCacheCallback) {
       return ((RemoteCacheCallback) o).toString();
-    }
-    else {
+    } else {
       return o.getClass().getName();
     }
   }
@@ -497,8 +491,7 @@ public class RemoteRegionAttributes implements RegionAttributes,
     private final String desc;
 
     /**
-     * Creates a new <code>RemoteCacheCallback</code> with the given
-     * description.
+     * Creates a new <code>RemoteCacheCallback</code> with the given description.
      */
     protected RemoteCacheCallback(String desc) {
       this.desc = desc;
@@ -509,67 +502,49 @@ public class RemoteRegionAttributes implements RegionAttributes,
       return desc;
     }
 
-    public final void close() {
-    }
+    public final void close() {}
   }
 
-  private static class RemoteCacheListener extends RemoteCacheCallback
-      implements CacheListener {
+  private static class RemoteCacheListener extends RemoteCacheCallback implements CacheListener {
 
     public RemoteCacheListener(String desc) {
       super(desc);
     }
 
-    public void afterCreate(EntryEvent event) {
-    }
+    public void afterCreate(EntryEvent event) {}
 
-    public void afterUpdate(EntryEvent event) {
-    }
+    public void afterUpdate(EntryEvent event) {}
 
-    public void afterInvalidate(EntryEvent event) {
-    }
+    public void afterInvalidate(EntryEvent event) {}
 
-    public void afterDestroy(EntryEvent event) {
-    }
+    public void afterDestroy(EntryEvent event) {}
 
-    public void afterRegionInvalidate(RegionEvent event) {
-    }
+    public void afterRegionInvalidate(RegionEvent event) {}
 
-    public void afterRegionDestroy(RegionEvent event) {
-    }
+    public void afterRegionDestroy(RegionEvent event) {}
 
-    public void afterRegionClear(RegionEvent event) {
-    }
+    public void afterRegionClear(RegionEvent event) {}
 
-    public void afterRegionCreate(RegionEvent event) {
-    }
-    
-    public void afterRegionLive(RegionEvent event) {
-    }    
+    public void afterRegionCreate(RegionEvent event) {}
+
+    public void afterRegionLive(RegionEvent event) {}
   }
 
-  private static class RemoteCacheWriter extends RemoteCacheCallback implements
-      CacheWriter {
+  private static class RemoteCacheWriter extends RemoteCacheCallback implements CacheWriter {
 
     public RemoteCacheWriter(String desc) {
       super(desc);
     }
 
-    public void beforeUpdate(EntryEvent event) throws CacheWriterException {
-    }
+    public void beforeUpdate(EntryEvent event) throws CacheWriterException {}
 
-    public void beforeCreate(EntryEvent event) throws CacheWriterException {
-    }
+    public void beforeCreate(EntryEvent event) throws CacheWriterException {}
 
-    public void beforeDestroy(EntryEvent event) throws CacheWriterException {
-    }
+    public void beforeDestroy(EntryEvent event) throws CacheWriterException {}
 
-    public void beforeRegionDestroy(RegionEvent event)
-        throws CacheWriterException {
-    }
-    public void beforeRegionClear(RegionEvent event)
-        throws CacheWriterException {
-    }
+    public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {}
+
+    public void beforeRegionClear(RegionEvent event) throws CacheWriterException {}
   }
 
   private static class RemoteCustomExpiry extends RemoteCacheCallback
@@ -578,24 +553,26 @@ public class RemoteRegionAttributes implements RegionAttributes,
     public RemoteCustomExpiry(String desc) {
       super(desc);
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.geode.cache.CustomExpiry#getExpiry(org.apache.geode.cache.Region.Entry)
      */
     public ExpirationAttributes getExpiry(Entry entry) {
       return null;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
      */
-    public void init(Properties props) {
-    }
-    
+    public void init(Properties props) {}
+
   }
-  
-  private static class RemoteCacheLoader extends RemoteCacheCallback implements
-      CacheLoader {
+
+  private static class RemoteCacheLoader extends RemoteCacheCallback implements CacheLoader {
 
     public RemoteCacheLoader(String desc) {
       super(desc);
@@ -606,23 +583,22 @@ public class RemoteRegionAttributes implements RegionAttributes,
     }
   }
 
-  private static class RemoteCompressor extends RemoteCacheCallback implements
-  Compressor {
+  private static class RemoteCompressor extends RemoteCacheCallback implements Compressor {
 
     public RemoteCompressor(String desc) {
       super(desc);
     }
-    
+
     public byte[] compress(byte[] input) {
       return null;
     }
+
     public byte[] decompress(byte[] input) {
       return null;
     }
   }
-  
-  public EvictionAttributes getEvictionAttributes()
-  {
+
+  public EvictionAttributes getEvictionAttributes() {
     return this.evictionAttributes;
   }
 
@@ -634,20 +610,19 @@ public class RemoteRegionAttributes implements RegionAttributes,
   public String getDiskStoreName() {
     return this.diskStoreName;
   }
+
   public boolean isDiskSynchronous() {
     return this.isDiskSynchronous;
   }
-  
+
   public boolean isGatewaySenderEnabled() {
     return this.isGatewaySenderEnabled;
   }
 
   public Set<String> getGatewaySenderIds() {
-    if (this.gatewaySendersDescs == null
-        || this.gatewaySendersDescs.length == 0) {
+    if (this.gatewaySendersDescs == null || this.gatewaySendersDescs.length == 0) {
       return Collections.EMPTY_SET;
-    }
-    else {
+    } else {
       Set<String> senderIds = new HashSet<String>();
       String[] result = new String[this.gatewaySendersDescs.length];
       for (int i = 0; i < result.length; i++) {
@@ -657,13 +632,11 @@ public class RemoteRegionAttributes implements RegionAttributes,
       return senderIds;
     }
   }
-  
+
   public Set<String> getAsyncEventQueueIds() {
-    if (this.asyncEventQueueDescs == null
-        || this.asyncEventQueueDescs.length == 0) {
+    if (this.asyncEventQueueDescs == null || this.asyncEventQueueDescs.length == 0) {
       return Collections.EMPTY_SET;
-    }
-    else {
+    } else {
       Set<String> asyncEventQueues = new HashSet<String>();
       String[] result = new String[this.asyncEventQueueDescs.length];
       for (int i = 0; i < result.length; i++) {

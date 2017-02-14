@@ -16,8 +16,12 @@
  */
 
 dependencies {
+  compile 'com.jayway.jsonpath:json-path:' + project.'json-path.version'
   testCompile 'commons-lang:commons-lang:' + project.'commons-lang.version'
-  compile ('junit:junit:' + project.'junit.version') {
+  testCompile 'com.google.guava:guava:' + project.'guava.version'
+  testCompile 'org.assertj:assertj-core:' + project.'assertj-core.version'
+
+  compile('junit:junit:' + project.'junit.version') {
     exclude module: 'hamcrest-core'
   }
   compile 'org.hamcrest:hamcrest-all:' + project.'hamcrest-all.version'

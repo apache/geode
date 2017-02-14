@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.web.controllers.support;
 
@@ -38,8 +36,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * The LoginHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract
- * and functionality of the Spring HandlerInterceptor, LoginHandlerInterceptor class.
+ * The LoginHandlerInterceptorJUnitTest class is a test suite of test cases to test the contract and
+ * functionality of the Spring HandlerInterceptor, LoginHandlerInterceptor class.
  * 
  * @see org.jmock.Mockery
  * @see org.junit.Assert
@@ -56,12 +54,14 @@ public class LoginHandlerInterceptorJUnitTest {
     mockContext = new Mockery();
     mockContext.setImposteriser(ClassImposteriser.INSTANCE);
     mockContext.setThreadingPolicy(new Synchroniser());
+    LoginHandlerInterceptor.getEnvironment().clear();
   }
 
   @After
   public void tearDown() {
     mockContext.assertIsSatisfied();
     mockContext = null;
+    LoginHandlerInterceptor.getEnvironment().clear();
   }
 
   private String createEnvironmentVariable(final String name) {
@@ -73,6 +73,7 @@ public class LoginHandlerInterceptorJUnitTest {
       public boolean hasMoreElements() {
         return iterator.hasNext();
       }
+
       public T nextElement() {
         return iterator.next();
       }
@@ -87,16 +88,19 @@ public class LoginHandlerInterceptorJUnitTest {
     requestParameters.put("parameter", "one");
     requestParameters.put(createEnvironmentVariable("variable"), "two");
 
-    final HttpServletRequest mockHttpRequest = mockContext.mock(HttpServletRequest.class, "testPreHandleAfterCompletion.HttpServletRequest");
+    final HttpServletRequest mockHttpRequest = mockContext.mock(HttpServletRequest.class,
+        "testPreHandleAfterCompletion.HttpServletRequest");
 
-    mockContext.checking(new Expectations() {{
-      oneOf(mockHttpRequest).getParameterNames();
-      will(returnValue(enumeration(requestParameters.keySet().iterator())));
-      oneOf(mockHttpRequest).getHeaderNames();
-      will(returnValue(enumeration(requestHeaders.keySet().iterator())));
-      oneOf(mockHttpRequest).getParameter(with(equal(createEnvironmentVariable("variable"))));
-      will(returnValue(requestParameters.get(createEnvironmentVariable("variable"))));
-    }});
+    mockContext.checking(new Expectations() {
+      {
+        oneOf(mockHttpRequest).getParameterNames();
+        will(returnValue(enumeration(requestParameters.keySet().iterator())));
+        oneOf(mockHttpRequest).getHeaderNames();
+        will(returnValue(enumeration(requestHeaders.keySet().iterator())));
+        oneOf(mockHttpRequest).getParameter(with(equal(createEnvironmentVariable("variable"))));
+        will(returnValue(requestParameters.get(createEnvironmentVariable("variable"))));
+      }
+    });
 
     LoginHandlerInterceptor handlerInterceptor = new LoginHandlerInterceptor();
 
@@ -127,7 +131,8 @@ public class LoginHandlerInterceptorJUnitTest {
     TestFramework.runOnce(new HandlerInterceptorThreadSafetyMultiThreadedTestCase());
   }
 
-  private final class HandlerInterceptorThreadSafetyMultiThreadedTestCase extends MultithreadedTestCase {
+  private final class HandlerInterceptorThreadSafetyMultiThreadedTestCase
+      extends MultithreadedTestCase {
 
     private LoginHandlerInterceptor handlerInterceptor;
 
@@ -143,41 +148,49 @@ public class LoginHandlerInterceptorJUnitTest {
 
       requestParametersOne.put("param", "one");
       requestParametersOne.put(createEnvironmentVariable("STAGE"), "test");
-      requestParametersOne.put(createEnvironmentVariable("GEMFIRE"), "/path/to/gemfire/700");
+      requestParametersOne.put(createEnvironmentVariable("GEODE_HOME"), "/path/to/gemfire/700");
 
-      mockHttpRequestOne = mockContext.mock(HttpServletRequest.class, "testHandlerInterceptorThreadSafety.HttpServletRequest.1");
+      mockHttpRequestOne = mockContext.mock(HttpServletRequest.class,
+          "testHandlerInterceptorThreadSafety.HttpServletRequest.1");
 
-      mockContext.checking(new Expectations() {{
-        oneOf(mockHttpRequestOne).getParameterNames();
-        will(returnValue(enumeration(requestParametersOne.keySet().iterator())));
-        oneOf(mockHttpRequestOne).getHeaderNames();
-        will(returnValue(enumeration(requestHeaders.keySet().iterator())));
-        oneOf(mockHttpRequestOne).getParameter(with(equal(createEnvironmentVariable("STAGE"))));
-        will(returnValue(requestParametersOne.get(createEnvironmentVariable("STAGE"))));
-        oneOf(mockHttpRequestOne).getParameter(with(equal(createEnvironmentVariable("GEMFIRE"))));
-        will(returnValue(requestParametersOne.get(createEnvironmentVariable("GEMFIRE"))));
-      }});
+      mockContext.checking(new Expectations() {
+        {
+          oneOf(mockHttpRequestOne).getParameterNames();
+          will(returnValue(enumeration(requestParametersOne.keySet().iterator())));
+          oneOf(mockHttpRequestOne).getHeaderNames();
+          will(returnValue(enumeration(requestHeaders.keySet().iterator())));
+          oneOf(mockHttpRequestOne).getParameter(with(equal(createEnvironmentVariable("STAGE"))));
+          will(returnValue(requestParametersOne.get(createEnvironmentVariable("STAGE"))));
+          oneOf(mockHttpRequestOne)
+              .getParameter(with(equal(createEnvironmentVariable("GEODE_HOME"))));
+          will(returnValue(requestParametersOne.get(createEnvironmentVariable("GEODE_HOME"))));
+        }
+      });
 
-      mockHttpRequestTwo = mockContext.mock(HttpServletRequest.class, "testHandlerInterceptorThreadSafety.HttpServletRequest.2");
+      mockHttpRequestTwo = mockContext.mock(HttpServletRequest.class,
+          "testHandlerInterceptorThreadSafety.HttpServletRequest.2");
 
       final Map<String, String> requestParametersTwo = new HashMap<>(3);
 
       requestParametersTwo.put("parameter", "two");
       requestParametersTwo.put(createEnvironmentVariable("HOST"), "localhost");
-      requestParametersTwo.put(createEnvironmentVariable("GEMFIRE"), "/path/to/gemfire/75");
+      requestParametersTwo.put(createEnvironmentVariable("GEODE_HOME"), "/path/to/gemfire/75");
 
-      mockContext.checking(new Expectations() {{
-        oneOf(mockHttpRequestTwo).getParameterNames();
-        will(returnValue(enumeration(requestParametersTwo.keySet().iterator())));
-        oneOf(mockHttpRequestTwo).getHeaderNames();
-        will(returnValue(enumeration(requestHeaders.keySet().iterator())));
-        oneOf(mockHttpRequestTwo).getParameter(with(equal(createEnvironmentVariable("HOST"))));
-        will(returnValue(requestParametersTwo.get(createEnvironmentVariable("HOST"))));
-        oneOf(mockHttpRequestTwo).getParameter(with(equal(createEnvironmentVariable("GEMFIRE"))));
-        will(returnValue(requestParametersTwo.get(createEnvironmentVariable("GEMFIRE"))));
-      }});
+      mockContext.checking(new Expectations() {
+        {
+          oneOf(mockHttpRequestTwo).getParameterNames();
+          will(returnValue(enumeration(requestParametersTwo.keySet().iterator())));
+          oneOf(mockHttpRequestTwo).getHeaderNames();
+          will(returnValue(enumeration(requestHeaders.keySet().iterator())));
+          oneOf(mockHttpRequestTwo).getParameter(with(equal(createEnvironmentVariable("HOST"))));
+          will(returnValue(requestParametersTwo.get(createEnvironmentVariable("HOST"))));
+          oneOf(mockHttpRequestTwo)
+              .getParameter(with(equal(createEnvironmentVariable("GEODE_HOME"))));
+          will(returnValue(requestParametersTwo.get(createEnvironmentVariable("GEODE_HOME"))));
+        }
+      });
 
-      handlerInterceptor =  new LoginHandlerInterceptor();
+      handlerInterceptor = new LoginHandlerInterceptor();
     }
 
     public void thread1() throws Exception {
@@ -198,7 +211,7 @@ public class LoginHandlerInterceptorJUnitTest {
       assertFalse(env.containsKey("parameter"));
       assertFalse(env.containsKey("HOST"));
       assertEquals("test", env.get("STAGE"));
-      assertEquals("/path/to/gemfire/700", env.get("GEMFIRE"));
+      assertEquals("/path/to/gemfire/700", env.get("GEODE_HOME"));
 
       waitForTick(2);
 
@@ -210,7 +223,7 @@ public class LoginHandlerInterceptorJUnitTest {
       assertFalse(env.containsKey("parameter"));
       assertFalse(env.containsKey("HOST"));
       assertEquals("test", env.get("STAGE"));
-      assertEquals("/path/to/gemfire/700", env.get("GEMFIRE"));
+      assertEquals("/path/to/gemfire/700", env.get("GEODE_HOME"));
 
       waitForTick(4);
 
@@ -222,7 +235,7 @@ public class LoginHandlerInterceptorJUnitTest {
       assertFalse(env.containsKey("parameter"));
       assertFalse(env.containsKey("HOST"));
       assertEquals("test", env.get("STAGE"));
-      assertEquals("/path/to/gemfire/700", env.get("GEMFIRE"));
+      assertEquals("/path/to/gemfire/700", env.get("GEODE_HOME"));
 
       handlerInterceptor.afterCompletion(mockHttpRequestOne, null, null, null);
 
@@ -251,7 +264,7 @@ public class LoginHandlerInterceptorJUnitTest {
       assertFalse(env.containsKey("param"));
       assertFalse(env.containsKey("STAGE"));
       assertEquals("localhost", env.get("HOST"));
-      assertEquals("/path/to/gemfire/75", env.get("GEMFIRE"));
+      assertEquals("/path/to/gemfire/75", env.get("GEODE_HOME"));
 
       waitForTick(3);
 

@@ -1,22 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /*
- * AbstractPoolCacheJUnitTest.java
- * JUnit based test
+ * AbstractPoolCacheJUnitTest.java JUnit based test
  *
  * Created on March 3, 2005, 5:24 PM
  */
@@ -75,11 +72,11 @@ public class AbstractPoolCacheJUnitTest {
   @Test
   public void testGetSimpleDataSource() throws Exception {
     Context ctx = cache.getJNDIContext();
-    GemFireBasicDataSource ds = (GemFireBasicDataSource) ctx
-        .lookup("java:/SimpleDataSource");
+    GemFireBasicDataSource ds = (GemFireBasicDataSource) ctx.lookup("java:/SimpleDataSource");
     Connection conn = ds.getConnection();
     if (conn == null)
-        fail("DataSourceFactoryTest-testGetSimpleDataSource() Error in creating the GemFireBasicDataSource");
+      fail(
+          "DataSourceFactoryTest-testGetSimpleDataSource() Error in creating the GemFireBasicDataSource");
   }
 
   /**
@@ -89,23 +86,21 @@ public class AbstractPoolCacheJUnitTest {
   @Test
   public void testReturnPooledConnectionToPool() throws Exception {
     Context ctx = cache.getJNDIContext();
-    GemFireConnPooledDataSource ds = (GemFireConnPooledDataSource) ctx
-        .lookup("java:/PooledDataSource");
-    GemFireConnectionPoolManager provider = (GemFireConnectionPoolManager) ds
-        .getConnectionProvider();
-    ConnectionPoolCacheImpl poolCache = (ConnectionPoolCacheImpl) provider
-        .getConnectionPoolCache();
-    PooledConnection conn = (PooledConnection) poolCache
-        .getPooledConnectionFromPool();
+    GemFireConnPooledDataSource ds =
+        (GemFireConnPooledDataSource) ctx.lookup("java:/PooledDataSource");
+    GemFireConnectionPoolManager provider =
+        (GemFireConnectionPoolManager) ds.getConnectionProvider();
+    ConnectionPoolCacheImpl poolCache = (ConnectionPoolCacheImpl) provider.getConnectionPoolCache();
+    PooledConnection conn = (PooledConnection) poolCache.getPooledConnectionFromPool();
     if (poolCache.availableCache.containsKey(conn))
-        fail("connection not removed from available cache list");
+      fail("connection not removed from available cache list");
     if (!poolCache.activeCache.containsKey(conn))
-        fail("connection not put in active connection list");
+      fail("connection not put in active connection list");
     provider.returnConnection(conn);
     if (!poolCache.availableCache.containsKey(conn))
-        fail("connection not returned to pool");
+      fail("connection not returned to pool");
     if (poolCache.activeCache.containsKey(conn))
-        fail("connection not returned to active list");
+      fail("connection not returned to active list");
   }
 
   /**
@@ -115,18 +110,18 @@ public class AbstractPoolCacheJUnitTest {
   @Test
   public void testValidateConnection() throws Exception {
     Context ctx = cache.getJNDIContext();
-    GemFireConnPooledDataSource ds = (GemFireConnPooledDataSource) ctx
-        .lookup("java:/PooledDataSource");
-    GemFireConnectionPoolManager provider = (GemFireConnectionPoolManager) ds
-        .getConnectionProvider();
-    ConnectionPoolCacheImpl poolCache = (ConnectionPoolCacheImpl) provider
-        .getConnectionPoolCache();
-    PooledConnection poolConn = (PooledConnection) poolCache
-        .getPooledConnectionFromPool();
+    GemFireConnPooledDataSource ds =
+        (GemFireConnPooledDataSource) ctx.lookup("java:/PooledDataSource");
+    GemFireConnectionPoolManager provider =
+        (GemFireConnectionPoolManager) ds.getConnectionProvider();
+    ConnectionPoolCacheImpl poolCache = (ConnectionPoolCacheImpl) provider.getConnectionPoolCache();
+    PooledConnection poolConn = (PooledConnection) poolCache.getPooledConnectionFromPool();
     Connection conn = poolConn.getConnection();
-    if (!ds.validateConnection(conn)) fail("validate connection failed");
+    if (!ds.validateConnection(conn))
+      fail("validate connection failed");
     conn.close();
-    if (ds.validateConnection(conn)) fail("validate connection failed");
+    if (ds.validateConnection(conn))
+      fail("validate connection failed");
   }
 
   /**
@@ -136,16 +131,14 @@ public class AbstractPoolCacheJUnitTest {
   @Test
   public void testGetPooledConnectionFromPool() throws Exception {
     Context ctx = cache.getJNDIContext();
-    GemFireConnPooledDataSource ds = (GemFireConnPooledDataSource) ctx
-        .lookup("java:/PooledDataSource");
-    GemFireConnectionPoolManager provider = (GemFireConnectionPoolManager) ds
-        .getConnectionProvider();
-    ConnectionPoolCacheImpl poolCache = (ConnectionPoolCacheImpl) provider
-        .getConnectionPoolCache();
-    PooledConnection poolConn = (PooledConnection) poolCache
-        .getPooledConnectionFromPool();
+    GemFireConnPooledDataSource ds =
+        (GemFireConnPooledDataSource) ctx.lookup("java:/PooledDataSource");
+    GemFireConnectionPoolManager provider =
+        (GemFireConnectionPoolManager) ds.getConnectionProvider();
+    ConnectionPoolCacheImpl poolCache = (ConnectionPoolCacheImpl) provider.getConnectionPoolCache();
+    PooledConnection poolConn = (PooledConnection) poolCache.getPooledConnectionFromPool();
     if (poolConn == null)
-        fail("getPooledConnectionFromPool failed to get a connection from pool");
+      fail("getPooledConnectionFromPool failed to get a connection from pool");
   }
 
   @Test
@@ -155,8 +148,8 @@ public class AbstractPoolCacheJUnitTest {
   }
 
   /**
-   * Tests if an XAresource obtained from an XAConnection which is already
-   * closed , can return null or not.
+   * Tests if an XAresource obtained from an XAConnection which is already closed , can return null
+   * or not.
    */
   @Ignore("TODO: test used to eat its own exception and it fails")
   @Test
@@ -168,27 +161,29 @@ public class AbstractPoolCacheJUnitTest {
     map.put("idle-timeout-seconds", "20");
     map.put("blocking-timeout-seconds", "2");
     map.put("login-timeout-seconds", "5");
-    //map.put("xa-datasource-class","org.apache.derby.jdbc.EmbeddedXADataSource");
+    // map.put("xa-datasource-class","org.apache.derby.jdbc.EmbeddedXADataSource");
     map.put("jdbc-driver-class", "org.apache.derby.jdbc.EmbeddedDriver");
     map.put("user-name", "mitul");
     map.put("password", "83f0069202c571faf1ae6c42b4ad46030e4e31c17409e19a");
     map.put("connection-url", "jdbc:derby:newDB;create=true");
     List props = new ArrayList();
-    props
-        .add(new ConfigProperty("databaseName", "newDB", "java.lang.String"));
+    props.add(new ConfigProperty("databaseName", "newDB", "java.lang.String"));
 
-    GemFireBasicDataSource gbds = (GemFireBasicDataSource)DataSourceFactory
-        .getSimpleDataSource(map, props);
-    map.put("xa-datasource-class",
-        "org.apache.derby.jdbc.EmbeddedXADataSource");
+    GemFireBasicDataSource gbds =
+        (GemFireBasicDataSource) DataSourceFactory.getSimpleDataSource(map, props);
+    map.put("xa-datasource-class", "org.apache.derby.jdbc.EmbeddedXADataSource");
 
     map.put("connection-url", "jdbc:derby:newDB;create=true");
 
-    GemFireTransactionDataSource gtds = (GemFireTransactionDataSource)DataSourceFactory
-        .getTranxDataSource(map, props);
+    GemFireTransactionDataSource gtds =
+        (GemFireTransactionDataSource) DataSourceFactory.getTranxDataSource(map, props);
 
-    XAConnection xaconn = (XAConnection)gtds.provider.borrowConnection();
-    try { Thread.sleep(4); } catch (InterruptedException e) { fail("interrupted"); }
+    XAConnection xaconn = (XAConnection) gtds.provider.borrowConnection();
+    try {
+      Thread.sleep(4);
+    } catch (InterruptedException e) {
+      fail("interrupted");
+    }
     for (int i = 0; i < 1000; ++i) {
       XAResource xar = xaconn.getXAResource();
       System.out.println("XAResource=" + xar);

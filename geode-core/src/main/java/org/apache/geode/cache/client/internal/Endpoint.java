@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal;
 
@@ -25,11 +23,12 @@ import org.apache.geode.distributed.internal.ServerLocation;
 
 /**
  * Represents a server. Keeps track of information about the specific server
+ * 
  * @since GemFire 5.7
  *
  */
 public class Endpoint {
-  
+
   private AtomicLong lastExecute = new AtomicLong();
   private AtomicInteger references = new AtomicInteger();
   private final ServerLocation location;
@@ -37,11 +36,10 @@ public class Endpoint {
   private final EndpointManagerImpl manager;
   private final DistributedMember memberId;
   private volatile boolean closed;
-  
-  Endpoint(EndpointManagerImpl endpointManager, DistributedSystem ds,
-      ServerLocation location, ConnectionStats stats,
-      DistributedMember memberId) {
-    this.manager =endpointManager;
+
+  Endpoint(EndpointManagerImpl endpointManager, DistributedSystem ds, ServerLocation location,
+      ConnectionStats stats, DistributedMember memberId) {
+    this.manager = endpointManager;
     this.location = location;
     this.stats = stats;
     this.memberId = memberId;
@@ -60,13 +58,13 @@ public class Endpoint {
     long now = System.nanoTime();
     return getLastExecute() <= (now - pingIntervalNanos);
   }
-  
+
   public void close() {
-    if(!closed) {
+    if (!closed) {
       closed = true;
     }
   }
-  
+
   public boolean isClosed() {
     return closed;
   }
@@ -84,7 +82,7 @@ public class Endpoint {
    */
   public boolean removeReference() {
     boolean lastReference = (references.decrementAndGet() <= 0);
-    if(lastReference) {
+    if (lastReference) {
       manager.endpointNotInUse(this);
     }
     return lastReference;
@@ -101,10 +99,10 @@ public class Endpoint {
   public String toString() {
     return location.toString();
   }
-  
+
   public DistributedMember getMemberId() {
     return memberId;
   }
-  
-  
+
+
 }

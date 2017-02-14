@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
@@ -71,8 +69,8 @@ public class DataBrowserJSONValidationJUnitTest {
   private int queryResultSetLimit = ManagementConstants.DEFAULT_QUERY_LIMIT;
 
   /**
-   * NUmber of elements to be shown in queryData operation if query results
-   * contain collections like Map, List etc.
+   * NUmber of elements to be shown in queryData operation if query results contain collections like
+   * Map, List etc.
    */
   private int queryCollectionsDepth = TypedJson.DEFAULT_COLLECTION_ELEMENT_LIMIT;
 
@@ -127,9 +125,8 @@ public class DataBrowserJSONValidationJUnitTest {
   }
 
   /**
-   * #Issue 51048 Tests a model where Objects have a circular reference with
-   * object reference. e.g. Order1-- Has--> Items each Item --Has --> OrderN
-   * where (OrderN == Order1)
+   * #Issue 51048 Tests a model where Objects have a circular reference with object reference. e.g.
+   * Order1-- Has--> Items each Item --Has --> OrderN where (OrderN == Order1)
    */
   @Test
   public void testCyclicWithNestedObjectReference() {
@@ -149,9 +146,8 @@ public class DataBrowserJSONValidationJUnitTest {
   }
 
   /**
-   * Tests a model where Objects have a circular reference with their class
-   * types. e.g. Order1-- Has--> Items each Item --Has --> OrderN where (OrderN
-   * != Order1)
+   * Tests a model where Objects have a circular reference with their class types. e.g. Order1--
+   * Has--> Items each Item --Has --> OrderN where (OrderN != Order1)
    */
   @Test
   public void testCyclicWithNestedClasses() {
@@ -173,9 +169,8 @@ public class DataBrowserJSONValidationJUnitTest {
   }
 
   /**
-   * Tests a model where Objects have a circular reference with their class
-   * types. e.g. Order1-- Has--> Items each Item --Has --> OrderN where (OrderN
-   * != Order1)
+   * Tests a model where Objects have a circular reference with their class types. e.g. Order1--
+   * Has--> Items each Item --Has --> OrderN where (OrderN != Order1)
    */
   @Test
   public void testCyclicWithNestedRefernce2ndLayer() {
@@ -278,7 +273,8 @@ public class DataBrowserJSONValidationJUnitTest {
       i++;
     }
 
-    queryData(QUERY_1, cache.getDistributedSystem().getMemberId() + "," + cache.getDistributedSystem().getMemberId(), 0);
+    queryData(QUERY_1, cache.getDistributedSystem().getMemberId() + ","
+        + cache.getDistributedSystem().getMemberId(), 0);
 
   }
 
@@ -303,7 +299,7 @@ public class DataBrowserJSONValidationJUnitTest {
     queryData(QUERY_1, "", 0);
 
   }
-  
+
   @Test
   public void testNestedPDXObject() {
 
@@ -318,7 +314,7 @@ public class DataBrowserJSONValidationJUnitTest {
     queryData(QUERY_1, "", 0);
 
   }
-  
+
   @Test
   public void testArrayWithNullValues() {
 
@@ -330,7 +326,7 @@ public class DataBrowserJSONValidationJUnitTest {
     queryData(QUERY_1, "", 0);
 
   }
-  
+
   @Test
   public void testWithSqlDate() {
 

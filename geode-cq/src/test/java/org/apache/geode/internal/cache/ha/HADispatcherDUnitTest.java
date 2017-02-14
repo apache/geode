@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.ha;
 
@@ -35,6 +33,7 @@ import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -54,21 +53,15 @@ import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 /**
- * This Dunit test is to verify that when the dispatcher of CS dispatches the
- * Event , the peer's HARegionQueue should get the events removed from the HA
- * RegionQueues assuming the QRM thread has acted upon by that time
- * This is done in the following steps
- * 1. start server1 and server2
- * 2. start client1 and client2
- * 3. perform put operation from client1
- * 4. check the entry in the regionque of client2 on server2.It should be present.
- * 5. Wait till client2 receives event
- * 6. Make sure that QRM is envoked
- * 7. Again the entry in the regionque of client2 on server2.It should not be present.
- * 8. close client1 and client2
- * 9. close server1 and server2
+ * This Dunit test is to verify that when the dispatcher of CS dispatches the Event , the peer's
+ * HARegionQueue should get the events removed from the HA RegionQueues assuming the QRM thread has
+ * acted upon by that time This is done in the following steps 1. start server1 and server2 2. start
+ * client1 and client2 3. perform put operation from client1 4. check the entry in the regionque of
+ * client2 on server2.It should be present. 5. Wait till client2 receives event 6. Make sure that
+ * QRM is envoked 7. Again the entry in the regionque of client2 on server2.It should not be
+ * present. 8. close client1 and client2 9. close server1 and server2
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String REGION_NAME = HADispatcherDUnitTest.class.getSimpleName() + "_region";
@@ -115,8 +108,10 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
 
     client1.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
     client2.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
-    client1.invoke(() -> createClientCache(serverHostName, new Integer(PORT1), new Integer(PORT2), new Boolean(false)));
-    client2.invoke(() -> createClientCache(serverHostName, new Integer(PORT1), new Integer(PORT2), new Boolean(true)));
+    client1.invoke(() -> createClientCache(serverHostName, new Integer(PORT1), new Integer(PORT2),
+        new Boolean(false)));
+    client2.invoke(() -> createClientCache(serverHostName, new Integer(PORT1), new Integer(PORT2),
+        new Boolean(true)));
   }
 
   @Override
@@ -148,8 +143,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * This is to test the serialization mechanism of ClientUpdateMessage.
-   * Added after CQ support.
+   * This is to test the serialization mechanism of ClientUpdateMessage. Added after CQ support.
    * This could be done in different way, by overflowing the HARegion queue.
    */
   @Test
@@ -242,7 +236,8 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
       public void run2() throws CacheException {
         Iterator iter = cache.getCacheServers().iterator();
         CacheServerImpl server = (CacheServerImpl) iter.next();
-        Iterator iter_prox = server.getAcceptor().getCacheClientNotifier().getClientProxies().iterator();
+        Iterator iter_prox =
+            server.getAcceptor().getCacheClientNotifier().getClientProxies().iterator();
         isObjectPresent = false;
 
         while (iter_prox.hasNext()) {
@@ -258,9 +253,11 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
               cache.getLogger().fine("regionQueue.size()::" + sz);
               return sz == 0 || !proxy.isConnected();
             }
+
             @Override
             public String description() {
-              return "regionQueue not empty with size " + regionQueue.size() + " for proxy " + proxy;
+              return "regionQueue not empty with size " + regionQueue.size() + " for proxy "
+                  + proxy;
             }
           };
           waitForCriterion(wc, 60 * 1000, 1000, true);
@@ -300,7 +297,8 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     return new Integer(server.getPort());
   }
 
-  private void createClientCache(String hostName, Integer port1, Integer port2, Boolean isListenerPresent) throws CqException, CqExistsException, RegionNotFoundException {
+  private void createClientCache(String hostName, Integer port1, Integer port2,
+      Boolean isListenerPresent) throws CqException, CqExistsException, RegionNotFoundException {
     int PORT1 = port1.intValue();
     int PORT2 = port2.intValue();
     Properties props = new Properties();
@@ -309,7 +307,8 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     createCache(props);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
-    ClientServerTestCase.configureConnectionPool(factory, hostName, new int[]{PORT1, PORT2}, true, -1, 2, null);
+    ClientServerTestCase.configureConnectionPool(factory, hostName, new int[] {PORT1, PORT2}, true,
+        -1, 2, null);
     if (isListenerPresent.booleanValue() == true) {
       CacheListener clientListener = new HAClientListener();
       factory.setCacheListener(clientListener);
@@ -345,7 +344,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
 
       assertNotNull(pool.getPrimary());
       assertTrue("backups=" + pool.getRedundants() + " expected=" + 1,
-              pool.getRedundants().size() >= 1);
+          pool.getRedundants().size() >= 1);
       assertEquals(PORT1, pool.getPrimaryPort());
     }
 
@@ -379,8 +378,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * This is the client listener which notifies the waiting thread when it
-   * receives the event.
+   * This is the client listener which notifies the waiting thread when it receives the event.
    */
   private static class HAClientListener extends CacheListenerAdapter implements Declarable {
 
@@ -400,8 +398,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     }
 
     @Override
-    public void init(Properties props) {
-    }
+    public void init(Properties props) {}
   }
 
   /**
@@ -416,9 +413,12 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
       isObjectPresent = false;
 
       // The event not be there in the region first time; try couple of time.
-      // This should have been replaced by listener on the HARegion and doing wait for event arrival in that.
+      // This should have been replaced by listener on the HARegion and doing wait for event arrival
+      // in that.
       while (true) {
-        for (Iterator iter_prox = server.getAcceptor().getCacheClientNotifier().getClientProxies().iterator(); iter_prox.hasNext();) {
+        for (Iterator iter_prox =
+            server.getAcceptor().getCacheClientNotifier().getClientProxies().iterator(); iter_prox
+                .hasNext();) {
           CacheClientProxy proxy = (CacheClientProxy) iter_prox.next();
           HARegion regionForQueue = (HARegion) proxy.getHARegion();
 
@@ -426,7 +426,8 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
             Object obj = itr.next();
             if (obj instanceof HAEventWrapper) {
               Conflatable confObj = (Conflatable) obj;
-              if (KEY1.equals(confObj.getKeyToConflate()) || KEY2.equals(confObj.getKeyToConflate())) {
+              if (KEY1.equals(confObj.getKeyToConflate())
+                  || KEY2.equals(confObj.getKeyToConflate())) {
                 isObjectPresent = true;
               }
             }

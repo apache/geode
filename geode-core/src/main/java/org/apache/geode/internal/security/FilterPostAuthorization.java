@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.security;
@@ -44,10 +42,9 @@ import org.apache.geode.security.AccessControl;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
- * An authorization implementation for testing that checks for authorization
- * information in post-operation filtering, removes that field and allows the
- * operation only if the authorization field in {@link ObjectWithAuthz} object
- * allows the current principal.
+ * An authorization implementation for testing that checks for authorization information in
+ * post-operation filtering, removes that field and allows the operation only if the authorization
+ * field in {@link ObjectWithAuthz} object allows the current principal.
  * 
  * @since GemFire 5.5
  */
@@ -58,8 +55,7 @@ public class FilterPostAuthorization implements AccessControl {
   private LogWriterI18n logger;
 
   static {
-    Instantiator.register(new Instantiator(ObjectWithAuthz.class,
-        ObjectWithAuthz.CLASSID) {
+    Instantiator.register(new Instantiator(ObjectWithAuthz.class, ObjectWithAuthz.CLASSID) {
       @Override
       public DataSerializable newInstance() {
         return new ObjectWithAuthz();
@@ -78,8 +74,8 @@ public class FilterPostAuthorization implements AccessControl {
     return new FilterPostAuthorization();
   }
 
-  public void init(Principal principal, DistributedMember remoteMember,
-      Cache cache) throws NotAuthorizedException {
+  public void init(Principal principal, DistributedMember remoteMember, Cache cache)
+      throws NotAuthorizedException {
 
     this.principalName = (principal == null ? "" : principal.getName());
     this.logger = cache.getSecurityLoggerI18n();
@@ -99,25 +95,23 @@ public class FilterPostAuthorization implements AccessControl {
         this.logger.finer("FilterPostAuthorization: successfully read object "
             + "from serialized object: " + obj);
       }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       this.logger.severe(
-        LocalizedStrings.FilterPostAuthorization_FILTERPOSTAUTHORIZATION_AN_EXCEPTION_WAS_THROWN_WHILE_TRYING_TO_DESERIALIZE,
-        ex);
+          LocalizedStrings.FilterPostAuthorization_FILTERPOSTAUTHORIZATION_AN_EXCEPTION_WAS_THROWN_WHILE_TRYING_TO_DESERIALIZE,
+          ex);
       return null;
     }
     obj = checkObjectAuth(obj);
     if (obj != null) {
-      HeapDataOutputStream hos = new HeapDataOutputStream(
-          serializedObj.length + 32, Version.CURRENT);
+      HeapDataOutputStream hos =
+          new HeapDataOutputStream(serializedObj.length + 32, Version.CURRENT);
       try {
         DataSerializer.writeObject(obj, hos);
         return hos.toByteArray();
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         this.logger.severe(
-          LocalizedStrings.FilterPostAuthorization_FILTERPOSTAUTHORIZATION_AN_EXCEPTION_WAS_THROWN_WHILE_TRYING_TO_SERIALIZE,
-          ex);
+            LocalizedStrings.FilterPostAuthorization_FILTERPOSTAUTHORIZATION_AN_EXCEPTION_WAS_THROWN_WHILE_TRYING_TO_SERIALIZE,
+            ex);
       }
     }
     return null;
@@ -126,32 +120,28 @@ public class FilterPostAuthorization implements AccessControl {
   private Object checkObjectAuth(Object value) {
     Object obj = value;
     if (value instanceof CqEntry) {
-      obj = ((CqEntry)value).getValue();
+      obj = ((CqEntry) value).getValue();
     }
 
     if (obj instanceof ObjectWithAuthz) {
-      int lastChar = this.principalName
-          .charAt(this.principalName.length() - 1)
-          - '0';
+      int lastChar = this.principalName.charAt(this.principalName.length() - 1) - '0';
       lastChar %= 10;
-      ObjectWithAuthz authzObj = (ObjectWithAuthz)obj;
-      int authzIndex = ((Integer)authzObj.getAuthz()).intValue() - '0';
+      ObjectWithAuthz authzObj = (ObjectWithAuthz) obj;
+      int authzIndex = ((Integer) authzObj.getAuthz()).intValue() - '0';
       authzIndex %= 10;
       if ((lastChar == 0) || (authzIndex % lastChar != 0)) {
         this.logger.warning(
-            LocalizedStrings.FilterPostAuthorization_FILTERPOSTAUTHORIZATION_THE_USER_0_IS_NOT_AUTHORIZED_FOR_THE_OBJECT_1, 
+            LocalizedStrings.FilterPostAuthorization_FILTERPOSTAUTHORIZATION_THE_USER_0_IS_NOT_AUTHORIZED_FOR_THE_OBJECT_1,
             new Object[] {this.principalName, authzObj.getVal()});
         return null;
-      }
-      else {
+      } else {
         if (this.logger.fineEnabled()) {
-          this.logger.fine("FilterPostAuthorization: user ["
-              + this.principalName + "] authorized for object: "
-              + authzObj.getVal());
+          this.logger.fine("FilterPostAuthorization: user [" + this.principalName
+              + "] authorized for object: " + authzObj.getVal());
         }
         if (value instanceof CqEntry) {
-          return new CqEntry(((CqEntry)value).getKey(),authzObj.getVal());
-        } else { 
+          return new CqEntry(((CqEntry) value).getKey(), authzObj.getVal());
+        } else {
           return authzObj.getVal();
         }
       }
@@ -166,7 +156,7 @@ public class FilterPostAuthorization implements AccessControl {
     assert context.isPostOperation();
     OperationCode opCode = context.getOperationCode();
     if (opCode.isGet()) {
-      GetOperationContext getContext = (GetOperationContext)context;
+      GetOperationContext getContext = (GetOperationContext) context;
       Object value = getContext.getObject();
       boolean isObject = getContext.isObject();
       if (value != null) {
@@ -174,32 +164,28 @@ public class FilterPostAuthorization implements AccessControl {
           getContext.setObject(value, isObject);
           return true;
         }
-      }
-      else {
+      } else {
         byte[] serializedValue = getContext.getSerializedValue();
         if ((serializedValue = checkObjectAuth(serializedValue, isObject)) != null) {
           getContext.setSerializedValue(serializedValue, isObject);
           return true;
         }
       }
-    }
-    else if (opCode.isPut()) {
-      PutOperationContext putContext = (PutOperationContext)context;
+    } else if (opCode.isPut()) {
+      PutOperationContext putContext = (PutOperationContext) context;
       byte[] serializedValue = putContext.getSerializedValue();
       boolean isObject = putContext.isObject();
       if ((serializedValue = checkObjectAuth(serializedValue, isObject)) != null) {
         putContext.setSerializedValue(serializedValue, isObject);
         return true;
       }
-    }
-    else if (opCode.equals(OperationCode.PUTALL)) {
+    } else if (opCode.equals(OperationCode.PUTALL)) {
       // no need for now
-    }
-    else if (opCode.isQuery() || opCode.isExecuteCQ()) {
-      QueryOperationContext queryContext = (QueryOperationContext)context;
+    } else if (opCode.isQuery() || opCode.isExecuteCQ()) {
+      QueryOperationContext queryContext = (QueryOperationContext) context;
       Object value = queryContext.getQueryResult();
       if (value instanceof SelectResults) {
-        SelectResults results = (SelectResults)value;
+        SelectResults results = (SelectResults) value;
         List newResults = new ArrayList();
         Iterator resultIter = results.iterator();
         while (resultIter.hasNext()) {
@@ -211,15 +197,13 @@ public class FilterPostAuthorization implements AccessControl {
         if (results.isModifiable()) {
           results.clear();
           results.addAll(newResults);
-        }
-        else {
+        } else {
           ObjectType constraint = results.getCollectionType().getElementType();
           results = new ResultsCollectionWrapper(constraint, newResults);
           queryContext.setQueryResult(results);
         }
         return true;
-      }
-      else {
+      } else {
         return false;
       }
     }

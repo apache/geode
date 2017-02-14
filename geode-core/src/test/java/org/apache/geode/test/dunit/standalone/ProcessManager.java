@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.test.dunit.standalone;
 
@@ -40,56 +38,74 @@ import org.apache.commons.io.FileUtils;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.FileUtil;
+import org.apache.geode.test.dunit.VM;
 
 /**
  *
  */
 public class ProcessManager {
   private int namingPort;
-  private Map<Integer, ProcessHolder> processes = new HashMap<Integer, ProcessHolder>();
+  private Map<Integer, ProcessHolder> processes = new HashMap<>();
   private File log4jConfig;
   private int pendingVMs;
   private Registry registry;
   private int debugPort = Integer.getInteger("dunit.debug.basePort", 0);
   private int suspendVM = Integer.getInteger("dunit.debug.suspendVM", -100);
+  private VersionManager versionManager;
 
   public ProcessManager(int namingPort, Registry registry) {
+    this.versionManager = VersionManager.getInstance();
     this.namingPort = namingPort;
     this.registry = registry;
   }
 
   public synchronized void launchVM(int vmNum) throws IOException {
+    launchVM(VersionManager.CURRENT_VERSION, vmNum, false);
+  }
+
+  public synchronized void launchVM(String version, int vmNum, boolean bouncedVM)
+      throws IOException {
     if (processes.containsKey(vmNum)) {
       throw new IllegalStateException("VM " + vmNum + " is already running.");
     }
 
-    String[] cmd = buildJavaCommand(vmNum, namingPort);
+    String[] cmd = buildJavaCommand(vmNum, namingPort, version);
     System.out.println("Executing " + Arrays.toString(cmd));
-    File workingDir = getVMDir(vmNum);
-    try {
-      FileUtil.delete(workingDir);
-    } catch (IOException e) {
-      //This delete is occasionally failing on some platforms, maybe due to a lingering
-      //process. Allow the process to be launched anyway.
-      System.err.println("Unable to delete " + workingDir + ". Currently contains "
-          + Arrays.asList(workingDir.list()));
+    File workingDir = getVMDir(version, vmNum);
+    if (!workingDir.exists()) {
+      workingDir.mkdirs();
+    } else if (!bouncedVM || DUnitLauncher.MAKE_NEW_WORKING_DIRS) {
+      try {
+        FileUtil.delete(workingDir);
+      } catch (IOException e) {
+        // This delete is occasionally failing on some platforms, maybe due to a lingering
+        // process. Allow the process to be launched anyway.
+        System.err.println("Unable to delete " + workingDir + ". Currently contains "
+            + Arrays.asList(workingDir.list()));
+      }
+      workingDir.mkdirs();
     }
-    workingDir.mkdirs();
     if (log4jConfig != null) {
       FileUtils.copyFileToDirectory(log4jConfig, workingDir);
     }
 
-    //TODO - delete directory contents, preferably with commons io FileUtils
+    // TODO - delete directory contents, preferably with commons io FileUtils
     Process process = Runtime.getRuntime().exec(cmd, null, workingDir);
     pendingVMs++;
     ProcessHolder holder = new ProcessHolder(process);
     processes.put(vmNum, holder);
-    linkStreams(vmNum, holder, process.getErrorStream(), System.err);
-    linkStreams(vmNum, holder, process.getInputStream(), System.out);
+    linkStreams(version, vmNum, holder, process.getErrorStream(), System.err);
+    linkStreams(version, vmNum, holder, process.getInputStream(), System.out);
   }
 
-  public static File getVMDir(int vmNum) {
-    return new File(DUnitLauncher.DUNIT_DIR, "vm" + vmNum);
+  public void validateVersion(String version) {
+    if (!versionManager.isValidVersion(version)) {
+      throw new IllegalArgumentException("Version " + version + " is not configured for use");
+    }
+  }
+
+  public static File getVMDir(String version, int vmNum) {
+    return new File(DUnitLauncher.DUNIT_DIR, VM.getVMName(VersionManager.CURRENT_VERSION, vmNum));
   }
 
   public synchronized void killVMs() {
@@ -109,7 +125,7 @@ public class ProcessManager {
     return false;
   }
 
-  public synchronized void bounce(int vmNum) {
+  public synchronized void bounce(String version, int vmNum) {
     if (!processes.containsKey(vmNum)) {
       throw new IllegalStateException("No such process " + vmNum);
     }
@@ -117,17 +133,18 @@ public class ProcessManager {
       ProcessHolder holder = processes.remove(vmNum);
       holder.kill();
       holder.getProcess().waitFor();
-      launchVM(vmNum);
+      launchVM(version, vmNum, true);
     } catch (InterruptedException | IOException e) {
       throw new RuntimeException("Unable to restart VM " + vmNum, e);
     }
   }
 
-  private void linkStreams(final int vmNum, final ProcessHolder holder, final InputStream in, final PrintStream out) {
+  private void linkStreams(final String version, final int vmNum, final ProcessHolder holder,
+      final InputStream in, final PrintStream out) {
     Thread ioTransport = new Thread() {
       public void run() {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String vmName = (vmNum == -2) ? "[locator]" : "[vm_" + vmNum + "]";
+        String vmName = "[" + VM.getVMName(version, vmNum) + "] ";
         try {
           String line = reader.readLine();
           while (line != null) {
@@ -152,10 +169,17 @@ public class ProcessManager {
     ioTransport.start();
   }
 
-  private String[] buildJavaCommand(int vmNum, int namingPort) {
+  private String[] buildJavaCommand(int vmNum, int namingPort, String version) {
     String cmd = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
-    String classPath = System.getProperty("java.class.path");
-    //String tmpDir = System.getProperty("java.io.tmpdir");
+    String dunitClasspath = System.getProperty("java.class.path");
+    String classPath;
+    if (!VersionManager.isCurrentVersion(version)) {
+      classPath = versionManager.getClasspath(version) + File.pathSeparator + dunitClasspath;
+    } else {
+      classPath = dunitClasspath;
+    }
+
+    // String tmpDir = System.getProperty("java.io.tmpdir");
     String agent = getAgentString();
 
     String jdkDebug = "";
@@ -164,7 +188,7 @@ public class ProcessManager {
       debugPort++;
     }
 
-    String jdkSuspend = vmNum == suspendVM ? "y" : "n";
+    String jdkSuspend = vmNum == suspendVM ? "y" : "n"; // ignore version
     ArrayList<String> cmds = new ArrayList<String>();
     cmds.add(cmd);
     cmds.add("-classpath");
@@ -172,22 +196,22 @@ public class ProcessManager {
     cmds.add(classPath);
     cmds.add("-D" + DUnitLauncher.RMI_PORT_PARAM + "=" + namingPort);
     cmds.add("-D" + DUnitLauncher.VM_NUM_PARAM + "=" + vmNum);
+    cmds.add("-D" + DUnitLauncher.VM_VERSION_PARAM + "=" + version);
     cmds.add("-D" + DUnitLauncher.WORKSPACE_DIR_PARAM + "=" + new File(".").getAbsolutePath());
     if (vmNum >= 0) { // let the locator print a banner
-//      cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");
+      if (version.equals(VersionManager.CURRENT_VERSION)) { // enable the banner for older versions
+        cmds.add("-D" + InternalLocator.INHIBIT_DM_BANNER + "=true");
+      }
     } else {
       // most distributed unit tests were written under the assumption that network partition
-      // detection is disabled, so we turn it off in the locator.  Tests for network partition
+      // detection is disabled, so we turn it off in the locator. Tests for network partition
       // detection should create a separate locator that has it enabled
-      cmds.add("-D"+DistributionConfig.GEMFIRE_PREFIX+ENABLE_NETWORK_PARTITION_DETECTION+"=false");
+      cmds.add(
+          "-D" + DistributionConfig.GEMFIRE_PREFIX + ENABLE_NETWORK_PARTITION_DETECTION + "=false");
     }
-    cmds.add("-D"+LOG_LEVEL+"=" + DUnitLauncher.logLevel);
+    cmds.add("-D" + LOG_LEVEL + "=" + DUnitLauncher.logLevel);
     if (DUnitLauncher.LOG4J != null) {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
-    }
-    String jtests = System.getProperty("JTESTS");
-    if (jtests != null) {
-      cmds.add("-DJTESTS="+jtests);
     }
     cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
     cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
@@ -208,13 +232,13 @@ public class ProcessManager {
 
     return rst;
   }
-  
+
   private String removeJREJars(String classpath) {
     String[] jars = classpath.split(File.pathSeparator);
     StringBuilder sb = new StringBuilder(classpath.length());
     String jreLib = File.separator + "jre" + File.separator + "lib" + File.separator;
     Boolean firstjar = true;
-    for (String jar: jars) {
+    for (String jar : jars) {
       if (!jar.contains(jreLib)) {
         if (!firstjar) {
           sb.append(File.pathSeparator);
@@ -227,19 +251,21 @@ public class ProcessManager {
   }
 
   /**
-   * Get the java agent passed to this process and pass it to the child VMs.
-   * This was added to support jacoco code coverage reports
+   * Get the java agent passed to this process and pass it to the child VMs. This was added to
+   * support jacoco code coverage reports
    */
   private String getAgentString() {
     RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
     if (runtimeBean != null) {
       for (String arg : runtimeBean.getInputArguments()) {
         if (arg.contains("-javaagent:")) {
-          //HACK for gradle bug  GRADLE-2859. Jacoco is passing a relative path
-          //That won't work when we pass this to dunit VMs in a different 
-          //directory
-          arg = arg.replace("-javaagent:..", "-javaagent:" + System.getProperty("user.dir") + File.separator + "..");
-          arg = arg.replace("destfile=..", "destfile=" + System.getProperty("user.dir") + File.separator + "..");
+          // HACK for gradle bug GRADLE-2859. Jacoco is passing a relative path
+          // That won't work when we pass this to dunit VMs in a different
+          // directory
+          arg = arg.replace("-javaagent:..",
+              "-javaagent:" + System.getProperty("user.dir") + File.separator + "..");
+          arg = arg.replace("destfile=..",
+              "destfile=" + System.getProperty("user.dir") + File.separator + "..");
           return arg;
         }
       }
@@ -293,8 +319,48 @@ public class ProcessManager {
     }
   }
 
-  public RemoteDUnitVMIF getStub(int i) throws AccessException, RemoteException, NotBoundException, InterruptedException {
+  public RemoteDUnitVMIF getStub(int i)
+      throws AccessException, RemoteException, NotBoundException, InterruptedException {
+    return getStub(VersionManager.CURRENT_VERSION, i);
+  }
+
+  public RemoteDUnitVMIF getStub(String version, int i)
+      throws AccessException, RemoteException, NotBoundException, InterruptedException {
     waitForVMs(DUnitLauncher.STARTUP_TIMEOUT);
     return (RemoteDUnitVMIF) registry.lookup("vm" + i);
+  }
+
+  private static class VersionedVMNumber {
+    String version;
+    int number;
+
+    VersionedVMNumber(String version, int number) {
+      this.version = version;
+      this.number = number;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+
+      VersionedVMNumber that = (VersionedVMNumber) o;
+
+      if (number != that.number) {
+        return false;
+      }
+      return version.equals(that.version);
+    }
+
+    @Override
+    public int hashCode() {
+      int result = version.hashCode();
+      result = 31 * result + number;
+      return result;
+    }
   }
 }

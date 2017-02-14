@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.wan.wancommand;
 
@@ -23,6 +21,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,94 +35,90 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.Wait.pause;
 
 @Category(DistributedTest.class)
-public class WanCommandStatusDUnitTest extends WANCommandTestBase{
-  
+public class WanCommandStatusDUnitTest extends WANCommandTestBase {
+
   private static final long serialVersionUID = 1L;
 
   @Test
-  public void testGatewaySenderStatus(){
+  public void testGatewaySenderStatus() {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
+    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
-    
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
 
-    vm6.invoke(() -> createAndStartReceiver( nyPort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
-    vm3.invoke(() -> createCache( lnPort ));
-    vm3.invoke(() -> createSender(
-        "ln_Serial", 2, false, 100, 400, false, false, null, true ));
-    vm3.invoke(() -> createSender(
-        "ln_Parallel", 2, true, 100, 400, false, false, null, true));
+    vm6.invoke(() -> createAndStartReceiver(nyPort));
 
-    vm4.invoke(() -> createCache( lnPort ));
-    vm4.invoke(() -> createSender(
-      "ln_Serial", 2, false, 100, 400, false, false, null, true));
-    vm4.invoke(() -> createSender(
-        "ln_Parallel", 2, true, 100, 400, false, false, null, true));
-    
-    vm5.invoke(() -> createCache( lnPort ));
-    vm5.invoke(() -> createSender(
-      "ln_Serial", 2, false, 100, 400, false, false, null, true));
-    vm5.invoke(() -> createSender(
-        "ln_Parallel", 2, true, 100, 400, false, false, null, true));
+    vm3.invoke(() -> createCache(lnPort));
+    vm3.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, true));
+    vm3.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, true));
+
+    vm4.invoke(() -> createCache(lnPort));
+    vm4.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, true));
+    vm4.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, true));
+
+    vm5.invoke(() -> createCache(lnPort));
+    vm5.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, true));
+    vm5.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, true));
 
     pause(10000);
-    String command = CliStrings.STATUS_GATEWAYSENDER + " --"
-    + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial";
+    String command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
+        + "=ln_Serial";
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
-      TabularResultData tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(3, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
-      
-      tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+
+      tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_hosts = tableResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER);
       assertEquals(2, result_hosts.size());
-      
+
       String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testGatewaySenderStatus : " + strCmdResult + ">>>>> ");
+      getLogWriter().info("testGatewaySenderStatus : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testListGatewaySender failed as did not get CommandResult");
     }
-    
-    vm3.invoke(() -> startSender( "ln_Serial" ));
-    vm3.invoke(() -> startSender( "ln_Parallel" ));
 
-    vm4.invoke(() -> startSender( "ln_Serial" ));
-    vm4.invoke(() -> startSender( "ln_Parallel" ));
+    vm3.invoke(() -> startSender("ln_Serial"));
+    vm3.invoke(() -> startSender("ln_Parallel"));
 
-    vm5.invoke(() -> startSender( "ln_Serial" ));
-    vm5.invoke(() -> startSender( "ln_Parallel" ));
+    vm4.invoke(() -> startSender("ln_Serial"));
+    vm4.invoke(() -> startSender("ln_Parallel"));
+
+    vm5.invoke(() -> startSender("ln_Serial"));
+    vm5.invoke(() -> startSender("ln_Parallel"));
 
     pause(10000);
-    command = CliStrings.STATUS_GATEWAYSENDER + " --"
-    + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial";
+    command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
+        + "=ln_Serial";
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
-      TabularResultData tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(3, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
-      
-      tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+
+      tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_hosts = tableResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER);
       assertEquals(2, result_hosts.size());
-      
+
       String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testGatewaySenderStatus : " + strCmdResult + ">>>>> ");
+      getLogWriter().info("testGatewaySenderStatus : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testListGatewaySender failed as did not get CommandResult");
@@ -131,98 +126,93 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
   }
 
   @Test
-  public void testGatewaySenderStatus_OnMember(){
+  public void testGatewaySenderStatus_OnMember() {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
+    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
-    vm6.invoke(() -> createAndStartReceiver( nyPort ));
+    vm6.invoke(() -> createAndStartReceiver(nyPort));
 
-    vm3.invoke(() -> createCache( lnPort ));
-    vm3.invoke(() -> createSender(
-        "ln_Serial", 2, false, 100, 400, false, false, null, true ));
-    vm3.invoke(() -> createSender(
-        "ln_Parallel", 2, true, 100, 400, false, false, null, true));
+    vm3.invoke(() -> createCache(lnPort));
+    vm3.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, true));
+    vm3.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, true));
 
-    vm4.invoke(() -> createCache( lnPort ));
-    vm4.invoke(() -> createSender(
-      "ln_Serial", 2, false, 100, 400, false, false, null, true));
-    vm4.invoke(() -> createSender(
-        "ln_Parallel", 2, true, 100, 400, false, false, null, true));
-    
-    vm5.invoke(() -> createCache( lnPort ));
+    vm4.invoke(() -> createCache(lnPort));
+    vm4.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, true));
+    vm4.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, true));
+
+    vm5.invoke(() -> createCache(lnPort));
 
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> getMember());
-    
+
     pause(10000);
-    String command = CliStrings.STATUS_GATEWAYSENDER + " --"
-    + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --"
-        + CliStrings.STATUS_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
-    
+    String command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
+        + "=ln_Serial --" + CliStrings.STATUS_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
+
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
       getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
-      TabularResultData tableResultData =
-          ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(1, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
-        
-    
+
+
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testListGatewaySender failed as did not get CommandResult");
     }
-    
-    vm3.invoke(() -> startSender( "ln_Serial" ));
-    vm3.invoke(() -> startSender( "ln_Parallel" ));
 
-    vm4.invoke(() -> startSender( "ln_Serial" ));
-    vm4.invoke(() -> startSender( "ln_Parallel" ));
+    vm3.invoke(() -> startSender("ln_Serial"));
+    vm3.invoke(() -> startSender("ln_Parallel"));
+
+    vm4.invoke(() -> startSender("ln_Serial"));
+    vm4.invoke(() -> startSender("ln_Parallel"));
 
     pause(10000);
-    command = CliStrings.STATUS_GATEWAYSENDER + " --"
-    + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --"
-        + CliStrings.STATUS_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
-    
+    command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
+        + "=ln_Serial --" + CliStrings.STATUS_GATEWAYSENDER__MEMBER + "=" + vm1Member.getId();
+
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
-//      TabularResultData tableResultData =
-//        (TabularResultData) cmdResult.getResultData();
-//      List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-//      assertIndexDetailsEquals(1, result_Status.size());
-//      assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
+      // TabularResultData tableResultData =
+      // (TabularResultData) cmdResult.getResultData();
+      // List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
+      // assertIndexDetailsEquals(1, result_Status.size());
+      // assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
       String strCmdResult = commandResultToString(cmdResult);
       getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
-      TabularResultData tableResultData =
-          ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(1, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
-      
+
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testListGatewaySender failed as did not get CommandResult");
     }
-    
+
     final DistributedMember vm5Member = (DistributedMember) vm5.invoke(() -> getMember());
-   
-    command = CliStrings.STATUS_GATEWAYSENDER + " --"
-    + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --"
-        + CliStrings.STATUS_GATEWAYSENDER__MEMBER + "=" + vm5Member.getId();
+
+    command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
+        + "=ln_Serial --" + CliStrings.STATUS_GATEWAYSENDER__MEMBER + "=" + vm5Member.getId();
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
-//      ErrorResultData errorResultData =
-//        (ErrorResultData) cmdResult.getResultData();
+      // ErrorResultData errorResultData =
+      // (ErrorResultData) cmdResult.getResultData();
       assertTrue(cmdResult != null);
-      
+
       String strCmdResult = commandResultToString(cmdResult);
       getLogWriter().info("testGatewaySenderStatus_OnMember : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
@@ -232,93 +222,89 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
   }
 
   @Test
-  public void testGatewaySenderStatus_OnGroups(){
+  public void testGatewaySenderStatus_OnGroups() {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
+    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
-    vm7.invoke(() -> createAndStartReceiver( nyPort ));
+    vm7.invoke(() -> createAndStartReceiver(nyPort));
 
-    vm3.invoke(() -> createCacheWithGroups( lnPort, "Serial_Sender, Parallel_Sender"));
-    vm3.invoke(() -> createSender(
-        "ln_Serial", 2, false, 100, 400, false, false, null, true ));
-    vm3.invoke(() -> createSender(
-        "ln_Parallel", 2, true, 100, 400, false, false, null, true));
+    vm3.invoke(() -> createCacheWithGroups(lnPort, "Serial_Sender, Parallel_Sender"));
+    vm3.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, true));
+    vm3.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, true));
 
-    vm4.invoke(() -> createCacheWithGroups( lnPort,"Serial_Sender, Parallel_Sender"));
-    vm4.invoke(() -> createSender(
-      "ln_Serial", 2, false, 100, 400, false, false, null, true));
-    vm4.invoke(() -> createSender(
-        "ln_Parallel", 2, true, 100, 400, false, false, null, true));
-    
-    vm5.invoke(() -> createCacheWithGroups( lnPort,"Parallel_Sender"));
-    vm5.invoke(() -> createSender(
-      "ln_Serial", 2, false, 100, 400, false, false, null, true));
-    vm5.invoke(() -> createSender(
-        "ln_Parallel", 2, true, 100, 400, false, false, null, true));
+    vm4.invoke(() -> createCacheWithGroups(lnPort, "Serial_Sender, Parallel_Sender"));
+    vm4.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, true));
+    vm4.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, true));
 
-    vm6.invoke(() -> createCacheWithGroups( lnPort,"Serial_Sender"));
-    
+    vm5.invoke(() -> createCacheWithGroups(lnPort, "Parallel_Sender"));
+    vm5.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, true));
+    vm5.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, true));
+
+    vm6.invoke(() -> createCacheWithGroups(lnPort, "Serial_Sender"));
+
     final DistributedMember vm1Member = (DistributedMember) vm3.invoke(() -> getMember());
-    
+
     pause(10000);
-    String command = CliStrings.STATUS_GATEWAYSENDER + " --"
-    + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --" + CliStrings.STATUS_GATEWAYSENDER__GROUP + "=Serial_Sender";
-    
+    String command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
+        + "=ln_Serial --" + CliStrings.STATUS_GATEWAYSENDER__GROUP + "=Serial_Sender";
+
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
-      TabularResultData tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(2, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
-      
-      tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+
+      tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_hosts = tableResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER);
       assertEquals(1, result_hosts.size());
-      
-      
+
+
       String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testGatewaySenderStatus_OnGroups : " + strCmdResult + ">>>>> ");
+      getLogWriter().info("testGatewaySenderStatus_OnGroups : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testListGatewaySender failed as did not get CommandResult");
     }
-    
-    vm3.invoke(() -> startSender( "ln_Serial" ));
-    vm3.invoke(() -> startSender( "ln_Parallel" ));
 
-    vm4.invoke(() -> startSender( "ln_Serial" ));
-    vm4.invoke(() -> startSender( "ln_Parallel" ));
+    vm3.invoke(() -> startSender("ln_Serial"));
+    vm3.invoke(() -> startSender("ln_Parallel"));
+
+    vm4.invoke(() -> startSender("ln_Serial"));
+    vm4.invoke(() -> startSender("ln_Parallel"));
 
     pause(10000);
-    command = CliStrings.STATUS_GATEWAYSENDER + " --"
-    + CliStrings.STATUS_GATEWAYSENDER__ID + "=ln_Serial --" + CliStrings.STATUS_GATEWAYSENDER__GROUP + "=Serial_Sender";
-    
+    command = CliStrings.STATUS_GATEWAYSENDER + " --" + CliStrings.STATUS_GATEWAYSENDER__ID
+        + "=ln_Serial --" + CliStrings.STATUS_GATEWAYSENDER__GROUP + "=Serial_Sender";
+
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
-      TabularResultData tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(2, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
-      
-      tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
+
+      tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER_NOT_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_SENDER);
       List<String> result_hosts = tableResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER);
       assertEquals(1, result_hosts.size());
-      
+
       String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testGatewaySenderStatus_OnGroups : " + strCmdResult + ">>>>> ");
+      getLogWriter().info("testGatewaySenderStatus_OnGroups : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
       fail("testListGatewaySender failed as did not get CommandResult");
@@ -326,148 +312,152 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
   }
 
   @Test
-  public void testGatewayReceiverStatus(){
+  public void testGatewayReceiverStatus() {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
+    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
-    vm6.invoke(() -> createAndStartReceiver( nyPort ));
+    vm6.invoke(() -> createAndStartReceiver(nyPort));
 
-    vm3.invoke(() -> createAndStartReceiver( lnPort ));
-    vm4.invoke(() -> createAndStartReceiver( lnPort ));
-    vm5.invoke(() -> createAndStartReceiver( lnPort ));
-    
+    vm3.invoke(() -> createAndStartReceiver(lnPort));
+    vm4.invoke(() -> createAndStartReceiver(lnPort));
+    vm5.invoke(() -> createAndStartReceiver(lnPort));
+
     pause(10000);
-    String command = CliStrings.STATUS_GATEWAYRECEIVER; 
+    String command = CliStrings.STATUS_GATEWAYRECEIVER;
     CommandResult cmdResult = executeCommand(command);
-    
+
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
-      
+      getLogWriter().info("testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
+
       assertEquals(Result.Status.OK, cmdResult.getStatus());
-      
-      TabularResultData tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
-      
+
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(3, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
-      
-      tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+
+      tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
       List<String> result_hosts = tableResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER);
       assertEquals(2, result_hosts.size());
-      
+
     } else {
       fail("testGatewayReceiverStatus failed as did not get CommandResult");
     }
-    
+
     vm3.invoke(() -> stopReceiver());
     vm4.invoke(() -> stopReceiver());
     vm5.invoke(() -> stopReceiver());
-    
+
     pause(10000);
-    
-    command = CliStrings.STATUS_GATEWAYRECEIVER; 
+
+    command = CliStrings.STATUS_GATEWAYRECEIVER;
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
-      
+      getLogWriter().info("testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
+
       assertEquals(Result.Status.OK, cmdResult.getStatus());
-      
-      TabularResultData tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
-      
+
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(3, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
-      
-      tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+
+      tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
       List<String> result_hosts = tableResultData.retrieveAllValues(CliStrings.RESULT_HOST_MEMBER);
       assertEquals(2, result_hosts.size());
-      
+
     } else {
       fail("testGatewayReceiverStatus failed as did not get CommandResult");
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1395
   @Test
-  public void testGatewayReceiverStatus_OnMember(){
+  public void testGatewayReceiverStatus_OnMember() {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
+    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
-    vm6.invoke(() -> createAndStartReceiver( nyPort ));
+    vm6.invoke(() -> createAndStartReceiver(nyPort));
 
-    vm3.invoke(() -> createAndStartReceiver( lnPort ));
-    vm4.invoke(() -> createAndStartReceiver( lnPort ));
-    vm5.invoke(() -> createAndStartReceiver( lnPort ));
-    
+    vm3.invoke(() -> createAndStartReceiver(lnPort));
+    vm4.invoke(() -> createAndStartReceiver(lnPort));
+    vm5.invoke(() -> createAndStartReceiver(lnPort));
+
     final DistributedMember vm3Member = (DistributedMember) vm3.invoke(() -> getMember());
-    
+
     pause(10000);
-    String command = CliStrings.STATUS_GATEWAYRECEIVER+ " --"
-    + CliStrings.STATUS_GATEWAYRECEIVER__MEMBER + "=" + vm3Member.getId();
-    
+    String command = CliStrings.STATUS_GATEWAYRECEIVER + " --"
+        + CliStrings.STATUS_GATEWAYRECEIVER__MEMBER + "=" + vm3Member.getId();
+
     CommandResult cmdResult = executeCommand(command);
-    
+
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
       getLogWriter().info("testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
-      //TabularResultData tableResultData = (TabularResultData) cmdResult.getResultData();
-      //List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-      //assertIndexDetailsEquals(1, result_Status.size());
-      //assertFalse(strCmdResult.contains(CliStrings.GATEWAY_NOT_RUNNING));
-      TabularResultData tableResultData =
-          ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+      // TabularResultData tableResultData = (TabularResultData) cmdResult.getResultData();
+      // List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
+      // assertIndexDetailsEquals(1, result_Status.size());
+      // assertFalse(strCmdResult.contains(CliStrings.GATEWAY_NOT_RUNNING));
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(1, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
     } else {
       fail("testGatewayReceiverStatus failed as did not get CommandResult");
     }
-    
+
     vm3.invoke(() -> stopReceiver());
     vm4.invoke(() -> stopReceiver());
     vm5.invoke(() -> stopReceiver());
-    
+
     pause(10000);
-    
-    command = CliStrings.STATUS_GATEWAYRECEIVER+ " --"
-    + CliStrings.STATUS_GATEWAYRECEIVER__MEMBER + "=" + vm3Member.getId();
-    
+
+    command = CliStrings.STATUS_GATEWAYRECEIVER + " --" + CliStrings.STATUS_GATEWAYRECEIVER__MEMBER
+        + "=" + vm3Member.getId();
+
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
-      
-//      TabularResultData tableResultData =
-//        (TabularResultData) cmdResult.getResultData();
-//      List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
-//      assertIndexDetailsEquals(1, result_Status.size());
-//      assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
-      
-      TabularResultData tableResultData =
-          ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+      getLogWriter().info("testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
+
+      // TabularResultData tableResultData =
+      // (TabularResultData) cmdResult.getResultData();
+      // List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
+      // assertIndexDetailsEquals(1, result_Status.size());
+      // assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
+
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(1, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
@@ -477,68 +467,69 @@ public class WanCommandStatusDUnitTest extends WANCommandTestBase{
   }
 
   @Test
-  public void testGatewayReceiverStatus_OnGroups(){
+  public void testGatewayReceiverStatus_OnGroups() {
 
-    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId( 1 ));
+    Integer lnPort = (Integer) vm1.invoke(() -> createFirstLocatorWithDSId(1));
 
     Properties props = getDistributedSystemProperties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
     setUpJmxManagerOnVm0ThenConnect(props);
 
-    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator( 2, lnPort ));
+    Integer nyPort = (Integer) vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
-    vm7.invoke(() -> createAndStartReceiver( nyPort ));
+    vm7.invoke(() -> createAndStartReceiver(nyPort));
 
-    vm3.invoke(() -> createAndStartReceiverWithGroup( lnPort, "RG1, RG2" ));
-    vm4.invoke(() -> createAndStartReceiverWithGroup( lnPort, "RG1, RG2"  ));
-    vm5.invoke(() -> createAndStartReceiverWithGroup( lnPort, "RG1"  ));
-    vm6.invoke(() -> createAndStartReceiverWithGroup( lnPort, "RG2"  ));
-    
+    vm3.invoke(() -> createAndStartReceiverWithGroup(lnPort, "RG1, RG2"));
+    vm4.invoke(() -> createAndStartReceiverWithGroup(lnPort, "RG1, RG2"));
+    vm5.invoke(() -> createAndStartReceiverWithGroup(lnPort, "RG1"));
+    vm6.invoke(() -> createAndStartReceiverWithGroup(lnPort, "RG2"));
+
     pause(10000);
     String command = CliStrings.STATUS_GATEWAYRECEIVER + " --"
         + CliStrings.STATUS_GATEWAYRECEIVER__GROUP + "=RG1";
-    
+
     CommandResult cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
-      
+      getLogWriter().info("testGatewayReceiverStatus : " + strCmdResult + ">>>>> ");
+
       assertEquals(Result.Status.OK, cmdResult.getStatus());
-      
-      TabularResultData tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
-      
+
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(3, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_NOT_RUNNING));
-      
+
     } else {
       fail("testGatewayReceiverStatus failed as did not get CommandResult");
     }
-    
+
     vm3.invoke(() -> stopReceiver());
     vm4.invoke(() -> stopReceiver());
     vm5.invoke(() -> stopReceiver());
 
     pause(10000);
-    command = CliStrings.STATUS_GATEWAYRECEIVER + " --"+ CliStrings.STATUS_GATEWAYRECEIVER__GROUP + "=RG1";
-    
+    command = CliStrings.STATUS_GATEWAYRECEIVER + " --" + CliStrings.STATUS_GATEWAYRECEIVER__GROUP
+        + "=RG1";
+
     cmdResult = executeCommand(command);
     if (cmdResult != null) {
       String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info(
-          "testGatewayReceiverStatus_OnGroups : " + strCmdResult + ">>>>> ");
+      getLogWriter().info("testGatewayReceiverStatus_OnGroups : " + strCmdResult + ">>>>> ");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
-      TabularResultData tableResultData =
-        ((CompositeResultData)cmdResult.getResultData()).retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE).retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
-      
+      TabularResultData tableResultData = ((CompositeResultData) cmdResult.getResultData())
+          .retrieveSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE)
+          .retrieveTable(CliStrings.TABLE_GATEWAY_RECEIVER);
+
       List<String> result_Status = tableResultData.retrieveAllValues(CliStrings.RESULT_STATUS);
       assertEquals(3, result_Status.size());
       assertFalse(result_Status.contains(CliStrings.GATEWAY_RUNNING));
-      
+
     } else {
       fail("testGatewayReceiverStatus failed as did not get CommandResult");
     }

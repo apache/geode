@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache;
 
@@ -21,6 +19,7 @@ import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
@@ -36,13 +35,14 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests PoolManager
+ * 
  * @since GemFire 5.7
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class PoolManagerJUnitTest {
-  
+
   private DistributedSystem ds;
-  
+
   @Before
   public void setUp() {
     Properties props = new Properties();
@@ -51,13 +51,13 @@ public class PoolManagerJUnitTest {
     ds = DistributedSystem.connect(props);
     assertEquals(0, PoolManager.getAll().size());
   }
-  
+
   @After
   public void tearDown() {
     PoolManager.close();
     ds.disconnect();
   }
-  
+
   @Test
   public void testCreateFactory() {
     assertNotNull(PoolManager.createFactory());
@@ -69,13 +69,13 @@ public class PoolManagerJUnitTest {
     assertEquals(0, PoolManager.getAll().size());
     {
       PoolFactory cpf = PoolManager.createFactory();
-      ((PoolFactoryImpl)cpf).setStartDisabled(true);
+      ((PoolFactoryImpl) cpf).setStartDisabled(true);
       cpf.addLocator("localhost", 12345).create("mypool");
     }
     assertEquals(1, PoolManager.getAll().size());
     {
       PoolFactory cpf = PoolManager.createFactory();
-      ((PoolFactoryImpl)cpf).setStartDisabled(true);
+      ((PoolFactoryImpl) cpf).setStartDisabled(true);
       cpf.addLocator("localhost", 12345).create("mypool2");
     }
     assertEquals(2, PoolManager.getAll().size());
@@ -89,7 +89,7 @@ public class PoolManagerJUnitTest {
   public void testFind() {
     {
       PoolFactory cpf = PoolManager.createFactory();
-      ((PoolFactoryImpl)cpf).setStartDisabled(true);
+      ((PoolFactoryImpl) cpf).setStartDisabled(true);
       cpf.addLocator("localhost", 12345).create("mypool");
     }
     assertNotNull(PoolManager.find("mypool"));
@@ -100,7 +100,7 @@ public class PoolManagerJUnitTest {
   @Test
   public void testRegionFind() {
     PoolFactory cpf = PoolManager.createFactory();
-    ((PoolFactoryImpl)cpf).setStartDisabled(true);
+    ((PoolFactoryImpl) cpf).setStartDisabled(true);
     Pool pool = cpf.addLocator("localhost", 12345).create("mypool");
     Cache cache = CacheFactory.create(ds);
     AttributesFactory fact = new AttributesFactory();
@@ -115,7 +115,7 @@ public class PoolManagerJUnitTest {
     assertEquals(0, PoolManager.getAll().size());
     {
       PoolFactory cpf = PoolManager.createFactory();
-      ((PoolFactoryImpl)cpf).setStartDisabled(true);
+      ((PoolFactoryImpl) cpf).setStartDisabled(true);
       cpf.addLocator("localhost", 12345).create("mypool");
     }
     assertEquals(1, PoolManager.getAll().size());
@@ -123,7 +123,7 @@ public class PoolManagerJUnitTest {
     assertEquals(0, PoolManager.getAll().size());
     {
       PoolFactory cpf = PoolManager.createFactory();
-      ((PoolFactoryImpl)cpf).setStartDisabled(true);
+      ((PoolFactoryImpl) cpf).setStartDisabled(true);
       cpf.addLocator("localhost", 12345).create("mypool");
     }
     assertEquals(1, PoolManager.getAll().size());

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.internal;
 
@@ -20,61 +18,57 @@ import org.apache.geode.admin.*;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-import javax.xml.transform.*; 
-//import javax.xml.transform.dom.DOMSource; 
-import javax.xml.transform.sax.SAXSource; 
-import javax.xml.transform.stream.StreamResult;  
+import javax.xml.transform.*;
+// import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.stream.StreamResult;
 import org.xml.sax.*;
-//import org.xml.sax.ext.*;
-import org.xml.sax.helpers.AttributesImpl; 
+// import org.xml.sax.ext.*;
+import org.xml.sax.helpers.AttributesImpl;
 import java.io.*;
 import java.util.*;
 
 /**
  * Generates XML data that represents the managed entities in an
- * <code>AdminDistributedSystem</code>.  This class is used mainly for
- * testing.
+ * <code>AdminDistributedSystem</code>. This class is used mainly for testing.
  *
  * @since GemFire 4.0
  */
-public class ManagedEntityConfigXmlGenerator
-  extends ManagedEntityConfigXml implements XMLReader {
+public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml implements XMLReader {
 
   /** An empty <code>Attributes</code> */
   private static Attributes EMPTY = new AttributesImpl();
 
-  /////////////////////////  Instance Fields  ////////////////////////
+  ///////////////////////// Instance Fields ////////////////////////
 
-  /** The <code>AdminDistributedSystem</code> for which we are
-   * generating XML */
+  /**
+   * The <code>AdminDistributedSystem</code> for which we are generating XML
+   */
   private AdminDistributedSystem system;
 
   /** The content handler to which SAX events are generated */
   private ContentHandler handler;
 
-  /////////////////////////  Static Methods  ////////////////////////
+  ///////////////////////// Static Methods ////////////////////////
 
   /**
-   * Generates an XML representation of all of the managed entities in
-   * the given <code>AdminDistributedSystem</code>.
+   * Generates an XML representation of all of the managed entities in the given
+   * <code>AdminDistributedSystem</code>.
    */
-  public static void generate(AdminDistributedSystem system,
-                              PrintWriter pw) {
+  public static void generate(AdminDistributedSystem system, PrintWriter pw) {
     (new ManagedEntityConfigXmlGenerator(system)).generate(pw);
   }
 
-  /////////////////////////  Constructors  //////////////////////////
+  ///////////////////////// Constructors //////////////////////////
 
   /**
-   * Creates a new generator for the given
-   * <code>AdminDistributedSystem</code>. 
+   * Creates a new generator for the given <code>AdminDistributedSystem</code>.
    */
-  private ManagedEntityConfigXmlGenerator(AdminDistributedSystem
-                                          system) {
+  private ManagedEntityConfigXmlGenerator(AdminDistributedSystem system) {
     this.system = system;
   }
 
-  ///////////////////////  Instance Methods  ///////////////////////
+  /////////////////////// Instance Methods ///////////////////////
 
   /**
    * Generates XML and writes it to the given <code>PrintWriter</code>
@@ -97,16 +91,17 @@ public class ManagedEntityConfigXmlGenerator
       pw.flush();
 
     } catch (Exception ex) {
-      RuntimeException ex2 = new RuntimeException(LocalizedStrings.ManagedEntityConfigXmlGenerator_EXCEPTION_THROWN_WHILE_GENERATING_XML.toLocalizedString());
+      RuntimeException ex2 = new RuntimeException(
+          LocalizedStrings.ManagedEntityConfigXmlGenerator_EXCEPTION_THROWN_WHILE_GENERATING_XML
+              .toLocalizedString());
       ex2.initCause(ex);
       throw ex2;
     }
   }
 
   /**
-   * Called by the transformer to parse the "input source".  We ignore
-   * the input source and, instead, generate SAX events to the {@link
-   * #setContentHandler ContentHandler}.
+   * Called by the transformer to parse the "input source". We ignore the input source and, instead,
+   * generate SAX events to the {@link #setContentHandler ContentHandler}.
    */
   public void parse(InputSource input) throws SAXException {
     Assert.assertTrue(this.handler != null);
@@ -115,8 +110,7 @@ public class ManagedEntityConfigXmlGenerator
 
     AttributesImpl atts = new AttributesImpl();
 
-    atts.addAttribute("", "", ID, "",
-                      String.valueOf(this.system.getConfig().getSystemId()));
+    atts.addAttribute("", "", ID, "", String.valueOf(this.system.getConfig().getSystemId()));
 
     handler.startElement("", DISTRIBUTED_SYSTEM, DISTRIBUTED_SYSTEM, atts);
 
@@ -128,7 +122,10 @@ public class ManagedEntityConfigXmlGenerator
       generateCacheServers();
 
     } catch (AdminException ex) {
-      throw new SAXException(LocalizedStrings.ManagedEntityConfigXmlGenerator_AN_ADMINEXCEPTION_WAS_THROWN_WHILE_GENERATING_XML.toLocalizedString(), ex);
+      throw new SAXException(
+          LocalizedStrings.ManagedEntityConfigXmlGenerator_AN_ADMINEXCEPTION_WAS_THROWN_WHILE_GENERATING_XML
+              .toLocalizedString(),
+          ex);
     }
 
     handler.endElement("", DISTRIBUTED_SYSTEM, DISTRIBUTED_SYSTEM);
@@ -143,8 +140,7 @@ public class ManagedEntityConfigXmlGenerator
 
     handler.startElement("", REMOTE_COMMAND, REMOTE_COMMAND, EMPTY);
 
-    handler.characters(remoteCommand.toCharArray(), 0,
-                       remoteCommand.length());
+    handler.characters(remoteCommand.toCharArray(), 0, remoteCommand.length());
 
     handler.endElement("", REMOTE_COMMAND, REMOTE_COMMAND);
   }
@@ -156,7 +152,7 @@ public class ManagedEntityConfigXmlGenerator
     handler.startElement("", LOCATORS, LOCATORS, EMPTY);
 
     generateLocators();
-    
+
     handler.endElement("", LOCATORS, LOCATORS);
   }
 
@@ -164,8 +160,7 @@ public class ManagedEntityConfigXmlGenerator
    * Generates XML for the distributed system's locators
    */
   private void generateLocators() throws SAXException {
-    DistributionLocator[] locators =
-      this.system.getDistributionLocators();
+    DistributionLocator[] locators = this.system.getDistributionLocators();
     for (int i = 0; i < locators.length; i++) {
       generateLocator(locators[i].getConfig());
     }
@@ -174,12 +169,10 @@ public class ManagedEntityConfigXmlGenerator
   /**
    * Generates XML for a locator
    */
-  private void generateLocator(DistributionLocatorConfig config) 
-    throws SAXException {
-    
+  private void generateLocator(DistributionLocatorConfig config) throws SAXException {
+
     AttributesImpl atts = new AttributesImpl();
-    atts.addAttribute("", "", PORT, "",
-                      String.valueOf(config.getPort()));
+    atts.addAttribute("", "", PORT, "", String.valueOf(config.getPort()));
 
     handler.startElement("", LOCATOR, LOCATOR, atts);
 
@@ -191,8 +184,7 @@ public class ManagedEntityConfigXmlGenerator
   /**
    * Generates XML for attributes common to all managed entities.
    */
-  private void generateEntityConfig(ManagedEntityConfig config) 
-    throws SAXException {
+  private void generateEntityConfig(ManagedEntityConfig config) throws SAXException {
 
     String host = config.getHost();
     if (host != null) {
@@ -204,31 +196,27 @@ public class ManagedEntityConfigXmlGenerator
     String remoteCommand = config.getRemoteCommand();
     if (remoteCommand != null) {
       handler.startElement("", REMOTE_COMMAND, REMOTE_COMMAND, EMPTY);
-      handler.characters(remoteCommand.toCharArray(), 0,
-                         remoteCommand.length());
+      handler.characters(remoteCommand.toCharArray(), 0, remoteCommand.length());
       handler.endElement("", REMOTE_COMMAND, REMOTE_COMMAND);
     }
 
     String workingDirectory = config.getWorkingDirectory();
     if (workingDirectory != null) {
       handler.startElement("", WORKING_DIRECTORY, WORKING_DIRECTORY, EMPTY);
-      handler.characters(workingDirectory.toCharArray(), 0,
-                         workingDirectory.length());
+      handler.characters(workingDirectory.toCharArray(), 0, workingDirectory.length());
       handler.endElement("", WORKING_DIRECTORY, WORKING_DIRECTORY);
     }
 
     String productDirectory = config.getProductDirectory();
     if (productDirectory != null) {
       handler.startElement("", PRODUCT_DIRECTORY, PRODUCT_DIRECTORY, EMPTY);
-      handler.characters(productDirectory.toCharArray(), 0,
-                         productDirectory.length());
+      handler.characters(productDirectory.toCharArray(), 0, productDirectory.length());
       handler.endElement("", PRODUCT_DIRECTORY, PRODUCT_DIRECTORY);
     }
   }
 
   /**
-   * Generates XML for the SSL configuration of the distributed
-   * system.
+   * Generates XML for the SSL configuration of the distributed system.
    */
   private void generateSSL() throws SAXException {
     DistributedSystemConfig config = this.system.getConfig();
@@ -240,33 +228,30 @@ public class ManagedEntityConfigXmlGenerator
 
     AttributesImpl atts = new AttributesImpl();
     atts.addAttribute("", "", AUTHENTICATION_REQUIRED, "",
-                      String.valueOf(config.isSSLAuthenticationRequired()));
+        String.valueOf(config.isSSLAuthenticationRequired()));
 
     handler.startElement("", SSL, SSL, atts);
 
     String protocols = config.getSSLProtocols();
     if (protocols != null) {
       handler.startElement("", PROTOCOLS, PROTOCOLS, EMPTY);
-      handler.characters(protocols.toCharArray(), 0,
-                         protocols.length());
+      handler.characters(protocols.toCharArray(), 0, protocols.length());
       handler.endElement("", PROTOCOLS, PROTOCOLS);
     }
 
     String ciphers = config.getSSLCiphers();
     if (ciphers != null) {
       handler.startElement("", CIPHERS, CIPHERS, EMPTY);
-      handler.characters(ciphers.toCharArray(), 0,
-                         ciphers.length());
+      handler.characters(ciphers.toCharArray(), 0, ciphers.length());
       handler.endElement("", CIPHERS, CIPHERS);
     }
 
     Properties sslProps = config.getSSLProperties();
-    for (Iterator iter = sslProps.entrySet().iterator();
-         iter.hasNext(); ) {
+    for (Iterator iter = sslProps.entrySet().iterator(); iter.hasNext();) {
       Map.Entry entry = (Map.Entry) iter.next();
       String key = (String) entry.getKey();
       String value = (String) entry.getValue();
-      
+
       handler.startElement("", PROPERTY, PROPERTY, EMPTY);
 
       handler.startElement("", KEY, KEY, EMPTY);
@@ -284,11 +269,9 @@ public class ManagedEntityConfigXmlGenerator
   }
 
   /**
-   * Generates an XML representation of the
-   * <code>CacheServer</code>s in the distributed system.
+   * Generates an XML representation of the <code>CacheServer</code>s in the distributed system.
    */
-  private void generateCacheServers()
-    throws SAXException, AdminException {
+  private void generateCacheServers() throws SAXException, AdminException {
 
     CacheServer[] servers = this.system.getCacheServers();
     for (int i = 0; i < servers.length; i++) {
@@ -297,11 +280,9 @@ public class ManagedEntityConfigXmlGenerator
   }
 
   /**
-   * Generates an XML representation of a
-   * <code>CacheServerConfig</code>.
+   * Generates an XML representation of a <code>CacheServerConfig</code>.
    */
-  private void generateCacheServer(CacheServerConfig config) 
-    throws SAXException {
+  private void generateCacheServer(CacheServerConfig config) throws SAXException {
 
     handler.startElement("", CACHE_SERVER, CACHE_SERVER, EMPTY);
 
@@ -310,8 +291,7 @@ public class ManagedEntityConfigXmlGenerator
     String classpath = config.getClassPath();
     if (classpath != null) {
       handler.startElement("", CLASSPATH, CLASSPATH, EMPTY);
-      handler.characters(classpath.toCharArray(), 0,
-                         classpath.length());
+      handler.characters(classpath.toCharArray(), 0, classpath.length());
       handler.endElement("", CLASSPATH, CLASSPATH);
     }
 
@@ -323,36 +303,36 @@ public class ManagedEntityConfigXmlGenerator
    */
   public void setContentHandler(ContentHandler handler) {
     this.handler = handler;
-  }  
+  }
 
   public ContentHandler getContentHandler() {
     return this.handler;
-  }  
+  }
 
   public ErrorHandler getErrorHandler() {
     return this;
   }
 
-  //////////  Inherited methods that don't do anything  //////////
+  ////////// Inherited methods that don't do anything //////////
 
   public boolean getFeature(String name)
-    throws SAXNotRecognizedException, SAXNotSupportedException {
+      throws SAXNotRecognizedException, SAXNotSupportedException {
     return false;
   }
 
   public void setFeature(String name, boolean value)
-    throws SAXNotRecognizedException, SAXNotSupportedException {
+      throws SAXNotRecognizedException, SAXNotSupportedException {
 
   }
 
   public Object getProperty(String name)
-    throws SAXNotRecognizedException, SAXNotSupportedException {
+      throws SAXNotRecognizedException, SAXNotSupportedException {
 
     return null;
   }
 
   public void setProperty(String name, Object value)
-    throws SAXNotRecognizedException, SAXNotSupportedException {
+      throws SAXNotRecognizedException, SAXNotSupportedException {
 
   }
 
@@ -363,7 +343,7 @@ public class ManagedEntityConfigXmlGenerator
   public EntityResolver getEntityResolver() {
     return this;
   }
-  
+
   public void setDTDHandler(DTDHandler handler) {
 
   }
@@ -376,8 +356,7 @@ public class ManagedEntityConfigXmlGenerator
 
   }
 
-  public void parse(String systemId)
-    throws IOException, SAXException {
+  public void parse(String systemId) throws IOException, SAXException {
 
   }
 

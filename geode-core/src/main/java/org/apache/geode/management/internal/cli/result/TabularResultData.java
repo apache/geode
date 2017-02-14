@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.result;
 
@@ -33,11 +31,11 @@ import org.apache.geode.management.internal.cli.json.GfJsonObject;
  * @since GemFire 7.0
  */
 public class TabularResultData extends AbstractResultData {
-  /*package*/TabularResultData() {
+  /* package */ TabularResultData() {
     super();
   }
-  
-  /*package*/TabularResultData(GfJsonObject gfJsonObject) {
+
+  /* package */ TabularResultData(GfJsonObject gfJsonObject) {
     super(gfJsonObject);
   }
 
@@ -49,7 +47,7 @@ public class TabularResultData extends AbstractResultData {
     }
     return this;
   }
-  
+
   public GfJsonArray getHeaders() {
     try {
       return this.contentObject.names();
@@ -75,19 +73,17 @@ public class TabularResultData extends AbstractResultData {
    * 
    * @param headerText
    * @return this TabularResultData
-   * @throws ResultDataException
-   *           If the value is non-finite number or if the key is null.
+   * @throws ResultDataException If the value is non-finite number or if the key is null.
    */
   public TabularResultData setHeader(String headerText) {
     return (TabularResultData) super.setHeader(headerText);
   }
-  
+
   /**
    * 
    * @param footerText
    * @return this TabularResultData
-   * @throws ResultDataException
-   *           If the value is non-finite number or if the key is null.
+   * @throws ResultDataException If the value is non-finite number or if the key is null.
    */
   public TabularResultData setFooter(String footerText) {
     return (TabularResultData) super.setFooter(footerText);
@@ -102,7 +98,7 @@ public class TabularResultData extends AbstractResultData {
   public String getFooter() {
     return gfJsonObject.getString(RESULT_FOOTER);
   }
-  
+
   public Map<String, String> retrieveDataByValueInColumn(String columnName, String valueToSearch) {
     Map<String, String> foundValues = Collections.emptyMap();
     try {
@@ -116,7 +112,7 @@ public class TabularResultData extends AbstractResultData {
           break;
         }
       }
-      
+
       if (foundIndex != -1) {
         foundValues = new LinkedHashMap<String, String>();
         for (Iterator<String> iterator = contentObject.keys(); iterator.hasNext();) {
@@ -130,9 +126,10 @@ public class TabularResultData extends AbstractResultData {
     }
     return foundValues;
   }
-  
-  public List<Map<String, String>> retrieveAllDataByValueInColumn(String columnName, String valueToSearch) {
-    List<Map<String, String>> foundValuesList = new ArrayList<Map<String,String>>();
+
+  public List<Map<String, String>> retrieveAllDataByValueInColumn(String columnName,
+      String valueToSearch) {
+    List<Map<String, String>> foundValuesList = new ArrayList<Map<String, String>>();
     try {
       GfJsonArray jsonArray = contentObject.getJSONArray(columnName);
       int size = jsonArray.size();
@@ -146,7 +143,7 @@ public class TabularResultData extends AbstractResultData {
             GfJsonArray storedColumnValues = contentObject.getJSONArray(storedColumnNames);
             foundValues.put(storedColumnNames, String.valueOf(storedColumnValues.get(i)));
           }
-          
+
           foundValuesList.add(foundValues);
         }
       }
@@ -155,7 +152,7 @@ public class TabularResultData extends AbstractResultData {
     }
     return foundValuesList;
   }
-  
+
   public List<String> retrieveAllValues(String columnName) {
     List<String> values = new ArrayList<String>();
 

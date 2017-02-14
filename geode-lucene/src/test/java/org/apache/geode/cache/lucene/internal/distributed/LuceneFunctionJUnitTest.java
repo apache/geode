@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.lucene.internal.distributed;
@@ -36,6 +32,7 @@ import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.StringQueryProvider;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
@@ -75,6 +72,7 @@ public class LuceneFunctionJUnitTest {
   IndexResultCollector mockCollector;
   InternalLuceneService mockService;
   LuceneIndexImpl mockIndex;
+  LuceneIndexStats mockStats;
 
   ArrayList<IndexRepository> repos;
   LuceneFunctionContext<IndexResultCollector> searchArgs;
@@ -95,33 +93,38 @@ public class LuceneFunctionJUnitTest {
       collector.collect(r1_2.getKey(), r1_2.getScore());
       collector.collect(r1_3.getKey(), r1_3.getScore());
       return null;
-    }).when(mockRepository1).query(eq(query), eq(LuceneQueryFactory.DEFAULT_LIMIT), any(IndexResultCollector.class));
+    }).when(mockRepository1).query(eq(query), eq(LuceneQueryFactory.DEFAULT_LIMIT),
+        any(IndexResultCollector.class));
 
     doAnswer(invocation -> {
       IndexResultCollector collector = invocation.getArgumentAt(2, IndexResultCollector.class);
       collector.collect(r2_1.getKey(), r2_1.getScore());
       collector.collect(r2_2.getKey(), r2_2.getScore());
       return null;
-    }).when(mockRepository2).query(eq(query), eq(LuceneQueryFactory.DEFAULT_LIMIT), any(IndexResultCollector.class));
+    }).when(mockRepository2).query(eq(query), eq(LuceneQueryFactory.DEFAULT_LIMIT),
+        any(IndexResultCollector.class));
 
     LuceneFunction function = new LuceneFunction();
 
     function.execute(mockContext);
 
-    ArgumentCaptor<TopEntriesCollector> resultCaptor  = ArgumentCaptor.forClass(TopEntriesCollector.class);
+    ArgumentCaptor<TopEntriesCollector> resultCaptor =
+        ArgumentCaptor.forClass(TopEntriesCollector.class);
     verify(mockResultSender).lastResult(resultCaptor.capture());
     TopEntriesCollector result = resultCaptor.getValue();
 
 
     List<EntryScore> hits = result.getEntries().getHits();
     assertEquals(5, hits.size());
-    TopEntriesJUnitTest.verifyResultOrder(result.getEntries().getHits(), r1_1, r2_1, r1_2, r2_2, r1_3);
+    TopEntriesJUnitTest.verifyResultOrder(result.getEntries().getHits(), r1_1, r2_1, r1_2, r2_2,
+        r1_3);
   }
 
   @Test
   public void testResultLimitClause() throws Exception {
 
-    searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName", null, 3);
+    searchArgs =
+        new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName", null, 3);
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
     when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
@@ -147,7 +150,8 @@ public class LuceneFunctionJUnitTest {
 
     function.execute(mockContext);
 
-    ArgumentCaptor<TopEntriesCollector> resultCaptor  = ArgumentCaptor.forClass(TopEntriesCollector.class);
+    ArgumentCaptor<TopEntriesCollector> resultCaptor =
+        ArgumentCaptor.forClass(TopEntriesCollector.class);
     verify(mockResultSender).lastResult(resultCaptor.capture());
     TopEntriesCollector result = resultCaptor.getValue();
 
@@ -159,7 +163,8 @@ public class LuceneFunctionJUnitTest {
   @Test
   public void injectCustomCollectorManager() throws Exception {
     final CollectorManager mockManager = mock(CollectorManager.class);
-    searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName", mockManager);
+    searchArgs =
+        new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName", mockManager);
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
     when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
@@ -172,13 +177,14 @@ public class LuceneFunctionJUnitTest {
       assertEquals(mockCollector, collectors.iterator().next());
       return new TopEntriesCollector(null);
 
-    } );
+    });
 
     doAnswer(invocation -> {
       IndexResultCollector collector = invocation.getArgumentAt(2, IndexResultCollector.class);
       collector.collect(r2_1.getKey(), r2_1.getScore());
       return null;
-    }).when(mockRepository2).query(eq(query), eq(LuceneQueryFactory.DEFAULT_LIMIT), any(IndexResultCollector.class));
+    }).when(mockRepository2).query(eq(query), eq(LuceneQueryFactory.DEFAULT_LIMIT),
+        any(IndexResultCollector.class));
 
 
     LuceneFunction function = new LuceneFunction();
@@ -195,7 +201,8 @@ public class LuceneFunctionJUnitTest {
     when(mockContext.getArguments()).thenReturn(searchArgs);
     when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
     when(mockRepoManager.getRepositories(eq(mockContext))).thenReturn(repos);
-    doThrow(IOException.class).when(mockRepository1).query(eq(query), eq(LuceneQueryFactory.DEFAULT_LIMIT), any(IndexResultCollector.class));
+    doThrow(IOException.class).when(mockRepository1).query(eq(query),
+        eq(LuceneQueryFactory.DEFAULT_LIMIT), any(IndexResultCollector.class));
 
     LuceneFunction function = new LuceneFunction();
 
@@ -207,7 +214,8 @@ public class LuceneFunctionJUnitTest {
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
     when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
-    when(mockRepoManager.getRepositories(eq(mockContext))).thenThrow(new BucketNotFoundException(""));
+    when(mockRepoManager.getRepositories(eq(mockContext)))
+        .thenThrow(new BucketNotFoundException(""));
     LuceneFunction function = new LuceneFunction();
 
     function.execute(mockContext);
@@ -218,7 +226,8 @@ public class LuceneFunctionJUnitTest {
   @Test(expected = FunctionException.class)
   public void testReduceError() throws Exception {
     final CollectorManager mockManager = mock(CollectorManager.class);
-    searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName", mockManager);
+    searchArgs =
+        new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName", mockManager);
 
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
@@ -262,18 +271,19 @@ public class LuceneFunctionJUnitTest {
     mockRepository1 = mock(IndexRepository.class, "repo1");
     mockRepository2 = mock(IndexRepository.class, "repo2");
     mockCollector = mock(IndexResultCollector.class);
+    mockStats = mock(LuceneIndexStats.class);
 
     repos = new ArrayList<IndexRepository>();
     repos.add(mockRepository1);
     repos.add(mockRepository2);
-    
+
     mockIndex = mock(LuceneIndexImpl.class);
     mockService = mock(InternalLuceneService.class);
     mockCache = mock(InternalCache.class);
     Analyzer analyzer = new StandardAnalyzer();
     Mockito.doReturn(analyzer).when(mockIndex).getAnalyzer();
     queryProvider = new StringQueryProvider("gemfire:lucene", DEFAULT_FIELD);
-    
+
     searchArgs = new LuceneFunctionContext<IndexResultCollector>(queryProvider, "indexName");
 
     when(mockRegion.getCache()).thenReturn(mockCache);
@@ -282,6 +292,7 @@ public class LuceneFunctionJUnitTest {
     when(mockService.getIndex(eq("indexName"), eq(regionPath))).thenReturn(mockIndex);
     when(mockIndex.getRepositoryManager()).thenReturn(mockRepoManager);
     when(mockIndex.getFieldNames()).thenReturn(new String[] {"gemfire"});
+    when(mockIndex.getIndexStats()).thenReturn(mockStats);
 
     query = queryProvider.getQuery(mockIndex);
   }

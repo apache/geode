@@ -1,35 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.AccessController;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.Callable;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
 
 import org.apache.commons.lang.SerializationException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.security.shiro.CustomAuthRealm;
 import org.apache.geode.internal.security.shiro.GeodeAuthenticationToken;
 import org.apache.geode.internal.security.shiro.ShiroPrincipal;
@@ -47,16 +43,26 @@ import org.apache.geode.security.SecurityManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.ShiroException;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.apache.shiro.config.Ini.Section;
 import org.apache.shiro.config.IniSecurityManagerFactory;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.session.mgt.DefaultSessionManager;
+import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.SubjectThreadState;
 import org.apache.shiro.util.ThreadContext;
 import org.apache.shiro.util.ThreadState;
 
-public class IntegratedSecurityService implements SecurityService{
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.AccessController;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
+public class IntegratedSecurityService implements SecurityService {
 
   private static Logger logger = LogService.getLogger(LogService.SECURITY_LOGGER_NAME);
 
@@ -66,26 +72,24 @@ public class IntegratedSecurityService implements SecurityService{
     return defaultInstance;
   }
 
-  private IntegratedSecurityService() {
-  }
+  private IntegratedSecurityService() {}
 
   private PostProcessor postProcessor;
   private SecurityManager securityManager;
 
-  private boolean isIntegratedSecurity;
+  private Boolean isIntegratedSecurity;
 
   private boolean isClientAuthenticator; // is there a SECURITY_CLIENT_AUTHENTICATOR
   private boolean isPeerAuthenticator; // is there a SECURITY_PEER_AUTHENTICATOR
 
   /**
-   * It first looks the shiro subject in AccessControlContext since JMX will
-   * use multiple threads to process operations from the same client, then it
-   * looks into Shiro's thead context.
+   * It first looks the shiro subject in AccessControlContext since JMX will use multiple threads to
+   * process operations from the same client, then it looks into Shiro's thead context.
    *
    * @return the shiro subject, null if security is not enabled
    */
   public Subject getSubject() {
-    if (!isIntegratedSecurity) {
+    if (!isIntegratedSecurity()) {
       return null;
     }
 
@@ -94,7 +98,7 @@ public class IntegratedSecurityService implements SecurityService{
     // First try get the principal out of AccessControlContext instead of Shiro's Thread context
     // since threads can be shared between JMX clients.
     javax.security.auth.Subject jmxSubject =
-      javax.security.auth.Subject.getSubject(AccessController.getContext());
+        javax.security.auth.Subject.getSubject(AccessController.getContext());
 
     if (jmxSubject != null) {
       Set<ShiroPrincipal> principals = jmxSubject.getPrincipals(ShiroPrincipal.class);
@@ -106,7 +110,7 @@ public class IntegratedSecurityService implements SecurityService{
       }
     }
 
-    // in other cases like admin rest call or pulse authorization
+    // in other cases like rest call, client operations, we get it from the current thread
     currentUser = SecurityUtils.getSubject();
 
     if (currentUser == null || currentUser.getPrincipal() == null) {
@@ -119,8 +123,8 @@ public class IntegratedSecurityService implements SecurityService{
   /**
    * convenient method for testing
    */
-  public Subject login(String username, String password){
-    if(StringUtils.isBlank(username) || StringUtils.isBlank(password))
+  public Subject login(String username, String password) {
+    if (StringUtils.isBlank(username) || StringUtils.isBlank(password))
       return null;
 
     Properties credentials = new Properties();
@@ -133,11 +137,11 @@ public class IntegratedSecurityService implements SecurityService{
    * @return null if security is not enabled, otherwise return a shiro subject
    */
   public Subject login(Properties credentials) {
-    if (!isIntegratedSecurity) {
+    if (!isIntegratedSecurity()) {
       return null;
     }
 
-    if(credentials == null)
+    if (credentials == null)
       return null;
 
     // this makes sure it starts with a clean user object
@@ -148,10 +152,10 @@ public class IntegratedSecurityService implements SecurityService{
     try {
       logger.info("Logging in " + token.getPrincipal());
       currentUser.login(token);
-    }
-    catch (ShiroException e) {
+    } catch (ShiroException e) {
       logger.info(e.getMessage(), e);
-      throw new AuthenticationFailedException("Authentication error. Please check your credentials.", e);
+      throw new AuthenticationFailedException(
+          "Authentication error. Please check your credentials.", e);
     }
 
     return currentUser;
@@ -166,8 +170,7 @@ public class IntegratedSecurityService implements SecurityService{
     try {
       logger.info("Logging out " + currentUser.getPrincipal());
       currentUser.logout();
-    }
-    catch (ShiroException e) {
+    } catch (ShiroException e) {
       logger.info(e.getMessage(), e);
       throw new GemFireSecurityException(e.getMessage(), e);
     }
@@ -185,20 +188,12 @@ public class IntegratedSecurityService implements SecurityService{
   }
 
   /**
-   * this binds the passed-in subject to the executing thread, normally, you
-   * would do this:
+   * this binds the passed-in subject to the executing thread, normally, you would do this:
    *
-   * ThreadState state = null;
-   * try{
-   *   state = IntegratedSecurityService.bindSubject(subject);
-   *   //do the rest of the work as this subject
-   * }
-   * finally{
-   *   if(state!=null)
-   *      state.clear();
-   * }
+   * ThreadState state = null; try{ state = IntegratedSecurityService.bindSubject(subject); //do the
+   * rest of the work as this subject } finally{ if(state!=null) state.clear(); }
    */
-  public ThreadState bindSubject(Subject subject){
+  public ThreadState bindSubject(Subject subject) {
     if (subject == null) {
       return null;
     }
@@ -213,9 +208,7 @@ public class IntegratedSecurityService implements SecurityService{
       return;
     }
 
-    authorize(resourceOperation.resource().name(),
-      resourceOperation.operation().name(),
-      null);
+    authorize(resourceOperation.resource().name(), resourceOperation.operation().name(), null);
   }
 
   public void authorizeClusterManage() {
@@ -270,11 +263,11 @@ public class IntegratedSecurityService implements SecurityService{
     authorize(resource, operation, null);
   }
 
-  private void authorize(String resource, String operation, String regionName){
+  public void authorize(String resource, String operation, String regionName) {
     authorize(resource, operation, regionName, null);
   }
 
-  private void authorize(String resource, String operation, String regionName, String key) {
+  public void authorize(String resource, String operation, String regionName, String key) {
     regionName = StringUtils.stripStart(regionName, "/");
     authorize(new ResourcePermission(resource, operation, regionName, key));
   }
@@ -295,8 +288,7 @@ public class IntegratedSecurityService implements SecurityService{
 
     try {
       currentUser.checkPermission(context);
-    }
-    catch (ShiroException e) {
+    } catch (ShiroException e) {
       String msg = currentUser.getPrincipal() + " not authorized for " + context;
       logger.info(msg);
       throw new NotAuthorizedException(msg, e);
@@ -312,7 +304,7 @@ public class IntegratedSecurityService implements SecurityService{
     }
 
     String shiroConfig = securityProps.getProperty(SECURITY_SHIRO_INIT);
-    String securityConfig = securityProps.getProperty(SECURITY_MANAGER);
+    String securityManagerConfig = securityProps.getProperty(SECURITY_MANAGER);
     String clientAuthenticatorConfig = securityProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
     String peerAuthenticatorConfig = securityProps.getProperty(SECURITY_PEER_AUTHENTICATOR);
 
@@ -321,7 +313,8 @@ public class IntegratedSecurityService implements SecurityService{
 
       // we will need to make sure that shiro uses a case sensitive permission resolver
       Section main = factory.getIni().addSection("main");
-      main.put("geodePermissionResolver", "org.apache.geode.internal.security.shiro.GeodePermissionResolver");
+      main.put("geodePermissionResolver",
+          "org.apache.geode.internal.security.shiro.GeodePermissionResolver");
       if (!main.containsKey("iniRealm.permissionResolver")) {
         main.put("iniRealm.permissionResolver", "$geodePermissionResolver");
       }
@@ -329,35 +322,28 @@ public class IntegratedSecurityService implements SecurityService{
       org.apache.shiro.mgt.SecurityManager securityManager = factory.getInstance();
       SecurityUtils.setSecurityManager(securityManager);
       isIntegratedSecurity = true;
-    }
-    // only set up shiro realm if user has implemented SecurityManager
-    else if (!StringUtils.isBlank(securityConfig)) {
-      securityManager = SecurityService.getObjectOfTypeFromClassName(securityConfig, SecurityManager.class);
-      securityManager.init(securityProps);
-      Realm realm = new CustomAuthRealm(securityManager);
-      org.apache.shiro.mgt.SecurityManager shiroManager = new DefaultSecurityManager(realm);
-      SecurityUtils.setSecurityManager(shiroManager);
-      isIntegratedSecurity = true;
-    }
-    else if( !StringUtils.isBlank(clientAuthenticatorConfig)) {
-      isClientAuthenticator = true;
-    }
-    else if (!StringUtils.isBlank(peerAuthenticatorConfig)) {
-      isPeerAuthenticator = true;
-    }
-    else {
-      isIntegratedSecurity = false;
       isClientAuthenticator = false;
       isPeerAuthenticator = false;
+    }
+    // only set up shiro realm if user has implemented SecurityManager
+    else if (!StringUtils.isBlank(securityManagerConfig)) {
+      SecurityManager securityManager = SecurityService
+          .getObjectOfTypeFromClassName(securityManagerConfig, SecurityManager.class);
+      securityManager.init(securityProps);
+      this.setSecurityManager(securityManager);
+    } else {
+      isIntegratedSecurity = null;
+      isClientAuthenticator = !StringUtils.isBlank(clientAuthenticatorConfig);
+      isPeerAuthenticator = !StringUtils.isBlank(peerAuthenticatorConfig);
     }
 
     // this initializes the post processor
     String customPostProcessor = securityProps.getProperty(SECURITY_POST_PROCESSOR);
-    if( !StringUtils.isBlank(customPostProcessor)) {
-      postProcessor = SecurityService.getObjectOfTypeFromClassName(customPostProcessor, PostProcessor.class);
+    if (!StringUtils.isBlank(customPostProcessor)) {
+      postProcessor =
+          SecurityService.getObjectOfTypeFromClassName(customPostProcessor, PostProcessor.class);
       postProcessor.init(securityProps);
-    }
-    else{
+    } else {
       postProcessor = null;
     }
   }
@@ -373,26 +359,28 @@ public class IntegratedSecurityService implements SecurityService{
       postProcessor = null;
     }
     ThreadContext.remove();
-    isIntegratedSecurity = false;
+    SecurityUtils.setSecurityManager(null);
+    isIntegratedSecurity = null;
     isClientAuthenticator = false;
     isPeerAuthenticator = false;
   }
 
   /**
-   * postProcess call already has this logic built in, you don't need to call
-   * this everytime you call postProcess. But if your postProcess is pretty
-   * involved with preparations and you need to bypass it entirely, call this
-   * first.
+   * postProcess call already has this logic built in, you don't need to call this everytime you
+   * call postProcess. But if your postProcess is pretty involved with preparations and you need to
+   * bypass it entirely, call this first.
    */
-  public boolean needPostProcess(){
-    return (isIntegratedSecurity && postProcessor != null);
+  public boolean needPostProcess() {
+    return (isIntegratedSecurity() && postProcessor != null);
   }
 
-  public Object postProcess(String regionPath, Object key, Object value, boolean valueIsSerialized){
+  public Object postProcess(String regionPath, Object key, Object value,
+      boolean valueIsSerialized) {
     return postProcess(null, regionPath, key, value, valueIsSerialized);
   }
 
-  public Object postProcess(Object principal, String regionPath, Object key, Object value, boolean valueIsSerialized) {
+  public Object postProcess(Object principal, String regionPath, Object key, Object value,
+      boolean valueIsSerialized) {
     if (!needPostProcess())
       return value;
 
@@ -406,41 +394,94 @@ public class IntegratedSecurityService implements SecurityService{
     String regionName = StringUtils.stripStart(regionPath, "/");
     Object newValue = null;
 
-    // if the data is a byte array, but the data itself is supposed to be an object, we need to desearized it before we pass
+    // if the data is a byte array, but the data itself is supposed to be an object, we need to
+    // desearized it before we pass
     // it to the callback.
     if (valueIsSerialized && value instanceof byte[]) {
       try {
         Object oldObj = EntryEventImpl.deserialize((byte[]) value);
-        Object newObj = postProcessor.processRegionValue(principal, regionName, key,  oldObj);
+        Object newObj = postProcessor.processRegionValue(principal, regionName, key, oldObj);
         newValue = BlobHelper.serializeToBlob(newObj);
-      } catch (IOException|SerializationException e) {
+      } catch (IOException | SerializationException e) {
         throw new GemFireIOException("Exception de/serializing entry value", e);
       }
-    }
-    else {
+    } else {
       newValue = postProcessor.processRegionValue(principal, regionName, key, value);
     }
 
     return newValue;
   }
 
-  public SecurityManager getSecurityManager(){
+  public SecurityManager getSecurityManager() {
     return securityManager;
+  }
+
+  public void setSecurityManager(SecurityManager securityManager) {
+    if (securityManager == null) {
+      return;
+    }
+
+    this.securityManager = securityManager;
+    Realm realm = new CustomAuthRealm(securityManager);
+    DefaultSecurityManager shiroManager = new DefaultSecurityManager(realm);
+    SecurityUtils.setSecurityManager(shiroManager);
+    increaseShiroGlobalSessionTimeout(shiroManager);
+
+    isIntegratedSecurity = true;
+    isClientAuthenticator = false;
+    isPeerAuthenticator = false;
+  }
+
+  private void increaseShiroGlobalSessionTimeout(final DefaultSecurityManager shiroManager) {
+    SessionManager sessionManager = shiroManager.getSessionManager();
+    if (DefaultSessionManager.class.isInstance(sessionManager)) {
+      DefaultSessionManager defaultSessionManager = (DefaultSessionManager) sessionManager;
+      defaultSessionManager.setGlobalSessionTimeout(Long.MAX_VALUE);
+      long value = defaultSessionManager.getGlobalSessionTimeout();
+      if (value != Long.MAX_VALUE) {
+        logger.error("Unable to set Shiro Global Session Timeout. Current value is '{}'.", value);
+      }
+    } else {
+      logger.error("Unable to set Shiro Global Session Timeout. Current SessionManager is '{}'.",
+          sessionManager == null ? "null" : sessionManager.getClass());
+    }
   }
 
   public PostProcessor getPostProcessor() {
     return postProcessor;
   }
 
-  public boolean isIntegratedSecurity(){
+  public void setPostProcessor(PostProcessor postProcessor) {
+    if (postProcessor == null) {
+      return;
+    }
+
+    this.postProcessor = postProcessor;
+  }
+
+  /**
+   * check if Shiro's security manager is configured
+   * 
+   * @return true if configured, false if not
+   */
+  public boolean isIntegratedSecurity() {
+    if (isIntegratedSecurity != null) {
+      return isIntegratedSecurity;
+    }
+
+    try {
+      isIntegratedSecurity = (SecurityUtils.getSecurityManager() != null);
+    } catch (UnavailableSecurityManagerException e) {
+      isIntegratedSecurity = false;
+    }
     return isIntegratedSecurity;
   }
 
   public boolean isClientSecurityRequired() {
-    return isClientAuthenticator || isIntegratedSecurity;
+    return isClientAuthenticator || isIntegratedSecurity();
   }
 
   public boolean isPeerSecurityRequired() {
-    return isPeerAuthenticator || isIntegratedSecurity;
+    return isPeerAuthenticator || isIntegratedSecurity();
   }
 }

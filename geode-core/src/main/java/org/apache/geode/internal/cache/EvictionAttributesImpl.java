@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -34,14 +32,13 @@ import org.apache.geode.internal.cache.lru.LRUCapacityController;
 import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
 
 /**
- * Defines the attributes for configuring the eviction controller associated
- * with a <code>Region</code>. EvictionAttributesImpl were born out of the
- * previoulsy deprecated CapacityController interface. Eviction, as defined
- * here, is the process of removing an Entry from the Region and potentially
- * placing it elsewhere, as defined by the
- * {@link org.apache.geode.cache.EvictionAction}. The algorithms used to
- * determine when to perform the <code>EvictionAction</code> are enumerated in
- * the {@link org.apache.geode.cache.EvictionAlgorithm} class.
+ * Defines the attributes for configuring the eviction controller associated with a
+ * <code>Region</code>. EvictionAttributesImpl were born out of the previoulsy deprecated
+ * CapacityController interface. Eviction, as defined here, is the process of removing an Entry from
+ * the Region and potentially placing it elsewhere, as defined by the
+ * {@link org.apache.geode.cache.EvictionAction}. The algorithms used to determine when to perform
+ * the <code>EvictionAction</code> are enumerated in the
+ * {@link org.apache.geode.cache.EvictionAlgorithm} class.
  * 
  * @see org.apache.geode.cache.EvictionAlgorithm
  * @see org.apache.geode.cache.AttributesFactory
@@ -50,9 +47,8 @@ import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
  * 
  * @since GemFire 5.0
  */
-public final class EvictionAttributesImpl extends EvictionAttributes 
-  implements EvictionAttributesMutator
-{
+public final class EvictionAttributesImpl extends EvictionAttributes
+    implements EvictionAttributesMutator {
   private static final long serialVersionUID = -6404395520499379715L;
 
   private EvictionAlgorithm algorithm = EvictionAlgorithm.NONE;
@@ -63,60 +59,60 @@ public final class EvictionAttributesImpl extends EvictionAttributes
 
   private EvictionAction action = EvictionAction.NONE;
 
- /** The Eviction Controller instance generated as a result of processing this instance 
-  * Typically used for any mutation operations
-  */
+  /**
+   * The Eviction Controller instance generated as a result of processing this instance Typically
+   * used for any mutation operations
+   */
   private volatile LRUAlgorithm evictionController;
 
-  public EvictionAttributesImpl() {
-  }
-  
+  public EvictionAttributesImpl() {}
+
   /**
-   * construct a new EvictionAttributes with the same characteristics
-   * as the given attributes, but not sharing the same evictionController.
+   * construct a new EvictionAttributes with the same characteristics as the given attributes, but
+   * not sharing the same evictionController.
    *
-   * <p>author bruce
+   * <p>
+   * author bruce
    */
   public EvictionAttributesImpl(EvictionAttributesImpl other) {
     this.algorithm = other.algorithm;
     this.sizer = other.sizer;
     this.maximum = other.maximum;
     this.action = other.action;
-    //this.evictionController = null;
+    // this.evictionController = null;
   }
-  
-  public EvictionAttributesImpl setAlgorithm(EvictionAlgorithm algorithm)
-  {
+
+  public EvictionAttributesImpl setAlgorithm(EvictionAlgorithm algorithm) {
     this.algorithm = algorithm;
     return this;
   }
 
-  public  EvictionAttributesImpl setObjectSizer(ObjectSizer memorySizer)
-  {
+  public EvictionAttributesImpl setObjectSizer(ObjectSizer memorySizer) {
     this.sizer = memorySizer;
     return this;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.cache.EvictionAttributes#getObjectSizer()
    */
   @Override
-  public ObjectSizer getObjectSizer()
-  {
+  public ObjectSizer getObjectSizer() {
     return this.sizer;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.cache.EvictionAttributes#getAlgorithm()
    */
   @Override
-  public EvictionAlgorithm getAlgorithm()
-  {
+  public EvictionAlgorithm getAlgorithm() {
     return this.algorithm;
   }
 
-  public void setMaximum(int maximum)
-  {
+  public void setMaximum(int maximum) {
     this.maximum = maximum;
     if (this.evictionController != null) {
       this.evictionController.setLimit(this.maximum);
@@ -125,21 +121,20 @@ public final class EvictionAttributesImpl extends EvictionAttributes
 
   /**
    * @param maximum parameter for the given {@link EvictionAlgorithm}
-   * @return the instance of {@link EvictionAttributesImpl} on which this method was
-   *         called
+   * @return the instance of {@link EvictionAttributesImpl} on which this method was called
    */
-  public EvictionAttributesImpl internalSetMaximum(int maximum)
-  {
+  public EvictionAttributesImpl internalSetMaximum(int maximum) {
     this.maximum = maximum;
     return this;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.cache.EvictionAttributes#getMaximum()
    */
   @Override
-  public int getMaximum()
-  {
+  public int getMaximum() {
     if (this.algorithm.isLRUHeap()) {
       throw new UnsupportedOperationException("LRUHeap does not support a maximum");
     }
@@ -147,16 +142,13 @@ public final class EvictionAttributesImpl extends EvictionAttributes
   }
 
   /**
-   * Sets the {@link EvictionAction} on the {@link EvictionAttributesImpl} that the
-   * given {@link EvictionAlgorithm} uses to perform the eviction.
+   * Sets the {@link EvictionAction} on the {@link EvictionAttributesImpl} that the given
+   * {@link EvictionAlgorithm} uses to perform the eviction.
    * 
-   * @param action
-   *          the {@link EvictionAction} used by the {@link EvictionAction}
-   * @return the instance of {@link EvictionAttributesMutator} on which this
-   *         method was called
+   * @param action the {@link EvictionAction} used by the {@link EvictionAction}
+   * @return the instance of {@link EvictionAttributesMutator} on which this method was called
    */
-  public EvictionAttributesImpl setAction(EvictionAction action)
-  {
+  public EvictionAttributesImpl setAction(EvictionAction action) {
     if (action != null) {
       this.action = action;
     } else {
@@ -165,55 +157,55 @@ public final class EvictionAttributesImpl extends EvictionAttributes
     return this;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.cache.EvictionAttributes#getAction()
    */
   @Override
-  public EvictionAction getAction()
-  {
+  public EvictionAction getAction() {
     return this.action;
   }
 
-  /** 
+  /**
    * Build the appropriate eviction controller using the attributes provided.
    * 
-   * @return the super of the eviction controller or null if no {@link EvictionAction} 
-   * is set.
+   * @return the super of the eviction controller or null if no {@link EvictionAction} is set.
    * 
    * @see EvictionAttributes
    */
-  public LRUAlgorithm createEvictionController(Region region, boolean isOffHeap) 
-  {
+  public LRUAlgorithm createEvictionController(Region region, boolean isOffHeap) {
     if (this.algorithm == EvictionAlgorithm.LRU_ENTRY) {
-      this.evictionController = new LRUCapacityController(this.maximum, this.action,region); 
+      this.evictionController = new LRUCapacityController(this.maximum, this.action, region);
     } else if (this.algorithm == EvictionAlgorithm.LRU_HEAP) {
-      this.evictionController = new HeapLRUCapacityController(this.sizer,this.action,region);       
+      this.evictionController = new HeapLRUCapacityController(this.sizer, this.action, region);
     } else if (this.algorithm == EvictionAlgorithm.LRU_MEMORY) {
-      this.evictionController = new MemLRUCapacityController(this.maximum, this.sizer, this.action,region, isOffHeap);
-    } else if(this.algorithm == EvictionAlgorithm.LIFO_ENTRY){
-      this.evictionController = new LRUCapacityController(this.maximum, this.action,region);
-    } else if(this.algorithm == EvictionAlgorithm.LIFO_MEMORY){
-      this.evictionController = new MemLRUCapacityController(this.maximum, this.sizer, this.action,region, isOffHeap);
-    }  else {
+      this.evictionController =
+          new MemLRUCapacityController(this.maximum, this.sizer, this.action, region, isOffHeap);
+    } else if (this.algorithm == EvictionAlgorithm.LIFO_ENTRY) {
+      this.evictionController = new LRUCapacityController(this.maximum, this.action, region);
+    } else if (this.algorithm == EvictionAlgorithm.LIFO_MEMORY) {
+      this.evictionController =
+          new MemLRUCapacityController(this.maximum, this.sizer, this.action, region, isOffHeap);
+    } else {
       // for all other algorithms, return null
       this.evictionController = null;
     }
     return this.evictionController;
   }
-  
+
   public void toData(DataOutput out) throws IOException {
     out.writeInt(this.maximum);
     DataSerializer.writeObject(this.action, out);
     DataSerializer.writeObject(this.algorithm, out);
   }
-  
-  public void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
+
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.maximum = in.readInt();
-    this.action = (EvictionAction)DataSerializer.readObject(in);
-    this.algorithm = (EvictionAlgorithm)DataSerializer.readObject(in);
+    this.action = (EvictionAction) DataSerializer.readObject(in);
+    this.algorithm = (EvictionAlgorithm) DataSerializer.readObject(in);
   }
-  
+
   public static EvictionAttributesImpl createFromData(DataInput in)
       throws IOException, ClassNotFoundException {
     EvictionAttributesImpl result = new EvictionAttributesImpl();
@@ -238,5 +230,5 @@ public final class EvictionAttributesImpl extends EvictionAttributes
     return this.algorithm == EvictionAlgorithm.LIFO_MEMORY;
   }
 
- 
+
 }

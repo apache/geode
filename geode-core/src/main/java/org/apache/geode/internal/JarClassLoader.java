@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -91,7 +89,7 @@ public class JarClassLoader extends ClassLoader {
   public JarClassLoader(final File file, final String jarName, byte[] jarBytes) throws IOException {
     Assert.assertTrue(file != null, "file cannot be null");
     Assert.assertTrue(jarName != null, "jarName cannot be null");
-    
+
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
       @SuppressWarnings("resource")
@@ -99,30 +97,35 @@ public class JarClassLoader extends ClassLoader {
       this.fileLock = fileInputStream.getChannel().lock(0, file.length(), true);
 
       if (isDebugEnabled) {
-        logger.debug("Acquired shared file lock w/ channel: {}, for JAR: {}", this.fileLock.channel(), file.getAbsolutePath());
+        logger.debug("Acquired shared file lock w/ channel: {}, for JAR: {}",
+            this.fileLock.channel(), file.getAbsolutePath());
       }
 
       if (file.length() == 0) {
-        throw new FileNotFoundException("JAR file was truncated prior to obtaining a lock: " + jarName);
+        throw new FileNotFoundException(
+            "JAR file was truncated prior to obtaining a lock: " + jarName);
       }
 
       final byte[] fileContent = getJarContent();
       if (!Arrays.equals(fileContent, jarBytes)) {
-        throw new FileNotFoundException("JAR file: " + file.getAbsolutePath() + ", was modified prior to obtaining a lock: "
-            + jarName);
+        throw new FileNotFoundException("JAR file: " + file.getAbsolutePath()
+            + ", was modified prior to obtaining a lock: " + jarName);
       }
-        
+
       if (!isValidJarContent(jarBytes)) {
         if (this.fileLock != null) {
           this.fileLock.release();
           this.fileLock.channel().close();
           if (isDebugEnabled) {
-            logger.debug("Prematurely releasing shared file lock due to bad content for JAR file: {}, w/ channel: {}", file.getAbsolutePath(), this.fileLock.channel());
+            logger.debug(
+                "Prematurely releasing shared file lock due to bad content for JAR file: {}, w/ channel: {}",
+                file.getAbsolutePath(), this.fileLock.channel());
           }
         }
-        throw new IllegalArgumentException("File does not contain valid JAR content: " + file.getAbsolutePath());
+        throw new IllegalArgumentException(
+            "File does not contain valid JAR content: " + file.getAbsolutePath());
       }
-      
+
       Assert.assertTrue(jarBytes != null, "jarBytes cannot be null");
 
       // Temporarily save the contents of the JAR file until they can be processed by the
@@ -143,7 +146,9 @@ public class JarClassLoader extends ClassLoader {
         this.fileLock.release();
         this.fileLock.channel().close();
         if (isDebugEnabled) {
-          logger.debug("Prematurely releasing shared file lock due to file not found for JAR file: {}, w/ channel: {}", file.getAbsolutePath(), this.fileLock.channel());
+          logger.debug(
+              "Prematurely releasing shared file lock due to file not found for JAR file: {}, w/ channel: {}",
+              file.getAbsolutePath(), this.fileLock.channel());
         }
       }
       throw fnfex;
@@ -153,8 +158,7 @@ public class JarClassLoader extends ClassLoader {
   /**
    * Peek into the JAR data and make sure that it is valid JAR content.
    * 
-   * @param inputStream
-   *          InputStream containing data to be validated.
+   * @param inputStream InputStream containing data to be validated.
    * 
    * @return True if the data has JAR content, false otherwise
    */
@@ -177,35 +181,33 @@ public class JarClassLoader extends ClassLoader {
 
     return valid;
   }
-  
+
   /**
    * Peek into the JAR data and make sure that it is valid JAR content.
    * 
-   * @param jarBytes
-   *          Bytes of data to be validated.
+   * @param jarBytes Bytes of data to be validated.
    * 
    * @return True if the data has JAR content, false otherwise
    */
   public static boolean isValidJarContent(final byte[] jarBytes) {
     return hasValidJarContent(new ByteArrayInputStream(jarBytes));
   }
-  
+
   /**
    * Peek into the JAR data and make sure that it is valid JAR content.
    * 
-   * @param jarFile
-   *          File whose contents should be validated.
+   * @param jarFile File whose contents should be validated.
    * 
    * @return True if the data has JAR content, false otherwise
    */
   public static boolean hasValidJarContent(final File jarFile) {
     try {
-    return hasValidJarContent(new FileInputStream(jarFile));
+      return hasValidJarContent(new FileInputStream(jarFile));
     } catch (IOException ioex) {
       return false;
     }
   }
-  
+
   /**
    * Scan the JAR file and attempt to load all classes and register any function classes found.
    */
@@ -231,25 +233,30 @@ public class JarClassLoader extends ClassLoader {
       while (jarEntry != null) {
         if (jarEntry.getName().endsWith(".class")) {
           if (isDebugEnabled) {
-            logger.debug("Attempting to load class: {}, from JAR file: {}", jarEntry.getName(), this.file.getAbsolutePath());
+            logger.debug("Attempting to load class: {}, from JAR file: {}", jarEntry.getName(),
+                this.file.getAbsolutePath());
           }
 
-          final String className = jarEntry.getName().replaceAll("/", "\\.").substring(0, (jarEntry.getName().length() - 6));
+          final String className = jarEntry.getName().replaceAll("/", "\\.").substring(0,
+              (jarEntry.getName().length() - 6));
           try {
             Class<?> clazz = loadClass(className, true, false);
             Collection<Function> registerableFunctions = getRegisterableFunctionsFromClass(clazz);
             for (Function function : registerableFunctions) {
               FunctionService.registerFunction(function);
               if (isDebugEnabled) {
-                logger.debug("Registering function class: {}, from JAR file: {}", className, this.file.getAbsolutePath());
+                logger.debug("Registering function class: {}, from JAR file: {}", className,
+                    this.file.getAbsolutePath());
               }
               this.registeredFunctions.add(function);
             }
           } catch (ClassNotFoundException cnfex) {
-            logger.error("Unable to load all classes from JAR file: {}", this.file.getAbsolutePath(), cnfex);
+            logger.error("Unable to load all classes from JAR file: {}",
+                this.file.getAbsolutePath(), cnfex);
             throw cnfex;
           } catch (NoClassDefFoundError ncdfex) {
-            logger.error("Unable to load all classes from JAR file: {}", this.file.getAbsolutePath(), ncdfex);
+            logger.error("Unable to load all classes from JAR file: {}",
+                this.file.getAbsolutePath(), ncdfex);
             throw ncdfex;
           }
         }
@@ -276,7 +283,8 @@ public class JarClassLoader extends ClassLoader {
     this.registeredFunctions.clear();
 
     try {
-      TypeRegistry typeRegistry = ((GemFireCacheImpl) CacheFactory.getAnyInstance()).getPdxRegistry();
+      TypeRegistry typeRegistry =
+          ((GemFireCacheImpl) CacheFactory.getAnyInstance()).getPdxRegistry();
       if (typeRegistry != null) {
         typeRegistry.flushCache();
       }
@@ -288,18 +296,20 @@ public class JarClassLoader extends ClassLoader {
       this.fileLock.release();
       this.fileLock.channel().close();
       if (logger.isDebugEnabled()) {
-        logger.debug("Released shared file lock on JAR file: {}, w/ channel: {}", this.file.getAbsolutePath(), this.fileLock.channel());
+        logger.debug("Released shared file lock on JAR file: {}, w/ channel: {}",
+            this.file.getAbsolutePath(), this.fileLock.channel());
       }
     } catch (IOException ioex) {
-      logger.error("Could not release the shared lock for JAR file: {}", this.file.getAbsolutePath(), ioex);
+      logger.error("Could not release the shared lock for JAR file: {}",
+          this.file.getAbsolutePath(), ioex);
     }
   }
 
   /**
-   * Uses MD5 hashes to determine if the original byte content of this JarClassLoader is the same as that past in.
+   * Uses MD5 hashes to determine if the original byte content of this JarClassLoader is the same as
+   * that past in.
    * 
-   * @param compareToBytes
-   *          Bytes to compare the original content to
+   * @param compareToBytes Bytes to compare the original content to
    * @return True of the MD5 hash is the same o
    */
   public boolean hasSameContent(final byte[] compareToBytes) {
@@ -310,7 +320,8 @@ public class JarClassLoader extends ClassLoader {
 
     byte[] compareToMd5 = messageDigest.digest(compareToBytes);
     if (logger.isDebugEnabled()) {
-      logger.debug("For JAR file: {}, Comparing MD5 hash {} to {}", this.file.getAbsolutePath(), new String(this.md5hash), new String(compareToMd5));
+      logger.debug("For JAR file: {}, Comparing MD5 hash {} to {}", this.file.getAbsolutePath(),
+          new String(this.md5hash), new String(compareToMd5));
     }
     return Arrays.equals(this.md5hash, compareToMd5);
   }
@@ -326,7 +337,7 @@ public class JarClassLoader extends ClassLoader {
   protected URL findResource(String resourceName) {
     URL returnURL = null;
     JarInputStream jarInputStream = null;
-    
+
     try {
       ChannelInputStream channelInputStream = new ChannelInputStream(this.fileLock.channel());
       jarInputStream = new JarInputStream(channelInputStream);
@@ -385,12 +396,13 @@ public class JarClassLoader extends ClassLoader {
   }
 
   @Override
-  public Class<?> loadClass(final String className, final boolean resolveIt) throws ClassNotFoundException {
+  public Class<?> loadClass(final String className, final boolean resolveIt)
+      throws ClassNotFoundException {
     return loadClass(className, resolveIt, true);
   }
 
-  Class<?> loadClass(final String className, final boolean resolveIt, final boolean useClassPathLoader)
-      throws ClassNotFoundException {
+  Class<?> loadClass(final String className, final boolean resolveIt,
+      final boolean useClassPathLoader) throws ClassNotFoundException {
     Class<?> clazz = findLoadedClass(className);
     if (clazz != null) {
       return clazz;
@@ -489,12 +501,11 @@ public class JarClassLoader extends ClassLoader {
   }
 
   /**
-   * Check to see if the class implements the Function interface. If so, it will be registered with FunctionService.
-   * Also, if the functions's class was originally declared in a cache.xml file then any properties specified at that
-   * time will be reused when re-registering the function.
+   * Check to see if the class implements the Function interface. If so, it will be registered with
+   * FunctionService. Also, if the functions's class was originally declared in a cache.xml file
+   * then any properties specified at that time will be reused when re-registering the function.
    * 
-   * @param clazz
-   *          Class to check for implementation of the Function class
+   * @param clazz Class to check for implementation of the Function class
    * @return A collection of Objects that implement the Function interface.
    */
   private Collection<Function> getRegisterableFunctionsFromClass(Class<?> clazz) {
@@ -505,8 +516,9 @@ public class JarClassLoader extends ClassLoader {
         boolean registerUninitializedFunction = true;
         if (Declarable.class.isAssignableFrom(clazz)) {
           try {
-            final List<Properties> propertiesList = ((GemFireCacheImpl) CacheFactory.getAnyInstance())
-                .getDeclarableProperties(clazz.getName());
+            final List<Properties> propertiesList =
+                ((GemFireCacheImpl) CacheFactory.getAnyInstance())
+                    .getDeclarableProperties(clazz.getName());
 
             if (!propertiesList.isEmpty()) {
               registerUninitializedFunction = false;
@@ -538,13 +550,15 @@ public class JarClassLoader extends ClassLoader {
         }
       }
     } catch (Exception ex) {
-      logger.error("Attempting to register function from JAR file: " + this.file.getAbsolutePath(), ex);
+      logger.error("Attempting to register function from JAR file: " + this.file.getAbsolutePath(),
+          ex);
     }
 
     return registerableFunctions;
   }
 
-  private Class<?> forName(final String className, final Collection<ClassLoader> classLoaders) throws ClassNotFoundException {
+  private Class<?> forName(final String className, final Collection<ClassLoader> classLoaders)
+      throws ClassNotFoundException {
     Class<?> clazz = null;
 
     for (ClassLoader classLoader : classLoaders) {
@@ -574,18 +588,24 @@ public class JarClassLoader extends ClassLoader {
       return constructor.newInstance();
     } catch (NoSuchMethodException nsmex) {
       if (errorOnNoSuchMethod) {
-        logger.error("Zero-arg constructor is required, but not found for class: {}", clazz.getName(), nsmex);
+        logger.error("Zero-arg constructor is required, but not found for class: {}",
+            clazz.getName(), nsmex);
       } else {
         if (logger.isDebugEnabled()) {
-          logger.debug("Not registering function because it doesn't have a zero-arg constructor: {}", clazz.getName());
+          logger.debug(
+              "Not registering function because it doesn't have a zero-arg constructor: {}",
+              clazz.getName());
         }
       }
     } catch (SecurityException sex) {
-      logger.error("Zero-arg constructor of function not accessible for class: {}", clazz.getName(), sex);
+      logger.error("Zero-arg constructor of function not accessible for class: {}", clazz.getName(),
+          sex);
     } catch (IllegalAccessException iae) {
-      logger.error("Zero-arg constructor of function not accessible for class: {}", clazz.getName(), iae);
+      logger.error("Zero-arg constructor of function not accessible for class: {}", clazz.getName(),
+          iae);
     } catch (InvocationTargetException ite) {
-      logger.error("Error when attempting constructor for function for class: {}", clazz.getName(), ite);
+      logger.error("Error when attempting constructor for function for class: {}", clazz.getName(),
+          ite);
     } catch (InstantiationException ie) {
       logger.error("Unable to instantiate function for class: {}", clazz.getName(), ie);
     } catch (ExceptionInInitializerError eiiex) {
@@ -657,17 +677,19 @@ public class JarClassLoader extends ClassLoader {
   }
 
   /**
-   * When a lock is acquired it is done so through an open file (FileInputStream, etc.). If for any reason that same
-   * file is used to open another input stream, when the second input stream is closed the file lock will not be held
-   * (although an OverlappingFileLock exception will be thrown if an attempt is made to acquire the lock again). To get
-   * around this problem, this class is used to wrap the original file channel used by the lock with an InputStream.
-   * When this class is instantiated a lock is obtained to prevent other threads from attempting to use the file channel
-   * at the same time. The file channel can then be read as with any other InputStream. When the input stream is closed,
-   * instead of closing the file channel, the lock is released instead.
+   * When a lock is acquired it is done so through an open file (FileInputStream, etc.). If for any
+   * reason that same file is used to open another input stream, when the second input stream is
+   * closed the file lock will not be held (although an OverlappingFileLock exception will be thrown
+   * if an attempt is made to acquire the lock again). To get around this problem, this class is
+   * used to wrap the original file channel used by the lock with an InputStream. When this class is
+   * instantiated a lock is obtained to prevent other threads from attempting to use the file
+   * channel at the same time. The file channel can then be read as with any other InputStream. When
+   * the input stream is closed, instead of closing the file channel, the lock is released instead.
    * 
-   * This class is thread safe. However, multiple instances cannot be created by the same thread. The reason for this is
-   * that the lock will be obtained in all cases (it's reentrant), and then the channel position will be modified by
-   * both instances causing arbitrary values being returned from the read() method.
+   * This class is thread safe. However, multiple instances cannot be created by the same thread.
+   * The reason for this is that the lock will be obtained in all cases (it's reentrant), and then
+   * the channel position will be modified by both instances causing arbitrary values being returned
+   * from the read() method.
    * 
    * @since GemFire 7.0
    */

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -22,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -45,21 +44,21 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * bug test for bug 36805
  *
- * When server is running but region is not created on server. Client sends
- * register interest request, server checks for region, and if region is not
- * exist on server, it throws an exception to the client. Hence, client marks
- * server as dead.
+ * When server is running but region is not created on server. Client sends register interest
+ * request, server checks for region, and if region is not exist on server, it throws an exception
+ * to the client. Hence, client marks server as dead.
  * 
- * To avoid this, there should not be any check of region before registration.
- * And region registration should not fail due to non existent region.
+ * To avoid this, there should not be any check of region before registration. And region
+ * registration should not fail due to non existent region.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class Bug36805DUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;
@@ -92,8 +91,7 @@ public class Bug36805DUnitTest extends JUnit4DistributedTestCase {
     client2 = host.getVM(3);
   }
 
-  private void createCache(Properties props) throws Exception
-  {
+  private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     ds.disconnect();
     ds = getSystem(props);
@@ -102,20 +100,15 @@ public class Bug36805DUnitTest extends JUnit4DistributedTestCase {
     assertNotNull(cache);
   }
 
-  public static void createClientCache(String host, Integer port1, Integer port2)
-      throws Exception
-  {
+  public static void createClientCache(String host, Integer port1, Integer port2) throws Exception {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     new Bug36805DUnitTest().createCache(props);
-    PoolImpl p = (PoolImpl)PoolManager.createFactory()
-      .addServer(host, port1.intValue())
-      .addServer(host, port2.intValue())
-      .setSubscriptionEnabled(true)
-      .setMinConnections(4)
-      // .setRetryInterval(2345671)
-      .create("Bug36805UnitTestPool");
+    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port1.intValue())
+        .addServer(host, port2.intValue()).setSubscriptionEnabled(true).setMinConnections(4)
+        // .setRetryInterval(2345671)
+        .create("Bug36805UnitTestPool");
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setPoolName(p.getName());
@@ -125,10 +118,9 @@ public class Bug36805DUnitTest extends JUnit4DistributedTestCase {
 
   }
 
-  public static Integer createServerCache() throws Exception
-  {
+  public static Integer createServerCache() throws Exception {
     new Bug36805DUnitTest().createCache(new Properties());
-   // no region is created on server 
+    // no region is created on server
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
@@ -147,44 +139,43 @@ public class Bug36805DUnitTest extends JUnit4DistributedTestCase {
     server2.invoke(() -> Bug36805DUnitTest.closeCache());
   }
 
-  public static void closeCache()
-  {
+  public static void closeCache() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1581
   @Test
-  public void testBug36805()
-  {
-    Integer port1 = ((Integer)server1.invoke(() -> Bug36805DUnitTest.createServerCache()));
-    Integer port2 = ((Integer)server2.invoke(() -> Bug36805DUnitTest.createServerCache()));
-    client1.invoke(() -> Bug36805DUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(server1.getHost()), port1, port2 ));
-    client2.invoke(() -> Bug36805DUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(server1.getHost()), port1, port2 ));
+  public void testBug36805() {
+    Integer port1 = ((Integer) server1.invoke(() -> Bug36805DUnitTest.createServerCache()));
+    Integer port2 = ((Integer) server2.invoke(() -> Bug36805DUnitTest.createServerCache()));
+    client1.invoke(() -> Bug36805DUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port1, port2));
+    client2.invoke(() -> Bug36805DUnitTest
+        .createClientCache(NetworkUtils.getServerHostName(server1.getHost()), port1, port2));
     // set a cllabck so that we come to know that whether a failover is called
     // or not
     // if failover is called means this bug is present.
     // client2.invoke(() -> Bug36805DUnitTest.setClientServerObserver());
     client1.invoke(() -> Bug36805DUnitTest.registerInterest()); // register
-                                                                  // interest
-                                                                  // shoud not
-                                                                  // cause any
-                                                                  // failure
+                                                                // interest
+                                                                // shoud not
+                                                                // cause any
+                                                                // failure
 
-    client2.invoke(() -> Bug36805DUnitTest.verifyDeadAndLiveServers( new Integer(0), new Integer(2) ));
-    client1.invoke(() -> Bug36805DUnitTest.verifyDeadAndLiveServers( new Integer(0), new Integer(2) ));
+    client2
+        .invoke(() -> Bug36805DUnitTest.verifyDeadAndLiveServers(new Integer(0), new Integer(2)));
+    client1
+        .invoke(() -> Bug36805DUnitTest.verifyDeadAndLiveServers(new Integer(0), new Integer(2)));
 
   }
 
-  
-  public static void registerInterest()
-  {
+
+  public static void registerInterest() {
     cache.getLogger().info(
-        "<ExpectedException action=add>" + "RegionDestroyedException"
-        + "</ExpectedException>");
+        "<ExpectedException action=add>" + "RegionDestroyedException" + "</ExpectedException>");
     try {
       Region r = cache.getRegion("/" + regionName);
       assertNotNull(r);
@@ -198,22 +189,21 @@ public class Bug36805DUnitTest extends JUnit4DistributedTestCase {
       fail("expected RegionDestroyedException");
     } catch (ServerOperationException expected) {
       assertEquals(RegionDestroyedException.class, expected.getCause().getClass());
-    }
-    finally {
-      cache.getLogger().info(
-          "<ExpectedException action=remove>" + "RegionDestroyedException"
+    } finally {
+      cache.getLogger().info("<ExpectedException action=remove>" + "RegionDestroyedException"
           + "</ExpectedException>");
     }
   }
 
   public static void verifyDeadAndLiveServers(final Integer expectedDeadServers,
-      final Integer expectedLiveServers)
-  {
+      final Integer expectedLiveServers) {
     WaitCriterion wc = new WaitCriterion() {
       String excuse;
+
       public boolean done() {
         return pool.getConnectedServerCount() == expectedLiveServers.intValue();
       }
+
       public String description() {
         return excuse;
       }
@@ -221,29 +211,31 @@ public class Bug36805DUnitTest extends JUnit4DistributedTestCase {
     Wait.waitForCriterion(wc, 3 * 60 * 1000, 1000, true);
 
     // we no longer verify dead servers; live is good enough
-//     start = System.currentTimeMillis();
-//     while (proxy.getDeadServers().size() != expectedDeadServers.intValue()) { // wait
-//                                                                               // until
-//                                                                               // condition
-//                                                                               // is
-//                                                                               // met
-//       assertTrue(
-//           "Waited over "
-//               + maxWaitTime
-//               + " for dead servers to become: "
-//               + expectedDeadServers.intValue()
-//               + " but it is: " + proxy.getDeadServers().size()
-//               + ". This issue can occur on Solaris as DSM thread get stuck in connectForServer() call, and hence not recovering any newly started server This may be beacuase of tcp_ip_abort_cinterval kernal level property on solaris which has 3 minutes as a default value",
-//           (System.currentTimeMillis() - start) < maxWaitTime);
-//       try {
-//         Thread.yield();
-//         synchronized (delayLock) {
-//           delayLock.wait(2000);
-//         }
-//       }
-//       catch (InterruptedException ie) {
-//         fail("Interrupted while waiting ", ie);
-//       }
-//     }
+    // start = System.currentTimeMillis();
+    // while (proxy.getDeadServers().size() != expectedDeadServers.intValue()) { // wait
+    // // until
+    // // condition
+    // // is
+    // // met
+    // assertTrue(
+    // "Waited over "
+    // + maxWaitTime
+    // + " for dead servers to become: "
+    // + expectedDeadServers.intValue()
+    // + " but it is: " + proxy.getDeadServers().size()
+    // + ". This issue can occur on Solaris as DSM thread get stuck in connectForServer() call, and
+    // hence not recovering any newly started server This may be beacuase of tcp_ip_abort_cinterval
+    // kernal level property on solaris which has 3 minutes as a default value",
+    // (System.currentTimeMillis() - start) < maxWaitTime);
+    // try {
+    // Thread.yield();
+    // synchronized (delayLock) {
+    // delayLock.wait(2000);
+    // }
+    // }
+    // catch (InterruptedException ie) {
+    // fail("Interrupted while waiting ", ie);
+    // }
+    // }
   }
 }

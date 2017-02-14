@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.ha;
 
@@ -21,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -44,7 +43,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 @SuppressWarnings("serial")
 public class Bug48879DUnitTest extends JUnit4DistributedTestCase {
 
@@ -68,8 +67,8 @@ public class Bug48879DUnitTest extends JUnit4DistributedTestCase {
     vm0 = host.getVM(0); // server1
     vm1 = host.getVM(1); // server2
 
-    int port0 = (Integer) vm0.invoke(() -> Bug48879DUnitTest.createCacheServer( ));
-    int port1 = (Integer) vm1.invoke(() -> Bug48879DUnitTest.createCacheServer( ));
+    int port0 = (Integer) vm0.invoke(() -> Bug48879DUnitTest.createCacheServer());
+    int port1 = (Integer) vm1.invoke(() -> Bug48879DUnitTest.createCacheServer());
 
     createClientCache(host, new Integer[] {port0, port1}, Boolean.TRUE);
   }
@@ -90,16 +89,15 @@ public class Bug48879DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  @SuppressWarnings({ "unused", "deprecation" })
+  @SuppressWarnings({"unused", "deprecation"})
   public static Integer createCacheServer() throws Exception {
     Bug48879DUnitTest test = new Bug48879DUnitTest();
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "MessageTimeToLive", "30");
-    cache = (GemFireCacheImpl)CacheFactory.create(test.getSystem());
-    HARegionQueue.threadIdExpiryTime = (SLEEP_TIME/1000) - 10;
-    cache.setMessageSyncInterval(SLEEP_TIME/500);
+    cache = (GemFireCacheImpl) CacheFactory.create(test.getSystem());
+    HARegionQueue.threadIdExpiryTime = (SLEEP_TIME / 1000) - 10;
+    cache.setMessageSyncInterval(SLEEP_TIME / 500);
 
-    RegionFactory<String, String> rf = cache
-        .createRegionFactory(RegionShortcut.REPLICATE);
+    RegionFactory<String, String> rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
 
     Region<String, String> region = rf.create(REGION_NAME);
 
@@ -110,12 +108,10 @@ public class Bug48879DUnitTest extends JUnit4DistributedTestCase {
   }
 
   @SuppressWarnings("deprecation")
-  public static void createClientCache(Host host, Integer[] ports, Boolean doRI)
-      throws Exception {
+  public static void createClientCache(Host host, Integer[] ports, Boolean doRI) throws Exception {
 
     Properties props = new Properties();
-    props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId()
-        + ".gfs");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId() + ".gfs");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     DistributedSystem ds = new Bug48879DUnitTest().getSystem(props);
@@ -129,8 +125,8 @@ public class Bug48879DUnitTest extends JUnit4DistributedTestCase {
     }
     cache = (GemFireCacheImpl) ccf.create();
 
-    ClientRegionFactory<String, String> crf = cache
-        .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
+    ClientRegionFactory<String, String> crf =
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
 
     Region<String, String> region = crf.create(REGION_NAME);
 
@@ -140,9 +136,8 @@ public class Bug48879DUnitTest extends JUnit4DistributedTestCase {
 
   }
 
-  @SuppressWarnings({ "unused", "unchecked" })
-  public static void doPuts(Integer numOfThreads, Integer puts)
-      throws Exception {
+  @SuppressWarnings({"unused", "unchecked"})
+  public static void doPuts(Integer numOfThreads, Integer puts) throws Exception {
     Region<String, String> region = cache.getRegion(REGION_NAME);
     final int putsPerThread = puts;
 
@@ -165,45 +160,50 @@ public class Bug48879DUnitTest extends JUnit4DistributedTestCase {
     for (int i = 0; i < numOfThreads; i++) {
       try {
         threads[i].join();
-      } catch (InterruptedException ie) {}
+      } catch (InterruptedException ie) {
+      }
     }
     Thread.sleep(5000);
     region.put("LAST", "LAST");
   }
 
   public static Boolean isPrimaryServer() {
-    return ((CacheClientProxy) CacheClientNotifier.getInstance()
-        .getClientProxies().toArray()[0]).isPrimary();
+    return ((CacheClientProxy) CacheClientNotifier.getInstance().getClientProxies().toArray()[0])
+        .isPrimary();
   }
 
-  public static void verifyStats(Integer numOfEvents,
-      Integer expectedTids) throws Exception {
-    HARegionQueueStats stats = ((CacheClientProxy) CacheClientNotifier
-        .getInstance().getClientProxies().toArray()[0]).getHARegionQueue()
-        .getStatistics();
+  public static void verifyStats(Integer numOfEvents, Integer expectedTids) throws Exception {
+    HARegionQueueStats stats =
+        ((CacheClientProxy) CacheClientNotifier.getInstance().getClientProxies().toArray()[0])
+            .getHARegionQueue().getStatistics();
 
     long actualExpiry = stats.getEventsExpired();
     long expectedExpiry = isPrimaryServer() ? 0 : numOfEvents + 1; // +1 for LAST key
-    assertEquals("Expected eventsExpired: " + expectedExpiry
-        + " but actual eventsExpired: " + actualExpiry
-        + (isPrimaryServer() ? " at primary." : " at secondary."),
+    assertEquals(
+        "Expected eventsExpired: " + expectedExpiry + " but actual eventsExpired: " + actualExpiry
+            + (isPrimaryServer() ? " at primary." : " at secondary."),
         expectedExpiry, actualExpiry);
 
     int actualTids = stats.getThreadIdentiferCount();
-    assertTrue("Expected ThreadIdentifier count <= 1 but actual: "
-        + actualTids + (isPrimaryServer() ? " at primary." : " at secondary."),
-        actualTids <= 1); // Sometimes we may see 1 threadIdentifier due to slow machines, but never equal to expectedTids
+    assertTrue("Expected ThreadIdentifier count <= 1 but actual: " + actualTids
+        + (isPrimaryServer() ? " at primary." : " at secondary."), actualTids <= 1); // Sometimes we
+                                                                                     // may see 1
+                                                                                     // threadIdentifier
+                                                                                     // due to slow
+                                                                                     // machines,
+                                                                                     // but never
+                                                                                     // equal to
+                                                                                     // expectedTids
   }
 
   public static void verifyThreadsBeforeExpiry(Integer expectedTids) throws Exception {
-    HARegionQueueStats stats = ((CacheClientProxy) CacheClientNotifier
-        .getInstance().getClientProxies().toArray()[0]).getHARegionQueue()
-        .getStatistics();
+    HARegionQueueStats stats =
+        ((CacheClientProxy) CacheClientNotifier.getInstance().getClientProxies().toArray()[0])
+            .getHARegionQueue().getStatistics();
 
     int actualTids = stats.getThreadIdentiferCount();
-    assertTrue("Expected ThreadIdentifier count >= " + expectedTids + " but actual: "
-        + actualTids + (isPrimaryServer() ? " at primary." : " at secondary."),
-        actualTids >= expectedTids);
+    assertTrue("Expected ThreadIdentifier count >= " + expectedTids + " but actual: " + actualTids
+        + (isPrimaryServer() ? " at primary." : " at secondary."), actualTids >= expectedTids);
   }
 
   @Test
@@ -217,12 +217,12 @@ public class Bug48879DUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(() -> Bug48879DUnitTest.verifyThreadsBeforeExpiry(threads));
     vm1.invoke(() -> Bug48879DUnitTest.verifyThreadsBeforeExpiry(threads));
     // sleep till expiry time elapses
-    Thread.sleep(SLEEP_TIME*2 + 30000);
+    Thread.sleep(SLEEP_TIME * 2 + 30000);
 
     // Assert that threadidentifiers are expired and region events are retained on primary server
-    vm0.invoke(() -> Bug48879DUnitTest.verifyStats(threads*putsPerThread, threads));
+    vm0.invoke(() -> Bug48879DUnitTest.verifyStats(threads * putsPerThread, threads));
     // Assert that region events and threadidentifiers are expired on secondary server.
-    vm1.invoke(() -> Bug48879DUnitTest.verifyStats(threads*putsPerThread, threads));
+    vm1.invoke(() -> Bug48879DUnitTest.verifyStats(threads * putsPerThread, threads));
   }
 }
 

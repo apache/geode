@@ -1,19 +1,16 @@
 /*
-/*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * /* Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.rest.internal.web.controllers;
 
@@ -59,11 +56,11 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 class RestAPITestBase extends JUnit4DistributedTestCase {
 
   protected Cache cache = null;
-  List<String> restURLs = new ArrayList<>();
-  VM vm0 = null;
-  VM vm1 = null;
-  VM vm2 = null;
-  VM vm3 = null;
+  protected List<String> restURLs = new ArrayList<>();
+  protected VM vm0 = null;
+  protected VM vm1 = null;
+  protected VM vm2 = null;
+  protected VM vm3 = null;
 
   @Override
   public final void postSetUp() throws Exception {
@@ -83,8 +80,7 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     postSetUpRestAPITestBase();
   }
 
-  private void postSetUpRestAPITestBase() throws Exception {
-  }
+  private void postSetUpRestAPITestBase() throws Exception {}
 
   /**
    * close the clients and teh servers
@@ -128,17 +124,13 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     return "http://" + hostName + ":" + servicePort + context + "/v1";
   }
 
-  private int getInvocationCount() {
-    RestFunctionTemplate function = (RestFunctionTemplate) FunctionService.getFunction(getFunctionID());
+  private int getInvocationCount(String functionID) {
+    RestFunctionTemplate function = (RestFunctionTemplate) FunctionService.getFunction(functionID);
     return function.invocationCount;
   }
 
-  CloseableHttpResponse executeFunctionThroughRestCall(String function,
-                                                       String regionName,
-                                                       String filter,
-                                                       String jsonBody,
-                                                       String groups,
-                                                       String members) {
+  CloseableHttpResponse executeFunctionThroughRestCall(String function, String regionName,
+      String filter, String jsonBody, String groups, String members) {
     System.out.println("Entering executeFunctionThroughRestCall");
     CloseableHttpResponse value = null;
     try {
@@ -146,7 +138,8 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
       Random randomGenerator = new Random();
       int restURLIndex = randomGenerator.nextInt(restURLs.size());
 
-      HttpPost post = createHTTPPost(function, regionName, filter, restURLIndex, groups, members, jsonBody);
+      HttpPost post =
+          createHTTPPost(function, regionName, filter, restURLIndex, groups, members, jsonBody);
 
       System.out.println("Request: POST " + post.toString());
       value = httpclient.execute(post);
@@ -156,15 +149,11 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     return value;
   }
 
-  private HttpPost createHTTPPost(String function,
-                                  String regionName,
-                                  String filter,
-                                  int restUrlIndex,
-                                  String groups,
-                                  String members,
-                                  String jsonBody) {
+  private HttpPost createHTTPPost(String function, String regionName, String filter,
+      int restUrlIndex, String groups, String members, String jsonBody) {
     StringBuilder restURLBuilder = new StringBuilder();
-    restURLBuilder.append(restURLs.get(restUrlIndex)).append("/functions/").append(function).append("?");
+    restURLBuilder.append(restURLs.get(restUrlIndex)).append("/functions/").append(function)
+        .append("?");
     if (regionName != null && !regionName.isEmpty()) {
       restURLBuilder.append("onRegion=").append(regionName);
     } else if (groups != null && !groups.isEmpty()) {
@@ -186,24 +175,21 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     return post;
   }
 
-  protected String getFunctionID() {
-    throw new RuntimeException("This method should be overridden");
-  }
-
-  void assertHttpResponse(CloseableHttpResponse response, int httpCode, int expectedServerResponses) {
+  void assertHttpResponse(CloseableHttpResponse response, int httpCode,
+      int expectedServerResponses) {
     assertEquals(httpCode, response.getStatusLine().getStatusCode());
 
-    //verify response has body flag, expected is true.
+    // verify response has body flag, expected is true.
     assertNotNull(response.getEntity());
     try {
       String httpResponseString = processHttpResponse(response);
       response.close();
       System.out.println("Response : " + httpResponseString);
-      //verify function execution result
+      // verify function execution result
       JSONArray resultArray = new JSONArray(httpResponseString);
       assertEquals(expectedServerResponses, resultArray.length());
     } catch (Exception e) {
-      //fail("exception", e);
+      // fail("exception", e);
     }
   }
 
@@ -224,22 +210,16 @@ class RestAPITestBase extends JUnit4DistributedTestCase {
     return "";
   }
 
-  void assertCorrectInvocationCount(int expectedInvocationCount, VM... vms) {
+  void assertCorrectInvocationCount(String functionID, int expectedInvocationCount, VM... vms) {
     int count = 0;
     for (final VM vm : vms) {
-      count += vm.invoke("getInvocationCount", () -> getInvocationCount());
+      count += vm.invoke("getInvocationCount", () -> getInvocationCount(functionID));
     }
     assertEquals(expectedInvocationCount, count);
   }
 
-  private void resetInvocationCount() {
-    RestFunctionTemplate f = (RestFunctionTemplate) FunctionService.getFunction(getFunctionID());
+  protected void resetInvocationCount(String functionID) {
+    RestFunctionTemplate f = (RestFunctionTemplate) FunctionService.getFunction(functionID);
     f.invocationCount = 0;
-  }
-
-  void resetInvocationCounts(VM... vms) {
-    for (final VM vm : vms) {
-      vm.invoke("resetInvocationCount", () -> resetInvocationCount());
-    }
   }
 }

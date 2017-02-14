@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache.xmlcache;
@@ -40,8 +38,8 @@ public class CacheXmlPropertyResolverHelper {
 
   public static final String DEFAULT_PREFIX_FOR_SUFFIX = "{";
   /**
-   * This <code>HashMap </code> contains valid suffixes and prefixes to be 
-   * parsed by {@link CacheXmlPropertyResolverHelper} like {}, [] or ().
+   * This <code>HashMap </code> contains valid suffixes and prefixes to be parsed by
+   * {@link CacheXmlPropertyResolverHelper} like {}, [] or ().
    */
   private static HashMap<String, String> validSuffixAndPrefixes = new HashMap<String, String>();
 
@@ -62,69 +60,81 @@ public class CacheXmlPropertyResolverHelper {
    * @param propPrefix
    * @param propSuffix
    */
-  public CacheXmlPropertyResolverHelper(String propPrefix,
-      String propSuffix) {
-    if(propPrefix != null && propSuffix != null){
+  public CacheXmlPropertyResolverHelper(String propPrefix, String propSuffix) {
+    if (propPrefix != null && propSuffix != null) {
       String validPrefix = validSuffixAndPrefixes.get(propSuffix);
-      if(validPrefix != null && propPrefix.endsWith(validPrefix)){
+      if (validPrefix != null && propPrefix.endsWith(validPrefix)) {
         this.prefixForSuffix = validPrefix;
       } else {
         this.prefixForSuffix = propPrefix;
       }
       this.propertyPrefix = propPrefix;
-      
+
       this.propertySuffix = propSuffix;
     }
   }
 
   /**
-   * Parses the given string which are supposed to be like ${} for system and/or Gemfire
-   * properties to be replaced. This will return property.name from ${property.name}.
+   * Parses the given string which are supposed to be like ${} for system and/or Gemfire properties
+   * to be replaced. This will return property.name from ${property.name}.
+   * 
    * @param unparsedString
    * @return parsedString
    */
-  protected String parseResolvablePropString(String unparsedString, PropertyResolver resolver, Set<String> visitedReplaceableStrings){
+  protected String parseResolvablePropString(String unparsedString, PropertyResolver resolver,
+      Set<String> visitedReplaceableStrings) {
     StringBuilder buf = new StringBuilder(unparsedString);
     int prefixIndex = buf.indexOf(propertyPrefix);
 
-    while(prefixIndex != -1){
-      int suffixIndex = findSuffixIndex(buf, prefixIndex+propertyPrefix.length());
-      if(suffixIndex != -1){
-        String replaceableString = buf.substring(prefixIndex+propertyPrefix.length(), suffixIndex);
-        //Check for circular references
-        if(!visitedReplaceableStrings.add(replaceableString)){
-          logger.info(LocalizedMessage.create(LocalizedStrings.CacheXmlPropertyResolverHelper_SOME_UNRESOLVED_STRING_REPLACED_CIRCULAR_ERROR__0, replaceableString));
-          throw new IllegalArgumentException("Some still unresolved string "+ replaceableString+" was replaced by resolver, leading to circular references.");
+    while (prefixIndex != -1) {
+      int suffixIndex = findSuffixIndex(buf, prefixIndex + propertyPrefix.length());
+      if (suffixIndex != -1) {
+        String replaceableString =
+            buf.substring(prefixIndex + propertyPrefix.length(), suffixIndex);
+        // Check for circular references
+        if (!visitedReplaceableStrings.add(replaceableString)) {
+          logger.info(LocalizedMessage.create(
+              LocalizedStrings.CacheXmlPropertyResolverHelper_SOME_UNRESOLVED_STRING_REPLACED_CIRCULAR_ERROR__0,
+              replaceableString));
+          throw new IllegalArgumentException("Some still unresolved string " + replaceableString
+              + " was replaced by resolver, leading to circular references.");
         }
         /** Find the replacement using given <code>resolver</code> */
-        replaceableString = parseResolvablePropString(replaceableString, resolver, visitedReplaceableStrings);
+        replaceableString =
+            parseResolvablePropString(replaceableString, resolver, visitedReplaceableStrings);
         String replacement = resolver.resolveReplaceString(replaceableString);
 
-        if(replacement != null){
-          /** put replacement in <code>unparsedString</code> and call <code>parseResolvablePropString</code> recursively to find more 
-           * unparsedStrings in the replaced value of given unparsedString.*/
+        if (replacement != null) {
+          /**
+           * put replacement in <code>unparsedString</code> and call
+           * <code>parseResolvablePropString</code> recursively to find more unparsedStrings in the
+           * replaced value of given unparsedString.
+           */
           replacement = parseResolvablePropString(replacement, resolver, visitedReplaceableStrings);
-          buf.replace(prefixIndex, suffixIndex+propertySuffix.length(), replacement);
-          prefixIndex = buf.indexOf(propertyPrefix, prefixIndex+replacement.length());
-        } else if(resolver.isIgnoreUnresolvedProperties()) {
+          buf.replace(prefixIndex, suffixIndex + propertySuffix.length(), replacement);
+          prefixIndex = buf.indexOf(propertyPrefix, prefixIndex + replacement.length());
+        } else if (resolver.isIgnoreUnresolvedProperties()) {
           /** Look for more replaceable strings in given <code>unparsedString</code>. */
-          prefixIndex = buf.indexOf(propertyPrefix, suffixIndex+propertySuffix.length());
+          prefixIndex = buf.indexOf(propertyPrefix, suffixIndex + propertySuffix.length());
         } else {
-          throw new IllegalArgumentException("No replacement found for property : "+ replaceableString);
+          throw new IllegalArgumentException(
+              "No replacement found for property : " + replaceableString);
         }
-        //Before iterating again remove replaceable string from visitedReplaceableStrings as it can appear again.
+        // Before iterating again remove replaceable string from visitedReplaceableStrings as it can
+        // appear again.
         visitedReplaceableStrings.remove(replaceableString);
       } else {
         prefixIndex = -1;
       }
     }
-    
+
     return buf.toString();
   }
 
   /**
-   * Finds index of suffix in a string from a specified index. Like finds index of
-   * "}" in string "${my.prop.name}" starting from index 2, which is 14.
+   * Finds index of suffix in a string from a specified index. Like finds index of "}" in string
+   * "${my.prop.name}" starting from index 2, which is 14.
+   * 
    * @param buf
    * @param index
    * @return suffix
@@ -132,14 +142,16 @@ public class CacheXmlPropertyResolverHelper {
   private int findSuffixIndex(StringBuilder buf, int index) {
     int inNestedProperty = 0;
     while (index < buf.length()) {
-      if (buf.substring(index, index+this.propertySuffix.length()).equalsIgnoreCase(this.propertySuffix)) {
+      if (buf.substring(index, index + this.propertySuffix.length())
+          .equalsIgnoreCase(this.propertySuffix)) {
         if (inNestedProperty > 0) {
           inNestedProperty--;
           index = index + this.propertySuffix.length();
         } else {
           return index;
         }
-      } else if (buf.substring(index, index+this.prefixForSuffix.length()).equalsIgnoreCase(this.prefixForSuffix)) {
+      } else if (buf.substring(index, index + this.prefixForSuffix.length())
+          .equalsIgnoreCase(this.prefixForSuffix)) {
         inNestedProperty++;
         index = index + this.prefixForSuffix.length();
       } else {

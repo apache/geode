@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -32,17 +30,17 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 /**
  * A Unique ID for a disk store
  *
- * TODO - RVV - this class is java serializable because apparently it is included in some
- * Exception that is serialized with java serialization back to a client as part
- * of a put all exception. See PutAllCSDUnitTest.testPartialKeyInPR. 
+ * TODO - RVV - this class is java serializable because apparently it is included in some Exception
+ * that is serialized with java serialization back to a client as part of a put all exception. See
+ * PutAllCSDUnitTest.testPartialKeyInPR.
  */
 public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
-  
+
   private static final long serialVersionUID = 1L;
-  
+
   private long mostSig;
   private long leastSig;
-  
+
   public DiskStoreID(UUID uuid) {
     this.mostSig = uuid.getMostSignificantBits();
     this.leastSig = uuid.getLeastSignificantBits();
@@ -54,21 +52,20 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
   }
 
   /** for deserialization */
-  public DiskStoreID() {
-  }
+  public DiskStoreID() {}
 
   @Override
   public void toData(DataOutput out) throws IOException {
     out.writeLong(mostSig);
     out.writeLong(leastSig);
   }
-  
+
   @Override
   public void writeEssentialData(DataOutput out) throws IOException {
     out.writeLong(mostSig);
     out.writeLong(leastSig);
   }
-  
+
   public static DiskStoreID readEssentialData(DataInput in) throws IOException {
     long mostSig = in.readLong();
     long leastSig = in.readLong();
@@ -83,11 +80,11 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
 
   @Override
   public int compareTo(DiskStoreID tagID) {
-    if(tagID == null) {
+    if (tagID == null) {
       return 1;
     }
     int result = Long.signum(mostSig - tagID.mostSig);
-    if(result != 0) {
+    if (result != 0) {
       result = Long.signum(leastSig - tagID.leastSig);
     }
     return result;
@@ -148,19 +145,9 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
   public Version[] getSerializationVersions() {
     return null;
   }
-  
+
   public String abbrev() {
     return Long.toHexString(mostSig).substring(8);
   }
-  
-  @Override
-  public int getSizeInBytes() {
-  
-    int size = 0;
-  
-    // two longs 
-    size += 16;
-    
-    return size;    
-  }
+
 }

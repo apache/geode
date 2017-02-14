@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.util;
 
@@ -54,8 +52,10 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class BlobHelperWithThreadContextClassLoaderTest {
 
-  private static final String CLASS_NAME_SERIALIZABLE_IMPL = "org.apache.geode.internal.util.SerializableImpl";
-  private static final String CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE = "org.apache.geode.internal.util.SerializableImplWithValue";
+  private static final String CLASS_NAME_SERIALIZABLE_IMPL =
+      "org.apache.geode.internal.util.SerializableImpl";
+  private static final String CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE =
+      "org.apache.geode.internal.util.SerializableImplWithValue";
   private static final String VALUE = "value";
   private static final String SET_VALUE = "setValue";
   private static final String GET_VALUE = "getValue";
@@ -75,7 +75,8 @@ public class BlobHelperWithThreadContextClassLoaderTest {
 
   @Test
   public void tcclLoadsSerializableImpl() throws Exception {
-    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL, true, Thread.currentThread().getContextClassLoader());
+    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL, true,
+        Thread.currentThread().getContextClassLoader());
     assertThat(loadedClass).isNotNull();
     assertThat(loadedClass.getName()).isEqualTo(CLASS_NAME_SERIALIZABLE_IMPL);
 
@@ -87,7 +88,8 @@ public class BlobHelperWithThreadContextClassLoaderTest {
 
   @Test
   public void tcclLoadsSerializableImplWithValue() throws Exception {
-    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, true, Thread.currentThread().getContextClassLoader());
+    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, true,
+        Thread.currentThread().getContextClassLoader());
     assertThat(loadedClass).isNotNull();
     assertThat(loadedClass.getName()).isEqualTo(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE);
 
@@ -105,13 +107,13 @@ public class BlobHelperWithThreadContextClassLoaderTest {
   }
 
   /**
-   * Tests serializing an object loaded with the current context class
-   * loader (whose parent is the loader that loads GemFire and test
-   * classes).
+   * Tests serializing an object loaded with the current context class loader (whose parent is the
+   * loader that loads GemFire and test classes).
    */
   @Test
   public void handlesClassFromOtherClassLoader() throws Exception {
-    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL, true, Thread.currentThread().getContextClassLoader());
+    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL, true,
+        Thread.currentThread().getContextClassLoader());
 
     Object instance = loadedClass.newInstance();
     byte[] bytes = BlobHelper.serializeToBlob(instance);
@@ -131,7 +133,8 @@ public class BlobHelperWithThreadContextClassLoaderTest {
    */
   @Test
   public void handlesObjectWithStateFromOtherClassLoader() throws Exception {
-    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, true, Thread.currentThread().getContextClassLoader());
+    Class loadedClass = Class.forName(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, true,
+        Thread.currentThread().getContextClassLoader());
 
     Constructor ctor = loadedClass.getConstructor(new Class[] {Object.class});
     Valuable instance = (Valuable) ctor.newInstance(new Object[] {123});
@@ -144,7 +147,8 @@ public class BlobHelperWithThreadContextClassLoaderTest {
   }
 
   /**
-   * Custom class loader which uses BCEL to dynamically generate SerializableImpl or SerializableImplWithValue.
+   * Custom class loader which uses BCEL to dynamically generate SerializableImpl or
+   * SerializableImplWithValue.
    */
   private static class GeneratingClassLoader extends ClassLoader {
 
@@ -191,7 +195,7 @@ public class BlobHelperWithThreadContextClassLoaderTest {
         return generateSerializableImplWithValue();
       } else {
         return null;
-        //throw new Error("Unable to generate " + name);
+        // throw new Error("Unable to generate " + name);
       }
     }
 
@@ -199,14 +203,14 @@ public class BlobHelperWithThreadContextClassLoaderTest {
      * <pre>
      * public class SerializableImpl implements Serializable {
      *
-     *   public SerializableImpl() {
-     *   }
+     *   public SerializableImpl() {}
      *
      * }
      * </pre>
      */
     private Class<?> generateSerializableImpl() throws ClassNotFoundException {
-      ClassGen cg = new ClassGen(CLASS_NAME_SERIALIZABLE_IMPL, Object.class.getName(), GENERATED, Constants.ACC_PUBLIC | Constants.ACC_SUPER, new String[] {Serializable.class.getName()});
+      ClassGen cg = new ClassGen(CLASS_NAME_SERIALIZABLE_IMPL, Object.class.getName(), GENERATED,
+          Constants.ACC_PUBLIC | Constants.ACC_SUPER, new String[] {Serializable.class.getName()});
       cg.addEmptyConstructor(Constants.ACC_PUBLIC);
       JavaClass jClazz = cg.getJavaClass();
       byte[] bytes = jClazz.getBytes();
@@ -219,8 +223,7 @@ public class BlobHelperWithThreadContextClassLoaderTest {
      *
      *   private Object value;
      *
-     *   public SerializableImplWithValue() {
-     *   }
+     *   public SerializableImplWithValue() {}
      *
      *   public SerializableImplWithValue(Object value) {
      *     this.value = value;
@@ -239,7 +242,9 @@ public class BlobHelperWithThreadContextClassLoaderTest {
      * @see Valuable
      */
     private Class<?> generateSerializableImplWithValue() throws ClassNotFoundException {
-      ClassGen cg = new ClassGen(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, CLASS_NAME_SERIALIZABLE_IMPL, GENERATED, Constants.ACC_PUBLIC | Constants.ACC_SUPER, new String[] {Valuable.class.getName()});
+      ClassGen cg = new ClassGen(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE,
+          CLASS_NAME_SERIALIZABLE_IMPL, GENERATED, Constants.ACC_PUBLIC | Constants.ACC_SUPER,
+          new String[] {Valuable.class.getName()});
       ConstantPoolGen cp = cg.getConstantPool();
       InstructionFactory fac = new InstructionFactory(cg, cp);
 
@@ -253,14 +258,18 @@ public class BlobHelperWithThreadContextClassLoaderTest {
 
       // constructor with arg
       InstructionList ctor = new InstructionList();
-      MethodGen ctorMethod = new MethodGen(Constants.ACC_PUBLIC, Type.VOID, new Type[] { Type.OBJECT }, new String[] { "arg0" }, "<init>", "org.apache.geode.internal.util.bcel.SerializableImplWithValue", ctor, cp);
+      MethodGen ctorMethod = new MethodGen(Constants.ACC_PUBLIC, Type.VOID,
+          new Type[] {Type.OBJECT}, new String[] {"arg0"}, "<init>",
+          "org.apache.geode.internal.util.bcel.SerializableImplWithValue", ctor, cp);
       ctorMethod.setMaxStack(2);
 
       InstructionHandle ctor_ih_0 = ctor.append(fac.createLoad(Type.OBJECT, 0));
-      ctor.append(fac.createInvoke(CLASS_NAME_SERIALIZABLE_IMPL, "<init>", Type.VOID, Type.NO_ARGS, Constants.INVOKESPECIAL));
+      ctor.append(fac.createInvoke(CLASS_NAME_SERIALIZABLE_IMPL, "<init>", Type.VOID, Type.NO_ARGS,
+          Constants.INVOKESPECIAL));
       InstructionHandle ctor_ih_4 = ctor.append(fac.createLoad(Type.OBJECT, 0));
       ctor.append(fac.createLoad(Type.OBJECT, 1));
-      ctor.append(fac.createFieldAccess(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, "value", Type.OBJECT, Constants.PUTFIELD));
+      ctor.append(fac.createFieldAccess(CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, "value",
+          Type.OBJECT, Constants.PUTFIELD));
       InstructionHandle ctor_ih_9 = ctor.append(fac.createReturn(Type.VOID));
 
       cg.addMethod(ctorMethod.getMethod());
@@ -268,11 +277,13 @@ public class BlobHelperWithThreadContextClassLoaderTest {
 
       // getter
       InstructionList getter = new InstructionList();
-      MethodGen getterMethod = new MethodGen(Constants.ACC_PUBLIC, Type.OBJECT, null, null, GET_VALUE, CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, getter, cp);
+      MethodGen getterMethod = new MethodGen(Constants.ACC_PUBLIC, Type.OBJECT, null, null,
+          GET_VALUE, CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, getter, cp);
       getterMethod.setMaxStack(1);
 
       InstructionHandle getter_ih_0 = getter.append(fac.createLoad(Type.OBJECT, 0));
-      InstructionHandle getter_ih_1 = getter.append(fac.createGetField(cg.getClassName(), field.getName(), Type.getType(field.getSignature())));
+      InstructionHandle getter_ih_1 = getter.append(fac.createGetField(cg.getClassName(),
+          field.getName(), Type.getType(field.getSignature())));
       InstructionHandle getter_ih_4 = getter.append(fac.createReturn(Type.OBJECT));
 
       cg.addMethod(getterMethod.getMethod());
@@ -280,12 +291,15 @@ public class BlobHelperWithThreadContextClassLoaderTest {
 
       // setter
       InstructionList setter = new InstructionList();
-      MethodGen setterMethod = new MethodGen(Constants.ACC_PUBLIC, Type.VOID, new Type[] {Type.OBJECT}, new String[] {field.getName()}, SET_VALUE, CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, setter, cp);
+      MethodGen setterMethod = new MethodGen(Constants.ACC_PUBLIC, Type.VOID,
+          new Type[] {Type.OBJECT}, new String[] {field.getName()}, SET_VALUE,
+          CLASS_NAME_SERIALIZABLE_IMPL_WITH_VALUE, setter, cp);
       setterMethod.setMaxStack(2);
 
       InstructionHandle setter_ih_0 = setter.append(fac.createLoad(Type.OBJECT, 0));
       InstructionHandle setter_ih_1 = setter.append(fac.createLoad(Type.OBJECT, 1));
-      InstructionHandle setter_ih_2 = setter.append(fac.createPutField(cg.getClassName(), field.getName(), Type.getType(field.getSignature())));
+      InstructionHandle setter_ih_2 = setter.append(fac.createPutField(cg.getClassName(),
+          field.getName(), Type.getType(field.getSignature())));
       InstructionHandle setter_ih_0_ih_5 = setter.append(fac.createReturn(Type.VOID));
 
       cg.addMethod(setterMethod.getMethod());

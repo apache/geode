@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.ha;
 
@@ -26,10 +24,9 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 /**
  * This class tracks GemFire statistics related to a {@link HARegionQueue}.
  * 
- *  
+ * 
  */
-public class HARegionQueueStats
-  {
+public class HARegionQueueStats {
   /** The <code>StatisticsType</code> of the statistics */
   private static final StatisticsType _type;
 
@@ -38,7 +35,7 @@ public class HARegionQueueStats
 
   /** Name of the events conflated statistic */
   protected static final String EVENTS_CONFLATED = "eventsConflated";
-  
+
   /** Name of the marker events conflated statistic */
   protected static final String MARKER_EVENTS_CONFLATED = "markerEventsConflated";
 
@@ -59,27 +56,26 @@ public class HARegionQueueStats
 
   /** Name of the events dispatched statistic */
   protected static final String EVENTS_DISPATCHED = "eventsDispatched";
-  
+
   /**
-   * Name of the num void removals statistic. This refers to the events which
-   * were supposed to be destroyed from queue through remove() but were removed
-   * by some other operation like conflation or expiration.
+   * Name of the num void removals statistic. This refers to the events which were supposed to be
+   * destroyed from queue through remove() but were removed by some other operation like conflation
+   * or expiration.
    */
   protected static final String NUM_VOID_REMOVALS = "numVoidRemovals";
 
   /**
-   * Name of the number of sequence violated events statistic. This refers to
-   * the events which has sequence id less than lastSequnceId hence not put in
-   * the region queue
+   * Name of the number of sequence violated events statistic. This refers to the events which has
+   * sequence id less than lastSequnceId hence not put in the region queue
    */
   protected static final String NUM_SEQUENCE_VIOLATED = "numSequenceViolated";
-  
+
   /** Id of the events queued statistic */
   private static final int _eventsQueuedId;
 
   /** Id of the events conflated statistic */
   private static final int _eventsConflatedId;
-  
+
   /** Id of the marker events conflated statistic */
   private static final int _markerEventsConflatedId;
 
@@ -97,7 +93,7 @@ public class HARegionQueueStats
 
   /** Id of the thread identifiers statistic */
   private static final int _threadIdentifiersId;
-  
+
   /** Id of the num events dispatched statistic */
   private static final int _eventsDispatched;
 
@@ -106,7 +102,7 @@ public class HARegionQueueStats
 
   /** Id of the num sequence violated statistic */
   private static final int _numSequenceViolated;
-  
+
   /**
    * Static initializer to create and initialize the <code>StatisticsType</code>
    */
@@ -116,39 +112,36 @@ public class HARegionQueueStats
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
     _type = f.createType(statName, statName, new StatisticDescriptor[] {
-        f.createLongCounter(EVENTS_QUEUED, "Number of events added to queue.",
+        f.createLongCounter(EVENTS_QUEUED, "Number of events added to queue.", "operations"),
+
+        f.createLongCounter(EVENTS_CONFLATED, "Number of events conflated for the queue.",
             "operations"),
 
-        f.createLongCounter(EVENTS_CONFLATED,
-            "Number of events conflated for the queue.", "operations"),
-            
         f.createLongCounter(MARKER_EVENTS_CONFLATED,
             "Number of marker events conflated for the queue.", "operations"),
 
-        f.createLongCounter(EVENTS_REMOVED,
-            "Number of events removed from the queue.", "operations"),
+        f.createLongCounter(EVENTS_REMOVED, "Number of events removed from the queue.",
+            "operations"),
 
-        f.createLongCounter(EVENTS_TAKEN,
-            "Number of events taken from the queue.", "operations"),
+        f.createLongCounter(EVENTS_TAKEN, "Number of events taken from the queue.", "operations"),
 
-        f.createLongCounter(EVENTS_EXPIRED,
-            "Number of events expired from the queue.", "operations"),
+        f.createLongCounter(EVENTS_EXPIRED, "Number of events expired from the queue.",
+            "operations"),
 
-        f.createLongCounter(EVENTS_REMOVED_BY_QRM,
-            "Number of events removed by QRM message.", "operations"),
+        f.createLongCounter(EVENTS_REMOVED_BY_QRM, "Number of events removed by QRM message.",
+            "operations"),
 
-        f.createIntCounter(THREAD_IDENTIFIERS,
-            "Number of ThreadIdenfier objects for the queue.", "units"),
+        f.createIntCounter(THREAD_IDENTIFIERS, "Number of ThreadIdenfier objects for the queue.",
+            "units"),
 
-        f.createLongCounter(EVENTS_DISPATCHED,
-            "Number of events that have been dispatched.", "operations"),
-                    
-        f.createLongCounter(NUM_VOID_REMOVALS,
-            "Number of void removals from the queue.", "operations"),
+        f.createLongCounter(EVENTS_DISPATCHED, "Number of events that have been dispatched.",
+            "operations"),
 
-        f.createLongCounter(NUM_SEQUENCE_VIOLATED,
-            "Number of events that has violated sequence.", "operations")            
-    });
+        f.createLongCounter(NUM_VOID_REMOVALS, "Number of void removals from the queue.",
+            "operations"),
+
+        f.createLongCounter(NUM_SEQUENCE_VIOLATED, "Number of events that has violated sequence.",
+            "operations")});
 
     // Initialize id fields
     _eventsQueuedId = _type.nameToId(EVENTS_QUEUED);
@@ -170,15 +163,12 @@ public class HARegionQueueStats
   /**
    * Constructor.
    * 
-   * @param factory
-   *          The <code>StatisticsFactory</code> which creates the
-   *          <code>Statistics</code> instance
-   * @param name
-   *          The name of the <code>Statistics</code>
+   * @param factory The <code>StatisticsFactory</code> which creates the <code>Statistics</code>
+   *        instance
+   * @param name The name of the <code>Statistics</code>
    */
   public HARegionQueueStats(StatisticsFactory factory, String name) {
-    this._stats = factory.createAtomicStatistics(_type, "ClientSubscriptionStats-"
-        + name);
+    this._stats = factory.createAtomicStatistics(_type, "ClientSubscriptionStats-" + name);
   }
 
   // /////////////////// Instance Methods /////////////////////
@@ -186,8 +176,7 @@ public class HARegionQueueStats
   /**
    * Closes the <code>HARegionQueueStats</code>.
    */
-  public void close()
-  {
+  public void close() {
     this._stats.close();
   }
 
@@ -196,16 +185,14 @@ public class HARegionQueueStats
    * 
    * @return the current value of the "eventsQueued" stat
    */
-  public long getEventsEnqued()
-  {
+  public long getEventsEnqued() {
     return this._stats.getLong(_eventsQueuedId);
   }
 
   /**
    * Increments the "eventsQueued" stat by 1.
    */
-  public void incEventsEnqued()
-  {
+  public void incEventsEnqued() {
     this._stats.incLong(_eventsQueuedId, 1);
   }
 
@@ -214,34 +201,30 @@ public class HARegionQueueStats
    * 
    * @return the current value of the "eventsConflated" stat
    */
-  public long getEventsConflated()
-  {
+  public long getEventsConflated() {
     return this._stats.getLong(_eventsConflatedId);
   }
 
   /**
    * Increments the "eventsConflated" stat by 1.
    */
-  public void incEventsConflated()
-  {
+  public void incEventsConflated() {
     this._stats.incLong(_eventsConflatedId, 1);
   }
-  
+
   /**
    * Returns the current value of the "markerEventsConflated" stat.
    * 
-   * @return the current value of the "markerEventsConflated" stat 
+   * @return the current value of the "markerEventsConflated" stat
    */
-  public long getMarkerEventsConflated() 
-  {
+  public long getMarkerEventsConflated() {
     return this._stats.getLong(_markerEventsConflatedId);
   }
 
   /**
    * Increments the "markerEventsConflated" stat by 1.
    */
-  public void incMarkerEventsConflated() 
-  {
+  public void incMarkerEventsConflated() {
     this._stats.incLong(_markerEventsConflatedId, 1);
   }
 
@@ -250,16 +233,14 @@ public class HARegionQueueStats
    * 
    * @return the current value of the "eventsRemoved" stat
    */
-  public long getEventsRemoved()
-  {
+  public long getEventsRemoved() {
     return this._stats.getLong(_eventsRemovedId);
   }
 
   /**
    * Increments the "eventsRemoved" stat by 1.
    */
-  public void incEventsRemoved()
-  {
+  public void incEventsRemoved() {
     this._stats.incLong(_eventsRemovedId, 1);
   }
 
@@ -268,16 +249,14 @@ public class HARegionQueueStats
    * 
    * @return the current value of the "eventsTaken" stat
    */
-  public long getEventsTaken()
-  {
+  public long getEventsTaken() {
     return this._stats.getLong(_eventsTakenId);
   }
 
   /**
    * Increments the "eventsTaken" stat by 1.
    */
-  public void incEventsTaken()
-  {
+  public void incEventsTaken() {
     this._stats.incLong(_eventsTakenId, 1);
   }
 
@@ -286,16 +265,14 @@ public class HARegionQueueStats
    * 
    * @return the current value of the "eventsExpired" stat
    */
-  public long getEventsExpired()
-  {
+  public long getEventsExpired() {
     return this._stats.getLong(_eventsExpiredId);
   }
 
   /**
    * Increments the "eventsExpired" stat by 1.
    */
-  public void incEventsExpired()
-  {
+  public void incEventsExpired() {
     this._stats.incLong(_eventsExpiredId, 1);
   }
 
@@ -304,16 +281,14 @@ public class HARegionQueueStats
    * 
    * @return the current value of the "eventsRemovedByQrm" stat
    */
-  public long getEventsRemovedByQrm()
-  {
+  public long getEventsRemovedByQrm() {
     return this._stats.getLong(_eventsRemovedByQrmId);
   }
 
   /**
    * Increments the "eventsRemovedByQrm" stat by 1.
    */
-  public void incEventsRemovedByQrm()
-  {
+  public void incEventsRemovedByQrm() {
     this._stats.incLong(_eventsRemovedByQrmId, 1);
   }
 
@@ -322,24 +297,21 @@ public class HARegionQueueStats
    * 
    * @return the current value of the "threadIdentifiers" stat
    */
-  public int getThreadIdentiferCount()
-  {
+  public int getThreadIdentiferCount() {
     return this._stats.getInt(_threadIdentifiersId);
   }
 
   /**
    * Increments the "threadIdentifiers" stat by 1.
    */
-  public void incThreadIdentifiers()
-  {
+  public void incThreadIdentifiers() {
     this._stats.incInt(_threadIdentifiersId, 1);
   }
 
   /**
    * Decrements the "threadIdentifiers" stat by 1.
    */
-  public void decThreadIdentifiers()
-  {
+  public void decThreadIdentifiers() {
     this._stats.incInt(_threadIdentifiersId, -1);
   }
 
@@ -348,16 +320,14 @@ public class HARegionQueueStats
    * 
    * @return the current value of the "eventsDispatched" stat
    */
-  public long getEventsDispatched()
-  {
+  public long getEventsDispatched() {
     return this._stats.getLong(_eventsDispatched);
   }
 
   /**
    * Increments the "eventsDispatched" stat by 1.
    */
-  public void incEventsDispatched()
-  {
+  public void incEventsDispatched() {
     this._stats.incLong(_eventsDispatched, 1);
   }
 
@@ -366,16 +336,14 @@ public class HARegionQueueStats
    * 
    * @return the current value of the "numVoidRemovals" stat
    */
-  public long getNumVoidRemovals()
-  {
+  public long getNumVoidRemovals() {
     return this._stats.getLong(_numVoidRemovals);
   }
 
   /**
    * Increments the "numVoidRemovals" stat by 1.
    */
-  public void incNumVoidRemovals()
-  {
+  public void incNumVoidRemovals() {
     this._stats.incLong(_numVoidRemovals, 1);
   }
 
@@ -384,26 +352,23 @@ public class HARegionQueueStats
    * 
    * @return the current value of the "numSequenceViolated" stat
    */
-  public long getNumSequenceViolated()
-  {
+  public long getNumSequenceViolated() {
     return this._stats.getLong(_numSequenceViolated);
   }
 
   /**
    * Increments the "numSequenceViolated" stat by 1.
    */
-  public void incNumSequenceViolated()
-  {
+  public void incNumSequenceViolated() {
     this._stats.incLong(_numSequenceViolated, 1);
   }
-  
+
   /**
    * Returns true if the stats instance has been closed.
    * 
    * @return true if the stats instance has been closed.
    */
-  public boolean isClosed()
-  {
+  public boolean isClosed() {
     return this._stats.isClosed();
   }
 

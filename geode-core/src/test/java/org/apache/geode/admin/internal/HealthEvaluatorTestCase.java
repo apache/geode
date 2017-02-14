@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.internal;
 
@@ -26,9 +24,8 @@ import java.util.Properties;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
- * Superclass of tests for the {@linkplain
- * org.apache.geode.admin.internal.AbstractHealthEvaluator health
- * evaluator} classes.
+ * Superclass of tests for the {@linkplain org.apache.geode.admin.internal.AbstractHealthEvaluator
+ * health evaluator} classes.
  *
  *
  * @since GemFire 3.5
@@ -44,8 +41,7 @@ public abstract class HealthEvaluatorTestCase {
   @Before
   public void setUp() {
     Properties props = getProperties();
-    system = (InternalDistributedSystem)
-      DistributedSystem.connect(props);
+    system = (InternalDistributedSystem) DistributedSystem.connect(props);
   }
 
   /**
@@ -61,8 +57,7 @@ public abstract class HealthEvaluatorTestCase {
   }
 
   /**
-   * Creates the <code>Properties</code> objects used to connect to
-   * the distributed system.
+   * Creates the <code>Properties</code> objects used to connect to the distributed system.
    */
   protected Properties getProperties() {
     Properties props = new Properties();

@@ -1,21 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-   
-   
+
+
 package org.apache.geode.internal.admin.remote;
 
 import java.util.Set;
@@ -32,37 +30,37 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
- * Used by {@link AdminRequest} to wait for a {@link AdminResponse}.
- * Prior to GemFire 4.0, a singleton instance of this would keep track
- * of <code>AdminRequest</code>s that were waiting for replies and
- * would cancel them, if desired.  However, in order to fix bug 31562,
- * <code>AdminRequest</code> were modified to use an {@link
- * AdminReplyProcessor} and this class was refactored to be more
- * static. 
+ * Used by {@link AdminRequest} to wait for a {@link AdminResponse}. Prior to GemFire 4.0, a
+ * singleton instance of this would keep track of <code>AdminRequest</code>s that were waiting for
+ * replies and would cancel them, if desired. However, in order to fix bug 31562,
+ * <code>AdminRequest</code> were modified to use an {@link AdminReplyProcessor} and this class was
+ * refactored to be more static.
  *
  * <P>
  *
- * Eventually, the waiting/cancelling code can be factored into
- * <code>AdminRequest</code> and this class can go away.
+ * Eventually, the waiting/cancelling code can be factored into <code>AdminRequest</code> and this
+ * class can go away.
  */
 public class AdminWaiters {
   private static final Logger logger = LogService.getLogger();
-  
-  //private static final long TIMEOUT = 10000L;
+
+  // private static final long TIMEOUT = 10000L;
 
   /**
    * Sends <code>msg</code> using <code>dm</code> and waits for the response.
+   * 
    * @return the response.
-   * @throws RuntimeAdminException if this method is interrupted, times out, cancelled ({@link #cancelWaiters}), or failed with an exception on the server side.
+   * @throws RuntimeAdminException if this method is interrupted, times out, cancelled
+   *         ({@link #cancelWaiters}), or failed with an exception on the server side.
    */
   public static AdminResponse sendAndWait(AdminRequest msg, DistributionManager dm) {
 
     // Prior to GemFire 4.0 admin messages were only sent to other
     // VMs; it was impossible for an admin message to be destined for
-    // the VM that sent it.  However, now that the admin API can be
+    // the VM that sent it. However, now that the admin API can be
     // used in an application VM, the admin API may request
-    // information about its own VM.  Unfortunately, a distribution
-    // manager cannot send a message to itself (see bug 31734).  So,
+    // information about its own VM. Unfortunately, a distribution
+    // manager cannot send a message to itself (see bug 31734). So,
     // we have to handle admin messages sent to ourselves specially.
     if (dm.getId().equals(msg.getRecipient())) {
       msg.setSender(dm.getId()); // Sent from myself
@@ -71,7 +69,7 @@ public class AdminWaiters {
 
     AdminResponse result = null;
     try {
-      synchronized(msg) {
+      synchronized (msg) {
         Set failures = dm.putOutgoing(msg);
         if (failures != null && failures.size() > 0) { // didn't go out
           if (dm.getDistributionManagerIds().contains(msg.getRecipient())) {
@@ -80,19 +78,21 @@ public class AdminWaiters {
             if (logger.isTraceEnabled(LogMarker.DM)) {
               s += " (" + msg + ")";
             }
-            throw new RuntimeAdminException(LocalizedStrings.AdminWaiters_COULD_NOT_SEND_REQUEST_0.toLocalizedString(s));
+            throw new RuntimeAdminException(
+                LocalizedStrings.AdminWaiters_COULD_NOT_SEND_REQUEST_0.toLocalizedString(s));
           }
-          throw new OperationCancelledException(LocalizedStrings.AdminWaiters_REQUEST_SENT_TO_0_FAILED_SINCE_MEMBER_DEPARTED_1.toLocalizedString(new Object[] {msg.getRecipient(), ""}));
+          throw new OperationCancelledException(
+              LocalizedStrings.AdminWaiters_REQUEST_SENT_TO_0_FAILED_SINCE_MEMBER_DEPARTED_1
+                  .toLocalizedString(new Object[] {msg.getRecipient(), ""}));
         }
         // sent it
-        
+
         long timeout = getWaitTimeout();
         boolean gotResponse = msg.waitForResponse(timeout);
         if (!gotResponse) {
           if (dm.isCurrentMember(msg.getRecipient())) { // still here?
-            //no one ever replied
-            StringBuffer sb =
-              new StringBuffer("Administration request ");
+            // no one ever replied
+            StringBuffer sb = new StringBuffer("Administration request ");
             sb.append(msg);
             sb.append(" sent to ");
             sb.append(msg.getRecipient());
@@ -107,13 +107,14 @@ public class AdminWaiters {
           if (logger.isTraceEnabled(LogMarker.DM)) {
             s = " (" + msg + ")";
           }
-          throw new OperationCancelledException(LocalizedStrings.AdminWaiters_REQUEST_SENT_TO_0_FAILED_SINCE_MEMBER_DEPARTED_1.toLocalizedString(new Object[] {msg.getRecipient(), s}));
+          throw new OperationCancelledException(
+              LocalizedStrings.AdminWaiters_REQUEST_SENT_TO_0_FAILED_SINCE_MEMBER_DEPARTED_1
+                  .toLocalizedString(new Object[] {msg.getRecipient(), s}));
         } // !gotResponse
-        
+
         result = msg.getResponse();
       } // synchronized
-    } 
-    catch (InterruptedException ex) {
+    } catch (InterruptedException ex) {
       Thread.currentThread().interrupt();
       dm.getCancelCriterion().checkCancelInProgress(ex);
       String s = LocalizedStrings.AdminWaiters_REQUEST_WAIT_WAS_INTERRUPTED.toLocalizedString();
@@ -128,10 +129,14 @@ public class AdminWaiters {
       if (logger.isTraceEnabled(LogMarker.DM)) {
         s += " (" + msg + ")";
       }
-      throw new OperationCancelledException(LocalizedStrings.AdminWaiters_REQUEST_SEND_TO_0_WAS_CANCELLED_1.toLocalizedString(new Object[] {msg.getRecipient(), s}));
+      throw new OperationCancelledException(
+          LocalizedStrings.AdminWaiters_REQUEST_SEND_TO_0_WAS_CANCELLED_1
+              .toLocalizedString(new Object[] {msg.getRecipient(), s}));
 
     } else if (result instanceof AdminFailureResponse) {
-      throw new RuntimeAdminException(LocalizedStrings.AdminWaiters_REQUEST_FAILED.toLocalizedString(), ((AdminFailureResponse)result).getCause());
+      throw new RuntimeAdminException(
+          LocalizedStrings.AdminWaiters_REQUEST_FAILED.toLocalizedString(),
+          ((AdminFailureResponse) result).getCause());
     }
     return result;
   }
@@ -141,34 +146,33 @@ public class AdminWaiters {
    */
   public static void sendResponse(AdminResponse msg) {
     int id = msg.getMsgId();
-    ReplyProcessor21 processor =
-      (ReplyProcessor21) ReplyProcessor21.getProcessor(id);
+    ReplyProcessor21 processor = (ReplyProcessor21) ReplyProcessor21.getProcessor(id);
 
     if (processor == null) {
-      return; //must've been cancelled
+      return; // must've been cancelled
 
     } else {
       processor.process(msg);
     }
   }
+
   /**
-   * Call with the id of a RemoteGfManager that no longer exists.
-   * All outstanding requests to that manager will be cancelled.
+   * Call with the id of a RemoteGfManager that no longer exists. All outstanding requests to that
+   * manager will be cancelled.
    */
   public static void cancelWaiters(InternalDistributedMember id) {
     // Now that AdminRequests use a ReplyProcessor, we don't need to
-    // do anything here.  The ReplyProcessor takes care of members
+    // do anything here. The ReplyProcessor takes care of members
     // that depart.
   }
 
   public static void cancelRequest(int msgId, DistributionManager dm) {
-    AdminReplyProcessor processor =
-      (AdminReplyProcessor) ReplyProcessor21.getProcessor(msgId);
+    AdminReplyProcessor processor = (AdminReplyProcessor) ReplyProcessor21.getProcessor(msgId);
     if (processor != null) {
       InternalDistributedMember recipient = processor.getResponder();
       dm.putOutgoing(CancellationMessage.create(recipient, msgId));
       processor.cancel();
-    }    
+    }
   }
 
   private static long getWaitTimeout() {
@@ -180,5 +184,5 @@ public class AdminWaiters {
       return 1800 * 1000L;
     }
   }
-  
+
 }

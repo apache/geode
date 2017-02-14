@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.management;
 
@@ -40,7 +38,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
  * 
  * Run it like this:
  * 
- * java -cp geode-dependencies.jar:. -Dgemfire.log-file=system.log -Dgemfire.statistic-archive-file=statsArchive.gfs org.apache.geode.cache.control.MXMemoryPoolListenerExample  
+ * java -cp geode-dependencies.jar:. -Dgemfire.log-file=system.log
+ * -Dgemfire.statistic-archive-file=statsArchive.gfs
+ * org.apache.geode.cache.control.MXMemoryPoolListenerExample
  * 
  * @since GemFire 6.0
  */
@@ -55,18 +55,19 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
     this.logger = ds.getLogWriter();
   }
 
-  /* (non-Javadoc)
-   * @see javax.management.NotificationListener#handleNotification(javax.management.Notification, java.lang.Object)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see javax.management.NotificationListener#handleNotification(javax.management.Notification,
+   * java.lang.Object)
    */
   public void handleNotification(Notification arg0, Object arg1) {
-    this.logger.info("Notification: " + arg0 + 
-        "; o: " + arg1 + 
-        "; m: " + arg0.getMessage());
+    this.logger.info("Notification: " + arg0 + "; o: " + arg1 + "; m: " + arg0.getMessage());
     this.critical.set(true);
   }
-  
+
   public static void main(String args[]) {
-    
+
     final MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
 
 
@@ -106,31 +107,32 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
     dsProps.setProperty(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "200");
     dsProps.setProperty(ConfigurationProperties.ENABLE_TIME_STATISTICS, "true");
     dsProps.setProperty(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
-    DistributedSystem ds = DistributedSystem.connect(dsProps);  
+    DistributedSystem ds = DistributedSystem.connect(dsProps);
     final LogWriter logger = ds.getLogWriter();
 
-    logger.info("Usage threshold: " + threshold +
-        "; percent tenured: " + percentTenured + 
-        "; Runtime Maximum memory: " + (Runtime.getRuntime().maxMemory() / (1024*1024)) + "Mb" +
-        "; Heap Maximum memory: " + (mbean.getHeapMemoryUsage().getMax() / (1024*1024)) + "Mb");
+    logger.info("Usage threshold: " + threshold + "; percent tenured: " + percentTenured
+        + "; Runtime Maximum memory: " + (Runtime.getRuntime().maxMemory() / (1024 * 1024)) + "Mb"
+        + "; Heap Maximum memory: " + (mbean.getHeapMemoryUsage().getMax() / (1024 * 1024)) + "Mb");
 
     MXMemoryPoolListenerExample me = new MXMemoryPoolListenerExample(ds);
-    
+
     // Register this listener to NotificationEmitter
-    NotificationEmitter emitter = (NotificationEmitter)mbean;
+    NotificationEmitter emitter = (NotificationEmitter) mbean;
     emitter.addNotificationListener(me, null, null);
     List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
     for (MemoryPoolMXBean p : pools) {
       if (p.isCollectionUsageThresholdSupported()) {
         // p.setCollectionUsageThreshold(0);
-        logger.info("Pool which supports collection usage threshold: " + p.getName() + "; " + p.getCollectionUsage()); 
+        logger.info("Pool which supports collection usage threshold: " + p.getName() + "; "
+            + p.getCollectionUsage());
       }
 
       // On JRockit do not set the usage threshold on the Nursery pool
-      if (p.getType().equals(MemoryType.HEAP) && p.isUsageThresholdSupported() &&
-          !p.getName().startsWith("Nursery")) {
+      if (p.getType().equals(MemoryType.HEAP) && p.isUsageThresholdSupported()
+          && !p.getName().startsWith("Nursery")) {
         int byteThreshold = (int) Math.ceil(threshold * p.getUsage().getMax());
-        logger.info("Setting threshold " + (byteThreshold/(1024*1024)) + "Mb on: " + p.getName() + "; " + p.getCollectionUsage());
+        logger.info("Setting threshold " + (byteThreshold / (1024 * 1024)) + "Mb on: " + p.getName()
+            + "; " + p.getCollectionUsage());
         p.setUsageThreshold(byteThreshold);
       }
     }
@@ -139,9 +141,9 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
     new MemoryHog("hog_1", c, me.critical).consumeMemory(percentTenured).printTenuredSize();
     ds.disconnect();
   }
-  
+
   public static class MemoryHog {
-    private final String name; 
+    private final String name;
     private final Region tenuredData;
     private final Cache cache;
     private final AtomicBoolean criticalState;
@@ -160,16 +162,17 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
       final long maxSecondsToRun = 180;
       final LogWriter logger = this.cache.getLogger();
       final long start = System.nanoTime();
-      for (int i=100;;i++) {
+      for (int i = 100;; i++) {
         // Create garbage
-        byte[] val = new byte[1012]; // 1024 less 4 bytes for obj ref, less 8 bytes for Integer key == 1012
+        byte[] val = new byte[1012]; // 1024 less 4 bytes for obj ref, less 8 bytes for Integer key
+                                     // == 1012
         // Some random usage of the data to prevent optimization
-        val[percentTenured] = (byte) i; 
+        val[percentTenured] = (byte) i;
         if (percentTenured > 0 && (i % 100) <= percentTenured) {
           // Grow heap
           this.tenuredData.put(new Integer(i), val);
         }
-        
+
         if (i % 1000 == 0) {
           long runTime = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - start);
           if (runTime > maxSecondsToRun) {
@@ -177,9 +180,10 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
             break;
           }
         }
-        
+
         if (this.criticalState.get()) {
-          logger.info(this.name + ": Clearing tenured data: size=" + (this.tenuredData.size() / 1024) + "Mb");
+          logger.info(this.name + ": Clearing tenured data: size="
+              + (this.tenuredData.size() / 1024) + "Mb");
           this.tenuredData.clear();
           this.criticalState.set(false);
           try {
@@ -190,12 +194,12 @@ public class MXMemoryPoolListenerExample implements NotificationListener {
       }
       return this;
     }
-    
+
     public MemoryHog printTenuredSize() {
-      this.cache.getLogger().info("Tenured data size: " + this.tenuredData.getName() + 
-          ": " + this.tenuredData.size());
+      this.cache.getLogger().info(
+          "Tenured data size: " + this.tenuredData.getName() + ": " + this.tenuredData.size());
       return this;
     }
   }
-  
+
 }

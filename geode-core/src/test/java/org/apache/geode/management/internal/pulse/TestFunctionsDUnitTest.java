@@ -1,21 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.pulse;
 
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -59,8 +58,7 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
       @Override
       public boolean done() {
         final ManagementService service = getManagementService();
-        final DistributedSystemMXBean bean = service
-            .getDistributedSystemMXBean();
+        final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
         if (bean != null) {
           if (bean.getNumRunningFunctions() > 0) {
             return true;
@@ -78,31 +76,32 @@ public class TestFunctionsDUnitTest extends ManagementTestBase {
     };
 
     Wait.waitForCriterion(waitCriteria, 2 * 60 * 1000, 3000, true);
-    final DistributedSystemMXBean bean = getManagementService()
-        .getDistributedSystemMXBean();
+    final DistributedSystemMXBean bean = getManagementService().getDistributedSystemMXBean();
     assertNotNull(bean);
     return Integer.valueOf(bean.getNumRunningFunctions());
   }
 
+  @Category(FlakyTest.class) // GEODE-2072: waitForCriterion times out
   @Test
   public void testNumOfRunningFunctions() throws Exception {
     initManagement(false);
-    VM client = managedNodeList.get(2);    
+    VM client = managedNodeList.get(2);
     client.invokeAsync(new SerializableRunnable() {
       public void run() {
-        Cache cache = getCache();        
-        Function function = new TestFunction(true,
-            TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
-        Execution execution = FunctionService.onMember(cache
-            .getDistributedSystem().getDistributedMember());
+        Cache cache = getCache();
+        Function function =
+            new TestFunction(true, TestFunction.TEST_FUNCTION_RUNNING_FOR_LONG_TIME);
+        Execution execution =
+            FunctionService.onMember(cache.getDistributedSystem().getDistributedMember());
         for (int i = 0; i < 100; i++) {
           execution.execute(function);
         }
       }
     });
-    Integer numOfRunningFunctions = (Integer) managingNode.invoke(() -> TestFunctionsDUnitTest.getNumOfRunningFunction());
-    LogWriterUtils.getLogWriter().info(
-        "TestNumOfFunctions numOfRunningFunctions= " + numOfRunningFunctions);
+    Integer numOfRunningFunctions =
+        (Integer) managingNode.invoke(() -> TestFunctionsDUnitTest.getNumOfRunningFunction());
+    LogWriterUtils.getLogWriter()
+        .info("TestNumOfFunctions numOfRunningFunctions= " + numOfRunningFunctions);
     assertTrue(numOfRunningFunctions > 0 ? true : false);
   }
 

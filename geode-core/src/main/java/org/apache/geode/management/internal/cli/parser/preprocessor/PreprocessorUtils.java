@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.parser.preprocessor;
 
@@ -25,8 +23,8 @@ import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.management.internal.cli.parser.SyntaxConstants;
 
 /**
- * The methods in this class will be used by the {@link Preprocessor} class to
- * perform various trivial operations
+ * The methods in this class will be used by the {@link Preprocessor} class to perform various
+ * trivial operations
  * 
  * @since GemFire 7.0
  */
@@ -44,15 +42,13 @@ public class PreprocessorUtils {
       return null;
     }
   }
-  
+
   /**
    * 
-   * This function will trim the given input string. It will not only remove the
-   * spaces and tabs at the end but also compress multiple spaces and tabs to a
-   * single space
+   * This function will trim the given input string. It will not only remove the spaces and tabs at
+   * the end but also compress multiple spaces and tabs to a single space
    * 
-   * @param input
-   *          The input string on which the trim operation needs to be performed
+   * @param input The input string on which the trim operation needs to be performed
    * @return String
    */
   public static TrimmedInput trim(final String input) {
@@ -61,14 +57,11 @@ public class PreprocessorUtils {
 
   /**
    * 
-   * This function will trim the given input string. It will not only remove the
-   * spaces and tabs at the end but also compress multiple spaces and tabs to a
-   * single space
+   * This function will trim the given input string. It will not only remove the spaces and tabs at
+   * the end but also compress multiple spaces and tabs to a single space
    * 
-   * @param input
-   *          The input string on which the trim operation needs to be performed
-   * @param retainLineSeparator
-   *          whether to retain the line separator.
+   * @param input The input string on which the trim operation needs to be performed
+   * @param retainLineSeparator whether to retain the line separator.
    * 
    * @return String
    */
@@ -86,7 +79,7 @@ public class PreprocessorUtils {
       // "^(.*)(\\s-+)$" - something that ends with a space followed by a series of hyphens.
       while (Pattern.matches("^(.*)(\\s-+)$", inputCopy)) {
         inputCopy = StringUtils.removeEnd(inputCopy, SyntaxConstants.SHORT_OPTION_SPECIFIER);
-        
+
         // Again we need to trim the trailing white spaces
         // As we are in a loop
         inputCopy = StringUtils.stripEnd(inputCopy, null);
@@ -140,11 +133,9 @@ public class PreprocessorUtils {
   }
 
   /**
-   * This function just does the simple job of removing white spaces from the
-   * given input string
+   * This function just does the simple job of removing white spaces from the given input string
    * 
-   * @param input
-   *          The input String from which the spaces need to be removed
+   * @param input The input String from which the spaces need to be removed
    * @return String
    */
   public static String removeWhiteSpaces(String input) {
@@ -169,11 +160,10 @@ public class PreprocessorUtils {
    * 
    * This function will check for the validity of the input provided.
    * 
-   * For e.g; '" input"' is valid but '" input' is not a valid input same is the
-   * case with input like a JSON string
+   * For e.g; '" input"' is valid but '" input' is not a valid input same is the case with input
+   * like a JSON string
    * 
-   * @param input
-   *          The input string which needs to be checked for proper syntax
+   * @param input The input string which needs to be checked for proper syntax
    * @return Boolean
    */
   public static Boolean isSyntaxValid(String input) {
@@ -327,9 +317,9 @@ public class PreprocessorUtils {
       return false;
     }
   }
-  
+
   public static boolean isWhitespace(char ch) {
-    if (ch == ' ' || ch == '\t' || ch == '\n' || (ch == '\r' && SystemUtils.isWindows()) ) {
+    if (ch == ' ' || ch == '\t' || ch == '\n' || (ch == '\r' && SystemUtils.isWindows())) {
       return true;
     }
     return false;

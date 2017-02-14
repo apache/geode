@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.partitioned;
 
@@ -38,14 +36,13 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Test verifies Region#query()for PartitionedRegion on a single VM with
- * Region#destroyRegion() being called on the same with some delay.
+ * Test verifies Region#query()for PartitionedRegion on a single VM with Region#destroyRegion()
+ * being called on the same with some delay.
  * 
  * 
  */
 @Category(IntegrationTest.class)
-public class PRQueryCacheClosedJUnitTest
-{
+public class PRQueryCacheClosedJUnitTest {
   // PR Region name
   static final String regionName = "portfolios";
 
@@ -70,8 +67,7 @@ public class PRQueryCacheClosedJUnitTest
 
 
   @Before
-  public void setUp() throws Exception
-  {
+  public void setUp() throws Exception {
     if (logger == null) {
       logger = PartitionedRegionTestHelper.getLogger();
     }
@@ -79,8 +75,7 @@ public class PRQueryCacheClosedJUnitTest
 
 
   /**
-   * Tests the execution of query on a PartitionedRegion created on a single
-   * data store. <br>
+   * Tests the execution of query on a PartitionedRegion created on a single data store. <br>
    * 1. Creates a PR with redundancy=0 on a single VM. <br>
    * 2. Puts some test Objects in cache.<br>
    * 3. Create a Thread and fire queries on the data and verifies the result.<br>
@@ -91,20 +86,18 @@ public class PRQueryCacheClosedJUnitTest
    * @throws Exception
    */
   @Test
-  public void testQueryOnSingleDataStoreWithCacheClose() throws Exception
-  {
+  public void testQueryOnSingleDataStoreWithCacheClose() throws Exception {
 
-    logger
-        .info("PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Test Started  ");
+    logger.info(
+        "PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Test Started  ");
 
-    logger
-        .info("PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: creating PR Region ");
+    logger.info(
+        "PRQueryRegionDestroyedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: creating PR Region ");
 
-    final Region region = PartitionedRegionTestHelper.createPartitionedRegion(
-        regionName, localMaxMemory, redundancy);
+    final Region region =
+        PartitionedRegionTestHelper.createPartitionedRegion(regionName, localMaxMemory, redundancy);
 
-    final Region localRegion = PartitionedRegionTestHelper
-        .createLocalRegion(localRegionName);
+    final Region localRegion = PartitionedRegionTestHelper.createLocalRegion(localRegionName);
 
     final StringBuffer errorBuf = new StringBuffer("");
 
@@ -114,70 +107,67 @@ public class PRQueryCacheClosedJUnitTest
       for (int j = 0; j < dataSize; j++) {
         portfolios[j] = new PortfolioData(j);
       }
-      logger
-          .info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: populating PortfolioData into the PR Datastore  ");
+      logger.info(
+          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: populating PortfolioData into the PR Datastore  ");
 
       populateData(region, portfolios);
 
-      logger
-          .info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: populating PortfolioData into the PR Datastore  ");
+      logger.info(
+          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: populating PortfolioData into the PR Datastore  ");
 
       populateData(localRegion, portfolios);
-      final String[] queryString = { "ID = 0 OR ID = 1", "ID > 4 AND ID < 9",
-          "ID = 5", "ID < 5 ", "ID <= 5" };
+      final String[] queryString =
+          {"ID = 0 OR ID = 1", "ID > 4 AND ID < 9", "ID = 5", "ID < 5 ", "ID <= 5"};
 
-      logger
-          .info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Creating a Thread which will fire queries on the datastore");
+      logger.info(
+          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Creating a Thread which will fire queries on the datastore");
 
       Thread t1 = new Thread(new Runnable() {
-        public void run()
-        {
-          final String expectedCacheClosedException = CacheClosedException.class
-              .getName();
+        public void run() {
+          final String expectedCacheClosedException = CacheClosedException.class.getName();
 
-          logger.info("<ExpectedException action=add>"
-              + expectedCacheClosedException + "</ExpectedException>");
+          logger.info("<ExpectedException action=add>" + expectedCacheClosedException
+              + "</ExpectedException>");
 
           for (int i = 0; i < queryString.length; i++) {
 
             try {
 
               SelectResults resSetPR = region.query(queryString[i]);
-              
+
               SelectResults resSetLocal = localRegion.query(queryString[i]);
-              
-              String failureString=PartitionedRegionTestHelper.compareResultSets(resSetPR,
-                  resSetLocal);
+
+              String failureString =
+                  PartitionedRegionTestHelper.compareResultSets(resSetPR, resSetLocal);
               Thread.sleep(delayQuery);
-              if(failureString!=null){
+              if (failureString != null) {
                 errorBuf.append(failureString);
                 throw (new Exception(failureString));
-                
+
               }
 
-            }
-            catch (InterruptedException ie) {
+            } catch (InterruptedException ie) {
               fail("interrupted");
 
             }
 
             catch (CancelException cce) {
-              logger
-                  .info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: CancelException as Expected "
+              logger.info(
+                  "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: CancelException as Expected "
                       + cce);
 
             }
-            // it's also possible to get a RegionNotFoundException            
+            // it's also possible to get a RegionNotFoundException
             catch (RegionNotFoundException rnfe) {
-              logger
-              .info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: RegionNotFoundException as Expected "
-                    + rnfe);
+              logger.info(
+                  "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: RegionNotFoundException as Expected "
+                      + rnfe);
             }
-            
-            
+
+
             catch (Exception qe) {
-              logger
-                  .info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Unexpected Exception "
+              logger.info(
+                  "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Unexpected Exception "
                       + qe);
 
               encounteredException = true;
@@ -188,57 +178,55 @@ public class PRQueryCacheClosedJUnitTest
             }
 
           }
-          logger.info("<ExpectedException action=remove>"
-              + expectedCacheClosedException + "</ExpectedException>");
+          logger.info("<ExpectedException action=remove>" + expectedCacheClosedException
+              + "</ExpectedException>");
 
         }
       });
-      logger
-          .info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Creating a Thread which will call cache.close() on the datastore ");
+      logger.info(
+          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Creating a Thread which will call cache.close() on the datastore ");
 
       Thread t2 = new Thread(new Runnable() {
-        public void run()
-        {
+        public void run() {
           PartitionedRegionTestHelper.closeCache();
           try {
             Thread.sleep(delayCC);
-          }
-          catch (InterruptedException ie) {
+          } catch (InterruptedException ie) {
             fail("interrupted");
           }
-         PartitionedRegionTestHelper.createCache();
+          PartitionedRegionTestHelper.createCache();
 
         }
 
       });
 
-      logger
-          .info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Initiating the  Threads");
+      logger.info(
+          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Initiating the  Threads");
 
       t1.start();
       t2.start();
 
-      logger
-          .info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Waiting for the Threads to join ");
+      logger.info(
+          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Waiting for the Threads to join ");
 
       ThreadUtils.join(t1, 30 * 1000);
       ThreadUtils.join(t2, 30 * 1000);
-      logger
-          .info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: checking for any Unexpected Exception's occured");
+      logger.info(
+          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: checking for any Unexpected Exception's occured");
 
       assertFalse(
-          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Exception occured in Query-thread: " + errorBuf,
+          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Exception occured in Query-thread: "
+              + errorBuf,
           encounteredException);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
-      fail("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Test failed because of exception "
-          + e);
+      fail(
+          "PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Test failed because of exception "
+              + e);
 
     }
 
-    logger
-        .info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Test Ended");
+    logger.info("PRQueryCacheClosedJUnitTest#testQueryOnSingleDataStoreWithCacheClose: Test Ended");
 
   }
 
@@ -248,10 +236,8 @@ public class PRQueryCacheClosedJUnitTest
    * @param region
    * @param data
    */
-  private void populateData(Region region, Object[] data)
-  {
-    logger
-        .info("PRQueryCacheClosedJUnitTest#populateData: Populating Data in the PR Region ");
+  private void populateData(Region region, Object[] data) {
+    logger.info("PRQueryCacheClosedJUnitTest#populateData: Populating Data in the PR Region ");
     for (int j = 0; j < data.length; j++) {
       region.put(new Integer(j), data[j]);
     }

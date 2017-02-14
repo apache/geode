@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -58,10 +56,10 @@ public class IteratorDUnitTest extends JUnit4CacheTestCase {
     r.put("key", "value");
     r.put("key2", "value2");
     r.put("key3", "value3");
-    LocalRegion lr = (LocalRegion)r;
+    LocalRegion lr = (LocalRegion) r;
     // simulate a removed key
-//    lr.getRegionMap().getEntry("key")._setValue(Token.REMOVED_PHASE1);
-    lr.getRegionMap().getEntry("key").setValue(lr,Token.REMOVED_PHASE1);
+    // lr.getRegionMap().getEntry("key")._setValue(Token.REMOVED_PHASE1);
+    lr.getRegionMap().getEntry("key").setValue(lr, Token.REMOVED_PHASE1);
     Iterator it = r.keySet().iterator();
     int numKeys = 0;
     while (it.hasNext()) {
@@ -70,14 +68,14 @@ public class IteratorDUnitTest extends JUnit4CacheTestCase {
     }
     assertEquals(2, numKeys);
   }
-  
+
   @Test
   public void testKeysIteratorOnPR() {
     Host host = Host.getHost(0);
     VM accessor = host.getVM(0);
     VM datastore = host.getVM(1);
     final String regionName = getUniqueName();
-    
+
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         getGemfireCache().createRegionFactory(RegionShortcut.PARTITION_PROXY).create(regionName);
@@ -86,15 +84,16 @@ public class IteratorDUnitTest extends JUnit4CacheTestCase {
     });
     datastore.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        Region r = getGemfireCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
+        Region r =
+            getGemfireCache().createRegionFactory(RegionShortcut.PARTITION).create(regionName);
         r.put("key", "value");
         r.put("key2", "value2");
         r.put("key3", "value3");
-        PartitionedRegion pr = (PartitionedRegion)r;
+        PartitionedRegion pr = (PartitionedRegion) r;
         BucketRegion br = pr.getBucketRegion("key");
         assertNotNull(br);
         // simulate a removed key
-        br.getRegionMap().getEntry("key").setValue(pr,Token.REMOVED_PHASE1);
+        br.getRegionMap().getEntry("key").setValue(pr, Token.REMOVED_PHASE1);
         return null;
       }
     });

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.client.internal.locator;
@@ -36,6 +34,7 @@ import org.apache.geode.internal.process.ProcessUtils;
 /**
  * The LocatorStatusResponse class...
  * </p>
+ * 
  * @see org.apache.geode.cache.client.internal.locator.ServerLocationResponse
  * @since GemFire 7.0
  */
@@ -56,20 +55,17 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   private String host;
   private Integer port;
   private String name;
-  
+
   private static Integer identifyPid() {
     try {
       return ProcessUtils.identifyPid();
-    }
-    catch (PidUnavailableException ignore) {
+    } catch (PidUnavailableException ignore) {
       return null;
     }
   }
 
-  public LocatorStatusResponse initialize(final int locatorPort,
-                                          final String locatorHost,
-                                          final String locatorLogFile,
-                                          final String locatorName) {
+  public LocatorStatusResponse initialize(final int locatorPort, final String locatorHost,
+      final String locatorLogFile, final String locatorName) {
     final RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
     this.pid = identifyPid();
     this.jvmArgs = runtimeBean.getInputArguments();
@@ -104,7 +100,8 @@ public class LocatorStatusResponse extends ServerLocationResponse {
 
   @SuppressWarnings("unchecked")
   public List<String> getJvmArgs() {
-    return Collections.unmodifiableList(ObjectUtils.defaultIfNull(jvmArgs, Collections.<String>emptyList()));
+    return Collections
+        .unmodifiableList(ObjectUtils.defaultIfNull(jvmArgs, Collections.<String>emptyList()));
   }
 
   public Integer getPid() {
@@ -118,19 +115,19 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   public String getWorkingDirectory() {
     return workingDirectory;
   }
-  
+
   public String getLogFile() {
     return this.logFile;
   }
-  
+
   public String getHost() {
     return this.host;
   }
-  
+
   public Integer getPort() {
     return this.port;
   }
-  
+
   public String getName() {
     return this.name;
   }
@@ -188,20 +185,20 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   protected void readJavaVersion(final DataInput in) throws IOException {
     this.javaVersion = StringUtils.defaultIfBlank(in.readUTF());
   }
-  
+
   protected void readLogFile(final DataInput in) throws IOException {
     this.logFile = StringUtils.defaultIfBlank(in.readUTF());
   }
-  
+
   protected void readHost(final DataInput in) throws IOException {
     this.host = StringUtils.defaultIfBlank(in.readUTF());
   }
-  
+
   protected void readPort(final DataInput in) throws IOException {
     final int port = in.readInt();
     this.port = (port == 0 ? null : port);
   }
-  
+
   protected void readName(final DataInput in) throws IOException {
     this.name = StringUtils.defaultIfBlank(in.readUTF());
   }
@@ -252,20 +249,20 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   protected void writeJavaVersion(final DataOutput out) throws IOException {
     out.writeUTF(ObjectUtils.defaultIfNull(getJavaVersion(), ""));
   }
-  
-  protected void writeLogFile(final DataOutput out)throws IOException {
+
+  protected void writeLogFile(final DataOutput out) throws IOException {
     out.writeUTF(ObjectUtils.defaultIfNull(getLogFile(), ""));
   }
-  
-  protected void writeHost(final DataOutput out)throws IOException {
+
+  protected void writeHost(final DataOutput out) throws IOException {
     out.writeUTF(ObjectUtils.defaultIfNull(getHost(), ""));
   }
-  
+
   protected void writePort(final DataOutput out) throws IOException {
     out.writeInt(ObjectUtils.defaultIfNull(getPort(), 0));
   }
-  
-  protected void writeName(final DataOutput out)throws IOException {
+
+  protected void writeName(final DataOutput out) throws IOException {
     out.writeUTF(ObjectUtils.defaultIfNull(getName(), ""));
   }
 
@@ -282,12 +279,12 @@ public class LocatorStatusResponse extends ServerLocationResponse {
     final LocatorStatusResponse that = (LocatorStatusResponse) obj;
 
     return ObjectUtils.equalsIgnoreNull(this.getPid(), that.getPid())
-      && ObjectUtils.equals(this.getUptime(), that.getUptime())
-      && ObjectUtils.equals(this.getWorkingDirectory(), that.getWorkingDirectory())
-      && ObjectUtils.equals(this.getJvmArgs(), that.getJvmArgs())
-      && ObjectUtils.equals(this.getClasspath(), that.getClasspath())
-      && ObjectUtils.equals(this.getGemFireVersion(), that.getGemFireVersion())
-      && ObjectUtils.equals(this.getJavaVersion(), that.getJavaVersion());
+        && ObjectUtils.equals(this.getUptime(), that.getUptime())
+        && ObjectUtils.equals(this.getWorkingDirectory(), that.getWorkingDirectory())
+        && ObjectUtils.equals(this.getJvmArgs(), that.getJvmArgs())
+        && ObjectUtils.equals(this.getClasspath(), that.getClasspath())
+        && ObjectUtils.equals(this.getGemFireVersion(), that.getGemFireVersion())
+        && ObjectUtils.equals(this.getJavaVersion(), that.getJavaVersion());
   }
 
   @Override

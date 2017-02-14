@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -27,6 +25,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -66,7 +65,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * @since GemFire bugfix5.7
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class Bug38741DUnitTest extends ClientServerTestCase {
 
   protected RegionAttributes getRegionAttributes() {
@@ -76,8 +75,9 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
   }
 
   /**
-   * Test that CopyOnRead doesn't cause {@link HARegionQueue#peek()} to create a copy,
-   * assuming that creating copies performs a serialize and de-serialize operation.
+   * Test that CopyOnRead doesn't cause {@link HARegionQueue#peek()} to create a copy, assuming that
+   * creating copies performs a serialize and de-serialize operation.
+   * 
    * @throws Exception when there is a failure
    * @since GemFire bugfix5.7
    */
@@ -95,64 +95,64 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
     createBridgeServer(server, rName, ports[0]);
     // Put an instance of SerializationCounter to assert copy-on-read behavior
     // when notifyBySubscription is true
-    server.invoke(new CacheSerializableRunnable("Enable copy on read and assert server copy behavior") {
-      public void run2() throws CacheException {
-        final LocalRegion r = (LocalRegion) getRootRegion(rName);
+    server.invoke(
+        new CacheSerializableRunnable("Enable copy on read and assert server copy behavior") {
+          public void run2() throws CacheException {
+            final LocalRegion r = (LocalRegion) getRootRegion(rName);
 
-        // Using a key that counts serialization, the test captures
-        // any serialization of the key when it is a member of another object,
-        // specifically in this case ClientUpdateMessageImpl which is assume to be
-        // the value of a HARegion
-        SerializationCountingKey key = new SerializationCountingKey(k1);
-        byte[] val = new byte[1];
-        byte valIsObj = 0x01;
-        Integer cb = new Integer(0);
-        ClientProxyMembershipID cpmi = null;
-        EventID eid = null;
-        ClientUpdateMessageImpl cui =
-          new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_CREATE, r, key,
-              val, valIsObj, cb, cpmi, eid);
-        ClientUpdateMessageImpl cuiCopy = (ClientUpdateMessageImpl) CopyHelper.copy(cui);
-        assertSame(key, cui.getKeyOfInterest());
-        assertEquals(1, key.count.get());
-        key = (SerializationCountingKey) cuiCopy.getKeyOfInterest();
-        assertEquals(cui.getKeyOfInterest(), cuiCopy.getKeyOfInterest());
-        assertEquals(1, key.count.get());
+            // Using a key that counts serialization, the test captures
+            // any serialization of the key when it is a member of another object,
+            // specifically in this case ClientUpdateMessageImpl which is assume to be
+            // the value of a HARegion
+            SerializationCountingKey key = new SerializationCountingKey(k1);
+            byte[] val = new byte[1];
+            byte valIsObj = 0x01;
+            Integer cb = new Integer(0);
+            ClientProxyMembershipID cpmi = null;
+            EventID eid = null;
+            ClientUpdateMessageImpl cui = new ClientUpdateMessageImpl(
+                EnumListenerEvent.AFTER_CREATE, r, key, val, valIsObj, cb, cpmi, eid);
+            ClientUpdateMessageImpl cuiCopy = (ClientUpdateMessageImpl) CopyHelper.copy(cui);
+            assertSame(key, cui.getKeyOfInterest());
+            assertEquals(1, key.count.get());
+            key = (SerializationCountingKey) cuiCopy.getKeyOfInterest();
+            assertEquals(cui.getKeyOfInterest(), cuiCopy.getKeyOfInterest());
+            assertEquals(1, key.count.get());
 
 
-        SerializationCountingKey ks1 = new SerializationCountingKey(k1);
-        { // Make sure nothing (HARegion) has serialized/de-serialized this instance
-          SerializationCountingValue sc = new SerializationCountingValue();
-          r.put(ks1, sc);
-          assertEquals(0, sc.count.get());
-          assertEquals(0, ks1.count.get());
-        }
+            SerializationCountingKey ks1 = new SerializationCountingKey(k1);
+            { // Make sure nothing (HARegion) has serialized/de-serialized this instance
+              SerializationCountingValue sc = new SerializationCountingValue();
+              r.put(ks1, sc);
+              assertEquals(0, sc.count.get());
+              assertEquals(0, ks1.count.get());
+            }
 
-        { // No copy should be made upon get (assert standard no copy behavior)
-          SerializationCountingValue sc = (SerializationCountingValue) r.get(ks1);
-          assertEquals(0, sc.count.get());
-          assertEquals(0, ks1.count.get());
-        }
+            { // No copy should be made upon get (assert standard no copy behavior)
+              SerializationCountingValue sc = (SerializationCountingValue) r.get(ks1);
+              assertEquals(0, sc.count.get());
+              assertEquals(0, ks1.count.get());
+            }
 
-        // enable copy on read
-        getCache().setCopyOnRead(true);
+            // enable copy on read
+            getCache().setCopyOnRead(true);
 
-        { // Assert standard copy on read behavior
-          SerializationCountingValue sc = (SerializationCountingValue) r.get(ks1);
-          assertEquals(1, sc.count.get());
-          assertEquals(0, ks1.count.get());
-        }
+            { // Assert standard copy on read behavior
+              SerializationCountingValue sc = (SerializationCountingValue) r.get(ks1);
+              assertEquals(1, sc.count.get());
+              assertEquals(0, ks1.count.get());
+            }
 
-        { // Put another counter with copy-on-read true
-          // Again check that nothing (HARegion) has performed serialization
-          SerializationCountingValue sc = new SerializationCountingValue();
-          SerializationCountingKey ks3 = new SerializationCountingKey(k3);
-          r.put(ks3, sc);
-          assertEquals(0, sc.count.get());
-          assertEquals(0, ks3.count.get());
-        }
-      }
-    });
+            { // Put another counter with copy-on-read true
+              // Again check that nothing (HARegion) has performed serialization
+              SerializationCountingValue sc = new SerializationCountingValue();
+              SerializationCountingKey ks3 = new SerializationCountingKey(k3);
+              r.put(ks3, sc);
+              assertEquals(0, sc.count.get());
+              assertEquals(0, ks3.count.get());
+            }
+          }
+        });
 
     // Setup a client which subscribes to the server region, registers (aka pulls)
     // interest in keys which creates an assumed HARegionQueue on the server
@@ -161,15 +161,19 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
     client.invoke(new CacheSerializableRunnable("Assert server copy behavior from client") {
       public void run2() throws CacheException {
         getCache();
-        
+
         AttributesFactory factory = new AttributesFactory();
-        ClientServerTestCase.configureConnectionPool(factory, serverHostName, ports, true,-1,1,null);
+        ClientServerTestCase.configureConnectionPool(factory, serverHostName, ports, true, -1, 1,
+            null);
         factory.setScope(Scope.LOCAL);
         Region r = createRootRegion(rName, factory.create());
         SerializationCountingKey ks1 = new SerializationCountingKey(k1);
         SerializationCountingKey ks3 = new SerializationCountingKey(k3);
         r.registerInterest(ks1, InterestResultPolicy.KEYS_VALUES);
-        r.registerInterest(new SerializationCountingKey(k2), InterestResultPolicy.KEYS_VALUES); // entry shouldn't exist yet
+        r.registerInterest(new SerializationCountingKey(k2), InterestResultPolicy.KEYS_VALUES); // entry
+                                                                                                // shouldn't
+                                                                                                // exist
+                                                                                                // yet
         r.registerInterest(ks3, InterestResultPolicy.KEYS_VALUES);
 
         { // Once for the get on the server, once to send the value to this client
@@ -189,8 +193,7 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
     server.invoke(new CacheSerializableRunnable("Assert copy behavior after client is setup") {
       public void run2() throws CacheException {
         Region r = getRootRegion(rName);
-        CacheServerImpl bsi = (CacheServerImpl)
-          getCache().getCacheServers().iterator().next();
+        CacheServerImpl bsi = (CacheServerImpl) getCache().getCacheServers().iterator().next();
         Collection cp = bsi.getAcceptor().getCacheClientNotifier().getClientProxies();
         // Should only be one because only one client is connected
         assertEquals(1, cp.size());
@@ -200,12 +203,13 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
           public boolean done() {
             return ccp.getHARegionQueue().size() == 0;
           }
+
           public String description() {
             return "region queue never became empty";
           }
         };
         Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-        
+
         // Capture the current processed message count to know
         // when the next message has been serialized
         final int currMesgCount = ccp.getStatistics().getMessagesProcessed();
@@ -221,12 +225,13 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
           public boolean done() {
             return ccp.getStatistics().getMessagesProcessed() != currMesgCount;
           }
+
           public String description() {
             return null;
           }
         };
         Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-        
+
         // assert one serialization to send value to interested client
         // more than one implies copy-on-read behavior (bad)
         assertEquals(1, sc.count.get());
@@ -245,13 +250,13 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
           // Wait for the update to arrive on to the Cache Client Updater
           long start = NanoTimer.getTime();
           final int maxSecs = 30;
-          while(!r.containsKey(ks2)) {
+          while (!r.containsKey(ks2)) {
             Wait.pause(100);
             if ((NanoTimer.getTime() - start) > TimeUnit.SECONDS.toNanos(maxSecs)) {
               fail("Waited over " + maxSecs + "s");
             }
           }
-          
+
           SerializationCountingValue sc = (SerializationCountingValue) r.getEntry(ks2).getValue();
           assertEquals(1, sc.count.get());
         }
@@ -260,8 +265,9 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
   }
 
   /**
-   * Test to ensure that a PartitionedRegion doesn't make more than the
-   * expected number of copies when copy-on-read is set to true
+   * Test to ensure that a PartitionedRegion doesn't make more than the expected number of copies
+   * when copy-on-read is set to true
+   * 
    * @throws Exception
    */
   @Test
@@ -275,7 +281,8 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
     datastore.invoke(new CacheSerializableRunnable("Create PR DataStore") {
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
-        factory.setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(0).create());
+        factory.setPartitionAttributes(
+            new PartitionAttributesFactory().setRedundantCopies(0).create());
         createRootRegion(rName, factory.create());
       }
     });
@@ -283,7 +290,8 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
     accessor.invoke(new CacheSerializableRunnable("Create PR Accessor and put new value") {
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
-        factory.setPartitionAttributes(new PartitionAttributesFactory().setLocalMaxMemory(0).setRedundantCopies(0).create());
+        factory.setPartitionAttributes(
+            new PartitionAttributesFactory().setLocalMaxMemory(0).setRedundantCopies(0).create());
         Region r = createRootRegion(rName, factory.create());
         SerializationCountingValue val = new SerializationCountingValue();
         r.put(k1, val);
@@ -314,8 +322,9 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
               RawValue rv = br.getSerialized(keyInfo, false, false, null, null, false);
               Object val = rv.getRawValue();
               assertTrue(val instanceof CachedDeserializable);
-              CachedDeserializable cd = (CachedDeserializable)val;
-              SerializationCountingValue scv = (SerializationCountingValue)cd.getDeserializedForReading();
+              CachedDeserializable cd = (CachedDeserializable) val;
+              SerializationCountingValue scv =
+                  (SerializationCountingValue) cd.getDeserializedForReading();
               assertEquals(1, scv.count.get());
             } catch (IOException fail) {
               Assert.fail("Unexpected IOException", fail);
@@ -328,13 +337,13 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
     accessor.invoke(new CacheSerializableRunnable("assert accessor entry serialization count") {
       public void run2() throws CacheException {
         Region r = getRootRegion(rName);
-        SerializationCountingValue v1 = (SerializationCountingValue)r.get(k1);
+        SerializationCountingValue v1 = (SerializationCountingValue) r.get(k1);
         // The counter was incremented once to send the data to the datastore
         assertEquals(1, v1.count.get());
         getCache().setCopyOnRead(true);
         // Once to send the data to the datastore, no need to do a serialization
         // when we make copy since it is serialized from datastore to us.
-        SerializationCountingValue v2 = (SerializationCountingValue)r.get(k1);
+        SerializationCountingValue v2 = (SerializationCountingValue) r.get(k1);
         assertEquals(1, v2.count.get());
         assertTrue(v1 != v2);
       }
@@ -343,13 +352,13 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
     datastore.invoke(new CacheSerializableRunnable("assert value serialization") {
       public void run2() throws CacheException {
         Region r = getRootRegion(rName);
-        SerializationCountingValue v1 = (SerializationCountingValue)r.get(k1);
+        SerializationCountingValue v1 = (SerializationCountingValue) r.get(k1);
         // Once to send the value from the accessor to the data store
         assertEquals(1, v1.count.get());
         getCache().setCopyOnRead(true);
         // Once to send the value from the accessor to the data store
         // once to make a local copy
-        SerializationCountingValue v2 = (SerializationCountingValue)r.get(k1);
+        SerializationCountingValue v2 = (SerializationCountingValue) r.get(k1);
         assertEquals(2, v2.count.get());
         assertTrue(v1 != v2);
       }
@@ -365,17 +374,19 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
   public static class SerializationCountingValue implements DataSerializable {
     private static final long serialVersionUID = 1L;
     public final AtomicInteger count = new AtomicInteger();
-    public SerializationCountingValue() {
-    }
 
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public SerializationCountingValue() {}
+
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       count.set(in.readInt());
     }
+
     public void toData(DataOutput out) throws IOException {
       out.writeInt(count.addAndGet(1));
-      //GemFireCacheImpl.getInstance().getLogger().info("DEBUG "+this, new RuntimeException("STACK"));
+      // GemFireCacheImpl.getInstance().getLogger().info("DEBUG "+this, new
+      // RuntimeException("STACK"));
     }
+
     public String toString() {
       return getClass().getName() + "@" + System.identityHashCode(this) + "; count=" + count;
     }
@@ -383,19 +394,25 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
   public static class SerializationCountingKey extends SerializationCountingValue {
     private static final long serialVersionUID = 1L;
     private String k;
+
     public SerializationCountingKey(String k) {
       this.k = k;
     }
-    public SerializationCountingKey() {super();}
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+
+    public SerializationCountingKey() {
+      super();
+    }
+
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       k = DataSerializer.readString(in);
     }
+
     public void toData(DataOutput out) throws IOException {
       super.toData(out);
       DataSerializer.writeString(k, out);
     }
+
     public boolean equals(Object obj) {
       if (obj == this) {
         return true;
@@ -406,9 +423,11 @@ public class Bug38741DUnitTest extends ClientServerTestCase {
       }
       return false;
     }
+
     public int hashCode() {
       return k.hashCode();
     }
+
     public String toString() {
       return super.toString() + "; k=" + k;
     }

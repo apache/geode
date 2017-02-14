@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed;
 
@@ -20,6 +18,7 @@ import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 import joptsimple.OptionException;
 import org.junit.Rule;
@@ -35,8 +34,8 @@ import static org.junit.Assert.*;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
- * The LocatorLauncherTest class is a test suite of test cases for testing the contract and functionality of
- * launching a GemFire Locator.
+ * The LocatorLauncherTest class is a test suite of test cases for testing the contract and
+ * functionality of launching a GemFire Locator.
  *
  * @see org.apache.geode.distributed.LocatorLauncher
  * @see org.apache.geode.distributed.LocatorLauncher.Builder
@@ -50,7 +49,7 @@ public class LocatorLauncherTest {
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  
+
   @Rule
   public final TestName testName = new TestName();
 
@@ -58,12 +57,12 @@ public class LocatorLauncherTest {
   public void testBuilderParseArgumentsWithNonNumericPort() {
     try {
       new Builder().parseArguments("start", "locator1", "--port", "oneTwoThree");
-    }
-    catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException expected) {
       assertTrue(expected.getCause() instanceof OptionException);
-      assertTrue(expected.getMessage(), expected.getMessage().contains(
-        LocalizedStrings.Launcher_Builder_PARSE_COMMAND_LINE_ARGUMENT_ERROR_MESSAGE.toLocalizedString(
-          "Locator", expected.getCause().getMessage())));
+      assertTrue(expected.getMessage(),
+          expected.getMessage()
+              .contains(LocalizedStrings.Launcher_Builder_PARSE_COMMAND_LINE_ARGUMENT_ERROR_MESSAGE
+                  .toLocalizedString("Locator", expected.getCause().getMessage())));
       throw expected;
     }
   }
@@ -116,11 +115,13 @@ public class LocatorLauncherTest {
   public void testSetBindAddressToUnknownHost() {
     try {
       new Builder().setBindAddress("badhostname.badcompany.bad");
-    }
-    catch (IllegalArgumentException expected) {
-      final String expectedMessage1 = LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE.toLocalizedString("Locator");
-      final String expectedMessage2 = "badhostname.badcompany.bad is not an address for this machine.";
-      assertTrue(expected.getMessage().equals(expectedMessage1) || expected.getMessage().equals(expectedMessage2));
+    } catch (IllegalArgumentException expected) {
+      final String expectedMessage1 =
+          LocalizedStrings.Launcher_Builder_UNKNOWN_HOST_ERROR_MESSAGE.toLocalizedString("Locator");
+      final String expectedMessage2 =
+          "badhostname.badcompany.bad is not an address for this machine.";
+      assertTrue(expected.getMessage().equals(expectedMessage1)
+          || expected.getMessage().equals(expectedMessage2));
       if (expected.getMessage().equals(expectedMessage1)) {
         assertTrue(expected.getCause() instanceof UnknownHostException);
       }
@@ -128,24 +129,24 @@ public class LocatorLauncherTest {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1308
   @Test(expected = IllegalArgumentException.class)
   public void testSetBindAddressToNonLocalHost() {
     try {
       new Builder().setBindAddress("yahoo.com");
-    }
-    catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException expected) {
       final String expectedMessage = "yahoo.com is not an address for this machine.";
       assertEquals(expectedMessage, expected.getMessage());
       throw expected;
     }
   }
-  
+
   @Test
-  public void testSetBindAddressToLocalHost() throws Exception {        
-    String host = InetAddress.getLocalHost().getHostName();            
+  public void testSetBindAddressToLocalHost() throws Exception {
+    String host = InetAddress.getLocalHost().getHostName();
     new Builder().setBindAddress(host);
   }
-  
+
   @Test
   public void testSetAndGetHostnameForClients() {
     final Builder builder = new Builder();
@@ -161,10 +162,11 @@ public class LocatorLauncherTest {
   public void testSetHostnameForClientsWithBlankString() {
     try {
       new Builder().setHostnameForClients(" ");
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.LocatorLauncher_Builder_INVALID_HOSTNAME_FOR_CLIENTS_ERROR_MESSAGE
-        .toLocalizedString(), expected.getMessage());
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          LocalizedStrings.LocatorLauncher_Builder_INVALID_HOSTNAME_FOR_CLIENTS_ERROR_MESSAGE
+              .toLocalizedString(),
+          expected.getMessage());
       throw expected;
     }
   }
@@ -173,10 +175,11 @@ public class LocatorLauncherTest {
   public void testSetHostnameForClientsWithEmptyString() {
     try {
       new Builder().setHostnameForClients("");
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.LocatorLauncher_Builder_INVALID_HOSTNAME_FOR_CLIENTS_ERROR_MESSAGE
-        .toLocalizedString(), expected.getMessage());
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          LocalizedStrings.LocatorLauncher_Builder_INVALID_HOSTNAME_FOR_CLIENTS_ERROR_MESSAGE
+              .toLocalizedString(),
+          expected.getMessage());
       throw expected;
     }
   }
@@ -196,10 +199,10 @@ public class LocatorLauncherTest {
   public void testSetMemberNameWithBlankString() {
     try {
       new Builder().setMemberName("  ");
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE.toLocalizedString("Locator"),
-        expected.getMessage());
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE.toLocalizedString("Locator"),
+          expected.getMessage());
       throw expected;
     }
   }
@@ -208,10 +211,10 @@ public class LocatorLauncherTest {
   public void testSetMemberNameWithEmptyString() {
     try {
       new Builder().setMemberName("");
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE.toLocalizedString("Locator"),
-        expected.getMessage());
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          LocalizedStrings.Launcher_Builder_MEMBER_NAME_ERROR_MESSAGE.toLocalizedString("Locator"),
+          expected.getMessage());
       throw expected;
     }
   }
@@ -237,9 +240,9 @@ public class LocatorLauncherTest {
   public void testSetPidToInvalidValue() {
     try {
       new Builder().setPid(-1);
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_PID_ERROR_MESSAGE.toLocalizedString(), expected.getMessage());
+    } catch (IllegalArgumentException expected) {
+      assertEquals(LocalizedStrings.Launcher_Builder_PID_ERROR_MESSAGE.toLocalizedString(),
+          expected.getMessage());
       throw expected;
     }
   }
@@ -268,10 +271,10 @@ public class LocatorLauncherTest {
   public void testSetPortToOverflow() {
     try {
       new Builder().setPort(65536);
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_INVALID_PORT_ERROR_MESSAGE.toLocalizedString("Locator"),
-        expected.getMessage());
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          LocalizedStrings.Launcher_Builder_INVALID_PORT_ERROR_MESSAGE.toLocalizedString("Locator"),
+          expected.getMessage());
       throw expected;
     }
   }
@@ -280,10 +283,10 @@ public class LocatorLauncherTest {
   public void testSetPortToUnderflow() {
     try {
       new Builder().setPort(-1);
-    }
-    catch (IllegalArgumentException expected) {
-      assertEquals(LocalizedStrings.Launcher_Builder_INVALID_PORT_ERROR_MESSAGE.toLocalizedString("Locator"),
-        expected.getMessage());
+    } catch (IllegalArgumentException expected) {
+      assertEquals(
+          LocalizedStrings.Launcher_Builder_INVALID_PORT_ERROR_MESSAGE.toLocalizedString("Locator"),
+          expected.getMessage());
       throw expected;
     }
   }
@@ -292,12 +295,9 @@ public class LocatorLauncherTest {
   public void testBuild() throws Exception {
     Builder builder = new Builder();
 
-    LocatorLauncher launcher = builder.setCommand(Command.START)
-      .setDebug(true)
-      .setHostnameForClients("beanstock.vmware.com")
-      .setMemberName("Beanstock")
-      .setPort(8192)
-      .build();
+    LocatorLauncher launcher = builder.setCommand(Command.START).setDebug(true)
+        .setHostnameForClients("beanstock.vmware.com").setMemberName("Beanstock").setPort(8192)
+        .build();
 
     assertNotNull(launcher);
     assertEquals(builder.getCommand(), launcher.getCommand());
@@ -312,11 +312,8 @@ public class LocatorLauncherTest {
 
   @Test
   public void testBuildWithMemberNameSetInApiPropertiesOnStart() {
-    LocatorLauncher launcher = new Builder()
-      .setCommand(LocatorLauncher.Command.START)
-      .setMemberName(null)
-        .set(NAME, "locatorABC")
-      .build();
+    LocatorLauncher launcher = new Builder().setCommand(LocatorLauncher.Command.START)
+        .setMemberName(null).set(NAME, "locatorABC").build();
 
     assertNotNull(launcher);
     assertEquals(LocatorLauncher.Command.START, launcher.getCommand());
@@ -328,10 +325,8 @@ public class LocatorLauncherTest {
   public void testBuildWithMemberNameSetInSystemPropertiesOnStart() {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + NAME, "locatorXYZ");
 
-    LocatorLauncher launcher = new Builder()
-      .setCommand(LocatorLauncher.Command.START)
-      .setMemberName(null)
-      .build();
+    LocatorLauncher launcher =
+        new Builder().setCommand(LocatorLauncher.Command.START).setMemberName(null).build();
 
     assertNotNull(launcher);
     assertEquals(LocatorLauncher.Command.START, launcher.getCommand());

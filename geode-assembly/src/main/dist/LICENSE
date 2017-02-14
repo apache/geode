@@ -221,8 +221,6 @@ Apache Geode bundles the following files under the BSD 3-Clause License:
     Copyright (c) 2002-2007 Marc Prud'hommeaux.
   - Antlr v2.7.7 (http://www.antlr.org), Copyright (c) 2012 Terrence Parr
     and Sam Harwell
-  - highlight.js v7.3 (https://highlightjs.org), Copyright (c) 2006, Ivan
-    Sagalaev
   - JLine v2.12 (http://jline.sourceforge.net), Copyright (c) 2002-2006,
     Marc Prud'hommeaux <mwp1@cornell.edu>
   - jQuery Sparklines v2.0 (http://omnipotent.net/jquery.sparkline/),
@@ -597,26 +595,6 @@ Federal Courts of the Northern District of California and the state courts
 of the State of California, with venue lying in Santa Clara County,
 California.
 
----------------------------------------------------------------------------
-The ISC License (http://opensource.org/licenses/ISC)
----------------------------------------------------------------------------
-
-Apache Geode bundles the following file under the ISC license:
-
-  - Shred (https://github.com/pandastrike/shred), Copyright (c) 2012-2015
-    Panda Strike, LLC and Dan Yoder <dan@pandastrike.com>
-
-Permission to use, copy, modify, and/or distribute this software for any
-purpose with or without fee is hereby granted, provided that the above
-copyright notice and this permission notice appear in all copies.
-
-THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
-SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
-IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ---------------------------------------------------------------------------
 The JSON License (http://www.json.org/license.html)
@@ -653,16 +631,10 @@ The MIT License (http://opensource.org/licenses/mit-license.html)
 
 Apache Geode bundles the following files under the MIT license:
 
-  - Backbone.js v0.9.2 (http://backbonejs.org), Copyright (c) 2010-2012
-    Jeremy Ashkenas, DocumentCloud Inc.
   - Bootflat v1.0.1 (http://bootflat.github.io/), Copyright (c) 2014
     bootflat
-  - Bootstrap v3.0.0 (http://getbootstrap.com/), Copyright (c) 2011-2016
-    Twitter, Inc.
   - Font Awesome v4.0.3 (code files) (http://fontawesome.io), Copyright (c)
     Dave Gandy
-  - Handlebars v1.0.0 (http://handlebarsjs.com), Copyright (c) 2011, Yehuda
-    Katz
   - HeadJS v0.96 (http://headjs.com/), Copyright (c) 2013 Tero Piirainen
     (tipiirai)
   - HTML5 Shiv v3.6.2pre (https://github.com/aFarkas/html5shiv), Copyright
@@ -673,10 +645,8 @@ Apache Geode bundles the following files under the MIT license:
     Copyright (c) 2011 Sencha Inc.
   - JOpt Simple (http://pholser.github.io/jopt-simple/), Copyright (c)
     2004-2015 Paul R. Holser, Jr.
-  - jQuery JavaScript Library v1.7.2, v1.8.0 (https://jquery.com), Copyright (c)
+  - jQuery JavaScript Library v1.7.2 (https://jquery.com), Copyright (c)
     jQuery Foundation and other contributors, http://jquery.org
-  - jQuery BBQ v1.2.1 (http://benalman.com/projects/jquery-bbq-plugin/),
-    Copyright (c) 2010, "Cowboy" Ben Alman
   - jQuery.i18n.properties v1.0.x
     (https://github.com/jquery-i18n-properties/jquery-i18n-properties),
     Copyright (c) 2011 Nuno Miguel Correia Serra Fernandes
@@ -687,16 +657,11 @@ Apache Geode bundles the following files under the MIT license:
     Brandon Aaron
   - jQuery Placeholder (http://webcloud.se), Copyright (c) 2010 Daniel
     Stocks
-  - jQuery-slideto (https://github.com/Sleavely/jQuery-slideto), Copyright
-    (c) 2015 Joakim Hedlund
   - jQuery UI MultiSelect Widget v1.14pre
     (http://www.erichynds.com/jquery/jquery-ui-multiselect-widget/),
     Copyright (c) 2011 Eric Hynds
-  - jQuery UI v1.8.18 (http://jqueryui.com/about), Copyright (c) jQuery
+  - jQuery UI v1.10.2 (http://jqueryui.com/about), Copyright (c) jQuery
     Foundation and other contributors, http://jquery.org
-  - jQuery Wiggle (https://github.com/wilhelm-murdoch/jQuery-Wiggle),
-    Copyright (c) 2011 Wilhelm Murdoch <wilhelm.murdoch@gmail.com>,
-    TheDrunkenEpic <http://www.thedrunkenepic.com>
   - jScrollPane (http://jscrollpane.kelvinluck.com/), Copyright (c) 2010
     Kelvin Luck
   - matchMedia() polyfill (https://github.com/paulirish/matchMedia.js),
@@ -716,8 +681,6 @@ Apache Geode bundles the following files under the MIT license:
     contributors
   - Timeago v1.3.0 (http://timeago.yarp.com), Copyright (c) 2008-2015 Ryan
     McGeary
-  - Underscore (http://underscorejs.org), Copyright (c) 2009-2016 Jeremy
-    Ashkenas, DocumentCloud, and Investigative Reporters & Editors
   - zTree v3.5.02 (http://zTree.me/), Copyright (c) 2010 Hunter.z
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -803,7 +766,6 @@ domain:
   - AOP Alliance v1.0 (http://aopalliance.sourceforge.net)
   - CompactConcurrentHashSet2, derived from JSR-166 ConcurrentHashMap v1.43
     (http://gee.cs.oswego.edu/dl/concurrency-interest).
-  - Reset CSS (http://meyerweb.com/eric/tools/css/reset/)
   - tooltip.js v1.2.6 (https://github.com/jquerytools/jquerytools)
 
 

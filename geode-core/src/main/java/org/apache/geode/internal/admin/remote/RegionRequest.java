@@ -1,21 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-   
-   
+
+
 package org.apache.geode.internal.admin.remote;
 
 import org.apache.geode.distributed.internal.*;
@@ -26,8 +24,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import java.io.*;
 
 /**
- * A message that is sent to a particular application to get the
- * region for the specified path.
+ * A message that is sent to a particular application to get the region for the specified path.
+ * 
  * @since GemFire 3.5
  */
 public final class RegionRequest extends AdminRequest {
@@ -41,7 +39,7 @@ public final class RegionRequest extends AdminRequest {
   /** Request to create a VM region */
   static final int CREATE_VM_REGION = 12;
 
-  //////////////////////  Instance Fields  //////////////////////
+  ////////////////////// Instance Fields //////////////////////
 
   /** The action to be taken by this request */
   int action = 0;
@@ -58,16 +56,13 @@ public final class RegionRequest extends AdminRequest {
   /** The attributes for the region to create */
   RegionAttributes newRegionAttributes;
 
-  //////////////////////  Static Methods  ///////////////////////
+  ////////////////////// Static Methods ///////////////////////
 
   /**
-   * Returns a <code>RegionRequest</code> for getting a region with
-   * the given name.
+   * Returns a <code>RegionRequest</code> for getting a region with the given name.
    *
-   * @param c
-   *        The admin object for the remote cache
-   * @param path
-   *        The full path to the region
+   * @param c The admin object for the remote cache
+   * @param path The full path to the region
    */
   public static RegionRequest createForGet(CacheInfo c, String path) {
     RegionRequest m = new RegionRequest();
@@ -79,12 +74,11 @@ public final class RegionRequest extends AdminRequest {
   }
 
   /**
-   * Returns a <code>RegionRequest</code> for creating a VM root
-   * region with the given name and attributes. 
+   * Returns a <code>RegionRequest</code> for creating a VM root region with the given name and
+   * attributes.
    */
-  public static RegionRequest createForCreateRoot(CacheInfo c,
-                                                  String name,
-                                                  RegionAttributes attrs) {
+  public static RegionRequest createForCreateRoot(CacheInfo c, String name,
+      RegionAttributes attrs) {
     RegionRequest m = new RegionRequest();
     m.action = CREATE_VM_ROOT;
     m.cacheId = c.getId();
@@ -95,12 +89,11 @@ public final class RegionRequest extends AdminRequest {
   }
 
   /**
-   * Returns a <code>RegionRequest</code> for creating a VM root
-   * region with the given name and attributes. 
+   * Returns a <code>RegionRequest</code> for creating a VM root region with the given name and
+   * attributes.
    */
-  public static RegionRequest 
-    createForCreateSubregion(CacheInfo c, String parentPath,
-                             String name, RegionAttributes attrs) {
+  public static RegionRequest createForCreateSubregion(CacheInfo c, String parentPath, String name,
+      RegionAttributes attrs) {
     RegionRequest m = new RegionRequest();
     m.action = CREATE_VM_REGION;
     m.cacheId = c.getId();
@@ -139,15 +132,13 @@ public final class RegionRequest extends AdminRequest {
   }
 
   @Override
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.action = in.readInt();
     this.cacheId = in.readInt();
     this.path = DataSerializer.readString(in);
     this.newRegionName = DataSerializer.readString(in);
-    this.newRegionAttributes =
-      (RegionAttributes) DataSerializer.readObject(in);
+    this.newRegionAttributes = (RegionAttributes) DataSerializer.readObject(in);
     RegionRequest.setFriendlyName(this);
   }
 
@@ -155,21 +146,25 @@ public final class RegionRequest extends AdminRequest {
   public String toString() {
     return "RegionRequest from " + getRecipient() + " path=" + this.path;
   }
-  
+
   private static void setFriendlyName(RegionRequest rgnRqst) {
     switch (rgnRqst.action) {
       case GET_REGION:
-        rgnRqst.friendlyName = LocalizedStrings.RegionRequest_GET_A_SPECIFIC_REGION_FROM_THE_ROOT.toLocalizedString();
+        rgnRqst.friendlyName =
+            LocalizedStrings.RegionRequest_GET_A_SPECIFIC_REGION_FROM_THE_ROOT.toLocalizedString();
         break;
       case CREATE_VM_ROOT:
-        rgnRqst.friendlyName = LocalizedStrings.RegionRequest_CREATE_A_NEW_ROOT_VM_REGION.toLocalizedString();
+        rgnRqst.friendlyName =
+            LocalizedStrings.RegionRequest_CREATE_A_NEW_ROOT_VM_REGION.toLocalizedString();
         break;
       case CREATE_VM_REGION:
-        rgnRqst.friendlyName = LocalizedStrings.RegionRequest_CREATE_A_NEW_VM_REGION.toLocalizedString();
+        rgnRqst.friendlyName =
+            LocalizedStrings.RegionRequest_CREATE_A_NEW_VM_REGION.toLocalizedString();
         break;
       default:
-        rgnRqst.friendlyName = LocalizedStrings.RegionRequest_UNKNOWN_OPERATION_0.toLocalizedString(Integer.valueOf(rgnRqst.action));
+        rgnRqst.friendlyName = LocalizedStrings.RegionRequest_UNKNOWN_OPERATION_0
+            .toLocalizedString(Integer.valueOf(rgnRqst.action));
         break;
-      }
+    }
   }
 }

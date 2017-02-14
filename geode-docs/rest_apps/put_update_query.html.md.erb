@@ -73,10 +73,36 @@ Response Payload:  null
 
 ## Error Codes
 
-| Status Code               | Description                                                                                                                      |
-|---------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| 404 NOT FOUND             | Returned if the specified queryId cannot be found.                                                                               |
-| 500 INTERNAL SERVER ERROR | Error encountered at Geode server. Check the HTTP response body for a stack trace of the exception. |
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Status Code</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>401 UNAUTHORIZED</td>
+<td>Invalid Username or Password</td>
+</tr>
+<tr>
+<td>403 FORBIDDEN</td>
+<td>Insufficient privileges for operation</td>
+</tr>
+<tr>
+<td>404 NOT FOUND</td>
+<td>QueryID does not exist</td>
+</tr>
+<tr class="odd">
+<td>500 INTERNAL SERVER ERROR</td>
+<td>Error encountered at Geode server. Check the HTTP response body for a stack trace of the exception.</td>
+</tr>
+</tbody>
+</table>
 
 ## Implementation Notes
 

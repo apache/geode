@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.offheap;
 
@@ -50,7 +48,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.UnitTest")
-@PrepareForTest({ OffHeapStoredObject.class, OffHeapRegionEntryHelper.class })
+@PrepareForTest({OffHeapStoredObject.class, OffHeapRegionEntryHelper.class})
 public class OffHeapRegionEntryHelperJUnitTest {
 
   private static final Long VALUE_IS_NOT_ENCODABLE = 0L;
@@ -81,7 +79,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
 
-    ma = MemoryAllocatorImpl.create(ooohml, stats, 1, OffHeapStorage.MIN_SLAB_SIZE * 1, OffHeapStorage.MIN_SLAB_SIZE);
+    ma = MemoryAllocatorImpl.create(ooohml, stats, 1, OffHeapStorage.MIN_SLAB_SIZE * 1,
+        OffHeapStorage.MIN_SLAB_SIZE);
   }
 
   @After
@@ -95,7 +94,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = true;
     boolean isCompressed = false;
 
-    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(v, isSerialized, isCompressed);
+    OffHeapStoredObject chunk =
+        (OffHeapStoredObject) ma.allocateAndInitialize(v, isSerialized, isCompressed);
 
     return chunk;
   }
@@ -108,9 +108,11 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    assertThat(valueInBytes.length).isGreaterThanOrEqualTo(OffHeapRegionEntryHelper.MAX_LENGTH_FOR_DATA_AS_ADDRESS);
+    assertThat(valueInBytes.length)
+        .isGreaterThanOrEqualTo(OffHeapRegionEntryHelper.MAX_LENGTH_FOR_DATA_AS_ADDRESS);
 
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
 
     assertThat(encodedAddress).isEqualTo(VALUE_IS_NOT_ENCODABLE);
   }
@@ -124,7 +126,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = true;
     boolean isCompressed = false;
 
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
 
     assertThat(encodedAddress).isEqualTo(expectedEncodedAddress);
     assertSerializedAndCompressedBits(encodedAddress, isSerialized, isCompressed);
@@ -138,7 +141,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = true;
     boolean isCompressed = false;
 
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
 
     assertThat(encodedAddress).isEqualTo(VALUE_IS_NOT_ENCODABLE);
   }
@@ -151,7 +155,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = true;
     boolean isCompressed = false;
 
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(someValue, isSerialized, isCompressed);
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(someValue, isSerialized, isCompressed);
 
     assertThat(encodedAddress).isEqualTo(VALUE_IS_NOT_ENCODABLE);
   }
@@ -166,7 +171,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
 
     assertThat(encodedAddress).isEqualTo(expectedAddress);
     assertSerializedAndCompressedBits(encodedAddress, isSerialized, isCompressed);
@@ -182,7 +188,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = true;
     boolean isCompressed = false;
 
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
 
     assertThat(expectedAddress).isEqualTo(encodedAddress);
     assertSerializedAndCompressedBits(encodedAddress, isSerialized, isCompressed);
@@ -198,7 +205,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = false;
     boolean isCompressed = true;
 
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
 
     assertThat(encodedAddress).isEqualTo(expectedAddress);
     assertSerializedAndCompressedBits(encodedAddress, isSerialized, isCompressed);
@@ -214,15 +222,21 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = true;
     boolean isCompressed = true;
 
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(valueInBytes, isSerialized, isCompressed);
 
     assertThat(expectedAddress).isEqualTo(encodedAddress);
     assertSerializedAndCompressedBits(encodedAddress, isSerialized, isCompressed);
   }
 
-  private void assertSerializedAndCompressedBits(long encodedAddress, boolean shouldSerializedBitBeSet, boolean shouldCompressedBitBeSet) {
-    boolean isSerializedBitSet = (encodedAddress & OffHeapRegionEntryHelper.SERIALIZED_BIT) == OffHeapRegionEntryHelper.SERIALIZED_BIT ? true : false;
-    boolean isCompressedBitSet = (encodedAddress & OffHeapRegionEntryHelper.COMPRESSED_BIT) == OffHeapRegionEntryHelper.COMPRESSED_BIT ? true : false;
+  private void assertSerializedAndCompressedBits(long encodedAddress,
+      boolean shouldSerializedBitBeSet, boolean shouldCompressedBitBeSet) {
+    boolean isSerializedBitSet = (encodedAddress
+        & OffHeapRegionEntryHelper.SERIALIZED_BIT) == OffHeapRegionEntryHelper.SERIALIZED_BIT ? true
+            : false;
+    boolean isCompressedBitSet = (encodedAddress
+        & OffHeapRegionEntryHelper.COMPRESSED_BIT) == OffHeapRegionEntryHelper.COMPRESSED_BIT ? true
+            : false;
 
     assertThat(isSerializedBitSet).isEqualTo(shouldSerializedBitBeSet);
     assertThat(isCompressedBitSet).isEqualTo(shouldCompressedBitBeSet);
@@ -255,11 +269,11 @@ public class OffHeapRegionEntryHelperJUnitTest {
     long encodedAddress = 549755813703L;
     OffHeapRegionEntryHelper.decodeUncompressedAddressToBytes(encodedAddress);
   }
-  
+
   @Test
   public void decodeCompressedDataAsAddressToRawBytes() {
     long encodedAddress = 549755813703L;
-    byte[] expected = new byte[]{127, -1, -1, -1};
+    byte[] expected = new byte[] {127, -1, -1, -1};
 
     byte[] bytes = OffHeapRegionEntryHelper.decodeAddressToRawBytes(encodedAddress);
 
@@ -274,7 +288,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = true;
     boolean isCompressed = false;
 
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(serializedValue, isSerialized, isCompressed);
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(serializedValue, isSerialized, isCompressed);
 
     Integer actualValue = (Integer) OffHeapRegionEntryHelper.decodeAddressToObject(encodedAddress);
 
@@ -289,7 +304,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    long encodedAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(unSerializedValue, isSerialized, isCompressed);
+    long encodedAddress =
+        OffHeapRegionEntryHelper.encodeDataAsAddress(unSerializedValue, isSerialized, isCompressed);
 
     byte[] actualValue = (byte[]) OffHeapRegionEntryHelper.decodeAddressToObject(encodedAddress);
 
@@ -324,7 +340,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
   @Test
   public void isOffHeapShouldReturnFalseIfAddressIsAnEncodedAddress() {
-    byte[] data = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt((Integer) Integer.MAX_VALUE).array();
+    byte[] data =
+        ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt((Integer) Integer.MAX_VALUE).array();
     long address = OffHeapRegionEntryHelper.encodeDataAsAddress(data, false, false);
     assertThat(OffHeapRegionEntryHelper.isOffHeap(address)).isFalse();
   }
@@ -332,14 +349,22 @@ public class OffHeapRegionEntryHelperJUnitTest {
   @Test
   public void isOffHeapShouldReturnFalseForAnyTokenAddress() {
     assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.NULL_ADDRESS)).isFalse();
-    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.INVALID_ADDRESS)).isFalse();
-    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.LOCAL_INVALID_ADDRESS)).isFalse();
-    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.DESTROYED_ADDRESS)).isFalse();
-    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.REMOVED_PHASE1_ADDRESS)).isFalse();
-    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.REMOVED_PHASE2_ADDRESS)).isFalse();
-    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.END_OF_STREAM_ADDRESS)).isFalse();
-    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.NOT_AVAILABLE_ADDRESS)).isFalse();
-    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.TOMBSTONE_ADDRESS)).isFalse();
+    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.INVALID_ADDRESS))
+        .isFalse();
+    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.LOCAL_INVALID_ADDRESS))
+        .isFalse();
+    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.DESTROYED_ADDRESS))
+        .isFalse();
+    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.REMOVED_PHASE1_ADDRESS))
+        .isFalse();
+    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.REMOVED_PHASE2_ADDRESS))
+        .isFalse();
+    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.END_OF_STREAM_ADDRESS))
+        .isFalse();
+    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.NOT_AVAILABLE_ADDRESS))
+        .isFalse();
+    assertThat(OffHeapRegionEntryHelper.isOffHeap(OffHeapRegionEntryHelper.TOMBSTONE_ADDRESS))
+        .isFalse();
   }
 
   @Test
@@ -388,7 +413,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldAddress);
-    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.INVALID_ADDRESS)).thenReturn(Boolean.TRUE);
+    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.INVALID_ADDRESS))
+        .thenReturn(Boolean.TRUE);
     OffHeapRegionEntryHelper.setValue(re, Token.INVALID);
 
     // verify oldAddress is replaced with newAddress
@@ -397,7 +423,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldAddress);
-    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.LOCAL_INVALID_ADDRESS)).thenReturn(Boolean.TRUE);
+    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.LOCAL_INVALID_ADDRESS))
+        .thenReturn(Boolean.TRUE);
     OffHeapRegionEntryHelper.setValue(re, Token.LOCAL_INVALID);
 
     // verify oldAddress is replaced with newAddress
@@ -406,7 +433,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldAddress);
-    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.DESTROYED_ADDRESS)).thenReturn(Boolean.TRUE);
+    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.DESTROYED_ADDRESS))
+        .thenReturn(Boolean.TRUE);
     OffHeapRegionEntryHelper.setValue(re, Token.DESTROYED);
 
     // verify oldAddress is replaced with newAddress
@@ -415,7 +443,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldAddress);
-    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.REMOVED_PHASE1_ADDRESS)).thenReturn(Boolean.TRUE);
+    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.REMOVED_PHASE1_ADDRESS))
+        .thenReturn(Boolean.TRUE);
     OffHeapRegionEntryHelper.setValue(re, Token.REMOVED_PHASE1);
 
     // verify oldAddress is replaced with newAddress
@@ -424,7 +453,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldAddress);
-    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.REMOVED_PHASE2_ADDRESS)).thenReturn(Boolean.TRUE);
+    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.REMOVED_PHASE2_ADDRESS))
+        .thenReturn(Boolean.TRUE);
     OffHeapRegionEntryHelper.setValue(re, Token.REMOVED_PHASE2);
 
     // verify oldAddress is replaced with newAddress
@@ -433,7 +463,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldAddress);
-    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.END_OF_STREAM_ADDRESS)).thenReturn(Boolean.TRUE);
+    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.END_OF_STREAM_ADDRESS))
+        .thenReturn(Boolean.TRUE);
     OffHeapRegionEntryHelper.setValue(re, Token.END_OF_STREAM);
 
     // verify oldAddress is replaced with newAddress
@@ -442,7 +473,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldAddress);
-    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.NOT_AVAILABLE_ADDRESS)).thenReturn(Boolean.TRUE);
+    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.NOT_AVAILABLE_ADDRESS))
+        .thenReturn(Boolean.TRUE);
     OffHeapRegionEntryHelper.setValue(re, Token.NOT_AVAILABLE);
 
     // verify oldAddress is replaced with newAddress
@@ -451,7 +483,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
     // mock region entry methods required for test
     when(re.getAddress()).thenReturn(oldAddress);
-    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.TOMBSTONE_ADDRESS)).thenReturn(Boolean.TRUE);
+    when(re.setAddress(oldAddress, OffHeapRegionEntryHelper.TOMBSTONE_ADDRESS))
+        .thenReturn(Boolean.TRUE);
     OffHeapRegionEntryHelper.setValue(re, Token.TOMBSTONE);
 
     // verify oldAddress is replaced with newAddress
@@ -492,11 +525,14 @@ public class OffHeapRegionEntryHelperJUnitTest {
     // mock region entry
     OffHeapRegionEntry re = mock(OffHeapRegionEntry.class);
 
-    byte[] oldData = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt((Integer) Integer.MAX_VALUE).array();
+    byte[] oldData =
+        ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt((Integer) Integer.MAX_VALUE).array();
     long oldAddress = OffHeapRegionEntryHelper.encodeDataAsAddress(oldData, false, false);
 
-    byte[] newData = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE).putInt((Integer) Integer.MAX_VALUE - 1).array();
-    TinyStoredObject newAddress = new TinyStoredObject(OffHeapRegionEntryHelper.encodeDataAsAddress(newData, false, false));
+    byte[] newData = ByteBuffer.allocate(Integer.SIZE / Byte.SIZE)
+        .putInt((Integer) Integer.MAX_VALUE - 1).array();
+    TinyStoredObject newAddress =
+        new TinyStoredObject(OffHeapRegionEntryHelper.encodeDataAsAddress(newData, false, false));
 
     // mock Chunk static methods - in-order to verify that release is never called
     PowerMockito.spy(OffHeapStoredObject.class);
@@ -664,7 +700,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = true;
     boolean isCompressed = true;
 
-    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(data, isSerialized, isCompressed);
+    OffHeapStoredObject chunk =
+        (OffHeapStoredObject) ma.allocateAndInitialize(data, isSerialized, isCompressed);
 
     // create the mock context
     RegionEntryContext regionContext = mock(RegionEntryContext.class);
@@ -679,7 +716,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     when(regionContext.getCachePerfStats()).thenReturn(cacheStats);
     when(cacheStats.startDecompression()).thenReturn(startTime);
 
-    Object actual = OffHeapRegionEntryHelper.addressToObject(chunk.getAddress(), true, regionContext);
+    Object actual =
+        OffHeapRegionEntryHelper.addressToObject(chunk.getAddress(), true, regionContext);
 
     assertThat(actual).isInstanceOf(VMCachedDeserializable.class);
 
@@ -693,7 +731,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     boolean isSerialized = false;
     boolean isCompressed = true;
 
-    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(data, isSerialized, isCompressed);
+    OffHeapStoredObject chunk =
+        (OffHeapStoredObject) ma.allocateAndInitialize(data, isSerialized, isCompressed);
 
     // create the mock context
     RegionEntryContext regionContext = mock(RegionEntryContext.class);
@@ -708,7 +747,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     when(regionContext.getCachePerfStats()).thenReturn(cacheStats);
     when(cacheStats.startDecompression()).thenReturn(startTime);
 
-    Object actual = OffHeapRegionEntryHelper.addressToObject(chunk.getAddress(), true, regionContext);
+    Object actual =
+        OffHeapRegionEntryHelper.addressToObject(chunk.getAddress(), true, regionContext);
 
     assertThat(actual).isInstanceOf(byte[].class);
     assertThat(actual).isEqualTo(data);
@@ -784,31 +824,40 @@ public class OffHeapRegionEntryHelperJUnitTest {
 
   @Test
   public void addressToObjectShouldReturnToken() {
-    Token token = (Token) OffHeapRegionEntryHelper.addressToObject(OffHeapRegionEntryHelper.NULL_ADDRESS, false, null);
+    Token token = (Token) OffHeapRegionEntryHelper
+        .addressToObject(OffHeapRegionEntryHelper.NULL_ADDRESS, false, null);
     assertThat(token).isNull();
 
-    token = (Token) OffHeapRegionEntryHelper.addressToObject(OffHeapRegionEntryHelper.INVALID_ADDRESS, false, null);
+    token = (Token) OffHeapRegionEntryHelper
+        .addressToObject(OffHeapRegionEntryHelper.INVALID_ADDRESS, false, null);
     assertThat(token).isEqualTo(Token.INVALID);
 
-    token = (Token) OffHeapRegionEntryHelper.addressToObject(OffHeapRegionEntryHelper.LOCAL_INVALID_ADDRESS, false, null);
+    token = (Token) OffHeapRegionEntryHelper
+        .addressToObject(OffHeapRegionEntryHelper.LOCAL_INVALID_ADDRESS, false, null);
     assertThat(token).isEqualTo(Token.LOCAL_INVALID);
 
-    token = (Token) OffHeapRegionEntryHelper.addressToObject(OffHeapRegionEntryHelper.DESTROYED_ADDRESS, false, null);
+    token = (Token) OffHeapRegionEntryHelper
+        .addressToObject(OffHeapRegionEntryHelper.DESTROYED_ADDRESS, false, null);
     assertThat(token).isEqualTo(Token.DESTROYED);
 
-    token = (Token) OffHeapRegionEntryHelper.addressToObject(OffHeapRegionEntryHelper.REMOVED_PHASE1_ADDRESS, false, null);
+    token = (Token) OffHeapRegionEntryHelper
+        .addressToObject(OffHeapRegionEntryHelper.REMOVED_PHASE1_ADDRESS, false, null);
     assertThat(token).isEqualTo(Token.REMOVED_PHASE1);
 
-    token = (Token) OffHeapRegionEntryHelper.addressToObject(OffHeapRegionEntryHelper.REMOVED_PHASE2_ADDRESS, false, null);
+    token = (Token) OffHeapRegionEntryHelper
+        .addressToObject(OffHeapRegionEntryHelper.REMOVED_PHASE2_ADDRESS, false, null);
     assertThat(token).isEqualTo(Token.REMOVED_PHASE2);
 
-    token = (Token) OffHeapRegionEntryHelper.addressToObject(OffHeapRegionEntryHelper.END_OF_STREAM_ADDRESS, false, null);
+    token = (Token) OffHeapRegionEntryHelper
+        .addressToObject(OffHeapRegionEntryHelper.END_OF_STREAM_ADDRESS, false, null);
     assertThat(token).isEqualTo(Token.END_OF_STREAM);
 
-    token = (Token) OffHeapRegionEntryHelper.addressToObject(OffHeapRegionEntryHelper.NOT_AVAILABLE_ADDRESS, false, null);
+    token = (Token) OffHeapRegionEntryHelper
+        .addressToObject(OffHeapRegionEntryHelper.NOT_AVAILABLE_ADDRESS, false, null);
     assertThat(token).isEqualTo(Token.NOT_AVAILABLE);
 
-    token = (Token) OffHeapRegionEntryHelper.addressToObject(OffHeapRegionEntryHelper.TOMBSTONE_ADDRESS, false, null);
+    token = (Token) OffHeapRegionEntryHelper
+        .addressToObject(OffHeapRegionEntryHelper.TOMBSTONE_ADDRESS, false, null);
     assertThat(token).isEqualTo(Token.TOMBSTONE);
   }
 
@@ -838,7 +887,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     // mock region entry
     OffHeapRegionEntry re = mock(OffHeapRegionEntry.class);
     when(re.getAddress()).thenReturn(1L);
-    when(re.setAddress(1L, OffHeapRegionEntryHelper.REMOVED_PHASE2_ADDRESS)).thenReturn(Boolean.TRUE);
+    when(re.setAddress(1L, OffHeapRegionEntryHelper.REMOVED_PHASE2_ADDRESS))
+        .thenReturn(Boolean.TRUE);
 
     // mock required methods
     PowerMockito.spy(OffHeapRegionEntryHelper.class);
@@ -856,7 +906,8 @@ public class OffHeapRegionEntryHelperJUnitTest {
     // mock region entry
     OffHeapRegionEntry re = mock(VersionedStatsDiskRegionEntryOffHeap.class);
     when(re.getAddress()).thenReturn(1L);
-    when(re.setAddress(1L, OffHeapRegionEntryHelper.REMOVED_PHASE2_ADDRESS)).thenReturn(Boolean.TRUE);
+    when(re.setAddress(1L, OffHeapRegionEntryHelper.REMOVED_PHASE2_ADDRESS))
+        .thenReturn(Boolean.TRUE);
 
     DiskId spy = Mockito.spy(DiskId.class);
     when(((DiskEntry) re).getDiskId()).thenReturn(spy);
@@ -874,7 +925,7 @@ public class OffHeapRegionEntryHelperJUnitTest {
     PowerMockito.verifyStatic();
     OffHeapRegionEntryHelper.setValue(re, Token.REMOVED_PHASE2);
   }
-  
+
   @Test
   public void doWithOffHeapClearShouldSetTheThreadLocalToTrue() {
     // verify that threadlocal is not set

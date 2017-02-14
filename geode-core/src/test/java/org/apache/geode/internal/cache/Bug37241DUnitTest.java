@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -42,8 +40,8 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * Confirms the bug 37241 is fixed.
- * CleanupFailedInitialization on should also clean disk files created
+ * Confirms the bug 37241 is fixed. CleanupFailedInitialization on should also clean disk files
+ * created
  */
 @Category(DistributedTest.class)
 public class Bug37241DUnitTest extends JUnit4DistributedTestCase {
@@ -55,7 +53,7 @@ public class Bug37241DUnitTest extends JUnit4DistributedTestCase {
   static VM server2 = null;
 
   private static final String REGION_NAME = "Bug37241DUnitTest_region";
-  
+
   static final String expectedReplyException = ReplyException.class.getName();
 
   static final String expectedException = IllegalStateException.class.getName();
@@ -68,42 +66,36 @@ public class Bug37241DUnitTest extends JUnit4DistributedTestCase {
   }
 
   /*
-   *  1.Create persistent region serevr1 with scope global.
-   *  2.Try to create persitent region with same name on server2 with scope d-ack.
-   *  3.Region creation should fail . Check for all files created in the directory for server 2
-   *    gets deleted.
+   * 1.Create persistent region serevr1 with scope global. 2.Try to create persitent region with
+   * same name on server2 with scope d-ack. 3.Region creation should fail . Check for all files
+   * created in the directory for server 2 gets deleted.
    */
   @Test
-  public void testBug37241ForNewDiskRegion()
-  {
-    server1.invoke(() -> Bug37241DUnitTest.createRegionOnServer1());   
+  public void testBug37241ForNewDiskRegion() {
+    server1.invoke(() -> Bug37241DUnitTest.createRegionOnServer1());
 
-    try{
+    try {
       server2.invoke(() -> Bug37241DUnitTest.createRegionOnServer2(Scope.DISTRIBUTED_ACK));
-    }
-    catch(Exception e){
+    } catch (Exception e) {
       server2.invoke(() -> Bug37241DUnitTest.ignoreExceptionInLogs());
       server2.invoke(() -> Bug37241DUnitTest.checkForCleanup());
     }
   }
 
   @Test
-  public void testBug37241ForRecreatedDiskRegion()
-  {
+  public void testBug37241ForRecreatedDiskRegion() {
     server1.invoke(() -> Bug37241DUnitTest.createRegionOnServer1());
     server2.invoke(() -> Bug37241DUnitTest.createRegionOnServer2(Scope.GLOBAL));
     server2.invoke(() -> Bug37241DUnitTest.closeRegion());
     try {
-      server2.invoke(() -> Bug37241DUnitTest.createRegionOnServer2(Scope.DISTRIBUTED_ACK ));
-    }
-    catch (Exception e) {
+      server2.invoke(() -> Bug37241DUnitTest.createRegionOnServer2(Scope.DISTRIBUTED_ACK));
+    } catch (Exception e) {
       server2.invoke(() -> Bug37241DUnitTest.ignoreExceptionInLogs());
       server2.invoke(() -> Bug37241DUnitTest.checkForCleanupAfterRecreation());
     }
   }
 
-  private void createCache(Properties props) throws Exception
-  {
+  private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     ds.disconnect();
     ds = getSystem(props);
@@ -112,8 +104,7 @@ public class Bug37241DUnitTest extends JUnit4DistributedTestCase {
     assertNotNull(cache);
   }
 
-  public static void createRegionOnServer1() throws Exception
-  {
+  public static void createRegionOnServer1() throws Exception {
     new Bug37241DUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.GLOBAL);
@@ -127,16 +118,13 @@ public class Bug37241DUnitTest extends JUnit4DistributedTestCase {
     dirs[0] = file1;
     dirs[1] = file2;
     factory.setDiskSynchronous(false);
-    factory.setDiskStoreName(cache.createDiskStoreFactory()
-                             .setDiskDirs(dirs)
-                             .create("Bug37241DUnitTest")
-                             .getName());
+    factory.setDiskStoreName(
+        cache.createDiskStoreFactory().setDiskDirs(dirs).create("Bug37241DUnitTest").getName());
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
   }
 
-  public static void createRegionOnServer2(Scope scope) throws Exception
-  {
+  public static void createRegionOnServer2(Scope scope) throws Exception {
     new Bug37241DUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(scope);
@@ -150,73 +138,59 @@ public class Bug37241DUnitTest extends JUnit4DistributedTestCase {
     dirs[0] = file1;
     dirs[1] = file2;
     factory.setDiskSynchronous(false);
-    factory.setDiskStoreName(cache.createDiskStoreFactory()
-                             .setDiskDirs(dirs)
-                             .create("Bug37241DUnitTest")
-                             .getName());
+    factory.setDiskStoreName(
+        cache.createDiskStoreFactory().setDiskDirs(dirs).create("Bug37241DUnitTest").getName());
 
-    //added for not to log exepected IllegalStateExcepion.
-    LogWriterUtils.getLogWriter().info(
-        "<ExpectedException action=add>" + expectedReplyException
-            + "</ExpectedException>");
-    LogWriterUtils.getLogWriter().info(
-            "<ExpectedException action=add>" + expectedException
-            + "</ExpectedException>");
-    cache.getLogger().info(
-        "<ExpectedException action=add>" + expectedReplyException
-            + "</ExpectedException>");
-    cache.getLogger().info(
-        "<ExpectedException action=add>" + expectedException
-            + "</ExpectedException>");
-    
+    // added for not to log exepected IllegalStateExcepion.
+    LogWriterUtils.getLogWriter()
+        .info("<ExpectedException action=add>" + expectedReplyException + "</ExpectedException>");
+    LogWriterUtils.getLogWriter()
+        .info("<ExpectedException action=add>" + expectedException + "</ExpectedException>");
+    cache.getLogger()
+        .info("<ExpectedException action=add>" + expectedReplyException + "</ExpectedException>");
+    cache.getLogger()
+        .info("<ExpectedException action=add>" + expectedException + "</ExpectedException>");
+
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
-    
+
   }
 
-  public static void checkForCleanup()
-  {
+  public static void checkForCleanup() {
     try {
       Thread.sleep(200);
     } catch (InterruptedException ignore) {
     }
-    cache.getLogger().info("checkForCleanup=" + Arrays.asList(new File("server2_disk2").listFiles()));
+    cache.getLogger()
+        .info("checkForCleanup=" + Arrays.asList(new File("server2_disk2").listFiles()));
     assertEquals(0, new File("server2_disk2").listFiles().length);
   }
 
 
-  public static void checkForCleanupAfterRecreation()
-  {
+  public static void checkForCleanupAfterRecreation() {
     checkForCleanup();
   }
-  
-  public static void ignoreExceptionInLogs()
-  {
-        
+
+  public static void ignoreExceptionInLogs() {
+
+    cache.getLogger()
+        .info("<ExpectedException action=remove>" + expectedException + "</ExpectedException>");
+
     cache.getLogger().info(
-      "<ExpectedException action=remove>" + expectedException
-      + "</ExpectedException>");
-    
-    cache.getLogger().info(
-        "<ExpectedException action=remove>" + expectedReplyException
-        + "</ExpectedException>");
+        "<ExpectedException action=remove>" + expectedReplyException + "</ExpectedException>");
+    LogWriterUtils.getLogWriter()
+        .info("<ExpectedException action=remove>" + expectedException + "</ExpectedException>");
     LogWriterUtils.getLogWriter().info(
-        "<ExpectedException action=remove>" + expectedException
-        + "</ExpectedException>");
-    LogWriterUtils.getLogWriter().info(
-        "<ExpectedException action=remove>" + expectedReplyException
-        + "</ExpectedException>");
-  }  
-  
-  public static void closeRegion()
-  {
+        "<ExpectedException action=remove>" + expectedReplyException + "</ExpectedException>");
+  }
+
+  public static void closeRegion() {
     Cache cache = CacheFactory.getAnyInstance();
     Region region = cache.getRegion("/" + REGION_NAME);
     region.close();
   }
 
-  public static void closeCache()
-  {
+  public static void closeCache() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();

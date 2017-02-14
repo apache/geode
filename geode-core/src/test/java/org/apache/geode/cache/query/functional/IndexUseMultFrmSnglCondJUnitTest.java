@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /*
  * CompareIndexUsageTest.java
@@ -86,9 +84,10 @@ public class IndexUseMultFrmSnglCondJUnitTest {
       region.put("" + i, new Portfolio(i));
     }
     QueryService qs = CacheUtils.getQueryService();
-    String queries[] = { "SELECT DISTINCT * from /portfolios pf, pf.positions.values pos where pos.secId = 'IBM'"};
+    String queries[] =
+        {"SELECT DISTINCT * from /portfolios pf, pf.positions.values pos where pos.secId = 'IBM'"};
     SelectResults r[][] = new SelectResults[queries.length][2];
-    
+
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -96,19 +95,15 @@ public class IndexUseMultFrmSnglCondJUnitTest {
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
         r[i][0] = (SelectResults) q.execute();
-        
-        if (!observer.isIndexesUsed) {
-          CacheUtils.log("NO INDEX USED");
-        }else {
+
+        if (observer.isIndexesUsed) {
           fail("If index were not there how did they get used ???? ");
-        } 
-        CacheUtils.log(Utils.printResult(r));
-        resArType1 = (StructType) (r[i][0]).getCollectionType()
-            .getElementType();
+        }
+        resArType1 = (StructType) (r[i][0]).getCollectionType().getElementType();
         resArSize1 = ((r[i][0]).size());
         CacheUtils.log(resArType1);
         strAr1 = resArType1.getFieldNames();
-        
+
         set1 = ((r[i][0]).asSet());
         Iterator iter = set1.iterator();
         while (iter.hasNext()) {
@@ -116,32 +111,28 @@ public class IndexUseMultFrmSnglCondJUnitTest {
           valPf1 = stc1.get(strAr1[0]);
           valPos1 = stc1.get(strAr1[1]);
           SECID1 = (((Position) valPos1).getSecId());
-         
+
         }
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
       }
     }
-    //Create an Index and Run the Same Query as above.
-    qs.createIndex("secIdIndex", IndexType.FUNCTIONAL,
-        "b.secId", "/portfolios pf, pf.positions.values b");
-    
+    // Create an Index and Run the Same Query as above.
+    qs.createIndex("secIdIndex", IndexType.FUNCTIONAL, "b.secId",
+        "/portfolios pf, pf.positions.values b");
+
     for (int j = 0; j < queries.length; j++) {
       Query q2 = null;
       try {
         q2 = CacheUtils.getQueryService().newQuery(queries[j]);
         QueryObserverImpl observer2 = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer2);
-        r[j][1] = (SelectResults) q2.execute();  
-        if (observer2.isIndexesUsed == true)
-            CacheUtils.log("YES,INDEX IS USED!!");
-        else {
-            fail("FAILED: Index NOT Used");
+        r[j][1] = (SelectResults) q2.execute();
+        if (observer2.isIndexesUsed != true) {
+          fail("FAILED: Index NOT Used");
         }
-        CacheUtils.log(Utils.printResult(r[j][1]));
-        resArType2 = (StructType) (r[j][1]).getCollectionType()
-            .getElementType();
+        resArType2 = (StructType) (r[j][1]).getCollectionType().getElementType();
         CacheUtils.log(resArType2);
         resArSize2 = (r[j][1]).size();
         strAr2 = resArType2.getFieldNames();
@@ -159,17 +150,16 @@ public class IndexUseMultFrmSnglCondJUnitTest {
         fail(q2.getQueryString());
       }
     }
-    
+
     if ((resArType1).equals(resArType2)) {
-      CacheUtils.log("Both Search Results are of the same Type i.e.--> "
-          + resArType2);
+      CacheUtils.log("Both Search Results are of the same Type i.e.--> " + resArType2);
     } else {
       fail("FAILED:Search result Type is different in both the cases");
     }
-   
-    if ((resArSize1 == resArSize2) || resArSize1 != 0 ) {
-      CacheUtils.log("Search Results Size is Non Zero and is of Same Size i.e.  Size= "
-          + resArSize1);
+
+    if ((resArSize1 == resArSize2) || resArSize1 != 0) {
+      CacheUtils
+          .log("Search Results Size is Non Zero and is of Same Size i.e.  Size= " + resArSize1);
     } else {
       fail("FAILED:Search result size is different in both the cases");
     }
@@ -179,27 +169,27 @@ public class IndexUseMultFrmSnglCondJUnitTest {
       Struct stc2 = (Struct) iter2.next();
       Struct stc1 = (Struct) iter1.next();
       if (stc2.get(strAr2[0]) != stc1.get(strAr1[0]))
-          fail("FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
+        fail(
+            "FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
       if (stc2.get(strAr2[1]) != stc1.get(strAr1[1])
           || !((Position) stc1.get(strAr1[1])).secId.equals("IBM"))
-          fail("FAILED: In both the cases either Positions Or secIds obtained are different");
+        fail("FAILED: In both the cases either Positions Or secIds obtained are different");
     }
-    
+
     CacheUtils.compareResultsOfWithAndWithoutIndex(r, this);
   }
-  
-  
+
+
   @Test
   public void testMultiFromWithSingleConditionUsingIndex() throws Exception {
-    //create region 1 and 2
+    // create region 1 and 2
     Region region1 = CacheUtils.createRegion("portfolios1", Portfolio.class);
     Region region2 = CacheUtils.createRegion("portfolios2", Portfolio.class);
     for (int i = 0; i < 100; i++) {
       Portfolio p = null;
       if (i != 0 && i < 5) {
         p = new Portfolio(5);
-      }
-      else {
+      } else {
         p = new Portfolio(i);
       }
       region1.put(i, p);
@@ -207,32 +197,33 @@ public class IndexUseMultFrmSnglCondJUnitTest {
     }
 
     QueryService qs = CacheUtils.getQueryService();
-    //create and execute query
+    // create and execute query
     String queryString = "SELECT * from /portfolios1 P1, /portfolios2 P2 WHERE P1.ID = 5";
     Query query = qs.newQuery(queryString);
     SelectResults sr1 = (SelectResults) query.execute();
-    
-    //create index
+
+    // create index
     Index index = qs.createIndex("P1IDIndex", IndexType.FUNCTIONAL, "P1.ID", "/portfolios1 P1");
 
-    //execute query
+    // execute query
     SelectResults sr2 = (SelectResults) query.execute();
-    assertEquals("Index result set does not match unindexed result set size" , sr1.size(), sr2.size());
-    //size will be number of matching in region 1 x region 2 size
-    assertEquals("Query result set size does not match expected size" , 5 * region2.size(), sr2.size());
+    assertEquals("Index result set does not match unindexed result set size", sr1.size(),
+        sr2.size());
+    // size will be number of matching in region 1 x region 2 size
+    assertEquals("Query result set size does not match expected size", 5 * region2.size(),
+        sr2.size());
   }
-  
+
   @Test
   public void testMultiFromWithSingleConditionUsingRangeIndex() throws Exception {
-    //create region 1 and 2
+    // create region 1 and 2
     Region region1 = CacheUtils.createRegion("portfolios1", Portfolio.class);
     Region region2 = CacheUtils.createRegion("portfolios2", Portfolio.class);
     for (int i = 0; i < 100; i++) {
       Portfolio p = null;
       if (i != 0 && i < 5) {
         p = new Portfolio(5);
-      }
-      else {
+      } else {
         p = new Portfolio(i);
       }
       region1.put(i, p);
@@ -240,19 +231,21 @@ public class IndexUseMultFrmSnglCondJUnitTest {
     }
 
     QueryService qs = CacheUtils.getQueryService();
-    //create and execute query
+    // create and execute query
     String queryString = "SELECT * from /portfolios1 P1, P1.positions.values WHERE P1.ID = 5";
     Query query = qs.newQuery(queryString);
     SelectResults sr1 = (SelectResults) query.execute();
-    
-    //create index
-    Index index = qs.createIndex("P1IDIndex", IndexType.FUNCTIONAL, "P1.ID", "/portfolios1 P1, P1.positions.values");
 
-    //execute query
+    // create index
+    Index index = qs.createIndex("P1IDIndex", IndexType.FUNCTIONAL, "P1.ID",
+        "/portfolios1 P1, P1.positions.values");
+
+    // execute query
     SelectResults sr2 = (SelectResults) query.execute();
-    assertEquals("Index result set does not match unindexed result set size" , sr1.size(), sr2.size());
-    //size will be number of matching in region 1 x region 2 size
-    assertEquals("Query result set size does not match expected size" , 10, sr2.size());
+    assertEquals("Index result set does not match unindexed result set size", sr1.size(),
+        sr2.size());
+    // size will be number of matching in region 1 x region 2 size
+    assertEquals("Query result set size does not match expected size", 10, sr2.size());
   }
 
   class QueryObserverImpl extends QueryObserverAdapter {

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.util;
 
@@ -44,11 +42,11 @@ public class ClasspathScanLoadHelper {
   private static final String CLASSFILE_EXTENSION = ".class";
 
   public static Set<Class<?>> loadAndGet(String commandPackageName,
-                              Class<?> requiredInterfaceToLoad,
-                              boolean onlyInstantiable) throws ClassNotFoundException, IOException {
-    
-    Set<Class<?>> classSet  = new HashSet<Class<?>>();
-    Class<?>      classes[] = getClasses(commandPackageName);
+      Class<?> requiredInterfaceToLoad, boolean onlyInstantiable)
+      throws ClassNotFoundException, IOException {
+
+    Set<Class<?>> classSet = new HashSet<Class<?>>();
+    Class<?> classes[] = getClasses(commandPackageName);
 
     for (int i = 0; i < classes.length; i++) {
       if (implementsType(classes[i], requiredInterfaceToLoad)) {
@@ -61,24 +59,23 @@ public class ClasspathScanLoadHelper {
         }
       }
     }
-    
+
     return classSet;
   }
-  
+
   public static boolean isInstantiable(Class<?> klass) {
     int modifiers = klass.getModifiers();
-    
-    boolean isInstantiable = !Modifier.isAbstract(modifiers) && 
-                             !Modifier.isInterface(modifiers) && 
-                             Modifier.isPublic(modifiers); 
-    
+
+    boolean isInstantiable = !Modifier.isAbstract(modifiers) && !Modifier.isInterface(modifiers)
+        && Modifier.isPublic(modifiers);
+
     return isInstantiable;
   }
 
   private static boolean implementsType(Class<?> typeToCheck, Class<?> requiredInterface) {
-    if(requiredInterface.isAssignableFrom(typeToCheck)){
+    if (requiredInterface.isAssignableFrom(typeToCheck)) {
       return true;
-    }else{
+    } else {
       return false;
     }
   }
@@ -91,27 +88,29 @@ public class ClasspathScanLoadHelper {
 
     Enumeration<URL> resources = ClassPathLoader.getLatest().getResources(packagePath);
     List<Class<?>> classesList = new ArrayList<Class<?>>();
-    
+
     while (resources.hasMoreElements()) {
       URL packageUrl = resources.nextElement();
-      
+
       String actualPackagePath = packageUrl.getPath();
       int jarIndex = actualPackagePath.indexOf(".jar!");
       if (jarIndex != -1) { // resource appears to be in a jar
         String jarPath = actualPackagePath.substring(0, jarIndex + ".jar".length());
 
         if (jarPath.startsWith("file:")) {
-          if (File.separatorChar == '/') {//whether Unix or Windows system
+          if (File.separatorChar == '/') {// whether Unix or Windows system
             // On Unix, to get actual path, we remove "file:" from the Path
             jarPath = jarPath.substring("file:".length());
           } else {
             // On Windows jarPaths are like:
-            // Local Path:   file:/G:/where/java/spring/spring-shell/1.0.0/spring-shell-1.0.0.RELEASE.jar
-            // Network Path: file://stinger.pune.gemstone.com/shared/where/java/spring/spring-shell/1.0.0/spring-shell-1.0.0.RELEASE.jar
+            // Local Path:
+            // file:/G:/where/java/spring/spring-shell/1.0.0/spring-shell-1.0.0.RELEASE.jar
+            // Network Path:
+            // file://stinger.pune.gemstone.com/shared/where/java/spring/spring-shell/1.0.0/spring-shell-1.0.0.RELEASE.jar
             // To get actual path, we remove "file:/" from the Path
             jarPath = jarPath.substring("file:/".length());
-            // If the path still starts with a "/", then it's a network path. 
-            // Hence, add one "/". 
+            // If the path still starts with a "/", then it's a network path.
+            // Hence, add one "/".
             if (jarPath.startsWith("/") && !jarPath.startsWith("//")) {
               jarPath = "/" + jarPath;
             }
@@ -142,73 +141,64 @@ public class ClasspathScanLoadHelper {
     ClassPathLoader cpLoader = ClassPathLoader.getLatest();
     // Load only .class files that are not from test code
     TestClassFilter tcf = new TestClassFilter();
-    
+
     File[] files = directory.listFiles(tcf);
-    File   file  = null;
+    File file = null;
     for (int i = 0; i < files.length; i++) {
       file = files[i];
-      if (file.isDirectory()) {//sub-package
+      if (file.isDirectory()) {// sub-package
         // assert !file.getName().contains(".");
         classes.addAll(findClasses(file, packageName + "." + file.getName()));
       } else {
-        //remove .class from the file name
-        String classSimpleName = file.getName().substring(0, file.getName().length() - CLASSFILE_EXTENSION.length());
+        // remove .class from the file name
+        String classSimpleName =
+            file.getName().substring(0, file.getName().length() - CLASSFILE_EXTENSION.length());
         classes.add(cpLoader.forName(packageName + '.' + classSimpleName));
       }
     }
     return classes;
   }
-  
+
 
   /**
    * Returns all classes that are in the specified jar and package name.
    * 
-   * @param jarPath
-   *          The absolute or relative jar path.
-   * @param packageName
-   *          The package name.
+   * @param jarPath The absolute or relative jar path.
+   * @param packageName The package name.
    * @return Returns all classes that are in the specified jar and package name.
-   * @throws ClassNotFoundException
-   *           Thrown if unable to load a class
-   * @throws IOException
-   *           Thrown if error occurs while reading the jar file
+   * @throws ClassNotFoundException Thrown if unable to load a class
+   * @throws IOException Thrown if error occurs while reading the jar file
    */
-  public static Class<?>[] getClasses(String jarPath, String packageName) 
+  public static Class<?>[] getClasses(String jarPath, String packageName)
       throws ClassNotFoundException, IOException {
     ClassPathLoader cpLoader = ClassPathLoader.getLatest();
-    
+
     String[] classNames = getClassNames(jarPath, packageName);
-    Class<?> classes[]  = new Class[classNames.length];
+    Class<?> classes[] = new Class[classNames.length];
     for (int i = 0; i < classNames.length; i++) {
-      String className = (String)classNames[i];
+      String className = (String) classNames[i];
       classes[i] = cpLoader.forName(className);
     }
     return classes;
   }
 
   /**
-   * Returns all names of classes that are defined in the specified jar and
-   * package name.
+   * Returns all names of classes that are defined in the specified jar and package name.
    * 
-   * @param jarPath
-   *          The absolute or relative jar path.
-   * @param packageName
-   *          The package name.
-   * @return Returns all names of classes that are defined in the specified jar
-   *         and package name.
-   * @throws IOException
-   *           Thrown if error occurs while reading the jar file
+   * @param jarPath The absolute or relative jar path.
+   * @param packageName The package name.
+   * @return Returns all names of classes that are defined in the specified jar and package name.
+   * @throws IOException Thrown if error occurs while reading the jar file
    */
-  public static String[] getClassNames(String jarPath, String packageName) 
-      throws IOException {
+  public static String[] getClassNames(String jarPath, String packageName) throws IOException {
     if (jarPath == null) {
       return new String[0];
     }
-    
+
     File file;
-    //Path is absolute on Unix if it starts with '/' 
-    //or path contains colon on Windows 
-    if (jarPath.startsWith("/") || (jarPath.indexOf(':') >= 0 && File.separatorChar == '\\' )) {
+    // Path is absolute on Unix if it starts with '/'
+    // or path contains colon on Windows
+    if (jarPath.startsWith("/") || (jarPath.indexOf(':') >= 0 && File.separatorChar == '\\')) {
       // absolute path
       file = new File(jarPath);
     } else {
@@ -216,7 +206,7 @@ public class ClasspathScanLoadHelper {
       String workingDir = System.getProperty("user.dir");
       file = new File(workingDir + File.separator + jarPath);
     }
-    
+
     List<String> classNames = new ArrayList<String>();
     String packagePath = packageName.replaceAll("\\.", "/");
     JarInputStream jarFile = new JarInputStream(new FileInputStream(file));
@@ -236,7 +226,7 @@ public class ClasspathScanLoadHelper {
     }
     jarFile.close();
 
-    return (String[])classNames.toArray(new String[0]);
+    return (String[]) classNames.toArray(new String[0]);
   }
 
   /**
@@ -250,7 +240,8 @@ public class ClasspathScanLoadHelper {
     @Override
     public boolean accept(File pathname) {
       String pathToCheck = pathname.getName();
-      return !pathToCheck.contains(TESTS_CODE_INDICATOR) && pathToCheck.endsWith(CLASSFILE_EXTENSION);
+      return !pathToCheck.contains(TESTS_CODE_INDICATOR)
+          && pathToCheck.endsWith(CLASSFILE_EXTENSION);
     }
   }
 }

@@ -1,28 +1,34 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -50,14 +56,15 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
 
   private static VM server = null;
   private VM client = null;
   private static GemFireCacheImpl cache = null;
-  
+
   private static final String region = Bug48571DUnitTest.class.getSimpleName() + "_region";
   private static int numOfCreates = 0;
   private static int numOfUpdates = 0;
@@ -70,7 +77,7 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
     server = host.getVM(0);
     client = host.getVM(1);
   }
-  
+
   @Override
   public final void preTearDown() throws Exception {
     reset();
@@ -106,6 +113,7 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
         }
         return false;
       }
+
       @Override
       public String description() {
         return "Proxy has not paused yet";
@@ -113,7 +121,8 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
     };
     Wait.waitForCriterion(criterion, 15 * 1000, 200, true);
   }
-  
+
+  @Category(FlakyTest.class) // GEODE-510
   @Test
   public void testStatsMatchWithSize() throws Exception {
     IgnoredException.addIgnoredException("Unexpected IOException||Connection reset");
@@ -125,8 +134,8 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
     server.invoke(() -> Bug48571DUnitTest.doPuts());
     // close durable client
     client.invoke(() -> Bug48571DUnitTest.closeClientCache());
-    
-    server.invoke("verifyProxyHasBeenPaused", () -> verifyProxyHasBeenPaused() );
+
+    server.invoke("verifyProxyHasBeenPaused", () -> verifyProxyHasBeenPaused());
     // resume puts on server, add another 100.
     server.invokeAsync(() -> Bug48571DUnitTest.resumePuts()); // TODO: join or await result
     // start durable client
@@ -142,15 +151,14 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     props.setProperty(LOG_FILE, "server_" + OSProcess.getId() + ".log");
     props.setProperty(LOG_LEVEL, "info");
-    props.setProperty(STATISTIC_ARCHIVE_FILE, "server_" + OSProcess.getId()
-        + ".gfs");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "server_" + OSProcess.getId() + ".gfs");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     CacheFactory cf = new CacheFactory(props);
 
     DistributedSystem ds = new Bug48571DUnitTest().getSystem(props);
     ds.disconnect();
 
-    cache = (GemFireCacheImpl)cf.create();
+    cache = (GemFireCacheImpl) cf.create();
 
     RegionFactory<String, String> rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
     rf.setConcurrencyChecksEnabled(false);
@@ -176,8 +184,7 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
 
     props.setProperty(LOG_FILE, "client_" + OSProcess.getId() + ".log");
     props.setProperty(LOG_LEVEL, "info");
-    props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId()
-        + ".gfs");
+    props.setProperty(STATISTIC_ARCHIVE_FILE, "client_" + OSProcess.getId() + ".gfs");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
 
     ClientCacheFactory ccf = new ClientCacheFactory(props);
@@ -191,26 +198,27 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
 
     cache = (GemFireCacheImpl) ccf.create();
 
-    ClientRegionFactory<String, String> crf = cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
+    ClientRegionFactory<String, String> crf =
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
     crf.setConcurrencyChecksEnabled(false);
 
     crf.addCacheListener(new CacheListenerAdapter<String, String>() {
       public void afterInvalidate(EntryEvent<String, String> event) {
-        cache.getLoggerI18n().fine(
-            "Invalidate Event: " + event.getKey() + ", " + event.getNewValue());
+        cache.getLoggerI18n()
+            .fine("Invalidate Event: " + event.getKey() + ", " + event.getNewValue());
         numOfInvalidates++;
       }
+
       public void afterCreate(EntryEvent<String, String> event) {
         if (((String) event.getKey()).equals("last_key")) {
           lastKeyReceived = true;
         }
-        cache.getLoggerI18n().fine(
-            "Create Event: " + event.getKey() + ", " + event.getNewValue());
+        cache.getLoggerI18n().fine("Create Event: " + event.getKey() + ", " + event.getNewValue());
         numOfCreates++;
       }
+
       public void afterUpdate(EntryEvent<String, String> event) {
-        cache.getLoggerI18n().fine(
-            "Update Event: " + event.getKey() + ", " + event.getNewValue());
+        cache.getLoggerI18n().fine("Update Event: " + event.getKey() + ", " + event.getNewValue());
         numOfUpdates++;
       }
     });
@@ -225,21 +233,21 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
     Thread t1 = new Thread(new Runnable() {
       public void run() {
         for (int i = 0; i < 500; i++) {
-          r.put("T1_KEY_"+i, "VALUE_"+i);
+          r.put("T1_KEY_" + i, "VALUE_" + i);
         }
       }
     });
     Thread t2 = new Thread(new Runnable() {
       public void run() {
         for (int i = 0; i < 500; i++) {
-          r.put("T2_KEY_"+i, "VALUE_"+i);
+          r.put("T2_KEY_" + i, "VALUE_" + i);
         }
       }
     });
     Thread t3 = new Thread(new Runnable() {
       public void run() {
         for (int i = 0; i < 500; i++) {
-          r.put("T3_KEY_"+i, "VALUE_"+i);
+          r.put("T3_KEY_" + i, "VALUE_" + i);
         }
       }
     });
@@ -252,11 +260,11 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
     t2.join();
     t3.join();
   }
-  
+
   public static void resumePuts() {
     Region<String, String> r = cache.getRegion(region);
     for (int i = 0; i < 100; i++) {
-      r.put("NEWKEY_"+i, "NEWVALUE_"+i);
+      r.put("NEWKEY_" + i, "NEWVALUE_" + i);
     }
     r.put("last_key", "last_value");
   }
@@ -267,23 +275,29 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
       public boolean done() {
         return lastKeyReceived;
       }
+
       @Override
       public String description() {
         return "Did not receive last key.";
       }
     };
-    Wait.waitForCriterion(wc, 60*1000, 500, true);
+    Wait.waitForCriterion(wc, 60 * 1000, 500, true);
   }
 
   public static void verifyStats() throws Exception {
     CacheClientNotifier ccn = CacheClientNotifier.getInstance();
     CacheClientProxy ccp = ccn.getClientProxies().iterator().next();
     cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getQueueSize() " + ccp.getQueueSize());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getQueueSizeStat() " + ccp.getQueueSizeStat());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getEventsEnqued() " + ccp.getHARegionQueue().getStatistics().getEventsEnqued());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getEventsDispatched() " + ccp.getHARegionQueue().getStatistics().getEventsDispatched());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getEventsRemoved() " + ccp.getHARegionQueue().getStatistics().getEventsRemoved());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getNumVoidRemovals() " + ccp.getHARegionQueue().getStatistics().getNumVoidRemovals());
+    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+        "getQueueSizeStat() " + ccp.getQueueSizeStat());
+    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+        "getEventsEnqued() " + ccp.getHARegionQueue().getStatistics().getEventsEnqued());
+    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+        "getEventsDispatched() " + ccp.getHARegionQueue().getStatistics().getEventsDispatched());
+    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+        "getEventsRemoved() " + ccp.getHARegionQueue().getStatistics().getEventsRemoved());
+    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+        "getNumVoidRemovals() " + ccp.getHARegionQueue().getStatistics().getNumVoidRemovals());
     assertEquals(ccp.getQueueSize(), ccp.getQueueSizeStat());
   }
 }

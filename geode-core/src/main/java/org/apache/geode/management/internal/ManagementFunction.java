@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -34,23 +32,22 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * A generic function to act as a conduit between Managing Node and Managed
- * nodes.
+ * A generic function to act as a conduit between Managing Node and Managed nodes.
  * 
  * The direction of request flow is from Managing Node to Managing Node.
  * 
  * The following methods are executed at Managed node on behalf of the proxy.
  * 
- * 1) All setter methods 2) All operations 3) addNotificationListener 4)
- * removeNotificationListener 5) getNotificationInfo
+ * 1) All setter methods 2) All operations 3) addNotificationListener 4) removeNotificationListener
+ * 5) getNotificationInfo
  * 
  * 
  */
 
-public class ManagementFunction extends FunctionAdapter implements InternalEntity{
+public class ManagementFunction extends FunctionAdapter implements InternalEntity {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   /**
    * 
    */
@@ -76,15 +73,14 @@ public class ManagementFunction extends FunctionAdapter implements InternalEntit
   }
 
   /**
-   * Actual function execution. It delegates task at managed node according to
-   * the request received.
+   * Actual function execution. It delegates task at managed node according to the request received.
    * 
    * If any exception is encountered it will set the result to UNDEFINED
    */
   public void execute(FunctionContext fc) {
 
     boolean executedSuccessfully = false;
-    
+
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
 
@@ -113,13 +109,11 @@ public class ManagementFunction extends FunctionAdapter implements InternalEntit
 
       } else if (methodName.equals("addNotificationListener")) {
         notificationHub.addHubNotificationListener(memberName, objectName);
-        fc.getResultSender().lastResult(
-            (Serializable) ManagementConstants.UNDEFINED);
+        fc.getResultSender().lastResult((Serializable) ManagementConstants.UNDEFINED);
 
       } else if (methodName.equals("removeNotificationListener")) {
         notificationHub.removeHubNotificationListener(memberName, objectName);
-        fc.getResultSender().lastResult(
-            (Serializable) ManagementConstants.UNDEFINED);
+        fc.getResultSender().lastResult((Serializable) ManagementConstants.UNDEFINED);
 
       } else if (methodName.equals("getNotificationInfo")) {
         fc.getResultSender().lastResult(mbeanServer.getMBeanInfo(objectName));
@@ -132,9 +126,9 @@ public class ManagementFunction extends FunctionAdapter implements InternalEntit
       executedSuccessfully = true;
 
     } catch (InstanceNotFoundException e) {
-        if (cache != null && !cache.isClosed()) {
-          sendException(e, fc);
-        }
+      if (cache != null && !cache.isClosed()) {
+        sendException(e, fc);
+      }
     } catch (ReflectionException e) {
       sendException(e, fc);
     } catch (MBeanException e) {
@@ -146,8 +140,8 @@ public class ManagementFunction extends FunctionAdapter implements InternalEntit
     } finally {
       if (!executedSuccessfully) {
         if (cache == null || (cache != null && cache.isClosed())) {
-          Exception e = new Exception(ManagementStrings.MEMBER_IS_SHUTTING_DOWN
-              .toLocalizedString());
+          Exception e =
+              new Exception(ManagementStrings.MEMBER_IS_SHUTTING_DOWN.toLocalizedString());
           sendException(e, fc);
           return; // member is closing or invalid member
         }
@@ -160,8 +154,8 @@ public class ManagementFunction extends FunctionAdapter implements InternalEntit
   public String getId() {
     return ManagementConstants.MGMT_FUNCTION_ID;
   }
-  
-  private void sendException(Exception e, FunctionContext fc){
+
+  private void sendException(Exception e, FunctionContext fc) {
     if (logger.isDebugEnabled()) {
       logger.debug(ManagementStrings.MANAGEMENT_FUNCTION_COULD_NOT_EXECUTE.toLocalizedString());
       logger.debug(e.getMessage(), e);

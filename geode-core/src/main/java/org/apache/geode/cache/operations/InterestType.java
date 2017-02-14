@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.operations;
@@ -28,9 +26,9 @@ public final class InterestType {
 
   public static final byte TP_REGEX = 1;
 
-  //public static final byte TP_FILTER_CLASS = 2;
+  // public static final byte TP_FILTER_CLASS = 2;
 
-  //public static final byte TP_OQL = 3;
+  // public static final byte TP_OQL = 3;
 
   public static final byte TP_LIST = 4;
 
@@ -51,21 +49,20 @@ public final class InterestType {
   /**
    * For registering interest in all keys matching a regular expression.
    */
-  public static final InterestType REGULAR_EXPRESSION = new InterestType(
-      "REGULAR_EXPRESSION", TP_REGEX);
+  public static final InterestType REGULAR_EXPRESSION =
+      new InterestType("REGULAR_EXPRESSION", TP_REGEX);
 
   /**
-   * For registering interest in all key/value pairs that satisfy a provided
-   * filtering class.
+   * For registering interest in all key/value pairs that satisfy a provided filtering class.
    */
-  //public static final InterestType FILTER_CLASS = new InterestType(
-  //    "FILTER_CLASS", TP_FILTER_CLASS);
+  // public static final InterestType FILTER_CLASS = new InterestType(
+  // "FILTER_CLASS", TP_FILTER_CLASS);
 
   /**
    * For registering interest in all key/value pairs that satisfy an OQL query.
    */
-  //public static final InterestType OQL_QUERY = new InterestType("OQL_QUERY",
-  //    TP_OQL);
+  // public static final InterestType OQL_QUERY = new InterestType("OQL_QUERY",
+  // TP_OQL);
 
   /** The name of this interest type. */
   private final String name;
@@ -74,8 +71,8 @@ public final class InterestType {
   private final byte ordinal;
 
   /**
-   * One of the following: TP_KEY, TP_LIST, TP_REGEX, TP_FILTER_CLASS, TP_OQL.
-   * TP_FILTER_CLASS and TP_OQL are currently unimplemented.
+   * One of the following: TP_KEY, TP_LIST, TP_REGEX, TP_FILTER_CLASS, TP_OQL. TP_FILTER_CLASS and
+   * TP_OQL are currently unimplemented.
    */
   private final byte interestType;
 
@@ -111,16 +108,16 @@ public final class InterestType {
   /**
    * Returns true if this is a filter class interest type.
    */
-  //public boolean isFilterClass() {
-  //  return (this.interestType == TP_FILTER_CLASS);
-  //}
+  // public boolean isFilterClass() {
+  // return (this.interestType == TP_FILTER_CLASS);
+  // }
 
   /**
    * Returns true if this is an OQL query interest type.
    */
-  //public boolean isOQLQuery() {
-  //  return (this.interestType == TP_OQL);
-  //}
+  // public boolean isOQLQuery() {
+  // return (this.interestType == TP_OQL);
+  // }
 
   /**
    * Returns the <code>InterestType</code> represented by specified ordinal.

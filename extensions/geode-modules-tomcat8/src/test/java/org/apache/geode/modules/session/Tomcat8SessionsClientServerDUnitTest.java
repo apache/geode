@@ -1,24 +1,23 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.session;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.internal.cache.CacheServerLauncher.serverPort;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.junit.experimental.categories.Category;
@@ -49,7 +48,7 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
   @Override
   public void preTearDown() {
     vm0.invoke(() -> {
-      GemFireCacheImpl.getInstance().getCacheServers().forEach(e -> ((CacheServer)e).stop());
+      (GemFireCacheImpl.getInstance().getCacheServers()).forEach(cacheServer -> cacheServer.stop());
     });
     server.stopContainer();
   }
@@ -87,8 +86,8 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
     pf.create("Pool Connecting to Cache Server");
 
     /*
-     * Can only retrieve the region once the container has started up
-     * (and the cache has started too).
+     * Can only retrieve the region once the container has started up (and the cache has started
+     * too).
      */
     region = sessionManager.getSessionCache().getSessionRegion();
     sessionManager.getTheContext().setSessionTimeout(30);

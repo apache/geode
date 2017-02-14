@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.query.internal;
@@ -45,9 +43,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 // @todo probably should assert element type when elements added
 // @todo support generics when no longer support Java 1.4
 /**
- * Implementation of SelectResults that allows duplicates . The keys store the
- * elements of the collection and the the values store the number of occurrences
- * as an int.
+ * Implementation of SelectResults that allows duplicates . The keys store the elements of the
+ * collection and the the values store the number of occurrences as an int.
  * 
  * @see ResultsBag
  * @see StructBag
@@ -55,8 +52,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *
  * @since GemFire 8.1
  */
-public abstract class Bag<E> extends AbstractCollection<E> implements
-    CqResults<E> {
+public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<E> {
   protected ObjectType elementType;
   // protected ObjectIntHashMap map;
   protected int size = 0;
@@ -75,25 +71,22 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
   }
 
   /**
-   * This constructor should only be used by the DataSerializer. Creates a
-   * ResultsBag with no fields.
+   * This constructor should only be used by the DataSerializer. Creates a ResultsBag with no
+   * fields.
    */
-  public Bag(boolean ignored) {
-  }
+  public Bag(boolean ignored) {}
 
   /**
-   * @param stats
-   *          the CachePerfStats to track hash collisions. Should be null unless
-   *          this is used as a query execution-time result set.
+   * @param stats the CachePerfStats to track hash collisions. Should be null unless this is used as
+   *        a query execution-time result set.
    */
   public Bag(CachePerfStats stats) {
 
   }
 
   /**
-   * @param stats
-   *          the CachePerfStats to track hash collisions. Should be null unless
-   *          this is used as a query execution-time result set.
+   * @param stats the CachePerfStats to track hash collisions. Should be null unless this is used as
+   *        a query execution-time result set.
    */
   Bag(Collection c, CachePerfStats stats) {
     this(stats);
@@ -103,9 +96,8 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
   }
 
   /**
-   * @param stats
-   *          the CachePerfStats to track hash collisions. Should be null unless
-   *          this is used as a query execution-time result set.
+   * @param stats the CachePerfStats to track hash collisions. Should be null unless this is used as
+   *        a query execution-time result set.
    */
   Bag(SelectResults sr, CachePerfStats stats) {
     this((Collection) sr, stats);
@@ -114,9 +106,8 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
   }
 
   /**
-   * @param stats
-   *          the CachePerfStats to track hash collisions. Should be null unless
-   *          this is used as a query execution-time result set.
+   * @param stats the CachePerfStats to track hash collisions. Should be null unless this is used as
+   *        a query execution-time result set.
    */
   Bag(ObjectType elementType, CachePerfStats stats) {
     this(stats);
@@ -141,8 +132,8 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
   }
 
   /**
-   * Return an unmodifiable Set view of this bag. Does not require an iteration
-   * by using a lightweight wrapper.
+   * Return an unmodifiable Set view of this bag. Does not require an iteration by using a
+   * lightweight wrapper.
    */
   public Set asSet() {
     return new SetView();
@@ -183,8 +174,8 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
   protected abstract int mapGet(Object element);
 
   /**
-   * Return an iterator over the elements in this collection. Duplicates will
-   * show up the number of times it has occurrences.
+   * Return an iterator over the elements in this collection. Duplicates will show up the number of
+   * times it has occurrences.
    */
   @Override
   public Iterator iterator() {
@@ -328,11 +319,9 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
       return false;
     }
     Bag otherBag = (Bag) o;
-    return this.size == otherBag.size
-        && this.elementType.equals(otherBag.elementType)
+    return this.size == otherBag.size && this.elementType.equals(otherBag.elementType)
 
-        && this.getMap().equals(otherBag.getMap())
-        && this.numNulls == otherBag.numNulls;
+        && this.getMap().equals(otherBag.getMap()) && this.numNulls == otherBag.numNulls;
   }
 
   protected abstract Object getMap();
@@ -436,8 +425,8 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
       Object currentEntry = null;
 
       /**
-       * duplicates are numbered from 1 to n; 0 = no current, otherwise goes
-       * from 1 to dupLimit, indicating the last dup that was emitted by next()
+       * duplicates are numbered from 1 to n; 0 = no current, otherwise goes from 1 to dupLimit,
+       * indicating the last dup that was emitted by next()
        */
       int currentDup = 0;
       int dupLimit = 0;
@@ -480,13 +469,12 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
       Object currentEntry = null;
 
       /**
-       * duplicates are numbered from 1 to n; 0 = no current, otherwise goes
-       * from 1 to dupLimit, indicating the last dup that was emitted by next()
+       * duplicates are numbered from 1 to n; 0 = no current, otherwise goes from 1 to dupLimit,
+       * indicating the last dup that was emitted by next()
        */
       int currentDup = 0;
       /**
-       * dupLimit is the total number of occurrences; start by emitting the
-       * nulls
+       * dupLimit is the total number of occurrences; start by emitting the nulls
        */
       int dupLimit = Bag.this.numNulls;
 
@@ -498,8 +486,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
         // see if there is another duplicate to emit
         if (this.currentDup < this.dupLimit) {
           this.currentDup++;
-          return (this.currentEntry == null) ? null : Bag.this
-              .keyFromEntry(currentEntry);
+          return (this.currentEntry == null) ? null : Bag.this.keyFromEntry(currentEntry);
         }
         // otherwise, go to next object
         currentEntry = this.mapIterator.next();
@@ -514,8 +501,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
         if (this.currentDup == 0) {
           // next has not yet been called
           throw new IllegalStateException(
-              LocalizedStrings.ResultsBag_NEXT_MUST_BE_CALLED_BEFORE_REMOVE
-                  .toLocalizedString());
+              LocalizedStrings.ResultsBag_NEXT_MUST_BE_CALLED_BEFORE_REMOVE.toLocalizedString());
         }
 
         this.dupLimit--;
@@ -539,9 +525,9 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
   }
 
   /**
-   * package visibility so ResultsCollectionWrapper can reference it. This
-   * SetView is serialized as a special case by a ResultsCollectionWrapper.
-   * Keith: Refactored to add consideration for LIMIT, April 1, 2009
+   * package visibility so ResultsCollectionWrapper can reference it. This SetView is serialized as
+   * a special case by a ResultsCollectionWrapper. Keith: Refactored to add consideration for LIMIT,
+   * April 1, 2009
    * 
    * @see ResultsCollectionWrapper#toData
    */
@@ -659,8 +645,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements
       public void remove() {
         if (this.currPos == 0) {
           // next has not yet been called
-          throw new IllegalStateException(
-              "next() must be called before remove()");
+          throw new IllegalStateException("next() must be called before remove()");
         }
         synchronized (Bag.this.limitLock) {
           if (currentIsNull) {

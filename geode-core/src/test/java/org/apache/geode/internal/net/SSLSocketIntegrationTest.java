@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.net;
 
@@ -21,18 +19,26 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.*;
 import static org.assertj.core.api.Assertions.*;
 
+import com.jayway.awaitility.Awaitility;
+import com.sun.tools.hat.internal.model.StackTrace;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.Properties;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,11 +57,12 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Integration tests for SocketCreatorFactory with SSL.
  * <p>
- * <p>Renamed from {@code JSSESocketJUnitTest}.
- *
+ * <p>
+ * Renamed from {@code JSSESocketJUnitTest}.
+ * 
  * @see ClientSocketFactoryIntegrationTest
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class SSLSocketIntegrationTest {
 
   private static final String MESSAGE = SSLSocketIntegrationTest.class.getName() + " Message";
@@ -137,7 +144,77 @@ public class SSLSocketIntegrationTest {
     output.flush();
 
     // this is the real assertion of this test
-    await().atMost(1, TimeUnit.MINUTES).until(() -> assertThat(this.messageFromClient.get()).isEqualTo(MESSAGE));
+    await().atMost(1, TimeUnit.MINUTES)
+        .until(() -> assertThat(this.messageFromClient.get()).isEqualTo(MESSAGE));
+  }
+
+  @Test
+  public void configureClientSSLSocketCanTimeOut() throws Exception {
+    final Semaphore serverCoordination = new Semaphore(0);
+
+    // configure a non-SSL server socket. We will connect
+    // a client SSL socket to it and demonstrate that the
+    // handshake times out
+    final ServerSocket serverSocket = new ServerSocket();
+    serverSocket.bind(new InetSocketAddress(SocketCreator.getLocalHost(), 0));
+    Thread serverThread = new Thread() {
+      public void run() {
+        serverCoordination.release();
+        try (Socket clientSocket = serverSocket.accept()) {
+          System.out.println("server thread accepted a connection");
+          serverCoordination.acquire();
+        } catch (Exception e) {
+          System.err.println("accept failed");
+          e.printStackTrace();
+        }
+        try {
+          serverSocket.close();
+        } catch (IOException e) {
+          // ignored
+        }
+        System.out.println("server thread is exiting");
+      }
+    };
+    serverThread.setName("SocketCreatorJUnitTest serverSocket thread");
+    serverThread.setDaemon(true);
+    serverThread.start();
+
+    serverCoordination.acquire();
+
+    SocketCreator socketCreator =
+        SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.SERVER);
+
+    int serverSocketPort = serverSocket.getLocalPort();
+    try {
+      Awaitility.await("connect to server socket").atMost(30, TimeUnit.SECONDS).until(() -> {
+        try {
+          Socket clientSocket = socketCreator.connectForClient(
+              SocketCreator.getLocalHost().getHostAddress(), serverSocketPort, 2000);
+          clientSocket.close();
+          System.err.println(
+              "client successfully connected to server but should not have been able to do so");
+          return false;
+        } catch (SocketTimeoutException e) {
+          // we need to verify that this timed out in the handshake
+          // code
+          System.out.println("client connect attempt timed out - checking stack trace");
+          StackTraceElement[] trace = e.getStackTrace();
+          for (StackTraceElement element : trace) {
+            if (element.getMethodName().equals("configureClientSSLSocket")) {
+              System.out.println("client connect attempt timed out in the appropriate method");
+              return true;
+            }
+          }
+          // it wasn't in the configuration method so we need to try again
+        } catch (IOException e) {
+          // server socket may not be in accept() yet, causing a connection-refused
+          // exception
+        }
+        return false;
+      });
+    } finally {
+      serverCoordination.release();
+    }
   }
 
   private File findTestKeystore() throws IOException {

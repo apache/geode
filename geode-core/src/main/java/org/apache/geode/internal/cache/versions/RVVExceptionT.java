@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.versions;
 
@@ -26,39 +24,38 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.versions.RVVException.ReceivedVersionsIterator;
 
 /**
- * This subclass of RVVException is the original class that
- * uses TreeSets to hold received versions.  It is now only
- * used if the exception represents a large gap.
+ * This subclass of RVVException is the original class that uses TreeSets to hold received versions.
+ * It is now only used if the exception represents a large gap.
  * 
  * 
  *
  */
 public class RVVExceptionT extends RVVException {
-  
+
   TreeSet<Long> received;
-  
+
   RVVExceptionT(long previousVersion, long nextVersion) {
     super(previousVersion, nextVersion);
   }
-  
+
   @Override
   public void add(long receivedVersion) {
-    if (receivedVersion == this.previousVersion+1) {
+    if (receivedVersion == this.previousVersion + 1) {
       this.previousVersion = receivedVersion;
       if (this.received != null) {
         consumeReceivedVersions();
       }
-    } else if (receivedVersion == this.nextVersion-1) {
+    } else if (receivedVersion == this.nextVersion - 1) {
       this.nextVersion = receivedVersion;
       if (this.received != null) {
         consumeReceivedVersions();
       }
-    } else if (this.previousVersion < receivedVersion  &&  receivedVersion < this.nextVersion) {
+    } else if (this.previousVersion < receivedVersion && receivedVersion < this.nextVersion) {
       addReceived(receivedVersion);
     }
   }
 
-  
+
   @Override
   protected void addReceived(long rv) {
     if (this.received == null) {
@@ -66,36 +63,35 @@ public class RVVExceptionT extends RVVException {
     }
     this.received.add(rv);
   }
-  
+
   /**
-   * checks to see if any of the received versions can be merged into the
-   * start/end version numbers
+   * checks to see if any of the received versions can be merged into the start/end version numbers
    */
   private void consumeReceivedVersions() {
-    //Iterate in forward order
-    for (Iterator<Long> it = this.received.iterator(); it.hasNext(); ) {
+    // Iterate in forward order
+    for (Iterator<Long> it = this.received.iterator(); it.hasNext();) {
       long v = it.next();
-      if (v <= this.previousVersion+1) {
-        //if the received version is less than the previous + 1, remove it.
+      if (v <= this.previousVersion + 1) {
+        // if the received version is less than the previous + 1, remove it.
         it.remove();
-        if(v == this.previousVersion + 1) {
-          //if the received version is equal to previous +1, also update the previous
+        if (v == this.previousVersion + 1) {
+          // if the received version is equal to previous +1, also update the previous
           this.previousVersion = v;
         }
       } else {
-        //Once we reach received entries greater than the previous, stop.
+        // Once we reach received entries greater than the previous, stop.
         break;
       }
     }
-    
-    //Iterate in reverse order
-    for (Iterator<Long> it = this.received.descendingIterator(); it.hasNext(); ) {
+
+    // Iterate in reverse order
+    for (Iterator<Long> it = this.received.descendingIterator(); it.hasNext();) {
       long v = it.next();
-      if (v >= this.nextVersion-1) {
-        //if the received version is greater than the next - 1, remove it.
+      if (v >= this.nextVersion - 1) {
+        // if the received version is greater than the next - 1, remove it.
         it.remove();
-        if(v == this.nextVersion - 1) {
-          //if the received version is equal the next - 1, also update next.
+        if (v == this.nextVersion - 1) {
+          // if the received version is equal the next - 1, also update next.
           this.nextVersion = v;
         }
       } else {
@@ -112,19 +108,19 @@ public class RVVExceptionT extends RVVException {
     }
     return clone;
   }
- 
-  
+
+
   public void writeReceived(DataOutput out) throws IOException {
 
-    int size= this.received==null? 0 : this.received.size();
+    int size = this.received == null ? 0 : this.received.size();
     InternalDataSerializer.writeUnsignedVL(size, out);
 
-    //Write each version in the exception as a delta from the previous version
-    //this will likely be smaller than the absolute value, so it will
-    //be more likely to fit into a byte or a short.
+    // Write each version in the exception as a delta from the previous version
+    // this will likely be smaller than the absolute value, so it will
+    // be more likely to fit into a byte or a short.
     long last = this.previousVersion;
     if (this.received != null) {
-      for(Long version : this.received) {
+      for (Long version : this.received) {
         long delta = version.longValue() - last;
         InternalDataSerializer.writeUnsignedVL(delta, out);
         last = version.longValue();
@@ -133,33 +129,31 @@ public class RVVExceptionT extends RVVException {
     long delta = this.nextVersion - last;
     InternalDataSerializer.writeUnsignedVL(delta, out);
   }
-  
+
   @Override
   public String toString() {
     if (this.received != null) {
-      return "e(n=" + this.nextVersion +" p=" + + this.previousVersion +
-      (this.received.size() == 0? "" : "; rs=" + this.received) + ")";
+      return "e(n=" + this.nextVersion + " p=" + +this.previousVersion
+          + (this.received.size() == 0 ? "" : "; rs=" + this.received) + ")";
     }
-    return "et(n="+this.nextVersion+" p=" + this.previousVersion + "; rs=[])";
+    return "et(n=" + this.nextVersion + " p=" + this.previousVersion + "; rs=[])";
   }
 
-//  @Override
-//  public int hashCode() {
-//    final int prime = 31;
-//    int result = 1;
-//    result = prime * result + (int) (nextVersion ^ (nextVersion >>> 32));
-//    result = prime * result
-//        + (int) (previousVersion ^ (previousVersion >>> 32));
-//    result = prime * result + ((this.received == null) ? 0 : this.received.hashCode());
-//    return result;
-//  }
+  // @Override
+  // public int hashCode() {
+  // final int prime = 31;
+  // int result = 1;
+  // result = prime * result + (int) (nextVersion ^ (nextVersion >>> 32));
+  // result = prime * result
+  // + (int) (previousVersion ^ (previousVersion >>> 32));
+  // result = prime * result + ((this.received == null) ? 0 : this.received.hashCode());
+  // return result;
+  // }
 
-  /** For test purposes only. This
-   * isn't quite accurate, because I think two
-   * RVVs that have effectively same exceptions
-   * may represent the exceptions differently. This
-   * method is testing for an exact match of exception format.
-   * <br>
+  /**
+   * For test purposes only. This isn't quite accurate, because I think two RVVs that have
+   * effectively same exceptions may represent the exceptions differently. This method is testing
+   * for an exact match of exception format. <br>
    */
   @Override
   public boolean sameAs(RVVException ex) {
@@ -176,24 +170,24 @@ public class RVVExceptionT extends RVVException {
     }
     return true;
   }
-  
+
   protected boolean sameAs(RVVExceptionB ex) {
     if (!super.sameAs(ex)) {
       return false;
     }
-    for (ReceivedVersionsIterator it = receivedVersionsIterator(); it.hasNext(); ) {
+    for (ReceivedVersionsIterator it = receivedVersionsIterator(); it.hasNext();) {
       if (!ex.contains(it.next())) {
         return false;
       }
     }
-    for (ReceivedVersionsIterator it = ex.receivedVersionsIterator(); it.hasNext(); ) {
+    for (ReceivedVersionsIterator it = ex.receivedVersionsIterator(); it.hasNext();) {
       if (!contains(it.next())) {
         return false;
       }
     }
     return true;
   }
-  
+
   /** has the given version been recorded as having been received? */
   public boolean contains(long version) {
     if (version <= this.previousVersion) {
@@ -206,38 +200,38 @@ public class RVVExceptionT extends RVVException {
   public boolean isEmpty() {
     return (this.received == null || this.received.isEmpty());
   }
-  
+
   public ReceivedVersionsIterator receivedVersionsIterator() {
     ReceivedVersionsIteratorT result = new ReceivedVersionsIteratorT();
     result.initForForwardIteration();
     return result;
   }
-  
-  
-  
+
+
+
   public long getHighestReceivedVersion() {
-    if(received == null || received.isEmpty()) {
+    if (received == null || received.isEmpty()) {
       return previousVersion;
     } else {
       return received.last();
     }
   }
-  
+
   @Override
   public boolean shouldChangeForm() {
-    //If the received set size * 512 as big as the gap in versions, switch
-    //to using bitset instead because that will use less memory.
-    //A bit set using 1 bit for each *possible* entry
-    //A treeset uses approximately 64 bytes for each *actual* entry
-    return this.received != null 
+    // If the received set size * 512 as big as the gap in versions, switch
+    // to using bitset instead because that will use less memory.
+    // A bit set using 1 bit for each *possible* entry
+    // A treeset uses approximately 64 bytes for each *actual* entry
+    return this.received != null
         && this.received.size() * 512 > this.nextVersion - this.previousVersion;
   }
 
   @Override
   public RVVException changeForm() {
-    //Convert the exception to a bitset exception
+    // Convert the exception to a bitset exception
     RVVExceptionB ex = new RVVExceptionB(previousVersion, nextVersion);
-    for(ReceivedVersionsIterator it = this.receivedVersionsIterator(); it.hasNext(); ) {
+    for (ReceivedVersionsIterator it = this.receivedVersionsIterator(); it.hasNext();) {
       long next = it.next();
       ex.add(next);
     }
@@ -246,10 +240,8 @@ public class RVVExceptionT extends RVVException {
 
 
 
-
-
   /** it's a shame that BitSet has no iterator */
-  protected class ReceivedVersionsIteratorT  extends ReceivedVersionsIterator {
+  protected class ReceivedVersionsIteratorT extends ReceivedVersionsIterator {
     boolean noIterator;
     Iterator<Long> treeSetIterator;
 
@@ -260,18 +252,18 @@ public class RVVExceptionT extends RVVException {
         this.treeSetIterator = received.iterator();
       }
     }
-    
+
     boolean hasNext() {
       return !noIterator && this.treeSetIterator.hasNext();
     }
-    
+
     long next() {
       if (!noIterator) {
         return this.treeSetIterator.next().longValue();
       }
       throw new NoSuchElementException("no more elements");
     }
-    
+
     void remove() {
       if (!noIterator) {
         this.treeSetIterator.remove();

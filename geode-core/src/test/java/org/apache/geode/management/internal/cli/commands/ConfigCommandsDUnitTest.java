@@ -1,20 +1,45 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
+
+import static org.apache.commons.io.FileUtils.deleteDirectory;
+import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_FILE_SIZE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
@@ -22,7 +47,8 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.logging.LogWriterImpl;
@@ -32,26 +58,28 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.remote.CommandProcessor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
-import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.apache.geode.test.dunit.Wait.waitForCriterion;
-import static org.apache.commons.io.FileUtils.deleteDirectory;
 
 /**
  * Dunit class for testing GemFire config commands : export config
@@ -141,7 +169,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
       assertEquals(true, resultStr.contains(ARCHIVE_FILE_SIZE_LIMIT));
       assertEquals(true, !resultStr.contains("copy-on-read"));
 
-      cmdResult = executeCommand(command + " --" + CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS + "=false");
+      cmdResult =
+          executeCommand(command + " --" + CliStrings.DESCRIBE_CONFIG__HIDE__DEFAULTS + "=false");
       resultStr = commandResultToString(cmdResult);
 
       getLogWriter().info("#SB No hiding of defaults\n" + resultStr);
@@ -156,6 +185,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     }
   }
 
+  @Category(FlakyTest.class) // GEODE-1449
   @Test
   public void testExportConfig() throws Exception {
     Properties localProps = new Properties();
@@ -193,7 +223,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
 
     // Test export config for all members
     deleteTestFiles();
-    CommandResult cmdResult = executeCommand("export config --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
+    CommandResult cmdResult =
+        executeCommand("export config --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     assertTrue(this.managerConfigFile + " should exist", this.managerConfigFile.exists());
@@ -207,7 +238,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
 
     // Test exporting member
     deleteTestFiles();
-    cmdResult = executeCommand("export config --member=Manager --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
+    cmdResult = executeCommand(
+        "export config --member=Manager --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     assertTrue(this.managerConfigFile + " should exist", this.managerConfigFile.exists());
@@ -217,7 +249,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
 
     // Test exporting group
     deleteTestFiles();
-    cmdResult = executeCommand("export config --group=Group2 --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
+    cmdResult = executeCommand(
+        "export config --group=Group2 --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     assertFalse(this.managerConfigFile + " should not exist", this.managerConfigFile.exists());
@@ -240,7 +273,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     String configToMatch = stringWriter.toString();
 
     deleteTestFiles();
-    cmdResult = executeCommand("export config --member=Shell --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
+    cmdResult = executeCommand(
+        "export config --member=Shell --dir=" + this.temporaryFolder.getRoot().getAbsolutePath());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     char[] fileContents = new char[configToMatch.length()];
@@ -293,9 +327,11 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(10, config.getLogDiskSpaceLimit());
 
     CommandProcessor commandProcessor = new CommandProcessor();
-    Result result = commandProcessor.createCommandStatement("alter runtime", Collections.EMPTY_MAP).process();
+    Result result =
+        commandProcessor.createCommandStatement("alter runtime", Collections.EMPTY_MAP).process();
   }
 
+  @Category(FlakyTest.class) // GEODE-1313
   @Test
   public void testAlterRuntimeConfigRandom() throws Exception {
     final String member1 = "VM1";
@@ -374,7 +410,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT, "32");
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT, "49");
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE, "2000");
-    csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE, controllerStatFilePath);
+    csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__ARCHIVE__FILE,
+        controllerStatFilePath);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED, "true");
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__DISK__SPACE__LIMIT, "10");
 
@@ -418,30 +455,44 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
   @Test
   public void testAlterUpdatesSharedConfig() throws Exception {
     final String groupName = getName();
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    jmxPort = ports[0];
+    httpPort = ports[1];
+    try {
+      jmxHost = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException ignore) {
+      jmxHost = "localhost";
+    }
 
     // Start the Locator and wait for shared configuration to be available
     final int locatorPort = getRandomAvailablePort(SOCKET);
     final String locatorDirectory = this.temporaryFolder.newFolder("Locator").getAbsolutePath();
 
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
+    final Properties locatorProps = new Properties();
+    locatorProps.setProperty(NAME, "Locator");
+    locatorProps.setProperty(MCAST_PORT, "0");
+    locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+    locatorProps.setProperty(CLUSTER_CONFIGURATION_DIR, locatorDirectory);
+    locatorProps.setProperty(JMX_MANAGER, "true");
+    locatorProps.setProperty(JMX_MANAGER_START, "true");
+    locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+    locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+    locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
         final File locatorLogFile = new File(locatorDirectory, "locator-" + locatorPort + ".log");
-
-        final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME, "Locator");
-        locatorProps.setProperty(MCAST_PORT, "0");
-        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
-        locatorProps.setProperty(CLUSTER_CONFIGURATION_DIR, locatorDirectory);
-
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null, locatorProps);
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort,
+              locatorLogFile, null, locatorProps);
 
           WaitCriterion wc = new WaitCriterion() {
             @Override
             public boolean done() {
               return locator.isSharedConfigurationRunning();
             }
+
             @Override
             public String description() {
               return "Waiting for shared configuration to be started";
@@ -455,11 +506,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    // Start the default manager
-    Properties managerProps = new Properties();
-    managerProps.setProperty(MCAST_PORT, "0");
-    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
-    setUpJmxManagerOnVm0ThenConnect(managerProps);
+    connect(jmxHost, jmxPort, httpPort, getDefaultShell());
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
@@ -468,7 +515,7 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
       public Object call() throws Exception {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         localProps.setProperty(LOG_LEVEL, "error");
         localProps.setProperty(GROUPS, groupName);
         getSystem(localProps);
@@ -480,7 +527,8 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     });
 
     // Test altering the runtime config
-    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
+    CommandStringBuilder commandStringBuilder =
+        new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__GROUP, groupName);
     commandStringBuilder.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__LEVEL, "fine");
     CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
@@ -488,10 +536,11 @@ public class ConfigCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure the shared config was updated
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+        ClusterConfigurationService sharedConfig =
+            ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
         Properties gemfireProperties = null;
 
         try {

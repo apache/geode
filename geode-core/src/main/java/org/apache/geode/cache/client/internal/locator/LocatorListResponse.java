@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal.locator;
 
@@ -35,9 +33,8 @@ public class LocatorListResponse extends ServerLocationResponse {
   private boolean locatorsFound = false;
 
   /** Used by DataSerializer */
-  public LocatorListResponse() {
-  }
-  
+  public LocatorListResponse() {}
+
   public LocatorListResponse(List<ServerLocation> locators, boolean isBalanced) {
     this.controllers = locators;
     if (locators != null && !locators.isEmpty()) {
@@ -45,7 +42,7 @@ public class LocatorListResponse extends ServerLocationResponse {
     }
     this.isBalanced = isBalanced;
   }
-  
+
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.controllers = SerializationHelper.readServerLocationList(in);
     this.isBalanced = in.readBoolean();
@@ -61,6 +58,7 @@ public class LocatorListResponse extends ServerLocationResponse {
 
   /**
    * Returns an array list of type ServerLocation containing controllers.
+   * 
    * @return list of controllers
    */
   public List<ServerLocation> getLocators() {
@@ -68,14 +66,15 @@ public class LocatorListResponse extends ServerLocationResponse {
   }
 
   /**
-   * Returns whether or not the locator thinks that the servers 
-   * in this group are currently balanced.
+   * Returns whether or not the locator thinks that the servers in this group are currently
+   * balanced.
+   * 
    * @return true if the servers are balanced.
    */
   public boolean isBalanced() {
     return isBalanced;
   }
-  
+
   @Override
   public String toString() {
     return "LocatorListResponse{locators=" + controllers + ",isBalanced=" + isBalanced + "}";
@@ -89,5 +88,5 @@ public class LocatorListResponse extends ServerLocationResponse {
   public boolean hasResult() {
     return this.locatorsFound;
   }
-  
+
 }

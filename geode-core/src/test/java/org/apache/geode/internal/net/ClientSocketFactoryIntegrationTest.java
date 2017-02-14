@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.net;
 
@@ -26,6 +24,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,12 +40,14 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Integration tests for ClientSocketFactory.
  *
- * <p>Extracted from {@code JSSESocketJUnitTest}.
+ * <p>
+ * Extracted from {@code JSSESocketJUnitTest}.
  */
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class ClientSocketFactoryIntegrationTest {
 
-  private static final String EXCEPTION_MESSAGE = "TSocketFactory createSocket threw an IOException";
+  private static final String EXCEPTION_MESSAGE =
+      "TSocketFactory createSocket threw an IOException";
 
   private static volatile boolean invokedCreateSocket;
 
@@ -80,17 +81,16 @@ public class ClientSocketFactoryIntegrationTest {
 
   @Test
   public void testClientSocketFactory() throws Exception {
-    assertThatThrownBy(() -> this.socket = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER).connectForClient("localhost", 12345, 0))
-      .isExactlyInstanceOf(IOException.class)
-      .hasMessage(EXCEPTION_MESSAGE);
+    assertThatThrownBy(() -> this.socket = SocketCreatorFactory
+        .getSocketCreatorForComponent(CLUSTER).connectForClient("localhost", 12345, 0))
+            .isExactlyInstanceOf(IOException.class).hasMessage(EXCEPTION_MESSAGE);
 
     assertThat(invokedCreateSocket).isTrue();
   }
 
   private static class TSocketFactory implements ClientSocketFactory {
 
-    public TSocketFactory() {
-    }
+    public TSocketFactory() {}
 
     public Socket createSocket(final InetAddress address, final int port) throws IOException {
       invokedCreateSocket = true;

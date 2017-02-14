@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.pdx.internal;
 
@@ -45,30 +43,30 @@ public class EnumInfo implements DataSerializableFixedID {
   // It is not used for equals or hashcode.
   private int ordinal;
   private transient volatile WeakReference<Enum<?>> enumCache = null;
-  
+
   public EnumInfo(Enum<?> e) {
     this.clazz = e.getDeclaringClass().getName();
     this.name = e.name();
     this.ordinal = e.ordinal();
     this.enumCache = new WeakReference<Enum<?>>(e);
   }
-  
+
   public EnumInfo(String clazz, String name, int enumOrdinal) {
     this.clazz = clazz;
     this.name = name;
     this.ordinal = enumOrdinal;
   }
 
-  public EnumInfo() {
-  }
+  public EnumInfo() {}
 
   public int getDSFID() {
     return ENUM_INFO;
   }
-  
+
   public String getClassName() {
     return this.clazz;
   }
+
   // This method is used by the "pdx rename" command.
   public void setClassName(String v) {
     this.clazz = v;
@@ -91,7 +89,7 @@ public class EnumInfo implements DataSerializableFixedID {
       this.enumCache = null;
     }
   }
-  
+
   public int compareTo(EnumInfo other) {
     int result = this.clazz.compareTo(other.clazz);
     if (result == 0) {
@@ -102,7 +100,7 @@ public class EnumInfo implements DataSerializableFixedID {
     }
     return result;
   }
-  
+
   public Enum<?> getEnum() throws ClassNotFoundException {
     Enum<?> result;
     if (InternalDataSerializer.LOAD_CLASS_EACH_TIME) {
@@ -121,9 +119,11 @@ public class EnumInfo implements DataSerializableFixedID {
     }
     return result;
   }
+
   public int getOrdinal() {
     return this.ordinal;
   }
+
   private Enum<?> getExistingEnum() {
     WeakReference<Enum<?>> wr = this.enumCache;
     if (wr != null) {
@@ -131,7 +131,7 @@ public class EnumInfo implements DataSerializableFixedID {
     }
     return null;
   }
-  
+
   @SuppressWarnings("unchecked")
   private Enum<?> loadEnum() throws ClassNotFoundException {
     @SuppressWarnings("rawtypes")
@@ -139,7 +139,8 @@ public class EnumInfo implements DataSerializableFixedID {
     try {
       return Enum.valueOf(c, this.name);
     } catch (IllegalArgumentException ex) {
-      throw new PdxSerializationException("PDX enum field could not be read because \"" + this.name + "\" is not a valid name in enum class " + c, ex);
+      throw new PdxSerializationException("PDX enum field could not be read because \"" + this.name
+          + "\" is not a valid name in enum class " + c, ex);
     }
   }
 
@@ -155,6 +156,10 @@ public class EnumInfo implements DataSerializableFixedID {
   @Override
   public String toString() {
     return clazz + "." + name;
+  }
+
+  public String toFormattedString() {
+    return getClass().getSimpleName() + "[\n        " + clazz + "." + name + "]";
   }
 
   @Override
@@ -177,7 +182,9 @@ public class EnumInfo implements DataSerializableFixedID {
     } else if (!name.equals(other.name))
       return false;
     if (this.ordinal != other.ordinal) {
-      throw new PdxSerializationException("The ordinal value for the enum " + this.name + " on class " + this.clazz + " can not be changed. Pdx only allows new enum constants to be added to the end of the enum.");
+      throw new PdxSerializationException("The ordinal value for the enum " + this.name
+          + " on class " + this.clazz
+          + " can not be changed. Pdx only allows new enum constants to be added to the end of the enum.");
     }
     return true;
   }
@@ -186,7 +193,8 @@ public class EnumInfo implements DataSerializableFixedID {
     return new PdxInstanceEnumInfo(enumId, this);
   }
 
-  public static class PdxInstanceEnumInfo implements PdxInstance, Sendable, ConvertableToBytes, ComparableEnum {
+  public static class PdxInstanceEnumInfo
+      implements PdxInstance, Sendable, ConvertableToBytes, ComparableEnum {
     private static final long serialVersionUID = 7907582104525106416L;
     private final int enumId;
     private final EnumInfo ei;
@@ -199,9 +207,11 @@ public class EnumInfo implements DataSerializableFixedID {
     public String getClassName() {
       return this.ei.clazz;
     }
+
     public String getName() {
       return this.ei.name;
     }
+
     public int getOrdinal() {
       return this.ei.ordinal;
     }
@@ -216,7 +226,8 @@ public class EnumInfo implements DataSerializableFixedID {
       } catch (ClassNotFoundException ex) {
         throw new PdxSerializationException(
             LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-            .toLocalizedString(getClassName()), ex);
+                .toLocalizedString(getClassName()),
+            ex);
       }
     }
 
@@ -231,7 +242,7 @@ public class EnumInfo implements DataSerializableFixedID {
       tmp.add("ordinal");
       fieldNames = Collections.unmodifiableList(tmp);
     }
-    
+
     public List<String> getFieldNames() {
       return fieldNames;
     }
@@ -256,7 +267,7 @@ public class EnumInfo implements DataSerializableFixedID {
     public void sendTo(DataOutput out) throws IOException {
       InternalDataSerializer.writePdxEnumId(this.enumId, out);
     }
-    
+
     @Override
     public int hashCode() {
       // this hashCode needs to be kept consistent with PdxInstanceEnum
@@ -292,7 +303,7 @@ public class EnumInfo implements DataSerializableFixedID {
         return false;
       return true;
     }
-    
+
     @Override
     public String toString() {
       return this.ei.name;
@@ -306,13 +317,15 @@ public class EnumInfo implements DataSerializableFixedID {
 
     public int compareTo(Object o) {
       if (o instanceof ComparableEnum) {
-        ComparableEnum other = (ComparableEnum)o;
+        ComparableEnum other = (ComparableEnum) o;
         if (!getClassName().equals(other.getClassName())) {
-          throw new ClassCastException("Can not compare a " + getClassName() + " to a " + other.getClassName());
+          throw new ClassCastException(
+              "Can not compare a " + getClassName() + " to a " + other.getClassName());
         }
         return getOrdinal() - other.getOrdinal();
       } else {
-        throw new ClassCastException("Can not compare an instance of " + o.getClass() + " to a " + this.getClass());
+        throw new ClassCastException(
+            "Can not compare an instance of " + o.getClass() + " to a " + this.getClass());
       }
     }
   }
@@ -323,10 +336,10 @@ public class EnumInfo implements DataSerializableFixedID {
   }
 
   public void toStream(PrintStream printStream) {
-      printStream.print("  ");
-      printStream.print(this.clazz);
-      printStream.print('.');
-      printStream.print(this.name);
-      printStream.println();
+    printStream.print("  ");
+    printStream.print(this.clazz);
+    printStream.print('.');
+    printStream.print(this.name);
+    printStream.println();
   }
 }

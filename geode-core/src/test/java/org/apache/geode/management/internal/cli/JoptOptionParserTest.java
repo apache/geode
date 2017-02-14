@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli;
 
@@ -81,14 +79,16 @@ public class JoptOptionParserTest {
     assertThat(optionSet.getNoOfSpacesRemoved()).isEqualTo(emptyOptionSet.getNoOfSpacesRemoved());
     assertThat(optionSet.getSplit()).isEqualTo(emptyOptionSet.getSplit());
     assertThat(optionSet.getNoOfSpacesRemoved()).isEqualTo(emptyOptionSet.getNoOfSpacesRemoved());
-    assertThat(optionSet.getUserInput()).isEqualTo(""); //emptyOptionSet.getUserInput());
-    assertThat(optionSet.getValue((Argument)null)).isEqualTo(emptyOptionSet.getValue((Argument)null));
-    assertThat(optionSet.getValue((Option)null)).isEqualTo(emptyOptionSet.getValue((Option)null));
+    assertThat(optionSet.getUserInput()).isEqualTo(""); // emptyOptionSet.getUserInput());
+    assertThat(optionSet.getValue((Argument) null))
+        .isEqualTo(emptyOptionSet.getValue((Argument) null));
+    assertThat(optionSet.getValue((Option) null)).isEqualTo(emptyOptionSet.getValue((Option) null));
   }
 
   @Test
   public void parseEmptyThrowsNullPointerException() throws Exception {
-    assertThatThrownBy(() -> this.emptyOptionParser.parse("")).isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> this.emptyOptionParser.parse(""))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -241,7 +241,8 @@ public class JoptOptionParserTest {
   @Test
   public void parseInputShouldIgnoreUndefinedOption() throws Exception {
     // one fix for GEODE-1598 has a side effect of preventing our detection of undefined options
-    OptionSet optionSet = this.simpleOptionParser.parse("command1 argument1_value argument2_value --undefinedOption");
+    OptionSet optionSet =
+        this.simpleOptionParser.parse("command1 argument1_value argument2_value --undefinedOption");
     assertThat(optionSet.areOptionsPresent()).isFalse();
     assertThat(optionSet.hasOption(this.requiredOption)).isFalse();
     assertThat(optionSet.hasOption(this.optionalOption)).isFalse();
@@ -257,7 +258,8 @@ public class JoptOptionParserTest {
 
   @Test
   public void parseInputWithTwoOptionsShouldFindTwoOptions() throws Exception {
-    OptionSet optionSet = this.simpleOptionParser.parse("command1 argument1_value --option1 --option2");
+    OptionSet optionSet =
+        this.simpleOptionParser.parse("command1 argument1_value --option1 --option2");
     assertThat(optionSet.areOptionsPresent()).isTrue();
     assertThat(optionSet.hasOption(this.requiredOption)).isTrue();
     assertThat(optionSet.hasOption(this.optionalOption)).isTrue();
@@ -295,9 +297,11 @@ public class JoptOptionParserTest {
 
   @Test
   @Parameters(method = "exampleInputParameters")
-  public void parseInputWithExampleInputParametesr(String command, boolean expectException, boolean hasArguments, boolean hasOptions) throws Exception {
+  public void parseInputWithExampleInputParametesr(String command, boolean expectException,
+      boolean hasArguments, boolean hasOptions) throws Exception {
     if (expectException) {
-      assertThatThrownBy(() -> this.exampleOptionParser.parse(command)).isExactlyInstanceOf(CliCommandOptionMissingException.class);
+      assertThatThrownBy(() -> this.exampleOptionParser.parse(command))
+          .isExactlyInstanceOf(CliCommandOptionMissingException.class);
       return;
     }
 
@@ -308,28 +312,35 @@ public class JoptOptionParserTest {
   }
 
   private static Object[] exampleInputParameters() {
-    return new Object[]{
-      // 0
-      new Object[] { " ARGUMENT1_VALUE —option1=somevalue", false, true, false },
-      // 1
-      new Object[] { " ARGUMENT1_VALUE?      ARGUMENT2_VALUE -- ----------", false, true, false },
-      // 2
-      new Object[] { " --option1=value", false, false, true },
-      // 3
-      new Object[] { "         ARGUMENT1_VALUE?       ARGUMENT2_VALUE --option1=option1value --option2", false, true, true },
-      // 4
-      new Object[] { "         ARGUMENT1_VALUE?       ARGUMENT2_VALUE --option1=option1value --option2=option2value --option3=option3value", false, true, true },
-      // 5
-      new Object[] { " --string=string1 --stringArray=1,2 --stringArray=3,4 --stringList=11,12,13 --integer=10 --stringArray=5 --stringList=14,15", false, false, true },
-      // 6
-      new Object[] { " --stringArray=1,2 --stringArray='3,4'", false, false, true },
-      // 7
-      new Object[] { " --string=\"1\" --colonArray=2:3:4 --stringArray=5,\"6,7\",8 --stringList=\"9,10,11,12\"", false, false, true },
-      // 8
-      new Object[] { " --string=string1 --stringArray=1,2 --string=string2", false, false, true },
-      // 9
-      new Object[] { " this is just one argument?this is a second argument", false, true, false }
-    };
+    return new Object[] {
+        // 0
+        new Object[] {" ARGUMENT1_VALUE —option1=somevalue", false, true, false},
+        // 1
+        new Object[] {" ARGUMENT1_VALUE?      ARGUMENT2_VALUE -- ----------", false, true, false},
+        // 2
+        new Object[] {" --option1=value", false, false, true},
+        // 3
+        new Object[] {
+            "         ARGUMENT1_VALUE?       ARGUMENT2_VALUE --option1=option1value --option2",
+            false, true, true},
+        // 4
+        new Object[] {
+            "         ARGUMENT1_VALUE?       ARGUMENT2_VALUE --option1=option1value --option2=option2value --option3=option3value",
+            false, true, true},
+        // 5
+        new Object[] {
+            " --string=string1 --stringArray=1,2 --stringArray=3,4 --stringList=11,12,13 --integer=10 --stringArray=5 --stringList=14,15",
+            false, false, true},
+        // 6
+        new Object[] {" --stringArray=1,2 --stringArray='3,4'", false, false, true},
+        // 7
+        new Object[] {
+            " --string=\"1\" --colonArray=2:3:4 --stringArray=5,\"6,7\",8 --stringList=\"9,10,11,12\"",
+            false, false, true},
+        // 8
+        new Object[] {" --string=string1 --stringArray=1,2 --string=string2", false, false, true},
+        // 9
+        new Object[] {" this is just one argument?this is a second argument", false, true, false}};
   }
 
   private void defineSimpleOptionParser() {
@@ -348,7 +359,8 @@ public class JoptOptionParserTest {
     when(this.optionalArgument.getContext()).thenReturn("context for argument2");
     when(this.optionalArgument.getHelp()).thenReturn("help for argument2");
     when(this.optionalArgument.isRequired()).thenReturn(false);
-    when(this.optionalArgument.getUnspecifiedDefaultValue()).thenReturn("{unspecified default value for argument2}");
+    when(this.optionalArgument.getUnspecifiedDefaultValue())
+        .thenReturn("{unspecified default value for argument2}");
     when(this.optionalArgument.isSystemProvided()).thenReturn(false);
     arguments.add(this.optionalArgument);
 
@@ -397,7 +409,8 @@ public class JoptOptionParserTest {
     when(argument2.getContext()).thenReturn("context for argument2");
     when(argument2.getHelp()).thenReturn("help for argument2");
     when(argument2.isRequired()).thenReturn(false);
-    when(argument2.getUnspecifiedDefaultValue()).thenReturn("{unspecified default value for argument2}");
+    when(argument2.getUnspecifiedDefaultValue())
+        .thenReturn("{unspecified default value for argument2}");
     when(argument2.isSystemProvided()).thenReturn(false);
     arguments.add(argument2);
 
@@ -406,7 +419,8 @@ public class JoptOptionParserTest {
     when(argument3.getContext()).thenReturn("context for argument3");
     when(argument3.getHelp()).thenReturn("help for argument3");
     when(argument3.isRequired()).thenReturn(false);
-    when(argument3.getUnspecifiedDefaultValue()).thenReturn("{unspecified default value for argument3}");
+    when(argument3.getUnspecifiedDefaultValue())
+        .thenReturn("{unspecified default value for argument3}");
     when(argument2.isSystemProvided()).thenReturn(false);
     arguments.add(argument3);
 

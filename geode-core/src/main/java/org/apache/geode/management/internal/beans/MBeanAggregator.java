@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans;
 
@@ -37,9 +35,8 @@ import org.apache.geode.management.internal.ProxyListener;
 import org.apache.geode.management.internal.SystemManagementService;
 
 /**
- * This class is responsible for creating Aggregate MBeans at GemFire layer. It
- * acts as a ProxyListener and add/remove/update the corresponding MBean
- * aggregates accordingly.
+ * This class is responsible for creating Aggregate MBeans at GemFire layer. It acts as a
+ * ProxyListener and add/remove/update the corresponding MBean aggregates accordingly.
  * 
  * 
  */
@@ -53,8 +50,8 @@ public class MBeanAggregator implements ProxyListener {
    */
 
   protected LogWriterI18n logger;
-  
-  
+
+
 
   /**
    * Static list of MBeans which are currently supported for aggregation
@@ -88,7 +85,7 @@ public class MBeanAggregator implements ProxyListener {
    * Lock service aggregate handler.
    */
   private LockServiceHandler lockServiceHandler;
-  
+
   /**
    * Cache server aggregate Handler
    */
@@ -104,12 +101,13 @@ public class MBeanAggregator implements ProxyListener {
    */
 
   private GatewaySenderHandler gatewaySenderHandler;
-  
-  
+
+
   private DistributedSystemBridge distributedSystemBridge;
-  
+
   /**
    * Public constructor.
+   * 
    * @param distributedSystemBridge
    */
   public MBeanAggregator(DistributedSystemBridge distributedSystemBridge) {
@@ -128,10 +126,8 @@ public class MBeanAggregator implements ProxyListener {
 
   /**
    * 
-   * @param interfaceClass
-   *          class of the proxy interface
-   * @return appropriate handler instance to handle the proxy addition or
-   *         removal
+   * @param interfaceClass class of the proxy interface
+   * @return appropriate handler instance to handle the proxy addition or removal
    */
   private AggregateHandler getHandler(Class interfaceClass) {
     if (interfaceClass.equals(RegionMXBean.class)) {
@@ -181,18 +177,18 @@ public class MBeanAggregator implements ProxyListener {
   }
 
   @Override
-  public void afterPseudoCreateProxy(ObjectName objectName, Class interfaceClass, Object proxyObject, FederationComponent newVal){
+  public void afterPseudoCreateProxy(ObjectName objectName, Class interfaceClass,
+      Object proxyObject, FederationComponent newVal) {
     if (!distributedMBeanList.contains(interfaceClass)) {
       return;
     }
     AggregateHandler handler = getHandler(interfaceClass);
     handler.handlePseudoCreateProxy(objectName, interfaceClass, proxyObject, newVal);
   }
-  
+
   /**
-   * Handler class for CacheServer MBeans only to provide data to Distributed
-   * System MBean As of today there wont be any Distributed counterpart of Cache
-   * Server MBean
+   * Handler class for CacheServer MBeans only to provide data to Distributed System MBean As of
+   * today there wont be any Distributed counterpart of Cache Server MBean
    * 
    * 
    */
@@ -206,7 +202,8 @@ public class MBeanAggregator implements ProxyListener {
 
     }
 
-    public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object obj, FederationComponent oldVal) {
+    public void handleProxyRemoval(ObjectName objectName, Class interfaceClass, Object obj,
+        FederationComponent oldVal) {
       CacheServerMXBean serverProxy = (CacheServerMXBean) interfaceClass.cast(obj);
       distributedSystemBridge.removeServerFromSystem(objectName, serverProxy, oldVal);
 
@@ -217,18 +214,17 @@ public class MBeanAggregator implements ProxyListener {
         FederationComponent newVal, FederationComponent oldVal) {
       distributedSystemBridge.updateCacheServer(objectName, newVal, oldVal);
     }
-    
+
     @Override
-    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass, Object proxyObject,
-        FederationComponent newVal) {
-      
+    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass,
+        Object proxyObject, FederationComponent newVal) {
+
     }
   }
 
   /**
-   * Handler class for GatewayReceiverHandler MBeans only to provide data to
-   * Distributed System MBean As of today there wont be any Distributed
-   * counterpart of GatewayReceiverHandler MBean
+   * Handler class for GatewayReceiverHandler MBeans only to provide data to Distributed System
+   * MBean As of today there wont be any Distributed counterpart of GatewayReceiverHandler MBean
    * 
    * 
    */
@@ -254,19 +250,19 @@ public class MBeanAggregator implements ProxyListener {
         FederationComponent newVal, FederationComponent oldVal) {
       distributedSystemBridge.updateGatewayReceiver(objectName, newVal, oldVal);
     }
-    
+
     @Override
-    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass, Object proxyObject,
-        FederationComponent newVal) {
-      
+    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass,
+        Object proxyObject, FederationComponent newVal) {
+
     }
   }
-  
-  
-  
+
+
+
   /**
-   * Handler class for GatewayReceiverHandler MBeans only to provide data to Distributed System MBean
-   * As of today there wont be any Distributed counterpart of GatewayReceiverHandler MBean
+   * Handler class for GatewayReceiverHandler MBeans only to provide data to Distributed System
+   * MBean As of today there wont be any Distributed counterpart of GatewayReceiverHandler MBean
    * 
    * 
    */
@@ -290,11 +286,11 @@ public class MBeanAggregator implements ProxyListener {
         FederationComponent newVal, FederationComponent oldVal) {
       distributedSystemBridge.updateGatewaySender(objectName, newVal, oldVal);
     }
-    
+
     @Override
-    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass, Object proxyObject,
-        FederationComponent newVal) {
-      
+    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass,
+        Object proxyObject, FederationComponent newVal) {
+
     }
   }
 
@@ -323,11 +319,11 @@ public class MBeanAggregator implements ProxyListener {
         FederationComponent newVal, FederationComponent oldVal) {
       distributedSystemBridge.updateRegion(objectName, oldVal, newVal);
     }
-    
+
     @Override
-    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass, Object proxyObject,
-        FederationComponent newVal) {
-      
+    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass,
+        Object proxyObject, FederationComponent newVal) {
+
     }
   }
 
@@ -356,12 +352,12 @@ public class MBeanAggregator implements ProxyListener {
         FederationComponent newVal, FederationComponent oldVal) {
       distributedSystemBridge.updateMember(objectName, newVal, oldVal);
     }
-    
+
     @Override
-    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass, Object proxyObject,
-        FederationComponent newVal) {
+    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass,
+        Object proxyObject, FederationComponent newVal) {
       distributedSystemBridge.updateMember(objectName, newVal, null);
-      
+
     }
   }
 
@@ -388,13 +384,12 @@ public class MBeanAggregator implements ProxyListener {
 
     @Override
     public void handleProxyUpdate(ObjectName objectName, Class interfaceClass, Object proxyObject,
-        FederationComponent newVal, FederationComponent oldVal) {
-    }
-    
+        FederationComponent newVal, FederationComponent oldVal) {}
+
     @Override
-    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass, Object proxyObject,
-        FederationComponent newVal) {
-      
+    public void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass,
+        Object proxyObject, FederationComponent newVal) {
+
     }
   }
 
@@ -409,17 +404,18 @@ public class MBeanAggregator implements ProxyListener {
 
   }
 
-  public void quorumLost(Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
+  public void quorumLost(Set<InternalDistributedMember> failures,
+      List<InternalDistributedMember> remaining) {
     // [bruce] does this need to propagate through this bridge object?
-//    distributedSystemBridge.quorumLost(failures, remaining);
+    // distributedSystemBridge.quorumLost(failures, remaining);
   }
 
   @Override
-  public void memberSuspect(InternalDistributedMember id,
-      InternalDistributedMember whoSuspected, String reason) {
+  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
+      String reason) {
     distributedSystemBridge.memberSuspect(id, whoSuspected);
   }
-  
+
   @Override
   public void handleNotification(Notification notification) {
     distributedSystemBridge.sendSystemLevelNotification(notification);

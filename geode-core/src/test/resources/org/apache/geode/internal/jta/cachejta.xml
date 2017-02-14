@@ -17,11 +17,11 @@
 -->
 
 <!DOCTYPE cache PUBLIC
-  "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.1//EN"
-  "http://www.gemstone.com/dtd/cache4_1.dtd">
+  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+  "http://www.gemstone.com/dtd/cache7_0.dtd">
 <cache lock-lease="120" lock-timeout="120" search-timeout="300">
 	<vm-root-region name="root">
-		<region-attributes scope="distributed-no-ack" mirror-type="none" keep-alive-timeout="0" initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="true">
+		<region-attributes scope="distributed-no-ack" mirror-type="none"  initial-capacity="16" load-factor="0.75" concurrency-level="16" statistics-enabled="true">
 			<region-time-to-live>
 				<expiration-attributes timeout="0" action="invalidate"/>
 			</region-time-to-live>

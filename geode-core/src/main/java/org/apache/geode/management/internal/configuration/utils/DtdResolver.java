@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.configuration.utils;
 
@@ -29,18 +27,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /******
- * This class is used to resolve the location of DTD. 
- * During development time the dtd for the latest version is not published 
- * on the www.gemstone.com , then the dtd should be picked up as a resource from the Jar file.
+ * This class is used to resolve the location of DTD. During development time the dtd for the latest
+ * version is not published on the www.gemstone.com , then the dtd should be picked up as a resource
+ * from the Jar file.
  *
  * @deprecated As of 8.1 use {@link CacheXml}
  */
 @Deprecated
-public class DtdResolver implements EntityResolver{
+public class DtdResolver implements EntityResolver {
 
   @Deprecated
-  public InputSource resolveEntity (String publicId, String systemId) throws IOException
-  {
+  public InputSource resolveEntity(String publicId, String systemId) throws IOException {
     if (!isHttpUrlOK(systemId)) {
       URL dtdURL = getClass().getResource(CacheXml.LATEST_DTD_LOCATION);
       File dtd = new File(DistributionConfig.GEMFIRE_PREFIX + "dtd");
@@ -52,8 +49,10 @@ public class DtdResolver implements EntityResolver{
       return null;
     }
   }
+
   /****
    * Checks if the url passed , can be contacted or not.
+   * 
    * @param urlString
    * @return true if the URL is up and can be contacted.
    */
@@ -71,11 +70,12 @@ public class DtdResolver implements EntityResolver{
       }
     } catch (Exception e) {
       return false;
-    }  
+    }
   }
- 
+
   /***
    * Gets the URL for Cache dtd
+   * 
    * @return dtd url as string
    * @throws MalformedURLException
    */

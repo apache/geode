@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.sequencelog.model;
 
@@ -22,13 +20,13 @@ import java.util.SortedMap;
  *
  */
 public class Vertex implements Comparable<Vertex> {
-  
+
   private final Graph graph;
   private final String name;
   private final long timestamp;
   private final String state;
-  
-  
+
+
   public Vertex(Graph graph, String source, String state, long timestamp) {
     this.graph = graph;
     this.name = source;
@@ -45,11 +43,11 @@ public class Vertex implements Comparable<Vertex> {
   public long getTimestamp() {
     return timestamp;
   }
-  
+
   public String getState() {
     return state;
   }
-  
+
   @Override
   public String toString() {
     return name;
@@ -90,18 +88,16 @@ public class Vertex implements Comparable<Vertex> {
   }
 
   public int compareTo(Vertex o) {
-    int difference = o.name == null ? (this.name == null ? 0 : -1)
-        : (this.name == null ? 1 : 0);
-    if(difference != 0) {
+    int difference = o.name == null ? (this.name == null ? 0 : -1) : (this.name == null ? 1 : 0);
+    if (difference != 0) {
       return difference;
     }
     difference = o.name.compareTo(this.name);
-    if(difference != 0) {
+    if (difference != 0) {
       return difference;
     }
-    difference = o.timestamp > this.timestamp ? 1 
-        : (o.timestamp == this.timestamp ? 0 : -1);
-    if(difference != 0) {
+    difference = o.timestamp > this.timestamp ? 1 : (o.timestamp == this.timestamp ? 0 : -1);
+    if (difference != 0) {
       return difference;
     }
     difference = o.state == null ? (this.state == null ? 0 : -1)
@@ -114,7 +110,7 @@ public class Vertex implements Comparable<Vertex> {
   public Vertex getNextVertexOnDest() {
     SortedMap<Long, Vertex> map = graph.getIndexedVertices().get(name);
     SortedMap<Long, Vertex> tailMap = map.tailMap(timestamp + 1);
-    if(tailMap.isEmpty()) {
+    if (tailMap.isEmpty()) {
       return null;
     } else {
       return tailMap.get(tailMap.firstKey());

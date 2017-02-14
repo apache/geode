@@ -1,32 +1,30 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HTTP_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
@@ -43,6 +41,14 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Properties;
 
 /**
  * Test cases
@@ -67,21 +73,19 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   }
 
   /**
-   * When plan is to start Distributed System later so that the system can use
-   * this locator
+   * When plan is to start Distributed System later so that the system can use this locator
    */
   @Test
   public void testPeerLocation() throws Exception {
     int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    startLocator(locator, true, locPort);
-    locatorMBeanExist(locator, locPort, true);
+    startLocator(locator, locPort);
+    locatorMBeanExist(locator, locPort);
 
     Host host = Host.getHost(0);
     String host0 = getServerHostName(host);
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort
-        + "]");
+    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
     props.setProperty(JMX_MANAGER, "true");
     props.setProperty(JMX_MANAGER_START, "false");
     props.setProperty(JMX_MANAGER_PORT, "0");
@@ -89,22 +93,21 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     createCache(managingNode, props);
     startManagingNode(managingNode);
     DistributedMember locatorMember = getMember(locator);
-    remoteLocatorMBeanExist(managingNode,locatorMember);
+    remoteLocatorMBeanExist(managingNode, locatorMember);
 
   }
 
   @Test
   public void testPeerLocationWithPortZero() throws Exception {
     // Start the locator with port=0
-    int locPort = startLocator(locator, true, 0);
-    locatorMBeanExist(locator, locPort, true);
+    int locPort = startLocator(locator, 0);
+    locatorMBeanExist(locator, locPort);
 
     Host host = Host.getHost(0);
     String host0 = getServerHostName(host);
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort
-        + "]");
+    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
     props.setProperty(JMX_MANAGER, "true");
     props.setProperty(JMX_MANAGER_START, "false");
     props.setProperty(JMX_MANAGER_PORT, "0");
@@ -112,7 +115,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
     createCache(managingNode, props);
     startManagingNode(managingNode);
     DistributedMember locatorMember = getMember(locator);
-    remoteLocatorMBeanExist(managingNode,locatorMember);
+    remoteLocatorMBeanExist(managingNode, locatorMember);
 
   }
 
@@ -123,16 +126,16 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   public void testColocatedLocator() throws Exception {
     initManagement(false);
     int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    startLocator(locator, false, locPort);
-    locatorMBeanExist(locator, locPort, false);
+    startLocator(locator, locPort);
+    locatorMBeanExist(locator, locPort);
 
   }
 
   @Test
   public void testColocatedLocatorWithPortZero() throws Exception {
     initManagement(false);
-    int locPort = startLocator(locator, false, 0);
-    locatorMBeanExist(locator, locPort, false);
+    int locPort = startLocator(locator, 0);
+    locatorMBeanExist(locator, locPort);
 
   }
 
@@ -140,64 +143,60 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   public void testListManagers() throws Exception {
     initManagement(false);
     int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    startLocator(locator, false, locPort);
-    listManagers(locator, locPort, false);
+    startLocator(locator, locPort);
+    listManagers(locator, locPort);
   }
 
   @Test
   public void testListManagersWithPortZero() throws Exception {
     initManagement(false);
-    int locPort = startLocator(locator, false, 0);
-    listManagers(locator, locPort, false);
+    int locPort = startLocator(locator, 0);
+    listManagers(locator, locPort);
   }
 
   @Test
   public void testWillingManagers() throws Exception {
     int locPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    startLocator(locator, true, locPort);
+    startLocator(locator, locPort);
 
     Host host = Host.getHost(0);
     String host0 = getServerHostName(host);
-    
+
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort
-        + "]");
+    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
     props.setProperty(JMX_MANAGER, "true");
 
     createCache(managedNode2, props);
     createCache(managedNode3, props);
 
-    listWillingManagers(locator, locPort, false);
+    listWillingManagers(locator);
   }
 
   @Test
   public void testWillingManagersWithPortZero() throws Exception {
-    int locPort = startLocator(locator, true, 0);
+    int locPort = startLocator(locator, 0);
 
     Host host = Host.getHost(0);
     String host0 = getServerHostName(host);
 
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, host0 + "[" + locPort
-        + "]");
+    props.setProperty(LOCATORS, host0 + "[" + locPort + "]");
     props.setProperty(JMX_MANAGER, "true");
 
     createCache(managedNode2, props);
     createCache(managedNode3, props);
 
-    listWillingManagers(locator, locPort, false);
+    listWillingManagers(locator);
   }
 
   /**
-   * Starts a locator with given configuration.
-   * If DS is already started it will use the same DS
+   * Starts a locator with given configuration. If DS is already started it will use the same DS
    * 
-   * @param vm
-   *          reference to VM
+   * @param vm reference to VM
    */
-  protected Integer startLocator(final VM vm, final boolean isPeer, final int port) {
+  protected Integer startLocator(final VM vm, final int port) {
 
     return (Integer) vm.invoke(new SerializableCallable("Start Locator In VM") {
 
@@ -221,7 +220,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
         Locator locator = null;
         try {
           File logFile = new File(getTestMethodName() + "-locator" + port + ".log");
-          locator = Locator.startLocatorAndDS(port, logFile, bindAddr, props, isPeer, true, null);
+          locator = Locator.startLocatorAndDS(port, logFile, bindAddr, props);
         } catch (IOException ex) {
           Assert.fail("While starting locator on port " + port, ex);
         }
@@ -235,8 +234,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   /**
    * Creates a persistent region
    * 
-   * @param vm
-   *          reference to VM
+   * @param vm reference to VM
    */
   protected String stopLocator(VM vm) {
 
@@ -253,27 +251,23 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Creates a persistent region
-   * 
-   * @param vm
-   *          reference to VM
+   *
+   * @param vm reference to VM
    */
-  protected void locatorMBeanExist(VM vm, final int locPort,
-      final boolean isPeer) {
+  protected void locatorMBeanExist(VM vm, final int locPort) {
 
     vm.invoke(new SerializableCallable("Locator MBean created") {
 
       public Object call() throws Exception {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
-        ManagementService service = ManagementService
-            .getExistingManagementService(cache);
+        ManagementService service = ManagementService.getExistingManagementService(cache);
         assertNotNull(service);
         LocatorMXBean bean = service.getLocalLocatorMXBean();
         assertNotNull(bean);
         assertEquals(locPort, bean.getPort());
         LogWriterUtils.getLogWriter().info("Log of Locator" + bean.viewLog());
         LogWriterUtils.getLogWriter().info("BindAddress" + bean.getBindAddress());
-        assertEquals(isPeer, bean.isPeerLocator());
         return null;
       }
     });
@@ -282,8 +276,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
   /**
    * Creates a persistent region
    * 
-   * @param vm
-   *          reference to VM
+   * @param vm reference to VM
    */
   protected void remoteLocatorMBeanExist(VM vm, final DistributedMember member) {
 
@@ -291,8 +284,7 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
       public Object call() throws Exception {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        ManagementService service = ManagementService
-            .getExistingManagementService(cache);
+        ManagementService service = ManagementService.getExistingManagementService(cache);
         assertNotNull(service);
         LocatorMXBean bean = MBeanUtil.getLocatorMbeanProxy(member);
         assertNotNull(bean);
@@ -307,19 +299,17 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Creates a persistent region
-   * 
-   * @param vm
-   *          reference to VM
+   *
+   * @param vm reference to VM
    */
-  protected void listManagers(VM vm, final int locPort, final boolean isPeer) {
+  protected void listManagers(VM vm, final int locPort) {
 
     vm.invoke(new SerializableCallable("List Managers") {
 
       public Object call() throws Exception {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
-        ManagementService service = ManagementService
-            .getExistingManagementService(cache);
+        ManagementService service = ManagementService.getExistingManagementService(cache);
         assertNotNull(service);
         final LocatorMXBean bean = service.getLocalLocatorMXBean();
         assertNotNull(bean);
@@ -345,20 +335,17 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Creates a persistent region
-   * 
-   * @param vm
-   *          reference to VM
+   *
+   * @param vm reference to VM
    */
-  protected void listWillingManagers(VM vm, final int locPort,
-      final boolean isPeer) {
+  protected void listWillingManagers(VM vm) {
 
     vm.invoke(new SerializableCallable("List Willing Managers") {
 
       public Object call() throws Exception {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
 
-        ManagementService service = ManagementService
-            .getExistingManagementService(cache);
+        ManagementService service = ManagementService.getExistingManagementService(cache);
         assertNotNull(service);
         final LocatorMXBean bean = service.getLocalLocatorMXBean();
         assertNotNull(bean);
@@ -381,15 +368,16 @@ public class LocatorManagementDUnitTest extends ManagementTestBase {
       }
     });
   }
-  
-  /** get the host name to use for a server cache in client/server dunit
-   * testing
+
+  /**
+   * get the host name to use for a server cache in client/server dunit testing
+   * 
    * @param host
    * @return the host name
    */
   public static String getServerHostName(Host host) {
-    return System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address") != null ?
-        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address")
+    return System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address") != null
+        ? System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "server-bind-address")
         : host.getHostName();
   }
 

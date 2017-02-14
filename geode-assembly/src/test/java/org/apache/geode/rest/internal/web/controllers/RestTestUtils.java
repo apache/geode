@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.rest.internal.web.controllers;
 
@@ -38,14 +36,14 @@ import org.springframework.web.util.UriComponentsBuilder;
  * @see org.springframework.data.gemfire.GemfireTemplate
  * @since GemFire 8.0
  */
-public class RestTestUtils  {
+public class RestTestUtils {
 
   public static final String BASE_URL = "http://localhost:8080";
   public static final String GEMFIRE_REST_API_CONTEXT = "/gemfire-api";
   public static final String GEMFIRE_REST_API_VERSION = "/v1";
 
-  public static final URI GEMFIRE_REST_API_WEB_SERVICE_URL = URI
-      .create(BASE_URL + GEMFIRE_REST_API_CONTEXT + GEMFIRE_REST_API_VERSION);
+  public static final URI GEMFIRE_REST_API_WEB_SERVICE_URL =
+      URI.create(BASE_URL + GEMFIRE_REST_API_CONTEXT + GEMFIRE_REST_API_VERSION);
 
   private static RestTemplate restTemplate;
 
@@ -53,57 +51,57 @@ public class RestTestUtils  {
     if (restTemplate == null) {
       restTemplate = new RestTemplate();
 
-      final List<HttpMessageConverter<?>> messageConverters = new ArrayList<HttpMessageConverter<?>>();
+      final List<HttpMessageConverter<?>> messageConverters =
+          new ArrayList<HttpMessageConverter<?>>();
 
       messageConverters.add(new ByteArrayHttpMessageConverter());
       messageConverters.add(new ResourceHttpMessageConverter());
       messageConverters.add(new StringHttpMessageConverter());
       messageConverters.add(createMappingJackson2HttpMessageConverter());
-      
+
       restTemplate.setMessageConverters(messageConverters);
     }
     return restTemplate;
   }
 
   public static HttpMessageConverter<Object> createMappingJackson2HttpMessageConverter() {
-    final Jackson2ObjectMapperFactoryBean objectMapperFactoryBean = new Jackson2ObjectMapperFactoryBean();
+    final Jackson2ObjectMapperFactoryBean objectMapperFactoryBean =
+        new Jackson2ObjectMapperFactoryBean();
 
     objectMapperFactoryBean.setFailOnEmptyBeans(true);
     objectMapperFactoryBean.setIndentOutput(true);
     objectMapperFactoryBean.setDateFormat(new SimpleDateFormat("MM/dd/yyyy"));
-    objectMapperFactoryBean
-        .setFeaturesToDisable(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    objectMapperFactoryBean
-        .setFeaturesToEnable(
-            com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS,
-            com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_SINGLE_QUOTES,
-            com.fasterxml.jackson.databind.DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+    objectMapperFactoryBean.setFeaturesToDisable(
+        com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    objectMapperFactoryBean.setFeaturesToEnable(
+        com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_COMMENTS,
+        com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_SINGLE_QUOTES,
+        com.fasterxml.jackson.databind.DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
     objectMapperFactoryBean.afterPropertiesSet();
 
-    final MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
+    final MappingJackson2HttpMessageConverter httpMessageConverter =
+        new MappingJackson2HttpMessageConverter();
     httpMessageConverter.setObjectMapper(objectMapperFactoryBean.getObject());
     return httpMessageConverter;
   }
-  
+
   /*
-  protected static HttpMessageConverter<Object> createMarshallingHttpMessageConverter() {
-    final Jaxb2Marshaller jaxbMarshaller = new Jaxb2Marshaller();
+   * protected static HttpMessageConverter<Object> createMarshallingHttpMessageConverter() { final
+   * Jaxb2Marshaller jaxbMarshaller = new Jaxb2Marshaller();
+   * 
+   * jaxbMarshaller.setContextPaths("org.apache.geode.web.rest.domain",
+   * "org.apache.geode.web.controllers.support");
+   * jaxbMarshaller.setMarshallerProperties(Collections.singletonMap( "jaxb.formatted.output",
+   * Boolean.TRUE));
+   * 
+   * return new MarshallingHttpMessageConverter(jaxbMarshaller); }
+   */
 
-    jaxbMarshaller.setContextPaths("org.apache.geode.web.rest.domain",
-        "org.apache.geode.web.controllers.support");
-    jaxbMarshaller.setMarshallerProperties(Collections.singletonMap(
-        "jaxb.formatted.output", Boolean.TRUE));
-
-    return new MarshallingHttpMessageConverter(jaxbMarshaller);
-  }
-  */
-  
   public static URI toUri(final String... pathSegments) {
     return toUri(GEMFIRE_REST_API_WEB_SERVICE_URL, pathSegments);
   }
 
   public static URI toUri(final URI baseUrl, final String... pathSegments) {
-    return UriComponentsBuilder.fromUri(baseUrl).pathSegment(pathSegments)
-        .build().toUri();
+    return UriComponentsBuilder.fromUri(baseUrl).pathSegment(pathSegments).build().toUri();
   }
 }

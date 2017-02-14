@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -34,24 +32,21 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Confirm that bug 34583 is fixed. Cause of bug is recursion is
- * entries iterator that causes stack overflow.
+ * Confirm that bug 34583 is fixed. Cause of bug is recursion is entries iterator that causes stack
+ * overflow.
  */
 @Category(IntegrationTest.class)
 public class Bug34583JUnitTest {
-  
-  public Bug34583JUnitTest() {
-  }
-  
-  public void setup() {
-  }
-  
+
+  public Bug34583JUnitTest() {}
+
+  public void setup() {}
+
   @After
-  public void tearDown() {
-  }
-  
-  
-  
+  public void tearDown() {}
+
+
+
   @Test
   public void testBunchOfInvalidEntries() throws Exception {
     Properties props = new Properties();
@@ -61,11 +56,11 @@ public class Bug34583JUnitTest {
       AttributesFactory factory = new AttributesFactory();
       Cache cache = null;
       cache = CacheFactory.create(ds);
-     
+
       Region r = cache.createRegion("testRegion", factory.create());
       final int ENTRY_COUNT = 25000;
       {
-        for (int i=1; i <= ENTRY_COUNT; i++) {
+        for (int i = 1; i <= ENTRY_COUNT; i++) {
           r.put("key" + i, "value" + i);
         }
       }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.partitioned;
 
@@ -47,8 +45,7 @@ import org.apache.geode.test.dunit.Wait;
  * 
  */
 @Category(DistributedTest.class)
-public class PRBasicIndexCreationDeadlockDUnitTest extends
-    PartitionedRegionDUnitTestCase
+public class PRBasicIndexCreationDeadlockDUnitTest extends PartitionedRegionDUnitTestCase
 
 {
   /**
@@ -60,11 +57,13 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
   public PRBasicIndexCreationDeadlockDUnitTest() {
     super();
   }
+
   public void setCacheInVMs(VM... vms) {
     for (VM vm : vms) {
       vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
     }
   }
+
   public void setCacheInVMsUsingXML(String xmlFile, VM... vms) {
     for (VM vm : vms) {
       vm.invoke(() -> GemFireCacheImpl.testCacheXml = PRQHelp.findFile(xmlFile));
@@ -90,7 +89,7 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    setCacheInVMs(vm0,vm1);
+    setCacheInVMs(vm0, vm1);
     final String fileName1 = "PRPersistentIndexCreation_1.xml";
     final String fileName2 = "PRPersistentIndexCreation_2.xml";
     setCacheInVMsUsingXML(fileName1, vm0);
@@ -99,11 +98,11 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
     final File dir2 = new File("overflowData2");
 
     AsyncInvocation[] asyns = new AsyncInvocation[2];
-    
+
     try {
       vm0.invoke(new CacheSerializableRunnable("Create disk store directories") {
-        
-        
+
+
         @Override
         public void run2() throws CacheException {
           boolean success = (dir1).mkdir();
@@ -113,32 +112,32 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
 
       vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name));
       vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name));
-  
+
       final Portfolio[] portfoliosAndPositions = createPortfoliosAndPositions(100);
-  
+
       // Putting the data into the PR's created
       vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-                                                               0, 100));
-  
+          0, 100));
+
       vm0.invoke(new CacheSerializableRunnable("Close VM0 cache") {
-        
+
         @Override
         public void run2() throws CacheException {
           GemFireCacheImpl.getInstance().close();
         }
       });
-    
+
       vm1.invoke(new CacheSerializableRunnable("Close VM1 cache") {
-        
+
         @Override
         public void run2() throws CacheException {
           GemFireCacheImpl.getInstance().close();
         }
       });
-  
+
       // Restart the caches with testHook.
       asyns[0] = vm0.invokeAsync(new CacheSerializableRunnable("Restart VM0 cache") {
-        
+
         @Override
         public void run2() throws CacheException {
           GemFireCacheImpl.testCacheXml = PRQHelp.findFile(fileName1);
@@ -146,10 +145,10 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
           getCache();
         }
       });
-  
-      //asyns[1] = 
-        vm0.invoke(new CacheSerializableRunnable("Checking hook in VM0 cache") {
-        
+
+      // asyns[1] =
+      vm0.invoke(new CacheSerializableRunnable("Checking hook in VM0 cache") {
+
         @Override
         public void run2() throws CacheException {
           IndexUtilTestHook hook = (IndexUtilTestHook) IndexUtils.testHook;
@@ -160,17 +159,16 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
           while (!hook.isHooked()) {
             Wait.pause(30);
           }
-          //hook.setHooked(false);
+          // hook.setHooked(false);
           hook_vm1 = true;
-          /*while (!hook_vm2) {
-            pause(40);
-          }
-          hook.setHooked(false);*/
+          /*
+           * while (!hook_vm2) { pause(40); } hook.setHooked(false);
+           */
         }
       });
-  
+
       asyns[1] = vm1.invokeAsync(new CacheSerializableRunnable("Restart VM1 cache") {
-        
+
         @Override
         public void run2() throws CacheException {
           GemFireCacheImpl.testCacheXml = PRQHelp.findFile(fileName2);
@@ -179,9 +177,9 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
       });
 
       Wait.pause(2000);
-      
+
       vm0.invoke(new CacheSerializableRunnable("Checking hook in VM0 cache again") {
-        
+
         @Override
         public void run2() throws CacheException {
           IndexUtilTestHook hook = (IndexUtilTestHook) IndexUtils.testHook;
@@ -195,15 +193,15 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
           hook.setHooked(false);
           hook_vm1 = false;
         }
-      });  
+      });
 
-      for (AsyncInvocation async: asyns) {
+      for (AsyncInvocation async : asyns) {
         ThreadUtils.join(async, 10000);
       }
     } finally {
-      
+
       vm0.invoke(new CacheSerializableRunnable("Close VM0 cache") {
-        
+
         @Override
         public void run2() throws CacheException {
           dir1.delete();
@@ -221,7 +219,7 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
   public class IndexUtilTestHook implements TestHook {
 
     private volatile boolean hooked = false;
-    
+
     public void setHooked(boolean hooked) {
       this.hooked = hooked;
     }
@@ -229,18 +227,20 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends
     public boolean isHooked() {
       return hooked;
     }
-    
+
     @Override
     public synchronized void hook(int spot) throws RuntimeException {
       GemFireCacheImpl.getInstance().getLogger().fine("IndexUtilTestHook is set");
       switch (spot) {
-      case 0:
-        hooked = true;
-        while(hooked) {Wait.pause(300);}
-        break;
+        case 0:
+          hooked = true;
+          while (hooked) {
+            Wait.pause(300);
+          }
+          break;
 
-      default:
-        break;
+        default:
+          break;
       }
     }
   }

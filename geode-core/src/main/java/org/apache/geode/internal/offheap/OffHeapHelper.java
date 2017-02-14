@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.offheap;
 
@@ -30,7 +28,7 @@ public class OffHeapHelper {
   private OffHeapHelper() {
     // no instances allowed
   }
-  
+
   /**
    * If o is off-heap then return its heap form; otherwise return o since it is already on the heap.
    */
@@ -44,19 +42,21 @@ public class OffHeapHelper {
 
   /**
    * Just like {@link #copyIfNeeded(Object)} except that if off-heap is copied it is also released.
+   * 
    * @param v If this value is off-heap then the caller must have already retained it.
    * @return the heap copy to use in place of v
    */
   public static Object copyAndReleaseIfNeeded(@Released Object v) {
     if (v instanceof StoredObject) {
-      @Unretained StoredObject ohv = (StoredObject) v;
+      @Unretained
+      StoredObject ohv = (StoredObject) v;
       try {
-      if (ohv.isSerialized()) {
-        return CachedDeserializableFactory.create(ohv.getSerializedValue());
-      } else {
-        // it is a byte[]
-        return ohv.getDeserializedForReading();
-      }
+        if (ohv.isSerialized()) {
+          return CachedDeserializableFactory.create(ohv.getSerializedValue());
+        } else {
+          // it is a byte[]
+          return ohv.getDeserializedForReading();
+        }
       } finally {
         release(ohv);
       }
@@ -66,17 +66,19 @@ public class OffHeapHelper {
   }
 
   /**
-   * If v is on heap then just return v; no copy needed.
-   * Else v is off-heap so copy it to heap and return a reference to the heap copy.
-   * Note that unlike {@link #getHeapForm(Object)} if v is a serialized off-heap object it will be copied to the heap as a CachedDeserializable.
-   * If you prefer to have the serialized object also deserialized and copied to the heap use {@link #getHeapForm(Object)}.
+   * If v is on heap then just return v; no copy needed. Else v is off-heap so copy it to heap and
+   * return a reference to the heap copy. Note that unlike {@link #getHeapForm(Object)} if v is a
+   * serialized off-heap object it will be copied to the heap as a CachedDeserializable. If you
+   * prefer to have the serialized object also deserialized and copied to the heap use
+   * {@link #getHeapForm(Object)}.
    * 
    * @param v possible OFF_HEAP_REFERENCE
    * @return v or a heap copy of v
    */
   public static Object copyIfNeeded(@Unretained Object v) {
     if (v instanceof StoredObject) {
-      @Unretained StoredObject ohv = (StoredObject) v;
+      @Unretained
+      StoredObject ohv = (StoredObject) v;
       if (ohv.isSerialized()) {
         v = CachedDeserializableFactory.create(ohv.getSerializedValue());
       } else {
@@ -86,7 +88,7 @@ public class OffHeapHelper {
     }
     return v;
   }
-  
+
   /**
    * @return true if release was done
    */
@@ -98,8 +100,10 @@ public class OffHeapHelper {
       return false;
     }
   }
+
   /**
    * Just like {@link #release(Object)} but also disable debug tracking of the release.
+   * 
    * @return true if release was done
    */
   public static boolean releaseWithNoTracking(@Released Object o) {
@@ -117,9 +121,10 @@ public class OffHeapHelper {
       return false;
     }
   }
-  
+
   /**
    * Just like {@link #release(Object)} but also set the owner for debug tracking of the release.
+   * 
    * @return true if release was done
    */
   public static boolean releaseAndTrackOwner(@Released final Object o, final Object owner) {

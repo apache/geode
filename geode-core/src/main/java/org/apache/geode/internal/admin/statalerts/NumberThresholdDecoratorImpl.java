@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin.statalerts;
 
@@ -28,23 +26,21 @@ import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 
 /**
- * Implementation of {@link StatAlertDefinition}, represents threshold as
- * number
+ * Implementation of {@link StatAlertDefinition}, represents threshold as number
  * 
  */
-public final class NumberThresholdDecoratorImpl extends BaseDecoratorImpl 
-  implements DataSerializableFixedID {
+public final class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
+    implements DataSerializableFixedID {
 
   private static final long serialVersionUID = -1799140125261894306L;
 
   protected Number threshold;
   protected boolean evalForGtThan;
 
-  public NumberThresholdDecoratorImpl() {
-  }
+  public NumberThresholdDecoratorImpl() {}
 
-  public NumberThresholdDecoratorImpl(StatAlertDefinition definition,
-      Number threshold, boolean evalForGtThan) {
+  public NumberThresholdDecoratorImpl(StatAlertDefinition definition, Number threshold,
+      boolean evalForGtThan) {
     super(definition);
     this.threshold = threshold;
     this.evalForGtThan = evalForGtThan;
@@ -61,11 +57,11 @@ public final class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
   public boolean isGauge() {
     return false;
   }
-  
+
   public boolean isEvalForGreaterThan() {
     return evalForGtThan;
   }
-  
+
   @Override
   public boolean verify(StatisticsFactory factory) {
     return (super.verify(factory) && (null != threshold));
@@ -85,11 +81,9 @@ public final class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
   @Override
   public boolean evaluate(Number[] params) {
     if (this.evalForGtThan)
-      return super.evaluate(params)
-            && isGreaterThan(getValue(params)[0], threshold);
+      return super.evaluate(params) && isGreaterThan(getValue(params)[0], threshold);
     else
-      return super.evaluate(params)
-      && isLessThan(getValue(params)[0], threshold);      
+      return super.evaluate(params) && isLessThan(getValue(params)[0], threshold);
   }
 
   @Override
@@ -124,8 +118,7 @@ public final class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
 
   @Override
   public StatAlertDefinition getDecorator(String decoratorID) {
-    return ID.equalsIgnoreCase(decoratorID) ? this : super
-        .getDecorator(decoratorID);
+    return ID.equalsIgnoreCase(decoratorID) ? this : super.getDecorator(decoratorID);
   }
 
   @Override
@@ -136,10 +129,9 @@ public final class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
   }
 
   @Override
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.threshold = (Number)DataSerializer.readObject(in);
+    this.threshold = (Number) DataSerializer.readObject(in);
     this.evalForGtThan = DataSerializer.readPrimitiveBoolean(in);
   }
 

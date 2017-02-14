@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal.executor;
 
@@ -27,8 +25,7 @@ import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.GeodeRedisServer;
 
 /**
- * The AbstractExecutor is the base of all {@link Executor} types for the 
- * {@link GeodeRedisServer}.
+ * The AbstractExecutor is the base of all {@link Executor} types for the {@link GeodeRedisServer}.
  * 
  *
  */
@@ -50,16 +47,15 @@ public abstract class AbstractExecutor implements Executor {
   protected static final int millisInSecond = 1000;
 
   /**
-   * Getter method for a {@link Region} in the case that a Region should be
-   * created if one with the given name does not exist. Before getting or creating
-   * a Region, a check is first done to make sure the desired key doesn't already
-   * exist with a different {@link RedisDataType}. If there is a data type mismatch
-   * this method will throw a {@link RuntimeException}.
+   * Getter method for a {@link Region} in the case that a Region should be created if one with the
+   * given name does not exist. Before getting or creating a Region, a check is first done to make
+   * sure the desired key doesn't already exist with a different {@link RedisDataType}. If there is
+   * a data type mismatch this method will throw a {@link RuntimeException}.
    * 
-   * ********************** IMPORTANT NOTE **********************************************
-   * This method will not fail in returning a Region unless an internal error occurs, so
-   * if a Region is destroyed right after it is created, it will attempt to retry until a 
-   * reference to that Region is obtained
+   * ********************** IMPORTANT NOTE ********************************************** This
+   * method will not fail in returning a Region unless an internal error occurs, so if a Region is
+   * destroyed right after it is created, it will attempt to retry until a reference to that Region
+   * is obtained
    * *************************************************************************************
    * 
    * @param context Client client
@@ -67,33 +63,37 @@ public abstract class AbstractExecutor implements Executor {
    * @param type Type of data type desired
    * @return Region with name key
    */
-  protected Region<?, ?> getOrCreateRegion(ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
+  protected Region<?, ?> getOrCreateRegion(ExecutionHandlerContext context, ByteArrayWrapper key,
+      RedisDataType type) {
     return context.getRegionProvider().getOrCreateRegion(key, type, context);
   }
 
   /**
-   * Checks if the given key is associated with the passed data type.
-   * If there is a mismatch, a {@link RuntimeException} is thrown
+   * Checks if the given key is associated with the passed data type. If there is a mismatch, a
+   * {@link RuntimeException} is thrown
    * 
    * @param key Key to check
    * @param type Type to check to
    * @param context context
    */
-  protected void checkDataType(ByteArrayWrapper key, RedisDataType type, ExecutionHandlerContext context) {
+  protected void checkDataType(ByteArrayWrapper key, RedisDataType type,
+      ExecutionHandlerContext context) {
     RedisDataType currentType = context.getRegionProvider().getRedisDataType(key);
     if (currentType == null)
       return;
     if (currentType == RedisDataType.REDIS_PROTECTED)
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
     if (currentType != type)
-      throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is already used by a " + currentType.toString());
+      throw new RedisDataTypeMismatchException(
+          "The key name \"" + key + "\" is already used by a " + currentType.toString());
   }
 
   protected Query getQuery(ByteArrayWrapper key, Enum<?> type, ExecutionHandlerContext context) {
     return context.getRegionProvider().getQuery(key, type);
   }
 
-  protected boolean removeEntry(ByteArrayWrapper key, RedisDataType type, ExecutionHandlerContext context) {
+  protected boolean removeEntry(ByteArrayWrapper key, RedisDataType type,
+      ExecutionHandlerContext context) {
     if (type == null || type == RedisDataType.REDIS_PROTECTED)
       return false;
     RegionProvider rC = context.getRegionProvider();
@@ -101,7 +101,7 @@ public abstract class AbstractExecutor implements Executor {
   }
 
   protected int getBoundedStartIndex(int index, int size) {
-    if (size <  0)
+    if (size < 0)
       throw new IllegalArgumentException("Size < 0, really?");
     if (index >= 0)
       return Math.min(index, size);
@@ -110,7 +110,7 @@ public abstract class AbstractExecutor implements Executor {
   }
 
   protected int getBoundedEndIndex(int index, int size) {
-    if (size <  0)
+    if (size < 0)
       throw new IllegalArgumentException("Size < 0, really?");
     if (index >= 0)
       return Math.min(index, size);
@@ -119,7 +119,7 @@ public abstract class AbstractExecutor implements Executor {
   }
 
   protected long getBoundedStartIndex(long index, long size) {
-    if (size <  0L)
+    if (size < 0L)
       throw new IllegalArgumentException("Size < 0, really?");
     if (index >= 0L)
       return Math.min(index, size);
@@ -128,7 +128,7 @@ public abstract class AbstractExecutor implements Executor {
   }
 
   protected long getBoundedEndIndex(long index, long size) {
-    if (size <  0L)
+    if (size < 0L)
       throw new IllegalArgumentException("Size < 0, really?");
     if (index >= 0L)
       return Math.min(index, size);

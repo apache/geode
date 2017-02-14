@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.statistics;
 
@@ -20,9 +18,8 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 
 /**
- * An instance of a Statistics resource. There may be zero, one or many
- * instances depending on the statistics type. The ResourceInstance holds
- * an array of the latest stat values.
+ * An instance of a Statistics resource. There may be zero, one or many instances depending on the
+ * statistics type. The ResourceInstance holds an array of the latest stat values.
  * <p/>
  * Extracted from {@link StatArchiveWriter}.
  * 
@@ -46,11 +43,11 @@ public class ResourceInstance {
   public int getId() {
     return this.id;
   }
-  
+
   public Statistics getStatistics() {
     return this.statistics;
   }
-  
+
   public ResourceType getResourceType() {
     return this.type;
   }
@@ -58,35 +55,35 @@ public class ResourceInstance {
   public Number getStatValue(StatisticDescriptor sd) {
     return this.statistics.get(sd);
   }
-  
+
   public long getRawStatValue(StatisticDescriptor sd) {
     return this.statistics.getRawBits(sd);
   }
-  
+
   public long[] getLatestStatValues() {
     return this.latestStatValues;
   }
-  
+
   public void setLatestStatValues(long[] latestStatValues) {
     this.latestStatValues = latestStatValues;
   }
-  
+
   public long[] getPreviousStatValues() {
     return this.previousStatValues;
   }
-  
+
   public void setPreviousStatValues(long[] previousStatValues) {
     this.previousStatValues = previousStatValues;
   }
-  
+
   public int[] getUpdatedStats() {
     return this.updatedStats;
   }
-  
+
   public void setUpdatedStats(int[] updatedStats) {
     this.updatedStats = updatedStats;
   }
-  
+
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
@@ -113,7 +110,7 @@ public class ResourceInstance {
     return sb.toString();
   }
 
-//  private int unsignedByteToInt(byte value) {
-//    return value & 0x000000FF;
-//  }
+  // private int unsignedByteToInt(byte value) {
+  // return value & 0x000000FF;
+  // }
 }

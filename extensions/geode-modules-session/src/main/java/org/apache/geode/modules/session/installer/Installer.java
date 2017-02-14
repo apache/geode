@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.apache.geode.modules.session.installer;
 
@@ -53,25 +51,19 @@ public class Installer {
   private ArgumentValues argValues;
 
   private static final Argument ARG_HELP =
-      new Argument("-h", false).
-          setDescription("Displays this help message.");
+      new Argument("-h", false).setDescription("Displays this help message.");
 
-  private static Argument ARG_GEMFIRE_PARAMETERS =
-      new Argument("-p", false, "param=value").
-          setDescription("Specific parameter for inclusion into the "
-              + "session filter definition as a regular "
-              + "init-param. Can be given multiple times.");
+  private static Argument ARG_GEMFIRE_PARAMETERS = new Argument("-p", false, "param=value")
+      .setDescription("Specific parameter for inclusion into the "
+          + "session filter definition as a regular " + "init-param. Can be given multiple times.");
 
-  private static Argument ARG_CACHE_TYPE =
-      new Argument("-t", false, "cache-type").
-          setDescription(
-              "Type of cache. Must be one of 'peer-to-peer' or "
-                  + "'client-server'. Default is peer-to-peer.").
-          setDefaults("peer-to-peer");
+  private static Argument ARG_CACHE_TYPE = new Argument("-t", false, "cache-type")
+      .setDescription("Type of cache. Must be one of 'peer-to-peer' or "
+          + "'client-server'. Default is peer-to-peer.")
+      .setDefaults("peer-to-peer");
 
   private static Argument ARG_WEB_XML_FILE =
-      new Argument("-w", true, "web.xml file").
-          setDescription("The web.xml file to be modified.");
+      new Argument("-w", true, "web.xml file").setDescription("The web.xml file to be modified.");
 
 
   /**
@@ -102,18 +94,15 @@ public class Installer {
 
       processor.setUnknownArgumentHandler(new UnknownArgumentHandler() {
         @Override
-        public void handleUnknownArgument(
-            final String form, final String[] params) {
-          log("Unknown argument being ignored: "
-              + form + " (" + params.length + " params)");
+        public void handleUnknownArgument(final String form, final String[] params) {
+          log("Unknown argument being ignored: " + form + " (" + params.length + " params)");
           log("Use '-h' argument to display usage");
         }
       });
       argValues = processor.process(args);
 
       if (argValues.isDefined(ARG_HELP)) {
-        final UsageException usageException =
-            new UsageException("Usage requested by user");
+        final UsageException usageException = new UsageException("Usage requested by user");
         usageException.setUsage(processor.getUsage());
         throw (usageException);
       }
@@ -151,8 +140,7 @@ public class Installer {
   }
 
 
-  public void processWebXml(final InputStream webXml,
-      final OutputStream out) throws Exception {
+  public void processWebXml(final InputStream webXml, final OutputStream out) throws Exception {
 
     Document doc = createWebXmlDoc(webXml);
     mangleWebXml(doc);
@@ -161,11 +149,9 @@ public class Installer {
   }
 
 
-  private Document createWebXmlDoc(final InputStream webXml)
-      throws Exception {
+  private Document createWebXmlDoc(final InputStream webXml) throws Exception {
     Document doc;
-    final DocumentBuilderFactory factory =
-        DocumentBuilderFactory.newInstance();
+    final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     final DocumentBuilder builder = factory.newDocumentBuilder();
     doc = builder.parse(webXml);
 
@@ -205,8 +191,7 @@ public class Installer {
     // Set the type of cache
     initParam = append(doc, filter, "init-param", null);
     append(doc, initParam, "param-name", "cache-type");
-    append(doc, initParam, "param-value",
-        argValues.getFirstResult(ARG_CACHE_TYPE));
+    append(doc, initParam, "param-value", argValues.getFirstResult(ARG_CACHE_TYPE));
 
 
     if (argValues.isDefined(ARG_GEMFIRE_PARAMETERS)) {
@@ -235,8 +220,7 @@ public class Installer {
     final Element contextListener = doc.createElement("listener");
     append(doc, contextListener, "listener-class", GEMFIRE_LISTENER_CLASS);
     docElement.insertBefore(filterMapping, after(docElement, "filter"));
-    docElement.insertBefore(contextListener,
-        after(docElement, "filter-mapping"));
+    docElement.insertBefore(contextListener, after(docElement, "filter-mapping"));
     return doc;
   }
 
@@ -258,8 +242,7 @@ public class Installer {
     return null;
   }
 
-  private Node append(final Document doc, final Node parent,
-      final String element,
+  private Node append(final Document doc, final Node parent, final String element,
       final String value) {
     final Element child = doc.createElement(element);
     if (value != null)
@@ -279,8 +262,7 @@ public class Installer {
         transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, systemId);
       }
       transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-      transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount",
-          "4");
+      transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
       final DOMSource source = new DOMSource(doc);
       final StreamResult result = new StreamResult(out);
       transformer.transform(source, result);

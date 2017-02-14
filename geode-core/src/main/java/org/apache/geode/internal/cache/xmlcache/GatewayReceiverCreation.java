@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.xmlcache;
 
@@ -40,9 +38,9 @@ public class GatewayReceiverCreation implements GatewayReceiver {
   private String host;
 
   private int startPort;
-  
+
   private int endPort;
-  
+
   private String portRange;
 
   private List<GatewayTransportFilter> transFilter = new ArrayList<GatewayTransportFilter>();
@@ -52,32 +50,31 @@ public class GatewayReceiverCreation implements GatewayReceiver {
   private int socketBufferSize;
 
   private String bindAddress;
-  
+
   private boolean manualStart;
-  
+
   private CacheServer receiver;
 
   @SuppressWarnings("deprecation")
-  public GatewayReceiverCreation(Cache cache, int startPort,
-      int endPort, int timeBetPings, int buffSize, String bindAdd,
-      List<GatewayTransportFilter> filters, String hostnameForSenders, boolean manualStart) {
+  public GatewayReceiverCreation(Cache cache, int startPort, int endPort, int timeBetPings,
+      int buffSize, String bindAdd, List<GatewayTransportFilter> filters, String hostnameForSenders,
+      boolean manualStart) {
     this.cache = cache;
-    
+
     /*
-     * If user has set hostNameForSenders then it should take precedence over
-     * bindAddress. If user hasn't set either hostNameForSenders or bindAddress
-     * then getLocalHost().getHostName() should be used.
+     * If user has set hostNameForSenders then it should take precedence over bindAddress. If user
+     * hasn't set either hostNameForSenders or bindAddress then getLocalHost().getHostName() should
+     * be used.
      */
     if (hostnameForSenders == null || hostnameForSenders.isEmpty()) {
       if (bindAdd == null || bindAdd.isEmpty()) {
         try {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiverImpl_USING_LOCAL_HOST));
+          logger
+              .warn(LocalizedMessage.create(LocalizedStrings.GatewayReceiverImpl_USING_LOCAL_HOST));
           this.host = SocketCreator.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
           throw new IllegalStateException(
-              LocalizedStrings.GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME
-                  .toLocalizedString(),
-              e);
+              LocalizedStrings.GatewayReceiverImpl_COULD_NOT_GET_HOST_NAME.toLocalizedString(), e);
         }
       } else {
         this.host = bindAdd;
@@ -85,7 +82,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
     } else {
       this.host = hostnameForSenders;
     }
-    
+
 
     this.startPort = startPort;
     this.endPort = endPort;
@@ -111,7 +108,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
   public String getPortRange() {
     return this.portRange;
   }
-  
+
   public int getSocketBufferSize() {
     return this.socketBufferSize;
   }
@@ -123,11 +120,11 @@ public class GatewayReceiverCreation implements GatewayReceiver {
   public void setStartPort(int port) {
     this.startPort = port;
   }
-  
+
   public void setEndPort(int port) {
     this.endPort = port;
   }
-  
+
   public void setSocketBufferSize(int socketBufferSize) {
     this.socketBufferSize = socketBufferSize;
   }
@@ -146,8 +143,8 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   public void start() throws IOException {
     if (receiver == null) {
-      //add a cache server and set its port to random port. See defect 45630 for more details.
-      receiver = ((CacheCreation)this.cache).addCacheServer(true);
+      // add a cache server and set its port to random port. See defect 45630 for more details.
+      receiver = ((CacheCreation) this.cache).addCacheServer(true);
       receiver.setPort(endPort + 1);
     }
   }
@@ -156,22 +153,26 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   }
 
-  public boolean isRunning(){
+  public boolean isRunning() {
     return false;
   }
-  
+
   public void addGatewayTransportFilter(GatewayTransportFilter filter) {
     this.transFilter.add(filter);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.cache.wan.GatewayReceiver#getStartPort()
    */
   public int getStartPort() {
     return this.startPort;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.cache.wan.GatewayReceiver#getEndPort()
    */
   public int getEndPort() {

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -53,16 +51,17 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
 
   final List<String> filesToBeDeleted = new CopyOnWriteArrayList<String>();
-  
+
   @Test
   public void testPdxDeleteFieldVersioning() throws Exception {
     final String DS_NAME = "PdxDeleteFieldDUnitTestDiskStore";
     final String DS_NAME2 = "PdxDeleteFieldDUnitTestDiskStore2";
-    
+
     final Properties props = new Properties();
     final int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "localhost[" + locatorPorts[0] + "],localhost[" + locatorPorts[1] + "]");
+    props.setProperty(LOCATORS,
+        "localhost[" + locatorPorts[0] + "],localhost[" + locatorPorts[1] + "]");
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     final File f = new File(DS_NAME);
@@ -71,36 +70,39 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     f2.mkdir();
     this.filesToBeDeleted.add(DS_NAME);
     this.filesToBeDeleted.add(DS_NAME2);
-    
+
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
     VM vm2 = host.getVM(1);
-    
+
     vm1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         disconnectFromDS();
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[0] + "]");
-        final Cache cache = (new CacheFactory(props)).setPdxPersistent(true).setPdxDiskStore(DS_NAME).create();
+        final Cache cache =
+            (new CacheFactory(props)).setPdxPersistent(true).setPdxDiskStore(DS_NAME).create();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
-        dsf.setDiskDirs(new File[]{f});
+        dsf.setDiskDirs(new File[] {f});
         dsf.create(DS_NAME);
-        RegionFactory<String, PdxValue> rf1 = cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);    
+        RegionFactory<String, PdxValue> rf1 =
+            cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);
         rf1.setDiskStoreName(DS_NAME);
         Region<String, PdxValue> region1 = rf1.create("region1");
         region1.put("key1", new PdxValue(1, 2L));
         return null;
       }
     });
-    
+
     vm2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         disconnectFromDS();
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[1] + "]");
-        final Cache cache = (new CacheFactory(props)).setPdxReadSerialized(true).setPdxPersistent(true).setPdxDiskStore(DS_NAME2).create();
+        final Cache cache = (new CacheFactory(props)).setPdxReadSerialized(true)
+            .setPdxPersistent(true).setPdxDiskStore(DS_NAME2).create();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
-        dsf.setDiskDirs(new File[]{f2});
+        dsf.setDiskDirs(new File[] {f2});
         dsf.create(DS_NAME2);
-        RegionFactory rf1 = cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);    
+        RegionFactory rf1 = cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);
         rf1.setDiskStoreName(DS_NAME2);
         Region region1 = rf1.create("region1");
         Object v = region1.get("key1");
@@ -109,20 +111,21 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
         return null;
       }
     });
-    
+
     vm1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Cache cache = CacheFactory.getAnyInstance();
-        if(cache != null && !cache.isClosed()) {
+        if (cache != null && !cache.isClosed()) {
           cache.close();
         }
         return null;
       }
     });
-    
+
     vm1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        Collection<PdxType> types = DiskStoreImpl.pdxDeleteField(DS_NAME, new File[]{f}, PdxValue.class.getName(), "fieldToDelete");
+        Collection<PdxType> types = DiskStoreImpl.pdxDeleteField(DS_NAME, new File[] {f},
+            PdxValue.class.getName(), "fieldToDelete");
         assertEquals(1, types.size());
         PdxType pt = types.iterator().next();
         assertEquals(PdxValue.class.getName(), pt.getClassName());
@@ -130,30 +133,33 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
         return null;
       }
     });
-    
+
     vm1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[0] + "]");
-        final Cache cache = (new CacheFactory(props)).setPdxPersistent(true).setPdxDiskStore(DS_NAME).create();
+        final Cache cache =
+            (new CacheFactory(props)).setPdxPersistent(true).setPdxDiskStore(DS_NAME).create();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
-        dsf.setDiskDirs(new File[]{f});
+        dsf.setDiskDirs(new File[] {f});
         dsf.create(DS_NAME);
-        RegionFactory<String, PdxValue> rf1 = cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);    
+        RegionFactory<String, PdxValue> rf1 =
+            cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);
         rf1.setDiskStoreName(DS_NAME);
         Region<String, PdxValue> region1 = rf1.create("region1");
         return null;
       }
     });
-    
+
     vm2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         props.setProperty(START_LOCATOR, "localhost[" + locatorPorts[1] + "]");
-        final Cache cache = (new CacheFactory(props)).setPdxReadSerialized(true).setPdxPersistent(true).setPdxDiskStore(DS_NAME2).create();
-        
+        final Cache cache = (new CacheFactory(props)).setPdxReadSerialized(true)
+            .setPdxPersistent(true).setPdxDiskStore(DS_NAME2).create();
+
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
-        dsf.setDiskDirs(new File[]{f2});
+        dsf.setDiskDirs(new File[] {f2});
         dsf.create(DS_NAME2);
-        RegionFactory rf1 = cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);    
+        RegionFactory rf1 = cache.createRegionFactory(RegionShortcut.REPLICATE_PERSISTENT);
         rf1.setDiskStoreName(DS_NAME2);
         Region region1 = rf1.create("region1");
         PdxInstance v = (PdxInstance) region1.get("key1");
@@ -164,11 +170,11 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
         return null;
       }
     });
-    
+
     vm1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         Cache cache = CacheFactory.getAnyInstance();
-        if(cache != null && !cache.isClosed()) {
+        if (cache != null && !cache.isClosed()) {
           cache.close();
         }
         return null;
@@ -187,13 +193,14 @@ public class PdxDeleteFieldDUnitTest extends JUnit4CacheTestCase {
     }
     this.filesToBeDeleted.clear();
   }
-  
+
   public static class PdxValue implements PdxSerializable {
 
     public int value;
     public long fieldToDelete = -1L;
 
     public PdxValue() {} // for deserialization
+
     public PdxValue(int v, long lv) {
       this.value = v;
       this.fieldToDelete = lv;

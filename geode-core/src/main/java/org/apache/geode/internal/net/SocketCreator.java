@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.net;
 
@@ -100,8 +98,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.PasswordUtil;
 
 /**
- * Analyze configuration data (gemfire.properties) and configure sockets
- * accordingly for SSL.
+ * Analyze configuration data (gemfire.properties) and configure sockets accordingly for SSL.
  * <p>
  * gemfire.useSSL = (true|false) default false.<br/>
  * gemfire.ssl.debug = (true|false) default false.<br/>
@@ -109,16 +106,15 @@ import org.apache.geode.internal.util.PasswordUtil;
  * gemfire.ssl.protocols = <i>list of protocols</i><br/>
  * gemfire.ssl.ciphers = <i>list of cipher suites</i><br/>
  * <p>
- * The following may be included to configure the certificates used by the
- * Sun Provider.
+ * The following may be included to configure the certificates used by the Sun Provider.
  * <p>
  * javax.net.ssl.trustStore = <i>pathname</i><br/>
  * javax.net.ssl.trustStorePassword = <i>password</i><br/>
  * javax.net.ssl.keyStore = <i>pathname</i><br/>
  * javax.net.ssl.keyStorePassword = <i>password</i><br/>
  * <p>
- * Additional properties will be set as System properties to be available
- * as needed by other provider implementations.
+ * Additional properties will be set as System properties to be available as needed by other
+ * provider implementations.
  */
 public class SocketCreator {
 
@@ -127,12 +123,14 @@ public class SocketCreator {
   /**
    * Optional system property to enable GemFire usage of link-local addresses
    */
-  public static final String USE_LINK_LOCAL_ADDRESSES_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "net.useLinkLocalAddresses";
+  public static final String USE_LINK_LOCAL_ADDRESSES_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "net.useLinkLocalAddresses";
 
   /**
    * True if GemFire should use link-local addresses
    */
-  private static final boolean useLinkLocalAddresses = Boolean.getBoolean(USE_LINK_LOCAL_ADDRESSES_PROPERTY);
+  private static final boolean useLinkLocalAddresses =
+      Boolean.getBoolean(USE_LINK_LOCAL_ADDRESSES_PROPERTY);
 
   /**
    * we cache localHost to avoid bug #40619, access-violation in native code
@@ -142,14 +140,16 @@ public class SocketCreator {
   /**
    * all classes should use this variable to determine whether to use IPv4 or IPv6 addresses
    */
-  private static boolean useIPv6Addresses = !Boolean.getBoolean("java.net.preferIPv4Stack") && Boolean.getBoolean("java.net.preferIPv6Addresses");
+  private static boolean useIPv6Addresses = !Boolean.getBoolean("java.net.preferIPv4Stack")
+      && Boolean.getBoolean("java.net.preferIPv6Addresses");
 
   private static final Map<InetAddress, String> hostNames = new HashMap<>();
 
   /**
    * flag to force always using DNS (regardless of the fact that these lookups can hang)
    */
-  public static final boolean FORCE_DNS_USE = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "forceDnsUse");
+  public static final boolean FORCE_DNS_USE =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "forceDnsUse");
 
   /**
    * set this to false to inhibit host name lookup
@@ -184,7 +184,7 @@ public class SocketCreator {
         Set myInterfaces = getMyAddresses();
         boolean preferIPv6 = SocketCreator.useIPv6Addresses;
         String lhName = null;
-        for (Iterator<InetAddress> it = myInterfaces.iterator(); lhName == null && it.hasNext(); ) {
+        for (Iterator<InetAddress> it = myInterfaces.iterator(); lhName == null && it.hasNext();) {
           InetAddress addr = it.next();
           if (addr.isLoopbackAddress() || addr.isAnyLocalAddress()) {
             break;
@@ -209,7 +209,7 @@ public class SocketCreator {
           }
         }
         // vanilla Ubuntu installations will have a usable IPv6 address when
-        // running as a guest OS on an IPv6-enabled machine.  We also look for
+        // running as a guest OS on an IPv6-enabled machine. We also look for
         // the alternative IPv4 configuration.
         if (inetAddress.isLoopbackAddress()) {
           if (ipv4Fallback != null) {
@@ -232,15 +232,15 @@ public class SocketCreator {
   private ClientSocketFactory clientSocketFactory;
 
   /**
-   * Whether to enable TCP keep alive for sockets. This boolean is controlled by
-   * the gemfire.setTcpKeepAlive java system property.  If not set then GemFire
-   * will enable keep-alive on server->client and p2p connections.
+   * Whether to enable TCP keep alive for sockets. This boolean is controlled by the
+   * gemfire.setTcpKeepAlive java system property. If not set then GemFire will enable keep-alive on
+   * server->client and p2p connections.
    */
   public static final boolean ENABLE_TCP_KEEP_ALIVE;
 
   static {
     // bug #49484 - customers want tcp/ip keep-alive turned on by default
-    // to avoid dropped connections.  It can be turned off by setting this
+    // to avoid dropped connections. It can be turned off by setting this
     // property to false
     String str = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "setTcpKeepAlive");
     if (str != null) {
@@ -251,7 +251,7 @@ public class SocketCreator {
   }
 
   // -------------------------------------------------------------------------
-  //   Constructor
+  // Constructor
   // -------------------------------------------------------------------------
 
   /**
@@ -264,12 +264,11 @@ public class SocketCreator {
 
 
   // -------------------------------------------------------------------------
-  //   Static instance accessors
+  // Static instance accessors
   // -------------------------------------------------------------------------
 
   /**
-   * All GemFire code should use this method instead of
-   * InetAddress.getLocalHost().  See bug #40619
+   * All GemFire code should use this method instead of InetAddress.getLocalHost(). See bug #40619
    */
   public static InetAddress getLocalHost() throws UnknownHostException {
     if (localHost == null) {
@@ -286,8 +285,8 @@ public class SocketCreator {
   }
 
   /**
-   * returns the host name for the given inet address, using a local cache
-   * of names to avoid dns hits and duplicate strings
+   * returns the host name for the given inet address, using a local cache of names to avoid dns
+   * hits and duplicate strings
    */
   public static synchronized String getHostName(InetAddress addr) {
     String result = (String) hostNames.get(addr);
@@ -299,8 +298,8 @@ public class SocketCreator {
   }
 
   /**
-   * returns the host name for the given inet address, using a local cache
-   * of names to avoid dns hits and duplicate strings
+   * returns the host name for the given inet address, using a local cache of names to avoid dns
+   * hits and duplicate strings
    */
   public static synchronized String getCanonicalHostName(InetAddress addr, String hostName) {
     String result = (String) hostNames.get(addr);
@@ -319,7 +318,7 @@ public class SocketCreator {
   }
 
   // -------------------------------------------------------------------------
-  //   Initializers (change SocketCreator state)
+  // Initializers (change SocketCreator state)
   // -------------------------------------------------------------------------
 
   /**
@@ -331,7 +330,8 @@ public class SocketCreator {
   private void initialize() {
     try {
       // set p2p values...
-      if (SecurableCommunicationChannel.CLUSTER.equals(sslConfig.getSecuredCommunicationChannel())) {
+      if (SecurableCommunicationChannel.CLUSTER
+          .equals(sslConfig.getSecuredCommunicationChannel())) {
         if (this.sslConfig.isEnabled()) {
           System.setProperty("p2p.useSSL", "true");
           System.setProperty("p2p.oldIO", "true");
@@ -357,12 +357,12 @@ public class SocketCreator {
       this.ready = true;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
+      // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
       throw err;
     } catch (Error t) {
       // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
+      // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
@@ -377,6 +377,7 @@ public class SocketCreator {
 
   /**
    * Creates & configures the SSLContext when SSL is enabled.
+   * 
    * @return new SSLContext configured using the given protocols & properties
    *
    * @throws GeneralSecurityException if security information can not be found
@@ -388,13 +389,13 @@ public class SocketCreator {
     KeyManager[] keyManagers = getKeyManagers();
     TrustManager[] trustManagers = getTrustManagers();
 
-    newSSLContext.init(keyManagers, trustManagers, null /* use the default secure random*/);
+    newSSLContext.init(keyManagers, trustManagers, null /* use the default secure random */);
     return newSSLContext;
   }
 
   /**
-   * Used by CacheServerLauncher and SystemAdmin to read the properties from
-   * console
+   * Used by CacheServerLauncher and SystemAdmin to read the properties from console
+   * 
    * @param env Map in which the properties are to be read from console.
    */
   public static void readSSLProperties(Map<String, String> env) {
@@ -402,14 +403,13 @@ public class SocketCreator {
   }
 
   /**
-   * Used to read the properties from console. AgentLauncher calls this method
-   * directly & ignores gemfire.properties. CacheServerLauncher and SystemAdmin
-   * call this through {@link #readSSLProperties(Map)} and do NOT ignore
-   * gemfire.properties.
+   * Used to read the properties from console. AgentLauncher calls this method directly & ignores
+   * gemfire.properties. CacheServerLauncher and SystemAdmin call this through
+   * {@link #readSSLProperties(Map)} and do NOT ignore gemfire.properties.
+   * 
    * @param env Map in which the properties are to be read from console.
-   * @param ignoreGemFirePropsFile if <code>false</code> existing gemfire.properties file is read, if
-   * <code>true</code>, properties from gemfire.properties file are
-   * ignored.
+   * @param ignoreGemFirePropsFile if <code>false</code> existing gemfire.properties file is read,
+   *        if <code>true</code>, properties from gemfire.properties file are ignored.
    */
   public static void readSSLProperties(Map<String, String> env, boolean ignoreGemFirePropsFile) {
     Properties props = new Properties();
@@ -417,7 +417,8 @@ public class SocketCreator {
     for (Object entry : props.entrySet()) {
       Map.Entry<String, String> ent = (Map.Entry<String, String>) entry;
       // if the value of ssl props is empty, read them from console
-      if (ent.getKey().startsWith(DistributionConfig.SSL_SYSTEM_PROPS_NAME) || ent.getKey().startsWith(DistributionConfig.SYS_PROP_NAME)) {
+      if (ent.getKey().startsWith(DistributionConfig.SSL_SYSTEM_PROPS_NAME)
+          || ent.getKey().startsWith(DistributionConfig.SYS_PROP_NAME)) {
         String key = ent.getKey();
         if (key.startsWith(DistributionConfig.SYS_PROP_NAME)) {
           key = key.substring(DistributionConfig.SYS_PROP_NAME.length());
@@ -425,7 +426,8 @@ public class SocketCreator {
         if (ent.getValue() == null || ent.getValue().trim().equals("")) {
           GfeConsoleReader consoleReader = GfeConsoleReaderFactory.getDefaultConsoleReader();
           if (!consoleReader.isSupported()) {
-            throw new GemFireConfigException("SSL properties are empty, but a console is not available");
+            throw new GemFireConfigException(
+                "SSL properties are empty, but a console is not available");
           }
           if (key.toLowerCase().contains("password")) {
             char[] password = consoleReader.readPassword("Please enter " + key + ": ");
@@ -459,7 +461,7 @@ public class SocketCreator {
       return sslContext;
     }
     // lookup known algorithms
-    String[] knownAlgorithms = { "SSL", "SSLv2", "SSLv3", "TLS", "TLSv1", "TLSv1.1", "TLSv1.2" };
+    String[] knownAlgorithms = {"SSL", "SSLv2", "SSLv3", "TLS", "TLSv1", "TLSv1.1", "TLSv1.2"};
     for (String algo : knownAlgorithms) {
       try {
         sslContext = SSLContext.getInstance(algo);
@@ -471,15 +473,17 @@ public class SocketCreator {
     return sslContext;
   }
 
-  private TrustManager[] getTrustManagers() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+  private TrustManager[] getTrustManagers()
+      throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
     TrustManager[] trustManagers = null;
     GfeConsoleReader consoleReader = GfeConsoleReaderFactory.getDefaultConsoleReader();
 
     String trustStoreType = sslConfig.getTruststoreType();
     if (StringUtils.isEmpty(trustStoreType)) {
-      //read from console, default on empty
+      // read from console, default on empty
       if (consoleReader.isSupported()) {
-        trustStoreType = consoleReader.readLine("Please enter the trustStoreType (javax.net.ssl.trustStoreType) : ");
+        trustStoreType = consoleReader
+            .readLine("Please enter the trustStoreType (javax.net.ssl.trustStoreType) : ");
       } else {
         trustStoreType = KeyStore.getDefaultType();
       }
@@ -489,7 +493,8 @@ public class SocketCreator {
     String trustStorePath = sslConfig.getTruststore();
     if (StringUtils.isEmpty(trustStorePath)) {
       if (consoleReader.isSupported()) {
-        trustStorePath = consoleReader.readLine("Please enter the trustStore location (javax.net.ssl.trustStore) : ");
+        trustStorePath = consoleReader
+            .readLine("Please enter the trustStore location (javax.net.ssl.trustStore) : ");
       }
     }
     FileInputStream fis = new FileInputStream(trustStorePath);
@@ -502,9 +507,10 @@ public class SocketCreator {
           passwordString = PasswordUtil.decrypt(toDecrypt);
           password = passwordString.toCharArray();
         }
-        //read from the console
+        // read from the console
         if (StringUtils.isEmpty(passwordString) && consoleReader.isSupported()) {
-          password = consoleReader.readPassword("Please enter password for trustStore (javax.net.ssl.trustStorePassword) : ");
+          password = consoleReader.readPassword(
+              "Please enter password for trustStore (javax.net.ssl.trustStorePassword) : ");
         }
       } else {
         password = passwordString.toCharArray();
@@ -512,8 +518,10 @@ public class SocketCreator {
     }
     ts.load(fis, password);
 
-    // default algorithm can be changed by setting property "ssl.TrustManagerFactory.algorithm" in security properties
-    TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    // default algorithm can be changed by setting property "ssl.TrustManagerFactory.algorithm" in
+    // security properties
+    TrustManagerFactory tmf =
+        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
     tmf.init(ts);
     trustManagers = tmf.getTrustManagers();
     // follow the security tip in java doc
@@ -524,7 +532,8 @@ public class SocketCreator {
     return trustManagers;
   }
 
-  private KeyManager[] getKeyManagers() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
+  private KeyManager[] getKeyManagers() throws KeyStoreException, IOException,
+      NoSuchAlgorithmException, CertificateException, UnrecoverableKeyException {
     GfeConsoleReader consoleReader = GfeConsoleReaderFactory.getDefaultConsoleReader();
 
     KeyManager[] keyManagers = null;
@@ -532,7 +541,8 @@ public class SocketCreator {
     if (StringUtils.isEmpty(keyStoreType)) {
       // read from console, default on empty
       if (consoleReader.isSupported()) {
-        keyStoreType = consoleReader.readLine("Please enter the keyStoreType (javax.net.ssl.keyStoreType) : ");
+        keyStoreType =
+            consoleReader.readLine("Please enter the keyStoreType (javax.net.ssl.keyStoreType) : ");
       } else {
         keyStoreType = KeyStore.getDefaultType();
       }
@@ -541,9 +551,11 @@ public class SocketCreator {
     String keyStoreFilePath = sslConfig.getKeystore();
     if (StringUtils.isEmpty(keyStoreFilePath)) {
       if (consoleReader.isSupported()) {
-        keyStoreFilePath = consoleReader.readLine("Please enter the keyStore location (javax.net.ssl.keyStore) : ");
+        keyStoreFilePath = consoleReader
+            .readLine("Please enter the keyStore location (javax.net.ssl.keyStore) : ");
       } else {
-        keyStoreFilePath = System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
+        keyStoreFilePath =
+            System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
       }
     }
 
@@ -558,17 +570,20 @@ public class SocketCreator {
           passwordString = PasswordUtil.decrypt(toDecrypt);
           password = passwordString.toCharArray();
         }
-        //read from the console
+        // read from the console
         if (StringUtils.isEmpty(passwordString) && consoleReader != null) {
-          password = consoleReader.readPassword("Please enter password for keyStore (javax.net.ssl.keyStorePassword) : ");
+          password = consoleReader.readPassword(
+              "Please enter password for keyStore (javax.net.ssl.keyStorePassword) : ");
         }
       } else {
         password = passwordString.toCharArray();
       }
     }
     keyStore.load(fileInputStream, password);
-    // default algorithm can be changed by setting property "ssl.KeyManagerFactory.algorithm" in security properties
-    KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+    // default algorithm can be changed by setting property "ssl.KeyManagerFactory.algorithm" in
+    // security properties
+    KeyManagerFactory keyManagerFactory =
+        KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
     keyManagerFactory.init(keyStore, password);
     keyManagers = keyManagerFactory.getKeyManagers();
     // follow the security tip in java doc
@@ -595,9 +610,9 @@ public class SocketCreator {
 
     /**
      * Constructor.
+     * 
      * @param mgr The X509KeyManager used as a delegate
-     * @param keyAlias The alias name of the server's keypair and supporting
-     * certificate chain
+     * @param keyAlias The alias name of the server's keypair and supporting certificate chain
      */
     ExtendedAliasKeyManager(KeyManager mgr, String keyAlias) {
       this.delegate = (X509ExtendedKeyManager) mgr;
@@ -611,7 +626,8 @@ public class SocketCreator {
     }
 
     @Override
-    public String chooseClientAlias(final String[] strings, final Principal[] principals, final Socket socket) {
+    public String chooseClientAlias(final String[] strings, final Principal[] principals,
+        final Socket socket) {
       if (!StringUtils.isEmpty(this.keyAlias)) {
         return keyAlias;
       }
@@ -647,7 +663,8 @@ public class SocketCreator {
     }
 
     @Override
-    public String chooseEngineServerAlias(final String keyType, final Principal[] principals, final SSLEngine sslEngine) {
+    public String chooseEngineServerAlias(final String keyType, final Principal[] principals,
+        final SSLEngine sslEngine) {
       if (!StringUtils.isEmpty(this.keyAlias)) {
         PrivateKey key = this.delegate.getPrivateKey(this.keyAlias);
         return getKeyAlias(keyType, key);
@@ -670,7 +687,7 @@ public class SocketCreator {
   }
 
   // -------------------------------------------------------------------------
-  //   Public methods
+  // Public methods
   // -------------------------------------------------------------------------
 
   /**
@@ -681,15 +698,15 @@ public class SocketCreator {
   }
 
   /**
-   * Return a ServerSocket possibly configured for SSL.
-   * SSL configuration is left up to JSSE properties in java.security file.
+   * Return a ServerSocket possibly configured for SSL. SSL configuration is left up to JSSE
+   * properties in java.security file.
    */
   public ServerSocket createServerSocket(int nport, int backlog) throws IOException {
     return createServerSocket(nport, backlog, null);
   }
 
-  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr, List<GatewayTransportFilter> transportFilters, int socketBufferSize)
-    throws IOException {
+  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
+      List<GatewayTransportFilter> transportFilters, int socketBufferSize) throws IOException {
     if (transportFilters.isEmpty()) {
       return createServerSocket(nport, backlog, bindAddr, socketBufferSize);
     } else {
@@ -703,9 +720,9 @@ public class SocketCreator {
       try {
         result.bind(new InetSocketAddress(bindAddr, nport), backlog);
       } catch (BindException e) {
-        BindException throwMe = new BindException(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1.toLocalizedString(new Object[] {
-          bindAddr, Integer.valueOf(nport)
-        }));
+        BindException throwMe =
+            new BindException(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
+                .toLocalizedString(new Object[] {bindAddr, Integer.valueOf(nport)}));
         throwMe.initCause(e);
         throw throwMe;
       }
@@ -714,22 +731,26 @@ public class SocketCreator {
   }
 
   /**
-   * Return a ServerSocket possibly configured for SSL.
-   * SSL configuration is left up to JSSE properties in java.security file.
+   * Return a ServerSocket possibly configured for SSL. SSL configuration is left up to JSSE
+   * properties in java.security file.
    */
-  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr) throws IOException {
+  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr)
+      throws IOException {
     return createServerSocket(nport, backlog, bindAddr, -1, sslConfig.isEnabled());
   }
 
-  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr, int socketBufferSize) throws IOException {
+  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
+      int socketBufferSize) throws IOException {
     return createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConfig.isEnabled());
   }
 
-  private ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr, int socketBufferSize, boolean sslConnection) throws IOException {
+  private ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
+      int socketBufferSize, boolean sslConnection) throws IOException {
     printConfig();
     if (sslConnection) {
       if (this.sslContext == null) {
-        throw new GemFireConfigException("SSL not configured correctly, Please look at previous error");
+        throw new GemFireConfigException(
+            "SSL not configured correctly, Please look at previous error");
       }
       ServerSocketFactory ssf = this.sslContext.getServerSocketFactory();
       SSLServerSocket serverSocket = (SSLServerSocket) ssf.createServerSocket();
@@ -744,7 +765,7 @@ public class SocketCreator {
       finishServerSocket(serverSocket);
       return serverSocket;
     } else {
-      //log.info("Opening server socket on " + nport, new Exception("SocketCreation"));
+      // log.info("Opening server socket on " + nport, new Exception("SocketCreation"));
       ServerSocket result = new ServerSocket();
       result.setReuseAddress(true);
       // If necessary, set the receive buffer size before binding the socket so
@@ -756,9 +777,9 @@ public class SocketCreator {
       try {
         result.bind(new InetSocketAddress(bindAddr, nport), backlog);
       } catch (BindException e) {
-        BindException throwMe = new BindException(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1.toLocalizedString(new Object[] {
-          bindAddr, Integer.valueOf(nport)
-        }));
+        BindException throwMe =
+            new BindException(LocalizedStrings.SocketCreator_FAILED_TO_CREATE_SERVER_SOCKET_ON_0_1
+                .toLocalizedString(new Object[] {bindAddr, Integer.valueOf(nport)}));
         throwMe.initCause(e);
         throw throwMe;
       }
@@ -767,8 +788,9 @@ public class SocketCreator {
   }
 
   /**
-   * Creates or bind server socket to a random port selected
-   * from tcp-port-range which is same as membership-port-range.
+   * Creates or bind server socket to a random port selected from tcp-port-range which is same as
+   * membership-port-range.
+   * 
    * @param ba
    * @param backlog
    * @param isBindAddress
@@ -778,18 +800,17 @@ public class SocketCreator {
    *
    * @throws IOException
    */
-  public ServerSocket createServerSocketUsingPortRange(InetAddress ba,
-                                                       int backlog,
-                                                       boolean isBindAddress,
-                                                       boolean useNIO,
-                                                       int tcpBufferSize,
-                                                       int[] tcpPortRange) throws IOException {
-    return createServerSocketUsingPortRange(ba, backlog, isBindAddress, useNIO, tcpBufferSize, tcpPortRange, sslConfig.isEnabled());
+  public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
+      boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange)
+      throws IOException {
+    return createServerSocketUsingPortRange(ba, backlog, isBindAddress, useNIO, tcpBufferSize,
+        tcpPortRange, sslConfig.isEnabled());
   }
 
   /**
-   * Creates or bind server socket to a random port selected
-   * from tcp-port-range which is same as membership-port-range.
+   * Creates or bind server socket to a random port selected from tcp-port-range which is same as
+   * membership-port-range.
+   * 
    * @param ba
    * @param backlog
    * @param isBindAddress
@@ -800,13 +821,9 @@ public class SocketCreator {
    *
    * @throws IOException
    */
-  public ServerSocket createServerSocketUsingPortRange(InetAddress ba,
-                                                       int backlog,
-                                                       boolean isBindAddress,
-                                                       boolean useNIO,
-                                                       int tcpBufferSize,
-                                                       int[] tcpPortRange,
-                                                       boolean sslConnection) throws IOException {
+  public ServerSocket createServerSocketUsingPortRange(InetAddress ba, int backlog,
+      boolean isBindAddress, boolean useNIO, int tcpBufferSize, int[] tcpPortRange,
+      boolean sslConnection) throws IOException {
     ServerSocket socket = null;
     int localPort = 0;
     int startingPort = 0;
@@ -826,7 +843,8 @@ public class SocketCreator {
           portLimit = startingPort - 1;
           startingPort = 0;
         } else {
-          throw new SystemConnectException(LocalizedStrings.TCPConduit_UNABLE_TO_FIND_FREE_PORT.toLocalizedString());
+          throw new SystemConnectException(
+              LocalizedStrings.TCPConduit_UNABLE_TO_FIND_FREE_PORT.toLocalizedString());
         }
       }
       try {
@@ -837,7 +855,8 @@ public class SocketCreator {
           InetSocketAddress addr = new InetSocketAddress(isBindAddress ? ba : null, localPort);
           socket.bind(addr, backlog);
         } else {
-          socket = this.createServerSocket(localPort, backlog, isBindAddress ? ba : null, tcpBufferSize, sslConnection);
+          socket = this.createServerSocket(localPort, backlog, isBindAddress ? ba : null,
+              tcpBufferSize, sslConnection);
         }
         break;
       } catch (java.net.SocketException ex) {
@@ -869,7 +888,8 @@ public class SocketCreator {
   /**
    * Return a client socket. This method is used by client/server clients.
    */
-  public Socket connectForClient(String host, int port, int timeout, int socketBufferSize) throws IOException {
+  public Socket connectForClient(String host, int port, int timeout, int socketBufferSize)
+      throws IOException {
     return connect(InetAddress.getByName(host), port, timeout, null, true, socketBufferSize);
   }
 
@@ -883,48 +903,49 @@ public class SocketCreator {
   /**
    * Return a client socket. This method is used by peers.
    */
-  public Socket connectForServer(InetAddress inetadd, int port, int socketBufferSize) throws IOException {
+  public Socket connectForServer(InetAddress inetadd, int port, int socketBufferSize)
+      throws IOException {
     return connect(inetadd, port, 0, null, false, socketBufferSize);
   }
 
   /**
-   * Return a client socket, timing out if unable to connect and timeout > 0 (millis).
-   * The parameter <i>timeout</i> is ignored if SSL is being used, as there is no
-   * timeout argument in the ssl socket factory
+   * Return a client socket, timing out if unable to connect and timeout > 0 (millis). The parameter
+   * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
+   * socket factory
    */
-  public Socket connect(InetAddress inetadd, int port, int timeout, ConnectionWatcher optionalWatcher, boolean clientSide) throws IOException {
+  public Socket connect(InetAddress inetadd, int port, int timeout,
+      ConnectionWatcher optionalWatcher, boolean clientSide) throws IOException {
     return connect(inetadd, port, timeout, optionalWatcher, clientSide, -1);
   }
 
   /**
-   * Return a client socket, timing out if unable to connect and timeout > 0 (millis).
-   * The parameter <i>timeout</i> is ignored if SSL is being used, as there is no
-   * timeout argument in the ssl socket factory
+   * Return a client socket, timing out if unable to connect and timeout > 0 (millis). The parameter
+   * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
+   * socket factory
    */
-  public Socket connect(InetAddress inetadd, int port, int timeout, ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize)
-    throws IOException {
-    return connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize, sslConfig.isEnabled());
+  public Socket connect(InetAddress inetadd, int port, int timeout,
+      ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize)
+      throws IOException {
+    return connect(inetadd, port, timeout, optionalWatcher, clientSide, socketBufferSize,
+        sslConfig.isEnabled());
   }
 
   /**
-   * Return a client socket, timing out if unable to connect and timeout > 0 (millis).
-   * The parameter <i>timeout</i> is ignored if SSL is being used, as there is no
-   * timeout argument in the ssl socket factory
+   * Return a client socket, timing out if unable to connect and timeout > 0 (millis). The parameter
+   * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
+   * socket factory
    */
-  public Socket connect(InetAddress inetadd,
-                        int port,
-                        int timeout,
-                        ConnectionWatcher optionalWatcher,
-                        boolean clientSide,
-                        int socketBufferSize,
-                        boolean sslConnection) throws IOException {
+  public Socket connect(InetAddress inetadd, int port, int timeout,
+      ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize,
+      boolean sslConnection) throws IOException {
     Socket socket = null;
     SocketAddress sockaddr = new InetSocketAddress(inetadd, port);
     printConfig();
     try {
       if (sslConnection) {
         if (this.sslContext == null) {
-          throw new GemFireConfigException("SSL not configured correctly, Please look at previous error");
+          throw new GemFireConfigException(
+              "SSL not configured correctly, Please look at previous error");
         }
         SocketFactory sf = this.sslContext.getSocketFactory();
         socket = sf.createSocket();
@@ -943,7 +964,7 @@ public class SocketCreator {
           optionalWatcher.beforeConnect(socket);
         }
         socket.connect(sockaddr, Math.max(timeout, 0));
-        configureClientSSLSocket(socket);
+        configureClientSSLSocket(socket, timeout);
         return socket;
       } else {
         if (clientSide && this.clientSocketFactory != null) {
@@ -986,26 +1007,33 @@ public class SocketCreator {
         SSLSession session = sslSocket.getSession();
         Certificate[] peer = session.getPeerCertificates();
         if (logger.isDebugEnabled()) {
-          logger.debug(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate) peer[0]).getSubjectDN()));
+          logger.debug(
+              LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0,
+                  ((X509Certificate) peer[0]).getSubjectDN()));
         }
       } catch (SSLPeerUnverifiedException ex) {
         if (this.sslConfig.isRequireAuth()) {
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_AUTHENTICATING_PEER_0_1, new Object[] {
-            socket.getInetAddress(), Integer.valueOf(socket.getPort())
-          }), ex);
+          logger.fatal(
+              LocalizedMessage.create(
+                  LocalizedStrings.SocketCreator_SSL_ERROR_IN_AUTHENTICATING_PEER_0_1,
+                  new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
+              ex);
           throw ex;
         }
       } catch (SSLException ex) {
-        logger.fatal(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_CONNECTING_TO_PEER_0_1, new Object[] {
-          socket.getInetAddress(), Integer.valueOf(socket.getPort())
-        }), ex);
+        logger
+            .fatal(
+                LocalizedMessage.create(
+                    LocalizedStrings.SocketCreator_SSL_ERROR_IN_CONNECTING_TO_PEER_0_1,
+                    new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
+                ex);
         throw ex;
       }
     }
   }
 
   // -------------------------------------------------------------------------
-  //   Private implementation methods
+  // Private implementation methods
   // -------------------------------------------------------------------------
 
   /**
@@ -1014,7 +1042,7 @@ public class SocketCreator {
   private void finishServerSocket(SSLServerSocket serverSocket) throws IOException {
     serverSocket.setUseClientMode(false);
     if (this.sslConfig.isRequireAuth()) {
-      //serverSocket.setWantClientAuth( true );
+      // serverSocket.setWantClientAuth( true );
       serverSocket.setNeedClientAuth(true);
     }
     serverSocket.setEnableSessionCreation(true);
@@ -1032,10 +1060,10 @@ public class SocketCreator {
   }
 
   /**
-   * When a socket is accepted from a server socket, it should be passed to
-   * this method for SSL configuration.
+   * When a socket is accepted from a server socket, it should be passed to this method for SSL
+   * configuration.
    */
-  private void configureClientSSLSocket(Socket socket) throws IOException {
+  private void configureClientSSLSocket(Socket socket, int timeout) throws IOException {
     if (socket instanceof SSLSocket) {
       SSLSocket sslSocket = (SSLSocket) socket;
 
@@ -1054,26 +1082,38 @@ public class SocketCreator {
       }
 
       try {
+        if (timeout > 0) {
+          sslSocket.setSoTimeout(timeout);
+        }
         sslSocket.startHandshake();
         SSLSession session = sslSocket.getSession();
         Certificate[] peer = session.getPeerCertificates();
         if (logger.isDebugEnabled()) {
-          logger.debug(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0, ((X509Certificate) peer[0]).getSubjectDN()));
+          logger.debug(
+              LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_CONNECTION_FROM_PEER_0,
+                  ((X509Certificate) peer[0]).getSubjectDN()));
         }
       } catch (SSLHandshakeException ex) {
-        logger.fatal(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_CONNECTING_TO_PEER_0_1, new Object[] {
-          socket.getInetAddress(), Integer.valueOf(socket.getPort())
-        }), ex);
+        logger
+            .fatal(
+                LocalizedMessage.create(
+                    LocalizedStrings.SocketCreator_SSL_ERROR_IN_CONNECTING_TO_PEER_0_1,
+                    new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
+                ex);
         throw ex;
       } catch (SSLPeerUnverifiedException ex) {
         if (this.sslConfig.isRequireAuth()) {
-          logger.fatal(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_AUTHENTICATING_PEER), ex);
+          logger.fatal(LocalizedMessage
+              .create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_AUTHENTICATING_PEER), ex);
           throw ex;
         }
       } catch (SSLException ex) {
-        logger.fatal(LocalizedMessage.create(LocalizedStrings.SocketCreator_SSL_ERROR_IN_CONNECTING_TO_PEER_0_1, new Object[] {
-          socket.getInetAddress(), Integer.valueOf(socket.getPort())
-        }), ex);
+        logger
+            .fatal(
+                LocalizedMessage.create(
+                    LocalizedStrings.SocketCreator_SSL_ERROR_IN_CONNECTING_TO_PEER_0_1,
+                    new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
+                ex);
         throw ex;
       }
 
@@ -1102,7 +1142,8 @@ public class SocketCreator {
 
   protected void initializeClientSocketFactory() {
     this.clientSocketFactory = null;
-    String className = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory");
+    String className =
+        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "clientSocketFactory");
     if (className != null) {
       Object o;
       try {
@@ -1123,7 +1164,8 @@ public class SocketCreator {
   }
 
   public void initializeTransportFilterClientSocketFactory(GatewaySender sender) {
-    this.clientSocketFactory = new TransportFilterSocketFactory().setGatewayTransportFilters(sender.getGatewayTransportFilters());
+    this.clientSocketFactory = new TransportFilterSocketFactory()
+        .setGatewayTransportFilters(sender.getGatewayTransportFilters());
   }
 
   /**
@@ -1136,7 +1178,9 @@ public class SocketCreator {
     try {
       interfaces = NetworkInterface.getNetworkInterfaces();
     } catch (SocketException e) {
-      throw new IllegalArgumentException(LocalizedStrings.StartupMessage_UNABLE_TO_EXAMINE_NETWORK_INTERFACES.toLocalizedString(), e);
+      throw new IllegalArgumentException(
+          LocalizedStrings.StartupMessage_UNABLE_TO_EXAMINE_NETWORK_INTERFACES.toLocalizedString(),
+          e);
     }
     while (interfaces.hasMoreElements()) {
       NetworkInterface face = interfaces.nextElement();
@@ -1153,7 +1197,8 @@ public class SocketCreator {
         Enumeration<InetAddress> addrs = face.getInetAddresses();
         while (addrs.hasMoreElements()) {
           InetAddress addr = addrs.nextElement();
-          if (addr.isLoopbackAddress() || addr.isAnyLocalAddress() || (!useLinkLocalAddresses && addr.isLinkLocalAddress())) {
+          if (addr.isLoopbackAddress() || addr.isAnyLocalAddress()
+              || (!useLinkLocalAddresses && addr.isLinkLocalAddress())) {
             locals.add(addr);
           } else {
             result.add(addr);
@@ -1172,9 +1217,11 @@ public class SocketCreator {
 
   /**
    * This method uses JNDI to look up an address in DNS and return its name
+   * 
    * @param addr
    *
-   * @return the host name associated with the address or null if lookup isn't possible or there is no host name for this address
+   * @return the host name associated with the address or null if lookup isn't possible or there is
+   *         no host name for this address
    */
   public static String reverseDNS(InetAddress addr) {
     byte[] addrBytes = addr.getAddress();
@@ -1184,16 +1231,16 @@ public class SocketCreator {
       lookup = lookup + (addrBytes[index] & 0xff) + '.';
     }
     lookup += "in-addr.arpa";
-    //    System.out.println("Looking up: " + lookup);
+    // System.out.println("Looking up: " + lookup);
 
     try {
       Hashtable env = new Hashtable();
       env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
       DirContext ctx = new InitialDirContext(env);
-      Attributes attrs = ctx.getAttributes(lookup, new String[] { "PTR" });
-      for (NamingEnumeration ae = attrs.getAll(); ae.hasMoreElements(); ) {
+      Attributes attrs = ctx.getAttributes(lookup, new String[] {"PTR"});
+      for (NamingEnumeration ae = attrs.getAll(); ae.hasMoreElements();) {
         Attribute attr = (Attribute) ae.next();
-        for (Enumeration vals = attr.getAll(); vals.hasMoreElements(); ) {
+        for (Enumeration vals = attr.getAll(); vals.hasMoreElements();) {
           Object elem = vals.nextElement();
           if ("PTR".equals(attr.getID()) && elem != null) {
             return elem.toString();
@@ -1221,7 +1268,7 @@ public class SocketCreator {
           Enumeration en = NetworkInterface.getNetworkInterfaces();
           while (en.hasMoreElements()) {
             NetworkInterface i = (NetworkInterface) en.nextElement();
-            for (Enumeration en2 = i.getInetAddresses(); en2.hasMoreElements(); ) {
+            for (Enumeration en2 = i.getInetAddresses(); en2.hasMoreElements();) {
               InetAddress addr = (InetAddress) en2.nextElement();
               if (host.equals(addr)) {
                 return true;
@@ -1230,7 +1277,10 @@ public class SocketCreator {
           }
           return false;
         } catch (SocketException e) {
-          throw new IllegalArgumentException(LocalizedStrings.InetAddressUtil_UNABLE_TO_QUERY_NETWORK_INTERFACE.toLocalizedString(), e);
+          throw new IllegalArgumentException(
+              LocalizedStrings.InetAddressUtil_UNABLE_TO_QUERY_NETWORK_INTERFACE
+                  .toLocalizedString(),
+              e);
         }
       }
     } else {
@@ -1239,11 +1289,11 @@ public class SocketCreator {
   }
 
   /**
-   * Converts the string host to an instance of InetAddress.  Returns null if
-   * the string is empty.  Fails Assertion if the conversion would result in
-   * <code>java.lang.UnknownHostException</code>.
+   * Converts the string host to an instance of InetAddress. Returns null if the string is empty.
+   * Fails Assertion if the conversion would result in <code>java.lang.UnknownHostException</code>.
    * <p>
    * Any leading slashes on host will be ignored.
+   * 
    * @param host string version the InetAddress
    *
    * @return the host converted to InetAddress instance

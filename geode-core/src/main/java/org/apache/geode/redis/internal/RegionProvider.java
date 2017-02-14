@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.redis.internal;
 
@@ -52,11 +50,10 @@ import org.apache.geode.management.internal.cli.commands.CreateAlterDestroyRegio
 import org.apache.geode.redis.GeodeRedisServer;
 
 /**
- * This class stands between {@link Executor} and {@link Cache#getRegion(String)}.
- * This is needed because some keys for Redis represented as a {@link Region} in
- * {@link GeodeRedisServer} come with additional state. Therefore getting, creating,
- * or destroying a {@link Region} needs to be synchronized, which is done away with
- * and abstracted by this class.
+ * This class stands between {@link Executor} and {@link Cache#getRegion(String)}. This is needed
+ * because some keys for Redis represented as a {@link Region} in {@link GeodeRedisServer} come with
+ * additional state. Therefore getting, creating, or destroying a {@link Region} needs to be
+ * synchronized, which is done away with and abstracted by this class.
  * 
  *
  */
@@ -65,34 +62,40 @@ public class RegionProvider implements Closeable {
   private final ConcurrentHashMap<ByteArrayWrapper, Region<?, ?>> regions;
 
   /**
-   * This is the Redis meta data {@link Region} that holds the {@link RedisDataType}
-   * information for all Regions created. The mapping is a {@link String} key which is the name
-   * of the {@link Region} created to hold the data to the RedisDataType it contains.
+   * This is the Redis meta data {@link Region} that holds the {@link RedisDataType} information for
+   * all Regions created. The mapping is a {@link String} key which is the name of the
+   * {@link Region} created to hold the data to the RedisDataType it contains.
    */
   private final Region<String, RedisDataType> redisMetaRegion;
 
   /**
-   * This is the {@link RedisDataType#REDIS_STRING} {@link Region}. This is the Region
-   * that stores all string contents
+   * This is the {@link RedisDataType#REDIS_STRING} {@link Region}. This is the Region that stores
+   * all string contents
    */
   private final Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
 
   /**
-   * This is the {@link RedisDataType#REDIS_HLL} {@link Region}. This is the Region
-   * that stores all HyperLogLog contents
+   * This is the {@link RedisDataType#REDIS_HLL} {@link Region}. This is the Region that stores all
+   * HyperLogLog contents
    */
   private final Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
 
   private final Cache cache;
   private final QueryService queryService;
-  private final ConcurrentMap<ByteArrayWrapper, Map<Enum<?>, Query>> preparedQueries = new ConcurrentHashMap<ByteArrayWrapper, Map<Enum<?>, Query>>();
+  private final ConcurrentMap<ByteArrayWrapper, Map<Enum<?>, Query>> preparedQueries =
+      new ConcurrentHashMap<ByteArrayWrapper, Map<Enum<?>, Query>>();
   private final ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap;
   private final ScheduledExecutorService expirationExecutor;
   private final RegionShortcut defaultRegionType;
-  private static final CreateAlterDestroyRegionCommands cliCmds = new CreateAlterDestroyRegionCommands();
+  private static final CreateAlterDestroyRegionCommands cliCmds =
+      new CreateAlterDestroyRegionCommands();
   private final ConcurrentHashMap<String, Lock> locks;
 
-  public RegionProvider(Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion, Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion, Region<String, RedisDataType> redisMetaRegion, ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap, ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut) {
+  public RegionProvider(Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion,
+      Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion,
+      Region<String, RedisDataType> redisMetaRegion,
+      ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
+      ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut) {
     if (stringsRegion == null || hLLRegion == null || redisMetaRegion == null)
       throw new NullPointerException();
     this.regions = new ConcurrentHashMap<ByteArrayWrapper, Region<?, ?>>();
@@ -175,7 +178,7 @@ public class RegionProvider implements Closeable {
       return false;
     Lock lock = this.locks.get(key.toString());
     try {
-      if (lock != null)  {// Strings/hlls will not have locks
+      if (lock != null) {// Strings/hlls will not have locks
         lock.lock();
       }
       metaRemoveEntry(key);
@@ -204,7 +207,8 @@ public class RegionProvider implements Closeable {
     }
   }
 
-  public Region<?, ?> getOrCreateRegion(ByteArrayWrapper key, RedisDataType type, ExecutionHandlerContext context) {
+  public Region<?, ?> getOrCreateRegion(ByteArrayWrapper key, RedisDataType type,
+      ExecutionHandlerContext context) {
     return getOrCreateRegion0(key, type, context, true);
   }
 
@@ -240,7 +244,7 @@ public class RegionProvider implements Closeable {
             try {
               doInitializeSortedSet(key, r);
             } catch (RegionNotFoundException | IndexInvalidException e) {
-              //ignore
+              // ignore
             }
           }
           this.regions.put(key, r);
@@ -253,7 +257,8 @@ public class RegionProvider implements Closeable {
     }
   }
 
-  private Region<?, ?> getOrCreateRegion0(ByteArrayWrapper key, RedisDataType type, ExecutionHandlerContext context, boolean addToMeta) {
+  private Region<?, ?> getOrCreateRegion0(ByteArrayWrapper key, RedisDataType type,
+      ExecutionHandlerContext context, boolean addToMeta) {
     checkDataType(key, type);
     Region<?, ?> r = this.regions.get(key);
     if (r != null && r.isDestroyed()) {
@@ -272,7 +277,8 @@ public class RegionProvider implements Closeable {
         lock.lock();
         r = regions.get(key);
         if (r == null) {
-          boolean hasTransaction = context != null && context.hasTransaction(); // Can create without context
+          boolean hasTransaction = context != null && context.hasTransaction(); // Can create
+                                                                                // without context
           CacheTransactionManager txm = null;
           TransactionId transactionId = null;
           try {
@@ -299,12 +305,13 @@ public class RegionProvider implements Closeable {
                   concurrentCreateDestroyException = e;
                 }
               }
-            } while(concurrentCreateDestroyException != null);
-            this.regions.put(key, r);            
+            } while (concurrentCreateDestroyException != null);
+            this.regions.put(key, r);
             if (addToMeta) {
               RedisDataType existingType = metaPutIfAbsent(key, type);
               if (existingType != null && existingType != type)
-                throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is already used by a " + existingType.toString());
+                throw new RedisDataTypeMismatchException(
+                    "The key name \"" + key + "\" is already used by a " + existingType.toString());
             }
           } finally {
             if (hasTransaction)
@@ -350,16 +357,18 @@ public class RegionProvider implements Closeable {
     this.regions.remove(key);
   }
 
-  private void doInitializeSortedSet(ByteArrayWrapper key, Region<?, ?> r) throws RegionNotFoundException, IndexInvalidException {
+  private void doInitializeSortedSet(ByteArrayWrapper key, Region<?, ?> r)
+      throws RegionNotFoundException, IndexInvalidException {
     String fullpath = r.getFullPath();
     try {
-      queryService.createIndex("scoreIndex", "entry.value.score", r.getFullPath() + ".entrySet entry");
+      queryService.createIndex("scoreIndex", "entry.value.score",
+          r.getFullPath() + ".entrySet entry");
       queryService.createIndex("scoreIndex2", "value.score", r.getFullPath() + ".values value");
     } catch (IndexNameConflictException | IndexExistsException | UnsupportedOperationException e) {
       // ignore, these indexes already exist or unsupported but make sure prepared queries are made
     }
     HashMap<Enum<?>, Query> queryList = new HashMap<Enum<?>, Query>();
-    for (SortedSetQuery lq: SortedSetQuery.values()) {
+    for (SortedSetQuery lq : SortedSetQuery.values()) {
       String queryString = lq.getQueryString(fullpath);
       Query query = this.queryService.newQuery(queryString);
       queryList.put(lq, query);
@@ -372,7 +381,7 @@ public class RegionProvider implements Closeable {
     r.put("tail", Integer.valueOf(0));
     String fullpath = r.getFullPath();
     HashMap<Enum<?>, Query> queryList = new HashMap<Enum<?>, Query>();
-    for (ListQuery lq: ListQuery.values()) {
+    for (ListQuery lq : ListQuery.values()) {
       String queryString = lq.getQueryString(fullpath);
       Query query = this.queryService.newQuery(queryString);
       queryList.put(lq, query);
@@ -381,9 +390,8 @@ public class RegionProvider implements Closeable {
   }
 
   /**
-   * This method creates a Region globally with the given name. If
-   * there is an error in the creation, a runtime exception will
-   * be thrown.
+   * This method creates a Region globally with the given name. If there is an error in the
+   * creation, a runtime exception will be thrown.
    * 
    * @param key Name of Region to create
    * @return Region Region created globally
@@ -391,17 +399,21 @@ public class RegionProvider implements Closeable {
   private Region<?, ?> createRegionGlobally(String key) {
     Region<?, ?> r = null;
     r = cache.getRegion(key);
-    if (r != null) return r;
+    if (r != null)
+      return r;
     do {
-      Result result = cliCmds.createRegion(key, defaultRegionType, null, null, true, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+      Result result = cliCmds.createRegion(key, defaultRegionType, null, null, true, null, null,
+          null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null, null, null, null, null, null,
+          null, null);
       r = cache.getRegion(key);
       if (result.getStatus() == Status.ERROR && r == null) {
         String err = "";
-        while(result.hasNextLine())
+        while (result.hasNextLine())
           err += result.nextLine();
         throw new RegionCreationException(err);
       }
-    } while(r == null); // The region can be null in the case that it is concurrently destroyed by
+    } while (r == null); // The region can be null in the case that it is concurrently destroyed by
     // a remote even triggered internally by Geode
     return r;
   }
@@ -409,17 +421,17 @@ public class RegionProvider implements Closeable {
   public Query getQuery(ByteArrayWrapper key, Enum<?> query) {
     return this.preparedQueries.get(key).get(query);
     /*
-    if (query instanceof ListQuery) {
-      return this.queryService.newQuery(((ListQuery)query).getQueryString(this.regions.get(key).getFullPath()));
-    } else {
-      return this.queryService.newQuery(((SortedSetQuery)query).getQueryString(this.regions.get(key).getFullPath()));
-    }
+     * if (query instanceof ListQuery) { return
+     * this.queryService.newQuery(((ListQuery)query).getQueryString(this.regions.get(key).
+     * getFullPath())); } else { return
+     * this.queryService.newQuery(((SortedSetQuery)query).getQueryString(this.regions.get(key).
+     * getFullPath())); }
      */
   }
 
   /**
-   * Checks if the given key is associated with the passed data type.
-   * If there is a mismatch, a {@link RuntimeException} is thrown
+   * Checks if the given key is associated with the passed data type. If there is a mismatch, a
+   * {@link RuntimeException} is thrown
    * 
    * @param key Key to check
    * @param type Type to check to
@@ -431,7 +443,8 @@ public class RegionProvider implements Closeable {
     if (currentType == RedisDataType.REDIS_PROTECTED)
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
     if (currentType != type)
-      throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is already used by a " + currentType.toString());
+      throw new RedisDataTypeMismatchException(
+          "The key name \"" + key + "\" is already used by a " + currentType.toString());
   }
 
   public boolean regionExists(ByteArrayWrapper key) {
@@ -455,10 +468,10 @@ public class RegionProvider implements Closeable {
   }
 
   /**
-   * Sets the expiration for a key. The setting and modifying of a key expiration can only be set by a delay,
-   * which means that both expiring after a time and at a time can be done but
-   * the delay to expire at a time must be calculated before these calls. It is
-   * also important to note that the delay is always handled in milliseconds
+   * Sets the expiration for a key. The setting and modifying of a key expiration can only be set by
+   * a delay, which means that both expiring after a time and at a time can be done but the delay to
+   * expire at a time must be calculated before these calls. It is also important to note that the
+   * delay is always handled in milliseconds
    * 
    * @param key The key to set the expiration for
    * @param delay The delay in milliseconds of the expiration
@@ -468,7 +481,8 @@ public class RegionProvider implements Closeable {
     RedisDataType type = getRedisDataType(key);
     if (type == null)
       return false;
-    ScheduledFuture<?> future = this.expirationExecutor.schedule(new ExpirationExecutor(key, type, this), delay, TimeUnit.MILLISECONDS);
+    ScheduledFuture<?> future = this.expirationExecutor
+        .schedule(new ExpirationExecutor(key, type, this), delay, TimeUnit.MILLISECONDS);
     this.expirationsMap.put(key, future);
     return true;
   }
@@ -493,7 +507,8 @@ public class RegionProvider implements Closeable {
     if (type == null)
       return false;
 
-    ScheduledFuture<?> future = this.expirationExecutor.schedule(new ExpirationExecutor(key, type, this), delay, TimeUnit.MILLISECONDS);
+    ScheduledFuture<?> future = this.expirationExecutor
+        .schedule(new ExpirationExecutor(key, type, this), delay, TimeUnit.MILLISECONDS);
     this.expirationsMap.put(key, future);
     return true;
   }

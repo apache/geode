@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /*
  * NegativeNumberQueriesJUnitTest.java
@@ -84,35 +82,30 @@ public class NegativeNumberQueriesJUnitTest {
     Query q = qs.newQuery(queryStr);
     SelectResults rs = (SelectResults) q.execute();
     CacheUtils
-        .log("--------------------- Size of Result Set is: -------------------------"
-            + rs.size());
+        .log("--------------------- Size of Result Set is: -------------------------" + rs.size());
 
   }// end of testGetQueryTimes
 
   private void populateRegionsWithNumbers() throws Exception {
-    CacheUtils
-        .log("--------------------- Populating Data -------------------------");
+    CacheUtils.log("--------------------- Populating Data -------------------------");
     for (int i = 0; i < 100; i++) {
       region.put(String.valueOf(i), new Numbers(i));
     }
     for (int i = -100; i > -200; i--) {
       region.put(String.valueOf(i), new Numbers(i));
     }
-    CacheUtils
-        .log("--------------------- Data Populatio done -------------------------");
+    CacheUtils.log("--------------------- Data Populatio done -------------------------");
   }// end of populateRegions
 
   private void createIndexOnNumbers() throws Exception {
-    CacheUtils
-        .log("--------------------- Creating Indices -------------------------");
+    CacheUtils.log("--------------------- Creating Indices -------------------------");
     QueryService qs;
     qs = cache.getQueryService();
     qs.createIndex("id", IndexType.FUNCTIONAL, "num.id", "/numbers num");
     qs.createIndex("id1", IndexType.FUNCTIONAL, "num.id1", "/numbers num");
     qs.createIndex("avg", IndexType.FUNCTIONAL, "num.max1", "/numbers num");
     qs.createIndex("l", IndexType.FUNCTIONAL, "num.l", "/numbers num");
-    CacheUtils
-        .log("--------------------- Index Creation Done -------------------------");
+    CacheUtils.log("--------------------- Index Creation Done -------------------------");
   }// end of createIndex
 
 }// end of NegativeNumberQueriesJUnitTest

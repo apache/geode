@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 
 package org.apache.geode.modules.session.internal.filter;
 
@@ -52,8 +50,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * This class implements the session management using a Gemfire distributedCache
- * as a persistent store for the session objects
+ * This class implements the session management using a Gemfire distributedCache as a persistent
+ * store for the session objects
  */
 public class GemfireSessionManager implements SessionManager {
 
@@ -89,16 +87,15 @@ public class GemfireSessionManager implements SessionManager {
   private boolean isStopping = false;
 
   /**
-   * Boolean indicating whether this manager is defined in the same context (war
-   * / classloader) as the filter.
+   * Boolean indicating whether this manager is defined in the same context (war / classloader) as
+   * the filter.
    */
   private boolean isolated = false;
 
   /**
    * Map of wrapping GemFire session id to native session id
    */
-  private Map<String, String> nativeSessionMap =
-      new HashMap<String, String>();
+  private Map<String, String> nativeSessionMap = new HashMap<String, String>();
 
   /**
    * MBean for statistics
@@ -106,9 +103,8 @@ public class GemfireSessionManager implements SessionManager {
   private SessionStatistics mbean;
 
   /**
-   * This CL is used to compare against the class loader of attributes getting
-   * pulled out of the cache. This variable should be set to the CL of the
-   * filter running everything.
+   * This CL is used to compare against the class loader of attributes getting pulled out of the
+   * cache. This variable should be set to the CL of the filter running everything.
    */
   private ClassLoader referenceClassLoader;
 
@@ -123,21 +119,22 @@ public class GemfireSessionManager implements SessionManager {
    * Set up properties with default values
    */
   private TypeAwareMap<CacheProperty, Object> properties =
-      new TypeAwareMap<CacheProperty, Object>(CacheProperty.class) {{
-        put(CacheProperty.REGION_NAME, RegionHelper.NAME + "_sessions");
-        put(CacheProperty.ENABLE_GATEWAY_DELTA_REPLICATION, Boolean.FALSE);
-        put(CacheProperty.ENABLE_GATEWAY_REPLICATION, Boolean.FALSE);
-        put(CacheProperty.ENABLE_DEBUG_LISTENER, Boolean.FALSE);
-        put(CacheProperty.STATISTICS_NAME, "gemfire_statistics");
-        put(CacheProperty.SESSION_DELTA_POLICY, "delta_queued");
-        put(CacheProperty.REPLICATION_TRIGGER, "set");
-        /**
-         * For REGION_ATTRIBUTES_ID and ENABLE_LOCAL_CACHE the default
-         * is different for ClientServerCache and PeerToPeerCache
-         * so those values are set in the relevant constructors when
-         * these properties are passed in to them.
-         */
-      }};
+      new TypeAwareMap<CacheProperty, Object>(CacheProperty.class) {
+        {
+          put(CacheProperty.REGION_NAME, RegionHelper.NAME + "_sessions");
+          put(CacheProperty.ENABLE_GATEWAY_DELTA_REPLICATION, Boolean.FALSE);
+          put(CacheProperty.ENABLE_GATEWAY_REPLICATION, Boolean.FALSE);
+          put(CacheProperty.ENABLE_DEBUG_LISTENER, Boolean.FALSE);
+          put(CacheProperty.STATISTICS_NAME, "gemfire_statistics");
+          put(CacheProperty.SESSION_DELTA_POLICY, "delta_queued");
+          put(CacheProperty.REPLICATION_TRIGGER, "set");
+          /**
+           * For REGION_ATTRIBUTES_ID and ENABLE_LOCAL_CACHE the default is different for
+           * ClientServerCache and PeerToPeerCache so those values are set in the relevant
+           * constructors when these properties are passed in to them.
+           */
+        }
+      };
 
   public GemfireSessionManager() {
     LOG = LoggerFactory.getLogger(GemfireSessionManager.class.getName());
@@ -161,8 +158,7 @@ public class GemfireSessionManager implements SessionManager {
       isolated = true;
     }
 
-    String sessionCookieName = config.getInitParameter(
-        INIT_PARAM_SESSION_COOKIE_NAME);
+    String sessionCookieName = config.getInitParameter(INIT_PARAM_SESSION_COOKIE_NAME);
     if (sessionCookieName != null && !sessionCookieName.isEmpty()) {
       this.sessionCookieName = sessionCookieName;
       LOG.info("Session cookie name set to: {}", this.sessionCookieName);
@@ -173,8 +169,7 @@ public class GemfireSessionManager implements SessionManager {
       jvmId = DEFAULT_JVM_ID;
     }
 
-    LOG.info("Started GemfireSessionManager (isolated={}, jvmId={})",
-        isolated, jvmId);
+    LOG.info("Started GemfireSessionManager (isolated={}, jvmId={})", isolated, jvmId);
   }
 
   /**
@@ -199,14 +194,12 @@ public class GemfireSessionManager implements SessionManager {
    */
   @Override
   public HttpSession getSession(String id) {
-    GemfireHttpSession session = (GemfireHttpSession) sessionCache.getOperatingRegion().get(
-        id);
+    GemfireHttpSession session = (GemfireHttpSession) sessionCache.getOperatingRegion().get(id);
 
     if (session != null) {
       if (session.justSerialized()) {
         session.setManager(this);
-        LOG.debug("Recovered serialized session {} (jvmId={})", id,
-            session.getJvmOwnerId());
+        LOG.debug("Recovered serialized session {} (jvmId={})", id, session.getJvmOwnerId());
       }
       LOG.debug("Retrieved session id {}", id);
     } else {
@@ -221,28 +214,23 @@ public class GemfireSessionManager implements SessionManager {
   @Override
   public HttpSession wrapSession(HttpSession nativeSession) {
     String id = generateId();
-    GemfireHttpSession session =
-        new GemfireHttpSession(id, nativeSession);
+    GemfireHttpSession session = new GemfireHttpSession(id, nativeSession);
 
     /**
      * Set up the attribute container depending on how things are configured
      */
     AbstractSessionAttributes attributes;
-    if ("delta_queued".equals(
-        properties.get(CacheProperty.SESSION_DELTA_POLICY))) {
+    if ("delta_queued".equals(properties.get(CacheProperty.SESSION_DELTA_POLICY))) {
       attributes = new DeltaQueuedSessionAttributes();
-      ((DeltaQueuedSessionAttributes) attributes).setReplicationTrigger(
-          (String) properties.get(CacheProperty.REPLICATION_TRIGGER));
-    } else if ("delta_immediate".equals(
-        properties.get(CacheProperty.SESSION_DELTA_POLICY))) {
+      ((DeltaQueuedSessionAttributes) attributes)
+          .setReplicationTrigger((String) properties.get(CacheProperty.REPLICATION_TRIGGER));
+    } else if ("delta_immediate".equals(properties.get(CacheProperty.SESSION_DELTA_POLICY))) {
       attributes = new DeltaSessionAttributes();
-    } else if ("immediate".equals(
-        properties.get(CacheProperty.SESSION_DELTA_POLICY))) {
+    } else if ("immediate".equals(properties.get(CacheProperty.SESSION_DELTA_POLICY))) {
       attributes = new ImmediateSessionAttributes();
     } else {
       attributes = new DeltaSessionAttributes();
-      LOG.warn(
-          "No session delta policy specified - using default of 'delta_immediate'");
+      LOG.warn("No session delta policy specified - using default of 'delta_immediate'");
     }
 
     attributes.setSession(session);
@@ -279,8 +267,7 @@ public class GemfireSessionManager implements SessionManager {
   public void destroySession(String id) {
     if (!isStopping) {
       try {
-        GemfireHttpSession session = (GemfireHttpSession) sessionCache.getOperatingRegion().get(
-            id);
+        GemfireHttpSession session = (GemfireHttpSession) sessionCache.getOperatingRegion().get(id);
         if (session != null && session.getJvmOwnerId().equals(jvmId)) {
           LOG.debug("Destroying session {}", id);
           sessionCache.getOperatingRegion().destroy(id);
@@ -299,8 +286,7 @@ public class GemfireSessionManager implements SessionManager {
           // Ignored
         }
       } else {
-        GemfireHttpSession session = (GemfireHttpSession) sessionCache.getOperatingRegion().get(
-            id);
+        GemfireHttpSession session = (GemfireHttpSession) sessionCache.getOperatingRegion().get(id);
         if (session != null) {
           session.setNativeSession(null);
         }
@@ -338,13 +324,12 @@ public class GemfireSessionManager implements SessionManager {
   }
 
   /**
-   * This method is called when a native session gets destroyed. It will check
-   * if the GemFire session is actually still valid/not expired and will then
-   * attach a new, native session.
+   * This method is called when a native session gets destroyed. It will check if the GemFire
+   * session is actually still valid/not expired and will then attach a new, native session.
    *
    * @param nativeId the id of the native session
-   * @return the id of the newly attached native session or null if the GemFire
-   * session was already invalid
+   * @return the id of the newly attached native session or null if the GemFire session was already
+   *         invalid
    */
   public String refreshSession(String nativeId) {
     String gemfireId = getGemfireSessionIdFromNativeId(nativeId);
@@ -352,8 +337,8 @@ public class GemfireSessionManager implements SessionManager {
       return null;
     }
 
-    GemfireHttpSession session = (GemfireHttpSession) sessionCache.getOperatingRegion().get(
-        gemfireId);
+    GemfireHttpSession session =
+        (GemfireHttpSession) sessionCache.getOperatingRegion().get(gemfireId);
     if (session.isValid()) {
 
     }
@@ -399,27 +384,24 @@ public class GemfireSessionManager implements SessionManager {
     } else if (CACHE_TYPE_PEER_TO_PEER.equals(cacheType)) {
       distributedCache = PeerToPeerCache.getInstance();
     } else {
-      LOG.error("No 'cache-type' initialization param set. "
-          + "Cache will not be started");
+      LOG.error("No 'cache-type' initialization param set. " + "Cache will not be started");
       return;
     }
 
     if (!distributedCache.isStarted()) {
       /**
-       * Process all the init params and see if any apply to the
-       * distributed system.
+       * Process all the init params and see if any apply to the distributed system.
        */
-      for (Enumeration<String> e = config.getInitParameterNames(); e.hasMoreElements(); ) {
+      for (Enumeration<String> e = config.getInitParameterNames(); e.hasMoreElements();) {
         String param = e.nextElement();
         if (!param.startsWith(GEMFIRE_PROPERTY)) {
           continue;
         }
 
         String gemfireProperty = param.substring(GEMFIRE_PROPERTY.length());
-        LOG.info("Setting gemfire property: {} = {}",
-            gemfireProperty, config.getInitParameter(param));
-        distributedCache.setProperty(gemfireProperty,
+        LOG.info("Setting gemfire property: {} = {}", gemfireProperty,
             config.getInitParameter(param));
+        distributedCache.setProperty(gemfireProperty, config.getInitParameter(param));
       }
 
       distributedCache.lifecycleEvent(LifecycleTypeAdapter.START);
@@ -433,17 +415,16 @@ public class GemfireSessionManager implements SessionManager {
     // Retrieve the distributedCache
     GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
     if (cache == null) {
-      throw new IllegalStateException("No cache exists. Please configure "
-          + "either a PeerToPeerCacheLifecycleListener or "
-          + "ClientServerCacheLifecycleListener in the "
-          + "server.xml file.");
+      throw new IllegalStateException(
+          "No cache exists. Please configure " + "either a PeerToPeerCacheLifecycleListener or "
+              + "ClientServerCacheLifecycleListener in the " + "server.xml file.");
     }
 
     /**
      * Process all the init params and see if any apply to the distributedCache
      */
     ResourceManager rm = cache.getResourceManager();
-    for (Enumeration<String> e = config.getInitParameterNames(); e.hasMoreElements(); ) {
+    for (Enumeration<String> e = config.getInitParameterNames(); e.hasMoreElements();) {
       String param = e.nextElement();
 
       // Uggh - don't like this non-generic stuff
@@ -463,15 +444,13 @@ public class GemfireSessionManager implements SessionManager {
       }
 
       String gemfireWebParam = param.substring(GEMFIRE_CACHE.length());
-      LOG.info("Setting cache parameter: {} = {}",
-          gemfireWebParam, config.getInitParameter(param));
+      LOG.info("Setting cache parameter: {} = {}", gemfireWebParam, config.getInitParameter(param));
       properties.put(CacheProperty.valueOf(gemfireWebParam.toUpperCase()),
           config.getInitParameter(param));
     }
 
     // Create the appropriate session distributedCache
-    sessionCache = cache.isClient()
-        ? new ClientServerSessionCache(cache, properties)
+    sessionCache = cache.isClient() ? new ClientServerSessionCache(cache, properties)
         : new PeerToPeerSessionCache(cache, properties);
 
     // Initialize the session distributedCache
@@ -486,15 +465,12 @@ public class GemfireSessionManager implements SessionManager {
 
     try {
       InitialContext ctx = new InitialContext();
-      MBeanServer mbs = MBeanServer.class.cast(
-          ctx.lookup("java:comp/env/jmx/runtime"));
-      ObjectName oname = new ObjectName(
-          Constants.SESSION_STATISTICS_MBEAN_NAME);
+      MBeanServer mbs = MBeanServer.class.cast(ctx.lookup("java:comp/env/jmx/runtime"));
+      ObjectName oname = new ObjectName(Constants.SESSION_STATISTICS_MBEAN_NAME);
 
       mbs.registerMBean(mbean, oname);
     } catch (Exception ex) {
-      LOG.warn("Unable to register statistics MBean. Error: {}",
-          ex.getMessage());
+      LOG.warn("Unable to register statistics MBean. Error: {}", ex.getMessage());
     }
   }
 

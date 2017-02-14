@@ -1,0 +1,38 @@
+/*
+ * FILE: print.scss
+======================================================================== */
+pre code, p code, .terminal {
+  font-family: "DejaVu Sans Mono";
+  page-break-inside: avoid; }
+
+ol li {
+  margin-left: 15px; }
+
+.wrap {
+  width: 2400px; }
+  .wrap .container {
+    margin-left: 0; }
+
+li p code {
+  width: auto;
+  display: inline; }
+
+note {
+  overflow: visible;
+  page-break-inside: avoid !important;
+  page-break-before: avoid !important; }
+
+pre, pre code {
+  overflow: visible; }
+
+.quick-links,
+.nav-container,
+.header,
+.site-footer-links,
+#repo-link,
+#feedback {
+  display: none; }
+
+h1 {
+  margin-top: 0;
+  font-size: 1.563em; }

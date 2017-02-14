@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.process;
 
@@ -32,7 +30,7 @@ import org.apache.geode.internal.logging.LogService;
  */
 public abstract class ProcessStreamReader implements Runnable {
   private static final Logger logger = LogService.getLogger();
- 
+
   protected final Process process;
   protected final InputStream inputStream;
   protected final InputListener inputListener;
@@ -48,6 +46,7 @@ public abstract class ProcessStreamReader implements Runnable {
         public void notifyInputLine(String line) {
           // do nothing
         }
+
         @Override
         public String toString() {
           return "NullInputListener";
@@ -57,7 +56,7 @@ public abstract class ProcessStreamReader implements Runnable {
       this.inputListener = builder.inputListener;
     }
   }
-  
+
   @Override
   public void run() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -95,7 +94,7 @@ public abstract class ProcessStreamReader implements Runnable {
         this.thread = new Thread(this, createThreadName());
         this.thread.setDaemon(true);
         this.thread.start();
-      } else if (this.thread.isAlive()){
+      } else if (this.thread.isAlive()) {
         throw new IllegalStateException(this + " has already started");
       } else {
         throw new IllegalStateException(this + " was stopped and cannot be restarted");
@@ -108,7 +107,7 @@ public abstract class ProcessStreamReader implements Runnable {
     synchronized (this) {
       if (this.thread != null && this.thread.isAlive()) {
         this.thread.interrupt();
-      } else if (this.thread != null){
+      } else if (this.thread != null) {
         if (logger.isDebugEnabled()) {
           logger.debug("{} has already been stopped", this);
         }
@@ -133,13 +132,14 @@ public abstract class ProcessStreamReader implements Runnable {
         }
       }
     };
-    String threadName = getClass().getSimpleName() + " stopAfterDelay Thread @" + Integer.toHexString(hashCode());
+    String threadName =
+        getClass().getSimpleName() + " stopAfterDelay Thread @" + Integer.toHexString(hashCode());
     Thread thread = new Thread(delayedStop, threadName);
     thread.setDaemon(true);
     thread.start();
     return this;
   }
-  
+
   public boolean isRunning() {
     synchronized (this) {
       if (this.thread != null) {
@@ -148,7 +148,7 @@ public abstract class ProcessStreamReader implements Runnable {
     }
     return false;
   }
-  
+
   public void join() throws InterruptedException {
     Thread thread;
     synchronized (this) {
@@ -158,7 +158,7 @@ public abstract class ProcessStreamReader implements Runnable {
       thread.join();
     }
   }
-  
+
   public void join(final long millis) throws InterruptedException {
     Thread thread;
     synchronized (this) {
@@ -168,7 +168,7 @@ public abstract class ProcessStreamReader implements Runnable {
       thread.join(millis);
     }
   }
-  
+
   public void join(final long millis, final int nanos) throws InterruptedException {
     Thread thread;
     synchronized (this) {
@@ -178,22 +178,23 @@ public abstract class ProcessStreamReader implements Runnable {
       thread.join(millis, nanos);
     }
   }
-  
+
   @Override
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
     sb.append(" Thread").append(" #").append(System.identityHashCode(this));
-    sb.append(" alive=").append(isRunning()); //this.thread == null ? false : this.thread.isAlive());
+    sb.append(" alive=").append(isRunning()); // this.thread == null ? false :
+                                              // this.thread.isAlive());
     sb.append(" listener=").append(this.inputListener);
     return sb.toString();
   }
-  
+
   private String createThreadName() {
     return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
   }
-  
+
   /**
-   * Defines the callback for  lines of output found in the stream.
+   * Defines the callback for lines of output found in the stream.
    */
   public static interface InputListener {
     public void notifyInputLine(String line);
@@ -201,10 +202,9 @@ public abstract class ProcessStreamReader implements Runnable {
 
   /** Default ReadingMode is BLOCKING */
   public static enum ReadingMode {
-    BLOCKING,
-    NON_BLOCKING;
+    BLOCKING, NON_BLOCKING;
   }
-  
+
   /**
    * Builds a ProcessStreamReader.
    * 
@@ -216,34 +216,34 @@ public abstract class ProcessStreamReader implements Runnable {
     protected InputListener inputListener;
     protected long continueReadingMillis = 0;
     protected ReadingMode readingMode = ReadingMode.BLOCKING;
-    
+
     public Builder(final Process process) {
       this.process = process;
     }
-    
+
     public Builder inputStream(final InputStream inputStream) {
       this.inputStream = inputStream;
       return this;
     }
-    
+
     /** InputListener callback to invoke with read data */
     public Builder inputListener(final InputListener inputListener) {
       this.inputListener = inputListener;
       return this;
     }
-    
+
     /** millis to continue reading InputStream after Process terminates */
     public Builder continueReadingMillis(final long continueReadingMillis) {
       this.continueReadingMillis = continueReadingMillis;
       return this;
     }
-    
+
     /** ReadingMode to use for reading InputStream */
     public Builder readingMode(final ReadingMode readingMode) {
       this.readingMode = readingMode;
       return this;
     }
-    
+
     public ProcessStreamReader build() {
       if (process == null) {
         throw new NullPointerException("process may not be null");
@@ -255,8 +255,10 @@ public abstract class ProcessStreamReader implements Runnable {
         throw new IllegalArgumentException("continueReadingMillis must zero or positive");
       }
       switch (this.readingMode) {
-        case NON_BLOCKING: return new NonBlockingProcessStreamReader(this);
-        default: return new BlockingProcessStreamReader(this);
+        case NON_BLOCKING:
+          return new NonBlockingProcessStreamReader(this);
+        default:
+          return new BlockingProcessStreamReader(this);
       }
     }
   }

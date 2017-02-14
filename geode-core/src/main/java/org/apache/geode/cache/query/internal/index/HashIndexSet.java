@@ -1,24 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
-/*           
- * insertionIndex(), index(), trimToSize() are based on code provided by fastutil
- * They are based from add(), contains() and other methods from ObjectOpenHashSet
- * We have used the traversing mechanism and the HashCommon.mix()
+/*
+ * insertionIndex(), index(), trimToSize() are based on code provided by fastutil They are based
+ * from add(), contains() and other methods from ObjectOpenHashSet We have used the traversing
+ * mechanism and the HashCommon.mix()
  */
 package org.apache.geode.cache.query.internal.index;
 
@@ -38,35 +36,35 @@ import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.pdx.internal.PdxString;
 
 /**
- * An implementation of the <tt>Set</tt> interface for the HashIndex
- * Not exactly a set as the hash keys can actually collide but will
- * continue to look for an empty location to store the value
+ * An implementation of the <tt>Set</tt> interface for the HashIndex Not exactly a set as the hash
+ * keys can actually collide but will continue to look for an empty location to store the value
  *
  */
 public class HashIndexSet implements Set {
 
   /**
-   * optional statistics object to track number of hash collisions and time
-   * spent probing based on hash collisions
+   * optional statistics object to track number of hash collisions and time spent probing based on
+   * hash collisions
    */
-  final class HashIndexSetProperties{
+  final class HashIndexSetProperties {
     /** the set of Objects */
     final protected transient Object[] set;
-    /** used for hashing into the table**/
+    /** used for hashing into the table **/
     final protected int mask;
 
     /** the current number of entries in the set */
     protected transient int size = 0;
 
-    /** the current number of open slots in the hash.
-     * Originally used when we collapsed collided keys into collections
-     * Not really used now */
+    /**
+     * the current number of open slots in the hash. Originally used when we collapsed collided keys
+     * into collections Not really used now
+     */
     protected transient int free;
 
-    /** number of removed tokens in the set, these are index positions that may be reused*/
+    /** number of removed tokens in the set, these are index positions that may be reused */
     transient int removedTokens;
 
-    /** size of the backing table (-1)**/
+    /** size of the backing table (-1) **/
     protected int n;
 
     /**
@@ -83,6 +81,7 @@ public class HashIndexSet implements Set {
       this.mask = mask;
     }
   }
+
   private transient CachePerfStats cacheStats;
 
   /** the load above which rehashing occurs. */
@@ -92,18 +91,19 @@ public class HashIndexSet implements Set {
 
   protected float _loadFactor;
 
-  /** If after an update, the number of removed tokens X percent of the max size,
-    * we will compact and rehash to remove the tokens.
-    */
+  /**
+   * If after an update, the number of removed tokens X percent of the max size, we will compact and
+   * rehash to remove the tokens.
+   */
   protected static final float CONDITIONAL_REMOVED_TOKEN_REHASH_FACTOR = .7f;
 
   HashIndexSetProperties hashIndexSetProperties;
 
   protected HashIndex.IMQEvaluator _imqEvaluator;
 
- /**
-  * The removed token
-  */
+  /**
+   * The removed token
+   */
   protected static final Object REMOVED = new Object();
 
   static boolean TEST_ALWAYS_REHASH = false;
@@ -118,15 +118,14 @@ public class HashIndexSet implements Set {
   }
 
   /**
-   * Creates a new <code>HashIndexSet</code> instance with a prime capacity
-   * equal to or greater than <tt>initialCapacity</tt> and with the specified
-   * load factor.
+   * Creates a new <code>HashIndexSet</code> instance with a prime capacity equal to or greater than
+   * <tt>initialCapacity</tt> and with the specified load factor.
    * 
    * @param initialCapacity an <code>int</code> value
    * @param loadFactor a <code>float</code> value
    */
   private HashIndexSet(int initialCapacity, float loadFactor) {
-    setUp(initialCapacity , loadFactor);
+    setUp(initialCapacity, loadFactor);
   }
 
   public void setEvaluator(HashIndex.IMQEvaluator evaluator) {
@@ -134,8 +133,8 @@ public class HashIndexSet implements Set {
   }
 
   /**
-   * Set the statistics object for tracking hash code collisions. Should be
-   * called before the first element is added.
+   * Set the statistics object for tracking hash code collisions. Should be called before the first
+   * element is added.
    */
   public void setCachePerfStats(CachePerfStats stats) {
     this.cacheStats = stats;
@@ -144,8 +143,7 @@ public class HashIndexSet implements Set {
   /**
    * Searches the set for <tt>obj</tt>
    * 
-   * @param obj
-   *          an <code>Object</code> value
+   * @param obj an <code>Object</code> value
    * @return a <code>boolean</code> value
    */
   public boolean contains(Object obj) {
@@ -191,16 +189,16 @@ public class HashIndexSet implements Set {
     Object curr;
     hash = computeHash(key);
 
-    /* Code originated from fastutils
-     * Copyright (C) 2002-2014 Sebastiano Vigna
+    /*
+     * Code originated from fastutils Copyright (C) 2002-2014 Sebastiano Vigna
      * 
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
+     * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+     * except in compliance with the License. You may obtain a copy of the License at
      * 
-     * http://www.apache.org/licenses/LICENSE-2.0 
+     * http://www.apache.org/licenses/LICENSE-2.0
      */
-    if (!((curr = set[pos = (it.unimi.dsi.fastutil.HashCommon.mix(hash)) & mask]) == null || curr == REMOVED)) {
+    if (!((curr = set[pos = (it.unimi.dsi.fastutil.HashCommon.mix(hash)) & mask]) == null
+        || curr == REMOVED)) {
       if (((curr).equals(obj) && pos != ignoreThisSlot))
         return pos;
       while (!((curr = set[pos = (pos + 1) & mask]) == null || curr == REMOVED)) {
@@ -222,8 +220,7 @@ public class HashIndexSet implements Set {
   /**
    * Locates the index of <tt>obj</tt>.
    * 
-   * @param indexKey
-   *          an <code>Object</code> value that represents the index key
+   * @param indexKey an <code>Object</code> value that represents the index key
    * @return Iterator over a collection of objects that match the key
    */
   public Iterator get(Object indexKey) {
@@ -233,21 +230,21 @@ public class HashIndexSet implements Set {
   /**
    * 
    * @param set represents the array that all elements are stored in
-   * @param index
-   *          the array index location to store the object. This should be
-   *          calculated by one of the insertionIndex methods
+   * @param index the array index location to store the object. This should be calculated by one of
+   *        the insertionIndex methods
    * @param newObject the object to add to the set
    * @return true if object was added
    */
   private boolean addObjectToSet(Object[] set, int index, Object newObject) {
     boolean added = true;
     if (index < 0) {
-      throw new ArrayIndexOutOfBoundsException("Cannot add:" + newObject + " into array position:" + index);
+      throw new ArrayIndexOutOfBoundsException(
+          "Cannot add:" + newObject + " into array position:" + index);
     }
     Object oldObject = set[index];
     if (oldObject == null || oldObject == REMOVED) {
       set[index] = newObject;
-    } 
+    }
 
     return added;
   }
@@ -256,13 +253,14 @@ public class HashIndexSet implements Set {
    * Unsupported, we do not use HashIndexSet as a general all purpose set
    */
   public synchronized boolean add(Object obj) {
-    throw new UnsupportedOperationException("add(Object) not supported, try add(Object key, Object obj) instead");
+    throw new UnsupportedOperationException(
+        "add(Object) not supported, try add(Object key, Object obj) instead");
   }
 
   /**
    * Add an object using the hash value of the provided indexKey
    * 
-   * @param indexKey 
+   * @param indexKey
    * @param obj the object to add
    * @return true if object has been added
    * @throws TypeMismatchException
@@ -272,7 +270,8 @@ public class HashIndexSet implements Set {
       indexKey = IndexManager.NULL;
     }
     // Note we cannot make the below optimization for hash index. Due to in place modification
-    // where old key == new key (when no reverse map) we end up not updating to the correct slot in this case
+    // where old key == new key (when no reverse map) we end up not updating to the correct slot in
+    // this case
     // If oldKey and the newKey are same there is no need to update the
     // index-maps.
     // if ((oldKey == null && indexKey == null)
@@ -318,16 +317,16 @@ public class HashIndexSet implements Set {
       this.cacheStats.incQueryResultsHashCollisions();
     }
     try {
-      /* Code originated from fastutils
-       * Copyright (C) 2002-2014 Sebastiano Vigna
+      /*
+       * Code originated from fastutils Copyright (C) 2002-2014 Sebastiano Vigna
        * 
-       * Licensed under the Apache License, Version 2.0 (the "License");
-       * you may not use this file except in compliance with the License.
-       * You may obtain a copy of the License at
+       * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file
+       * except in compliance with the License. You may obtain a copy of the License at
        * 
-       * http://www.apache.org/licenses/LICENSE-2.0 
+       * http://www.apache.org/licenses/LICENSE-2.0
        */
-      if (!((curr = array[pos = (it.unimi.dsi.fastutil.HashCommon.mix(hash)) & mask]) == null || curr == REMOVED)) {
+      if (!((curr = array[pos = (it.unimi.dsi.fastutil.HashCommon.mix(hash)) & mask]) == null
+          || curr == REMOVED)) {
         while (!((curr = array[pos = (pos + 1) & mask]) == null || curr == REMOVED)) {
         }
       }
@@ -338,7 +337,7 @@ public class HashIndexSet implements Set {
       }
     }
   }
-  
+
   @Override
   public boolean equals(Object other) {
     if (!(other instanceof HashIndexSet)) {
@@ -378,11 +377,10 @@ public class HashIndexSet implements Set {
 
 
 
-    
     int mask = newN - 1;
     int _maxSize = computeMaxSize(newN, _loadFactor);
     Object[] newSet = new Object[newN + 1];
-    HashIndexSetProperties newHashIndexProperties = new HashIndexSetProperties(newSet,mask);
+    HashIndexSetProperties newHashIndexProperties = new HashIndexSetProperties(newSet, mask);
     newHashIndexProperties.size = metaData.size;
     newHashIndexProperties.free = hashIndexSetProperties.computeNumFree();
     newHashIndexProperties.removedTokens = 0;
@@ -418,8 +416,8 @@ public class HashIndexSet implements Set {
 
   /**
    * Unsupported as the hash index does not use this method call
-   * @param a
-   *          an <code>Object[]</code> value
+   * 
+   * @param a an <code>Object[]</code> value
    * @return an <code>Object[]</code> value
    */
   public Object[] toArray(Object[] a) {
@@ -458,9 +456,9 @@ public class HashIndexSet implements Set {
    * 
    * @param key assumed to not be null, rather needs to be NULL token
    * @param obj
-   * @param newIndexSlot if inplace modification occurs with out having a reversemap
-   *          we end up scanning the entire index. We want to remove the region entry from the index slot
-   *          but not the newly added (correct) slot. Rather only the "old/wrong" slot
+   * @param newIndexSlot if inplace modification occurs with out having a reversemap we end up
+   *        scanning the entire index. We want to remove the region entry from the index slot but
+   *        not the newly added (correct) slot. Rather only the "old/wrong" slot
    * @return true if object was removed, false otherwise
    */
   public synchronized boolean remove(Object key, Object obj, int newIndexSlot) {
@@ -485,22 +483,20 @@ public class HashIndexSet implements Set {
     }
     return false;
   }
-  
+
   public final boolean areObjectsEqual(Object o1, Object o2) {
     if (o1 == null) {
       return o2 == null;
     }
     try {
       return TypeUtils.compare(o1, o2, OQLLexerTokenTypes.TOK_EQ).equals(Boolean.TRUE);
-    }
-    catch (TypeMismatchException e) {
+    } catch (TypeMismatchException e) {
       return o1.equals(o2);
     }
   }
 
   /**
-   * Creates an iterator over the values of the set. The iterator supports
-   * element deletion.
+   * Creates an iterator over the values of the set. The iterator supports element deletion.
    * 
    * @return an <code>Iterator</code> value
    */
@@ -579,9 +575,8 @@ public class HashIndexSet implements Set {
   }
 
   /**
-   * Returns the number of positions used in the backing array
-   * Is not a true representation of the number of elements in the array
-   * as the array may contain REMOVED tokens
+   * Returns the number of positions used in the backing array Is not a true representation of the
+   * number of elements in the array as the array may contain REMOVED tokens
    * 
    * @return an <code>int</code> value
    */
@@ -590,8 +585,8 @@ public class HashIndexSet implements Set {
   }
 
   /**
-   * only used for query optimization.  Instead of crawling the entire array doing matches
-   * let's just return the size of the array as that is the worst case size
+   * only used for query optimization. Instead of crawling the entire array doing matches let's just
+   * return the size of the array as that is the worst case size
    */
   public int size(Object indexKey) {
     return hashIndexSetProperties.size;
@@ -603,18 +598,18 @@ public class HashIndexSet implements Set {
   public void compact() {
     trimToSize(hashIndexSetProperties.size);
   }
-  
-  public boolean trimToSize( final int n ) {
-    final int l = HashCommon.nextPowerOfTwo( (int)Math.ceil( n / _loadFactor ) );
-    if (this.hashIndexSetProperties.n <= l ) return true;
+
+  public boolean trimToSize(final int n) {
+    final int l = HashCommon.nextPowerOfTwo((int) Math.ceil(n / _loadFactor));
+    if (this.hashIndexSetProperties.n <= l)
+      return true;
     try {
-            rehash( l );
-    }
-    catch ( OutOfMemoryError cantDoIt ) {
-            return false;
+      rehash(l);
+    } catch (OutOfMemoryError cantDoIt) {
+      return false;
     }
     return true;
-}
+  }
 
   /**
    * Remove the object at <tt>index</tt>.
@@ -642,12 +637,12 @@ public class HashIndexSet implements Set {
    * initializes this index set
    */
   protected int setUp(final int expectedCapacity, final float loadFactor) {
-    int n = arraySize( expectedCapacity, loadFactor );
+    int n = arraySize(expectedCapacity, loadFactor);
     this._loadFactor = loadFactor;
     int _maxSize = computeMaxSize(n, loadFactor);
     int mask = n - 1;
     Object[] set = new Object[n + 1];
-    HashIndexSetProperties metaData  = new HashIndexSetProperties(set,mask);
+    HashIndexSetProperties metaData = new HashIndexSetProperties(set, mask);
     metaData.n = n;
     metaData.maxSize = _maxSize;
     hashIndexSetProperties = metaData;
@@ -655,9 +650,9 @@ public class HashIndexSet implements Set {
 
     return n;
   }
-  
+
   private int computeMaxSize(int n, float loadFactor) {
-    return Math.min( (int)Math.ceil( n * loadFactor ), n - 1 );
+    return Math.min((int) Math.ceil(n * loadFactor), n - 1);
   }
 
   /**
@@ -677,11 +672,13 @@ public class HashIndexSet implements Set {
    * Before inserting we can ensure we have capacity
    */
   protected final void preInsertHook() {
-    if (hashIndexSetProperties.size > hashIndexSetProperties.maxSize || hashIndexSetProperties.free == 0 || TEST_ALWAYS_REHASH) {
+    if (hashIndexSetProperties.size > hashIndexSetProperties.maxSize
+        || hashIndexSetProperties.free == 0 || TEST_ALWAYS_REHASH) {
       rehash(arraySize(hashIndexSetProperties.size + 1, _loadFactor));
       computeMaxSize(capacity(), _loadFactor);
       hashIndexSetProperties.free = hashIndexSetProperties.computeNumFree();
-    } else if (hashIndexSetProperties.removedTokens > hashIndexSetProperties.maxSize * CONDITIONAL_REMOVED_TOKEN_REHASH_FACTOR) {
+    } else if (hashIndexSetProperties.removedTokens > hashIndexSetProperties.maxSize
+        * CONDITIONAL_REMOVED_TOKEN_REHASH_FACTOR) {
       compact();
     }
   }
@@ -706,7 +703,7 @@ public class HashIndexSet implements Set {
       current = objects[pos];
     }
 
-    private HashIndexSetIterator(Object keyToMatch , HashIndexSetProperties metaData) {
+    private HashIndexSetIterator(Object keyToMatch, HashIndexSetProperties metaData) {
       this.keyToMatch = keyToMatch;
       this.objects = metaData.set;
       mask = metaData.mask;
@@ -715,7 +712,7 @@ public class HashIndexSet implements Set {
       prevPos = pos;
       current = this.objects[pos];
     }
-    
+
     private void setPos(int pos) {
       this.prevPos = this.pos;
       this.pos = pos;
@@ -732,7 +729,7 @@ public class HashIndexSet implements Set {
           } else if (notMatchingAnyKeyToRemove(keysToRemove, current)) {
             return true;
           }
-          setPos(pos+1);
+          setPos(pos + 1);
         }
         return false;
       } else {
@@ -770,7 +767,7 @@ public class HashIndexSet implements Set {
       if (keysToRemove != null) {
         // for Not equals we need to continue looking
         // so increment the index here
-        setPos(pos+1);
+        setPos(pos + 1);
       } else {
         // advance the pointer
         setPos((pos + 1) & mask);
@@ -786,28 +783,27 @@ public class HashIndexSet implements Set {
     public void remove() {
       removeAt(currentObjectIndex());
     }
-    
-    
+
+
     public boolean objectMatchesIndexKey(Object indexKey, Object o) {
       Object fieldValue = _imqEvaluator.evaluateKey(o);
-     
+
       if (fieldValue == IndexManager.NULL && indexKey == IndexManager.NULL) {
         return true;
       } else {
         try {
           if (fieldValue instanceof PdxString) {
-           if (indexKey instanceof String) {
-             fieldValue = ((PdxString) fieldValue).toString(); 
-           }
-         }
-         else if (indexKey instanceof PdxString) {
-           if (fieldValue instanceof String) {
-             fieldValue = new PdxString((String)fieldValue);
-           }
-         }
-         return TypeUtils.compare(fieldValue, indexKey, OQLLexerTokenTypes.TOK_EQ).equals(Boolean.TRUE);
-        }
-        catch (TypeMismatchException e) {
+            if (indexKey instanceof String) {
+              fieldValue = ((PdxString) fieldValue).toString();
+            }
+          } else if (indexKey instanceof PdxString) {
+            if (fieldValue instanceof String) {
+              fieldValue = new PdxString((String) fieldValue);
+            }
+          }
+          return TypeUtils.compare(fieldValue, indexKey, OQLLexerTokenTypes.TOK_EQ)
+              .equals(Boolean.TRUE);
+        } catch (TypeMismatchException e) {
           return fieldValue.equals(indexKey);
         }
       }

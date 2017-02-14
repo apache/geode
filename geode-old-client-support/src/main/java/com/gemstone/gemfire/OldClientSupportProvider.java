@@ -1,25 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.gemstone.gemfire;
 
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataOutputStream;
@@ -37,9 +38,19 @@ public class OldClientSupportProvider implements OldClientSupportService {
   static final String GEODE = "org.apache.geode";
   static final String GEMFIRE = "com.gemstone.gemfire";
 
+  static final String ALWAYS_CONVERT_CLASSES_NAME =
+      DistributionConfig.GEMFIRE_PREFIX + "old-client-support.convert-all";
+
+  /** whether to always convert new package names to old on outgoing serialization */
+  static final boolean ALWAYS_CONVERT_CLASSES = Boolean.getBoolean(ALWAYS_CONVERT_CLASSES_NAME);
+
+  private final Map<String, String> oldClassNamesToNew = new ConcurrentHashMap<>();
+  private final Map<String, String> newClassNamesToOld = new ConcurrentHashMap<>();
+
   /** returns the cache's OldClientSupportService */
   public static OldClientSupportService getService(Cache cache) {
-    return (OldClientSupportService)((InternalCache)cache).getService(OldClientSupportService.class);
+    return (OldClientSupportService) ((InternalCache) cache)
+        .getService(OldClientSupportService.class);
   }
 
   @Override
@@ -60,75 +71,96 @@ public class OldClientSupportProvider implements OldClientSupportService {
 
   @Override
   public String processIncomingClassName(String name) {
-    if (name.startsWith(GEMFIRE)) {
-      return GEODE + name.substring(GEMFIRE.length());
+    // tcpserver was moved to a different package in Geode.
+    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
+    String newPackage = "org.apache.geode.distributed.internal.tcpserver";
+    if (name.startsWith(oldPackage)) {
+      String cached = oldClassNamesToNew.get(name);
+      if (cached == null) {
+        cached = newPackage + name.substring(oldPackage.length());
+        oldClassNamesToNew.put(name, cached);
+      }
+      return cached;
     }
-    return name;
+    return processClassName(name, GEMFIRE, GEODE, oldClassNamesToNew);
   }
 
 
   @Override
   public String processIncomingClassName(String name, DataInput in) {
-    // tcpserver was moved to a different package in Geode.  
-    String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
-    String newPackage = "org.apache.geode.distributed.internal.tcpserver";
-    if (name.startsWith(oldPackage)) {
-      return newPackage + name.substring(oldPackage.length());
-    }
-    if (name.startsWith(GEMFIRE)) {
-      return GEODE + name.substring(GEMFIRE.length());
-    }
-    return name;
+    return processIncomingClassName(name);
   }
 
 
   @Override
   public String processOutgoingClassName(String name, DataOutput out) {
-    // tcpserver was moved to a different package in Geode
+    // tcpserver was moved to a different package
     String oldPackage = "com.gemstone.org.jgroups.stack.tcpserver";
     String newPackage = "org.apache.geode.distributed.internal.tcpserver";
     if (name.startsWith(newPackage)) {
       return oldPackage + name.substring(newPackage.length());
     }
+    if (ALWAYS_CONVERT_CLASSES) {
+      return processClassName(name, GEODE, GEMFIRE, newClassNamesToOld);
+    }
     // if the client is old then it needs com.gemstone.gemfire package names
     if (out instanceof VersionedDataOutputStream) {
-      VersionedDataOutputStream vout = (VersionedDataOutputStream)out;
+      VersionedDataOutputStream vout = (VersionedDataOutputStream) out;
       Version version = vout.getVersion();
       if (version != null && version.compareTo(Version.GFE_90) < 0) {
-        if (name.startsWith(GEODE)) {
-          name = GEMFIRE + name.substring(GEODE.length());
-        }
+        return processClassName(name, GEODE, GEMFIRE, newClassNamesToOld);
       }
     }
     return name;
   }
 
-
-  /**
-   * translates the given exception into one that can be sent to an old GemFire client
-   * @param theThrowable the exception to convert
-   * @param clientVersion the version of the client
-   * @return the exception to give the client
-   */
+  @Override
   public Throwable getThrowable(Throwable theThrowable, Version clientVersion) {
-    
+
     if (theThrowable == null) {
       return theThrowable;
     }
     if (clientVersion.compareTo(Version.GFE_90) >= 0) {
       return theThrowable;
     }
-    
+
     String className = theThrowable.getClass().getName();
-    
+
     // this class has been renamed, so it cannot be automatically translated
     // during java deserialization
     if (className.equals("org.apache.geode.cache.execute.EmptyRegionFunctionException")) {
       return new EmtpyRegionFunctionException(theThrowable.getMessage(), theThrowable.getCause());
     }
-    
+
     // other exceptions will be translated automatically by receivers
     return theThrowable;
   }
+
+
+  private String processClassName(String p_className, String oldPackage, String newPackage,
+      Map<String, String> cache) {
+    String cached = cache.get(p_className);
+    if (cached != null) {
+      return cached;
+    }
+
+    String className = p_className;
+
+    if (className.startsWith(oldPackage)) {
+      className = newPackage + className.substring(oldPackage.length());
+
+    } else if (className.startsWith("[") && className.contains("[L" + oldPackage)) {
+      int idx = className.indexOf("[L") + 2;
+      className =
+          className.substring(0, idx) + newPackage + className.substring(idx, oldPackage.length());
+    }
+
+    if (className != p_className) {
+      cache.put(p_className, className);
+    }
+
+    return className;
+  }
+
 
 }

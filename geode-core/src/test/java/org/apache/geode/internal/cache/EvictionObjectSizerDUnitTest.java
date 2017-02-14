@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -61,7 +59,7 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
   protected static Region region = null;
 
   private static final long serialVersionUID = 1L;
-  
+
   // Removed CONCURRENT_OVERHEAD since it is included in the regionEntrySize.
 
   public EvictionObjectSizerDUnitTest() {
@@ -78,16 +76,21 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
     // Size of overhead=
     // 49(HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead()
     // Size of Integer key= 0 (it is inlined)
-    // Size of Byte Array(1 MB)= 1024 * 1024 + 8 (byte object) + 4 ( size of object) + 4 (rounded up to nearest word)
-    //                         = 1048592
+    // Size of Byte Array(1 MB)= 1024 * 1024 + 8 (byte object) + 4 ( size of object) + 4 (rounded up
+    // to nearest word)
+    // = 1048592
     // Total Size of each entry should be= 1048592
     putData("PR1", 2, 1);
     int keySize = 0;
-    int valueSize = SharedLibrary.getObjectHeaderSize() + 4 /* array length */ + (1024*1024) /* bytes */;
+    int valueSize =
+        SharedLibrary.getObjectHeaderSize() + 4 /* array length */ + (1024 * 1024) /* bytes */;
     valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
-    int entrySize = keySize + valueSize + ((HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead();
+    int entrySize = keySize + valueSize
+        + ((HeapLRUCapacityController) ((PartitionedRegion) region).getEvictionController())
+            .getPerEntryOverhead();
     verifySize("PR1", 2, entrySize);
-    assertEquals(2*entrySize, ((PartitionedRegion)region).getEvictionController().getLRUHelper().getStats().getCounter());
+    assertEquals(2 * entrySize, ((PartitionedRegion) region).getEvictionController().getLRUHelper()
+        .getStats().getCounter());
   }
 
   /**
@@ -104,11 +107,14 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
     // Total Size of each entry should be= 1048592
     putData("PR1", 2, 1);
     {
-    int keySize = 0;
-    int valueSize = SharedLibrary.getObjectHeaderSize() + 4 /* array length */ + (1024*1024) /* bytes */;
-    valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
-    int entrySize = keySize + valueSize + ((HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead();
-    verifySize("PR1", 2, entrySize);
+      int keySize = 0;
+      int valueSize =
+          SharedLibrary.getObjectHeaderSize() + 4 /* array length */ + (1024 * 1024) /* bytes */;
+      valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
+      int entrySize = keySize + valueSize
+          + ((HeapLRUCapacityController) ((PartitionedRegion) region).getEvictionController())
+              .getPerEntryOverhead();
+      verifySize("PR1", 2, entrySize);
     }
 
     // Size of overhead= 49
@@ -117,18 +123,21 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
     // Total Size of each entry should be= 2097201
 
     {
-    putData("PR1", 2, 2);
-    int keySize = 0;
-    int valueSize = SharedLibrary.getObjectHeaderSize() + 4 /* array length */ + (1024*1024*2) /* bytes */;
-    valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
-    int entrySize = keySize + valueSize + ((HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead();
-    verifySize("PR1", 2, entrySize);
+      putData("PR1", 2, 2);
+      int keySize = 0;
+      int valueSize = SharedLibrary.getObjectHeaderSize() + 4 /* array length */
+          + (1024 * 1024 * 2) /* bytes */;
+      valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
+      int entrySize = keySize + valueSize
+          + ((HeapLRUCapacityController) ((PartitionedRegion) region).getEvictionController())
+              .getPerEntryOverhead();
+      verifySize("PR1", 2, entrySize);
     }
   }
 
   /**
-   * With object sizer for customized value object implementing ObjectSizer .Key
-   * -Integer Value TestNonSizerObject
+   * With object sizer for customized value object implementing ObjectSizer .Key -Integer Value
+   * TestNonSizerObject
    */
   @Test
   public void testObjectSizerForHeapLRU_CustomizedNonSizerObject() {
@@ -143,8 +152,11 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
       int keySize = 0;
       int valueSize = SharedLibrary.getObjectHeaderSize() + 4 /* array length */ + 0 /* bytes */;
       valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
-      int entrySize = keySize + valueSize + ((HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead();
-      LogWriterUtils.getLogWriter().info("testObjectSizerForHeapLRU_CustomizedNonSizerObject expected= " + entrySize);
+      int entrySize = keySize + valueSize
+          + ((HeapLRUCapacityController) ((PartitionedRegion) region).getEvictionController())
+              .getPerEntryOverhead();
+      LogWriterUtils.getLogWriter()
+          .info("testObjectSizerForHeapLRU_CustomizedNonSizerObject expected= " + entrySize);
       assertEquals(entrySize, getSizeOfCustomizedData(1));
     }
 
@@ -157,15 +169,18 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
       int keySize = 0;
       int valueSize = SharedLibrary.getObjectHeaderSize() + 4 /* array length */ + 4 /* bytes */;
       valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
-      int entrySize = keySize + valueSize + ((HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead();
-      LogWriterUtils.getLogWriter().info("testObjectSizerForHeapLRU_CustomizedNonSizerObject expected= " + entrySize);
+      int entrySize = keySize + valueSize
+          + ((HeapLRUCapacityController) ((PartitionedRegion) region).getEvictionController())
+              .getPerEntryOverhead();
+      LogWriterUtils.getLogWriter()
+          .info("testObjectSizerForHeapLRU_CustomizedNonSizerObject expected= " + entrySize);
       assertEquals(entrySize, getSizeOfCustomizedData(2));
     }
   }
 
   /**
-   * With object sizer for customized value object implementing ObjectSizer .Key
-   * -Integer Value TestObjectSizerImpl
+   * With object sizer for customized value object implementing ObjectSizer .Key -Integer Value
+   * TestObjectSizerImpl
    */
   @Test
   public void testObjectSizerForHeapLRU_CustomizedSizerObject() {
@@ -173,14 +188,18 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
 
     // Size of overhead= 49
     // Size of Integer key= 0(inlined)
-    // Size of TestObjectSizerImpl= 160 (serialized size), changed to 156 because package changed to org.apache.geode
+    // Size of TestObjectSizerImpl= 160 (serialized size), changed to 156 because package changed to
+    // org.apache.geode
     // Total Size of entry should be= 71
     putCustomizedData(1, new TestObjectSizerImpl());
-    int expected = (0+156+(Sizeable.PER_OBJECT_OVERHEAD*2)+((HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead());
-    LogWriterUtils.getLogWriter().info("testObjectSizerForHeapLRU_CustomizedSizerObject expected= " + expected);
+    int expected = (0 + 156 + (Sizeable.PER_OBJECT_OVERHEAD * 2)
+        + ((HeapLRUCapacityController) ((PartitionedRegion) region).getEvictionController())
+            .getPerEntryOverhead());
+    LogWriterUtils.getLogWriter()
+        .info("testObjectSizerForHeapLRU_CustomizedSizerObject expected= " + expected);
     assertEquals(expected, getSizeOfCustomizedData(1));
-    assertEquals(expected, ((PartitionedRegion)region).getEvictionController()
-        .getLRUHelper().getStats().getCounter());
+    assertEquals(expected, ((PartitionedRegion) region).getEvictionController().getLRUHelper()
+        .getStats().getCounter());
   }
 
   /**
@@ -192,18 +211,21 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
 
     // Size of overhead= 49
     // Size of TestNonSizerObject key= 1(customized)
-    // Size of TestObjectSizerImpl= 160 (serialized size), changed to 156 because package changed to org.apache.geode
+    // Size of TestObjectSizerImpl= 160 (serialized size), changed to 156 because package changed to
+    // org.apache.geode
     // Total Size of entry should be= 72
     putCustomizedObjects(new TestNonSizerObject("1"), new TestObjectSizerImpl());
-    int expected = (1+156+(Sizeable.PER_OBJECT_OVERHEAD*2)+((HeapLRUCapacityController)((PartitionedRegion)region).getEvictionController()).getPerEntryOverhead());
-    LogWriterUtils.getLogWriter().info("testObjectSizerForHeapLRU_CustomizedSizerObjects expected= " + expected);
+    int expected = (1 + 156 + (Sizeable.PER_OBJECT_OVERHEAD * 2)
+        + ((HeapLRUCapacityController) ((PartitionedRegion) region).getEvictionController())
+            .getPerEntryOverhead());
+    LogWriterUtils.getLogWriter()
+        .info("testObjectSizerForHeapLRU_CustomizedSizerObjects expected= " + expected);
     assertEquals(expected, getSizeOfCustomizedObject(new TestNonSizerObject("1")));
-    assertEquals(expected, ((PartitionedRegion)region).getEvictionController()
-        .getLRUHelper().getStats().getCounter());
+    assertEquals(expected, ((PartitionedRegion) region).getEvictionController().getLRUHelper()
+        .getStats().getCounter());
   }
 
-  public void prepareScenario(EvictionAlgorithm evictionAlgorithm,
-      ObjectSizer sizer) {
+  public void prepareScenario(EvictionAlgorithm evictionAlgorithm, ObjectSizer sizer) {
     createCache();
     createPartitionedRegion(true, evictionAlgorithm, "PR1", 1, 1, 10000, sizer);
   }
@@ -220,52 +242,40 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
       LogWriterUtils.getLogWriter().info("cache= " + cache);
       LogWriterUtils.getLogWriter().info("cache closed= " + cache.isClosed());
       cache.getResourceManager().setEvictionHeapPercentage(50);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Failed while creating the cache", e);
     }
   }
 
   public static void createPartitionedRegion(boolean setEvictionOn,
-      EvictionAlgorithm evictionAlgorithm, String regionName,
-      int totalNoOfBuckets, int evictionAction, int evictorInterval,
-      ObjectSizer sizer) {
+      EvictionAlgorithm evictionAlgorithm, String regionName, int totalNoOfBuckets,
+      int evictionAction, int evictorInterval, ObjectSizer sizer) {
 
     final AttributesFactory factory = new AttributesFactory();
     PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory()
-        .setRedundantCopies(totalNoOfBuckets == 4 ? 0 : 1).setTotalNumBuckets(
-            totalNoOfBuckets);
+        .setRedundantCopies(totalNoOfBuckets == 4 ? 0 : 1).setTotalNumBuckets(totalNoOfBuckets);
     factory.setConcurrencyChecksEnabled(false);
     factory.setPartitionAttributes(partitionAttributesFactory.create());
     if (setEvictionOn) {
       if (evictionAlgorithm.isLRUHeap()) {
-        factory.setEvictionAttributes(EvictionAttributes
-            .createLRUHeapAttributes(sizer,
-                evictionAction == 1 ? EvictionAction.LOCAL_DESTROY
-                    : EvictionAction.OVERFLOW_TO_DISK));
-      }
-      else if (evictionAlgorithm.isLRUMemory()) {
-        factory.setEvictionAttributes(EvictionAttributes
-            .createLRUMemoryAttributes(maxSizeInMb, sizer,
-                evictionAction == 1 ? EvictionAction.LOCAL_DESTROY
-                    : EvictionAction.OVERFLOW_TO_DISK));
-      }
-      else {
-        factory.setEvictionAttributes(EvictionAttributes
-            .createLRUEntryAttributes(maxEnteries,
-                evictionAction == 1 ? EvictionAction.LOCAL_DESTROY
-                    : EvictionAction.OVERFLOW_TO_DISK));
+        factory.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(sizer,
+            evictionAction == 1 ? EvictionAction.LOCAL_DESTROY : EvictionAction.OVERFLOW_TO_DISK));
+      } else if (evictionAlgorithm.isLRUMemory()) {
+        factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(maxSizeInMb,
+            sizer,
+            evictionAction == 1 ? EvictionAction.LOCAL_DESTROY : EvictionAction.OVERFLOW_TO_DISK));
+      } else {
+        factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(maxEnteries,
+            evictionAction == 1 ? EvictionAction.LOCAL_DESTROY : EvictionAction.OVERFLOW_TO_DISK));
       }
       if (evictionAction == 2) {
         factory.setDiskSynchronous(true);
         final File[] diskDirs = new File[1];
-        diskDirs[0] = new File("Partitioned_Region_Eviction/" + "LogFile" + "_"
-            + OSProcess.getId());
+        diskDirs[0] =
+            new File("Partitioned_Region_Eviction/" + "LogFile" + "_" + OSProcess.getId());
         diskDirs[0].mkdirs();
-        factory.setDiskStoreName(cache.createDiskStoreFactory()
-                                 .setDiskDirs(diskDirs)
-                                 .create("EvictionObjectSizerDUnitTest")
-                                 .getName());
+        factory.setDiskStoreName(cache.createDiskStoreFactory().setDiskDirs(diskDirs)
+            .create("EvictionObjectSizerDUnitTest").getName());
       }
     }
 
@@ -290,26 +300,23 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
     return result;
   }
 
-  public static void verifySize(String regionName, int noOfElememts,
-      int entrySize) {
+  public static void verifySize(String regionName, int noOfElememts, int entrySize) {
     final Region pr = cache.getRegion(regionName);
-    for (final Iterator i = ((PartitionedRegion)pr).getDataStore()
-        .getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry)i.next();
-      final BucketRegion bucketRegion = (BucketRegion)entry.getValue();
+    for (final Iterator i =
+        ((PartitionedRegion) pr).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
+      final Map.Entry entry = (Map.Entry) i.next();
+      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
-      }
-      else {
-        AbstractLRURegionMap map = (AbstractLRURegionMap)bucketRegion.entries;
+      } else {
+        AbstractLRURegionMap map = (AbstractLRURegionMap) bucketRegion.entries;
         if (map == null || map.size() == 0) {
           continue;
         }
-        LogWriterUtils.getLogWriter().info(
-            "Checking for entry in bucket region: " + bucketRegion);
+        LogWriterUtils.getLogWriter().info("Checking for entry in bucket region: " + bucketRegion);
         for (int counter = 1; counter <= noOfElememts; counter++) {
-          assertEquals(entrySize, ((AbstractLRURegionEntry)map
-              .getEntry(new Integer(counter))).getEntrySize());
+          assertEquals(entrySize,
+              ((AbstractLRURegionEntry) map.getEntry(new Integer(counter))).getEntrySize());
         }
       }
     }
@@ -329,17 +336,15 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
 
   private int getSizeOfCustomizedData(int counter) {
     final Region pr = cache.getRegion("PR1");
-    for (final Iterator i = ((PartitionedRegion)pr).getDataStore()
-        .getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry)i.next();
-      final BucketRegion bucketRegion = (BucketRegion)entry.getValue();
+    for (final Iterator i =
+        ((PartitionedRegion) pr).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
+      final Map.Entry entry = (Map.Entry) i.next();
+      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
-      }
-      else {
-        AbstractLRURegionMap map = (AbstractLRURegionMap)bucketRegion.entries;
-        return ((AbstractLRURegionEntry)map.getEntry(new Integer(counter)))
-            .getEntrySize();
+      } else {
+        AbstractLRURegionMap map = (AbstractLRURegionMap) bucketRegion.entries;
+        return ((AbstractLRURegionEntry) map.getEntry(new Integer(counter))).getEntrySize();
       }
     }
     return 0;
@@ -347,16 +352,15 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
 
   private int getSizeOfCustomizedObject(Object object) {
     final Region pr = cache.getRegion("PR1");
-    for (final Iterator i = ((PartitionedRegion)pr).getDataStore()
-        .getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry)i.next();
-      final BucketRegion bucketRegion = (BucketRegion)entry.getValue();
+    for (final Iterator i =
+        ((PartitionedRegion) pr).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
+      final Map.Entry entry = (Map.Entry) i.next();
+      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
-      }
-      else {
-        AbstractLRURegionMap map = (AbstractLRURegionMap)bucketRegion.entries;
-        AbstractLRURegionEntry re = (AbstractLRURegionEntry)map.getEntry(object);
+      } else {
+        AbstractLRURegionMap map = (AbstractLRURegionMap) bucketRegion.entries;
+        AbstractLRURegionEntry re = (AbstractLRURegionEntry) map.getEntry(object);
         if (re != null) {
           return re.getEntrySize();
         }

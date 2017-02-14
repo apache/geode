@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -76,7 +74,7 @@ public class ClusterMemberService implements PulseService {
       memberJSON.put("host", clusterMember.getHost());
 
       List<String> serverGroups = clusterMember.getServerGroups();
-      if(serverGroups.size() == 0){
+      if (serverGroups.size() == 0) {
         serverGroups = new ArrayList<>();
         serverGroups.add(PulseConstants.DEFAULT_SERVER_GROUP);
       }
@@ -84,7 +82,7 @@ public class ClusterMemberService implements PulseService {
       memberJSON.put("serverGroups", mapper.valueToTree(serverGroups));
 
       List<String> redundancyZones = clusterMember.getRedundancyZones();
-      if(redundancyZones.size() == 0){
+      if (redundancyZones.size() == 0) {
         redundancyZones = new ArrayList<String>();
         redundancyZones.add(PulseConstants.DEFAULT_REDUNDANCY_ZONE);
       }
@@ -110,12 +108,8 @@ public class ClusterMemberService implements PulseService {
       memberJSON.put("threads", clusterMember.getNumThreads());
 
       // Number of member clients
-      if (PulseController.getPulseProductSupport().equalsIgnoreCase(
-          PulseConstants.PRODUCT_NAME_SQLFIRE)){
-        memberJSON.put("clients", clusterMember.getNumSqlfireClients());
-      }else{
-        memberJSON.put("clients", clusterMember.getMemberClientsHMap().size());
-      }
+      memberJSON.put("clients", clusterMember.getMemberClientsHMap().size());
+
       memberJSON.put("queues", clusterMember.getQueueBacklog());
 
       memberListJson.add(memberJSON);

@@ -1,58 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.*;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.logging.log4j.Logger;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
@@ -125,6 +88,7 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryException;
+import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
@@ -156,7 +120,6 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
@@ -212,25 +175,59 @@ import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 import org.apache.geode.internal.util.concurrent.StoppableReadWriteLock;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.logging.log4j.Logger;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.AbstractSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Implementation of a local scoped-region. Note that this class has a different
- * meaning starting with 3.0. In previous versions, a LocalRegion was the
- * representation of a region in the VM. Starting with 3.0, a LocalRegion is a
- * non-distributed region. The subclass DistributedRegion adds distribution
- * behavior.
+ * Implementation of a local scoped-region. Note that this class has a different meaning starting
+ * with 3.0. In previous versions, a LocalRegion was the representation of a region in the VM.
+ * Starting with 3.0, a LocalRegion is a non-distributed region. The subclass DistributedRegion adds
+ * distribution behavior.
  *
  */
 @SuppressWarnings("deprecation")
-public class LocalRegion extends AbstractRegion
-  implements LoaderHelperFactory, ResourceListener<MemoryEvent>,
-             DiskExceptionHandler, DiskRecoveryStore
-{
+public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
+    ResourceListener<MemoryEvent>, DiskExceptionHandler, DiskRecoveryStore {
   private static final Logger logger = LogService.getLogger();
   private static final Pattern NAME_PATTERN = Pattern.compile("[aA-zZ0-9-_.]+");
 
   /**
    * Internal interface used to simulate failures when performing entry operations
+   * 
    * @since GemFire 5.7
    */
   public interface TestCallable {
@@ -250,14 +247,13 @@ public class LocalRegion extends AbstractRegion
   public static final int ANY_INIT = 2;
 
   /**
-   * thread local to indicate that this thread should bypass the initialization
-   * Latch
+   * thread local to indicate that this thread should bypass the initialization Latch
    */
   private static final ThreadLocal initializationThread = new ThreadLocal();
 
   /* thread local to indicate its for persist data convert tool */
   protected static final ThreadLocal isConversion = new ThreadLocal();
-  
+
   // user attributes //
   private Object regionUserAttribute;
 
@@ -290,20 +286,20 @@ public class LocalRegion extends AbstractRegion
   /** Lock used to prevent multiple concurrent destroy region operations */
   private Semaphore destroyLock;
 
-  //guarded by regionExpiryLock.
+  // guarded by regionExpiryLock.
   private RegionTTLExpiryTask regionTTLExpiryTask = null;
-  //guarded by regionExpiryLock.
+  // guarded by regionExpiryLock.
   private RegionIdleExpiryTask regionIdleExpiryTask = null;
-  
+
   private final Object regionExpiryLock = new Object();
   // guarded by regionExpiryLock. Keeps track of how many txs are writing to this region.
   private int txRefCount;
 
-  private final ConcurrentHashMap<RegionEntry, EntryExpiryTask> entryExpiryTasks = new ConcurrentHashMap<RegionEntry, EntryExpiryTask>();
+  private final ConcurrentHashMap<RegionEntry, EntryExpiryTask> entryExpiryTasks =
+      new ConcurrentHashMap<RegionEntry, EntryExpiryTask>();
 
   /**
-   * Set to true after an invalidate region expiration so we don't get multiple
-   * expirations
+   * Set to true after an invalidate region expiration so we don't get multiple expirations
    */
   volatile boolean regionInvalid = false;
 
@@ -316,23 +312,25 @@ public class LocalRegion extends AbstractRegion
 
   /** tracks threadID->seqno information for this region */
   protected EventTracker eventTracker;
-  
-  /** tracks region-level version information for members.  See
+
+  /**
+   * tracks region-level version information for members. See
    * https://wiki.gemstone.com/display/gfe70/Consistency+in+Replicated+Regions+and+WAN
    */
   private RegionVersionVector versionVector;
 
   private static final Pattern[] QUERY_PATTERNS = new Pattern[] {
-      Pattern.compile("^\\(*select .*", Pattern.CASE_INSENSITIVE
-          | Pattern.UNICODE_CASE | Pattern.DOTALL),
-      Pattern.compile("^import .*", Pattern.CASE_INSENSITIVE
-          | Pattern.UNICODE_CASE | Pattern.DOTALL) };
+      Pattern.compile("^\\(*select .*",
+          Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL),
+      Pattern.compile("^import .*",
+          Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.DOTALL)};
 
-  public static final String EXPIRY_MS_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_UNITS_MS";
-  
+  public static final String EXPIRY_MS_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_UNITS_MS";
+
   /**
-   * Used by unit tests to set expiry to milliseconds instead of the default
-   * seconds. Used in ExpiryTask.
+   * Used by unit tests to set expiry to milliseconds instead of the default seconds. Used in
+   * ExpiryTask.
    *
    * @since GemFire 5.0
    */
@@ -345,29 +343,27 @@ public class LocalRegion extends AbstractRegion
   private volatile boolean entriesInitialized;
 
   /**
-   * contains Regions themselves // marked volatile to make sure it is fully
-   * initialized before being // accessed; (actually should be final)
+   * contains Regions themselves // marked volatile to make sure it is fully initialized before
+   * being // accessed; (actually should be final)
    */
   protected volatile ConcurrentMap subregions;
 
   private final Object subregionsLock = new Object();
 
   // Used for synchronizzing access to client Cqs
-//  private final Object clientCqsSync = new Object();
+  // private final Object clientCqsSync = new Object();
 
   /**
-   * Prevents access to this region until it is done initializing, except for
-   * some special initializing operations such as replying to create region
-   * messages In JDK 1.5 we will use java.util.concurrent.CountDownLatch instead
-   * of org.apache.geode.internal.util.CountDownLatch.
+   * Prevents access to this region until it is done initializing, except for some special
+   * initializing operations such as replying to create region messages In JDK 1.5 we will use
+   * java.util.concurrent.CountDownLatch instead of org.apache.geode.internal.util.CountDownLatch.
    */
   protected final StoppableCountDownLatch initializationLatchBeforeGetInitialImage;
 
   protected final StoppableCountDownLatch initializationLatchAfterGetInitialImage;
 
   /**
-   * Used to hold off cache listener events until the afterRegionCreate is
-   * called
+   * Used to hold off cache listener events until the afterRegionCreate is called
    *
    * @since GemFire 5.0
    */
@@ -380,44 +376,42 @@ public class LocalRegion extends AbstractRegion
 
   /** Used for accessing region data on disk */
   private final DiskRegion diskRegion;
-  
+
   /**
-   * Used by transactions to suspend entry expiration while a transaction is in
-   * progress on a region. This field is only initialized if expiration is
-   * configured and transactions are possible.
+   * Used by transactions to suspend entry expiration while a transaction is in progress on a
+   * region. This field is only initialized if expiration is configured and transactions are
+   * possible.
    */
   private volatile StoppableReadWriteLock txExpirationLock;
 
   /**
-   * Used for serializing netSearch and netLoad on a per key basis.
-   * CM <Object, Future>
+   * Used for serializing netSearch and netLoad on a per key basis. CM <Object, Future>
    */
   protected final ConcurrentMap getFutures = new ConcurrentHashMap();
 
   /*
-   * Asif: This boolean needs to be made true if the test needs to receive a
-   * synchronous callback just after clear on map is done. Its visibility is
-   * default so that only tests present in org.apache.geode.internal.cache
-   * will be able to see it
+   * Asif: This boolean needs to be made true if the test needs to receive a synchronous callback
+   * just after clear on map is done. Its visibility is default so that only tests present in
+   * org.apache.geode.internal.cache will be able to see it
    */
   public static boolean ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
 
   /**
-   * A flag used to indicate that this Region is being used as an administrative
-   * Region, holding meta-data for a PartitionedRegion
+   * A flag used to indicate that this Region is being used as an administrative Region, holding
+   * meta-data for a PartitionedRegion
    */
   final private boolean isUsedForPartitionedRegionAdmin;
 
   final private boolean isUsedForPartitionedRegionBucket;
 
   final private boolean isUsedForMetaRegion;
-  
+
   final private boolean isMetaRegionWithTransactions;
-  
+
   final private boolean isUsedForSerialGatewaySenderQueue;
-  
+
   final private boolean isUsedForParallelGatewaySenderQueue;
-  
+
   final private AbstractGatewaySender serialGatewaySender;
 
   /**
@@ -429,43 +423,42 @@ public class LocalRegion extends AbstractRegion
    * Allow for different cacheperfstats locations... primarily for PartitionedRegions
    */
   private final CachePerfStats cachePerfStats;
-  private final boolean hasOwnStats; 
+  private final boolean hasOwnStats;
 
 
   private final ImageState imageState;
   /**
-   * Register interest count to track if any register interest is in progress for
-   * this region. This count will be incremented when register interest starts
-   * and decremented when register interest finishes.
+   * Register interest count to track if any register interest is in progress for this region. This
+   * count will be incremented when register interest starts and decremented when register interest
+   * finishes.
+   * 
    * @guarded.By {@link #imageState}
    */
-  private int riCnt = 0; /*
-                          * since always written while holding an exclusive write lock
-                          * and only read while holding a read lock
-                          * it does not need to be atomic or
-                          * protected by any other sync.
-                          */
+  private int riCnt =
+      0; /*
+          * since always written while holding an exclusive write lock and only read while holding a
+          * read lock it does not need to be atomic or protected by any other sync.
+          */
 
 
   /**
-   * Map of subregion full paths to serial numbers. These are subregions that
-   * were destroyed when this region was destroyed. This map remains null until
-   * this region is destroyed.
+   * Map of subregion full paths to serial numbers. These are subregions that were destroyed when
+   * this region was destroyed. This map remains null until this region is destroyed.
    */
   private volatile HashMap destroyedSubregionSerialNumbers;
 
   /**
-   * This boolean is true when a member who has this region is running low on memory.
-   * It is used to reject region operations.
+   * This boolean is true when a member who has this region is running low on memory. It is used to
+   * reject region operations.
    */
   public final AtomicBoolean memoryThresholdReached = new AtomicBoolean(false);
 
-  // Lock for updating PR MetaData on client side 
+  // Lock for updating PR MetaData on client side
   public final Lock clientMetaDataLock = new ReentrantLock();
-  
+
   /**
-   * There seem to be cases where a region can be created and yet the
-   * distributed system is not yet in place...
+   * There seem to be cases where a region can be created and yet the distributed system is not yet
+   * in place...
    *
    *
    */
@@ -485,7 +478,9 @@ public class LocalRegion extends AbstractRegion
       return c.getCancelCriterion().cancelInProgress();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.geode.CancelCriterion#generateCancelledException(java.lang.Throwable)
      */
     @Override
@@ -515,25 +510,15 @@ public class LocalRegion extends AbstractRegion
   /**
    * ThreadLocal used to set the current region being initialized.
    * 
-   * Currently used by the OpLog layer to initialize the
-   * {@link KeyWithRegionContext} if required.
+   * Currently used by the OpLog layer.
    */
-  private final static ThreadLocal<LocalRegion> initializingRegion =
-    new ThreadLocal<LocalRegion>();
-
-  /**
-   * Set to true if the region contains keys implementing
-   * {@link KeyWithRegionContext} that require setting up of region specific
-   * context after deserialization or recovery from disk.
-   */
-  private boolean keyRequiresRegionContext;
+  private final static ThreadLocal<LocalRegion> initializingRegion = new ThreadLocal<LocalRegion>();
 
   /**
    * Get the current initializing region as set in the ThreadLocal.
    * 
-   * Note that this value is cleared after the initialization of LocalRegion is
-   * done so is valid only for the duration of region creation and
-   * initialization.
+   * Note that this value is cleared after the initialization of LocalRegion is done so is valid
+   * only for the duration of region creation and initialization.
    */
   public static LocalRegion getInitializingRegion() {
     return initializingRegion.get();
@@ -543,7 +528,7 @@ public class LocalRegion extends AbstractRegion
     return this.stopper;
   }
 
-  protected Map<String,CacheServiceProfile> cacheServiceProfiles;
+  protected Map<String, CacheServiceProfile> cacheServiceProfiles;
 
   ////////////////// Public Methods ///////////////////////////////////////////
 
@@ -551,8 +536,7 @@ public class LocalRegion extends AbstractRegion
     StringBuilder buf = null;
     if (parentRegion == null) {
       buf = new StringBuilder(regionName.length() + 1);
-    }
-    else {
+    } else {
       String parentFull = parentRegion.getFullPath();
       buf = new StringBuilder(parentFull.length() + regionName.length() + 1);
       buf.append(parentFull);
@@ -564,12 +548,13 @@ public class LocalRegion extends AbstractRegion
   /**
    * Creates new region
    */
-  protected LocalRegion(String regionName, RegionAttributes attrs,
-      LocalRegion parentRegion, GemFireCacheImpl cache,
-      InternalRegionArguments internalRegionArgs) throws DiskAccessException {
-    super(cache, attrs,regionName, internalRegionArgs);
+  protected LocalRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
+      GemFireCacheImpl cache, InternalRegionArguments internalRegionArgs)
+      throws DiskAccessException {
+    super(cache, attrs, regionName, internalRegionArgs);
     // Initialized here (and defers to parent) to fix GEODE-128
-    this.EXPIRY_UNITS_MS = parentRegion != null ? parentRegion.EXPIRY_UNITS_MS : Boolean.getBoolean(EXPIRY_MS_PROPERTY);
+    this.EXPIRY_UNITS_MS = parentRegion != null ? parentRegion.EXPIRY_UNITS_MS
+        : Boolean.getBoolean(EXPIRY_MS_PROPERTY);
 
     Assert.assertTrue(regionName != null, "regionName must not be null");
     this.sharedDataView = buildDataView();
@@ -581,14 +566,15 @@ public class LocalRegion extends AbstractRegion
     if (internalRegionArgs.getPartitionedRegion() != null) {
       myName = internalRegionArgs.getPartitionedRegion().getFullPath();
     }
-    this.offHeap = attrs.getOffHeap() || Boolean.getBoolean(myName+":OFF_HEAP");
+    this.offHeap = attrs.getOffHeap() || Boolean.getBoolean(myName + ":OFF_HEAP");
     if (getOffHeap()) {
       if (cache.getOffHeapStore() == null) {
-        throw new IllegalStateException(LocalizedStrings.
-            LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED.toLocalizedString(myName));
+        throw new IllegalStateException(
+            LocalizedStrings.LocalRegion_THE_REGION_0_WAS_CONFIGURED_TO_USE_OFF_HEAP_MEMORY_BUT_OFF_HEAP_NOT_CONFIGURED
+                .toLocalizedString(myName));
       }
     }
-    
+
     this.initializationLatchBeforeGetInitialImage = new StoppableCountDownLatch(this.stopper, 1);
     this.initializationLatchAfterGetInitialImage = new StoppableCountDownLatch(this.stopper, 1);
     this.afterRegionCreateEventLatch = new StoppableCountDownLatch(this.stopper, 1);
@@ -600,16 +586,13 @@ public class LocalRegion extends AbstractRegion
 
     if (internalRegionArgs.getCachePerfStatsHolder() != null) {
       this.hasOwnStats = false;
-      this.cachePerfStats = internalRegionArgs.getCachePerfStatsHolder()
-          .getCachePerfStats();
-    }
-    else {
+      this.cachePerfStats = internalRegionArgs.getCachePerfStatsHolder().getCachePerfStats();
+    } else {
       if (attrs.getPartitionAttributes() != null || isInternalRegion()
           || internalRegionArgs.isUsedForMetaRegion()) {
         this.hasOwnStats = false;
         this.cachePerfStats = cache.getCachePerfStats();
-      }
-      else {
+      } else {
         this.hasOwnStats = true;
         this.cachePerfStats = new RegionPerfStats(cache, cache.getCachePerfStats(), regionName);
       }
@@ -626,50 +609,42 @@ public class LocalRegion extends AbstractRegion
     }
     if (internalRegionArgs.getLoaderHelperFactory() != null) {
       this.loaderHelperFactory = internalRegionArgs.getLoaderHelperFactory();
-    }
-    else {
+    } else {
       this.loaderHelperFactory = this;
     }
 
-    this.isUsedForPartitionedRegionAdmin = internalRegionArgs
-        .isUsedForPartitionedRegionAdmin();
-    this.isUsedForPartitionedRegionBucket = internalRegionArgs
-        .isUsedForPartitionedRegionBucket();
-    this.isUsedForMetaRegion = internalRegionArgs
-        .isUsedForMetaRegion();
+    this.isUsedForPartitionedRegionAdmin = internalRegionArgs.isUsedForPartitionedRegionAdmin();
+    this.isUsedForPartitionedRegionBucket = internalRegionArgs.isUsedForPartitionedRegionBucket();
+    this.isUsedForMetaRegion = internalRegionArgs.isUsedForMetaRegion();
     this.isMetaRegionWithTransactions = internalRegionArgs.isMetaRegionWithTransactions();
     this.isUsedForSerialGatewaySenderQueue = internalRegionArgs.isUsedForSerialGatewaySenderQueue();
-    this.isUsedForParallelGatewaySenderQueue = internalRegionArgs.isUsedForParallelGatewaySenderQueue();
+    this.isUsedForParallelGatewaySenderQueue =
+        internalRegionArgs.isUsedForParallelGatewaySenderQueue();
     this.serialGatewaySender = internalRegionArgs.getSerialGatewaySender();
-    this.cacheServiceProfiles = internalRegionArgs.getCacheServiceProfiles() == null
-        ? null
-        : Collections.unmodifiableMap(internalRegionArgs.getCacheServiceProfiles());
+    this.cacheServiceProfiles =
+        internalRegionArgs.getCacheServiceProfiles() == null ? Collections.emptyMap()
+            : Collections.unmodifiableMap(internalRegionArgs.getCacheServiceProfiles());
 
     if (!isUsedForMetaRegion && !isUsedForPartitionedRegionAdmin
-        && !isUsedForPartitionedRegionBucket
-        && !isUsedForSerialGatewaySenderQueue
+        && !isUsedForPartitionedRegionBucket && !isUsedForSerialGatewaySenderQueue
         && !isUsedForParallelGatewaySenderQueue) {
       this.filterProfile = new FilterProfile(this);
     }
-    
+
     // initialize client to server proxy
-    this.srp = (this.getPoolName() != null)
-      ? new ServerRegionProxy(this)
-      : null;
-    this.imageState =
-      new UnsharedImageState(this.srp != null,
-                             getDataPolicy().withReplication() || getDataPolicy().isPreloaded(),
-                             getAttributes().getDataPolicy().withPersistence(),
-                             this.stopper);
+    this.srp = (this.getPoolName() != null) ? new ServerRegionProxy(this) : null;
+    this.imageState = new UnsharedImageState(this.srp != null,
+        getDataPolicy().withReplication() || getDataPolicy().isPreloaded(),
+        getAttributes().getDataPolicy().withPersistence(), this.stopper);
 
     createEventTracker();
 
     // prevent internal regions from participating in a TX, bug 38709
-    this.supportsTX = !isSecret() && !isUsedForPartitionedRegionAdmin()
-        && !isUsedForMetaRegion() || isMetaRegionWithTransactions();
+    this.supportsTX = !isSecret() && !isUsedForPartitionedRegionAdmin() && !isUsedForMetaRegion()
+        || isMetaRegionWithTransactions();
 
     this.testCallable = internalRegionArgs.getTestCallable();
-    
+
   }
 
   private RegionMap createRegionMap(InternalRegionArguments internalRegionArgs) {
@@ -687,16 +662,14 @@ public class LocalRegion extends AbstractRegion
     }
     return result;
   }
-  
+
   protected InternalDataView buildDataView() {
     return new LocalRegionDataView();
   }
 
   /**
-   * initialize the event tracker.  Not all region implementations want or
-   * need one of these. Regions that require one should reimplement this method
-   * and create one like so:
-   * <code><pre>
+   * initialize the event tracker. Not all region implementations want or need one of these. Regions
+   * that require one should reimplement this method and create one like so: <code><pre>
    *     this.eventTracker = new EventTracker(this.cache);
    *     this.eventTracker.start();
    * </pre></code>
@@ -706,40 +679,41 @@ public class LocalRegion extends AbstractRegion
     // method should be changed to set it to "initialized" state when the
     // region finishes initialization
   }
-  
-  
+
+
   /**
    * Test method for getting the event tracker.
    * 
-   * this method is for testing only.  Other region classes may track events using
-   * different mechanisms than EventTrackers
+   * this method is for testing only. Other region classes may track events using different
+   * mechanisms than EventTrackers
    */
   protected EventTracker getEventTracker() {
     return this.eventTracker;
   }
-  
+
   /** returns the regions version-vector */
   public RegionVersionVector getVersionVector() {
     return this.versionVector;
   }
-  
+
   /** returns object used to guard the size() operation during tombstone removal */
   public Object getSizeGuard() {
     if (!this.concurrencyChecksEnabled) {
       return new Object();
     } else {
-      return this.fullPath; // avoids creating another sync object - could be anything unique to this region
+      return this.fullPath; // avoids creating another sync object - could be anything unique to
+                            // this region
     }
   }
-  
+
   /** initializes a new version vector for this region */
   protected void createVersionVector() {
-    
+
     this.versionVector = RegionVersionVector.create(getVersionMember(), this);
-    
+
     if (dataPolicy.withPersistence()) {
-      //copy the versions that we have recovered from disk into
-      //the version vector.
+      // copy the versions that we have recovered from disk into
+      // the version vector.
       RegionVersionVector diskVector = this.diskRegion.getRegionVersionVector();
       this.versionVector.recordVersions(diskVector.getCloneForTransmission());
     } else if (!dataPolicy.withStorage()) {
@@ -752,10 +726,9 @@ public class LocalRegion extends AbstractRegion
     }
     this.cache.getDistributionManager().addMembershipListener(this.versionVector);
   }
-  
+
   @Override
-  protected void updateEntryExpiryPossible()
-  {
+  protected void updateEntryExpiryPossible() {
     super.updateEntryExpiryPossible();
     if (!isEntryExpiryPossible()) {
       // since expiration is no longer possible cleanup the tasks
@@ -763,18 +736,17 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
-  boolean isCacheClosing()
-  {
+  boolean isCacheClosing() {
     return this.cache.isClosed();
   }
 
   public RegionEntry getRegionEntry(Object key) {
     return this.entries.getEntry(key);
   }
-  
+
   /**
-   * Test hook - returns the version stamp for an entry in the form of a
-   * version tag
+   * Test hook - returns the version stamp for an entry in the form of a version tag
+   * 
    * @param key
    * @return the entry version information
    */
@@ -782,15 +754,16 @@ public class LocalRegion extends AbstractRegion
     Region.Entry entry = getEntry(key, true);
     VersionTag tag = null;
     if (entry != null && entry instanceof EntrySnapshot) {
-      tag = ((EntrySnapshot)entry).getVersionTag();
+      tag = ((EntrySnapshot) entry).getVersionTag();
     } else if (entry != null && entry instanceof NonTXEntry) {
-      tag = ((NonTXEntry)entry).getRegionEntry().getVersionStamp().asVersionTag();
+      tag = ((NonTXEntry) entry).getRegionEntry().getVersionStamp().asVersionTag();
     }
     return tag;
   }
-  
-  /** removes any destroyed entries from the region and clear the destroyedKeys
-   * assert: Caller must be holding writeLock on is
+
+  /**
+   * removes any destroyed entries from the region and clear the destroyedKeys assert: Caller must
+   * be holding writeLock on is
    */
   private void destroyEntriesAndClearDestroyedKeysSet() {
     ImageState is = getImageState();
@@ -813,63 +786,55 @@ public class LocalRegion extends AbstractRegion
   public final ServerRegionProxy getServerProxy() {
     return this.srp;
   }
-  
+
   public final boolean hasServerProxy() {
     return this.srp != null;
   }
 
   /** Returns true if the ExpiryTask is currently allowed to expire. */
-  protected boolean isExpirationAllowed(ExpiryTask expiry)
-  {
+  protected boolean isExpirationAllowed(ExpiryTask expiry) {
     return true;
   }
 
-  void performExpiryTimeout(ExpiryTask p_task) throws CacheException
-  {
+  void performExpiryTimeout(ExpiryTask p_task) throws CacheException {
     if (p_task != null) {
       p_task.basicPerformTimeout(false);
     }
   }
 
-  private void initRoot()
-  {
+  private void initRoot() {
     this.destroyLock = new Semaphore(1);
   }
 
   public void handleMarker() {
-    
-    RegionEventImpl event = new RegionEventImpl(this,
-        Operation.MARKER, null, false, getMyId(),
+
+    RegionEventImpl event = new RegionEventImpl(this, Operation.MARKER, null, false, getMyId(),
         false /* generate EventID */);
 
     dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_LIVE, event);
   }
 
-  public AttributesMutator getAttributesMutator()
-  {
+  public AttributesMutator getAttributesMutator() {
     checkReadiness();
     return this;
   }
 
-  public Region createSubregion(String subregionName,
-      RegionAttributes regionAttributes) throws RegionExistsException,
-      TimeoutException
-  {
+  public Region createSubregion(String subregionName, RegionAttributes regionAttributes)
+      throws RegionExistsException, TimeoutException {
     try {
       return createSubregion(subregionName, regionAttributes,
-          new InternalRegionArguments().setDestroyLockFlag(true)
-              .setRecreateFlag(false));
-    }
-    catch (IOException e) {
+          new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false));
+    } catch (IOException e) {
       // only happens when loading a snapshot, not here
-      InternalGemFireError assErr = new InternalGemFireError(LocalizedStrings.LocalRegion_UNEXPECTED_EXCEPTION.toLocalizedString());
+      InternalGemFireError assErr = new InternalGemFireError(
+          LocalizedStrings.LocalRegion_UNEXPECTED_EXCEPTION.toLocalizedString());
       assErr.initCause(e);
       throw assErr;
 
-    }
-    catch (ClassNotFoundException e) {
+    } catch (ClassNotFoundException e) {
       // only happens when loading a snapshot, not here
-      InternalGemFireError assErr = new InternalGemFireError(LocalizedStrings.LocalRegion_UNEXPECTED_EXCEPTION.toLocalizedString());
+      InternalGemFireError assErr = new InternalGemFireError(
+          LocalizedStrings.LocalRegion_UNEXPECTED_EXCEPTION.toLocalizedString());
       assErr.initCause(e);
       throw assErr;
 
@@ -882,34 +847,28 @@ public class LocalRegion extends AbstractRegion
    * @since GemFire 5.0
    */
   @Override
-  protected InternalDistributedMember getMyId()
-  {
+  protected InternalDistributedMember getMyId() {
     return this.cache.getMyId();
   }
-  
-  public VersionSource getVersionMember()
-  {
-    if(dataPolicy.withPersistence()) {
+
+  public VersionSource getVersionMember() {
+    if (dataPolicy.withPersistence()) {
       return getDiskStore().getDiskStoreID();
     } else {
       return this.cache.getMyId();
     }
   }
 
-  public Region createSubregion(String subregionName,
-      RegionAttributes attrs,
-      InternalRegionArguments internalRegionArgs) throws RegionExistsException,
-      TimeoutException, IOException, ClassNotFoundException
-  {
+  public Region createSubregion(String subregionName, RegionAttributes attrs,
+      InternalRegionArguments internalRegionArgs)
+      throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException {
     checkReadiness();
     LocalRegion newRegion = null;
     RegionAttributes regionAttributes = attrs;
     attrs = cache.invokeRegionBefore(this, subregionName, attrs, internalRegionArgs);
-    final InputStream snapshotInputStream = internalRegionArgs
-        .getSnapshotInputStream();
+    final InputStream snapshotInputStream = internalRegionArgs.getSnapshotInputStream();
     final boolean getDestroyLock = internalRegionArgs.getDestroyLockFlag();
-    final InternalDistributedMember imageTarget = internalRegionArgs
-        .getImageTarget();
+    final InternalDistributedMember imageTarget = internalRegionArgs.getImageTarget();
     try {
       if (getDestroyLock)
         acquireDestroyLock();
@@ -931,33 +890,31 @@ public class LocalRegion extends AbstractRegion
         // but don't wait on initialization while synchronized (distributed
         // deadlock)
         synchronized (this.subregionsLock) {
-          
-          existing = (LocalRegion)this.subregions.get(subregionName);
+
+          existing = (LocalRegion) this.subregions.get(subregionName);
 
           if (existing == null) {
             if (regionAttributes.getScope().isDistributed()
                 && internalRegionArgs.isUsedForPartitionedRegionBucket()) {
-              final PartitionedRegion pr = internalRegionArgs
-                  .getPartitionedRegion();
+              final PartitionedRegion pr = internalRegionArgs.getPartitionedRegion();
               internalRegionArgs.setUserAttribute(pr.getUserAttribute());
               if (pr.isShadowPR()) {
-                newRegion = new BucketRegionQueue(subregionName, regionAttributes,
-                  this, this.cache, internalRegionArgs);
+                newRegion = new BucketRegionQueue(subregionName, regionAttributes, this, this.cache,
+                    internalRegionArgs);
               } else {
-                newRegion = new BucketRegion(subregionName, regionAttributes,
-                    this, this.cache, internalRegionArgs);  
+                newRegion = new BucketRegion(subregionName, regionAttributes, this, this.cache,
+                    internalRegionArgs);
               }
-            }
-            else if (regionAttributes.getPartitionAttributes() != null) {
-              newRegion = new PartitionedRegion(subregionName,
-                  regionAttributes, this, this.cache,  internalRegionArgs);
-            }
-            else {
+            } else if (regionAttributes.getPartitionAttributes() != null) {
+              newRegion = new PartitionedRegion(subregionName, regionAttributes, this, this.cache,
+                  internalRegionArgs);
+            } else {
               boolean local = regionAttributes.getScope().isLocal();
-              newRegion = local ? new LocalRegion(subregionName,
-                  regionAttributes, this, this.cache, internalRegionArgs)
-                  : new DistributedRegion(subregionName, regionAttributes,
-                      this, this.cache, internalRegionArgs);
+              newRegion = local
+                  ? new LocalRegion(subregionName, regionAttributes, this, this.cache,
+                      internalRegionArgs)
+                  : new DistributedRegion(subregionName, regionAttributes, this, this.cache,
+                      internalRegionArgs);
             }
             Object o = this.subregions.putIfAbsent(subregionName, newRegion);
 
@@ -976,13 +933,12 @@ public class LocalRegion extends AbstractRegion
 
           } // endif: existing == null
         } // end synchronization
-      }
-      finally {
+      } finally {
         if (getDestroyLock)
           releaseDestroyLock();
       }
-      
-      //Fix for bug 42127 - moved to outside of the destroy lock.
+
+      // Fix for bug 42127 - moved to outside of the destroy lock.
       if (existing != null) {
         // now outside of synchronization we must wait for appropriate
         // initialization on existing region before returning a reference to
@@ -992,36 +948,39 @@ public class LocalRegion extends AbstractRegion
         throw new RegionExistsException(existing);
       }
 
-      
+
       boolean success = false;
       try {
         newRegion.checkReadiness();
         this.cache.setRegionByPath(newRegion.getFullPath(), newRegion);
-        if (regionAttributes instanceof UserSpecifiedRegionAttributes){
-          internalRegionArgs.setIndexes((
-            (UserSpecifiedRegionAttributes)regionAttributes).getIndexes());  
+        if (regionAttributes instanceof UserSpecifiedRegionAttributes) {
+          internalRegionArgs
+              .setIndexes(((UserSpecifiedRegionAttributes) regionAttributes).getIndexes());
         }
-        newRegion.initialize(snapshotInputStream, imageTarget, internalRegionArgs); // releases initialization Latches
-        //register the region with resource manager to get memory events
-        if(!newRegion.isInternalRegion()){
+        newRegion.initialize(snapshotInputStream, imageTarget, internalRegionArgs); // releases
+                                                                                    // initialization
+                                                                                    // Latches
+        // register the region with resource manager to get memory events
+        if (!newRegion.isInternalRegion()) {
           if (!newRegion.isDestroyed) {
             cache.getResourceManager().addResourceListener(ResourceType.MEMORY, newRegion);
-            
+
             if (!newRegion.getOffHeap()) {
-              newRegion.initialCriticalMembers(cache.getResourceManager().getHeapMonitor().getState().isCritical(), cache
-                  .getResourceAdvisor().adviseCritialMembers());
+              newRegion.initialCriticalMembers(
+                  cache.getResourceManager().getHeapMonitor().getState().isCritical(),
+                  cache.getResourceAdvisor().adviseCritialMembers());
             } else {
-              newRegion.initialCriticalMembers(cache.getResourceManager().getHeapMonitor().getState().isCritical()
-                  || cache.getResourceManager().getOffHeapMonitor().getState().isCritical(), cache.getResourceAdvisor()
-                  .adviseCritialMembers());
+              newRegion.initialCriticalMembers(
+                  cache.getResourceManager().getHeapMonitor().getState().isCritical()
+                      || cache.getResourceManager().getOffHeapMonitor().getState().isCritical(),
+                  cache.getResourceAdvisor().adviseCritialMembers());
             }
 
             // synchronization would be done on ManagementAdapter.regionOpLock
             // instead of destroyLock in LocalRegion? ManagementAdapter is one
-            // of the Resource Event listeners            
-            
-            InternalDistributedSystem system = this.cache
-                .getDistributedSystem();
+            // of the Resource Event listeners
+
+            InternalDistributedSystem system = this.cache.getDistributedSystem();
             system.handleResourceEvent(ResourceEvent.REGION_CREATE, newRegion);
           }
         }
@@ -1030,11 +989,13 @@ public class LocalRegion extends AbstractRegion
         // don't print a call stack
         throw e;
       } catch (final RuntimeException validationException) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_INITIALIZATION_FAILED_FOR_REGION_0,
-            getFullPath()), validationException);
+        logger
+            .warn(
+                LocalizedMessage.create(
+                    LocalizedStrings.LocalRegion_INITIALIZATION_FAILED_FOR_REGION_0, getFullPath()),
+                validationException);
         throw validationException;
-      }
-      finally {
+      } finally {
         if (!success) {
           this.cache.setRegionByPath(newRegion.getFullPath(), null);
           initializationFailed(newRegion);
@@ -1043,8 +1004,7 @@ public class LocalRegion extends AbstractRegion
       }
 
       newRegion.postCreateRegion();
-    }
-    finally {
+    } finally {
       // make sure region initialization latch is open regardless
       // before returning;
       // if the latch is not open at this point, then an exception must
@@ -1063,7 +1023,8 @@ public class LocalRegion extends AbstractRegion
   public final void create(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, EntryExistsException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
-    @Released EntryEventImpl event = newCreateEntryEvent(key, value, aCallbackArgument);
+    @Released
+    EntryEventImpl event = newCreateEntryEvent(key, value, aCallbackArgument);
     try {
       validatedCreate(event, startPut);
     } finally {
@@ -1074,28 +1035,27 @@ public class LocalRegion extends AbstractRegion
   public final void validatedCreate(EntryEventImpl event, long startPut)
       throws TimeoutException, EntryExistsException, CacheWriterException {
 
-      if (event.getEventId() == null && generateEventID()) {
-        event.setNewEventId(cache.getDistributedSystem());
+    if (event.getEventId() == null && generateEventID()) {
+      event.setNewEventId(cache.getDistributedSystem());
+    }
+    // Fix for 42448 - Only make create with null a local invalidate for
+    // normal regions. Otherwise, it will become a distributed invalidate.
+    if (getDataPolicy() == DataPolicy.NORMAL) {
+      event.setLocalInvalid(true);
+    }
+    discoverJTA();
+    if (!basicPut(event, true, // ifNew
+        false, // ifOld
+        null, // expectedOldValue
+        true // requireOldValue TODO txMerge why is oldValue required for
+             // create? I think so that the EntryExistsException will have it.
+    )) {
+      throw new EntryExistsException(event.getKey().toString(), event.getOldValue());
+    } else {
+      if (!getDataView().isDeferredStats()) {
+        getCachePerfStats().endPut(startPut, false);
       }
-      // Fix for 42448 - Only make create with null a local invalidate for
-      // normal regions. Otherwise, it will become a distributed invalidate.
-      if (getDataPolicy() == DataPolicy.NORMAL) {
-        event.setLocalInvalid(true);
-      }
-      discoverJTA();
-      if (!basicPut(event, true, // ifNew
-          false, // ifOld
-          null, // expectedOldValue
-          true // requireOldValue TODO txMerge why is oldValue required for
-               // create? I think so that the EntryExistsException will have it.
-      )) {
-        throw new EntryExistsException(event.getKey().toString(),
-            event.getOldValue());
-      } else {
-        if (!getDataView().isDeferredStats()) {
-          getCachePerfStats().endPut(startPut, false);
-        }
-      }
+    }
   }
 
   @Retained
@@ -1106,30 +1066,31 @@ public class LocalRegion extends AbstractRegion
     checkReadiness();
     checkForLimitedOrNoAccess();
 
-    return EntryEventImpl.create(this, Operation.CREATE, key,
-        value, aCallbackArgument, false, getMyId())
+    return EntryEventImpl
+        .create(this, Operation.CREATE, key, value, aCallbackArgument, false, getMyId())
         /* to distinguish genuine create */.setCreate(true);
   }
 
   /**
-   * The default Region implementation will generate EvenTID in the EntryEvent
-   * object. This method is overridden in special Region objects like HARegion
-   * or SingleWriteSingleReadRegionQueue.SingleReadWriteMetaRegion to return
-   * false as the event propagation from those regions do not need EventID
-   * objects
+   * The default Region implementation will generate EvenTID in the EntryEvent object. This method
+   * is overridden in special Region objects like HARegion or
+   * SingleWriteSingleReadRegionQueue.SingleReadWriteMetaRegion to return false as the event
+   * propagation from those regions do not need EventID objects
    *
-   * <p>author Asif
+   * <p>
+   * author Asif
+   * 
    * @return boolean indicating whether to generate eventID or not
    */
   @Override
-  public boolean generateEventID()
-  {     
+  public boolean generateEventID() {
     return !isUsedForPartitionedRegionAdmin();
   }
 
   public final Object destroy(Object key, Object aCallbackArgument)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
-    @Released EntryEventImpl event = newDestroyEntryEvent(key, aCallbackArgument);
+    @Released
+    EntryEventImpl event = newDestroyEntryEvent(key, aCallbackArgument);
     try {
       return validatedDestroy(key, event);
     } finally {
@@ -1138,44 +1099,41 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Destroys entry without performing validations. Call this after validating
-   * key, callback arg, and runtime state.
+   * Destroys entry without performing validations. Call this after validating key, callback arg,
+   * and runtime state.
    */
   public Object validatedDestroy(Object key, EntryEventImpl event)
-      throws TimeoutException, EntryNotFoundException, CacheWriterException
- {
-      if (event.getEventId() == null && generateEventID()) {
-        event.setNewEventId(cache.getDistributedSystem());
-      }
-      basicDestroy(event, true, // cacheWrite
-          null); // expectedOldValue
-      if (event.isOldValueOffHeap()) {
-        return null;
-      } else {
-        return handleNotAvailable(event.getOldValue());
-      }
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
+    if (event.getEventId() == null && generateEventID()) {
+      event.setNewEventId(cache.getDistributedSystem());
+    }
+    basicDestroy(event, true, // cacheWrite
+        null); // expectedOldValue
+    if (event.isOldValueOffHeap()) {
+      return null;
+    } else {
+      return handleNotAvailable(event.getOldValue());
+    }
   }
 
   @Retained
-  public final EntryEventImpl newDestroyEntryEvent(Object key,
-      Object aCallbackArgument) {
+  public final EntryEventImpl newDestroyEntryEvent(Object key, Object aCallbackArgument) {
     validateKey(key);
     validateCallbackArg(aCallbackArgument);
     checkReadiness();
     checkForLimitedOrNoAccess();
 
-    return EntryEventImpl.create(this, Operation.DESTROY, key,
-        null/* newValue */, aCallbackArgument, false, getMyId());
+    return EntryEventImpl.create(this, Operation.DESTROY, key, null/* newValue */,
+        aCallbackArgument, false, getMyId());
   }
 
   public void destroyRegion(Object aCallbackArgument)
-      throws CacheWriterException, TimeoutException
-  {
+      throws CacheWriterException, TimeoutException {
     getDataView().checkSupportsRegionDestroy();
     checkForLimitedOrNoAccess();
 
-    RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_DESTROY,
-        aCallbackArgument, false, getMyId(), generateEventID());
+    RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_DESTROY, aCallbackArgument,
+        false, getMyId(), generateEventID());
     basicDestroyRegion(event, true);
   }
 
@@ -1189,6 +1147,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Fetch the de-serialized value from non-transactional state.
+   * 
    * @param keyInfo to which the value is associated
    * @param updateStats true if the entry stats should be updated.
    * @param disableCopyOnRead if true then disable copy on read
@@ -1198,14 +1157,9 @@ public class LocalRegion extends AbstractRegion
    * @param retainResult if true then the result may be a retained off-heap reference
    * @return the value for the given key
    */
-  public final Object getDeserializedValue(RegionEntry re,
-                                           final KeyInfo keyInfo,
-                                           final boolean updateStats,
-                                           boolean disableCopyOnRead,
-                                           boolean preferCD,
-                                           EntryEventImpl clientEvent,
-                                           boolean returnTombstones,
-                                           boolean retainResult) {
+  public final Object getDeserializedValue(RegionEntry re, final KeyInfo keyInfo,
+      final boolean updateStats, boolean disableCopyOnRead, boolean preferCD,
+      EntryEventImpl clientEvent, boolean returnTombstones, boolean retainResult) {
     if (this.diskRegion != null) {
       this.diskRegion.setClearCountReference();
     }
@@ -1213,7 +1167,7 @@ public class LocalRegion extends AbstractRegion
       if (re == null) {
         re = this.entries.getEntry(keyInfo.getKey());
       }
-      //skip updating the stats if the value is null
+      // skip updating the stats if the value is null
       // TODO - We need to clean up the callers of the this class so that we can
       // update the statistics here, where it would make more sense.
       if (re == null) {
@@ -1224,17 +1178,17 @@ public class LocalRegion extends AbstractRegion
         // defer the lruUpdateCallback to prevent a deadlock (see bug 51121).
         final boolean disabled = this.entries.disableLruUpdateCallback();
         try {
-        synchronized(re) { // bug #51059 value & version must be obtained atomically
-          clientEvent.setVersionTag(re.getVersionStamp().asVersionTag());
-          value = getDeserialized(re, updateStats, disableCopyOnRead, preferCD, retainResult);
-        }
+          synchronized (re) { // bug #51059 value & version must be obtained atomically
+            clientEvent.setVersionTag(re.getVersionStamp().asVersionTag());
+            value = getDeserialized(re, updateStats, disableCopyOnRead, preferCD, retainResult);
+          }
         } finally {
           if (disabled) {
             this.entries.enableLruUpdateCallback();
           }
           try {
             this.entries.lruUpdateCallback();
-          }catch( DiskAccessException dae) {
+          } catch (DiskAccessException dae) {
             this.handleDiskAccessException(dae);
             throw dae;
           }
@@ -1243,12 +1197,14 @@ public class LocalRegion extends AbstractRegion
         value = getDeserialized(re, updateStats, disableCopyOnRead, preferCD, retainResult);
       }
       if (logger.isTraceEnabled() && !(this instanceof HARegion)) {
-        logger.trace("getDeserializedValue for {} returning version: {} returnTombstones: {} value: {}",
-            keyInfo.getKey(), (re.getVersionStamp()==null? "null" : re.getVersionStamp().asVersionTag()), returnTombstones, value);
+        logger.trace(
+            "getDeserializedValue for {} returning version: {} returnTombstones: {} value: {}",
+            keyInfo.getKey(),
+            (re.getVersionStamp() == null ? "null" : re.getVersionStamp().asVersionTag()),
+            returnTombstones, value);
       }
       return value;
-    }
-    finally {
+    } finally {
       if (this.diskRegion != null) {
         this.diskRegion.removeClearCountReference();
       }
@@ -1263,30 +1219,32 @@ public class LocalRegion extends AbstractRegion
    * @param preferCD true if the preferred result form is CachedDeserializable
    * @param retainResult if true then the result may be a retained off-heap reference
    * @return the value found, which can be
-   *  <ul>
-   *    <li> null if the value was removed from the region entry
-   *    <li>Token.INVALID if the value of the region entry is invalid
-   *    <li>Token.LOCAL_INVALID if the value of the region entry is local invalid
-   *  </ul>
+   *         <ul>
+   *         <li>null if the value was removed from the region entry
+   *         <li>Token.INVALID if the value of the region entry is invalid
+   *         <li>Token.LOCAL_INVALID if the value of the region entry is local invalid
+   *         </ul>
    */
   @Retained
-  protected final Object getDeserialized(RegionEntry re, boolean updateStats, boolean disableCopyOnRead, boolean preferCD, boolean retainResult) {
+  protected final Object getDeserialized(RegionEntry re, boolean updateStats,
+      boolean disableCopyOnRead, boolean preferCD, boolean retainResult) {
     assert !retainResult || preferCD;
     boolean disabledLRUCallback = this.entries.disableLruUpdateCallback();
     try {
-      @Retained Object v = null;
+      @Retained
+      Object v = null;
       try {
         if (retainResult) {
           v = re.getValueRetain(this);
         } else {
           v = re.getValue(this);
         }
-      } catch(DiskAccessException dae) {
+      } catch (DiskAccessException dae) {
         this.handleDiskAccessException(dae);
         throw dae;
       }
-  
-      //skip updating the stats if the value is null
+
+      // skip updating the stats if the value is null
       if (v == null) {
         return null;
       }
@@ -1294,92 +1252,93 @@ public class LocalRegion extends AbstractRegion
         if (!preferCD) {
           if (isCopyOnRead()) {
             if (disableCopyOnRead) {
-              v = ((CachedDeserializable)v).getDeserializedForReading();
+              v = ((CachedDeserializable) v).getDeserializedForReading();
             } else {
-              v = ((CachedDeserializable)v).getDeserializedWritableCopy(this, re);
+              v = ((CachedDeserializable) v).getDeserializedWritableCopy(this, re);
             }
           } else {
-            v = ((CachedDeserializable)v).getDeserializedValue(this, re);
+            v = ((CachedDeserializable) v).getDeserializedValue(this, re);
           }
         }
+      } else if (!disableCopyOnRead) {
+        v = conditionalCopy(v);
       }
-      else if (!disableCopyOnRead) {
-          v = conditionalCopy(v);
-      }
-  
+
       if (updateStats) {
         updateStatsForGet(re, v != null && !Token.isInvalid(v));
       }
       return v;
-    } catch(IllegalArgumentException i) {
-      IllegalArgumentException iae = new IllegalArgumentException(LocalizedStrings.DONT_RELEASE.toLocalizedString("Error while deserializing value for key="+re.getKey()));
+    } catch (IllegalArgumentException i) {
+      IllegalArgumentException iae = new IllegalArgumentException(LocalizedStrings.DONT_RELEASE
+          .toLocalizedString("Error while deserializing value for key=" + re.getKey()));
       iae.initCause(i);
       throw iae;
     } finally {
-      if(disabledLRUCallback) {
+      if (disabledLRUCallback) {
         this.entries.enableLruUpdateCallback();
         this.entries.lruUpdateCallback();
       }
     }
   }
-  
+
   @Override
-  public Object get(Object key, Object aCallbackArgument,
-      boolean generateCallbacks, EntryEventImpl clientEvent) throws TimeoutException, CacheLoaderException
-  {
-    Object result = get(key, aCallbackArgument, generateCallbacks, false, false, null, clientEvent, false);
+  public Object get(Object key, Object aCallbackArgument, boolean generateCallbacks,
+      EntryEventImpl clientEvent) throws TimeoutException, CacheLoaderException {
+    Object result =
+        get(key, aCallbackArgument, generateCallbacks, false, false, null, clientEvent, false);
     if (Token.isInvalid(result)) {
       result = null;
     }
     return result;
   }
-  
+
   /*
    * @see BucketRegion#getSerialized(KeyInfo, boolean, boolean)
    */
-  public Object get(Object key,
-                    Object aCallbackArgument,
-                    boolean generateCallbacks,
-                    boolean disableCopyOnRead,
-                    boolean preferCD,
-                    ClientProxyMembershipID requestingClient,
-                    EntryEventImpl clientEvent,
-                    boolean returnTombstones) throws TimeoutException, CacheLoaderException {
-	  return get(key, aCallbackArgument,
-		      generateCallbacks, disableCopyOnRead, preferCD,requestingClient, clientEvent, returnTombstones, false, false);
+  public Object get(Object key, Object aCallbackArgument, boolean generateCallbacks,
+      boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient,
+      EntryEventImpl clientEvent, boolean returnTombstones)
+      throws TimeoutException, CacheLoaderException {
+    return get(key, aCallbackArgument, generateCallbacks, disableCopyOnRead, preferCD,
+        requestingClient, clientEvent, returnTombstones, false, false);
   }
-  
+
   /**
    * The result of this operation may be an off-heap reference that the caller must release
    */
   @Retained
-  public Object getRetained(Object key, Object aCallbackArgument,
-      boolean generateCallbacks, boolean disableCopyOnRead,
-      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones) throws TimeoutException, CacheLoaderException {
-    return getRetained(key, aCallbackArgument,
-              generateCallbacks, disableCopyOnRead, requestingClient, clientEvent, returnTombstones, false);
+  public Object getRetained(Object key, Object aCallbackArgument, boolean generateCallbacks,
+      boolean disableCopyOnRead, ClientProxyMembershipID requestingClient,
+      EntryEventImpl clientEvent, boolean returnTombstones)
+      throws TimeoutException, CacheLoaderException {
+    return getRetained(key, aCallbackArgument, generateCallbacks, disableCopyOnRead,
+        requestingClient, clientEvent, returnTombstones, false);
   }
 
   /**
    * The result of this operation may be an off-heap reference that the caller must release.
-   * @param opScopeIsLocal if true then just check local storage for a value; if false then try to find the value if it is not local
+   * 
+   * @param opScopeIsLocal if true then just check local storage for a value; if false then try to
+   *        find the value if it is not local
    */
   @Retained
-  public Object getRetained(Object key, Object aCallbackArgument,
-      boolean generateCallbacks, boolean disableCopyOnRead,
-      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones, boolean opScopeIsLocal) throws TimeoutException, CacheLoaderException {
-    return get(key, aCallbackArgument, generateCallbacks, disableCopyOnRead, true, requestingClient, clientEvent, returnTombstones, opScopeIsLocal,
-      false /* see GEODE-1291*/);
+  public Object getRetained(Object key, Object aCallbackArgument, boolean generateCallbacks,
+      boolean disableCopyOnRead, ClientProxyMembershipID requestingClient,
+      EntryEventImpl clientEvent, boolean returnTombstones, boolean opScopeIsLocal)
+      throws TimeoutException, CacheLoaderException {
+    return get(key, aCallbackArgument, generateCallbacks, disableCopyOnRead, true, requestingClient,
+        clientEvent, returnTombstones, opScopeIsLocal, false /* see GEODE-1291 */);
   }
+
   /**
-   * @param opScopeIsLocal if true then just check local storage for a value; if false then try to find the value if it is not local
+   * @param opScopeIsLocal if true then just check local storage for a value; if false then try to
+   *        find the value if it is not local
    * @param retainResult if true then the result may be a retained off-heap reference.
    */
-  public Object get(Object key, Object aCallbackArgument,
-                    boolean generateCallbacks, boolean disableCopyOnRead, boolean preferCD,
-                    ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent, boolean returnTombstones,
-                    boolean opScopeIsLocal, boolean retainResult) throws TimeoutException, CacheLoaderException
-  {
+  public Object get(Object key, Object aCallbackArgument, boolean generateCallbacks,
+      boolean disableCopyOnRead, boolean preferCD, ClientProxyMembershipID requestingClient,
+      EntryEventImpl clientEvent, boolean returnTombstones, boolean opScopeIsLocal,
+      boolean retainResult) throws TimeoutException, CacheLoaderException {
     assert !retainResult || preferCD;
     validateKey(key);
     validateCallbackArg(aCallbackArgument);
@@ -1391,8 +1350,8 @@ public class LocalRegion extends AbstractRegion
     boolean isMiss = true;
     try {
       KeyInfo keyInfo = getKeyInfo(key, aCallbackArgument);
-      Object value = getDataView().getDeserializedValue(keyInfo, this, true, disableCopyOnRead, preferCD, clientEvent, returnTombstones,
-        retainResult);
+      Object value = getDataView().getDeserializedValue(keyInfo, this, true, disableCopyOnRead,
+          preferCD, clientEvent, returnTombstones, retainResult);
       final boolean isCreate = value == null;
       isMiss = value == null || Token.isInvalid(value)
           || (!returnTombstones && value == Token.TOMBSTONE);
@@ -1405,18 +1364,14 @@ public class LocalRegion extends AbstractRegion
         // if scope is local and there is no loader, then
         // don't go further to try and get value
         if (!opScopeIsLocal
-            && ((getScope().isDistributed())
-                || hasServerProxy()
-                || basicGetLoader() != null)) { 
+            && ((getScope().isDistributed()) || hasServerProxy() || basicGetLoader() != null)) {
           // serialize search/load threads if not in txn
-          value = getDataView().findObject(keyInfo,
-              this, isCreate, generateCallbacks, value, disableCopyOnRead,
-              preferCD, requestingClient, clientEvent, returnTombstones);
+          value = getDataView().findObject(keyInfo, this, isCreate, generateCallbacks, value,
+              disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
           if (!returnTombstones && value == Token.TOMBSTONE) {
             value = null;
           }
-        }
-        else { // local scope with no loader, still might need to update stats
+        } else { // local scope with no loader, still might need to update stats
           if (isCreate) {
             recordMiss(null, key);
           }
@@ -1424,14 +1379,14 @@ public class LocalRegion extends AbstractRegion
         }
       }
       return value;
-    }
-    finally {
+    } finally {
       stats.endGet(start, isMiss);
     }
   }
 
   /**
-   * Update region and potentially entry stats for the miss case 
+   * Update region and potentially entry stats for the miss case
+   * 
    * @param re optional region entry, fetched if null
    * @param key the key used to fetch the region entry
    */
@@ -1446,62 +1401,53 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * optimized to only allow one thread to do a search/load, other threads wait
-   * on a future
-   *  @param keyInfo
-   * @param p_isCreate
-   *                true if call found no entry; false if updating an existing
-   *                entry
+   * optimized to only allow one thread to do a search/load, other threads wait on a future
+   * 
+   * @param keyInfo
+   * @param p_isCreate true if call found no entry; false if updating an existing entry
    * @param generateCallbacks
-   * @param p_localValue
-*                the value retrieved from the region for this object.
+   * @param p_localValue the value retrieved from the region for this object.
    * @param disableCopyOnRead if true then do not make a copy
    * @param preferCD true if the preferred result form is CachedDeserializable
    * @param clientEvent the client event, if any
    * @param returnTombstones whether to return tombstones
    */
   @Retained
-  Object nonTxnFindObject(KeyInfo keyInfo,
-                          boolean p_isCreate,
-                          boolean generateCallbacks,
-                          Object p_localValue,
-                          boolean disableCopyOnRead,
-                          boolean preferCD,
-                          ClientProxyMembershipID requestingClient,
-                          EntryEventImpl clientEvent,
-                          boolean returnTombstones)
-      throws TimeoutException, CacheLoaderException
-  {
+  Object nonTxnFindObject(KeyInfo keyInfo, boolean p_isCreate, boolean generateCallbacks,
+      Object p_localValue, boolean disableCopyOnRead, boolean preferCD,
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+      boolean returnTombstones) throws TimeoutException, CacheLoaderException {
     final Object key = keyInfo.getKey();
-  
+
     Object localValue = p_localValue;
     boolean isCreate = p_isCreate;
     Object[] valueAndVersion = null;
-    @Retained Object result = null;
+    @Retained
+    Object result = null;
     FutureResult thisFuture = new FutureResult(this.stopper);
-    Future otherFuture = (Future)this.getFutures.putIfAbsent(keyInfo.getKey(), thisFuture);
+    Future otherFuture = (Future) this.getFutures.putIfAbsent(keyInfo.getKey(), thisFuture);
     // only one thread can get their future into the map for this key at a time
     if (otherFuture != null) {
       try {
-        valueAndVersion = (Object[])otherFuture.get();
+        valueAndVersion = (Object[]) otherFuture.get();
         if (valueAndVersion != null) {
           result = valueAndVersion[0];
           if (clientEvent != null) {
-            clientEvent.setVersionTag((VersionTag)valueAndVersion[1]);
+            clientEvent.setVersionTag((VersionTag) valueAndVersion[1]);
           }
           if (!preferCD && result instanceof CachedDeserializable) {
-            CachedDeserializable cd = (CachedDeserializable)result;
+            CachedDeserializable cd = (CachedDeserializable) result;
             // fix for bug 43023
             if (!disableCopyOnRead && isCopyOnRead()) {
               result = cd.getDeserializedWritableCopy(null, null);
             } else {
               result = cd.getDeserializedForReading();
             }
-           
+
           } else if (!disableCopyOnRead) {
             result = conditionalCopy(result);
           }
-         // what was a miss is now a hit
+          // what was a miss is now a hit
           RegionEntry re = null;
           if (isCreate) {
             re = basicGetEntry(keyInfo.getKey());
@@ -1510,15 +1456,14 @@ public class LocalRegion extends AbstractRegion
           return result;
         }
         // if value == null, try our own search/load
-      }
-      catch (InterruptedException e) {
+      } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         // TODO check a CancelCriterion here?
         return null;
-      }
-      catch (ExecutionException e) {
+      } catch (ExecutionException e) {
         // unexpected since there is no background thread
-        InternalGemFireError err = new InternalGemFireError(LocalizedStrings.LocalRegion_UNEXPECTED_EXCEPTION.toLocalizedString());
+        InternalGemFireError err = new InternalGemFireError(
+            LocalizedStrings.LocalRegion_UNEXPECTED_EXCEPTION.toLocalizedString());
         err.initCause(err);
         throw err;
       }
@@ -1528,8 +1473,8 @@ public class LocalRegion extends AbstractRegion
     try {
       boolean partitioned = this.getDataPolicy().withPartitioning();
       if (!partitioned) {
-        localValue = getDeserializedValue(null, keyInfo, isCreate, disableCopyOnRead, preferCD, clientEvent, false,
-          false);
+        localValue = getDeserializedValue(null, keyInfo, isCreate, disableCopyOnRead, preferCD,
+            clientEvent, false, false);
 
         // stats have now been updated
         if (localValue != null && !Token.isInvalid(localValue)) {
@@ -1537,16 +1482,19 @@ public class LocalRegion extends AbstractRegion
           return result;
         }
         isCreate = localValue == null;
-        result = findObjectInSystem(keyInfo, isCreate, null, generateCallbacks,
-            localValue, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
+        result = findObjectInSystem(keyInfo, isCreate, null, generateCallbacks, localValue,
+            disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
 
       } else {
-        
-        // This code was moved from PartitionedRegion.nonTxnFindObject().  That method has been removed.
-        // For PRs we don't want to deserialize the value and we can't use findObjectInSystem because
+
+        // This code was moved from PartitionedRegion.nonTxnFindObject(). That method has been
+        // removed.
+        // For PRs we don't want to deserialize the value and we can't use findObjectInSystem
+        // because
         // it can invoke code that is transactional.
-        result = getSharedDataView().findObject(keyInfo, this, isCreate, generateCallbacks,
-            localValue, disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
+        result =
+            getSharedDataView().findObject(keyInfo, this, isCreate, generateCallbacks, localValue,
+                disableCopyOnRead, preferCD, requestingClient, clientEvent, returnTombstones);
       }
 
       if (result == null && localValue != null) {
@@ -1555,11 +1503,10 @@ public class LocalRegion extends AbstractRegion
         }
       }
       // findObjectInSystem does not call conditionalCopy
-    }
-    finally {
+    } finally {
       if (result != null) {
-        VersionTag tag = (clientEvent==null)? null : clientEvent.getVersionTag();
-        thisFuture.set(new Object[]{result, tag});
+        VersionTag tag = (clientEvent == null) ? null : clientEvent.getVersionTag();
+        thisFuture.set(new Object[] {result, tag});
       } else {
         thisFuture.set(null);
       }
@@ -1576,14 +1523,10 @@ public class LocalRegion extends AbstractRegion
    *
    * @since GemFire 4.0
    */
-  protected boolean isCopyOnRead()
-  {
-    return this.compressor == null
-      && this.cache.isCopyOnRead()
-      && ! this.isUsedForPartitionedRegionAdmin
-      && ! this.isUsedForMetaRegion
-      && ! getOffHeap()
-      && ! isSecret();
+  protected boolean isCopyOnRead() {
+    return this.compressor == null && this.cache.isCopyOnRead()
+        && !this.isUsedForPartitionedRegionAdmin && !this.isUsedForMetaRegion && !getOffHeap()
+        && !isSecret();
   }
 
   /**
@@ -1591,58 +1534,51 @@ public class LocalRegion extends AbstractRegion
    *
    * @since GemFire 4.0
    */
-  protected Object conditionalCopy(Object o)
-  {
+  protected Object conditionalCopy(Object o) {
     if (isCopyOnRead() && !Token.isInvalid(o)) {
       return CopyHelper.copy(o);
-    }
-    else {
+    } else {
       return o;
     }
   }
 
   private final String fullPath;
 
-  public String getFullPath()
-  {
+  public String getFullPath() {
     return this.fullPath;
   }
 
-  //   public String getFullPath() {
-  //     // work way up to root region, prepending
-  //     // the region names to a buffer
-  //     StringBuffer buf = new StringBuffer(SEPARATOR);
-  //     Assert.assertTrue(this.regionName != null);
-  //     buf.append(this.regionName);
-  //     LocalRegion r = this;
-  //     while ((r = r.parentRegion) != null) {
-  //       buf.insert(0, r.regionName);
-  //       buf.insert(0, SEPARATOR_CHAR);
-  //     }
-  //     return buf.toString();
-  //   }
+  // public String getFullPath() {
+  // // work way up to root region, prepending
+  // // the region names to a buffer
+  // StringBuffer buf = new StringBuffer(SEPARATOR);
+  // Assert.assertTrue(this.regionName != null);
+  // buf.append(this.regionName);
+  // LocalRegion r = this;
+  // while ((r = r.parentRegion) != null) {
+  // buf.insert(0, r.regionName);
+  // buf.insert(0, SEPARATOR_CHAR);
+  // }
+  // return buf.toString();
+  // }
 
-  public Region getParentRegion()
-  {
-    //checkReadiness();
+  public Region getParentRegion() {
+    // checkReadiness();
     return this.parentRegion;
   }
 
-  public Region getSubregion(String path)
-  {
+  public Region getSubregion(String path) {
     checkReadiness();
     return getSubregion(path, false);
   }
 
-  public void invalidateRegion(Object aCallbackArgument)
-      throws TimeoutException
-  {
+  public void invalidateRegion(Object aCallbackArgument) throws TimeoutException {
     getDataView().checkSupportsRegionInvalidate();
     validateCallbackArg(aCallbackArgument);
     checkReadiness();
     checkForLimitedOrNoAccess();
     RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_INVALIDATE,
-      aCallbackArgument, false, getMyId(), generateEventID());
+        aCallbackArgument, false, getMyId(), generateEventID());
 
     basicInvalidateRegion(event);
   }
@@ -1650,7 +1586,8 @@ public class LocalRegion extends AbstractRegion
   public Object put(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
-    @Released EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
+    @Released
+    EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
     try {
       return validatedPut(event, startPut);
     } finally {
@@ -1661,25 +1598,25 @@ public class LocalRegion extends AbstractRegion
   public final Object validatedPut(EntryEventImpl event, long startPut)
       throws TimeoutException, CacheWriterException {
 
-      if (event.getEventId() == null && generateEventID()) {
-        event.setNewEventId(cache.getDistributedSystem());
+    if (event.getEventId() == null && generateEventID()) {
+      event.setNewEventId(cache.getDistributedSystem());
+    }
+    Object oldValue = null;
+    if (basicPut(event, false, // ifNew
+        false, // ifOld
+        null, // expectedOldValue
+        false // requireOldValue
+    )) {
+      if (!event.isOldValueOffHeap()) {
+        // don't copy it to heap just to return from put.
+        // TODO: come up with a better way to do this.
+        oldValue = event.getOldValue();
       }
-      Object oldValue = null;
-      if (basicPut(event, false, // ifNew
-          false, // ifOld
-          null, // expectedOldValue
-          false // requireOldValue
-      )) {
-        if (!event.isOldValueOffHeap()) {
-          // don't copy it to heap just to return from put.
-          // TODO: come up with a better way to do this.
-          oldValue = event.getOldValue();
-        }
-        if (!getDataView().isDeferredStats()) {
-          getCachePerfStats().endPut(startPut, false);
-        }
+      if (!getDataView().isDeferredStats()) {
+        getCachePerfStats().endPut(startPut, false);
       }
-      return handleNotAvailable(oldValue);
+    }
+    return handleNotAvailable(oldValue);
   }
 
   @Retained
@@ -1688,8 +1625,8 @@ public class LocalRegion extends AbstractRegion
 
     validateArguments(key, value, aCallbackArgument);
     if (value == null) {
-      throw new NullPointerException(LocalizedStrings
-          .LocalRegion_VALUE_MUST_NOT_BE_NULL.toLocalizedString());
+      throw new NullPointerException(
+          LocalizedStrings.LocalRegion_VALUE_MUST_NOT_BE_NULL.toLocalizedString());
     }
     checkReadiness();
     checkForLimitedOrNoAccess();
@@ -1698,25 +1635,27 @@ public class LocalRegion extends AbstractRegion
     // This used to call the constructor which took the old value. It
     // was modified to call the other EntryEventImpl constructor so that
     // an id will be generated by default. Null was passed in anyway.
-    //   generate EventID
-    @Retained final EntryEventImpl event = EntryEventImpl.create(
-        this, Operation.UPDATE, key,
-        value, aCallbackArgument, false, getMyId());
+    // generate EventID
+    @Retained
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE, key, value,
+        aCallbackArgument, false, getMyId());
     boolean eventReturned = false;
     try {
-    extractDeltaIntoEvent(value, event);
-    eventReturned = true;
-    return event;
+      extractDeltaIntoEvent(value, event);
+      eventReturned = true;
+      return event;
     } finally {
-      if (!eventReturned) event.release();
+      if (!eventReturned)
+        event.release();
     }
   }
+
   private void extractDeltaIntoEvent(Object value, EntryEventImpl event) {
     // 1. Check for DS-level delta property.
     // 2. Default value for operation type is UPDATE, so no need to check that here.
-    // 3. Check if it has server region proxy. 
-    //    We do not have a handle to event in PutOpImpl to check if we have 
-    //    delta bytes calculated already. So no need to calculate it here.
+    // 3. Check if it has server region proxy.
+    // We do not have a handle to event in PutOpImpl to check if we have
+    // delta bytes calculated already. So no need to calculate it here.
     // 4. Check if value is instanceof org.apache.geode.Delta
     // 5. Check if Region in PR with redundantCopies > 0. Set extractDelta.
     // 6. Check if Region has peers. Set extractDelta.
@@ -1732,10 +1671,10 @@ public class LocalRegion extends AbstractRegion
           && value instanceof org.apache.geode.Delta) {
         if (!this.hasServerProxy()) {
           if ((this instanceof PartitionedRegion)) {
-            if (((PartitionedRegion)this).getRedundantCopies() > 0) {
+            if (((PartitionedRegion) this).getRedundantCopies() > 0) {
               extractDelta = true;
             } else {
-              InternalDistributedMember ids = (InternalDistributedMember)PartitionRegionHelper
+              InternalDistributedMember ids = (InternalDistributedMember) PartitionRegionHelper
                   .getPrimaryMemberForKey(this, event.getKey());
               if (ids != null) {
                 if (this.getSystem().getMemberId().equals(ids.getId())) {
@@ -1748,9 +1687,9 @@ public class LocalRegion extends AbstractRegion
               }
             }
           } else if ((this instanceof DistributedRegion)
-              && !((DistributedRegion)this).scope.isDistributedNoAck()
-              && ((DistributedRegion)this).getCacheDistributionAdvisor()
-                  .adviseCacheOp().size() > 0) {
+              && !((DistributedRegion) this).scope.isDistributedNoAck()
+              && ((DistributedRegion) this).getCacheDistributionAdvisor().adviseCacheOp()
+                  .size() > 0) {
             extractDelta = true;
           }
           if (!extractDelta && ClientHealthMonitor.getInstance() != null) {
@@ -1760,17 +1699,18 @@ public class LocalRegion extends AbstractRegion
           // This is a client region
           extractDelta = true;
         }
-        if (extractDelta && ((org.apache.geode.Delta)value).hasDelta()) {
+        if (extractDelta && ((org.apache.geode.Delta) value).hasDelta()) {
           HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
           long start = DistributionStats.getStatTime();
           try {
-            ((org.apache.geode.Delta)value).toDelta(hdos);
+            ((org.apache.geode.Delta) value).toDelta(hdos);
           } catch (RuntimeException re) {
             throw re;
           } catch (Exception e) {
             throw new DeltaSerializationException(
                 LocalizedStrings.DistributionManager_CAUGHT_EXCEPTION_WHILE_SENDING_DELTA
-                    .toLocalizedString(), e);
+                    .toLocalizedString(),
+                e);
           }
           event.setDeltaBytes(hdos.toByteArray());
           this.getCachePerfStats().endDeltaPrepared(start);
@@ -1785,7 +1725,7 @@ public class LocalRegion extends AbstractRegion
 
   @SuppressWarnings("unchecked")
   private boolean hasAdjunctRecipientsNeedingDelta(EntryEventImpl event) {
-    PartitionedRegion pr = ((PartitionedRegion)this);
+    PartitionedRegion pr = ((PartitionedRegion) this);
     BucketRegion br = null;
     FilterRoutingInfo filterRouting = null;
     Set twoMessages = Collections.EMPTY_SET;
@@ -1798,7 +1738,8 @@ public class LocalRegion extends AbstractRegion
     } catch (ForceReattemptException fre) {
       return true;
     }
-    Set<InternalDistributedMember> recipients = br.getCacheDistributionAdvisor().adviseUpdate(event);
+    Set<InternalDistributedMember> recipients =
+        br.getCacheDistributionAdvisor().adviseUpdate(event);
     twoMessages = br.getBucketAdvisor().adviseRequiresTwoMessages();
     CacheDistributionAdvisor cda = pr.getCacheDistributionAdvisor();
     filterRouting = cda.adviseFilterRouting(event, recipients);
@@ -1807,8 +1748,7 @@ public class LocalRegion extends AbstractRegion
     return !Collections.disjoint(adjunctRecipients, cacheservers);
   }
 
-  public Region.Entry getEntry(Object key)
-  {
+  public Region.Entry getEntry(Object key) {
     validateKey(key);
     checkReadiness();
     checkForNoAccess();
@@ -1822,8 +1762,8 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Just like getEntry but also updates the stats that get would have depending
-   * on a flag. See bug 42410. Also skips discovering JTA
+   * Just like getEntry but also updates the stats that get would have depending on a flag. See bug
+   * 42410. Also skips discovering JTA
    * 
    * @param key
    * @return the entry if it exists; otherwise null.
@@ -1832,7 +1772,7 @@ public class LocalRegion extends AbstractRegion
     validateKey(key);
     checkReadiness();
     checkForNoAccess();
-    if(updateStats) {
+    if (updateStats) {
       return getDataView().accessEntry(getKeyInfo(key), this);
     } else {
       return getDataView().getEntry(getKeyInfo(key), this, false);
@@ -1847,8 +1787,7 @@ public class LocalRegion extends AbstractRegion
       // if region has not been initialized yet, then get the estimate from
       // disk region's recovery map if available
       if (!this.initialized && this.diskRegion != null
-          && (rm = this.diskRegion.getRecoveredEntryMap()) != null
-          && (size = rm.size()) > 0) {
+          && (rm = this.diskRegion.getRecoveredEntryMap()) != null && (size = rm.size()) > 0) {
         return size;
       }
       if ((rm = getRegionMap()) != null) {
@@ -1857,10 +1796,10 @@ public class LocalRegion extends AbstractRegion
     }
     return 0;
   }
-    /**
+
+  /**
    * @param keyInfo
-   * @param access
-   *          true if caller wants last accessed time updated
+   * @param access true if caller wants last accessed time updated
    * @param allowTombstones whether an entry with a TOMBSTONE value can be returned
    * @return TODO
    */
@@ -1883,51 +1822,48 @@ public class LocalRegion extends AbstractRegion
     }
 
     Region.Entry ren = new NonTXEntry(re);
-    //long start=0, end=0;
-    //start = System.currentTimeMillis();
-    //end = System.currentTimeMillis();
-    //System.out.println("getEntry: " + (end-start));
+    // long start=0, end=0;
+    // start = System.currentTimeMillis();
+    // end = System.currentTimeMillis();
+    // System.out.println("getEntry: " + (end-start));
     return ren;
   }
 
   /**
    * @return boolean
    */
-  protected boolean isClosed()
-  {
+  protected boolean isClosed() {
     return this.cache.isClosed();
   }
 
   /**
-   * Returns true if this region is or has been closed or destroyed.
-   * Note that unlike {@link #isDestroyed()} this method will not
-   * return true if the cache is closing but has not yet started closing
-   * this region.
+   * Returns true if this region is or has been closed or destroyed. Note that unlike
+   * {@link #isDestroyed()} this method will not return true if the cache is closing but has not yet
+   * started closing this region.
    */
   public boolean isThisRegionBeingClosedOrDestroyed() {
     return this.isDestroyed;
   }
-  
+
   /** returns true if this region has been destroyed */
-  public boolean isDestroyed()
-  {
+  public boolean isDestroyed() {
     if (isClosed()) {
       return true; // for bug 42328
     }
     boolean isTraceEnabled = logger.isTraceEnabled();
-    //    boolean result = false;
+    // boolean result = false;
     if (this.isDestroyed) {
       if (isTraceEnabled) {
         logger.trace("isDestroyed: true, this.isDestroyed: {}", getFullPath());
       }
       return true;
     }
-    //    if (!isInitialized()) { // don't return true if still initializing
-    //      if (finestEnabled) {
-    //        log.finest("isDestroyed: false, not initialized: " + getFullPath());
-    //      }
-    //      return false;
-    //    }
+    // if (!isInitialized()) { // don't return true if still initializing
+    // if (finestEnabled) {
+    // log.finest("isDestroyed: false, not initialized: " + getFullPath());
+    // }
+    // return false;
+    // }
     // @todo we could check parents here if we want this to be more accurate,
     // and the isDestroyed field could be made volatile as well.
     // if (this.parentRegion != null) return this.parentRegion.isDestroyed();
@@ -1941,7 +1877,7 @@ public class LocalRegion extends AbstractRegion
   protected Set basicSubregions(boolean recursive) {
     return new SubregionsSet(recursive);
   }
-  
+
   public Set subregions(boolean recursive) {
     checkReadiness();
     return new SubregionsSet(recursive);
@@ -1960,17 +1896,16 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Flavor of keys that will not do repeatable read
+   * 
    * @since GemFire 5.5
    */
-  public Set testHookKeys()
-  {
+  public Set testHookKeys() {
     checkReadiness();
     checkForNoAccess();
     return new EntriesSet(this, false, IteratorType.KEYS, false /* allowTombstones */);
   }
 
-  public Set keys()
-  {
+  public Set keys() {
     checkReadiness();
     checkForNoAccess();
     return new EntriesSet(this, false, IteratorType.KEYS, false);
@@ -1978,6 +1913,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * return a set of the keys in this region
+   * 
    * @param allowTombstones whether destroyed entries should be included
    * @return the keys
    */
@@ -1987,33 +1923,28 @@ public class LocalRegion extends AbstractRegion
     return new EntriesSet(this, false, IteratorType.KEYS, allowTombstones);
   }
 
-  public Collection values()
-  {
+  public Collection values() {
     checkReadiness();
     checkForNoAccess();
     return new EntriesSet(this, false, IteratorType.VALUES, false);
   }
 
-  public Object getUserAttribute()
-  {
+  public Object getUserAttribute() {
     return this.regionUserAttribute;
   }
 
-  public void setUserAttribute(Object value)
-  {
+  public void setUserAttribute(Object value) {
     checkReadiness();
     this.regionUserAttribute = value;
   }
 
-  public boolean containsKey(Object key)
-  {
+  public boolean containsKey(Object key) {
     checkReadiness();
     checkForNoAccess();
     return getDataView().containsKey(getKeyInfo(key), this);
   }
 
-  public boolean containsTombstone(Object key)
-  {
+  public boolean containsTombstone(Object key) {
     checkReadiness();
     checkForNoAccess();
     if (!this.concurrencyChecksEnabled) {
@@ -2046,8 +1977,7 @@ public class LocalRegion extends AbstractRegion
     return contains;
   }
 
-  public boolean containsValueForKey(Object key)
-  {
+  public boolean containsValueForKey(Object key) {
     discoverJTA();
     return getDataView().containsValueForKey(getKeyInfo(key), this);
   }
@@ -2067,43 +1997,42 @@ public class LocalRegion extends AbstractRegion
       boolean result = entry != null;
       if (result) {
         ReferenceCountHelper.skipRefCountTracking();
-        Object val = entry.getTransformedValue(); // no need to decompress since we only want to know if we have an existing value 
+        Object val = entry.getTransformedValue(); // no need to decompress since we only want to
+                                                  // know if we have an existing value
         if (val instanceof StoredObject) {
           OffHeapHelper.release(val);
           ReferenceCountHelper.unskipRefCountTracking();
           return true;
         }
         ReferenceCountHelper.unskipRefCountTracking();
-        // No need to to check CachedDeserializable because of Bruce's fix in r30960 for bug 42162. See bug 42732.
+        // No need to to check CachedDeserializable because of Bruce's fix in r30960 for bug 42162.
+        // See bug 42732.
         // this works because INVALID and LOCAL_INVALID will never be faulted out of mem
         // If val is NOT_AVAILABLE that means we have a valid value on disk.
         result = !Token.isInvalidOrRemoved(val);
       }
       return result;
-    }
-    finally {
+    } finally {
       if (this.diskRegion != null) {
         this.diskRegion.removeClearCountReference();
       }
     }
   }
 
-  public RegionAttributes getAttributes()
-  {
+  public RegionAttributes getAttributes() {
     // to fix bug 35134 allow attribute access on closed regions
-    //checkReadiness();
+    // checkReadiness();
     return this;
   }
 
-  public String getName()
-  {
+  public String getName() {
     return this.regionName;
   }
 
   /**
-   * Convenience method to get region name for logging/exception messages.
-   * if this region is an instanceof bucket region, it returns the
-   * bucket region name
+   * Convenience method to get region name for logging/exception messages. if this region is an
+   * instanceof bucket region, it returns the bucket region name
+   * 
    * @return name of the region or the owning partitioned region
    */
   public String getDisplayName() {
@@ -2112,16 +2041,15 @@ public class LocalRegion extends AbstractRegion
     }
     return this.regionName;
   }
-  
+
   /**
-   * Returns the number of entries in this region. Note that because of the
-   * concurrency properties of the {@link RegionMap}, the number of entries is
-   * only an approximate. That is, other threads may change the number of
-   * entries in this region while this method is being invoked.
+   * Returns the number of entries in this region. Note that because of the concurrency properties
+   * of the {@link RegionMap}, the number of entries is only an approximate. That is, other threads
+   * may change the number of entries in this region while this method is being invoked.
    *
    * @see RegionMap#size
    *
-   * author David Whitlock
+   *      author David Whitlock
    */
   public final int entryCount() {
     return getDataView().entryCount(this);
@@ -2131,14 +2059,14 @@ public class LocalRegion extends AbstractRegion
     return entryCount(buckets, false);
   }
 
-  protected int entryCount( Set<Integer> buckets, boolean estimate) {
-    assert buckets == null: "unexpected buckets " + buckets + " for region "
-        + toString();
+  protected int entryCount(Set<Integer> buckets, boolean estimate) {
+    assert buckets == null : "unexpected buckets " + buckets + " for region " + toString();
 
     return getDataView().entryCount(this);
   }
 
-  public int entryCountEstimate(final TXStateInterface tx, Set<Integer> buckets, boolean entryCountEstimate) {
+  public int entryCountEstimate(final TXStateInterface tx, Set<Integer> buckets,
+      boolean entryCountEstimate) {
     return entryCount(buckets, entryCountEstimate);
   }
 
@@ -2146,7 +2074,7 @@ public class LocalRegion extends AbstractRegion
    * @return size after considering imageState
    */
   protected int getRegionSize() {
-    synchronized(getSizeGuard()) {
+    synchronized (getSizeGuard()) {
       int result = getRegionMap().size();
       // if this is a client with no tombstones then we subtract the number
       // of entries being affected by register-interest refresh
@@ -2158,24 +2086,22 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Returns the <code>DiskRegion</code> that this region uses to access data
-   * on disk.
+   * Returns the <code>DiskRegion</code> that this region uses to access data on disk.
    *
    * @return <code>null</code> if disk regions are not being used
    *
    * @since GemFire 3.2
    */
-  public DiskRegion getDiskRegion()
-  {
+  public DiskRegion getDiskRegion() {
     return this.diskRegion;
   }
+
   public DiskRegionView getDiskRegionView() {
     return getDiskRegion();
   }
 
   /**
-   * Lets the customer do an explicit evict of a value to disk and removes the value
-   * from memory.
+   * Lets the customer do an explicit evict of a value to disk and removes the value from memory.
    */
   public void evictValue(Object key) {
     if (getDiskRegion() != null) {
@@ -2189,12 +2115,11 @@ public class LocalRegion extends AbstractRegion
    *
    * @since GemFire 3.5.1
    */
-  public void checkLRU()
-  {
+  public void checkLRU() {
     if (this.entriesInitialized) {
       try {
         this.entries.lruUpdateCallback();
-      }catch( DiskAccessException dae) {
+      } catch (DiskAccessException dae) {
         this.handleDiskAccessException(dae);
         throw dae;
       }
@@ -2205,19 +2130,20 @@ public class LocalRegion extends AbstractRegion
     EvictionAttributes ea = getAttributes().getEvictionAttributes();
     return ea != null && ea.getAction().isOverflowToDisk();
   }
-  
-  public void writeToDisk()
-  {
+
+  public void writeToDisk() {
     if (this.diskRegion == null) {
       DataPolicy dp = getDataPolicy();
       if (dp.isEmpty()) {
-        throw new IllegalStateException(LocalizedStrings.LocalRegion_CANNOT_WRITE_A_REGION_WITH_DATAPOLICY_0_TO_DISK.toLocalizedString(dp));
+        throw new IllegalStateException(
+            LocalizedStrings.LocalRegion_CANNOT_WRITE_A_REGION_WITH_DATAPOLICY_0_TO_DISK
+                .toLocalizedString(dp));
+      } else if (!dp.withPersistence() && !isOverflowEnabled()) {
+        throw new IllegalStateException(
+            LocalizedStrings.LocalRegion_CANNOT_WRITE_A_REGION_THAT_IS_NOT_CONFIGURED_TO_ACCESS_DISKS
+                .toLocalizedString());
       }
-      else if (!dp.withPersistence() && !isOverflowEnabled()) {
-        throw new IllegalStateException(LocalizedStrings.LocalRegion_CANNOT_WRITE_A_REGION_THAT_IS_NOT_CONFIGURED_TO_ACCESS_DISKS.toLocalizedString());
-      }
-    }
-    else {
+    } else {
       this.diskRegion.asynchForceFlush();
     }
   }
@@ -2225,8 +2151,7 @@ public class LocalRegion extends AbstractRegion
   /**
    * Used by tests to force everything out to disk.
    */
-  public void forceFlush()
-  {
+  public void forceFlush() {
     if (this.diskRegion != null) {
       this.diskRegion.flushForTesting();
     }
@@ -2235,196 +2160,190 @@ public class LocalRegion extends AbstractRegion
   /**
    * This implementation only checks readiness and scope
    */
-  public Lock getRegionDistributedLock() throws IllegalStateException
-  {
+  public Lock getRegionDistributedLock() throws IllegalStateException {
     checkReadiness();
     checkForLimitedOrNoAccess();
     Scope theScope = getAttributes().getScope();
     Assert.assertTrue(theScope == Scope.LOCAL);
-    throw new IllegalStateException(LocalizedStrings.LocalRegion_ONLY_SUPPORTED_FOR_GLOBAL_SCOPE_NOT_LOCAL.toLocalizedString());
+    throw new IllegalStateException(
+        LocalizedStrings.LocalRegion_ONLY_SUPPORTED_FOR_GLOBAL_SCOPE_NOT_LOCAL.toLocalizedString());
   }
 
   /**
    * This implementation only checks readiness and scope
    */
-  public Lock getDistributedLock(Object key) throws IllegalStateException
-  {
+  public Lock getDistributedLock(Object key) throws IllegalStateException {
     checkReadiness();
     checkForLimitedOrNoAccess();
     Scope theScope = getAttributes().getScope();
     Assert.assertTrue(theScope == Scope.LOCAL);
-    throw new IllegalStateException(LocalizedStrings.LocalRegion_ONLY_SUPPORTED_FOR_GLOBAL_SCOPE_NOT_LOCAL.toLocalizedString());
+    throw new IllegalStateException(
+        LocalizedStrings.LocalRegion_ONLY_SUPPORTED_FOR_GLOBAL_SCOPE_NOT_LOCAL.toLocalizedString());
   }
 
   public void invalidate(Object key, Object aCallbackArgument)
-      throws TimeoutException, EntryNotFoundException
-  {
+      throws TimeoutException, EntryNotFoundException {
     checkReadiness();
     checkForLimitedOrNoAccess();
     validatedInvalidate(key, aCallbackArgument);
   }
 
   /**
-   * Destroys entry without performing validations. Call this after validating
-   * key, callback arg, and runtime state.
+   * Destroys entry without performing validations. Call this after validating key, callback arg,
+   * and runtime state.
    */
   protected void validatedInvalidate(Object key, Object aCallbackArgument)
-      throws TimeoutException, EntryNotFoundException
-  {
-    @Released EntryEventImpl event = EntryEventImpl.create(
-        this, Operation.INVALIDATE,
-        key, null, aCallbackArgument, false, getMyId());
+      throws TimeoutException, EntryNotFoundException {
+    @Released
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.INVALIDATE, key, null,
+        aCallbackArgument, false, getMyId());
     try {
-    if (generateEventID()) {
-      event.setNewEventId(cache.getDistributedSystem());
-    }
-    basicInvalidate(event);
+      if (generateEventID()) {
+        event.setNewEventId(cache.getDistributedSystem());
+      }
+      basicInvalidate(event);
     } finally {
       event.release();
     }
   }
 
-  public void localDestroy(Object key, Object aCallbackArgument)
-      throws EntryNotFoundException
-  {
+  public void localDestroy(Object key, Object aCallbackArgument) throws EntryNotFoundException {
     validateKey(key);
     checkReadiness();
     checkForNoAccess();
-    @Released EntryEventImpl event = EntryEventImpl.create(
-        this,
-        Operation.LOCAL_DESTROY, key, null, aCallbackArgument, false, getMyId());
+    @Released
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_DESTROY, key, null,
+        aCallbackArgument, false, getMyId());
     if (generateEventID()) {
       event.setNewEventId(cache.getDistributedSystem());
     }
     try {
-      basicDestroy(event,
-                   false,
-                   null); // expectedOldValue
-    }
-    catch (CacheWriterException e) {
+      basicDestroy(event, false, null); // expectedOldValue
+    } catch (CacheWriterException e) {
       // cache writer not called
-      throw new Error(LocalizedStrings.LocalRegion_CACHE_WRITER_SHOULD_NOT_HAVE_BEEN_CALLED_FOR_LOCALDESTROY.toLocalizedString(), e);
-    }
-    catch (TimeoutException e) {
+      throw new Error(
+          LocalizedStrings.LocalRegion_CACHE_WRITER_SHOULD_NOT_HAVE_BEEN_CALLED_FOR_LOCALDESTROY
+              .toLocalizedString(),
+          e);
+    } catch (TimeoutException e) {
       // no distributed lock
-      throw new Error(LocalizedStrings.LocalRegion_NO_DISTRIBUTED_LOCK_SHOULD_HAVE_BEEN_ATTEMPTED_FOR_LOCALDESTROY.toLocalizedString(), e);
+      throw new Error(
+          LocalizedStrings.LocalRegion_NO_DISTRIBUTED_LOCK_SHOULD_HAVE_BEEN_ATTEMPTED_FOR_LOCALDESTROY
+              .toLocalizedString(),
+          e);
     } finally {
       event.release();
     }
   }
 
-  public void localDestroyRegion(Object aCallbackArgument)
-  {
+  public void localDestroyRegion(Object aCallbackArgument) {
     getDataView().checkSupportsRegionDestroy();
-    RegionEventImpl event = new RegionEventImpl(this,
-        Operation.REGION_LOCAL_DESTROY, aCallbackArgument, false, getMyId(),
-        generateEventID()/* generate EventID */);
+    RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_LOCAL_DESTROY,
+        aCallbackArgument, false, getMyId(), generateEventID()/* generate EventID */);
     try {
       basicDestroyRegion(event, false);
-    }
-    catch (CacheWriterException e) {
+    } catch (CacheWriterException e) {
       // not possible with local operation, CacheWriter not called
-      throw new Error(LocalizedStrings.LocalRegion_CACHEWRITEREXCEPTION_SHOULD_NOT_BE_THROWN_IN_LOCALDESTROYREGION.toLocalizedString(), e);
-    }
-    catch (TimeoutException e) {
+      throw new Error(
+          LocalizedStrings.LocalRegion_CACHEWRITEREXCEPTION_SHOULD_NOT_BE_THROWN_IN_LOCALDESTROYREGION
+              .toLocalizedString(),
+          e);
+    } catch (TimeoutException e) {
       // not possible with local operation, no distributed locks possible
-      throw new Error(LocalizedStrings.LocalRegion_TIMEOUTEXCEPTION_SHOULD_NOT_BE_THROWN_IN_LOCALDESTROYREGION.toLocalizedString(), e);
+      throw new Error(
+          LocalizedStrings.LocalRegion_TIMEOUTEXCEPTION_SHOULD_NOT_BE_THROWN_IN_LOCALDESTROYREGION
+              .toLocalizedString(),
+          e);
     }
   }
 
-  public void close()
-  {
+  public void close() {
 
-    RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_CLOSE,
-        null, false, getMyId(), generateEventID()/* generate EventID */);
+    RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_CLOSE, null, false,
+        getMyId(), generateEventID()/* generate EventID */);
     try {
       // NOTE: the 422dynamicRegions branch added the callbackEvents argument
       // to basicDestroyRegion and inhibited events on region.close. This
       // clashed with the new SystemMemberCacheListener functionality in
       // 5.0, causing unit tests to fail
       basicDestroyRegion(event, false, true, true);
-    }
-    catch (CacheWriterException e) {
+    } catch (CacheWriterException e) {
       // not possible with local operation, CacheWriter not called
-      throw new Error(LocalizedStrings.LocalRegion_CACHEWRITEREXCEPTION_SHOULD_NOT_BE_THROWN_IN_LOCALDESTROYREGION.toLocalizedString(), e);
-    }
-    catch (TimeoutException e) {
+      throw new Error(
+          LocalizedStrings.LocalRegion_CACHEWRITEREXCEPTION_SHOULD_NOT_BE_THROWN_IN_LOCALDESTROYREGION
+              .toLocalizedString(),
+          e);
+    } catch (TimeoutException e) {
       // not possible with local operation, no distributed locks possible
-      throw new Error(LocalizedStrings.LocalRegion_TIMEOUTEXCEPTION_SHOULD_NOT_BE_THROWN_IN_LOCALDESTROYREGION.toLocalizedString(), e);
+      throw new Error(
+          LocalizedStrings.LocalRegion_TIMEOUTEXCEPTION_SHOULD_NOT_BE_THROWN_IN_LOCALDESTROYREGION
+              .toLocalizedString(),
+          e);
     }
   }
 
-  public void localInvalidate(Object key, Object callbackArgument)
-      throws EntryNotFoundException
-  {
+  public void localInvalidate(Object key, Object callbackArgument) throws EntryNotFoundException {
     validateKey(key);
     checkReadiness();
     checkForNoAccess();
 
-    @Released EntryEventImpl event = EntryEventImpl.create(
-        this,
-        Operation.LOCAL_INVALIDATE, key, null/* newValue */, callbackArgument,
-        false, getMyId());
+    @Released
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_INVALIDATE, key,
+        null/* newValue */, callbackArgument, false, getMyId());
     try {
-    if (generateEventID()) {
-      event.setNewEventId(cache.getDistributedSystem());
-    }
-    event.setLocalInvalid(true);
-    basicInvalidate(event);
+      if (generateEventID()) {
+        event.setNewEventId(cache.getDistributedSystem());
+      }
+      event.setLocalInvalid(true);
+      basicInvalidate(event);
     } finally {
       event.release();
     }
   }
 
-  public void localInvalidateRegion(Object aCallbackArgument)
-  {
+  public void localInvalidateRegion(Object aCallbackArgument) {
     getDataView().checkSupportsRegionInvalidate();
     checkReadiness();
     checkForNoAccess();
-    RegionEventImpl event = new RegionEventImpl(this,
-        Operation.REGION_LOCAL_INVALIDATE, aCallbackArgument, false, getMyId());
+    RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_LOCAL_INVALIDATE,
+        aCallbackArgument, false, getMyId());
     basicInvalidateRegion(event);
   }
 
   /**
    * Look up the LocalRegion with the specified full path.
    *
-   * @param system
-   *          the distributed system whose cache contains the root of interest
+   * @param system the distributed system whose cache contains the root of interest
    * @return the LocalRegion or null if not found
    */
-  public static LocalRegion getRegionFromPath(DistributedSystem system,
-      String path)
-  {
+  public static LocalRegion getRegionFromPath(DistributedSystem system, String path) {
     Cache c = GemFireCacheImpl.getInstance();
-    if(c==null) {
+    if (c == null) {
       return null;
     } else {
-      return (LocalRegion)c.getRegion(path);
+      return (LocalRegion) c.getRegion(path);
     }
   }
 
-  //   public void dumpEntryMapStats(PrintStream out) {
-  //     ((ConcurrentHashMap)this.entries).dumpStats(out);
-  //   }
+  // public void dumpEntryMapStats(PrintStream out) {
+  // ((ConcurrentHashMap)this.entries).dumpStats(out);
+  // }
 
   ////////////////// Protected Methods ////////////////////////////////////////
 
   /**
-   * Do any extra initialization required. Region is already visible in parent's
-   * subregion map. This method releases the initialization Latches, so
-   * subclasses should call this super method last after performing additional
-   * initialization.
+   * Do any extra initialization required. Region is already visible in parent's subregion map. This
+   * method releases the initialization Latches, so subclasses should call this super method last
+   * after performing additional initialization.
    *
-   * @param imageTarget
-   *          ignored, used by subclass for get initial image
-   * @param internalRegionArgs 
-   * @see DistributedRegion#initialize(InputStream, InternalDistributedMember, InternalRegionArguments)
+   * @param imageTarget ignored, used by subclass for get initial image
+   * @param internalRegionArgs
+   * @see DistributedRegion#initialize(InputStream, InternalDistributedMember,
+   *      InternalRegionArguments)
    */
-  protected void initialize(InputStream snapshotInputStream,
-      InternalDistributedMember imageTarget, InternalRegionArguments internalRegionArgs) throws TimeoutException,
-      IOException, ClassNotFoundException
-  {
+  protected void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
+      InternalRegionArguments internalRegionArgs)
+      throws TimeoutException, IOException, ClassNotFoundException {
     if (!isInternalRegion()) {
       // Subclasses may have already called this method, but this is
       // acceptable because addResourceListener won't add it twice
@@ -2472,7 +2391,7 @@ public class LocalRegion extends AbstractRegion
     if (snapshotInputStream != null && this.scope.isLocal()) {
       try {
         loadSnapshotDuringInitialization(snapshotInputStream);
-      }catch(DiskAccessException dae) {
+      } catch (DiskAccessException dae) {
         releaseAfterRegionCreateEventLatch();
         this.handleDiskAccessException(dae);
         throw dae;
@@ -2492,22 +2411,23 @@ public class LocalRegion extends AbstractRegion
         rescheduleEntryExpiryTasks(); // called after gii to fix bug 35214
       }
       initialized();
-    }
-    catch (RegionDestroyedException e) {
+    } catch (RegionDestroyedException e) {
       // whether it is this region or a parent region that is destroyed,
       // then so must we be
       Assert.assertTrue(isDestroyed());
       // just proceed, a destroyed region will be returned to caller
     }
   }
- 
-  protected void createOQLIndexes(InternalRegionArguments internalRegionArgs) {  
+
+  protected void createOQLIndexes(InternalRegionArguments internalRegionArgs) {
     createOQLIndexes(internalRegionArgs, false);
   }
- 
-  protected void createOQLIndexes(InternalRegionArguments internalRegionArgs, boolean recoverFromDisk) {
-    
-    if (internalRegionArgs == null || internalRegionArgs.getIndexes() == null || internalRegionArgs.getIndexes().size() == 0){
+
+  protected void createOQLIndexes(InternalRegionArguments internalRegionArgs,
+      boolean recoverFromDisk) {
+
+    if (internalRegionArgs == null || internalRegionArgs.getIndexes() == null
+        || internalRegionArgs.getIndexes().size() == 0) {
       return;
     }
     if (logger.isDebugEnabled()) {
@@ -2524,12 +2444,14 @@ public class LocalRegion extends AbstractRegion
     int initLevel = 0;
     DiskRegion dr = this.getDiskRegion();
     boolean isOverflowToDisk = false;
-    if(dr != null) {
+    if (dr != null) {
       isOverflowToDisk = dr.isOverflowEnabled();
-      if(recoverFromDisk && !isOverflowToDisk) {
+      if (recoverFromDisk && !isOverflowToDisk) {
         // Refer bug #44119
-        // For disk regions, index creation should wait for async value creation to complete before it starts its iteration
-        // In case of disk overflow regions the waitForAsyncRecovery is done in populateOQLIndexes method via getBestIterator() 
+        // For disk regions, index creation should wait for async value creation to complete before
+        // it starts its iteration
+        // In case of disk overflow regions the waitForAsyncRecovery is done in populateOQLIndexes
+        // method via getBestIterator()
         dr.waitForAsyncRecovery();
       }
     }
@@ -2537,40 +2459,49 @@ public class LocalRegion extends AbstractRegion
       // Release the initialization latch for index creation.
       initLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
       for (Object o : oqlIndexes) {
-        IndexCreationData icd = (IndexCreationData)o;
+        IndexCreationData icd = (IndexCreationData) o;
         try {
           if (icd.getPartitionedIndex() != null) {
             ExecutionContext externalContext = new ExecutionContext(null, this.cache);
             if (internalRegionArgs.getPartitionedRegion() != null) {
-              externalContext.setBucketRegion(internalRegionArgs.getPartitionedRegion(), (BucketRegion)this);
+              externalContext.setBucketRegion(internalRegionArgs.getPartitionedRegion(),
+                  (BucketRegion) this);
             }
             if (logger.isDebugEnabled()) {
               logger.debug("IndexManager Index creation process for {}", icd.getIndexName());
             }
 
-            //load entries during initialization only for non overflow regions
-            indexes.add(this.indexManager.createIndex(icd.getIndexName(), icd.getIndexType(), 
-                icd.getIndexExpression(), icd.getIndexFromClause(), 
-                icd.getIndexImportString(), externalContext, icd.getPartitionedIndex(), !isOverflowToDisk));
+            // load entries during initialization only for non overflow regions
+            indexes.add(this.indexManager.createIndex(icd.getIndexName(), icd.getIndexType(),
+                icd.getIndexExpression(), icd.getIndexFromClause(), icd.getIndexImportString(),
+                externalContext, icd.getPartitionedIndex(), !isOverflowToDisk));
             prIndexes.add(icd.getPartitionedIndex());
           } else {
             if (logger.isDebugEnabled()) {
               logger.debug("QueryService Index creation process for {}" + icd.getIndexName());
             }
-            DefaultQueryService qs = (DefaultQueryService) this.getGemFireCache().getLocalQueryService();
-            String fromClause = (icd.getIndexType() == IndexType.FUNCTIONAL || icd.getIndexType() == IndexType.HASH)? icd.getIndexFromClause() : this.getFullPath();
-            //load entries during initialization only for non overflow regions
-            indexes.add(qs.createIndex(icd.getIndexName(), icd.getIndexType(), icd.getIndexExpression(), fromClause, icd.getIndexImportString(), !isOverflowToDisk));
+            DefaultQueryService qs =
+                (DefaultQueryService) this.getGemFireCache().getLocalQueryService();
+            String fromClause =
+                (icd.getIndexType() == IndexType.FUNCTIONAL || icd.getIndexType() == IndexType.HASH)
+                    ? icd.getIndexFromClause() : this.getFullPath();
+            // load entries during initialization only for non overflow regions
+            indexes.add(
+                qs.createIndex(icd.getIndexName(), icd.getIndexType(), icd.getIndexExpression(),
+                    fromClause, icd.getIndexImportString(), !isOverflowToDisk));
           }
 
-        }
-        catch (Exception ex) {
-          logger.info("Failed to create index {} on region {} with exception: {}", icd.getIndexName(), this.getFullPath(), ex);
+        } catch (Exception ex) {
+          logger.info("Failed to create index {} on region {} with exception: {}",
+              icd.getIndexName(), this.getFullPath(), ex);
 
           // Check if the region index creation is from cache.xml, in that case throw exception.
-          // Other case is when bucket regions are created dynamically, in that case ignore the exception.
+          // Other case is when bucket regions are created dynamically, in that case ignore the
+          // exception.
           if (internalRegionArgs.getDeclarativeIndexCreation()) {
-            InternalGemFireError err = new InternalGemFireError(LocalizedStrings.GemFireCache_INDEX_CREATION_EXCEPTION_1.toLocalizedString(new Object[] {icd.getIndexName(), this.getFullPath()}) );
+            InternalGemFireError err =
+                new InternalGemFireError(LocalizedStrings.GemFireCache_INDEX_CREATION_EXCEPTION_1
+                    .toLocalizedString(new Object[] {icd.getIndexName(), this.getFullPath()}));
             err.initCause(ex);
             throw err;
           }
@@ -2581,8 +2512,8 @@ public class LocalRegion extends AbstractRegion
       LocalRegion.setThreadInitLevelRequirement(initLevel);
     }
     // Load data into OQL indexes in case of disk recovery and disk overflow
-    if(isOverflowToDisk){
-      if(recoverFromDisk) {
+    if (isOverflowToDisk) {
+      if (recoverFromDisk) {
         populateOQLIndexes(indexes);
       } else {
         // Empty indexes are created for overflow regions but not populated at this stage
@@ -2590,8 +2521,8 @@ public class LocalRegion extends AbstractRegion
         // Setting the populate flag to true so that the indexes can apply updates.
         this.indexManager.setPopulateFlagForIndexes(indexes);
       }
-      //due to bug #52096, the pr index populate flags were not being set 
-      //we should revisit and clean up the index creation code paths
+      // due to bug #52096, the pr index populate flags were not being set
+      // we should revisit and clean up the index creation code paths
       this.indexManager.setPopulateFlagForIndexes(prIndexes);
     }
     getCachePerfStats().endIndexInitialization(start);
@@ -2608,7 +2539,7 @@ public class LocalRegion extends AbstractRegion
       logger.info("Failed to update index on region {}: {}", this.getFullPath(), ex.getMessage());
     }
   }
-  
+
   /**
    * The region is now fully initialized, as far as LocalRegion is concerned
    */
@@ -2616,15 +2547,13 @@ public class LocalRegion extends AbstractRegion
     // does nothing in LocalRegion at this time
   }
 
-  protected void releaseLatches()
-  {
+  protected void releaseLatches() {
     releaseBeforeGetInitialImageLatch();
     releaseAfterGetInitialImageLatch();
     releaseAfterRegionCreateEventLatch();
   }
 
-  protected void releaseBeforeGetInitialImageLatch()
-  {
+  protected void releaseBeforeGetInitialImageLatch() {
     if (logger.isDebugEnabled()) {
       logger.debug("Releasing Initialization Latch (before initial image) for {}", getFullPath());
     }
@@ -2643,19 +2572,16 @@ public class LocalRegion extends AbstractRegion
    *
    * @since GemFire 5.0
    */
-  private void releaseAfterRegionCreateEventLatch()
-  {
+  private void releaseAfterRegionCreateEventLatch() {
     releaseLatch(this.afterRegionCreateEventLatch);
   }
 
   /**
-   * Used to cause cache listener events to wait until the after region create
-   * event is delivered.
+   * Used to cause cache listener events to wait until the after region create event is delivered.
    *
    * @since GemFire 5.0
    */
-  private void waitForRegionCreateEvent()
-  {
+  private void waitForRegionCreateEvent() {
     StoppableCountDownLatch l = this.afterRegionCreateEventLatch;
     if (l != null && l.getCount() == 0) {
       return;
@@ -2663,8 +2589,7 @@ public class LocalRegion extends AbstractRegion
     waitOnInitialization(l);
   }
 
-  private static void releaseLatch(StoppableCountDownLatch latch)
-  {
+  private static void releaseLatch(StoppableCountDownLatch latch) {
     if (latch == null)
       return;
     latch.countDown();
@@ -2673,25 +2598,24 @@ public class LocalRegion extends AbstractRegion
   /**
    * Removes entries and recursively destroys subregions.
    *
-   * @param eventSet
-   *          collects the events for all destroyed regions if null, then we're
-   *          closing so don't send events to callbacks or destroy the disk
-   *          region
+   * @param eventSet collects the events for all destroyed regions if null, then we're closing so
+   *        don't send events to callbacks or destroy the disk region
    */
-  private void recursiveDestroyRegion(Set eventSet, RegionEventImpl p_event,
-      boolean cacheWrite) throws CacheWriterException, TimeoutException
-  {
+  private void recursiveDestroyRegion(Set eventSet, RegionEventImpl p_event, boolean cacheWrite)
+      throws CacheWriterException, TimeoutException {
     RegionEventImpl event = p_event;
     final boolean isClose = event.getOperation().isClose();
     // do the cacheWriter beforeRegionDestroy first to fix bug 47736
     if (eventSet != null && cacheWrite) {
       try {
         cacheWriteBeforeRegionDestroy(event);
-      }
-      catch (CancelException e) {
-        // I don't think this should ever happens:  bulletproofing for bug 39454
+      } catch (CancelException e) {
+        // I don't think this should ever happens: bulletproofing for bug 39454
         if (!cache.forcedDisconnect()) {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_RECURSIVEDESTROYREGION_PROBLEM_IN_CACHEWRITEBEFOREREGIONDESTROY), e);
+          logger.warn(
+              LocalizedMessage.create(
+                  LocalizedStrings.LocalRegion_RECURSIVEDESTROYREGION_PROBLEM_IN_CACHEWRITEBEFOREREGIONDESTROY),
+              e);
         }
       }
     }
@@ -2700,7 +2624,8 @@ public class LocalRegion extends AbstractRegion
       this.eventTracker.stop();
     }
     if (logger.isTraceEnabled(LogMarker.RVV) && getVersionVector() != null) {
-      logger.trace(LogMarker.RVV, "version vector for {} is {}", getName(), getVersionVector().fullToString());
+      logger.trace(LogMarker.RVV, "version vector for {} is {}", getName(),
+          getVersionVector().fullToString());
     }
     cancelTTLExpiryTask();
     cancelIdleExpiryTask();
@@ -2737,11 +2662,9 @@ public class LocalRegion extends AbstractRegion
           } finally {
             LocalRegion.setThreadInitLevelRequirement(LocalRegion.AFTER_INITIAL_IMAGE);
           }
-        }
-        catch (CancelException e) {
-          rgn = (LocalRegion)element; // ignore, keep going through the motions though
-        }
-        catch (RegionDestroyedException rde) {
+        } catch (CancelException e) {
+          rgn = (LocalRegion) element; // ignore, keep going through the motions though
+        } catch (RegionDestroyedException rde) {
           // SharedRegionData was destroyed
           continue;
         }
@@ -2753,7 +2676,7 @@ public class LocalRegion extends AbstractRegion
         }
         /** ** BEGIN operating on subregion of this region (rgn) *** */
         if (eventSet != null) {
-          event = (RegionEventImpl)event.clone();
+          event = (RegionEventImpl) event.clone();
           event.region = rgn;
         }
 
@@ -2763,11 +2686,11 @@ public class LocalRegion extends AbstractRegion
             InternalDistributedSystem system = rgn.cache.getDistributedSystem();
             system.handleResourceEvent(ResourceEvent.REGION_REMOVE, rgn);
           }
-        }
-        catch (CancelException e) {
-          // I don't think this should ever happen:  bulletproofing for bug 39454
+        } catch (CancelException e) {
+          // I don't think this should ever happen: bulletproofing for bug 39454
           if (!cache.forcedDisconnect()) {
-            logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_RECURSIVEDESTROYREGION_RECURSION_FAILED_DUE_TO_CACHE_CLOSURE_REGION_0,
+            logger.warn(LocalizedMessage.create(
+                LocalizedStrings.LocalRegion_RECURSIVEDESTROYREGION_RECURSION_FAILED_DUE_TO_CACHE_CLOSURE_REGION_0,
                 rgn.getFullPath()), e);
           }
         }
@@ -2782,21 +2705,19 @@ public class LocalRegion extends AbstractRegion
               this.indexManager.removeBucketIndexes(getPartitionedRegion());
             }
             this.indexManager.destroy();
-          }
-          catch (QueryException e) {
+          } catch (QueryException e) {
             throw new IndexMaintenanceException(e);
           }
         }
-      }
-      catch (CancelException e) {
-        // I don't think this should ever happens:  bulletproofing for bug 39454
+      } catch (CancelException e) {
+        // I don't think this should ever happens: bulletproofing for bug 39454
         if (!cache.forcedDisconnect()) {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_BASICDESTROYREGION_INDEX_REMOVAL_FAILED_DUE_TO_CACHE_CLOSURE_REGION_0,
+          logger.warn(LocalizedMessage.create(
+              LocalizedStrings.LocalRegion_BASICDESTROYREGION_INDEX_REMOVAL_FAILED_DUE_TO_CACHE_CLOSURE_REGION_0,
               getFullPath()), e);
         }
       }
-    }
-    finally {
+    } finally {
       // mark this region as destroyed.
       if (event.isReinitializing()) {
         this.reinitialized_old = true;
@@ -2823,9 +2744,9 @@ public class LocalRegion extends AbstractRegion
       // otherwise, the listener will be closed after the destroy event
       try {
         postDestroyRegion(!isClose, event);
-      }
-      catch (CancelException e) {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_RECURSIVEDESTROYREGION_POSTDESTROYREGION_FAILED_DUE_TO_CACHE_CLOSURE_REGION_0,
+      } catch (CancelException e) {
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.LocalRegion_RECURSIVEDESTROYREGION_POSTDESTROYREGION_FAILED_DUE_TO_CACHE_CLOSURE_REGION_0,
             getFullPath()), e);
       }
 
@@ -2836,14 +2757,14 @@ public class LocalRegion extends AbstractRegion
       }
 
       detachPool();
-      
+
       if (eventSet != null) {
         closeCallbacksExceptListener();
-      }
-      else {
+      } else {
         closeAllCallbacks();
       }
-      if (this.concurrencyChecksEnabled && this.dataPolicy.withReplication() && !this.cache.isClosed()) {
+      if (this.concurrencyChecksEnabled && this.dataPolicy.withReplication()
+          && !this.cache.isClosed()) {
         this.cache.getTombstoneService().unscheduleTombstones(this);
       }
       if (this.hasOwnStats) {
@@ -2851,64 +2772,58 @@ public class LocalRegion extends AbstractRegion
       }
     }
   }
-  
+
   public void closeEntries() {
     this.entries.close();
   }
+
   public Set<VersionSource> clearEntries(RegionVersionVector rvv) {
     return this.entries.clear(rvv);
   }
 
   @Override
-  public void checkReadiness()
-  {
+  public void checkReadiness() {
     checkRegionDestroyed(true);
   }
 
   /**
-   * This method should be called when the caller cannot locate an entry and that condition
-   * is unexpected.  This will first double check the cache and region state before throwing
-   * an EntryNotFoundException.  EntryNotFoundException should be a last resort exception.
+   * This method should be called when the caller cannot locate an entry and that condition is
+   * unexpected. This will first double check the cache and region state before throwing an
+   * EntryNotFoundException. EntryNotFoundException should be a last resort exception.
    * 
    * @param entryKey the missing entry's key.
    */
   public void checkEntryNotFound(Object entryKey) {
     checkReadiness();
     // Localized string for partitioned region is generic enough for general use
-    throw new EntryNotFoundException(LocalizedStrings.PartitionedRegion_ENTRY_NOT_FOUND_FOR_KEY_0.toLocalizedString(entryKey));    
+    throw new EntryNotFoundException(
+        LocalizedStrings.PartitionedRegion_ENTRY_NOT_FOUND_FOR_KEY_0.toLocalizedString(entryKey));
   }
-  
-  /**
 
-   * Search for the value in a server (if one exists),
-   * then try a loader.
+  /**
+   * 
+   * Search for the value in a server (if one exists), then try a loader.
    * 
    * If we find a value, we put it in the cache.
+   * 
    * @param preferCD return the CacheDeserializable, if that's what the value is.
    * @param requestingClient the client making the request, if any
-   * @param clientEvent the client's event, if any.  If not null, we set the version tag
+   * @param clientEvent the client's event, if any. If not null, we set the version tag
    * @param returnTombstones TODO
    * @return the deserialized value
-   * @see LocalRegion#findObjectInSystem(KeyInfo, boolean, TXStateInterface, boolean, Object, boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean)
+   * @see LocalRegion#findObjectInSystem(KeyInfo, boolean, TXStateInterface, boolean, Object,
+   *      boolean, boolean, ClientProxyMembershipID, EntryEventImpl, boolean)
    */
-  protected Object findObjectInSystem(KeyInfo keyInfo,
-                                      boolean isCreate,
-                                      TXStateInterface tx,
-                                      boolean generateCallbacks,
-                                      Object localValue,
-                                      boolean disableCopyOnRead,
-                                      boolean preferCD,
-                                      ClientProxyMembershipID requestingClient,
-                                      EntryEventImpl clientEvent,
-                                      boolean returnTombstones)
-      throws CacheLoaderException, TimeoutException
-  {
+  protected Object findObjectInSystem(KeyInfo keyInfo, boolean isCreate, TXStateInterface tx,
+      boolean generateCallbacks, Object localValue, boolean disableCopyOnRead, boolean preferCD,
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+      boolean returnTombstones) throws CacheLoaderException, TimeoutException {
     final Object key = keyInfo.getKey();
     final Object aCallbackArgument = keyInfo.getCallbackArg();
     Object value = null;
     boolean fromServer = false;
     VersionTagHolder holder = null;
-    
+
     /*
      * First lets try the server
      */
@@ -2920,7 +2835,7 @@ public class LocalRegion extends AbstractRegion
         fromServer = value != null;
       }
     }
-    
+
     /*
      * If we didn't get anything from the server, try the loader
      */
@@ -2928,18 +2843,15 @@ public class LocalRegion extends AbstractRegion
       // copy into local var to prevent race condition
       CacheLoader loader = basicGetLoader();
       if (loader != null) {
-        final LoaderHelper loaderHelper
-          = loaderHelperFactory.createLoaderHelper(key, aCallbackArgument,
-                                                   false /* netSearchAllowed */,
-                                                   true  /* netloadAllowed */,
-                                                   null  /* searcher */);
+        final LoaderHelper loaderHelper =
+            loaderHelperFactory.createLoaderHelper(key, aCallbackArgument,
+                false /* netSearchAllowed */, true /* netloadAllowed */, null /* searcher */);
         CachePerfStats stats = getCachePerfStats();
         long statStart = stats.startLoad();
         try {
           value = loader.load(loaderHelper);
           fromServer = false;
-        }
-        finally {
+        } finally {
           stats.endLoad(statStart);
         }
       }
@@ -2947,11 +2859,10 @@ public class LocalRegion extends AbstractRegion
 
     // don't allow tombstones into a client cache if it doesn't
     // have concurrency checks enabled
-    if (fromServer && 
-        value == Token.TOMBSTONE && !this.concurrencyChecksEnabled) {
+    if (fromServer && value == Token.TOMBSTONE && !this.concurrencyChecksEnabled) {
       value = null;
     }
-    
+
     /*
      * If we got a value back, let's put it in the cache.
      */
@@ -2963,62 +2874,60 @@ public class LocalRegion extends AbstractRegion
       Operation op;
       if (isCreate) {
         op = Operation.LOCAL_LOAD_CREATE;
-      }
-      else {
+      } else {
         op = Operation.LOCAL_LOAD_UPDATE;
       }
 
-      @Released EntryEventImpl event
-        = EntryEventImpl.create(this, op, key, value, aCallbackArgument,
-                             false, getMyId(), generateCallbacks);
+      @Released
+      EntryEventImpl event = EntryEventImpl.create(this, op, key, value, aCallbackArgument, false,
+          getMyId(), generateCallbacks);
       try {
 
-      // bug #47716 - do not put an invalid entry into the cache if there's
-      // already one there with the same version
-      if (fromServer) {
-        if (alreadyInvalid(key, event)) {
-          return null;
+        // bug #47716 - do not put an invalid entry into the cache if there's
+        // already one there with the same version
+        if (fromServer) {
+          if (alreadyInvalid(key, event)) {
+            return null;
+          }
+          event.setFromServer(fromServer);
+          event.setVersionTag(holder.getVersionTag());
+          if (clientEvent != null) {
+            clientEvent.setVersionTag(holder.getVersionTag());
+          }
         }
-        event.setFromServer(fromServer);
-        event.setVersionTag(holder.getVersionTag());
-        if (clientEvent != null) {
-          clientEvent.setVersionTag(holder.getVersionTag());
+
+        // set the event id so that we can progagate
+        // the value to the server
+        if (!fromServer) {
+          event.setNewEventId(cache.getDistributedSystem());
         }
-      }
-      
-      //set the event id so that we can progagate 
-      //the value to the server
-      if (!fromServer) {
-        event.setNewEventId(cache.getDistributedSystem());
-      }
-      try {
         try {
-          re = basicPutEntry(event, 0L);
-          if (!fromServer && clientEvent != null) {
-            clientEvent.setVersionTag(event.getVersionTag());
-            clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
+          try {
+            re = basicPutEntry(event, 0L);
+            if (!fromServer && clientEvent != null) {
+              clientEvent.setVersionTag(event.getVersionTag());
+              clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
+            }
+            if (fromServer && (event.getRawNewValue() == Token.TOMBSTONE)) {
+              return null; // tombstones are destroyed entries
+            }
+          } catch (ConcurrentCacheModificationException e) {
+            // this means the value attempted to overwrite a newer modification and was rejected
+            if (logger.isDebugEnabled()) {
+              logger.debug("caught concurrent modification attempt when applying {}", event);
+            }
+            notifyBridgeClients(event);
           }
-          if (fromServer && (event.getRawNewValue() == Token.TOMBSTONE)) {
-            return null; // tombstones are destroyed entries
+          if (!getDataView().isDeferredStats()) {
+            getCachePerfStats().endPut(startPut, event.isOriginRemote());
           }
-        } catch (ConcurrentCacheModificationException e) {
-          // this means the value attempted to overwrite a newer modification and was rejected
+        } catch (CacheWriterException cwe) {
           if (logger.isDebugEnabled()) {
-            logger.debug("caught concurrent modification attempt when applying {}", event);
+            logger.debug("findObjectInSystem: writer exception putting entry {}", event, cwe);
           }
-          notifyBridgeClients(event);
         }
-        if (!getDataView().isDeferredStats()) {
-          getCachePerfStats().endPut(startPut, event.isOriginRemote());
-        }
-      }
-      catch (CacheWriterException cwe) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("findObjectInSystem: writer exception putting entry {}", event, cwe);
-        }
-      }
-      } finally {     
-          event.release();        
+      } finally {
+        event.release();
       }
     }
     if (isCreate) {
@@ -3030,12 +2939,11 @@ public class LocalRegion extends AbstractRegion
   protected boolean isMemoryThresholdReachedForLoad() {
     return this.memoryThresholdReached.get();
   }
-  
+
   /**
-   * Returns true if the cache already has this key as an invalid entry
-   * with a version >= the one in the given event.  This is used in
-   * cache-miss processing to avoid overwriting the entry when it is
-   * not necessary, so that we avoid invoking cache listeners.
+   * Returns true if the cache already has this key as an invalid entry with a version >= the one in
+   * the given event. This is used in cache-miss processing to avoid overwriting the entry when it
+   * is not necessary, so that we avoid invoking cache listeners.
    * 
    * @param key
    * @param event
@@ -3047,7 +2955,7 @@ public class LocalRegion extends AbstractRegion
     if (newValue == null || Token.isInvalid(newValue)) {
       RegionEntry entry = this.entries.getEntry(key);
       if (entry != null) {
-        synchronized(entry) {
+        synchronized (entry) {
           if (entry.isInvalid()) {
             VersionStamp stamp = entry.getVersionStamp();
             if (stamp == null || event.getVersionTag() == null) {
@@ -3068,18 +2976,16 @@ public class LocalRegion extends AbstractRegion
    * @see DistributedRegion#cacheWriteBeforeDestroy(EntryEventImpl, Object)
    */
   boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
-      throws CacheWriterException, EntryNotFoundException, TimeoutException
-  {
+      throws CacheWriterException, EntryNotFoundException, TimeoutException {
     boolean result = false;
     // copy into local var to prevent race condition
     CacheWriter writer = basicGetWriter();
-    if (writer != null && event.getOperation() != Operation.REMOVE && 
-        !event.inhibitAllNotifications()) {
+    if (writer != null && event.getOperation() != Operation.REMOVE
+        && !event.inhibitAllNotifications()) {
       final long start = getCachePerfStats().startCacheWriterCall();
       try {
         writer.beforeDestroy(event);
-      }
-      finally {
+      } finally {
         getCachePerfStats().endCacheWriterCall(start);
       }
       result = true;
@@ -3090,8 +2996,7 @@ public class LocalRegion extends AbstractRegion
 
   /** @return true if this was a client region; false if not */
   protected boolean bridgeWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
-      throws CacheWriterException, EntryNotFoundException, TimeoutException
-  {
+      throws CacheWriterException, EntryNotFoundException, TimeoutException {
     if (hasServerProxy()) {
       serverDestroy(event, expectedOldValue);
       return true;
@@ -3127,6 +3032,7 @@ public class LocalRegion extends AbstractRegion
       }
     }
   }
+
   /**
    * @since GemFire 5.7
    */
@@ -3154,8 +3060,7 @@ public class LocalRegion extends AbstractRegion
   /**
    * @since GemFire 5.7
    */
-  protected void serverPut(EntryEventImpl event,
-      boolean requireOldValue, Object expectedOldValue) {
+  protected void serverPut(EntryEventImpl event, boolean requireOldValue, Object expectedOldValue) {
     if (event.getOperation().isDistributed() && !event.isFromServer()) {
       ServerRegionProxy mySRP = getServerProxy();
       if (mySRP != null) {
@@ -3169,10 +3074,9 @@ public class LocalRegion extends AbstractRegion
         Object value = event.getRawNewValue();
         // serverPut is called by cacheWriteBeforePut so the new value will not yet be off-heap
         Object callbackArg = event.getRawCallbackArgument();
-        boolean isCreate = event.isCreate(); 
-        Object result = mySRP.put(key, value, event.getDeltaBytes(), event,
-            op, requireOldValue, expectedOldValue,
-            callbackArg, isCreate);
+        boolean isCreate = event.isCreate();
+        Object result = mySRP.put(key, value, event.getDeltaBytes(), event, op, requireOldValue,
+            expectedOldValue, callbackArg, isCreate);
         // bug #42296, serverproxy returns null when cache is closing
         getCancelCriterion().checkCancelInProgress(null);
         // if concurrent map operations failed we don't want the region map
@@ -3183,14 +3087,18 @@ public class LocalRegion extends AbstractRegion
           }
           if (op == Operation.PUT_IF_ABSENT) {
             if (result != null) {
-              throw new EntryNotFoundException("entry existed for putIfAbsent"); // customers don't see this exception
+              throw new EntryNotFoundException("entry existed for putIfAbsent"); // customers don't
+                                                                                 // see this
+                                                                                 // exception
             }
           } else if (op == Operation.REPLACE) {
             if (requireOldValue && result == null) {
               throw new EntryNotFoundException("entry not found for replace");
             } else if (!requireOldValue) {
-              if ( !((Boolean)result).booleanValue() ) {
-                throw new EntryNotFoundException("entry found with wrong value"); // customers don't see this exception
+              if (!((Boolean) result).booleanValue()) {
+                throw new EntryNotFoundException("entry found with wrong value"); // customers don't
+                                                                                  // see this
+                                                                                  // exception
               }
             }
           }
@@ -3201,6 +3109,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Destroy an entry on the server given its event.
+   * 
    * @since GemFire 5.7
    */
   protected void serverDestroy(EntryEventImpl event, Object expectedOldValue) {
@@ -3210,21 +3119,21 @@ public class LocalRegion extends AbstractRegion
         // send to server
         Object key = event.getKey();
         Object callbackArg = event.getRawCallbackArgument();
-        Object result = mySRP.destroy(key, expectedOldValue, event.getOperation(), event, callbackArg);
+        Object result =
+            mySRP.destroy(key, expectedOldValue, event.getOperation(), event, callbackArg);
         if (result instanceof EntryNotFoundException) {
-          throw (EntryNotFoundException)result;
+          throw (EntryNotFoundException) result;
+        }
       }
     }
   }
-  }
-  
+
   /**
    * @return true if cacheWrite was performed
    * @see DistributedRegion#cacheWriteBeforeRegionDestroy(RegionEventImpl)
    */
   boolean cacheWriteBeforeRegionDestroy(RegionEventImpl event)
-      throws CacheWriterException, TimeoutException
-  {
+      throws CacheWriterException, TimeoutException {
     boolean result = false;
     // copy into local var to prevent race condition
     CacheWriter writer = basicGetWriter();
@@ -3232,8 +3141,7 @@ public class LocalRegion extends AbstractRegion
       final long start = getCachePerfStats().startCacheWriterCall();
       try {
         writer.beforeRegionDestroy(event);
-      }
-      finally {
+      } finally {
         getCachePerfStats().endCacheWriterCall(start);
       }
       result = true;
@@ -3243,8 +3151,7 @@ public class LocalRegion extends AbstractRegion
   }
 
   protected boolean cacheWriteBeforeRegionClear(RegionEventImpl event)
-      throws CacheWriterException, TimeoutException
-  {
+      throws CacheWriterException, TimeoutException {
     boolean result = false;
     // copy into local var to prevent race condition
     CacheWriter writer = basicGetWriter();
@@ -3252,8 +3159,7 @@ public class LocalRegion extends AbstractRegion
       final long start = getCachePerfStats().startCacheWriterCall();
       try {
         writer.beforeRegionClear(event);
-      }
-      finally {
+      } finally {
         getCachePerfStats().endCacheWriterCall(start);
       }
       result = true;
@@ -3268,57 +3174,51 @@ public class LocalRegion extends AbstractRegion
    * @param netWriteRecipients
    * @param localWriter
    * @param requireOldValue
-   * @param expectedOldValue 
+   * @param expectedOldValue
    * @throws CacheWriterException
    * @throws TimeoutException
    */
-   void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients,
-      CacheWriter localWriter, 
-      boolean requireOldValue,
-      Object expectedOldValue)
-      throws CacheWriterException, TimeoutException
-  {
+  void cacheWriteBeforePut(EntryEventImpl event, Set netWriteRecipients, CacheWriter localWriter,
+      boolean requireOldValue, Object expectedOldValue)
+      throws CacheWriterException, TimeoutException {
     Assert.assertTrue(netWriteRecipients == null);
     Operation op = event.getOperation();
-    if (!(op == Operation.PUT_IF_ABSENT
-          || op == Operation.REPLACE) && (localWriter != null) && 
-          !((EntryEventImpl)event).inhibitAllNotifications()) {
+    if (!(op == Operation.PUT_IF_ABSENT || op == Operation.REPLACE) && (localWriter != null)
+        && !((EntryEventImpl) event).inhibitAllNotifications()) {
       final long start = getCachePerfStats().startCacheWriterCall();
       final boolean newEntry = event.getOperation().isCreate();
       try {
         if (!newEntry) {
           localWriter.beforeUpdate(event);
-        }
-        else {
+        } else {
           localWriter.beforeCreate(event);
         }
-      }
-      finally {
+      } finally {
         getCachePerfStats().endCacheWriterCall(start);
       }
     }
     serverPut(event, requireOldValue, expectedOldValue);
   }
 
-  protected void validateArguments(Object key, Object value,
-      Object aCallbackArgument)
-  {
+  protected void validateArguments(Object key, Object value, Object aCallbackArgument) {
     validateKey(key);
     validateValue(value);
     validateCallbackArg(aCallbackArgument);
 
   }
 
-  protected void validateKey(Object key)
-  {
+  protected void validateKey(Object key) {
     if (key == null) {
-      throw new NullPointerException(LocalizedStrings.LocalRegion_KEY_CANNOT_BE_NULL.toLocalizedString());
+      throw new NullPointerException(
+          LocalizedStrings.LocalRegion_KEY_CANNOT_BE_NULL.toLocalizedString());
     }
 
     // check validity of key against keyConstraint
     if (this.keyConstraint != null) {
       if (!this.keyConstraint.isInstance(key))
-        throw new ClassCastException(LocalizedStrings.LocalRegion_KEY_0_DOES_NOT_SATISFY_KEYCONSTRAINT_1.toLocalizedString(new Object[] {key.getClass().getName(), this.keyConstraint.getName()}));
+        throw new ClassCastException(
+            LocalizedStrings.LocalRegion_KEY_0_DOES_NOT_SATISFY_KEYCONSTRAINT_1.toLocalizedString(
+                new Object[] {key.getClass().getName(), this.keyConstraint.getName()}));
     }
 
     // We don't need to check that the key is Serializable. Instead,
@@ -3327,20 +3227,19 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Starting in 3.5, we don't check to see if the callback argument is
-   * <code>Serializable</code>. We instead rely on the actual serialization
-   * (which happens in-thread with the put) to tell us if there are any
-   * problems.
+   * Starting in 3.5, we don't check to see if the callback argument is <code>Serializable</code>.
+   * We instead rely on the actual serialization (which happens in-thread with the put) to tell us
+   * if there are any problems.
    */
-  protected void validateCallbackArg(Object aCallbackArgument)
-  {
+  protected void validateCallbackArg(Object aCallbackArgument) {
 
   }
 
   /**
    * @since GemFire 5.0.2
    */
-  private final boolean DO_EXPENSIVE_VALIDATIONS = Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DO_EXPENSIVE_VALIDATIONS");
+  private final boolean DO_EXPENSIVE_VALIDATIONS =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DO_EXPENSIVE_VALIDATIONS");
 
   /**
    * the number of tombstone entries in the RegionMap
@@ -3351,26 +3250,45 @@ public class LocalRegion extends AbstractRegion
   private boolean concurrencyMessageIssued;
 
   /**
-   * Starting in 3.5, we don't check to see if the value is
-   * <code>Serializable</code>. We instead rely on the actual serialization
-   * (which happens in-thread with the put) to tell us if there are any
-   * problems.
+   * Starting in 3.5, we don't check to see if the value is <code>Serializable</code>. We instead
+   * rely on the actual serialization (which happens in-thread with the put) to tell us if there are
+   * any problems.
    */
-  protected void validateValue(Object p_value)
-  {
+  protected void validateValue(Object p_value) {
     Object value = p_value;
+
     // check validity of value against valueConstraint
     if (this.valueConstraint != null) {
       if (value != null) {
         if (value instanceof CachedDeserializable) {
           if (DO_EXPENSIVE_VALIDATIONS) {
-            value = ((CachedDeserializable)value).getDeserializedValue(null, null);
+            value = ((CachedDeserializable) value).getDeserializedValue(null, null);
           } else {
             return;
           }
         }
-        if (!this.valueConstraint.isInstance(value))
-          throw new ClassCastException(LocalizedStrings.LocalRegion_VALUE_0_DOES_NOT_SATISFY_VALUECONSTRAINT_1.toLocalizedString(new Object[] {value.getClass().getName(), this.valueConstraint.getName()}));
+        if (!this.valueConstraint.isInstance(value)) {
+          String valueClassName = value.getClass().getName();
+          // check for a REST object, which has a @type field denoting its class
+          if (value instanceof PdxInstance) {
+            PdxInstance pdx = (PdxInstance) value;
+            if (pdx.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
+              Object type = (String) pdx.getField("@type");
+              if (type != null && type instanceof String) {
+                valueClassName = (String) type;
+              } else {
+                return;
+              }
+            }
+            if (valueClassName.equals(this.valueConstraint.getName())) {
+              return;
+            }
+          }
+          throw new ClassCastException(
+              LocalizedStrings.LocalRegion_VALUE_0_DOES_NOT_SATISFY_VALUECONSTRAINT_1
+                  .toLocalizedString(
+                      new Object[] {valueClassName, this.valueConstraint.getName()}));
+        }
       }
     }
   }
@@ -3379,74 +3297,84 @@ public class LocalRegion extends AbstractRegion
     // return this.cache.getCachePerfStats();
     return this.cachePerfStats;
   }
+
   public CachePerfStats getRegionPerfStats() {
     return this.cachePerfStats;
   }
-  
+
   /** regions track the number of tombstones their map holds for size calculations */
   public void incTombstoneCount(int delta) {
     this.tombstoneCount.addAndGet(delta);
     this.cachePerfStats.incTombstoneCount(delta);
-    
-    //Fix for 45204 - don't include the tombstones in
-    //any of our entry count stats.
+
+    // Fix for 45204 - don't include the tombstones in
+    // any of our entry count stats.
     this.cachePerfStats.incEntryCount(-delta);
   }
-  
+
   public int getTombstoneCount() {
     return this.tombstoneCount.get();
   }
+
   public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion) {
     scheduleTombstone(entry, destroyedVersion, false);
   }
-  
-  public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion, boolean reschedule) {
+
+  public void scheduleTombstone(RegionEntry entry, VersionTag destroyedVersion,
+      boolean reschedule) {
     if (destroyedVersion == null) {
       throw new NullPointerException("destroyed version tag cannot be null");
     }
-//    Object sync = TombstoneService.DEBUG_TOMBSTONE_COUNT? TombstoneService.debugSync : new Object();
-//    lastUnscheduled.set(null);
-//    synchronized(sync) {
+    // Object sync = TombstoneService.DEBUG_TOMBSTONE_COUNT? TombstoneService.debugSync : new
+    // Object();
+    // lastUnscheduled.set(null);
+    // synchronized(sync) {
     if (!reschedule) {
       incTombstoneCount(1);
     }
-//      if (entry instanceof AbstractRegionEntry) {
-//        AbstractRegionEntry are = (AbstractRegionEntry)entry;
-//        if (are.isTombstoneScheduled()) {
-//          log.severe(LocalizedStrings.DEBUG, "Scheduling a tombstone for an entry that is already a tombstone: " + entry, new Exception("stack trace"));
-//          throw new IllegalStateException("Attempt to schedule a tombstone for a destroyed entry that is already scheduled for expiration");
-//        }
-//        are.setTombstoneScheduled(true);
-//      }
-      if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
-        logger.trace(LogMarker.TOMBSTONE_COUNT, "{} tombstone for {} version={} count is {} entryMap size is {}", reschedule ? "rescheduling" : "scheduling",
-            entry.getKey(), entry.getVersionStamp().asVersionTag(), this.tombstoneCount.get(), this.entries.size()/*, new Exception("stack trace")*/);
-        // this can be useful for debugging tombstone count problems if there aren't a lot of concurrent threads
-//        if (TombstoneService.DEBUG_TOMBSTONE_COUNT && this.entries instanceof AbstractRegionMap) {
-//          ((AbstractRegionMap)this.entries).verifyTombstoneCount(tombstoneCount);
-//        }
-      }
-      getGemFireCache().getTombstoneService().scheduleTombstone(this, entry,
-          destroyedVersion);
-//    }
+    // if (entry instanceof AbstractRegionEntry) {
+    // AbstractRegionEntry are = (AbstractRegionEntry)entry;
+    // if (are.isTombstoneScheduled()) {
+    // log.severe(LocalizedStrings.DEBUG, "Scheduling a tombstone for an entry that is already a
+    // tombstone: " + entry, new Exception("stack trace"));
+    // throw new IllegalStateException("Attempt to schedule a tombstone for a destroyed entry that
+    // is already scheduled for expiration");
+    // }
+    // are.setTombstoneScheduled(true);
+    // }
+    if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT)) {
+      logger.trace(LogMarker.TOMBSTONE_COUNT,
+          "{} tombstone for {} version={} count is {} entryMap size is {}",
+          reschedule ? "rescheduling" : "scheduling", entry.getKey(),
+          entry.getVersionStamp().asVersionTag(), this.tombstoneCount.get(),
+          this.entries.size()/* , new Exception("stack trace") */);
+      // this can be useful for debugging tombstone count problems if there aren't a lot of
+      // concurrent threads
+      // if (TombstoneService.DEBUG_TOMBSTONE_COUNT && this.entries instanceof AbstractRegionMap) {
+      // ((AbstractRegionMap)this.entries).verifyTombstoneCount(tombstoneCount);
+      // }
+    }
+    getGemFireCache().getTombstoneService().scheduleTombstone(this, entry, destroyedVersion);
+    // }
   }
 
-//  ThreadLocal<RegionEntry> lastUnscheduled = new ThreadLocal<RegionEntry>();
-//  ThreadLocal<Exception> lastUnscheduledPlace = new ThreadLocal<Exception>();
-  
+  // ThreadLocal<RegionEntry> lastUnscheduled = new ThreadLocal<RegionEntry>();
+  // ThreadLocal<Exception> lastUnscheduledPlace = new ThreadLocal<Exception>();
+
   public void rescheduleTombstone(RegionEntry entry, VersionTag version) {
     scheduleTombstone(entry, version, true);
   }
-  
+
   public void unscheduleTombstone(RegionEntry entry) {
     unscheduleTombstone(entry, true);
   }
-  
+
   private void unscheduleTombstone(RegionEntry entry, boolean validate) {
     incTombstoneCount(-1);
     if (logger.isTraceEnabled(LogMarker.TOMBSTONE)) {
-      logger.trace(LogMarker.TOMBSTONE, "unscheduling tombstone for {} count is {} entryMap size is {}",
-          entry.getKey(), this.tombstoneCount.get(), this.entries.size()/*, new Exception("stack trace")*/);
+      logger.trace(LogMarker.TOMBSTONE,
+          "unscheduling tombstone for {} count is {} entryMap size is {}", entry.getKey(),
+          this.tombstoneCount.get(), this.entries.size()/* , new Exception("stack trace") */);
     }
     if (logger.isTraceEnabled(LogMarker.TOMBSTONE_COUNT) && validate) {
       if (this.entries instanceof AbstractRegionMap) {
@@ -3454,22 +3382,26 @@ public class LocalRegion extends AbstractRegion
       }
     }
     // we don't have to remove the entry from the sweeper since the version has
-    // changed.  It would be costly to iterate over the tombstone list for
+    // changed. It would be costly to iterate over the tombstone list for
     // every tombstone exhumed while holding the entry's lock
-    //this.cache.getTombstoneService().unscheduleTombstone(entry);
+    // this.cache.getTombstoneService().unscheduleTombstone(entry);
   }
-  
-  /** remove any tombstones from the given member that are <= the given version 
+
+  /**
+   * remove any tombstones from the given member that are <= the given version
+   * 
    * @param eventID event identifier for the GC operation
    * @param clientRouting routing info (if null a routing is computed)
    */
-  public void expireTombstones(Map<VersionSource, Long> regionGCVersions, EventID eventID, FilterInfo clientRouting) {
+  public void expireTombstones(Map<VersionSource, Long> regionGCVersions, EventID eventID,
+      FilterInfo clientRouting) {
     Set<Object> keys = null;
     if (!this.concurrencyChecksEnabled) {
       return;
     }
     if (!this.versionVector.containsTombstoneGCVersions(regionGCVersions)) {
-      keys = this.cache.getTombstoneService().gcTombstones(this, regionGCVersions, needsTombstoneGCKeysForClients(eventID, clientRouting));
+      keys = this.cache.getTombstoneService().gcTombstones(this, regionGCVersions,
+          needsTombstoneGCKeysForClients(eventID, clientRouting));
       if (keys == null) {
         // deltaGII prevented tombstone GC
         return;
@@ -3479,22 +3411,26 @@ public class LocalRegion extends AbstractRegion
       notifyClientsOfTombstoneGC(regionGCVersions, keys, eventID, clientRouting);
     }
   }
-  
+
   public void expireTombstoneKeys(Set<Object> tombstoneKeys) {
     if (this.concurrencyChecksEnabled) {
       this.cache.getTombstoneService().gcTombstoneKeys(this, tombstoneKeys);
     }
   }
-  
+
 
   protected boolean needsTombstoneGCKeysForClients(EventID eventID, FilterInfo clientRouting) {
     return false;
   }
-  /** pass tombstone garbage-collection info to clients 
+
+  /**
+   * pass tombstone garbage-collection info to clients
+   * 
    * @param eventID the ID of the event (see bug #50683)
    * @param routing routing info (routing is computed if this is null)
    */
-  protected void notifyClientsOfTombstoneGC(Map<VersionSource, Long> regionGCVersions, Set<Object>keysRemoved, EventID eventID, FilterInfo routing) {
+  protected void notifyClientsOfTombstoneGC(Map<VersionSource, Long> regionGCVersions,
+      Set<Object> keysRemoved, EventID eventID, FilterInfo routing) {
     if (CacheClientNotifier.getInstance() != null) {
       // Only route the event to clients interested in the partitioned region.
       // We do this by constructing a region-level event and then use it to
@@ -3502,27 +3438,29 @@ public class LocalRegion extends AbstractRegion
       // in this region
       FilterProfile fp = getFilterProfile();
       if (fp != null || routing != null) { // null check - fix for bug #45614
-        RegionEventImpl regionEvent = new RegionEventImpl(this, Operation.REGION_DESTROY, null, true, getMyId());
+        RegionEventImpl regionEvent =
+            new RegionEventImpl(this, Operation.REGION_DESTROY, null, true, getMyId());
         regionEvent.setEventID(eventID);
         FilterInfo clientRouting = routing;
         if (clientRouting == null) {
           clientRouting = fp.getLocalFilterRouting(regionEvent);
         }
-        regionEvent.setLocalFilterInfo(clientRouting); 
-        ClientUpdateMessage clientMessage = ClientTombstoneMessage.gc(this, regionGCVersions,
-            eventID);
-        CacheClientNotifier.notifyClients(regionEvent, clientMessage); 
+        regionEvent.setLocalFilterInfo(clientRouting);
+        ClientUpdateMessage clientMessage =
+            ClientTombstoneMessage.gc(this, regionGCVersions, eventID);
+        CacheClientNotifier.notifyClients(regionEvent, clientMessage);
       }
     }
   }
-  
-  
+
+
   /** local regions do not perform versioning */
   protected boolean shouldGenerateVersionTag(RegionEntry entry, EntryEventImpl event) {
     if (this.getDataPolicy().withPersistence()) {
       return true;
     } else {
-      return this.concurrencyChecksEnabled && (entry.getVersionStamp().hasValidVersion() || this.dataPolicy.withReplication());
+      return this.concurrencyChecksEnabled
+          && (entry.getVersionStamp().hasValidVersion() || this.dataPolicy.withReplication());
     }
   }
 
@@ -3530,62 +3468,57 @@ public class LocalRegion extends AbstractRegion
     this.concurrencyChecksEnabled = true;
     if (this.dataPolicy.withStorage()) {
       RegionEntryFactory versionedEntryFactory = this.entries.getEntryFactory().makeVersioned();
-      Assert.assertTrue(this.entries.size() == 0, "RegionMap should be empty but was of size:"+this.entries.size());
+      Assert.assertTrue(this.entries.size() == 0,
+          "RegionMap should be empty but was of size:" + this.entries.size());
       this.entries.setEntryFactory(versionedEntryFactory);
       createVersionVector();
     }
   }
-  
+
   /**
    * validate attributes of subregion being created, sent to parent
    *
-   * @throws IllegalArgumentException
-   *           if attrs is null
-   * @throws IllegalStateException
-   *           if attributes are invalid
+   * @throws IllegalArgumentException if attrs is null
+   * @throws IllegalStateException if attributes are invalid
    */
-  protected void validateSubregionAttributes(RegionAttributes attrs)
-  {
+  protected void validateSubregionAttributes(RegionAttributes attrs) {
     if (attrs == null) {
-      throw new IllegalArgumentException(LocalizedStrings.LocalRegion_REGION_ATTRIBUTES_MUST_NOT_BE_NULL.toLocalizedString());
+      throw new IllegalArgumentException(
+          LocalizedStrings.LocalRegion_REGION_ATTRIBUTES_MUST_NOT_BE_NULL.toLocalizedString());
     }
     if (this.scope == Scope.LOCAL && attrs.getScope() != Scope.LOCAL) {
-      throw new IllegalStateException(LocalizedStrings.LocalRegion_A_REGION_WITH_SCOPELOCAL_CAN_ONLY_HAVE_SUBREGIONS_WITH_SCOPELOCAL.toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.LocalRegion_A_REGION_WITH_SCOPELOCAL_CAN_ONLY_HAVE_SUBREGIONS_WITH_SCOPELOCAL
+              .toLocalizedString());
     }
   }
 
   /**
-   * Returns the value of the entry with the given key as it is stored in the
-   * VM. This means that if the value is invalid, the invalid token will be
-   * returned. If the value is a {@link CachedDeserializable}received from
-   * another VM, that object will be returned. If the value does not reside in
-   * the VM because it has been overflowed to disk, <code>null</code> will be
-   * returned. This method is intended for testing.testing purposes only.
+   * Returns the value of the entry with the given key as it is stored in the VM. This means that if
+   * the value is invalid, the invalid token will be returned. If the value is a
+   * {@link CachedDeserializable}received from another VM, that object will be returned. If the
+   * value does not reside in the VM because it has been overflowed to disk, <code>null</code> will
+   * be returned. This method is intended for testing.testing purposes only.
    *
-   * @throws EntryNotFoundException
-   *           No entry with <code>key</code> exists
+   * @throws EntryNotFoundException No entry with <code>key</code> exists
    *
    * @see RegionMap#getEntry
    *
    * @since GemFire 3.2
    */
-  public Object getValueInVM(Object key) throws EntryNotFoundException
-  {
-    return basicGetValueInVM(key, true/*rememberRead*/);
+  public Object getValueInVM(Object key) throws EntryNotFoundException {
+    return basicGetValueInVM(key, true/* rememberRead */);
   }
 
-  public Object getValueInVM(EntryEventImpl event)
-      throws EntryNotFoundException {
-    return basicGetValueInVM(event.getKey(), true/*rememberRead*/);
+  public Object getValueInVM(EntryEventImpl event) throws EntryNotFoundException {
+    return basicGetValueInVM(event.getKey(), true/* rememberRead */);
   }
 
   /**
    * @param rememberRead true if read should be remembered in a transaction
    * @since GemFire 5.5
    */
-  private Object basicGetValueInVM(Object key, boolean rememberRead)
-    throws EntryNotFoundException
-  {
+  private Object basicGetValueInVM(Object key, boolean rememberRead) throws EntryNotFoundException {
     return getDataView().getValueInVM(getKeyInfo(key), this, rememberRead);
   }
 
@@ -3609,44 +3542,43 @@ public class LocalRegion extends AbstractRegion
     return v;
   }
 
-    /**
-     * This is a test hook method used to find out what keys the current tx
-     * has read or written.
-     * @return an unmodifiable set of keys that have been read or written
-     * by the transaction on this thread.
-     * @throws IllegalStateException if not tx in progress
-     * @since GemFire 5.5
-     */
-    public Set testHookTXKeys() {
-      if (!isTX()) throw new IllegalStateException(LocalizedStrings.LocalRegion_TX_NOT_IN_PROGRESS.toLocalizedString());
-      TXStateProxyImpl tx = (TXStateProxyImpl) getTXState();
-      if (!tx.isRealDealLocal()) {
-        return Collections.EMPTY_SET;
-      }
-      TXRegionState txr = txReadRegion();
-      if (txr == null) {
-        return Collections.EMPTY_SET;
-      } else {
-        return txr.getEntryKeys();
-      }
+  /**
+   * This is a test hook method used to find out what keys the current tx has read or written.
+   * 
+   * @return an unmodifiable set of keys that have been read or written by the transaction on this
+   *         thread.
+   * @throws IllegalStateException if not tx in progress
+   * @since GemFire 5.5
+   */
+  public Set testHookTXKeys() {
+    if (!isTX())
+      throw new IllegalStateException(
+          LocalizedStrings.LocalRegion_TX_NOT_IN_PROGRESS.toLocalizedString());
+    TXStateProxyImpl tx = (TXStateProxyImpl) getTXState();
+    if (!tx.isRealDealLocal()) {
+      return Collections.EMPTY_SET;
     }
+    TXRegionState txr = txReadRegion();
+    if (txr == null) {
+      return Collections.EMPTY_SET;
+    } else {
+      return txr.getEntryKeys();
+    }
+  }
 
   /**
-   * Returns the value of the entry with the given key as it is stored on disk.
-   * While the value may be read from disk, it is <b>not </b> stored into the
-   * entry in the VM. This method is intended for testing purposes only.
+   * Returns the value of the entry with the given key as it is stored on disk. While the value may
+   * be read from disk, it is <b>not </b> stored into the entry in the VM. This method is intended
+   * for testing purposes only.
    *
-   * @throws EntryNotFoundException
-   *           No entry with <code>key</code> exists
-   * @throws IllegalStateException
-   *           If this region does not write to disk
+   * @throws EntryNotFoundException No entry with <code>key</code> exists
+   * @throws IllegalStateException If this region does not write to disk
    *
    * @see RegionEntry#getValueOnDisk
    *
    * @since GemFire 3.2
    */
-  public Object getValueOnDisk(Object key) throws EntryNotFoundException
-  {
+  public Object getValueOnDisk(Object key) throws EntryNotFoundException {
     // Ok for this to ignore tx state
     RegionEntry re = this.entries.getEntry(key);
     if (re == null) {
@@ -3658,32 +3590,30 @@ public class LocalRegion extends AbstractRegion
   /**
    * Gets the value from VM, if present, otherwise from disk without fault in.
    * 
-   * @param 	key
-   * @return	Object
-   * @throws 	EntryNotFoundException
+   * @param key
+   * @return Object
+   * @throws EntryNotFoundException
    */
   public Object getValueInVMOrDiskWithoutFaultIn(Object key) throws EntryNotFoundException {
-	RegionEntry re = this.entries.getEntry(key);
-	if (re == null) {
-		throw new EntryNotFoundException(key.toString());
-	}
-	return re.getValueInVMOrDiskWithoutFaultIn(this);
+    RegionEntry re = this.entries.getEntry(key);
+    if (re == null) {
+      throw new EntryNotFoundException(key.toString());
+    }
+    return re.getValueInVMOrDiskWithoutFaultIn(this);
   }
-  
+
   /**
-   * Get the serialized bytes from disk. This method only looks for the value on
-   * the disk, ignoring heap data. This method is intended for testing purposes
-   * only. 
+   * Get the serialized bytes from disk. This method only looks for the value on the disk, ignoring
+   * heap data. This method is intended for testing purposes only.
    * 
    * @param key the object whose hashCode is used to find the value
-   * @return either a byte array, a CacheDeserializable with the serialized value,
-   * or null if the entry exists but no value data exists.
+   * @return either a byte array, a CacheDeserializable with the serialized value, or null if the
+   *         entry exists but no value data exists.
    * @throws IllegalStateException when the region is not persistent
    * @throws EntryNotFoundException if there is no entry for the given key
    * @since GemFire 5.7
    */
-  public Object getSerializedValueOnDisk(Object key) throws EntryNotFoundException
-  {
+  public Object getSerializedValueOnDisk(Object key) throws EntryNotFoundException {
     // Ok for this to ignore tx state
     RegionEntry re = this.entries.getEntry(key);
     if (re == null) {
@@ -3699,24 +3629,19 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Returns the value of the entry with the given key as it is stored present
-   * in the buffer or disk. While the value may be read from disk or buffer,
-   * it is <b>not</b>
-   * stored into the entry in the VM.  This is different from  getValueonDisk in that
-   * it checks for a value both in asynch buffers ( subject to asynch mode
-   * enabled) as well as Disk
+   * Returns the value of the entry with the given key as it is stored present in the buffer or
+   * disk. While the value may be read from disk or buffer, it is <b>not</b> stored into the entry
+   * in the VM. This is different from getValueonDisk in that it checks for a value both in asynch
+   * buffers ( subject to asynch mode enabled) as well as Disk
    *
-   * @throws EntryNotFoundException
-   *         No entry with <code>key</code> exists
-   * @throws IllegalStateException
-   *         If this region does not write to disk
+   * @throws EntryNotFoundException No entry with <code>key</code> exists
+   * @throws IllegalStateException If this region does not write to disk
    *
    * @see RegionEntry#getValueOnDisk
    *
    * @since GemFire 5.1
    */
-  public Object getValueOnDiskOrBuffer(Object key)
-  throws EntryNotFoundException {
+  public Object getValueOnDiskOrBuffer(Object key) throws EntryNotFoundException {
     // Ok for this to ignore tx state
     RegionEntry re = this.entries.getEntry(key);
     if (re == null) {
@@ -3724,15 +3649,17 @@ public class LocalRegion extends AbstractRegion
     }
     return re.getValueOnDiskOrBuffer(this);
   }
-  
+
   /**
-   * Does a get that attempts to not fault values in from disk or make the entry
-   * the most recent in the LRU.
+   * Does a get that attempts to not fault values in from disk or make the entry the most recent in
+   * the LRU.
+   * 
    * @param adamant fault in and affect LRU as a last resort
    * @param allowTombstone also return Token.TOMBSTONE if the entry is deleted
    * @param serializedFormOkay if the serialized form can be returned
    */
-  public Object getNoLRU(Object k, boolean adamant, boolean allowTombstone, boolean serializedFormOkay) {
+  public Object getNoLRU(Object k, boolean adamant, boolean allowTombstone,
+      boolean serializedFormOkay) {
     Object o = null;
     try {
       o = getValueInVM(k); // OFFHEAP deserialize
@@ -3749,15 +3676,13 @@ public class LocalRegion extends AbstractRegion
             }
           } else {
             if (!serializedFormOkay && (o instanceof CachedDeserializable)) {
-              o = ((CachedDeserializable)o).getDeserializedValue(this,
-                  getRegionEntry(k));
+              o = ((CachedDeserializable) o).getDeserializedValue(this, getRegionEntry(k));
             }
           }
         }
       } else {
         if (!serializedFormOkay && (o instanceof CachedDeserializable)) {
-          o = ((CachedDeserializable)o).getDeserializedValue(this,
-              getRegionEntry(k));
+          o = ((CachedDeserializable) o).getDeserializedValue(this, getRegionEntry(k));
         }
       }
     } catch (EntryNotFoundException ok) {
@@ -3770,8 +3695,7 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Bump this number any time an incompatible change is made to the snapshot
-   * format.
+   * Bump this number any time an incompatible change is made to the snapshot format.
    */
   private static final byte SNAPSHOT_VERSION = 1;
 
@@ -3781,17 +3705,18 @@ public class LocalRegion extends AbstractRegion
 
   private static final byte SNAPSHOT_VALUE_LOCAL_INVALID = 25;
 
-  public void saveSnapshot(OutputStream outputStream) throws IOException
-  {
+  public void saveSnapshot(OutputStream outputStream) throws IOException {
     if (isProxy()) {
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_REGIONS_WITH_DATAPOLICY_0_DO_NOT_SUPPORT_SAVESNAPSHOT.toLocalizedString(getDataPolicy()));
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_REGIONS_WITH_DATAPOLICY_0_DO_NOT_SUPPORT_SAVESNAPSHOT
+              .toLocalizedString(getDataPolicy()));
     }
     checkForNoAccess();
     DataOutputStream out = new DataOutputStream(outputStream);
     try {
       out.writeByte(SNAPSHOT_VERSION);
       for (Iterator itr = entries(false).iterator(); itr.hasNext();) {
-        Region.Entry entry = (Region.Entry)itr.next();
+        Region.Entry entry = (Region.Entry) itr.next();
         try {
           Object key = entry.getKey();
           Object value = entry.getValue();
@@ -3800,38 +3725,34 @@ public class LocalRegion extends AbstractRegion
           }
           DataSerializer.writeObject(key, out);
           if (value == null) { // fix for bug 33311
-            LocalRegion.NonTXEntry lre = (LocalRegion.NonTXEntry)entry;
+            LocalRegion.NonTXEntry lre = (LocalRegion.NonTXEntry) entry;
             RegionEntry re = lre.getRegionEntry();
             value = re.getValue(this); // OFFHEAP: incrc, copy info heap cd for serialization, decrc
             if (value == Token.INVALID) {
               out.writeByte(SNAPSHOT_VALUE_INVALID);
-            }
-            else if (value == Token.LOCAL_INVALID) {
+            } else if (value == Token.LOCAL_INVALID) {
               out.writeByte(SNAPSHOT_VALUE_LOCAL_INVALID);
-            }
-            else {
+            } else {
               out.writeByte(SNAPSHOT_VALUE_OBJ);
               DataSerializer.writeObject(value, out);
             }
-          }
-          else {
+          } else {
             out.writeByte(SNAPSHOT_VALUE_OBJ);
             DataSerializer.writeObject(value, out);
           }
-        }
-        catch (EntryDestroyedException e) {
+        } catch (EntryDestroyedException e) {
           // continue to next entry
         }
       }
       // write NULL terminator
       DataSerializer.writeObject(null, out);
-    }
-    finally {
+    } finally {
       out.close();
     }
   }
 
-  public void loadSnapshot4ConvertTo65(InputStream inputStream) throws CacheWriterException, TimeoutException, ClassNotFoundException, IOException {
+  public void loadSnapshot4ConvertTo65(InputStream inputStream)
+      throws CacheWriterException, TimeoutException, ClassNotFoundException, IOException {
     isConversion.set(Boolean.valueOf(true));
     try {
       loadSnapshot(inputStream);
@@ -3839,37 +3760,34 @@ public class LocalRegion extends AbstractRegion
       isConversion.remove();
     }
   }
-  
+
   public void loadSnapshot(InputStream inputStream)
-      throws CacheWriterException, TimeoutException, ClassNotFoundException,
-      IOException
-  {
+      throws CacheWriterException, TimeoutException, ClassNotFoundException, IOException {
     if (isProxy()) {
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_REGIONS_WITH_DATAPOLICY_0_DO_NOT_SUPPORT_LOADSNAPSHOT.toLocalizedString(getDataPolicy()));
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_REGIONS_WITH_DATAPOLICY_0_DO_NOT_SUPPORT_LOADSNAPSHOT
+              .toLocalizedString(getDataPolicy()));
     }
     if (inputStream == null) {
-      throw new NullPointerException(LocalizedStrings.LocalRegion_INPUTSTREAM_MUST_NOT_BE_NULL.toLocalizedString());
+      throw new NullPointerException(
+          LocalizedStrings.LocalRegion_INPUTSTREAM_MUST_NOT_BE_NULL.toLocalizedString());
     }
     checkReadiness();
     checkForLimitedOrNoAccess();
-    RegionEventImpl event = new RegionEventImpl(this,
-        Operation.REGION_LOAD_SNAPSHOT, null, false, getMyId(),
-        generateEventID()/* generate EventID */);
+    RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_LOAD_SNAPSHOT, null, false,
+        getMyId(), generateEventID()/* generate EventID */);
     reinitialize(inputStream, event);
   }
 
-  public void registerInterest(Object key)
-  {
+  public void registerInterest(Object key) {
     registerInterest(key, false);
   }
 
   public void registerInterest(Object key, boolean isDurable) {
     registerInterest(key, isDurable, true);
   }
-  
-  public void registerInterest(Object key, boolean isDurable,
-      boolean receiveValues)
-  {
+
+  public void registerInterest(Object key, boolean isDurable, boolean receiveValues) {
     registerInterest(key, InterestResultPolicy.DEFAULT, isDurable, receiveValues);
   }
 
@@ -3885,11 +3803,16 @@ public class LocalRegion extends AbstractRegion
 
   public void finishRegisterInterest() {
     if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "testing.slow-interest-recovery")) {
-      if(logger.isDebugEnabled()) {
+      if (logger.isDebugEnabled()) {
         logger.debug("slowing interest recovery...");
       }
-      try { Thread.sleep(20000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); return; }
-      if(logger.isDebugEnabled()) {
+      try {
+        Thread.sleep(20000);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return;
+      }
+      if (logger.isDebugEnabled()) {
         logger.debug("done slowing interest recovery");
       }
     }
@@ -3898,7 +3821,7 @@ public class LocalRegion extends AbstractRegion
       getImageState().writeLockRI();
       gotLock = true;
       this.riCnt--;
-      Assert.assertTrue(this.riCnt >= 0 , "register interest count can not be < 0 ");
+      Assert.assertTrue(this.riCnt >= 0, "register interest count can not be < 0 ");
       if (this.riCnt == 0) {
         // remove any destroyed entries from the region and clear the hashset
         destroyEntriesAndClearDestroyedKeysSet();
@@ -3912,16 +3835,17 @@ public class LocalRegion extends AbstractRegion
   }
 
   // TODO this is distressingly similar to code in the client.internal package
-  private void processSingleInterest(Object key, int interestType,
-      InterestResultPolicy pol, boolean isDurable,
-      boolean receiveUpdatesAsInvalidates)
-  {
+  private void processSingleInterest(Object key, int interestType, InterestResultPolicy pol,
+      boolean isDurable, boolean receiveUpdatesAsInvalidates) {
     final ServerRegionProxy proxy = getServerProxy();
     if (proxy == null) {
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_INTEREST_REGISTRATION_REQUIRES_A_POOL.toLocalizedString());
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_INTEREST_REGISTRATION_REQUIRES_A_POOL.toLocalizedString());
     }
     if (isDurable && !proxy.getPool().isDurableClient()) {
-      throw new IllegalStateException(LocalizedStrings.LocalRegion_DURABLE_FLAG_ONLY_APPLICABLE_FOR_DURABLE_CLIENTS.toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.LocalRegion_DURABLE_FLAG_ONLY_APPLICABLE_FOR_DURABLE_CLIENTS
+              .toLocalizedString());
     }
     if (!proxy.getPool().getSubscriptionEnabled()) {
       String msg = "Interest registration requires a pool whose queue is enabled.";
@@ -3930,15 +3854,18 @@ public class LocalRegion extends AbstractRegion
 
     if (getAttributes().getDataPolicy().withReplication() // fix for bug 36185
         && !getAttributes().getScope().isLocal()) { // fix for bug 37692
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_INTEREST_REGISTRATION_NOT_SUPPORTED_ON_REPLICATED_REGIONS.toLocalizedString());
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_INTEREST_REGISTRATION_NOT_SUPPORTED_ON_REPLICATED_REGIONS
+              .toLocalizedString());
     }
 
     if (key == null)
-      throw new IllegalArgumentException(LocalizedStrings.LocalRegion_INTEREST_KEY_MUST_NOT_BE_NULL.toLocalizedString());
+      throw new IllegalArgumentException(
+          LocalizedStrings.LocalRegion_INTEREST_KEY_MUST_NOT_BE_NULL.toLocalizedString());
     // Sequence of events, on a single entry:
     // 1. Client puts value (a).
     // 2. Server updates with value (b). Client never gets the update,
-    //     because it isn't interested in that key.
+    // because it isn't interested in that key.
     // 3. Client registers interest.
     // At this point, there is an entry in the local cache, but it is
     // inconsistent with the server.
@@ -3948,199 +3875,181 @@ public class LocalRegion extends AbstractRegion
     startRegisterInterest();
     try {
       List serverKeys;
-    
+
       this.clearKeysOfInterest(key, interestType, pol);
       // Checking for the Dunit test(testRegisterInterst_Destroy_Concurrent) flag
       if (PoolImpl.BEFORE_REGISTER_CALLBACK_FLAG) {
         ClientServerObserver bo = ClientServerObserverHolder.getInstance();
         bo.beforeInterestRegistration();
-      }// Test Code Ends
+      } // Test Code Ends
       final byte regionDataPolicy = getAttributes().getDataPolicy().ordinal;
       switch (interestType) {
-      case InterestType.FILTER_CLASS:
-        serverKeys = proxy.registerInterest(key, interestType, pol,
-              isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
-        break;
-      case InterestType.KEY:
-        
-        if (key instanceof String && key.equals("ALL_KEYS")) {
-          
-          serverKeys = proxy.registerInterest(".*",
-                                              InterestType.REGULAR_EXPRESSION,
-                                              pol,
-                                              isDurable,
-                                              receiveUpdatesAsInvalidates,
-                                              regionDataPolicy);
-        }
-        else {
-          if (key instanceof List) {
-            serverKeys = proxy.registerInterestList((List)key, pol,
-                  isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
+        case InterestType.FILTER_CLASS:
+          serverKeys = proxy.registerInterest(key, interestType, pol, isDurable,
+              receiveUpdatesAsInvalidates, regionDataPolicy);
+          break;
+        case InterestType.KEY:
+
+          if (key instanceof String && key.equals("ALL_KEYS")) {
+
+            serverKeys = proxy.registerInterest(".*", InterestType.REGULAR_EXPRESSION, pol,
+                isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
           } else {
-            serverKeys = proxy.registerInterest(key, InterestType.KEY, pol,
-                  isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
-          }
-        }
-        break;
-      case InterestType.OQL_QUERY:
-        serverKeys = proxy.registerInterest(key, InterestType.OQL_QUERY, pol,
-              isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
-        break;
-      case InterestType.REGULAR_EXPRESSION: {
-        String regex = (String)key;
-        // compile regex throws java.util.regex.PatternSyntaxException if invalid
-        // we do this before sending to the server because it's more efficient
-        // and the client is not receiving exception messages properly
-        Pattern.compile(regex);
-        serverKeys = proxy.registerInterest(regex,
-                                            InterestType.REGULAR_EXPRESSION,
-                                            pol,
-                                            isDurable,
-                                            receiveUpdatesAsInvalidates,
-                                            regionDataPolicy);
-        break;
-      }
-      default:
-        throw new InternalGemFireError(LocalizedStrings.LocalRegion_UNKNOWN_INTEREST_TYPE.toLocalizedString());
-    }
-    boolean finishedRefresh = false;
-    try {
-      refreshEntriesFromServerKeys(null, serverKeys, pol);
-      
-      finishedRefresh = true;      
-    }
-    finally {
-      if (!finishedRefresh) {
-        // unregister before throwing the exception caused by the refresh
-        switch (interestType) {
-          case InterestType.FILTER_CLASS:
-            proxy.unregisterInterest(key, interestType, false, false);
-            break;
-          case InterestType.KEY:
-            if (key instanceof String && key.equals("ALL_KEYS")) {
-              proxy.unregisterInterest(".*", InterestType.REGULAR_EXPRESSION, false, false);
-            }
-            else if (key instanceof List) {
-              proxy.unregisterInterestList((List)key, false, false);
+            if (key instanceof List) {
+              serverKeys = proxy.registerInterestList((List) key, pol, isDurable,
+                  receiveUpdatesAsInvalidates, regionDataPolicy);
             } else {
-              proxy.unregisterInterest(key, InterestType.KEY, false, false);
+              serverKeys = proxy.registerInterest(key, InterestType.KEY, pol, isDurable,
+                  receiveUpdatesAsInvalidates, regionDataPolicy);
             }
-            break;
-          case InterestType.OQL_QUERY:
-            proxy.unregisterInterest(key, InterestType.OQL_QUERY, false, false);
-            break;
-          case InterestType.REGULAR_EXPRESSION: {
-            proxy.unregisterInterest(key, InterestType.REGULAR_EXPRESSION, false, false);
-            break;
           }
-          default:
-            throw new InternalGemFireError(LocalizedStrings.LocalRegion_UNKNOWN_INTEREST_TYPE.toLocalizedString());
+          break;
+        case InterestType.OQL_QUERY:
+          serverKeys = proxy.registerInterest(key, InterestType.OQL_QUERY, pol, isDurable,
+              receiveUpdatesAsInvalidates, regionDataPolicy);
+          break;
+        case InterestType.REGULAR_EXPRESSION: {
+          String regex = (String) key;
+          // compile regex throws java.util.regex.PatternSyntaxException if invalid
+          // we do this before sending to the server because it's more efficient
+          // and the client is not receiving exception messages properly
+          Pattern.compile(regex);
+          serverKeys = proxy.registerInterest(regex, InterestType.REGULAR_EXPRESSION, pol,
+              isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
+          break;
+        }
+        default:
+          throw new InternalGemFireError(
+              LocalizedStrings.LocalRegion_UNKNOWN_INTEREST_TYPE.toLocalizedString());
+      }
+      boolean finishedRefresh = false;
+      try {
+        refreshEntriesFromServerKeys(null, serverKeys, pol);
+
+        finishedRefresh = true;
+      } finally {
+        if (!finishedRefresh) {
+          // unregister before throwing the exception caused by the refresh
+          switch (interestType) {
+            case InterestType.FILTER_CLASS:
+              proxy.unregisterInterest(key, interestType, false, false);
+              break;
+            case InterestType.KEY:
+              if (key instanceof String && key.equals("ALL_KEYS")) {
+                proxy.unregisterInterest(".*", InterestType.REGULAR_EXPRESSION, false, false);
+              } else if (key instanceof List) {
+                proxy.unregisterInterestList((List) key, false, false);
+              } else {
+                proxy.unregisterInterest(key, InterestType.KEY, false, false);
+              }
+              break;
+            case InterestType.OQL_QUERY:
+              proxy.unregisterInterest(key, InterestType.OQL_QUERY, false, false);
+              break;
+            case InterestType.REGULAR_EXPRESSION: {
+              proxy.unregisterInterest(key, InterestType.REGULAR_EXPRESSION, false, false);
+              break;
+            }
+            default:
+              throw new InternalGemFireError(
+                  LocalizedStrings.LocalRegion_UNKNOWN_INTEREST_TYPE.toLocalizedString());
           }
         }
       }
-    }
-    finally {
+    } finally {
       finishRegisterInterest();
     }
   }
 
-  public void registerInterest(Object key, InterestResultPolicy policy)
-  {
+  public void registerInterest(Object key, InterestResultPolicy policy) {
     registerInterest(key, policy, false);
   }
-  public void registerInterest(Object key, InterestResultPolicy policy,
-      boolean isDurable) {
+
+  public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable) {
     registerInterest(key, policy, isDurable, true);
   }
-  public void registerInterest(Object key, InterestResultPolicy policy,
-      boolean isDurable, boolean receiveValues)
-  {
+
+  public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable,
+      boolean receiveValues) {
     processSingleInterest(key, InterestType.KEY, policy, isDurable, !receiveValues);
   }
 
-  public void registerInterestRegex(String regex)
-  {
+  public void registerInterestRegex(String regex) {
     registerInterestRegex(regex, false);
   }
 
   public void registerInterestRegex(String regex, boolean isDurable) {
     registerInterestRegex(regex, InterestResultPolicy.DEFAULT, isDurable, true);
   }
-  public void registerInterestRegex(String regex, boolean isDurable,
-      boolean receiveValues)
-  {
+
+  public void registerInterestRegex(String regex, boolean isDurable, boolean receiveValues) {
     registerInterestRegex(regex, InterestResultPolicy.DEFAULT, isDurable, receiveValues);
   }
-  public void registerInterestRegex(String regex, InterestResultPolicy policy)
-  {
+
+  public void registerInterestRegex(String regex, InterestResultPolicy policy) {
     registerInterestRegex(regex, policy, false);
   }
 
-  public void registerInterestRegex(String regex, InterestResultPolicy policy,
-      boolean isDurable) {
+  public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable) {
     registerInterestRegex(regex, policy, isDurable, true);
   }
-  public void registerInterestRegex(String regex, InterestResultPolicy policy,
-      boolean isDurable, boolean receiveValues)
-  {
-    processSingleInterest(regex, InterestType.REGULAR_EXPRESSION, policy,
-        isDurable, !receiveValues);
+
+  public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable,
+      boolean receiveValues) {
+    processSingleInterest(regex, InterestType.REGULAR_EXPRESSION, policy, isDurable,
+        !receiveValues);
   }
-  public void registerInterestFilter(String className)
-  {
+
+  public void registerInterestFilter(String className) {
     registerInterestFilter(className, false);
   }
+
   public void registerInterestFilter(String className, boolean isDurable) {
     registerInterestFilter(className, isDurable, true);
   }
-  public void registerInterestFilter(String className, boolean isDurable,
-      boolean receiveValues)
-  {
-    processSingleInterest(className, InterestType.FILTER_CLASS,
-        InterestResultPolicy.DEFAULT, isDurable, !receiveValues);
+
+  public void registerInterestFilter(String className, boolean isDurable, boolean receiveValues) {
+    processSingleInterest(className, InterestType.FILTER_CLASS, InterestResultPolicy.DEFAULT,
+        isDurable, !receiveValues);
   }
-  public void registerInterestOQL(String query)
-  {
+
+  public void registerInterestOQL(String query) {
     registerInterestOQL(query, false);
   }
+
   public void registerInterestOQL(String query, boolean isDurable) {
     registerInterestOQL(query, isDurable, true);
   }
-  public void registerInterestOQL(String query, boolean isDurable,
-      boolean receiveValues)
-  {
-    processSingleInterest(query, InterestType.OQL_QUERY,
-        InterestResultPolicy.DEFAULT, isDurable, !receiveValues);
+
+  public void registerInterestOQL(String query, boolean isDurable, boolean receiveValues) {
+    processSingleInterest(query, InterestType.OQL_QUERY, InterestResultPolicy.DEFAULT, isDurable,
+        !receiveValues);
   }
 
-  public void unregisterInterest(Object key)
-  {
+  public void unregisterInterest(Object key) {
     ServerRegionProxy proxy = getServerProxy();
     if (proxy != null) {
       // Keep support for "ALL_KEYS" in 4.2.x
       if (key instanceof String && key.equals("ALL_KEYS")) {
         proxy.unregisterInterest(".*", InterestType.REGULAR_EXPRESSION, false, false);
-      }
-      else if (key instanceof List) {
-        proxy.unregisterInterestList((List)key, false, false);
-      }
-      else {
+      } else if (key instanceof List) {
+        proxy.unregisterInterestList((List) key, false, false);
+      } else {
         proxy.unregisterInterest(key, InterestType.KEY, false, false);
       }
-    }
-    else {
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_INTEREST_UNREGISTRATION_REQUIRES_A_POOL.toLocalizedString());
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_INTEREST_UNREGISTRATION_REQUIRES_A_POOL.toLocalizedString());
     }
   }
 
-  public void unregisterInterestRegex(String regex)
-  {
+  public void unregisterInterestRegex(String regex) {
     ServerRegionProxy proxy = getServerProxy();
     if (proxy != null) {
       proxy.unregisterInterest(regex, InterestType.REGULAR_EXPRESSION, false, false);
-    }
-    else {
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_INTEREST_UNREGISTRATION_REQUIRES_A_POOL.toLocalizedString());
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_INTEREST_UNREGISTRATION_REQUIRES_A_POOL.toLocalizedString());
     }
   }
 
@@ -4148,35 +4057,34 @@ public class LocalRegion extends AbstractRegion
     ServerRegionProxy proxy = getServerProxy();
     if (proxy != null) {
       proxy.unregisterInterest(className, InterestType.FILTER_CLASS, false, false);
-    }
-    else {
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_INTEREST_UNREGISTRATION_REQUIRES_A_POOL.toLocalizedString());
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_INTEREST_UNREGISTRATION_REQUIRES_A_POOL.toLocalizedString());
     }
   }
 
-  public void unregisterInterestOQL(String query)
-  {
+  public void unregisterInterestOQL(String query) {
     ServerRegionProxy proxy = getServerProxy();
     if (proxy != null) {
       proxy.unregisterInterest(query, InterestType.OQL_QUERY, false, false);
-    }
-    else {
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_INTEREST_UNREGISTRATION_REQUIRES_A_POOL.toLocalizedString());
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_INTEREST_UNREGISTRATION_REQUIRES_A_POOL.toLocalizedString());
     }
   }
 
-  public List getInterestList()
-  {
+  public List getInterestList() {
     ServerRegionProxy proxy = getServerProxy();
     if (proxy != null) {
       return proxy.getInterestList(InterestType.KEY);
-    }
-    else {
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_INTEREST_UNREGISTRATION_REQUIRES_A_POOL.toLocalizedString());
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_INTEREST_UNREGISTRATION_REQUIRES_A_POOL.toLocalizedString());
     }
   }
 
-  /** finds the keys in this region using the given interestType and argument.  Currently only
+  /**
+   * finds the keys in this region using the given interestType and argument. Currently only
    * InterestType.REGULAR_EXPRESSION and InterestType.KEY are supported
    *
    * @param interestType an InterestType value
@@ -4184,94 +4092,92 @@ public class LocalRegion extends AbstractRegion
    * @param allowTombstones whether to return destroyed entries
    * @return a set of the keys matching the given criterion
    */
-  public Set getKeysWithInterest(int interestType, Object interestArg, boolean allowTombstones)
-  {
+  public Set getKeysWithInterest(int interestType, Object interestArg, boolean allowTombstones) {
     Set ret = null;
     if (interestType == InterestType.REGULAR_EXPRESSION) {
       if (interestArg == null || ".*".equals(interestArg)) {
         ret = new HashSet(keySet(allowTombstones));
-      }
-      else {
+      } else {
         ret = new HashSet();
         // Handle the regex pattern
         if (!(interestArg instanceof String)) {
-          throw new IllegalArgumentException(LocalizedStrings.AbstractRegion_REGULAR_EXPRESSION_ARGUMENT_WAS_NOT_A_STRING.toLocalizedString());
+          throw new IllegalArgumentException(
+              LocalizedStrings.AbstractRegion_REGULAR_EXPRESSION_ARGUMENT_WAS_NOT_A_STRING
+                  .toLocalizedString());
         }
-        Pattern keyPattern = Pattern.compile((String)interestArg);
+        Pattern keyPattern = Pattern.compile((String) interestArg);
         for (Iterator it = this.keySet(allowTombstones).iterator(); it.hasNext();) {
           Object entryKey = it.next();
-          if(!(entryKey instanceof String)) {
-            //key is not a String, cannot apply regex to this entry
+          if (!(entryKey instanceof String)) {
+            // key is not a String, cannot apply regex to this entry
             continue;
           }
-          if(!keyPattern.matcher((String) entryKey).matches()) {
-            //key does not match the regex, this entry should not be returned.
+          if (!keyPattern.matcher((String) entryKey).matches()) {
+            // key does not match the regex, this entry should not be returned.
             continue;
           }
           ret.add(entryKey);
         }
       }
-    }
-    else if (interestType == InterestType.KEY) {
+    } else if (interestType == InterestType.KEY) {
       if (interestArg instanceof List) {
-        ret = new HashSet();  // TODO optimize initial size
-        List keyList = (List)interestArg;
+        ret = new HashSet(); // TODO optimize initial size
+        List keyList = (List) interestArg;
         for (Iterator it = keyList.iterator(); it.hasNext();) {
           Object entryKey = it.next();
           if (this.containsKey(entryKey) || (allowTombstones && this.containsTombstone(entryKey))) {
             ret.add(entryKey);
           }
         }
-      }
-      else {
+      } else {
         ret = new HashSet();
-        if (this.containsKey(interestArg) || (allowTombstones && this.containsTombstone(interestArg))) {
+        if (this.containsKey(interestArg)
+            || (allowTombstones && this.containsTombstone(interestArg))) {
           ret.add(interestArg);
         }
       }
-    }
-    else if (interestType == InterestType.FILTER_CLASS) {
-      throw new UnsupportedOperationException(LocalizedStrings.AbstractRegion_INTERESTTYPEFILTER_CLASS_NOT_YET_SUPPORTED.toLocalizedString());
-    }
-    else if (interestType == InterestType.OQL_QUERY) {
-      throw new UnsupportedOperationException(LocalizedStrings.AbstractRegion_INTERESTTYPEOQL_QUERY_NOT_YET_SUPPORTED.toLocalizedString());
-    }
-    else {
-      throw new IllegalArgumentException(LocalizedStrings.AbstractRegion_UNSUPPORTED_INTEREST_TYPE_0.toLocalizedString(Integer.valueOf(interestType)));
+    } else if (interestType == InterestType.FILTER_CLASS) {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.AbstractRegion_INTERESTTYPEFILTER_CLASS_NOT_YET_SUPPORTED
+              .toLocalizedString());
+    } else if (interestType == InterestType.OQL_QUERY) {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.AbstractRegion_INTERESTTYPEOQL_QUERY_NOT_YET_SUPPORTED
+              .toLocalizedString());
+    } else {
+      throw new IllegalArgumentException(LocalizedStrings.AbstractRegion_UNSUPPORTED_INTEREST_TYPE_0
+          .toLocalizedString(Integer.valueOf(interestType)));
     }
     return ret;
   }
 
-  public List getInterestListRegex()
-  {
+  public List getInterestListRegex() {
     ServerRegionProxy proxy = getServerProxy();
     if (proxy != null) {
       return proxy.getInterestList(InterestType.REGULAR_EXPRESSION);
-    }
-    else {
-      throw new UnsupportedOperationException( LocalizedStrings.LocalRegion_INTEREST_LIST_RETRIEVAL_REQUIRES_A_POOL.toLocalizedString());
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_INTEREST_LIST_RETRIEVAL_REQUIRES_A_POOL.toLocalizedString());
     }
   }
 
-  public List getInterestListFilters()
-  {
+  public List getInterestListFilters() {
     ServerRegionProxy proxy = getServerProxy();
     if (proxy != null) {
       return proxy.getInterestList(InterestType.FILTER_CLASS);
-    }
-    else {
-      throw new UnsupportedOperationException( LocalizedStrings.LocalRegion_INTEREST_LIST_RETRIEVAL_REQUIRES_A_POOL.toLocalizedString());
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_INTEREST_LIST_RETRIEVAL_REQUIRES_A_POOL.toLocalizedString());
     }
   }
 
-  public List getInterestListOQL()
-  {
+  public List getInterestListOQL() {
     ServerRegionProxy proxy = getServerProxy();
     if (proxy != null) {
       return proxy.getInterestList(InterestType.OQL_QUERY);
-    }
-    else {
-      throw new UnsupportedOperationException( LocalizedStrings.LocalRegion_INTEREST_LIST_RETRIEVAL_REQUIRES_A_POOL.toLocalizedString());
+    } else {
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_INTEREST_LIST_RETRIEVAL_REQUIRES_A_POOL.toLocalizedString());
     }
   }
 
@@ -4280,7 +4186,8 @@ public class LocalRegion extends AbstractRegion
     if (proxy != null) {
       return proxy.keySet();
     } else {
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_SERVER_KEYSET_REQUIRES_A_POOL.toLocalizedString());
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_SERVER_KEYSET_REQUIRES_A_POOL.toLocalizedString());
     }
   }
 
@@ -4291,7 +4198,8 @@ public class LocalRegion extends AbstractRegion
     if (proxy != null) {
       return proxy.containsKey(key);
     } else {
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_SERVER_KEYSET_REQUIRES_A_POOL.toLocalizedString());
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_SERVER_KEYSET_REQUIRES_A_POOL.toLocalizedString());
     }
   }
 
@@ -4301,29 +4209,30 @@ public class LocalRegion extends AbstractRegion
    * @param key
    * @see DistributedRegion#localDestroyNoCallbacks(Object)
    */
-  protected void localDestroyNoCallbacks(Object key)
-  {
-    if(logger.isDebugEnabled()) {
+  protected void localDestroyNoCallbacks(Object key) {
+    if (logger.isDebugEnabled()) {
       logger.debug("localDestroyNoCallbacks key={}", key);
     }
     checkReadiness();
     validateKey(key);
-    @Released EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_DESTROY,
-        key, false, getMyId(), false /* generateCallbacks */, true);
+    @Released
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_DESTROY, key, false,
+        getMyId(), false /* generateCallbacks */, true);
     try {
-      basicDestroy(event,
-                   false,
-                   null); // expectedOldValue
-    }
-    catch (CacheWriterException e) {
+      basicDestroy(event, false, null); // expectedOldValue
+    } catch (CacheWriterException e) {
       // cache writer not called
-      throw new Error(LocalizedStrings.LocalRegion_CACHE_WRITER_SHOULD_NOT_HAVE_BEEN_CALLED_FOR_LOCALDESTROY.toLocalizedString(), e);
-    }
-    catch (TimeoutException e) {
+      throw new Error(
+          LocalizedStrings.LocalRegion_CACHE_WRITER_SHOULD_NOT_HAVE_BEEN_CALLED_FOR_LOCALDESTROY
+              .toLocalizedString(),
+          e);
+    } catch (TimeoutException e) {
       // no distributed lock
-      throw new Error(LocalizedStrings.LocalRegion_NO_DISTRIBUTED_LOCK_SHOULD_HAVE_BEEN_ATTEMPTED_FOR_LOCALDESTROY.toLocalizedString(), e);
-    }
-    catch (EntryNotFoundException e) {
+      throw new Error(
+          LocalizedStrings.LocalRegion_NO_DISTRIBUTED_LOCK_SHOULD_HAVE_BEEN_ATTEMPTED_FOR_LOCALDESTROY
+              .toLocalizedString(),
+          e);
+    } catch (EntryNotFoundException e) {
       // not a problem
     } finally {
       event.release();
@@ -4333,14 +4242,12 @@ public class LocalRegion extends AbstractRegion
   /**
    * Do localDestroy on a list of keys, if they exist
    *
-   * @param keys
-   *          the list of arrays of keys to invalidate
+   * @param keys the list of arrays of keys to invalidate
    * @see #registerInterest(Object)
    */
-  private void clearViaList(List keys)
-  {
+  private void clearViaList(List keys) {
     for (Iterator it = this.entries(false).iterator(); it.hasNext();) {
-      Region.Entry entry = (Region.Entry)it.next();
+      Region.Entry entry = (Region.Entry) it.next();
       try {
         Object entryKey = entry.getKey();
         boolean match = false;
@@ -4355,8 +4262,7 @@ public class LocalRegion extends AbstractRegion
           continue;
         }
         localDestroyNoCallbacks(entryKey);
-      }
-      catch (EntryDestroyedException ignore) {
+      } catch (EntryDestroyedException ignore) {
         // ignore to fix bug 35534
       }
     }
@@ -4365,27 +4271,24 @@ public class LocalRegion extends AbstractRegion
   /**
    * do a localDestroy on all matching keys
    *
-   * @param key
-   *          the regular expression to match on
+   * @param key the regular expression to match on
    * @see #registerInterestRegex(String)
    */
-  private void clearViaRegEx(String key)
-  {
+  private void clearViaRegEx(String key) {
     // @todo: if (key.equals(".*)) then cmnClearRegionNoCallbacks
     Pattern keyPattern = Pattern.compile(key);
     for (Iterator it = this.entries(false).iterator(); it.hasNext();) {
-      Region.Entry entry = (Region.Entry)it.next();
+      Region.Entry entry = (Region.Entry) it.next();
       try {
         Object entryKey = entry.getKey();
         if (!(entryKey instanceof String))
           continue;
-        if (!keyPattern.matcher((String)entryKey).matches()) {
-          //key does not match the regex, this entry should not be returned.
+        if (!keyPattern.matcher((String) entryKey).matches()) {
+          // key does not match the regex, this entry should not be returned.
           continue;
         }
         localDestroyNoCallbacks(entryKey);
-      }
-      catch (EntryDestroyedException ignore) {
+      } catch (EntryDestroyedException ignore) {
         // ignore to fix bug 35534
       }
     }
@@ -4394,39 +4297,36 @@ public class LocalRegion extends AbstractRegion
   /**
    * do a localDestroy on all matching keys
    *
-   * @param key
-   *          the regular expression to match on
+   * @param key the regular expression to match on
    * @see #registerInterestFilter(String)
    */
-  private void clearViaFilterClass(String key)
-  {
+  private void clearViaFilterClass(String key) {
     Class filterClass;
     InterestFilter filter;
     try {
       filterClass = ClassLoadUtil.classFromName(key);
-      filter = (InterestFilter)filterClass.newInstance();
-    }
-    catch (ClassNotFoundException cnfe) {
-      throw new RuntimeException(LocalizedStrings.LocalRegion_CLASS_0_NOT_FOUND_IN_CLASSPATH.toLocalizedString(key), cnfe);
-    }
-    catch (Exception e) {
-      throw new RuntimeException(LocalizedStrings.LocalRegion_CLASS_0_COULD_NOT_BE_INSTANTIATED.toLocalizedString(key), e);
+      filter = (InterestFilter) filterClass.newInstance();
+    } catch (ClassNotFoundException cnfe) {
+      throw new RuntimeException(
+          LocalizedStrings.LocalRegion_CLASS_0_NOT_FOUND_IN_CLASSPATH.toLocalizedString(key), cnfe);
+    } catch (Exception e) {
+      throw new RuntimeException(
+          LocalizedStrings.LocalRegion_CLASS_0_COULD_NOT_BE_INSTANTIATED.toLocalizedString(key), e);
     }
 
     for (Iterator it = this.entries(false).iterator(); it.hasNext();) {
-      Region.Entry entry = (Region.Entry)it.next();
+      Region.Entry entry = (Region.Entry) it.next();
       try {
         Object entryKey = entry.getKey();
         if (!(entryKey instanceof String))
           continue;
         InterestEvent e = new InterestEvent(entryKey, entry.getValue(), true);
         if (!filter.notifyOnRegister(e)) {
-          //the filter does not want to know about this entry, so skip it.
+          // the filter does not want to know about this entry, so skip it.
           continue;
         }
         localDestroyNoCallbacks(entryKey);
-      }
-      catch (EntryDestroyedException ignore) {
+      } catch (EntryDestroyedException ignore) {
         // ignore to fix bug 35534
       }
     }
@@ -4438,18 +4338,18 @@ public class LocalRegion extends AbstractRegion
    * @param query
    * @see #registerInterestOQL(String)
    */
-  private void clearViaQuery(String query)
-  {
-    throw new InternalGemFireError(LocalizedStrings.LocalRegion_NOT_YET_SUPPORTED.toLocalizedString());
+  private void clearViaQuery(String query) {
+    throw new InternalGemFireError(
+        LocalizedStrings.LocalRegion_NOT_YET_SUPPORTED.toLocalizedString());
   }
 
   /**
    * Refresh local entries based on server's list of keys
+   * 
    * @param serverKeys
    */
   public void refreshEntriesFromServerKeys(Connection con, List serverKeys,
-      InterestResultPolicy pol)
-  {
+      InterestResultPolicy pol) {
     if (serverKeys == null) {
       return;
     }
@@ -4462,21 +4362,21 @@ public class LocalRegion extends AbstractRegion
       return; // done
     }
 
-    if(logger.isDebugEnabled()) {
+    if (logger.isDebugEnabled()) {
       logger.debug("refreshEntries region={}", getFullPath());
     }
     for (Iterator it = serverKeys.iterator(); it.hasNext();) {
-      ArrayList keysList = (ArrayList)it.next();
+      ArrayList keysList = (ArrayList) it.next();
       // The chunk can contain null data if there are no entries on the server
       // corresponding to the requested keys
       if (keysList == null) {
         continue;
       }
       // int numberOfResults = keysList.size();
-      if(EntryLogger.isEnabled()) {
-        if(con != null) {
+      if (EntryLogger.isEnabled()) {
+        if (con != null) {
           Endpoint endpoint = con.getEndpoint();
-          if(endpoint != null) {
+          if (endpoint != null) {
             EntryLogger.setSource(endpoint.getMemberId(), "RIGII");
           }
         }
@@ -4484,36 +4384,36 @@ public class LocalRegion extends AbstractRegion
       try {
         ArrayList list = new ArrayList(keysList);
         if (pol != InterestResultPolicy.KEYS_VALUES) {
-        for (Iterator it2 = keysList.iterator(); it2.hasNext();) {
-          Object currentKey = it2.next();
-          // Dont apply riResponse if the entry was destroyed when
-          // ri is in progress
-          if (currentKey == null || getImageState().hasDestroyedEntry(currentKey)){
-            list.remove(currentKey);
+          for (Iterator it2 = keysList.iterator(); it2.hasNext();) {
+            Object currentKey = it2.next();
+            // Dont apply riResponse if the entry was destroyed when
+            // ri is in progress
+            if (currentKey == null || getImageState().hasDestroyedEntry(currentKey)) {
+              list.remove(currentKey);
+            }
           }
-        }
         }
         if (pol == InterestResultPolicy.KEYS) {
           // Attempt to create an invalid in without overwriting
           if (!isProxy()) {
             for (Iterator it2 = list.iterator(); it2.hasNext();) {
               Object currentKey = it2.next();
-              entries.initialImagePut(currentKey, 0, Token.LOCAL_INVALID, false,
-                  false, null, null, false);
-              
+              entries.initialImagePut(currentKey, 0, Token.LOCAL_INVALID, false, false, null, null,
+                  false);
+
             }
           }
           // Size statistics don't take key into account, so we don't
           // need to modify the region's size.
-        }
-        else if(!list.isEmpty()) {
+        } else if (!list.isEmpty()) {
           Assert.assertTrue(pol == InterestResultPolicy.KEYS_VALUES);
-//          for (Iterator it2 = list.iterator(); it2.hasNext();) {
-//            Object currentKey = ((Entry)it2.next()).getKey();
-//            localDestroyNoCallbacks(currentKey);
-//          }
-          VersionedObjectList values = (VersionedObjectList)list.get(0); // proxy.getAllOnPrimaryForRegisterInterest(con, list);
-          if(logger.isDebugEnabled()) {
+          // for (Iterator it2 = list.iterator(); it2.hasNext();) {
+          // Object currentKey = ((Entry)it2.next()).getKey();
+          // localDestroyNoCallbacks(currentKey);
+          // }
+          VersionedObjectList values = (VersionedObjectList) list.get(0); // proxy.getAllOnPrimaryForRegisterInterest(con,
+                                                                          // list);
+          if (logger.isDebugEnabled()) {
             logger.debug("processing interest response: {}", values.size());
           }
           VersionedObjectList.Iterator listIt = values.iterator();
@@ -4526,28 +4426,28 @@ public class LocalRegion extends AbstractRegion
             Object val = entry.getObject();
             boolean isBytes = entry.isBytes();
             boolean isKeyOnServer = !entry.isKeyNotOnServer();
-            boolean isTombstone = this.concurrencyChecksEnabled
-                                  && entry.isKeyNotOnServer()
-                                  && (entry.getVersionTag() != null);
+            boolean isTombstone = this.concurrencyChecksEnabled && entry.isKeyNotOnServer()
+                && (entry.getVersionTag() != null);
             final VersionTag tag = entry.getVersionTag();
             if (val instanceof Throwable) {
-              logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_CAUGHT_THE_FOLLOWING_EXCEPTION_FOR_KEY_0_WHILE_PERFORMING_A_REMOTE_GETALL,
-                      currentKey), (Throwable)val);
+              logger.warn(LocalizedMessage.create(
+                  LocalizedStrings.LocalRegion_CAUGHT_THE_FOLLOWING_EXCEPTION_FOR_KEY_0_WHILE_PERFORMING_A_REMOTE_GETALL,
+                  currentKey), (Throwable) val);
               localDestroyNoCallbacks(currentKey);
               continue;
             } else {
-              if(logger.isDebugEnabled()) {
+              if (logger.isDebugEnabled()) {
                 logger.debug("refreshEntries key={} value={} version={}", currentKey, entry, tag);
               }
               if (tag == null) { // no version checks
                 localDestroyNoCallbacks(currentKey);
               }
             }
-            
-            if(val instanceof byte[] && !isBytes) {
+
+            if (val instanceof byte[] && !isBytes) {
               val = CachedDeserializableFactory.create((byte[]) val);
             }
-            
+
             if (isTombstone) {
               assert val == null : "server returned a value for a destroyed entry";
               val = Token.TOMBSTONE;
@@ -4559,17 +4459,15 @@ public class LocalRegion extends AbstractRegion
               if (!isProxy()) {
                 entries.initialImagePut(currentKey, 0, val, false, false, tag, null, false);
               }
-            }
-            else {
+            } else {
               RegionEntry re = entries.getEntry(currentKey);
               if (!isProxy() && isKeyOnServer) {
-                entries.initialImagePut(currentKey, 0, Token.LOCAL_INVALID,
-                      false,false, tag, null, false);
-              }
-              else {
+                entries.initialImagePut(currentKey, 0, Token.LOCAL_INVALID, false, false, tag, null,
+                    false);
+              } else {
                 if (re != null) {
                   synchronized (re) {
-                    if (re.isDestroyedOrRemovedButNotTombstone()) { 
+                    if (re.isDestroyedOrRemovedButNotTombstone()) {
                       entries.removeEntry(currentKey, re, false);
                     }
                   }
@@ -4580,8 +4478,7 @@ public class LocalRegion extends AbstractRegion
             }
           }
         }
-      }
-      catch (DiskAccessException dae) {
+      } catch (DiskAccessException dae) {
         this.handleDiskAccessException(dae);
         throw dae;
       } finally {
@@ -4590,12 +4487,11 @@ public class LocalRegion extends AbstractRegion
     } // for
   }
 
-  private void logKeys(List serverKeys, InterestResultPolicy pol)
-  {
+  private void logKeys(List serverKeys, InterestResultPolicy pol) {
     int totalKeys = 0;
     StringBuffer buffer = new StringBuffer();
     for (Iterator it = serverKeys.iterator(); it.hasNext();) {
-      ArrayList keysList = (ArrayList)it.next();
+      ArrayList keysList = (ArrayList) it.next();
       // The chunk can contain null data if there are no entries on the server
       // corresponding to the requested keys
       // TODO is this still possible?
@@ -4607,7 +4503,7 @@ public class LocalRegion extends AbstractRegion
         Object key = it2.next();
         if (key != null) {
           if (key instanceof VersionedObjectList) {
-            Set keys = ((VersionedObjectList)key).keySet();
+            Set keys = ((VersionedObjectList) key).keySet();
             for (Object k : keys) {
               buffer.append("  " + k).append("\n");
             }
@@ -4617,92 +4513,83 @@ public class LocalRegion extends AbstractRegion
         }
       }
     } // for
-    if(logger.isDebugEnabled()) {
-      logger.debug("{} refreshEntriesFromServerKeys count={} policy={}\n{}", this, totalKeys, pol, buffer);
+    if (logger.isDebugEnabled()) {
+      logger.debug("{} refreshEntriesFromServerKeys count={} policy={}\n{}", this, totalKeys, pol,
+          buffer);
     }
   }
+
   /**
    * Remove values in local cache before registering interest
    *
-   * @param key
-   *          the interest key
-   * @param interestType
-   *          the interest type from {@link InterestType}
-   * @param pol
-   *          the policy from {@link InterestResultPolicy}
+   * @param key the interest key
+   * @param interestType the interest type from {@link InterestType}
+   * @param pol the policy from {@link InterestResultPolicy}
    */
-  public void clearKeysOfInterest(Object key, int interestType,
-      InterestResultPolicy pol)
-  {
+  public void clearKeysOfInterest(Object key, int interestType, InterestResultPolicy pol) {
     switch (interestType) {
-    case InterestType.FILTER_CLASS:
-      clearViaFilterClass((String)key);
-      break;
-    case InterestType.KEY:
-      if (key instanceof String && key.equals("ALL_KEYS"))
-        clearViaRegEx(".*");
-      else if (key instanceof List)
-        clearViaList((List)key);
-      else
-        localDestroyNoCallbacks(key);
-      break;
-    case InterestType.OQL_QUERY:
-      clearViaQuery((String)key);
-      break;
-    case InterestType.REGULAR_EXPRESSION:
-      clearViaRegEx((String)key);
-      break;
-    default:
-      throw new InternalGemFireError(LocalizedStrings.LocalRegion_UNKNOWN_INTEREST_TYPE.toLocalizedString());
+      case InterestType.FILTER_CLASS:
+        clearViaFilterClass((String) key);
+        break;
+      case InterestType.KEY:
+        if (key instanceof String && key.equals("ALL_KEYS"))
+          clearViaRegEx(".*");
+        else if (key instanceof List)
+          clearViaList((List) key);
+        else
+          localDestroyNoCallbacks(key);
+        break;
+      case InterestType.OQL_QUERY:
+        clearViaQuery((String) key);
+        break;
+      case InterestType.REGULAR_EXPRESSION:
+        clearViaRegEx((String) key);
+        break;
+      default:
+        throw new InternalGemFireError(
+            LocalizedStrings.LocalRegion_UNKNOWN_INTEREST_TYPE.toLocalizedString());
     }
   }
 
   //////////////////// Package Methods ////////////////////////////////////////
 
   /**
-   * Destroys and recreates this region. If this is triggered by loadSnapshot
-   * inputStream will be supplied. If this is triggered by LossAction of
-   * reinitialize then inputStream will be null, and the region will go through
-   * regular GetInitalImage if it is a mirrored replicate.
+   * Destroys and recreates this region. If this is triggered by loadSnapshot inputStream will be
+   * supplied. If this is triggered by LossAction of reinitialize then inputStream will be null, and
+   * the region will go through regular GetInitalImage if it is a mirrored replicate.
    * <p>
    * Acquires and releases the DestroyLock.
    *
    * @since GemFire 5.0
    */
   void reinitialize(InputStream inputStream, RegionEventImpl event)
-      throws TimeoutException, IOException, ClassNotFoundException
-  {
+      throws TimeoutException, IOException, ClassNotFoundException {
     acquireDestroyLock();
     try {
       reinitialize_destroy(event);
       recreate(inputStream, null);
-    }
-    finally {
+    } finally {
       releaseDestroyLock();
     }
   }
 
   /** must be holding destroy lock */
   void reinitializeFromImageTarget(InternalDistributedMember imageTarget)
-      throws TimeoutException, IOException, ClassNotFoundException
-  {
+      throws TimeoutException, IOException, ClassNotFoundException {
     Assert.assertTrue(imageTarget != null);
     recreate(null, imageTarget);
   }
 
   /**
-   * Returns true if this region was reinitialized, e.g. a snapshot was loaded,
-   * and this is the recreated region
+   * Returns true if this region was reinitialized, e.g. a snapshot was loaded, and this is the
+   * recreated region
    */
-  boolean reinitialized_new()
-  {
+  boolean reinitialized_new() {
     return this.reinitialized_new;
   }
 
   /** must be holding destroy lock */
-  void reinitialize_destroy(RegionEventImpl event) throws CacheWriterException,
-      TimeoutException
-  {
+  void reinitialize_destroy(RegionEventImpl event) throws CacheWriterException, TimeoutException {
     final boolean cacheWrite = !event.originRemote;
     // register this region as reinitializing
     this.cache.regionReinitializing(getFullPath());
@@ -4710,10 +4597,8 @@ public class LocalRegion extends AbstractRegion
   }
 
   /** must be holding destroy lock */
-  private void recreate(InputStream inputStream,
-      InternalDistributedMember imageTarget) throws TimeoutException,
-      IOException, ClassNotFoundException
-  {
+  private void recreate(InputStream inputStream, InternalDistributedMember imageTarget)
+      throws TimeoutException, IOException, ClassNotFoundException {
     String thePath = getFullPath();
     Region newRegion = null;
     // recreate new region with snapshot data
@@ -4723,16 +4608,14 @@ public class LocalRegion extends AbstractRegion
       boolean getDestroyLock = false;
       // If specified diskDir in DEFAULT diskstore, we should not use null
       // as diskstore name any more
-      if (this.dsi!=null && this.dsi.getName().equals(DiskStoreFactory.DEFAULT_DISK_STORE_NAME)
+      if (this.dsi != null && this.dsi.getName().equals(DiskStoreFactory.DEFAULT_DISK_STORE_NAME)
           && this.diskStoreName == null && !useDefaultDiskStore()) {
         this.diskStoreName = this.dsi.getName();
       }
       RegionAttributes attrs = this;
       InternalRegionArguments iargs = new InternalRegionArguments()
-      .setDestroyLockFlag(getDestroyLock)
-      .setSnapshotInputStream(inputStream)
-      .setImageTarget(imageTarget)
-      .setRecreateFlag(true);
+          .setDestroyLockFlag(getDestroyLock).setSnapshotInputStream(inputStream)
+          .setImageTarget(imageTarget).setRecreateFlag(true);
       if (this instanceof BucketRegion) {
         BucketRegion me = (BucketRegion) this;
         iargs.setPartitionedRegionBucketRedundancy(me.getRedundancyLevel());
@@ -4740,21 +4623,20 @@ public class LocalRegion extends AbstractRegion
 
       if (parent == null) {
         newRegion = this.cache.createVMRegion(this.regionName, attrs, iargs);
-      }
-      else {
+      } else {
         newRegion = parent.createSubregion(this.regionName, attrs, iargs);
       }
 
       // note that createVMRegion and createSubregion now call
       // regionReinitialized
-    }
-    catch (RegionExistsException e) {
+    } catch (RegionExistsException e) {
       // shouldn't happen since we're holding the destroy lock
-      InternalGemFireError error = new InternalGemFireError(LocalizedStrings.LocalRegion_GOT_REGIONEXISTSEXCEPTION_IN_REINITIALIZE_WHEN_HOLDING_DESTROY_LOCK.toLocalizedString());
+      InternalGemFireError error = new InternalGemFireError(
+          LocalizedStrings.LocalRegion_GOT_REGIONEXISTSEXCEPTION_IN_REINITIALIZE_WHEN_HOLDING_DESTROY_LOCK
+              .toLocalizedString());
       error.initCause(e);
       throw error;
-    }
-    finally {
+    } finally {
       if (newRegion == null) { // failed to create region
         this.cache.unregisterReinitializingRegion(thePath);
       }
@@ -4762,14 +4644,16 @@ public class LocalRegion extends AbstractRegion
   }
 
   void loadSnapshotDuringInitialization(InputStream inputStream)
-      throws IOException, ClassNotFoundException
-  {
+      throws IOException, ClassNotFoundException {
     DataInputStream in = new DataInputStream(inputStream);
     try {
       RegionMap map = getRegionMap();
       byte snapshotVersion = in.readByte();
       if (snapshotVersion != SNAPSHOT_VERSION) {
-        throw new IllegalArgumentException(LocalizedStrings.LocalRegion_UNSUPPORTED_SNAPSHOT_VERSION_0_ONLY_VERSION_1_IS_SUPPORTED.toLocalizedString(new Object[] {Byte.valueOf(snapshotVersion), Byte.valueOf(SNAPSHOT_VERSION)}));
+        throw new IllegalArgumentException(
+            LocalizedStrings.LocalRegion_UNSUPPORTED_SNAPSHOT_VERSION_0_ONLY_VERSION_1_IS_SUPPORTED
+                .toLocalizedString(
+                    new Object[] {Byte.valueOf(snapshotVersion), Byte.valueOf(SNAPSHOT_VERSION)}));
       }
       for (;;) {
         Object key = DataSerializer.readObject(in);
@@ -4780,32 +4664,29 @@ public class LocalRegion extends AbstractRegion
 
         if (b == SNAPSHOT_VALUE_OBJ) {
           value = DataSerializer.readObject(in);
-        }
-        else if (b == SNAPSHOT_VALUE_INVALID) {
+        } else if (b == SNAPSHOT_VALUE_INVALID) {
           // Even though it was a distributed invalidate when the
           // snapshot was created I think it is correct to turn it
           // into a local invalidate when we load the snapshot since
           // we don't do a distributed invalidate operation when loading.
           value = Token.LOCAL_INVALID;
-        }
-        else if (b == SNAPSHOT_VALUE_LOCAL_INVALID) {
+        } else if (b == SNAPSHOT_VALUE_LOCAL_INVALID) {
           value = Token.LOCAL_INVALID;
+        } else {
+          throw new IllegalArgumentException(
+              LocalizedStrings.LocalRegion_UNEXPECTED_SNAPSHOT_CODE_0_THIS_SNAPSHOT_WAS_PROBABLY_WRITTEN_BY_AN_EARLIER_INCOMPATIBLE_RELEASE
+                  .toLocalizedString(new Byte(b)));
         }
-        else {
-          throw new IllegalArgumentException(LocalizedStrings.LocalRegion_UNEXPECTED_SNAPSHOT_CODE_0_THIS_SNAPSHOT_WAS_PROBABLY_WRITTEN_BY_AN_EARLIER_INCOMPATIBLE_RELEASE.toLocalizedString(new Byte(b)));
-        }
-        
-        //If versioning is enabled, we will give the entry a "fake"
-        //version.
+
+        // If versioning is enabled, we will give the entry a "fake"
+        // version.
         VersionTag tag = null;
-        if(this.concurrencyChecksEnabled) {
+        if (this.concurrencyChecksEnabled) {
           tag = VersionTag.create(getVersionMember());
         }
-        map.initialImagePut(key, cacheTimeMillis(), value, false,
-            false, tag, null, false);
+        map.initialImagePut(key, cacheTimeMillis(), value, false, false, tag, null, false);
       }
-    }
-    finally {
+    } finally {
       in.close();
     }
     this.reinitialized_new = true;
@@ -4813,15 +4694,14 @@ public class LocalRegion extends AbstractRegion
 
   /** Package helper method */
   @Retained
-  Object getEntryValue(RegionEntry entry)
-  {
+  Object getEntryValue(RegionEntry entry) {
     if (entry == null) {
       return null;
     }
-    
+
     try {
       return entry.getValue(this);
-    }catch(DiskAccessException dae) {
+    } catch (DiskAccessException dae) {
       this.handleDiskAccessException(dae);
       throw dae;
     }
@@ -4831,22 +4711,20 @@ public class LocalRegion extends AbstractRegion
   /**
    * Blocks until initialization is complete.
    *
-   * @param destroyedRegionOk
-   *          true if it is okay to return a region that isDestroyed
+   * @param destroyedRegionOk true if it is okay to return a region that isDestroyed
    * @see DestroyRegionOperation
    */
-  Region getSubregion(String path, boolean destroyedRegionOk)
-  {
+  Region getSubregion(String path, boolean destroyedRegionOk) {
     if (destroyedRegionOk) {
       checkCacheClosed();
-    }
-    else if (isDestroyed()) {
+    } else if (isDestroyed()) {
       // Assume if the owner of the subregion is destroyed, so are all of its
       // subregions
       return null;
     }
     if (path == null) {
-      throw new IllegalArgumentException(LocalizedStrings.LocalRegion_PATH_SHOULD_NOT_BE_NULL.toLocalizedString());
+      throw new IllegalArgumentException(
+          LocalizedStrings.LocalRegion_PATH_SHOULD_NOT_BE_NULL.toLocalizedString());
     }
     if (path.length() == 0) {
       waitOnInitialization(); // some internal methods rely on this
@@ -4854,7 +4732,8 @@ public class LocalRegion extends AbstractRegion
     }
 
     if (path.charAt(0) == SEPARATOR_CHAR)
-      throw new IllegalArgumentException(LocalizedStrings.LocalRegion_PATH_SHOULD_NOT_START_WITH_A_SLASH.toLocalizedString());
+      throw new IllegalArgumentException(
+          LocalizedStrings.LocalRegion_PATH_SHOULD_NOT_START_WITH_A_SLASH.toLocalizedString());
 
     int sep_idx; // the index of the next separator
     // initialize the current region as this one
@@ -4899,102 +4778,95 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Called by a thread that is doing region initialization. Causes the
-   * initialization Latch to be bypassed by this thread.
+   * Called by a thread that is doing region initialization. Causes the initialization Latch to be
+   * bypassed by this thread.
    *
    * @return oldLevel
    */
-  public static int setThreadInitLevelRequirement(int level)
-  {
+  public static int setThreadInitLevelRequirement(int level) {
     int oldLevel = threadInitLevelRequirement();
     if (level == AFTER_INITIAL_IMAGE) { // if setting to default, just reset
       initializationThread.set(null);
-    }
-    else {
+    } else {
       initializationThread.set(Integer.valueOf(level));
     }
     return oldLevel;
   }
 
   /**
-   * Return the access level this thread has for regions with respect to how
-   * initialized they need to be before this thread can have a reference to it.
-   * AFTER_INITIAL_IMAGE: Must be fully initialized (the default)
-   * BEFORE_INITIAL_IMAGE: Must have had first latch opened ANY_INIT: Thread
-   * uses region as soon as possible
+   * Return the access level this thread has for regions with respect to how initialized they need
+   * to be before this thread can have a reference to it. AFTER_INITIAL_IMAGE: Must be fully
+   * initialized (the default) BEFORE_INITIAL_IMAGE: Must have had first latch opened ANY_INIT:
+   * Thread uses region as soon as possible
    */
-  public static int threadInitLevelRequirement()
-  {
-    Integer initLevel = (Integer)initializationThread.get();
+  public static int threadInitLevelRequirement() {
+    Integer initLevel = (Integer) initializationThread.get();
     if (initLevel == null) {
       return AFTER_INITIAL_IMAGE;
     }
     return initLevel.intValue();
   }
-  
+
   public boolean checkForInitialization() {
     if (this.initialized) {
       return true;
     }
     switch (threadInitLevelRequirement()) {
-    case AFTER_INITIAL_IMAGE:
-      return checkForInitialization(this.initializationLatchAfterGetInitialImage);
-    case BEFORE_INITIAL_IMAGE:
-      return checkForInitialization(this.initializationLatchBeforeGetInitialImage);
-    case ANY_INIT:
-      return true;
-    default:
-      throw new InternalGemFireError(LocalizedStrings.LocalRegion_UNEXPECTED_THREADINITLEVELREQUIREMENT.toLocalizedString());
+      case AFTER_INITIAL_IMAGE:
+        return checkForInitialization(this.initializationLatchAfterGetInitialImage);
+      case BEFORE_INITIAL_IMAGE:
+        return checkForInitialization(this.initializationLatchBeforeGetInitialImage);
+      case ANY_INIT:
+        return true;
+      default:
+        throw new InternalGemFireError(
+            LocalizedStrings.LocalRegion_UNEXPECTED_THREADINITLEVELREQUIREMENT.toLocalizedString());
     }
   }
 
-  private boolean checkForInitialization(
-      StoppableCountDownLatch latch) {
+  private boolean checkForInitialization(StoppableCountDownLatch latch) {
     return latch.getCount() == 0;
   }
 
   /** wait on the initialization Latch based on thread requirements */
-  public void waitOnInitialization()
-  {
+  public void waitOnInitialization() {
     if (this.initialized) {
       return;
     }
     switch (threadInitLevelRequirement()) {
-    case AFTER_INITIAL_IMAGE:
-      waitOnInitialization(this.initializationLatchAfterGetInitialImage);
-      break;
-    case BEFORE_INITIAL_IMAGE:
-      waitOnInitialization(this.initializationLatchBeforeGetInitialImage);
-      break;
-    case ANY_INIT:
-      return;
-    default:
-      throw new InternalGemFireError(LocalizedStrings.LocalRegion_UNEXPECTED_THREADINITLEVELREQUIREMENT.toLocalizedString());
+      case AFTER_INITIAL_IMAGE:
+        waitOnInitialization(this.initializationLatchAfterGetInitialImage);
+        break;
+      case BEFORE_INITIAL_IMAGE:
+        waitOnInitialization(this.initializationLatchBeforeGetInitialImage);
+        break;
+      case ANY_INIT:
+        return;
+      default:
+        throw new InternalGemFireError(
+            LocalizedStrings.LocalRegion_UNEXPECTED_THREADINITLEVELREQUIREMENT.toLocalizedString());
     }
   }
 
-  protected void waitOnInitialization(StoppableCountDownLatch latch)
-  {
+  protected void waitOnInitialization(StoppableCountDownLatch latch) {
     if (latch == null)
       return; // latch resource has been freed
 
-      while (true) {
-        cache.getCancelCriterion().checkCancelInProgress(null);
-        boolean interrupted = Thread.interrupted();
-        try {
-          latch.await();
-          break;
-        }
-        catch (InterruptedException e) {
-          interrupted = true;
-          cache.getCancelCriterion().checkCancelInProgress(e);
-          // continue waiting
-        }
-        finally {
-          if (interrupted) // set interrupted flag if was interrupted
-            Thread.currentThread().interrupt();
-        }
-      } // while
+    while (true) {
+      cache.getCancelCriterion().checkCancelInProgress(null);
+      boolean interrupted = Thread.interrupted();
+      try {
+        latch.await();
+        break;
+      } catch (InterruptedException e) {
+        interrupted = true;
+        cache.getCancelCriterion().checkCancelInProgress(e);
+        // continue waiting
+      } finally {
+        if (interrupted) // set interrupted flag if was interrupted
+          Thread.currentThread().interrupt();
+      }
+    } // while
   }
 
   /**
@@ -5009,8 +4881,7 @@ public class LocalRegion extends AbstractRegion
 
   /** return null if not found */
   @Override
-  public RegionEntry basicGetEntry(Object key)
-  {
+  public RegionEntry basicGetEntry(Object key) {
     // ok to ignore tx state; all callers are non-transactional
     RegionEntry re = this.entries.getEntry(key);
     if (re != null && re.isRemoved()) {
@@ -5020,150 +4891,143 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Return true if invalidation occurred; false if it did not, for example if
-   * it was already invalidated
+   * Return true if invalidation occurred; false if it did not, for example if it was already
+   * invalidated
    *
    * @see DistributedRegion#basicInvalidate(EntryEventImpl)
    */
-  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException
-  {
+  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     basicInvalidate(event, isInitialized()/* for bug 35214 */);
   }
 
   /**
-   * Used by disk regions when recovering data from backup. Currently this "put"
-   * is done at a very low level to keep it from generating events or pushing
-   * updates to others.
+   * Used by disk regions when recovering data from backup. Currently this "put" is done at a very
+   * low level to keep it from generating events or pushing updates to others.
    */
-  public DiskEntry initializeRecoveredEntry(Object key, DiskEntry.RecoveredEntry value)
-  {
+  public DiskEntry initializeRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
     Assert.assertTrue(this.diskRegion != null);
     // region operation so it is ok to ignore tx state
     RegionEntry re = this.entries.initRecoveredEntry(key, value);
     if (re == null) {
-      throw new InternalGemFireError(LocalizedStrings.LocalRegion_ENTRY_ALREADY_EXISTED_0.toLocalizedString(key));
+      throw new InternalGemFireError(
+          LocalizedStrings.LocalRegion_ENTRY_ALREADY_EXISTED_0.toLocalizedString(key));
     }
-    return (DiskEntry)re;
+    return (DiskEntry) re;
   }
+
   /**
-   * Used by disk regions when recovering data from backup and
-   * initializedRecoveredEntry has already been called for the given key.
-   * Currently this "put"
-   * is done at a very low level to keep it from generating events or pushing
-   * updates to others.
+   * Used by disk regions when recovering data from backup and initializedRecoveredEntry has already
+   * been called for the given key. Currently this "put" is done at a very low level to keep it from
+   * generating events or pushing updates to others.
    */
-  public DiskEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry value)
-  {
+  public DiskEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
     Assert.assertTrue(this.diskRegion != null);
     // region operation so it is ok to ignore tx state
     RegionEntry re = this.entries.updateRecoveredEntry(key, value);
-    return (DiskEntry)re;
+    return (DiskEntry) re;
   }
-  
+
   public void copyRecoveredEntries(RegionMap rm) {
     this.entries.copyRecoveredEntries(rm);
   }
-  
+
   public void recordRecoveredGCVersion(VersionSource member, long gcVersion) {
-  //TODO - RVV - I'm not sure about this recordGCVersion method. It seems
-    //like it's not doing the right thing if the current member is the member
-    //we just recovered.
-    //We need to update the RVV in memory
+    // TODO - RVV - I'm not sure about this recordGCVersion method. It seems
+    // like it's not doing the right thing if the current member is the member
+    // we just recovered.
+    // We need to update the RVV in memory
     this.versionVector.recordGCVersion(member, gcVersion);
-    
-    //We also need to update the RVV that represents what we have persisted on disk
+
+    // We also need to update the RVV that represents what we have persisted on disk
     DiskRegion dr = this.getDiskRegion();
-    if(dr != null) {
+    if (dr != null) {
       dr.recordRecoveredGCVersion(member, gcVersion);
     }
   }
 
-  public void recordRecoveredVersonHolder(VersionSource member,
-      RegionVersionHolder versionHolder, boolean latestOplog) {
-    if(this.concurrencyChecksEnabled) {
-      //We need to update the RVV in memory
+  public void recordRecoveredVersonHolder(VersionSource member, RegionVersionHolder versionHolder,
+      boolean latestOplog) {
+    if (this.concurrencyChecksEnabled) {
+      // We need to update the RVV in memory
       this.versionVector.initRecoveredVersion(member, versionHolder, latestOplog);
       DiskRegion dr = this.getDiskRegion();
-      //We also need to update the RVV that represents what we have persisted on disk
-      if(dr != null) {
+      // We also need to update the RVV that represents what we have persisted on disk
+      if (dr != null) {
         dr.recordRecoveredVersonHolder(member, versionHolder, latestOplog);
       }
     }
   }
-  
+
   @Override
   public void recordRecoveredVersionTag(VersionTag tag) {
-    if(this.concurrencyChecksEnabled) {
+    if (this.concurrencyChecksEnabled) {
       this.versionVector.recordVersion(tag.getMemberID(), tag.getRegionVersion());
       DiskRegion dr = this.getDiskRegion();
-      //We also need to update the RVV that represents what we have persisted on disk
-      if(dr != null) {
+      // We also need to update the RVV that represents what we have persisted on disk
+      if (dr != null) {
         dr.recordRecoveredVersionTag(tag);
       }
     }
   }
-  
-  
+
+
 
   @Override
   public void setRVVTrusted(boolean rvvTrusted) {
-    if(this.concurrencyChecksEnabled) {
+    if (this.concurrencyChecksEnabled) {
       DiskRegion dr = this.getDiskRegion();
-      //Update whether or not the RVV we have recovered is trusted (accurately
-      //represents what we have on disk).
-      if(dr != null) {
+      // Update whether or not the RVV we have recovered is trusted (accurately
+      // represents what we have on disk).
+      if (dr != null) {
         dr.setRVVTrusted(rvvTrusted);
       }
     }
   }
-  
+
   /**
    * Get the best iterator for the region entries.
    */
   public Iterator<RegionEntry> getBestIterator(boolean includeValues) {
-    if(this instanceof DistributedRegion) {
-      return ((DistributedRegion)this).getBestIterator(includeValues);
+    if (this instanceof DistributedRegion) {
+      return ((DistributedRegion) this).getBestIterator(includeValues);
     }
-    
+
     return this.entries.regionEntries().iterator();
   }
-  
+
   /**
-   * Fix up our RVV by iterating over the entries in the region
-   * and making sure they are applied to the RVV.
+   * Fix up our RVV by iterating over the entries in the region and making sure they are applied to
+   * the RVV.
    * 
-   * If we failed to do a GII, we may have applied the RVV from a remote member.
-   * That RVV may not have seen some of the events in our local RVV. Those
-   * entries were supposed to be replaced with the results of the GII. However,
-   * if we failed the GII, those entries may still be in the cache, but are 
-   * no longer reflected in the local RVV. This method iterates over those
-   * keys and makes sure their versions are applied to the local RVV.
+   * If we failed to do a GII, we may have applied the RVV from a remote member. That RVV may not
+   * have seen some of the events in our local RVV. Those entries were supposed to be replaced with
+   * the results of the GII. However, if we failed the GII, those entries may still be in the cache,
+   * but are no longer reflected in the local RVV. This method iterates over those keys and makes
+   * sure their versions are applied to the local RVV.
    * 
-   * TODO - this method should probably rebuild the RVV from scratch, instead
-   * of starting with the existing RVV. By starting with the existing RVV, we
-   * may claim to have entries that we actually don't have. Unfortunately, we
-   * can't really rebuild the RVV from scratch because we will end up with
-   * huge exception lists.
+   * TODO - this method should probably rebuild the RVV from scratch, instead of starting with the
+   * existing RVV. By starting with the existing RVV, we may claim to have entries that we actually
+   * don't have. Unfortunately, we can't really rebuild the RVV from scratch because we will end up
+   * with huge exception lists.
    * 
-   * However, if we are in the state of recovering from disk with an untrusted
-   * RVV, we must be newer than any other surviving members. So they shouldn't
-   * have any entries in their cache that match entries that we failed to receive
-   * through the GII but are reflected in our current RVV. So it should be 
-   * safe to start with the current RVV.
+   * However, if we are in the state of recovering from disk with an untrusted RVV, we must be newer
+   * than any other surviving members. So they shouldn't have any entries in their cache that match
+   * entries that we failed to receive through the GII but are reflected in our current RVV. So it
+   * should be safe to start with the current RVV.
    * 
    */
   void repairRVV() {
     RegionVersionVector rvv = this.getVersionVector();
-    
-    if(rvv == null) {
-      //No need to do anything.
+
+    if (rvv == null) {
+      // No need to do anything.
       return;
     }
-    
+
     Iterator<RegionEntry> it = getBestIterator(false);
     int count = 0;
     VersionSource<?> myId = this.getVersionMember();
-    //Iterate over the all of the entries
+    // Iterate over the all of the entries
     while (it.hasNext()) {
       RegionEntry mapEntry = it.next();
       VersionStamp<?> stamp = mapEntry.getVersionStamp();
@@ -5171,50 +5035,50 @@ public class LocalRegion extends AbstractRegion
       if (id == null) {
         id = myId;
       }
-      //Make sure the version is applied to the regions RVV
+      // Make sure the version is applied to the regions RVV
       rvv.recordVersion(id, stamp.getRegionVersion());
-      
+
     }
   }
 
   /**
-   * Return true if invalidation occurred; false if it did not, for example if
-   * it was already invalidated
+   * Return true if invalidation occurred; false if it did not, for example if it was already
+   * invalidated
    */
-  private void basicInvalidate(final EntryEventImpl event,
-      boolean invokeCallbacks) throws EntryNotFoundException
-  {
+  private void basicInvalidate(final EntryEventImpl event, boolean invokeCallbacks)
+      throws EntryNotFoundException {
     basicInvalidate(event, invokeCallbacks, false);
   }
 
   /**
-   * Asif:Made this function protected as this is over ridden in HARegion to
-   * abort expiry of Events which have key as Long , if it is not able to
-   * destroy from availableIDs
+   * Asif:Made this function protected as this is over ridden in HARegion to abort expiry of Events
+   * which have key as Long , if it is not able to destroy from availableIDs
    *
-   * @param forceNewEntry
-   *          true if we are a mirror and still in the initialization phase.
-   *          Called from InvalidateOperation.InvalidateMessage
-
+   * @param forceNewEntry true if we are a mirror and still in the initialization phase. Called from
+   *        InvalidateOperation.InvalidateMessage
+   * 
    */
   void basicInvalidate(final EntryEventImpl event, boolean invokeCallbacks,
-      final boolean forceNewEntry) throws EntryNotFoundException
-  {
-    if (!event.isOriginRemote() && !event.isDistributed()
-        && getScope().isDistributed() && getDataPolicy().withReplication()
+      final boolean forceNewEntry) throws EntryNotFoundException {
+    if (!event.isOriginRemote() && !event.isDistributed() && getScope().isDistributed()
+        && getDataPolicy().withReplication()
         && invokeCallbacks /*
-                            * catches case where being called by (distributed)
-                            * invalidateRegion
+                            * catches case where being called by (distributed) invalidateRegion
                             */) {
-      throw new IllegalStateException(LocalizedStrings.LocalRegion_CANNOT_DO_A_LOCAL_INVALIDATE_ON_A_REPLICATED_REGION.toLocalizedString());
+      throw new IllegalStateException(
+          LocalizedStrings.LocalRegion_CANNOT_DO_A_LOCAL_INVALIDATE_ON_A_REPLICATED_REGION
+              .toLocalizedString());
     }
 
     if (hasSeenEvent(event)) {
-      if(logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "LR.basicInvalidate: this cache has already seen this event {}", event);
+      if (logger.isTraceEnabled(LogMarker.DM)) {
+        logger.trace(LogMarker.DM, "LR.basicInvalidate: this cache has already seen this event {}",
+            event);
       }
-      if (this.concurrencyChecksEnabled && event.getVersionTag() != null && !event.getVersionTag().isRecorded()) {
-        getVersionVector().recordVersion((InternalDistributedMember) event.getDistributedMember(), event.getVersionTag());
+      if (this.concurrencyChecksEnabled && event.getVersionTag() != null
+          && !event.getVersionTag().isRecorded()) {
+        getVersionVector().recordVersion((InternalDistributedMember) event.getDistributedMember(),
+            event.getVersionTag());
       }
       return;
     }
@@ -5223,22 +5087,19 @@ public class LocalRegion extends AbstractRegion
     getDataView().invalidateExistingEntry(event, invokeCallbacks, forceNewEntry);
   }
 
-  void basicInvalidatePart2(RegionEntry re, EntryEventImpl event,
-      boolean conflictwithClear, boolean invokeCallbacks)
-  {
+  void basicInvalidatePart2(RegionEntry re, EntryEventImpl event, boolean conflictwithClear,
+      boolean invokeCallbacks) {
     updateStatsForInvalidate();
 
     if (invokeCallbacks) {
       try {
         re.dispatchListenerEvents(event);
-      }
-      catch (InterruptedException ie) {
+      } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
         stopper.checkCancelInProgress(null);
         return;
       }
-    }
-    else {
+    } else {
       event.callbacksInvoked(true);
     }
   }
@@ -5250,8 +5111,7 @@ public class LocalRegion extends AbstractRegion
     getCachePerfStats().incInvalidates();
   }
 
-  void basicInvalidatePart3(RegionEntry re, EntryEventImpl event,
-      boolean invokeCallbacks) {
+  void basicInvalidatePart3(RegionEntry re, EntryEventImpl event, boolean invokeCallbacks) {
     // No op. overriden by sub classes.
     // Dispatching listener events moved to basic*Part2.
   }
@@ -5264,50 +5124,45 @@ public class LocalRegion extends AbstractRegion
     // Notify bridge clients (if this is a BridgeServer)
     event.setEventType(eventType);
     notifyBridgeClients(event);
-    if(callDispatchListenerEvent){
+    if (callDispatchListenerEvent) {
       dispatchListenerEvent(eventType, event);
     }
   }
 
   /**
-   * @param key
-   *          the key of the entry to invalidate
-   * @param newValue
-   *          the new value of the entry
-   * @param didDestroy
-   *          true if tx destroyed this entry at some point
-   * @param rmtOrigin
-   *          true if transaction being applied had a remote origin
-   * @param event
-   *          filled in if operation performed
-   * @param filterRoutingInfo 
-   * @param bridgeContext 
+   * @param key the key of the entry to invalidate
+   * @param newValue the new value of the entry
+   * @param didDestroy true if tx destroyed this entry at some point
+   * @param rmtOrigin true if transaction being applied had a remote origin
+   * @param event filled in if operation performed
+   * @param filterRoutingInfo
+   * @param bridgeContext
    * @param txEntryState for passing up versionTag - only on near side
    * @param versionTag tag generated by txCoordinator - only on far side
    * @param tailKey tail (shadow) key generated by txCoordinator for WAN - only on farside
    */
   final void txApplyInvalidate(Object key, Object newValue, boolean didDestroy,
-      TransactionId rmtOrigin, TXRmtEvent event, boolean localOp, 
-      EventID eventId, Object aCallbackArgument,List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
-      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag, long tailKey)
-  {
-    this.entries.txApplyInvalidate(key, newValue, didDestroy, rmtOrigin, 
-        event, localOp, eventId, aCallbackArgument,pendingCallbacks,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
+      TransactionId rmtOrigin, TXRmtEvent event, boolean localOp, EventID eventId,
+      Object aCallbackArgument, List<EntryEventImpl> pendingCallbacks,
+      FilterRoutingInfo filterRoutingInfo, ClientProxyMembershipID bridgeContext,
+      TXEntryState txEntryState, VersionTag versionTag, long tailKey) {
+    this.entries.txApplyInvalidate(key, newValue, didDestroy, rmtOrigin, event, localOp, eventId,
+        aCallbackArgument, pendingCallbacks, filterRoutingInfo, bridgeContext, txEntryState,
+        versionTag, tailKey);
   }
 
   /**
-   * Called by lower levels, while still holding the write sync lock, and the
-   * low level has completed its part of the basic destroy
+   * Called by lower levels, while still holding the write sync lock, and the low level has
+   * completed its part of the basic destroy
    */
-  final void txApplyInvalidatePart2(RegionEntry re, Object key,
-      boolean didDestroy, boolean didInvalidate, boolean clearConflict)
-  {
+  final void txApplyInvalidatePart2(RegionEntry re, Object key, boolean didDestroy,
+      boolean didInvalidate, boolean clearConflict) {
     if (this.testCallable != null) {
       this.testCallable.call(this, Operation.INVALIDATE, re);
     }
     if (didInvalidate) {
       updateStatsForInvalidate();
-      // Bug 40842: clearing index of the old value 
+      // Bug 40842: clearing index of the old value
       // performed in AbstractRegionMap
     }
     if (didDestroy) {
@@ -5318,70 +5173,54 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Allows null as new value to accomodate create with a null value. Assumes
-   * all key, value, and callback validations have been performed.
+   * Allows null as new value to accomodate create with a null value. Assumes all key, value, and
+   * callback validations have been performed.
    *
-   * @param event
-   *          the event object for this operation, with the exception that the
-   *          oldValue parameter is not yet filled in. The oldValue will be
-   *          filled in by this operation.
+   * @param event the event object for this operation, with the exception that the oldValue
+   *        parameter is not yet filled in. The oldValue will be filled in by this operation.
    *
-   * @param ifNew
-   *          true if this operation must not overwrite an existing key
-   * @param ifOld
-   *          true if this operation must not create a new key
-   * @param expectedOldValue
-   *          only succeed if old value is equal to this value. If null,
-   *          then doesn't matter what old value is. If INVALID token,
-   *          must be INVALID.
-   * @param requireOldValue
-   *          true if the oldValue should be set in event even if ifNew
-   *          and entry exists
-   * @return false if ifNew is true and there is an existing key or
-   *         if ifOld is true and expectedOldValue does not match the current
-   *         value in the cache.  Otherwise return true.
+   * @param ifNew true if this operation must not overwrite an existing key
+   * @param ifOld true if this operation must not create a new key
+   * @param expectedOldValue only succeed if old value is equal to this value. If null, then doesn't
+   *        matter what old value is. If INVALID token, must be INVALID.
+   * @param requireOldValue true if the oldValue should be set in event even if ifNew and entry
+   *        exists
+   * @return false if ifNew is true and there is an existing key or if ifOld is true and
+   *         expectedOldValue does not match the current value in the cache. Otherwise return true.
    */
-  protected final boolean basicPut(EntryEventImpl event,
-      boolean ifNew,
-      boolean ifOld,
-      Object expectedOldValue,
-      boolean requireOldValue)
-  throws TimeoutException, CacheWriterException {
-	 return getDataView().putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, 0L, false);
+  protected final boolean basicPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue)
+      throws TimeoutException, CacheWriterException {
+    return getDataView().putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, 0L,
+        false);
   }
 
   /**
-   * @param putOp
-   *          describes the operation that did the put
-   * @param key
-   *          the key of the entry to put
-   * @param newValue
-   *          the new value of the entry
-   * @param didDestroy
-   *          true if tx destroyed this entry at some point
-   * @param rmtOrigin
-   *          true if transaction being applied had a remote origin
-   * @param event
-   *          filled in if operation performed
-   * @param aCallbackArgument
-   *            argument passed in by user
-   * @param filterRoutingInfo 
-   * @param bridgeContext 
+   * @param putOp describes the operation that did the put
+   * @param key the key of the entry to put
+   * @param newValue the new value of the entry
+   * @param didDestroy true if tx destroyed this entry at some point
+   * @param rmtOrigin true if transaction being applied had a remote origin
+   * @param event filled in if operation performed
+   * @param aCallbackArgument argument passed in by user
+   * @param filterRoutingInfo
+   * @param bridgeContext
    * @param txEntryState for passing up versionTag - only on near side
    * @param versionTag tag generated by txCoordinator - only on far side
    * @param tailKey tail (shadow) key generated by txCoordinator for WAN - only on farside
    */
-  final void txApplyPut(Operation putOp, Object key, Object newValue,
-      boolean didDestroy, TransactionId rmtOrigin, TXRmtEvent event, 
-      EventID eventId, Object aCallbackArgument,List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
-      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag, long tailKey)
-  {
+  final void txApplyPut(Operation putOp, Object key, Object newValue, boolean didDestroy,
+      TransactionId rmtOrigin, TXRmtEvent event, EventID eventId, Object aCallbackArgument,
+      List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, TXEntryState txEntryState, VersionTag versionTag,
+      long tailKey) {
     long startPut = CachePerfStats.getStatTime();
-    this.entries.txApplyPut(putOp, key, newValue, didDestroy, rmtOrigin, 
-        event, eventId, aCallbackArgument,pendingCallbacks,filterRoutingInfo,bridgeContext, txEntryState, versionTag, tailKey);
+    this.entries.txApplyPut(putOp, key, newValue, didDestroy, rmtOrigin, event, eventId,
+        aCallbackArgument, pendingCallbacks, filterRoutingInfo, bridgeContext, txEntryState,
+        versionTag, tailKey);
     updateStatsForPut(startPut);
-    //Fix for 47507 - make sure we throw an exception if we skip the TX put because
-    //the region is cleared (due to a destroy).
+    // Fix for 47507 - make sure we throw an exception if we skip the TX put because
+    // the region is cleared (due to a destroy).
     this.checkReadiness();
   }
 
@@ -5392,9 +5231,8 @@ public class LocalRegion extends AbstractRegion
     getCachePerfStats().endPut(startPut, false);
   }
 
-  final void txApplyPutPart2(RegionEntry re, Object key, Object newValue,
-      long lastModified, boolean isCreate, boolean didDestroy, boolean clearConflict )
-  {
+  final void txApplyPutPart2(RegionEntry re, Object key, Object newValue, long lastModified,
+      boolean isCreate, boolean didDestroy, boolean clearConflict) {
     if (this.testCallable != null) {
       Operation op = isCreate ? Operation.CREATE : Operation.UPDATE;
       this.testCallable.call(this, op, re);
@@ -5406,12 +5244,9 @@ public class LocalRegion extends AbstractRegion
       if (this.indexManager != null) {
         try {
           this.indexManager.updateIndexes(re,
-                                          isCreate ? IndexManager.ADD_ENTRY :
-                                                     IndexManager.UPDATE_ENTRY,
-                                          isCreate ? IndexProtocol.OTHER_OP :
-                                                     IndexProtocol.AFTER_UPDATE_OP);
-        }
-        catch (QueryException e) {
+              isCreate ? IndexManager.ADD_ENTRY : IndexManager.UPDATE_ENTRY,
+              isCreate ? IndexProtocol.OTHER_OP : IndexProtocol.AFTER_UPDATE_OP);
+        } catch (QueryException e) {
           throw new IndexMaintenanceException(e);
         }
       }
@@ -5427,167 +5262,159 @@ public class LocalRegion extends AbstractRegion
     setLastModifiedTime(lastModified);
   }
 
-  public boolean basicBridgeCreate(final Object key, final byte[] value,
-      boolean isObject, Object p_callbackArg, final ClientProxyMembershipID client,
-      boolean fromClient, EntryEventImpl clientEvent, boolean throwEntryExists) throws TimeoutException,
-      EntryExistsException, CacheWriterException
-  {
+  public boolean basicBridgeCreate(final Object key, final byte[] value, boolean isObject,
+      Object p_callbackArg, final ClientProxyMembershipID client, boolean fromClient,
+      EntryEventImpl clientEvent, boolean throwEntryExists)
+      throws TimeoutException, EntryExistsException, CacheWriterException {
     EventID eventId = clientEvent.getEventId();
     Object callbackArg = p_callbackArg;
     long startPut = CachePerfStats.getStatTime();
     if (fromClient) {
       // If this region is also wan-enabled, then wrap that callback arg in a
       // GatewayEventCallbackArgument to store the event id.
-      if(isGatewaySenderEnabled()) {
+      if (isGatewaySenderEnabled()) {
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
-    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.CREATE, key,
-       value, callbackArg,  false /* origin remote */, client.getDistributedMember(),
-        true /* generateCallbacks */,
-        eventId);
+    @Released
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.CREATE, key, value,
+        callbackArg, false /* origin remote */, client.getDistributedMember(),
+        true /* generateCallbacks */, eventId);
     try {
-    event.setContext(client);
-    
-    // if this is a replayed operation or WAN event we may already have a version tag
-    event.setVersionTag(clientEvent.getVersionTag());
-    //carry over the possibleDuplicate flag from clientEvent
-    event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
+      event.setContext(client);
 
-    //Fix for 42448 - Only make create with null a local invalidate for
-    //normal regions. Otherwise, it will become a distributed invalidate.
-    if(getDataPolicy() == DataPolicy.NORMAL) {
-      event.setLocalInvalid(true);
-    }
+      // if this is a replayed operation or WAN event we may already have a version tag
+      event.setVersionTag(clientEvent.getVersionTag());
+      // carry over the possibleDuplicate flag from clientEvent
+      event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
 
-    // Set the new value to the input byte[] if it isn't null
-    if (value != null) {
-      // If the byte[] represents an object, then store it serialized
-      // in a CachedDeserializable; otherwise store it directly as a byte[]
-      if (isObject) {
-        // The value represents an object
-        event.setSerializedNewValue(value);
+      // Fix for 42448 - Only make create with null a local invalidate for
+      // normal regions. Otherwise, it will become a distributed invalidate.
+      if (getDataPolicy() == DataPolicy.NORMAL) {
+        event.setLocalInvalid(true);
       }
-      else {
-        // The value does not represent an object
-        event.setNewValue(value);
-      }
-    }
 
-    boolean ifNew = true; // cannot overwrite an existing key
-    boolean ifOld = false; // can create a new key
-    long lastModified = 0L; // use now
-    boolean overwriteDestroyed = false; // not okay to overwrite the DESTROYED
-    // token
-    boolean success = basicUpdate(event, ifNew, ifOld, lastModified,
-        overwriteDestroyed);
-    clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
-    if (success) {
-      clientEvent.setVersionTag(event.getVersionTag());
-      getCachePerfStats().endPut(startPut, event.isOriginRemote());
-    }
-    else {
-      this.stopper.checkCancelInProgress(null);
-      if (throwEntryExists) {
-        throw new EntryExistsException(""+key, event.getOldValue());
+      // Set the new value to the input byte[] if it isn't null
+      if (value != null) {
+        // If the byte[] represents an object, then store it serialized
+        // in a CachedDeserializable; otherwise store it directly as a byte[]
+        if (isObject) {
+          // The value represents an object
+          event.setSerializedNewValue(value);
+        } else {
+          // The value does not represent an object
+          event.setNewValue(value);
+        }
       }
-    }
-    return success;
+
+      boolean ifNew = true; // cannot overwrite an existing key
+      boolean ifOld = false; // can create a new key
+      long lastModified = 0L; // use now
+      boolean overwriteDestroyed = false; // not okay to overwrite the DESTROYED
+      // token
+      boolean success = basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed);
+      clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
+      if (success) {
+        clientEvent.setVersionTag(event.getVersionTag());
+        getCachePerfStats().endPut(startPut, event.isOriginRemote());
+      } else {
+        this.stopper.checkCancelInProgress(null);
+        if (throwEntryExists) {
+          throw new EntryExistsException("" + key, event.getOldValue());
+        }
+      }
+      return success;
     } finally {
       event.release();
     }
   }
 
-  public boolean basicBridgePut(Object key, Object value, byte[] deltaBytes,
-      boolean isObject, Object p_callbackArg, ClientProxyMembershipID memberId,
-      boolean fromClient, EntryEventImpl clientEvent)
-      throws TimeoutException, CacheWriterException {
+  public boolean basicBridgePut(Object key, Object value, byte[] deltaBytes, boolean isObject,
+      Object p_callbackArg, ClientProxyMembershipID memberId, boolean fromClient,
+      EntryEventImpl clientEvent) throws TimeoutException, CacheWriterException {
     EventID eventID = clientEvent.getEventId();
     Object callbackArg = p_callbackArg;
     long startPut = CachePerfStats.getStatTime();
     if (fromClient) {
       // If this region is also wan-enabled, then wrap that callback arg in a
       // GatewayEventCallbackArgument to store the event id.
-      if(isGatewaySenderEnabled()) {
+      if (isGatewaySenderEnabled()) {
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
-   
-    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE, key,
-        null /* new value */, callbackArg,
-        false /* origin remote */, memberId.getDistributedMember(),
-        true /* generateCallbacks */,
-        eventID);
-    try {
-    event.setContext(memberId);
-    event.setDeltaBytes(deltaBytes);
 
-    // if this is a replayed operation we may already have a version tag
-    event.setVersionTag(clientEvent.getVersionTag());
-    //carry over the possibleDuplicate flag from clientEvent
-    event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
-    
-    // Set the new value to the input byte[]
-    // If the byte[] represents an object, then store it
-    // serialized in a CachedDeserializable; otherwise store it directly
-    // as a byte[].
-    if (isObject && value instanceof byte[]) {
-      event.setSerializedNewValue((byte[])value);
-    }
-    else {
-      event.setNewValue(value);
-    }
-
-    boolean ifNew = false; // can overwrite an existing key
-    
-    boolean ifOld = false; // can create a new key
-    long lastModified = 0L; // use now
-    boolean overwriteDestroyed = false; // not okay to overwrite the DESTROYED token
-    boolean success = false;
+    @Released
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE, key,
+        null /* new value */, callbackArg, false /* origin remote */,
+        memberId.getDistributedMember(), true /* generateCallbacks */, eventID);
     try {
-      success = basicUpdate(event, ifNew, ifOld, lastModified,
-       overwriteDestroyed);
-    } catch (ConcurrentCacheModificationException ex) { // thrown by WAN conflicts
-      event.isConcurrencyConflict(true);
-    }
-    clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
-    if (success) {
-      clientEvent.setVersionTag(event.getVersionTag());
-      getCachePerfStats().endPut(startPut, event.isOriginRemote());
-    }
-    else {
-      this.stopper.checkCancelInProgress(null);
-    }
-    return success;
+      event.setContext(memberId);
+      event.setDeltaBytes(deltaBytes);
+
+      // if this is a replayed operation we may already have a version tag
+      event.setVersionTag(clientEvent.getVersionTag());
+      // carry over the possibleDuplicate flag from clientEvent
+      event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
+
+      // Set the new value to the input byte[]
+      // If the byte[] represents an object, then store it
+      // serialized in a CachedDeserializable; otherwise store it directly
+      // as a byte[].
+      if (isObject && value instanceof byte[]) {
+        event.setSerializedNewValue((byte[]) value);
+      } else {
+        event.setNewValue(value);
+      }
+
+      boolean ifNew = false; // can overwrite an existing key
+
+      boolean ifOld = false; // can create a new key
+      long lastModified = 0L; // use now
+      boolean overwriteDestroyed = false; // not okay to overwrite the DESTROYED token
+      boolean success = false;
+      try {
+        success = basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed);
+      } catch (ConcurrentCacheModificationException ex) { // thrown by WAN conflicts
+        event.isConcurrencyConflict(true);
+      }
+      clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
+      if (success) {
+        clientEvent.setVersionTag(event.getVersionTag());
+        getCachePerfStats().endPut(startPut, event.isOriginRemote());
+      } else {
+        this.stopper.checkCancelInProgress(null);
+      }
+      return success;
     } finally {
       event.release();
     }
   }
 
   /**
-   * issue a config message if the server and client have different
-   * concurrency checking expectations
+   * issue a config message if the server and client have different concurrency checking
+   * expectations
+   * 
    * @param tag
    */
   private void concurrencyConfigurationCheck(VersionTag tag) {
     if (!this.concurrencyMessageIssued && ((tag != null) != this.concurrencyChecksEnabled)) {
       this.concurrencyMessageIssued = true;
-      logger.info(LocalizedMessage.create(LocalizedStrings.LocalRegion_SERVER_HAS_CONCURRENCY_CHECKS_ENABLED_0_BUT_CLIENT_HAS_1_FOR_REGION_2,
-          new Object[]{ !this.concurrencyChecksEnabled, this.concurrencyChecksEnabled, this}));
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.LocalRegion_SERVER_HAS_CONCURRENCY_CHECKS_ENABLED_0_BUT_CLIENT_HAS_1_FOR_REGION_2,
+          new Object[] {!this.concurrencyChecksEnabled, this.concurrencyChecksEnabled, this}));
     }
   }
 
   /**
-   * Perform an update in a bridge client. See CacheClientUpdater.handleUpdate()
-   * The op is from the bridge server and should not be distributed back to it.
+   * Perform an update in a bridge client. See CacheClientUpdater.handleUpdate() The op is from the
+   * bridge server and should not be distributed back to it.
    *
    * @throws CacheWriterException TODO-javadocs
    */
-  public void basicBridgeClientUpdate(DistributedMember serverId, Object key,
-      Object value, byte[] deltaBytes, boolean isObject,
-      Object callbackArgument, boolean isCreate, boolean processedMarker,
-      EntryEventImpl event, EventID eventID) throws TimeoutException,
-      CacheWriterException {
+  public void basicBridgeClientUpdate(DistributedMember serverId, Object key, Object value,
+      byte[] deltaBytes, boolean isObject, Object callbackArgument, boolean isCreate,
+      boolean processedMarker, EntryEventImpl event, EventID eventID)
+      throws TimeoutException, CacheWriterException {
     if (isCacheContentProxy()) {
       return;
     }
@@ -5609,9 +5436,8 @@ public class LocalRegion extends AbstractRegion
       // as a byte[].
       if (isObject && value instanceof byte[]) {
         // The value represents an object
-        event.setSerializedNewValue((byte[])value);
-      }
-      else {
+        event.setSerializedNewValue((byte[]) value);
+      } else {
         // The value does not represent an object
         event.setNewValue(value);
       }
@@ -5624,68 +5450,63 @@ public class LocalRegion extends AbstractRegion
       boolean ifNew = false; // can overwrite an existing key
       boolean ifOld = false; // can create a new key
       long lastModified = 0L; // use now
-      boolean overwriteDestroyed = true; //okay to overwrite the DESTROYED token
+      boolean overwriteDestroyed = true; // okay to overwrite the DESTROYED token
       if (basicUpdate(event, ifNew, ifOld, lastModified, overwriteDestroyed)) {
         getCachePerfStats().endPut(startPut, event.isOriginRemote());
       }
-    }
-    else {
+    } else {
       if (isInitialized()) {
-        invokePutCallbacks(isCreate ? EnumListenerEvent.AFTER_CREATE
-            : EnumListenerEvent.AFTER_UPDATE, event, true, true);
+        invokePutCallbacks(
+            isCreate ? EnumListenerEvent.AFTER_CREATE : EnumListenerEvent.AFTER_UPDATE, event, true,
+            true);
       }
     }
   }
 
   /**
-   * Perform an invalidate in a bridge client.
-   * The op is from the bridge server and should not be distributed back to it.
+   * Perform an invalidate in a bridge client. The op is from the bridge server and should not be
+   * distributed back to it.
    *
    * @throws EntryNotFoundException TODO-javadocs
    */
   public void basicBridgeClientInvalidate(DistributedMember serverId, Object key,
-      Object callbackArgument, boolean processedMarker, EventID eventID,
-      VersionTag versionTag)
-  throws EntryNotFoundException {
+      Object callbackArgument, boolean processedMarker, EventID eventID, VersionTag versionTag)
+      throws EntryNotFoundException {
     if (!isCacheContentProxy()) {
       concurrencyConfigurationCheck(versionTag);
 
       // Create an event and put the entry
-      @Released EntryEventImpl event =
-        EntryEventImpl.create(this,
-                           Operation.INVALIDATE,
-                           key, null /* newValue */,
-                           callbackArgument /* callbackArg*/,
-                           true /*originRemote*/,
-                           serverId
-                           );
+      @Released
+      EntryEventImpl event =
+          EntryEventImpl.create(this, Operation.INVALIDATE, key, null /* newValue */,
+              callbackArgument /* callbackArg */, true /* originRemote */, serverId);
       try {
 
-      event.setVersionTag(versionTag);
-      event.setFromServer(true);
-      if (generateEventID() && !this.cache.getCacheServers().isEmpty()) {
-        event.setNewEventId(cache.getDistributedSystem());
-      } else {
-        event.setEventId(eventID);
-      }
+        event.setVersionTag(versionTag);
+        event.setFromServer(true);
+        if (generateEventID() && !this.cache.getCacheServers().isEmpty()) {
+          event.setNewEventId(cache.getDistributedSystem());
+        } else {
+          event.setEventId(eventID);
+        }
 
-      // If the marker has been processed, process this invalidate event
-      // normally; otherwise, this event occurred in the past and has been
-      // stored for a durable client. In this case, just invoke the invalidate
-      // callbacks.
-      if (processedMarker) {
-        // [bruce] changed to force new entry creation for consistency
-        final boolean forceNewEntry = this.concurrencyChecksEnabled;
-        basicInvalidate(event, true, forceNewEntry);
-        if (event.isConcurrencyConflict()) { // bug #45520 - we must throw this for the CacheClientUpdater
-          throw new ConcurrentCacheModificationException();
+        // If the marker has been processed, process this invalidate event
+        // normally; otherwise, this event occurred in the past and has been
+        // stored for a durable client. In this case, just invoke the invalidate
+        // callbacks.
+        if (processedMarker) {
+          // [bruce] changed to force new entry creation for consistency
+          final boolean forceNewEntry = this.concurrencyChecksEnabled;
+          basicInvalidate(event, true, forceNewEntry);
+          if (event.isConcurrencyConflict()) { // bug #45520 - we must throw this for the
+                                               // CacheClientUpdater
+            throw new ConcurrentCacheModificationException();
+          }
+        } else {
+          if (isInitialized()) {
+            invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event, true);
+          }
         }
-      } else {
-        if (isInitialized()) {
-          invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event,
-              true);
-        }
-      }
       } finally {
         event.release();
       }
@@ -5693,54 +5514,49 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Perform a destroy in a bridge client.
-   * The op is from the bridge server and should not be distributed back to it.
+   * Perform a destroy in a bridge client. The op is from the bridge server and should not be
+   * distributed back to it.
    *
    * @throws EntryNotFoundException TODO-javadocs
    */
   public void basicBridgeClientDestroy(DistributedMember serverId, Object key,
-      Object callbackArgument, boolean processedMarker, EventID eventID,
-      VersionTag versionTag)
-    throws EntryNotFoundException {
+      Object callbackArgument, boolean processedMarker, EventID eventID, VersionTag versionTag)
+      throws EntryNotFoundException {
     if (!isCacheContentProxy()) {
       concurrencyConfigurationCheck(versionTag);
 
       // Create an event and destroy the entry
-      @Released EntryEventImpl event =
-        EntryEventImpl.create(this,
-                           Operation.DESTROY,
-                           key, null /* newValue */,
-                           callbackArgument /* callbackArg*/,
-                           true /*originRemote*/,
-                           serverId
-                           );
+      @Released
+      EntryEventImpl event =
+          EntryEventImpl.create(this, Operation.DESTROY, key, null /* newValue */,
+              callbackArgument /* callbackArg */, true /* originRemote */, serverId);
       try {
-      event.setFromServer(true);
-      event.setVersionTag(versionTag);
-      
-      if (generateEventID() && !this.cache.getCacheServers().isEmpty()) {
-        event.setNewEventId(cache.getDistributedSystem());
-      } else {
-        event.setEventId(eventID);
-      }
-      // If the marker has been processed, process this destroy event normally;
-      // otherwise, this event occurred in the past and has been stored for a
-      // durable client. In this case, just invoke the destroy callbacks.
-      if(logger.isDebugEnabled()) {
-        logger.debug("basicBridgeClientDestroy(processedMarker={})", processedMarker);
-      }
-      if (processedMarker) {
-        basicDestroy(event,
-                     false, // cacheWrite
-                     null); // expectedOldValue
-        if (event.isConcurrencyConflict()) { // bug #45520 - we must throw an exception for CacheClientUpdater
-          throw new ConcurrentCacheModificationException();
+        event.setFromServer(true);
+        event.setVersionTag(versionTag);
+
+        if (generateEventID() && !this.cache.getCacheServers().isEmpty()) {
+          event.setNewEventId(cache.getDistributedSystem());
+        } else {
+          event.setEventId(eventID);
         }
-      } else {
-        if (isInitialized()) {
-          invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, true, true);
+        // If the marker has been processed, process this destroy event normally;
+        // otherwise, this event occurred in the past and has been stored for a
+        // durable client. In this case, just invoke the destroy callbacks.
+        if (logger.isDebugEnabled()) {
+          logger.debug("basicBridgeClientDestroy(processedMarker={})", processedMarker);
         }
-      }
+        if (processedMarker) {
+          basicDestroy(event, false, // cacheWrite
+              null); // expectedOldValue
+          if (event.isConcurrencyConflict()) { // bug #45520 - we must throw an exception for
+                                               // CacheClientUpdater
+            throw new ConcurrentCacheModificationException();
+          }
+        } else {
+          if (isInitialized()) {
+            invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, true, true);
+          }
+        }
       } finally {
         event.release();
       }
@@ -5749,17 +5565,16 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Clear the region from a server request.
-   * @param callbackArgument The callback argument. This is currently null
-   * since {@link java.util.Map#clear} supports no parameters.
-   * @param processedMarker Whether the marker has been processed (for durable
-   * clients)
+   * 
+   * @param callbackArgument The callback argument. This is currently null since
+   *        {@link java.util.Map#clear} supports no parameters.
+   * @param processedMarker Whether the marker has been processed (for durable clients)
    */
   public void basicBridgeClientClear(Object callbackArgument, boolean processedMarker) {
     checkReadiness();
     checkForNoAccess();
-    RegionEventImpl event = new RegionEventImpl(this,
-        Operation.REGION_LOCAL_CLEAR, callbackArgument, true, getMyId(),
-        generateEventID()/* generate EventID */);
+    RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_LOCAL_CLEAR,
+        callbackArgument, true, getMyId(), generateEventID()/* generate EventID */);
     // If the marker has been processed, process this clear event normally;
     // otherwise, this event occurred in the past and has been stored for a
     // durable client. In this case, just invoke the clear callbacks.
@@ -5771,80 +5586,75 @@ public class LocalRegion extends AbstractRegion
       }
     }
   }
-  
-  
-  
-  public void basicBridgeDestroy(Object key, Object p_callbackArg,
-      ClientProxyMembershipID memberId, boolean fromClient, EntryEventImpl clientEvent)
-      throws TimeoutException, EntryNotFoundException, CacheWriterException
-  {
+
+
+
+  public void basicBridgeDestroy(Object key, Object p_callbackArg, ClientProxyMembershipID memberId,
+      boolean fromClient, EntryEventImpl clientEvent)
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
     Object callbackArg = p_callbackArg;
     if (fromClient) {
       // If this region is also wan-enabled, then wrap that callback arg in a
       // GatewayEventCallbackArgument to store the event id.
-      if(isGatewaySenderEnabled()) {
+      if (isGatewaySenderEnabled()) {
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
 
     // Create an event and put the entry
-    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.DESTROY, key,
-        null /* new value */, callbackArg,
-        false /* origin remote */, memberId.getDistributedMember(),
-        true /* generateCallbacks */,
-        clientEvent.getEventId());
+    @Released
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.DESTROY, key,
+        null /* new value */, callbackArg, false /* origin remote */,
+        memberId.getDistributedMember(), true /* generateCallbacks */, clientEvent.getEventId());
     try {
-    event.setContext(memberId);
-    // if this is a replayed or WAN operation we may already have a version tag
-    event.setVersionTag(clientEvent.getVersionTag());
-    try {
-      basicDestroy(event,
-                 true,  // cacheWrite
-                 null); // expectedOldValue
-    } catch (ConcurrentCacheModificationException ex) { // thrown by WAN conflicts
-      event.isConcurrencyConflict(true);
-    } finally {
-      clientEvent.setVersionTag(event.getVersionTag());
-      clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
-      clientEvent.setIsRedestroyedEntry(event.getIsRedestroyedEntry());
-    }
+      event.setContext(memberId);
+      // if this is a replayed or WAN operation we may already have a version tag
+      event.setVersionTag(clientEvent.getVersionTag());
+      try {
+        basicDestroy(event, true, // cacheWrite
+            null); // expectedOldValue
+      } catch (ConcurrentCacheModificationException ex) { // thrown by WAN conflicts
+        event.isConcurrencyConflict(true);
+      } finally {
+        clientEvent.setVersionTag(event.getVersionTag());
+        clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
+        clientEvent.setIsRedestroyedEntry(event.getIsRedestroyedEntry());
+      }
     } finally {
       event.release();
     }
   }
 
-  
+
   public void basicBridgeInvalidate(Object key, Object p_callbackArg,
       ClientProxyMembershipID memberId, boolean fromClient, EntryEventImpl clientEvent)
-      throws TimeoutException, EntryNotFoundException, CacheWriterException
-  {
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
     Object callbackArg = p_callbackArg;
     if (fromClient) {
       // If this region is also wan-enabled, then wrap that callback arg in a
       // GatewayEventCallbackArgument to store the event id.
-      if(isGatewaySenderEnabled()) {
+      if (isGatewaySenderEnabled()) {
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
 
     // Create an event and put the entry
-    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.INVALIDATE, key,
-        null /* new value */, callbackArg,
-        false /* origin remote */, memberId.getDistributedMember(),
-        true /* generateCallbacks */,
-        clientEvent.getEventId());
+    @Released
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.INVALIDATE, key,
+        null /* new value */, callbackArg, false /* origin remote */,
+        memberId.getDistributedMember(), true /* generateCallbacks */, clientEvent.getEventId());
     try {
-    event.setContext(memberId);
-    
-    // if this is a replayed operation we may already have a version tag
-    event.setVersionTag(clientEvent.getVersionTag());
+      event.setContext(memberId);
 
-    try {
-      basicInvalidate(event);
-    } finally {
-      clientEvent.setVersionTag(event.getVersionTag());
-      clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
-    }
+      // if this is a replayed operation we may already have a version tag
+      event.setVersionTag(clientEvent.getVersionTag());
+
+      try {
+        basicInvalidate(event);
+      } finally {
+        clientEvent.setVersionTag(event.getVersionTag());
+        clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
+      }
     } finally {
       event.release();
     }
@@ -5852,15 +5662,14 @@ public class LocalRegion extends AbstractRegion
 
   public void basicBridgeUpdateVersionStamp(Object key, Object p_callbackArg,
       ClientProxyMembershipID memberId, boolean fromClient, EntryEventImpl clientEvent) {
- 
+
     // Create an event and update version stamp of the entry
-    @Released EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE_VERSION_STAMP, key,
-        null /* new value */, null /*callbackArg*/,
-        false /* origin remote */, memberId.getDistributedMember(),
-        false /* generateCallbacks */,
-        clientEvent.getEventId());
+    @Released
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.UPDATE_VERSION_STAMP, key,
+        null /* new value */, null /* callbackArg */, false /* origin remote */,
+        memberId.getDistributedMember(), false /* generateCallbacks */, clientEvent.getEventId());
     event.setContext(memberId);
-    
+
     // if this is a replayed operation we may already have a version tag
     event.setVersionTag(clientEvent.getVersionTag());
 
@@ -5875,11 +5684,14 @@ public class LocalRegion extends AbstractRegion
 
   void basicUpdateEntryVersion(EntryEventImpl event) throws EntryNotFoundException {
     if (hasSeenEvent(event)) {
-      if(logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "LR.basicDestroy: this cache has already seen this event {}", event);
+      if (logger.isTraceEnabled(LogMarker.DM)) {
+        logger.trace(LogMarker.DM, "LR.basicDestroy: this cache has already seen this event {}",
+            event);
       }
-      if (this.concurrencyChecksEnabled && event.getVersionTag() != null && !event.getVersionTag().isRecorded()) {
-        getVersionVector().recordVersion((InternalDistributedMember) event.getDistributedMember(), event.getVersionTag());
+      if (this.concurrencyChecksEnabled && event.getVersionTag() != null
+          && !event.getVersionTag().isRecorded()) {
+        getVersionVector().recordVersion((InternalDistributedMember) event.getDistributedMember(),
+            event.getVersionTag());
       }
       return;
     }
@@ -5890,80 +5702,60 @@ public class LocalRegion extends AbstractRegion
   /**
    * Allows null as new value to accomodate create with a null value.
    *
-   * @param event
-   *          the event object for this operation, with the exception that the
-   *          oldValue parameter is not yet filled in. The oldValue will be
-   *          filled in by this operation.
+   * @param event the event object for this operation, with the exception that the oldValue
+   *        parameter is not yet filled in. The oldValue will be filled in by this operation.
    *
-   * @param ifNew
-   *          true if this operation must not overwrite an existing key
-   * @param ifOld
-   *          true if this operation must not create a new entry
-   * @param lastModified
-   *          the lastModified time to set with the value; if 0L, then the
-   *          lastModified time will be set to now.
-   * @param overwriteDestroyed
-   *          true if okay to overwrite the DESTROYED token: when this is true
-   *          has the following effect: even when ifNew is true will write over
-   *          DESTROYED token when overwriteDestroyed is false and ifNew or
-   *          ifOld is true then if the put doesn't occur because there is a
-   *          DESTROYED token present then the entry flag blockedDestroyed is
-   *          set.
-   * @return false if ifNew is true and there is an existing key, or ifOld is
-   *         true and there is no existing entry; otherwise return true.
+   * @param ifNew true if this operation must not overwrite an existing key
+   * @param ifOld true if this operation must not create a new entry
+   * @param lastModified the lastModified time to set with the value; if 0L, then the lastModified
+   *        time will be set to now.
+   * @param overwriteDestroyed true if okay to overwrite the DESTROYED token: when this is true has
+   *        the following effect: even when ifNew is true will write over DESTROYED token when
+   *        overwriteDestroyed is false and ifNew or ifOld is true then if the put doesn't occur
+   *        because there is a DESTROYED token present then the entry flag blockedDestroyed is set.
+   * @return false if ifNew is true and there is an existing key, or ifOld is true and there is no
+   *         existing entry; otherwise return true.
    */
-  final boolean basicUpdate(final EntryEventImpl event, 
-                            final boolean ifNew,
-                            final boolean ifOld,
-                            final long lastModified,
-                            final boolean overwriteDestroyed)
-  throws TimeoutException,
-        CacheWriterException {
+  final boolean basicUpdate(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
+      final long lastModified, final boolean overwriteDestroyed)
+      throws TimeoutException, CacheWriterException {
     // check validity of key against keyConstraint
     if (this.keyConstraint != null) {
       if (!this.keyConstraint.isInstance(event.getKey()))
-        throw new ClassCastException(LocalizedStrings.LocalRegion_KEY_0_DOES_NOT_SATISFY_KEYCONSTRAINT_1.toLocalizedString(new Object[] {event.getKey().getClass().getName(), this.keyConstraint.getName()}));
+        throw new ClassCastException(
+            LocalizedStrings.LocalRegion_KEY_0_DOES_NOT_SATISFY_KEYCONSTRAINT_1.toLocalizedString(
+                new Object[] {event.getKey().getClass().getName(), this.keyConstraint.getName()}));
     }
 
     validateValue(event.basicGetNewValue());
 
-    return getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified, overwriteDestroyed);
+    return getDataView().putEntry(event, ifNew, ifOld, null, false, lastModified,
+        overwriteDestroyed);
   }
 
   /**
    * Subclasses should reimplement if needed
    *
-   * @see DistributedRegion#virtualPut(EntryEventImpl, boolean, boolean,
-   *      Object, boolean, long, boolean)
+   * @see DistributedRegion#virtualPut(EntryEventImpl, boolean, boolean, Object, boolean, long,
+   *      boolean)
    */
-  boolean virtualPut(final EntryEventImpl event,
-                     final boolean ifNew,
-                     final boolean ifOld,
-                     Object expectedOldValue,
-                     boolean requireOldValue,
-                     final long lastModified,
-                     final boolean overwriteDestroyed)
-  throws TimeoutException,
-        CacheWriterException {
+  boolean virtualPut(final EntryEventImpl event, final boolean ifNew, final boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue, final long lastModified,
+      final boolean overwriteDestroyed) throws TimeoutException, CacheWriterException {
     if (!MemoryThresholds.isLowMemoryExceptionDisabled()) {
       checkIfAboveThreshold(event);
     }
     Operation originalOp = event.getOperation();
     RegionEntry oldEntry = null;
-    
-    try { 
-      oldEntry = this.entries.basicPut(event,
-                                 lastModified,
-                                 ifNew,
-                                 ifOld,
-                                 expectedOldValue,
-                                 requireOldValue,
-                                 overwriteDestroyed);
+
+    try {
+      oldEntry = this.entries.basicPut(event, lastModified, ifNew, ifOld, expectedOldValue,
+          requireOldValue, overwriteDestroyed);
     } catch (ConcurrentCacheModificationException e) {
       // this can happen in a client cache when another thread
       // managed to slip in its version info to the region entry before this
       // thread got around to doing so
-      if(logger.isDebugEnabled()) {
+      if (logger.isDebugEnabled()) {
         logger.debug("caught concurrent modification attempt when applying {}", event);
       }
       notifyBridgeClients(event);
@@ -5982,12 +5774,13 @@ public class LocalRegion extends AbstractRegion
         return true;
       }
     }
-    
+
     return oldEntry != null;
   }
-  
+
   /**
    * check to see if a LowMemoryException should be thrown for this event
+   * 
    * @param evi
    * @throws LowMemoryException
    */
@@ -5998,67 +5791,57 @@ public class LocalRegion extends AbstractRegion
     }
     // Threshold check is performed elsewhere for putAll when there is a server proxy
     boolean alreadyCheckedThreshold = hasServerProxy() && evi.getOperation().isPutAll();
-    if (! alreadyCheckedThreshold && !evi.isOriginRemote()) {
+    if (!alreadyCheckedThreshold && !evi.isOriginRemote()) {
       checkIfAboveThreshold(evi.getKey());
     }
   }
-  
+
   /**
-   * Checks to see if the event should be rejected because of sick state either due to
-   * exceeding local critical threshold or a remote member exceeding critical threshold 
+   * Checks to see if the event should be rejected because of sick state either due to exceeding
+   * local critical threshold or a remote member exceeding critical threshold
+   * 
    * @param key the key for the operation
    * @throws LowMemoryException if the target member for this operation is sick
    */
-  private void checkIfAboveThreshold(final Object key) throws LowMemoryException{
+  private void checkIfAboveThreshold(final Object key) throws LowMemoryException {
     if (memoryThresholdReached.get()) {
       Set<DistributedMember> htrm = getMemoryThresholdReachedMembers();
 
-      // #45603: trigger a background eviction since we're above the the critical 
+      // #45603: trigger a background eviction since we're above the the critical
       // threshold
-      InternalResourceManager.getInternalResourceManager(cache).getHeapMonitor().updateStateAndSendEvent();
+      InternalResourceManager.getInternalResourceManager(cache).getHeapMonitor()
+          .updateStateAndSendEvent();
 
       Object[] prms = new Object[] {getFullPath(), key, htrm};
-      throw new LowMemoryException(LocalizedStrings.ResourceManager_LOW_MEMORY_IN_0_FOR_PUT_1_MEMBER_2.toLocalizedString(prms),
+      throw new LowMemoryException(
+          LocalizedStrings.ResourceManager_LOW_MEMORY_IN_0_FOR_PUT_1_MEMBER_2
+              .toLocalizedString(prms),
           htrm);
     }
   }
-  
+
   /**
    * Perform a put without invoking callbacks or checking for transactions
    */
-  /*public Object putNoCallbacks(Object key, Object value) {
-    EntryEventImpl event = new EntryEventImpl(
-        this, Operation.UPDATE, key,
-        value,
-        nullcallbackobj, false,
-        getMyId(),
-        true, true);
-    event.setNewEventId(getCache().getDistributedSystem());
-    boolean didPut = this.entries.basicPut(event, System.currentTimeMillis(),
-        false, false, true, false) != null;
-    if (didPut) {
-      return event.getOldValue();
-    }
-    else {
-      return null;
-    }
-  }*/
+  /*
+   * public Object putNoCallbacks(Object key, Object value) { EntryEventImpl event = new
+   * EntryEventImpl( this, Operation.UPDATE, key, value, nullcallbackobj, false, getMyId(), true,
+   * true); event.setNewEventId(getCache().getDistributedSystem()); boolean didPut =
+   * this.entries.basicPut(event, System.currentTimeMillis(), false, false, true, false) != null; if
+   * (didPut) { return event.getOldValue(); } else { return null; } }
+   */
 
   /**
    * Allows null as new value to accomodate create with a null value.
    *
-   * @param event
-   *          the event object for this operation, with the exception that the
-   *          oldValue parameter is not yet filled in. The oldValue will be
-   *          filled in by this operation.
-   * @param lastModified
-   *          the lastModified time to set with the value; if 0L then the
-   *          lastModified time will be set to now.
+   * @param event the event object for this operation, with the exception that the oldValue
+   *        parameter is not yet filled in. The oldValue will be filled in by this operation.
+   * @param lastModified the lastModified time to set with the value; if 0L then the lastModified
+   *        time will be set to now.
    * @return null if put not done; otherwise the put entry
    */
-  protected RegionEntry basicPutEntry(final EntryEventImpl event,
-                                            final long lastModified)
-  throws TimeoutException, CacheWriterException {
+  protected RegionEntry basicPutEntry(final EntryEventImpl event, final long lastModified)
+      throws TimeoutException, CacheWriterException {
     discoverJTA();
     TXStateInterface tx = getTXState();
     // Note we are doing a load or netsearch result so it seems like
@@ -6069,29 +5852,23 @@ public class LocalRegion extends AbstractRegion
     if (isTX()) {
       tx.txPutEntry(event, ifNew, false, false, null);
       return null;
-    }
-    else {
+    } else {
       if (GemFireCacheImpl.internalBeforeNonTXBasicPut != null) {
         GemFireCacheImpl.internalBeforeNonTXBasicPut.run();
       }
-      
-      RegionEntry oldEntry = this.entries.basicPut(event,
-                                   lastModified,
-                                   ifNew,
-                                   false,  // ifOld
-                                   null,   // expectedOldValue
-                                   false,  // requireOldValue
-                                   false); // overwriteDestroyed
+
+      RegionEntry oldEntry = this.entries.basicPut(event, lastModified, ifNew, false, // ifOld
+          null, // expectedOldValue
+          false, // requireOldValue
+          false); // overwriteDestroyed
       return oldEntry;
     }
   }
 
-  protected long basicPutPart2(EntryEventImpl event, RegionEntry entry,
-      boolean isInitialized, long lastModified,
-      boolean clearConflict)
-  {
+  protected long basicPutPart2(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
+      long lastModified, boolean clearConflict) {
     final boolean isNewKey = event.getOperation().isCreate();
-    //Invoke callbacks only if we are not creating a tombstone
+    // Invoke callbacks only if we are not creating a tombstone
     final boolean invokeCallbacks = event.basicGetNewValue() != Token.TOMBSTONE;
 
     if (isNewKey) {
@@ -6107,14 +5884,13 @@ public class LocalRegion extends AbstractRegion
         try {
           if (!entry.isInvalid()) {
             this.indexManager.updateIndexes(entry,
-                isNewKey ? IndexManager.ADD_ENTRY :
-                  IndexManager.UPDATE_ENTRY,
-                  isNewKey ? IndexProtocol.OTHER_OP :
-                    IndexProtocol.AFTER_UPDATE_OP);
+                isNewKey ? IndexManager.ADD_ENTRY : IndexManager.UPDATE_ENTRY,
+                isNewKey ? IndexProtocol.OTHER_OP : IndexProtocol.AFTER_UPDATE_OP);
           }
-        }
-        catch (QueryException e) {
+        } catch (QueryException e) {
           throw new IndexMaintenanceException(e);
+        } finally {
+          IndexManager.setIndexBufferTime(lastModifiedTime, cacheTimeMillis());
         }
       }
     }
@@ -6127,20 +5903,18 @@ public class LocalRegion extends AbstractRegion
         if (event.isGenerateCallbacks()) {
           doCallback = true;
         }
-      }
-      else if (this.isUsedForPartitionedRegionBucket) {
+      } else if (this.isUsedForPartitionedRegionBucket) {
         // invokePutCallbacks in BucketRegion will be more discriminating
         doCallback = true;
       }
       if (doCallback) {
-        notifyGatewaySender(event.getOperation().isUpdate()? EnumListenerEvent.AFTER_UPDATE
-                                             : EnumListenerEvent.AFTER_CREATE, event);
+        notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
+            : EnumListenerEvent.AFTER_CREATE, event);
         // Notify listeners
         if (!event.isBulkOpInProgress()) {
           try {
             entry.dispatchListenerEvents(event);
-          }
-          catch (InterruptedException ie) {
+          } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
             stopper.checkCancelInProgress(null);
           }
@@ -6151,22 +5925,19 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * To lower latency, PRs generate the local filter rounting in
-   * DistributedCacheOperation after message distribution and before waiting for
-   * responses.
+   * To lower latency, PRs generate the local filter rounting in DistributedCacheOperation after
+   * message distribution and before waiting for responses.
    * 
-   * Warning: Even if you comment out bucket condition in following method,
-   * getLocalRountingInfo() does NOT process CQs for bucket regions internally.
-   * Check
-   * {@link FilterProfile#getFilterRoutingInfoPart2(FilterRoutingInfo, CacheEvent)}
-   * .
+   * Warning: Even if you comment out bucket condition in following method, getLocalRountingInfo()
+   * does NOT process CQs for bucket regions internally. Check
+   * {@link FilterProfile#getFilterRoutingInfoPart2(FilterRoutingInfo, CacheEvent)} .
    * 
    * @param event
    */
   protected void generateLocalFilterRouting(InternalCacheEvent event) {
     boolean isEntryEvent = event.getOperation().isEntry();
-    EntryEventImpl entryEvent = isEntryEvent? (EntryEventImpl)event : null;
-    
+    EntryEventImpl entryEvent = isEntryEvent ? (EntryEventImpl) event : null;
+
     FilterProfile fp = this.getFilterProfile();
     FilterInfo routing = event.getLocalFilterInfo();
     boolean lockForCQ = false;
@@ -6182,12 +5953,12 @@ public class LocalRegion extends AbstractRegion
         }
       }
       if (isEntryEvent) {
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
           logger.debug("getting local client routing.");
         }
       }
       if (lockForCQ) {
-        synchronized(re) {
+        synchronized (re) {
           routing = fp.getLocalFilterRouting(event);
         }
       } else {
@@ -6196,9 +5967,9 @@ public class LocalRegion extends AbstractRegion
       event.setLocalFilterInfo(routing);
     }
     // bug #45520 - do not send CQ events to clients out of order
-    if (routing != null  &&  event.getOperation().isEntry()
-        &&  ((EntryEventImpl)event).isConcurrencyConflict()) {
-      if(logger.isDebugEnabled()) {
+    if (routing != null && event.getOperation().isEntry()
+        && ((EntryEventImpl) event).isConcurrencyConflict()) {
+      if (logger.isDebugEnabled()) {
         logger.debug("clearing CQ routing for event that's in conflict");
       }
       routing.clearCQRouting();
@@ -6211,7 +5982,7 @@ public class LocalRegion extends AbstractRegion
    * @param event
    */
   protected void notifyTimestampsToGateways(EntryEventImpl event) {
-    
+
     // Create updateTimeStampEvent from event.
     VersionTagHolder updateTimeStampEvent = new VersionTagHolder(event.getVersionTag());
     updateTimeStampEvent.setOperation(Operation.UPDATE_VERSION_STAMP);
@@ -6219,18 +5990,18 @@ public class LocalRegion extends AbstractRegion
     updateTimeStampEvent.setGenerateCallbacks(false);
     updateTimeStampEvent.distributedMember = event.getDistributedMember();
     updateTimeStampEvent.setNewEventId(getSystem());
-    
-    
+
+
     if (event.getRegion() instanceof BucketRegion) {
-      BucketRegion br = (BucketRegion)event.getRegion();
+      BucketRegion br = (BucketRegion) event.getRegion();
       PartitionedRegion pr = br.getPartitionedRegion();
       updateTimeStampEvent.setRegion(pr);
-   
+
       // increment the tailKey for the event
       if (pr.isParallelWanEnabled()) {
         br.handleWANEvent(updateTimeStampEvent);
       }
-      
+
       if (pr.isInitialized()) {
         pr.notifyGatewaySender(EnumListenerEvent.TIMESTAMP_UPDATE, updateTimeStampEvent);
       }
@@ -6248,11 +6019,9 @@ public class LocalRegion extends AbstractRegion
     getCachePerfStats().incCreates();
   }
 
-  public void basicPutPart3(EntryEventImpl event, RegionEntry entry,
-      boolean isInitialized, long lastModified, boolean invokeCallbacks,
-      boolean ifNew, boolean ifOld, Object expectedOldValue,
-      boolean requireOldValue)
-  {
+  public void basicPutPart3(EntryEventImpl event, RegionEntry entry, boolean isInitialized,
+      long lastModified, boolean invokeCallbacks, boolean ifNew, boolean ifOld,
+      Object expectedOldValue, boolean requireOldValue) {
     // We used to dispatch listener events here which is moved to part2 to be in RE lock #45520.
     if (invokeCallbacks) {
       if (event.isBulkOpInProgress()) {
@@ -6261,14 +6030,14 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
-  public void invokePutCallbacks(final EnumListenerEvent eventType,
-      final EntryEventImpl event, final boolean callDispatchListenerEvent, boolean notifyGateways) {
+  public void invokePutCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
+      final boolean callDispatchListenerEvent, boolean notifyGateways) {
 
     // disallow callbacks on import
     if (!event.isGenerateCallbacks()) {
       return;
     }
-    
+
     // Notify bridge clients (if this is a BridgeServer)
     Operation op = event.getOperation();
     // The spec for ConcurrentMap support requires that operations be mapped
@@ -6283,7 +6052,7 @@ public class LocalRegion extends AbstractRegion
     if (notifyGateways) {
       notifyGatewaySender(eventType, event);
     }
-    if(callDispatchListenerEvent){
+    if (callDispatchListenerEvent) {
       dispatchListenerEvent(eventType, event);
     }
   }
@@ -6293,27 +6062,25 @@ public class LocalRegion extends AbstractRegion
    * @param event
    * @param lastModifiedTime
    */
-  protected void postUpdate(EntryEventImpl event, long lastModifiedTime)
-  {
-  }
-  
+  protected void postUpdate(EntryEventImpl event, long lastModifiedTime) {}
+
   /**
-   * retrieve a deep copy of the Region's event state.  This is used
-   * for getInitialImage.  The result is installed in the receiver of
-   * the image.
+   * retrieve a deep copy of the Region's event state. This is used for getInitialImage. The result
+   * is installed in the receiver of the image.
    */
   public Map<? extends DataSerializable, ? extends DataSerializable> getEventState() {
     if (this.eventTracker != null) {
       return this.eventTracker.getState();
-    }
-    else {
+    } else {
       return null;
     }
   }
-  
+
   /**
-   * Record the event state encapsulated in the given Map.<p>
+   * Record the event state encapsulated in the given Map.
+   * <p>
    * This is intended for state transfer during GII.
+   * 
    * @param provider the member that provided this state
    * @param state a Map obtained from getEventState()
    */
@@ -6322,21 +6089,21 @@ public class LocalRegion extends AbstractRegion
       this.eventTracker.recordState(provider, state);
     }
   }
-  
+
   /**
    * generate version tag if it does not exist and set it into the event.
+   * 
    * @param event
    * @param entry
    */
   public void generateAndSetVersionTag(InternalCacheEvent event, RegionEntry entry) {
     if (entry != null && event.getOperation().isEntry()) {
-      EntryEventImpl entryEvent = (EntryEventImpl)event;
+      EntryEventImpl entryEvent = (EntryEventImpl) event;
       if (!entryEvent.isOriginRemote() && shouldGenerateVersionTag(entry, entryEvent)) {
         boolean eventHasDelta = (getSystem().getConfig().getDeltaPropagation()
-            && !this.scope.isDistributedNoAck()
-            && entryEvent.getDeltaBytes() != null);
+            && !this.scope.isDistributedNoAck() && entryEvent.getDeltaBytes() != null);
         VersionTag v = entry.generateVersionTag(null, eventHasDelta, this, entryEvent);
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled() && v != null) {
           logger.debug("generated version tag {} for {}", v, entryEvent.getKey());
         }
       }
@@ -6345,6 +6112,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * record the event's sequenceId in Region's event state to prevent replay.
+   * 
    * @param event
    */
   public void recordEvent(InternalCacheEvent event) {
@@ -6352,116 +6120,119 @@ public class LocalRegion extends AbstractRegion
       this.eventTracker.recordEvent(event);
     }
   }
-  
+
   /**
    * has the Region's event state seen this event?
+   * 
    * @param event
    * @return true if the Region's event state has seen the event
    */
-   public boolean hasSeenEvent(EntryEventImpl event) {
-     boolean isDup = false;
-     if (this.eventTracker != null) {
-       // bug 41289 - wait for event tracker to be initialized before checkin
-       // so that an operation inteded for a previous version of a bucket
-       // is not prematurely applied to a new version of the bucket
-       if (this.isUsedForPartitionedRegionBucket()) {
-         try {
-           this.eventTracker.waitOnInitialization();
-         } catch (InterruptedException ie) {
-           this.stopper.checkCancelInProgress(ie);
-           Thread.currentThread().interrupt();
-         }
-       }
-       isDup = this.eventTracker.hasSeenEvent(event);
-       if (isDup) {
-         event.setPossibleDuplicate(true);
-         if (this.concurrencyChecksEnabled && event.getVersionTag() == null) {
-           event.setVersionTag(findVersionTagForClientEvent(event.getEventId()));
-         }
-       } else {
-         // bug #48205 - a retried PR operation may already have a version assigned to it
-         // in another VM 
-         if (event.isPossibleDuplicate()
-             && event.getRegion().concurrencyChecksEnabled
-             && (event.getVersionTag() == null)
-             && (event.getEventId() != null)) {
-           boolean isBulkOp = event.getOperation().isPutAll() || event.getOperation().isRemoveAll();
-           VersionTag tag = FindVersionTagOperation.findVersionTag(event.getRegion(), event.getEventId(), isBulkOp);
-           event.setVersionTag(tag);
-         }
-       }
-     } 
-     return isDup;
-   }
-   
-   /**
-    * tries to find the version tag for a replayed client event
-    * @param eventId
-    * @return the version tag, if known.  Null if not
-    */
-   public VersionTag findVersionTagForClientEvent(EventID eventId) {
-     if (this.eventTracker != null) {
-       return this.eventTracker.findVersionTag(eventId);
-     }
-     return null;
-   }
-   
-   public VersionTag findVersionTagForGatewayEvent(EventID eventId) {
-     if (this.eventTracker != null) {
-       return this.eventTracker.findVersionTagForGateway(eventId);
-     }
-     return null;
-   }
-   
-   /**
-    * tries to find the version tag for a replayed client event
-    * @param eventId
-    * @return the version tag, if known.  Null if not
-    */
-   public VersionTag findVersionTagForClientBulkOp(EventID eventId) {
-     if (eventId == null) {
-       return null;
-     }
-     if (this.eventTracker != null) {
-       return this.eventTracker.findVersionTagForBulkOp(eventId);
-     }
-     return null;
-   }
-
-   /**
-    * has the Region's event state seen this event?  Most checks should use
-    * the method that takes an Event, not an ID, but with transactions we
-    * do not have an event at the time the check needs to be made.  Consequently,
-    * this method may cause events to be recorded that would otherwise be
-    * ignored.
-    * @param eventID the identifier of the event
-    * @return true if the Region's event state has seen the event
-    */
-    public boolean hasSeenEvent(EventID eventID) {
-      if (eventID == null) {
-        return false;
-      }
-      boolean isDup = false;
-      if (this.eventTracker != null) {
-        // bug 41289 - wait for event tracker to be initialized before checkin
-        // so that an operation intended for a previous version of a bucket
-        // is not prematurely applied to a new version of the bucket
-        if (this.isUsedForPartitionedRegionBucket()) {
-          try {
-            this.eventTracker.waitOnInitialization();
-          } catch (InterruptedException ie) {
-            this.stopper.checkCancelInProgress(ie);
-            Thread.currentThread().interrupt();
-          }
+  public boolean hasSeenEvent(EntryEventImpl event) {
+    boolean isDup = false;
+    if (this.eventTracker != null) {
+      // bug 41289 - wait for event tracker to be initialized before checkin
+      // so that an operation inteded for a previous version of a bucket
+      // is not prematurely applied to a new version of the bucket
+      if (this.isUsedForPartitionedRegionBucket()) {
+        try {
+          this.eventTracker.waitOnInitialization();
+        } catch (InterruptedException ie) {
+          this.stopper.checkCancelInProgress(ie);
+          Thread.currentThread().interrupt();
         }
-        isDup = this.eventTracker.hasSeenEvent(eventID, null);
-      } 
-      return isDup;
+      }
+      isDup = this.eventTracker.hasSeenEvent(event);
+      if (isDup) {
+        event.setPossibleDuplicate(true);
+        if (this.concurrencyChecksEnabled && event.getVersionTag() == null) {
+          event.setVersionTag(findVersionTagForClientEvent(event.getEventId()));
+        }
+      } else {
+        // bug #48205 - a retried PR operation may already have a version assigned to it
+        // in another VM
+        if (event.isPossibleDuplicate() && event.getRegion().concurrencyChecksEnabled
+            && (event.getVersionTag() == null) && (event.getEventId() != null)) {
+          boolean isBulkOp = event.getOperation().isPutAll() || event.getOperation().isRemoveAll();
+          VersionTag tag = FindVersionTagOperation.findVersionTag(event.getRegion(),
+              event.getEventId(), isBulkOp);
+          event.setVersionTag(tag);
+        }
+      }
     }
+    return isDup;
+  }
 
   /**
-   * A routine to provide synchronization running based on <memberShipID, threadID> 
-   * of the requesting client for the region's event state
+   * tries to find the version tag for a replayed client event
+   * 
+   * @param eventId
+   * @return the version tag, if known. Null if not
+   */
+  public VersionTag findVersionTagForClientEvent(EventID eventId) {
+    if (this.eventTracker != null) {
+      return this.eventTracker.findVersionTag(eventId);
+    }
+    return null;
+  }
+
+  public VersionTag findVersionTagForGatewayEvent(EventID eventId) {
+    if (this.eventTracker != null) {
+      return this.eventTracker.findVersionTagForGateway(eventId);
+    }
+    return null;
+  }
+
+  /**
+   * tries to find the version tag for a replayed client event
+   * 
+   * @param eventId
+   * @return the version tag, if known. Null if not
+   */
+  public VersionTag findVersionTagForClientBulkOp(EventID eventId) {
+    if (eventId == null) {
+      return null;
+    }
+    if (this.eventTracker != null) {
+      return this.eventTracker.findVersionTagForBulkOp(eventId);
+    }
+    return null;
+  }
+
+  /**
+   * has the Region's event state seen this event? Most checks should use the method that takes an
+   * Event, not an ID, but with transactions we do not have an event at the time the check needs to
+   * be made. Consequently, this method may cause events to be recorded that would otherwise be
+   * ignored.
+   * 
+   * @param eventID the identifier of the event
+   * @return true if the Region's event state has seen the event
+   */
+  public boolean hasSeenEvent(EventID eventID) {
+    if (eventID == null) {
+      return false;
+    }
+    boolean isDup = false;
+    if (this.eventTracker != null) {
+      // bug 41289 - wait for event tracker to be initialized before checkin
+      // so that an operation intended for a previous version of a bucket
+      // is not prematurely applied to a new version of the bucket
+      if (this.isUsedForPartitionedRegionBucket()) {
+        try {
+          this.eventTracker.waitOnInitialization();
+        } catch (InterruptedException ie) {
+          this.stopper.checkCancelInProgress(ie);
+          Thread.currentThread().interrupt();
+        }
+      }
+      isDup = this.eventTracker.hasSeenEvent(eventID, null);
+    }
+    return isDup;
+  }
+
+  /**
+   * A routine to provide synchronization running based on <memberShipID, threadID> of the
+   * requesting client for the region's event state
+   * 
    * @param r - a Runnable to wrap the processing of the bulk op
    * @param eventID - the base event ID of the bulk op
    *
@@ -6470,20 +6241,18 @@ public class LocalRegion extends AbstractRegion
   public void syncBulkOp(Runnable r, EventID eventID) {
     if (this.eventTracker != null && !isTX()) {
       this.eventTracker.syncBulkOp(r, eventID);
-    }
-    else {
+    } else {
       r.run();
     }
   }
-  
+
   public void recordBulkOpStart(ThreadIdentifier membershipID) {
     if (this.eventTracker != null && !isTX()) {
       this.eventTracker.recordBulkOpStart(membershipID);
     }
   }
-  
-  final protected void notifyBridgeClients(CacheEvent event)
-  {
+
+  final protected void notifyBridgeClients(CacheEvent event) {
     int numBS = getCache().getCacheServers().size();
 
     // #Bugfix 37518: In case of localOperations no need to notify clients.
@@ -6492,8 +6261,8 @@ public class LocalRegion extends AbstractRegion
     }
     // Return if the inhibit all notifications flag is set
     if (event instanceof EntryEventImpl) {
-      if (((EntryEventImpl)event).inhibitAllNotifications()) {
-        if(logger.isDebugEnabled()) {
+      if (((EntryEventImpl) event).inhibitAllNotifications()) {
+        if (logger.isDebugEnabled()) {
           logger.debug("Notification inhibited for key {}", event);
         }
         return;
@@ -6502,14 +6271,15 @@ public class LocalRegion extends AbstractRegion
 
     if (shouldNotifyBridgeClients()) {
       if (numBS > 0) {
-        if(logger.isDebugEnabled()) {
-          logger.debug("{}: notifying {} bridge servers of event: {}", this.getName(), numBS, event);
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}: notifying {} bridge servers of event: {}", this.getName(), numBS,
+              event);
         }
       }
-      
+
       Operation op = event.getOperation();
       if (event.getOperation().isEntry()) {
-        EntryEventImpl e = (EntryEventImpl)event;
+        EntryEventImpl e = (EntryEventImpl) event;
         if (e.getEventType() == null) {
           if (op.isCreate()) {
             e.setEventType(EnumListenerEvent.AFTER_CREATE);
@@ -6525,12 +6295,12 @@ public class LocalRegion extends AbstractRegion
         }
       }
 
-      InternalCacheEvent ice = (InternalCacheEvent)event;
+      InternalCacheEvent ice = (InternalCacheEvent) event;
       if (!this.isUsedForPartitionedRegionBucket()) {
         generateLocalFilterRouting(ice);
       }
 
-      CacheClientNotifier.notifyClients((InternalCacheEvent)event);
+      CacheClientNotifier.notifyClients((InternalCacheEvent) event);
     }
   }
 
@@ -6560,23 +6330,23 @@ public class LocalRegion extends AbstractRegion
     }
     return false;
   }
-  
-  protected void notifyGatewaySender(EnumListenerEvent operation,
-      EntryEventImpl event) {
-    
-    if (isPdxTypesRegion() || event.isConcurrencyConflict() /* usually concurrent cache modification problem */) { 
+
+  protected void notifyGatewaySender(EnumListenerEvent operation, EntryEventImpl event) {
+
+    if (isPdxTypesRegion()
+        || event.isConcurrencyConflict() /* usually concurrent cache modification problem */) {
       return;
     }
 
     // Return if the inhibit all notifications flag is set
-    if (event.inhibitAllNotifications()){
-      if(logger.isDebugEnabled()) {
+    if (event.inhibitAllNotifications()) {
+      if (logger.isDebugEnabled()) {
         logger.debug("Notification inhibited for key {}", event);
       }
       return;
     }
-    
-    
+
+
     Set<String> allGatewaySenderIds = null;
     checkSameSenderIdsAvailableOnAllNodes();
     if (event.getOperation() == Operation.UPDATE_VERSION_STAMP) {
@@ -6589,82 +6359,78 @@ public class LocalRegion extends AbstractRegion
     if (allRemoteDSIds != null) {
       for (GatewaySender sender : getCache().getAllGatewaySenders()) {
         if (allGatewaySenderIds.contains(sender.getId())) {
-          //TODO: This is a BUG. Why return and not continue?
-          if((!this.getDataPolicy().withStorage()) && sender.isParallel()){
+          // TODO: This is a BUG. Why return and not continue?
+          if ((!this.getDataPolicy().withStorage()) && sender.isParallel()) {
             return;
           }
-          if(logger.isDebugEnabled()) {
+          if (logger.isDebugEnabled()) {
             logger.debug("Notifying the GatewaySender : {}", sender.getId());
           }
-          ((AbstractGatewaySender)sender).distribute(operation, event,
-              allRemoteDSIds);
+          ((AbstractGatewaySender) sender).distribute(operation, event, allRemoteDSIds);
         }
       }
 
-      
-//      if (shouldNotifyGatewaySender()) {
-//        // Get All WAN site DSID's to be sent to each WAN site so that they
-//        // don't redistribute it to same WAN sites again again (infinite loop).
-//        if (!this.getName().equals(PeerTypeRegistration.REGION_NAME)) { //This is for all region except pdx Region
-//          for (GatewaySender sender : getCache().getAllGatewaySenders()) {
-//            if (allGatewaySenderIds.contains(sender.getId())) { //Make sure we are distributing to only those senders whose id is avaialble on this region
-//              if(this.partitionAttributes == null && sender.isParallel()){ //ParalleGatewaySender with DR is not allowed
-//                throw new IllegalStateException(
-//                    LocalizedStrings.AttributesFactory_PARALLELGATEWAYSENDER_0_IS_INCOMPATIBLE_WITH_DISTRIBUTED_REPLICATION
-//                        .toLocalizedString(sender.getId()));
-//              }
-//              if (allRemoteDSIds == null) {
-//                allRemoteDSIds = new ArrayList<Integer>();
-//              }
-//              allRemoteDSIds.add(sender.getRemoteDSId());
-//            }
-//            else { //this else is for PDX region    
-//              if (allRemoteDSIds == null) {
-//                allRemoteDSIds = new ArrayList<Integer>();
-//              }
-//              allRemoteDSIds.add(sender.getRemoteDSId());
-//            }
-//          }
-//        }
-//        if (allRemoteDSIds == null) {
-//          allRemoteDSIds = Collections.emptyList();
-//        }
-//        
-//        // Now distribute the event to each WAN site.
-//        if (!this.getName().equals(PeerTypeRegistration.REGION_NAME)) {
-//          for (GatewaySender sender : getCache().getAllGatewaySenders()) {
-//            if (allGatewaySenderIds.contains(sender.getId())) {
-//              if((!this.getDataPolicy().withStorage()) && sender.isParallel()){
-//                return;
-//              }
-//              ((AbstractGatewaySender)sender).distribute(operation, event,
-//                  allRemoteDSIds);
-//            }
-//          }
-//        }
-//      }
+
+      // if (shouldNotifyGatewaySender()) {
+      // // Get All WAN site DSID's to be sent to each WAN site so that they
+      // // don't redistribute it to same WAN sites again again (infinite loop).
+      // if (!this.getName().equals(PeerTypeRegistration.REGION_NAME)) { //This is for all region
+      // except pdx Region
+      // for (GatewaySender sender : getCache().getAllGatewaySenders()) {
+      // if (allGatewaySenderIds.contains(sender.getId())) { //Make sure we are distributing to only
+      // those senders whose id is avaialble on this region
+      // if(this.partitionAttributes == null && sender.isParallel()){ //ParalleGatewaySender with DR
+      // is not allowed
+      // throw new IllegalStateException(
+      // LocalizedStrings.AttributesFactory_PARALLELGATEWAYSENDER_0_IS_INCOMPATIBLE_WITH_DISTRIBUTED_REPLICATION
+      // .toLocalizedString(sender.getId()));
+      // }
+      // if (allRemoteDSIds == null) {
+      // allRemoteDSIds = new ArrayList<Integer>();
+      // }
+      // allRemoteDSIds.add(sender.getRemoteDSId());
+      // }
+      // else { //this else is for PDX region
+      // if (allRemoteDSIds == null) {
+      // allRemoteDSIds = new ArrayList<Integer>();
+      // }
+      // allRemoteDSIds.add(sender.getRemoteDSId());
+      // }
+      // }
+      // }
+      // if (allRemoteDSIds == null) {
+      // allRemoteDSIds = Collections.emptyList();
+      // }
+      //
+      // // Now distribute the event to each WAN site.
+      // if (!this.getName().equals(PeerTypeRegistration.REGION_NAME)) {
+      // for (GatewaySender sender : getCache().getAllGatewaySenders()) {
+      // if (allGatewaySenderIds.contains(sender.getId())) {
+      // if((!this.getDataPolicy().withStorage()) && sender.isParallel()){
+      // return;
+      // }
+      // ((AbstractGatewaySender)sender).distribute(operation, event,
+      // allRemoteDSIds);
+      // }
+      // }
+      // }
+      // }
     }
   }
 
-  public void checkSameSenderIdsAvailableOnAllNodes() {
-  }
+  public void checkSameSenderIdsAvailableOnAllNodes() {}
+
   /**
-   * @param cacheWrite
-   *          if true, then we're just cleaning up the local cache and calling
-   *          listeners,
-   * @see DistributedRegion#basicDestroyRegion(RegionEventImpl, boolean,
-   *      boolean, boolean)
+   * @param cacheWrite if true, then we're just cleaning up the local cache and calling listeners,
+   * @see DistributedRegion#basicDestroyRegion(RegionEventImpl, boolean, boolean, boolean)
    */
   void basicDestroyRegion(RegionEventImpl event, boolean cacheWrite)
-      throws CacheWriterException, TimeoutException
-  {
+      throws CacheWriterException, TimeoutException {
     basicDestroyRegion(event, cacheWrite, true, true);
   }
 
-  void basicDestroyRegion(RegionEventImpl event, boolean cacheWrite,
-      boolean lock, boolean callbackEvents) throws CacheWriterException,
-      TimeoutException
-  {
+  void basicDestroyRegion(RegionEventImpl event, boolean cacheWrite, boolean lock,
+      boolean callbackEvents) throws CacheWriterException, TimeoutException {
     preDestroyChecks();
     HashSet eventSet = null;
     final TXStateProxy tx = this.cache.getTXMgr().internalSuspend();
@@ -6674,11 +6440,12 @@ public class LocalRegion extends AbstractRegion
         try {
           acquireDestroyLock();
           acquiredLock = true;
-        }
-        catch (CancelException e) {
+        } catch (CancelException e) {
           // ignore
-          if(logger.isDebugEnabled()) {
-            logger.debug("basicDestroyRegion: acquireDestroyLock failed due to cache closure, region = {}", getFullPath());
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+                "basicDestroyRegion: acquireDestroyLock failed due to cache closure, region = {}",
+                getFullPath());
           }
         }
       }
@@ -6692,9 +6459,8 @@ public class LocalRegion extends AbstractRegion
         try { // ensure that destroy events are dispatched
 
           if (this instanceof PartitionedRegion
-              && !((PartitionedRegion)this).getParallelGatewaySenderIds()
-                  .isEmpty()) {
-            ((PartitionedRegion)this).destroyParallelGatewaySenderRegion(event.getOperation(),
+              && !((PartitionedRegion) this).getParallelGatewaySenderIds().isEmpty()) {
+            ((PartitionedRegion) this).destroyParallelGatewaySenderRegion(event.getOperation(),
                 cacheWrite, lock, callbackEvents);
           }
 
@@ -6703,59 +6469,57 @@ public class LocalRegion extends AbstractRegion
             // recent
             this.parentRegion.updateStats();
           }
-  
-        
+
+
           try {
             eventSet = callbackEvents ? new HashSet() : null;
             this.destroyedSubregionSerialNumbers = collectSubregionSerialNumbers();
             recursiveDestroyRegion(eventSet, event, cacheWrite);
-          }
-          catch (CancelException e) {
+          } catch (CancelException e) {
             // This should be properly caught and ignored; if we see this there is
             // a serious problem.
             if (!cache.forcedDisconnect()) {
-              logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_RECURSIVEDESTROYREGION_RECURSION_FAILED_DUE_TO_CACHE_CLOSURE_REGION_0,
-                getFullPath()), e);
+              logger.warn(LocalizedMessage.create(
+                  LocalizedStrings.LocalRegion_RECURSIVEDESTROYREGION_RECURSION_FAILED_DUE_TO_CACHE_CLOSURE_REGION_0,
+                  getFullPath()), e);
             }
           } catch (CacheWriterException cwe) {
             cancelledByCacheWriterException = true;
             throw cwe;
           }
-          
+
           // at this point all subregions are destroyed and this region
           // has been marked as destroyed and postDestroyRegion has been
           // called for each region. The only detail left is
           // unhooking this region from the parent subregion map, and
           // sending listener events
           Assert.assertTrue(this.isDestroyed);
-          
+
           /**
-           * Added for M&M : At this point we can safely call ResourceEvent
-           * to remove the region artifacts From Management Layer
+           * Added for M&M : At this point we can safely call ResourceEvent to remove the region
+           * artifacts From Management Layer
            **/
           if (!isInternalRegion()) {
-            InternalDistributedSystem system = this.cache
-                .getDistributedSystem();
+            InternalDistributedSystem system = this.cache.getDistributedSystem();
             system.handleResourceEvent(ResourceEvent.REGION_REMOVE, this);
           }
-      
+
           try {
             LocalRegion parent = this.parentRegion;
             if (parent == null) {
               this.cache.removeRoot(this);
-            }
-            else {
+            } else {
               parent.subregions.remove(this.regionName, this);
             }
-          }
-          catch (CancelException e) {
-            // I don't think this should ever happens:  bulletproofing for bug 39454
+          } catch (CancelException e) {
+            // I don't think this should ever happens: bulletproofing for bug 39454
             if (!cache.forcedDisconnect()) {
-              logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_BASICDESTROYREGION_PARENT_REMOVAL_FAILED_DUE_TO_CACHE_CLOSURE_REGION_0, 
-                getFullPath()), e);
+              logger.warn(LocalizedMessage.create(
+                  LocalizedStrings.LocalRegion_BASICDESTROYREGION_PARENT_REMOVAL_FAILED_DUE_TO_CACHE_CLOSURE_REGION_0,
+                  getFullPath()), e);
             }
           }
-        }  // ensure that destroy events are dispatched
+        } // ensure that destroy events are dispatched
         finally {
           if (!cancelledByCacheWriterException) {
             // We only need to notify bridgeClients of the top level region destroy
@@ -6769,19 +6533,17 @@ public class LocalRegion extends AbstractRegion
           if (eventSet != null && callbackEvents) {
             try {
               sendPendingRegionDestroyEvents(eventSet);
-            }
-            catch (CancelException e) {
+            } catch (CancelException e) {
               // ignore, we're mute.
             }
           }
         }
-      }  // maintain destroy lock and TXStateInterface
+      } // maintain destroy lock and TXStateInterface
       finally {
         if (acquiredLock) {
           try {
             releaseDestroyLock();
-          }
-          catch (CancelException e) {
+          } catch (CancelException e) {
             // ignore
           }
         }
@@ -6792,13 +6554,13 @@ public class LocalRegion extends AbstractRegion
   }
 
   protected void preDestroyChecks() {
-    
+
   }
 
-  protected void distributeDestroyRegion(RegionEventImpl event, boolean notifyOfRegionDeparture) {
-  }
+  protected void distributeDestroyRegion(RegionEventImpl event, boolean notifyOfRegionDeparture) {}
 
   public static final float DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE = 80.0f;
+
   /**
    * Called after this region has been completely created
    *
@@ -6806,8 +6568,7 @@ public class LocalRegion extends AbstractRegion
    *
    * @see DistributedRegion#postDestroyRegion(boolean, RegionEventImpl)
    */
-  protected void postCreateRegion()
-  {
+  protected void postCreateRegion() {
     if (getEvictionAttributes().getAlgorithm().isLRUHeap()) {
       final LogWriter logWriter = cache.getLogger();
       float evictionPercentage = DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE;
@@ -6826,7 +6587,8 @@ public class LocalRegion extends AbstractRegion
           }
           rm.setEvictionHeapPercentage(evictionPercentage);
           if (logWriter.fineEnabled()) {
-            logWriter.fine("Enabled heap eviction at " + evictionPercentage + " percent for LRU region");
+            logWriter
+                .fine("Enabled heap eviction at " + evictionPercentage + " percent for LRU region");
           }
         }
       } else {
@@ -6841,12 +6603,13 @@ public class LocalRegion extends AbstractRegion
           }
           rm.setEvictionOffHeapPercentage(evictionPercentage);
           if (logWriter.fineEnabled()) {
-            logWriter.fine("Enabled off-heap eviction at " + evictionPercentage + " percent for LRU region");
+            logWriter.fine(
+                "Enabled off-heap eviction at " + evictionPercentage + " percent for LRU region");
           }
         }
       }
     }
-      
+
     if (!isInternalRegion()) {
       getCachePerfStats().incRegions(1);
       if (getMembershipAttributes().hasRequiredRoles()) {
@@ -6855,45 +6618,45 @@ public class LocalRegion extends AbstractRegion
     }
 
     if (hasListener()) {
-      RegionEventImpl event = new RegionEventImpl(this,
-          Operation.REGION_CREATE, null, false, getMyId());
+      RegionEventImpl event =
+          new RegionEventImpl(this, Operation.REGION_CREATE, null, false, getMyId());
       dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_CREATE, event);
     }
     releaseAfterRegionCreateEventLatch();
-    SystemMemberCacheEventProcessor.send(getCache(), this,
-        Operation.REGION_CREATE);
+    SystemMemberCacheEventProcessor.send(getCache(), this, Operation.REGION_CREATE);
     initializingRegion.set(null);
   }
 
   /**
    * notify region membership listeners of the initial membership
+   * 
    * @param listeners an array of listeners to notify
    */
   public void notifyOfInitialMembers(CacheListener[] listeners, Set others) {
     if (listeners != null) {
       for (int i = 0; i < listeners.length; i++) {
         if (listeners[i] instanceof RegionMembershipListener) {
-          RegionMembershipListener rml = (RegionMembershipListener)listeners[i];
+          RegionMembershipListener rml = (RegionMembershipListener) listeners[i];
           try {
-            DistributedMember[] otherDms = new DistributedMember[others
-                .size()];
+            DistributedMember[] otherDms = new DistributedMember[others.size()];
             others.toArray(otherDms);
             rml.initialMembers(this, otherDms);
-          }
-          catch (VirtualMachineError err) {
+          } catch (VirtualMachineError err) {
             SystemFailure.initiateFailure(err);
-            // If this ever returns, rethrow the error.  We're poisoned
+            // If this ever returns, rethrow the error. We're poisoned
             // now, so don't let this thread continue.
             throw err;
-          }
-          catch (Throwable t) {
+          } catch (Throwable t) {
             // Whenever you catch Error or Throwable, you must also
-            // catch VirtualMachineError (see above).  However, there is
+            // catch VirtualMachineError (see above). However, there is
             // _still_ a possibility that you are dealing with a cascading
             // error condition, so you also need to check to see if the JVM
             // is still usable:
             SystemFailure.checkFailure();
-            logger.error(LocalizedMessage.create(LocalizedStrings.DistributedRegion_EXCEPTION_OCCURRED_IN_REGIONMEMBERSHIPLISTENER), t);
+            logger.error(
+                LocalizedMessage.create(
+                    LocalizedStrings.DistributedRegion_EXCEPTION_OCCURRED_IN_REGIONMEMBERSHIPLISTENER),
+                t);
           }
         }
       }
@@ -6903,14 +6666,11 @@ public class LocalRegion extends AbstractRegion
   /**
    * This method is invoked after isDestroyed has been set to true
    */
-  protected void postDestroyRegion(boolean destroyDiskRegion,
-      RegionEventImpl event)
-  {
+  protected void postDestroyRegion(boolean destroyDiskRegion, RegionEventImpl event) {
     if (this.diskRegion != null) {
       if (destroyDiskRegion) {
         this.diskRegion.endDestroy(this);
-      }
-      else {
+      } else {
         this.diskRegion.close(this);
       }
     }
@@ -6924,30 +6684,31 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * @param cacheWrite
-   *          true if cacheWrite should be performed or false if cacheWrite
-   *          should not be performed
+   * @param cacheWrite true if cacheWrite should be performed or false if cacheWrite should not be
+   *        performed
    * @see DistributedRegion#basicDestroy(EntryEventImpl, boolean, Object)
    */
-  void basicDestroy(final EntryEventImpl event,
-                       final boolean cacheWrite,
-                       Object expectedOldValue)
-  throws EntryNotFoundException, CacheWriterException, TimeoutException {
-    
+  void basicDestroy(final EntryEventImpl event, final boolean cacheWrite, Object expectedOldValue)
+      throws EntryNotFoundException, CacheWriterException, TimeoutException {
+
     if (!event.isOriginRemote()) {
       checkIfReplicatedAndLocalDestroy(event);
     }
 
     if (hasSeenEvent(event)) {
       assert getJTAEnlistedTX() == null;
-      if(logger.isTraceEnabled(LogMarker.DM)) {
-        logger.trace(LogMarker.DM, "LR.basicDestroy: this cache has already seen this event {}", event);
+      if (logger.isTraceEnabled(LogMarker.DM)) {
+        logger.trace(LogMarker.DM, "LR.basicDestroy: this cache has already seen this event {}",
+            event);
       }
-      if (this.concurrencyChecksEnabled && event.getVersionTag() != null && !event.getVersionTag().isRecorded()) {
-        getVersionVector().recordVersion((InternalDistributedMember) event.getDistributedMember(), event.getVersionTag());
+      if (this.concurrencyChecksEnabled && event.getVersionTag() != null
+          && !event.getVersionTag().isRecorded()) {
+        getVersionVector().recordVersion((InternalDistributedMember) event.getDistributedMember(),
+            event.getVersionTag());
       }
-      // Bug 49449: When client retried and returned with hasSeenEvent for both LR and DR, the server should still 
-      // notifyGatewayHubs even the event could be duplicated in gateway queues1 
+      // Bug 49449: When client retried and returned with hasSeenEvent for both LR and DR, the
+      // server should still
+      // notifyGatewayHubs even the event could be duplicated in gateway queues1
       notifyGatewaySender(EnumListenerEvent.AFTER_DESTROY, event);
       return;
     }
@@ -6957,13 +6718,18 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Do the expensive work of discovering an existing JTA transaction
-   * Only needs to be called at Region.Entry entry points e.g. Region.put, Region.invalidate, etc.
+   * Do the expensive work of discovering an existing JTA transaction Only needs to be called at
+   * Region.Entry entry points e.g. Region.put, Region.invalidate, etc.
+   * 
    * @since GemFire tx
    */
   final public void discoverJTA() {
-    if (!isSecret() && !isUsedForPartitionedRegionAdmin()
-        && !isUsedForMetaRegion()) { // prevent internal regions from participating in a TX
+    if (!isSecret() && !isUsedForPartitionedRegionAdmin() && !isUsedForMetaRegion()) { // prevent
+                                                                                       // internal
+                                                                                       // regions
+                                                                                       // from
+                                                                                       // participating
+                                                                                       // in a TX
       getJTAEnlistedTX();
     }
   }
@@ -6977,15 +6743,13 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * @param expectedOldValue if this is non-null, only destroy if key exists
-   *        and old value is equal to expectedOldValue
+   * @param expectedOldValue if this is non-null, only destroy if key exists and old value is equal
+   *        to expectedOldValue
    * @return true if a the destroy was done; false if it was not needed
    */
-  final boolean mapDestroy(final EntryEventImpl event,
-                     final boolean cacheWrite,
-                     final boolean isEviction,
-                     Object expectedOldValue)
-  throws CacheWriterException, EntryNotFoundException, TimeoutException {
+  final boolean mapDestroy(final EntryEventImpl event, final boolean cacheWrite,
+      final boolean isEviction, Object expectedOldValue)
+      throws CacheWriterException, EntryNotFoundException, TimeoutException {
     final boolean inGII = lockGII();
     try { // make sure unlockGII is called for bug 40001
       return mapDestroy(event, cacheWrite, isEviction, expectedOldValue, inGII, false);
@@ -6995,20 +6759,15 @@ public class LocalRegion extends AbstractRegion
       }
     }
   }
-  
-  final boolean mapDestroy(final EntryEventImpl event,
-      final boolean cacheWrite,
-      final boolean isEviction,
-      Object expectedOldValue,
-      boolean needTokensForGII,
+
+  final boolean mapDestroy(final EntryEventImpl event, final boolean cacheWrite,
+      final boolean isEviction, Object expectedOldValue, boolean needTokensForGII,
       boolean removeRecoveredEntry) {
-    //When register interest is in progress ,
+    // When register interest is in progress ,
     // We should not remove the key from the
     // region and instead replace the value
     // in the map with a DESTROYED token
-    final boolean inRI = !needTokensForGII
-    && !event.isFromRILocalDestroy()
-    && lockRIReadLock();
+    final boolean inRI = !needTokensForGII && !event.isFromRILocalDestroy() && lockRIReadLock();
     // at this point riCnt is guaranteed to be correct and we know for sure
     // whether a RI is in progress and that riCnt will not change during this
     // destroy operation
@@ -7016,20 +6775,15 @@ public class LocalRegion extends AbstractRegion
       final boolean needRIDestroyToken = inRI && (this.riCnt > 0);
       final boolean inTokenMode = needTokensForGII || needRIDestroyToken;
       // the following will call basicDestroyPart2 at the correct moment
-      boolean result = this.entries.destroy(event,
-          inTokenMode,
-          needRIDestroyToken,
-          cacheWrite,
-          isEviction,
-          expectedOldValue,
-          removeRecoveredEntry);
+      boolean result = this.entries.destroy(event, inTokenMode, needRIDestroyToken, cacheWrite,
+          isEviction, expectedOldValue, removeRecoveredEntry);
       // AbstractRegionMap.destroy now calls cancelExpiryTask
       return result;
     } catch (ConcurrentCacheModificationException e) {
       // this can happen in a client/server cache when another thread
       // managed to slip in its version info to the region entry before this
       // thread got around to doing so
-      if(logger.isDebugEnabled()) {
+      if (logger.isDebugEnabled()) {
         logger.debug("caught concurrent modification attempt when applying {}", event);
       }
       // Notify clients only if its NOT a gateway event.
@@ -7037,11 +6791,10 @@ public class LocalRegion extends AbstractRegion
         notifyBridgeClients(event);
       }
       return true; // event was elided
-    } catch(DiskAccessException dae) {
+    } catch (DiskAccessException dae) {
       handleDiskAccessException(dae);
       throw dae;
-    }
-    finally {
+    } finally {
       if (inRI) {
         unlockRIReadLock();
       }
@@ -7049,8 +6802,7 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Return true if dae was caused by a RegionDestroyedException.
-   * This was added for bug 39603.
+   * Return true if dae was caused by a RegionDestroyedException. This was added for bug 39603.
    */
   static boolean causedByRDE(DiskAccessException dae) {
     boolean result = false;
@@ -7066,116 +6818,118 @@ public class LocalRegion extends AbstractRegion
     }
     return result;
   }
-  
+
   final public void handleDiskAccessException(DiskAccessException dae) {
     handleDiskAccessException(dae, false);
   }
-  //Asif:To Fix bug 39079, we are locally destroying the region, the 
-  //destruction takes place here & not at DiskRegion or AbstractOplogDiskRegionEntry level
-  //is to eliminate any possibility of deadlocks ,as it is an entry operation thread
-  //which is implictly closing the region & stopping the Servers 
-   /**
-    * @param dae DiskAccessException encountered by the thread
-    * @param duringInitialization indicates that this exception occurred during
-    * region initialization. Instead of closing the cache here, we rely on the
-    * region initialization to clean things up.
-    * @see DistributedRegion#initialize(InputStream, InternalDistributedMember, InternalRegionArguments)
-    * @see LocalRegion#initialize(InputStream, InternalDistributedMember, InternalRegionArguments)
-    * @see InitialImageOperation#processChunk
-    */
-  final public void handleDiskAccessException(DiskAccessException dae, boolean duringInitialization) {
+
+  // Asif:To Fix bug 39079, we are locally destroying the region, the
+  // destruction takes place here & not at DiskRegion or AbstractOplogDiskRegionEntry level
+  // is to eliminate any possibility of deadlocks ,as it is an entry operation thread
+  // which is implictly closing the region & stopping the Servers
+  /**
+   * @param dae DiskAccessException encountered by the thread
+   * @param duringInitialization indicates that this exception occurred during region
+   *        initialization. Instead of closing the cache here, we rely on the region initialization
+   *        to clean things up.
+   * @see DistributedRegion#initialize(InputStream, InternalDistributedMember,
+   *      InternalRegionArguments)
+   * @see LocalRegion#initialize(InputStream, InternalDistributedMember, InternalRegionArguments)
+   * @see InitialImageOperation#processChunk
+   */
+  final public void handleDiskAccessException(DiskAccessException dae,
+      boolean duringInitialization) {
     // these will rethrow the originating exception
     if (duringInitialization || causedByRDE(dae)) {
       return;
     }
 
     // log the error
-    StringId sid = LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_CACHE_WILL_BE_CLOSED;
+    StringId sid =
+        LocalizedStrings.LocalRegion_A_DISKACCESSEXCEPTION_HAS_OCCURED_WHILE_WRITING_TO_THE_DISK_FOR_REGION_0_THE_CACHE_WILL_BE_CLOSED;
     logger.error(LocalizedMessage.create(sid, this.fullPath), dae);
 
     // forward the error to the disk store
     getDiskStore().handleDiskAccessException(dae);
   }
-  
-  void expireDestroy(final EntryEventImpl event,
-      final boolean cacheWrite) {
+
+  void expireDestroy(final EntryEventImpl event, final boolean cacheWrite) {
     basicDestroy(event, cacheWrite, null);
   }
-  
+
   void expireInvalidate(final EntryEventImpl event) {
     basicInvalidate(event);
   }
 
   /**
-   * Creates an event for EVICT_DESTROY operations.
-   * It is intended that this method be overridden to allow for special 
-   * handling of Partitioned Regions.
-   * @param key - the key that this event is related to 
+   * Creates an event for EVICT_DESTROY operations. It is intended that this method be overridden to
+   * allow for special handling of Partitioned Regions.
+   * 
+   * @param key - the key that this event is related to
    * @return an event for EVICT_DESTROY
    */
   @Retained
   protected EntryEventImpl generateEvictDestroyEvent(final Object key) {
-    @Retained EntryEventImpl event = EntryEventImpl.create(
-        this, Operation.EVICT_DESTROY, key, null/* newValue */,
-        null, false, getMyId());
+    @Retained
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.EVICT_DESTROY, key,
+        null/* newValue */, null, false, getMyId());
     // Fix for bug#36963
     if (generateEventID()) {
       event.setNewEventId(cache.getDistributedSystem());
     }
     return event;
   }
+
   /**
    * @return true if the evict destroy was done; false if it was not needed
    */
-  boolean evictDestroy(LRUEntry entry)
-  {
-    
+  boolean evictDestroy(LRUEntry entry) {
+
     checkReadiness();
-    @Released final EntryEventImpl event = 
-          generateEvictDestroyEvent(entry.getKey());
+    @Released
+    final EntryEventImpl event = generateEvictDestroyEvent(entry.getKey());
     try {
-      return mapDestroy(event,
-                        false, // cacheWrite
-                        true,  // isEviction
-                        null); // expectedOldValue
-    }
-    catch (CacheWriterException error) {
-      throw new Error(LocalizedStrings.LocalRegion_CACHE_WRITER_SHOULD_NOT_HAVE_BEEN_CALLED_FOR_EVICTDESTROY.toLocalizedString(), error);
-    }
-    catch (TimeoutException anotherError) {
-      throw new Error(LocalizedStrings.LocalRegion_NO_DISTRIBUTED_LOCK_SHOULD_HAVE_BEEN_ATTEMPTED_FOR_EVICTDESTROY.toLocalizedString(), anotherError);
-    }
-    catch (EntryNotFoundException yetAnotherError) {
-      throw new Error(LocalizedStrings.LocalRegion_ENTRYNOTFOUNDEXCEPTION_SHOULD_BE_MASKED_FOR_EVICTDESTROY.toLocalizedString(), yetAnotherError);
+      return mapDestroy(event, false, // cacheWrite
+          true, // isEviction
+          null); // expectedOldValue
+    } catch (CacheWriterException error) {
+      throw new Error(
+          LocalizedStrings.LocalRegion_CACHE_WRITER_SHOULD_NOT_HAVE_BEEN_CALLED_FOR_EVICTDESTROY
+              .toLocalizedString(),
+          error);
+    } catch (TimeoutException anotherError) {
+      throw new Error(
+          LocalizedStrings.LocalRegion_NO_DISTRIBUTED_LOCK_SHOULD_HAVE_BEEN_ATTEMPTED_FOR_EVICTDESTROY
+              .toLocalizedString(),
+          anotherError);
+    } catch (EntryNotFoundException yetAnotherError) {
+      throw new Error(
+          LocalizedStrings.LocalRegion_ENTRYNOTFOUNDEXCEPTION_SHOULD_BE_MASKED_FOR_EVICTDESTROY
+              .toLocalizedString(),
+          yetAnotherError);
     } finally {
       event.release();
     }
   }
 
   /**
-   * Called by lower levels {@link AbstractRegionMap} while holding the entry
-   * synchronization <bold>and</bold> while the entry remains in the map. Once
-   * the entry is removed from the map, then other operations synchronize on a
-   * new entry, allow for ordering problems between
-   * {@link #create(Object, Object, Object)} and
-   * {@link #destroy(Object, Object)} operations.
+   * Called by lower levels {@link AbstractRegionMap} while holding the entry synchronization
+   * <bold>and</bold> while the entry remains in the map. Once the entry is removed from the map,
+   * then other operations synchronize on a new entry, allow for ordering problems between
+   * {@link #create(Object, Object, Object)} and {@link #destroy(Object, Object)} operations.
    *
    * @param entry the Region entry being destroyed
-   * @param event
-   *          the event describing the destroy operation
+   * @param event the event describing the destroy operation
    * @since GemFire 5.1
    */
-  protected void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event)
-  {
-  }
+  protected void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {}
 
   /**
-   * Called by lower levels, while still holding the write sync lock, and the
-   * low level has completed its part of the basic destroy
+   * Called by lower levels, while still holding the write sync lock, and the low level has
+   * completed its part of the basic destroy
    */
-  void basicDestroyPart2(RegionEntry re, EntryEventImpl event,
-      boolean inTokenMode, boolean conflictWithClear, boolean duringRI, boolean invokeCallbacks)
-  {
+  void basicDestroyPart2(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
+      boolean conflictWithClear, boolean duringRI, boolean invokeCallbacks) {
     if (!(this instanceof HARegion)) {
       if (logger.isTraceEnabled()) {
         logger.trace("basicDestroyPart2(inTokenMode={},conflictWithClear={},duringRI={}) event={}",
@@ -7185,10 +6939,10 @@ public class LocalRegion extends AbstractRegion
     VersionTag v = event.getVersionTag();
 
     /**
-     * destroys that are not part of the cleaning out of keys prior to a register-interest
-     * are marked with Tombstones instead of Destroyed tokens so that they are not
-     * reaped after the RI completes.  RI does not create Tombstones because it
-     * would flood the TombstoneService with unnecessary work.
+     * destroys that are not part of the cleaning out of keys prior to a register-interest are
+     * marked with Tombstones instead of Destroyed tokens so that they are not reaped after the RI
+     * completes. RI does not create Tombstones because it would flood the TombstoneService with
+     * unnecessary work.
      */
     if (inTokenMode && !(this.concurrencyChecksEnabled || event.isFromRILocalDestroy())) {
       if (re.isDestroyed()) {
@@ -7199,30 +6953,23 @@ public class LocalRegion extends AbstractRegion
           }
         }
       }
-    }
-    else {
+    } else {
       if (this.concurrencyChecksEnabled && !(this instanceof HARegion)) {
         if (logger.isDebugEnabled()) {
           logger.debug("basicDestroyPart2: {}, version={}", event.getKey(), v);
         }
       }
     }
-    /* this is too late to do index maintenance with a CompactRangeIndex
-    because we need to have the old value still intact. At this point
-    the old value has already be replaced with a destroyed token.
-    if (!isProxy() && !conflictWithClear) {
-      if (this.indexManager != null) {
-        try {
-          this.indexManager.updateIndexes(re, IndexManager.REMOVE_ENTRY);
-        }
-        catch (QueryException e) {
-          throw new IndexMaintenanceException(e);
-        }
-      }
-    }*/
+    /*
+     * this is too late to do index maintenance with a CompactRangeIndex because we need to have the
+     * old value still intact. At this point the old value has already be replaced with a destroyed
+     * token. if (!isProxy() && !conflictWithClear) { if (this.indexManager != null) { try {
+     * this.indexManager.updateIndexes(re, IndexManager.REMOVE_ENTRY); } catch (QueryException e) {
+     * throw new IndexMaintenanceException(e); } } }
+     */
 
     notifyGatewaySender(EnumListenerEvent.AFTER_DESTROY, event);
-    
+
     // invoke callbacks if initialized and told to do so, or if this
     // is a bucket in a partitioned region
     if (invokeCallbacks && !event.isBulkOpInProgress()) {
@@ -7230,8 +6977,7 @@ public class LocalRegion extends AbstractRegion
           || this.isUsedForPartitionedRegionBucket) {
         try {
           re.dispatchListenerEvents(event);
-        }
-        catch (InterruptedException ie) {
+        } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
           stopper.checkCancelInProgress(null);
           return;
@@ -7243,12 +6989,11 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * distribution and callback notification are done in part2 inside
-   * entry lock for maintaining the order of events.
+   * distribution and callback notification are done in part2 inside entry lock for maintaining the
+   * order of events.
    */
-  void basicDestroyPart3(RegionEntry re, EntryEventImpl event,
-      boolean inTokenMode, boolean duringRI, boolean invokeCallbacks,
-      Object expectedOldValue) {
+  void basicDestroyPart3(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
+      boolean duringRI, boolean invokeCallbacks, Object expectedOldValue) {
     if (invokeCallbacks) {
       if (event.isBulkOpInProgress()) {
         event.getRemoveAllOperation().addEntry(event);
@@ -7257,7 +7002,7 @@ public class LocalRegion extends AbstractRegion
     if (!inTokenMode || duringRI) {
       updateStatsForDestroy();
     }
-    
+
     if (this.entryUserAttributes != null) {
       this.entryUserAttributes.remove(event.getKey());
     }
@@ -7269,19 +7014,17 @@ public class LocalRegion extends AbstractRegion
   private void updateStatsForDestroy() {
     getCachePerfStats().incDestroys();
   }
-  
-  //Asif : This method will clear the tranxnl entries
-  final void txClearRegion()
-  {
+
+  // Asif : This method will clear the tranxnl entries
+  final void txClearRegion() {
     TXStateInterface tx = getJTAEnlistedTX();
     if (tx != null) {
       tx.rmRegion(this);
     }
   }
 
-  public void invokeDestroyCallbacks(final EnumListenerEvent eventType,
-      final EntryEventImpl event , final boolean callDispatchListenerEvent, boolean notifyGateways)
-  {
+  public void invokeDestroyCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
+      final boolean callDispatchListenerEvent, boolean notifyGateways) {
     // The spec for ConcurrentMap support requires that operations be mapped
     // to non-CM counterparts
     if (event.getOperation() == Operation.REMOVE) {
@@ -7292,24 +7035,23 @@ public class LocalRegion extends AbstractRegion
     if (notifyGateways) {
       notifyGatewaySender(eventType, event);
     }
-    if(callDispatchListenerEvent){
+    if (callDispatchListenerEvent) {
       dispatchListenerEvent(eventType, event);
     }
   }
-  
-  
-  public void invokeTXCallbacks(final EnumListenerEvent eventType,
-      final EntryEventImpl event , final boolean callDispatchListenerEvent)
-  {
+
+
+  public void invokeTXCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
+      final boolean callDispatchListenerEvent) {
     // The spec for ConcurrentMap support requires that operations be mapped
     // to non-CM counterparts
-    
+
     Operation op = event.getOperation();
 
     if (logger.isDebugEnabled()) {
       logger.debug("invokeTXCallbacks for event {}", event);
     }
-    
+
     if (op == Operation.REMOVE) {
       event.setOperation(Operation.DESTROY);
     } else if (op == Operation.PUT_IF_ABSENT) {
@@ -7320,44 +7062,41 @@ public class LocalRegion extends AbstractRegion
     event.setEventType(eventType);
     notifyBridgeClients(event);
     notifyGatewaySender(eventType, event);
-    if (callDispatchListenerEvent){
-      if (event.getInvokePRCallbacks() || (!(event.getRegion() instanceof PartitionedRegion) && !(event.getRegion().isUsedForPartitionedRegionBucket()))) {
+    if (callDispatchListenerEvent) {
+      if (event.getInvokePRCallbacks() || (!(event.getRegion() instanceof PartitionedRegion)
+          && !(event.getRegion().isUsedForPartitionedRegionBucket()))) {
         dispatchListenerEvent(eventType, event);
       }
     }
   }
-  
+
 
   /**
-   * @param key
-   *          the key of the entry to destroy
-   * @param rmtOrigin
-   *          true if transaction being applied had a remote origin
-   * @param event
-   *          filled in if operation performed
-   * @param needTokensForGII
-   *          true if caller has determined we are in destroy token mode and
-   *          will keep us in that mode while this call is executing.
-   * @param filterRoutingInfo 
-   * @param bridgeContext 
+   * @param key the key of the entry to destroy
+   * @param rmtOrigin true if transaction being applied had a remote origin
+   * @param event filled in if operation performed
+   * @param needTokensForGII true if caller has determined we are in destroy token mode and will
+   *        keep us in that mode while this call is executing.
+   * @param filterRoutingInfo
+   * @param bridgeContext
    * @param isOriginRemote whether the event originated in a peer or in this vm
    * @param txEntryState for passing up versionTag - only on near side
    * @param versionTag tag generated by txCoordinator - only on far side
    * @param tailKey tail (shadow) key generated by txCoordinator for WAN - only on farside
    */
-  final void txApplyDestroy(Object key, TransactionId rmtOrigin,
-      TXRmtEvent event, boolean needTokensForGII, Operation op, 
-      EventID eventId, Object aCallbackArgument,List<EntryEventImpl> pendingCallbacks,
-      FilterRoutingInfo filterRoutingInfo, ClientProxyMembershipID bridgeContext,
-      boolean isOriginRemote, TXEntryState txEntryState, VersionTag versionTag, long tailKey)
-  {
+  final void txApplyDestroy(Object key, TransactionId rmtOrigin, TXRmtEvent event,
+      boolean needTokensForGII, Operation op, EventID eventId, Object aCallbackArgument,
+      List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
+      ClientProxyMembershipID bridgeContext, boolean isOriginRemote, TXEntryState txEntryState,
+      VersionTag versionTag, long tailKey) {
     final boolean inRI = !needTokensForGII && lockRIReadLock();
     final boolean needRIDestroyToken = inRI && (this.riCnt > 0);
     final boolean inTokenMode = needTokensForGII || needRIDestroyToken;
 
     try {
-      this.entries.txApplyDestroy(key, rmtOrigin, event, inTokenMode,  needRIDestroyToken,
-        op, eventId, aCallbackArgument,pendingCallbacks,filterRoutingInfo,bridgeContext, isOriginRemote, txEntryState, versionTag, tailKey);
+      this.entries.txApplyDestroy(key, rmtOrigin, event, inTokenMode, needRIDestroyToken, op,
+          eventId, aCallbackArgument, pendingCallbacks, filterRoutingInfo, bridgeContext,
+          isOriginRemote, txEntryState, versionTag, tailKey);
     } finally {
       if (inRI) {
         unlockRIReadLock();
@@ -7366,18 +7105,16 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Called by lower levels, while still holding the write sync lock, and the
-   * low level has completed its part of the basic destroy
+   * Called by lower levels, while still holding the write sync lock, and the low level has
+   * completed its part of the basic destroy
    */
-  void txApplyDestroyPart2(RegionEntry re, Object key, boolean inTokenMode, boolean clearConflict)
-  {
+  void txApplyDestroyPart2(RegionEntry re, Object key, boolean inTokenMode, boolean clearConflict) {
     if (this.testCallable != null) {
       this.testCallable.call(this, Operation.DESTROY, re);
     }
     if (inTokenMode) {
       getImageState().addDestroyedEntry(key);
-    }
-    else {
+    } else {
       updateStatsForDestroy();
     }
     if (this.entryUserAttributes != null) {
@@ -7389,8 +7126,7 @@ public class LocalRegion extends AbstractRegion
    * @see DistributedRegion#basicInvalidateRegion(RegionEventImpl)
    * @param event
    */
-  void basicInvalidateRegion(RegionEventImpl event)
-  {
+  void basicInvalidateRegion(RegionEventImpl event) {
     final TXStateProxy tx = this.cache.getTXMgr().internalSuspend();
     try {
       this.regionInvalid = true;
@@ -7398,7 +7134,7 @@ public class LocalRegion extends AbstractRegion
       invalidateAllEntries(event);
       Set allSubregions = subregions(true);
       for (Iterator itr = allSubregions.iterator(); itr.hasNext();) {
-        LocalRegion rgn = (LocalRegion)itr.next();
+        LocalRegion rgn = (LocalRegion) itr.next();
         rgn.regionInvalid = true;
         try {
           rgn.getImageState().setRegionInvalidated(true);
@@ -7408,13 +7144,11 @@ public class LocalRegion extends AbstractRegion
             continue; // don't invoke callbacks if not initialized yet
 
           if (rgn.hasListener()) {
-            RegionEventImpl event2 = (RegionEventImpl)event.clone();
+            RegionEventImpl event2 = (RegionEventImpl) event.clone();
             event2.region = rgn;
-            rgn.dispatchListenerEvent(
-                EnumListenerEvent.AFTER_REGION_INVALIDATE, event2);
+            rgn.dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_INVALIDATE, event2);
           }
-        }
-        catch (RegionDestroyedException ignore) {
+        } catch (RegionDestroyedException ignore) {
           // ignore subregions that have been destroyed to fix bug 33276
         }
       }
@@ -7432,30 +7166,26 @@ public class LocalRegion extends AbstractRegion
       if (hasListener) {
         dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_INVALIDATE, event);
       }
-    }
-    finally {
+    } finally {
       this.cache.getTXMgr().resume(tx);
     }
   }
 
   /**
-   * Determines whether the receiver is unexpired with regard to the given
-   * timeToLive and idleTime attributes, which may different from this entry's
-   * actual attributes. Used for validation of objects during netSearch(), which
-   * must validate remote entries against local timeout attributes.
+   * Determines whether the receiver is unexpired with regard to the given timeToLive and idleTime
+   * attributes, which may different from this entry's actual attributes. Used for validation of
+   * objects during netSearch(), which must validate remote entries against local timeout
+   * attributes.
    */
-  boolean isExpiredWithRegardTo(Object key, int ttl, int idleTime)
-  {
+  boolean isExpiredWithRegardTo(Object key, int ttl, int idleTime) {
 
     if (!getAttributes().getStatisticsEnabled())
       return false;
 
     long expTime;
     try {
-      expTime = (new NetSearchExpirationCalculator(this, key, ttl, idleTime))
-          .getExpirationTime();
-    }
-    catch (EntryNotFoundException ex) {
+      expTime = (new NetSearchExpirationCalculator(this, key, ttl, idleTime)).getExpirationTime();
+    } catch (EntryNotFoundException ex) {
       return true;
     }
     if (expTime == 0)
@@ -7463,79 +7193,72 @@ public class LocalRegion extends AbstractRegion
     return expTime <= cacheTimeMillis();
   }
 
-  void dispatchListenerEvent(EnumListenerEvent op, InternalCacheEvent event)
-  {
+  void dispatchListenerEvent(EnumListenerEvent op, InternalCacheEvent event) {
     // Return if the inhibit all notifications flag is set
     boolean isEntryEvent = event instanceof EntryEventImpl;
     if (isEntryEvent) {
-      if (((EntryEventImpl)event).inhibitAllNotifications()){
+      if (((EntryEventImpl) event).inhibitAllNotifications()) {
         if (logger.isDebugEnabled()) {
           logger.debug("Notification inhibited for key {}", event);
         }
         return;
       }
     }
-    
+
     if (shouldDispatchListenerEvent()) {
-      //Assert.assertTrue(event.getRegion() == this);
+      // Assert.assertTrue(event.getRegion() == this);
       if (logger.isTraceEnabled()) {
         logger.trace("dispatchListenerEvent event={}", event);
       }
       final long start = getCachePerfStats().startCacheListenerCall();
-      
+
       boolean origOriginRemote = false;
       boolean isOriginRemoteSet = false;
 
       try {
         if ((isEntryEvent)) {
-          if (((EntryEventImpl)event).isSingleHop()) {
+          if (((EntryEventImpl) event).isSingleHop()) {
             origOriginRemote = event.isOriginRemote();
-            ((EntryEventImpl)event).setOriginRemote(true);
+            ((EntryEventImpl) event).setOriginRemote(true);
             isOriginRemoteSet = true;
           }
           RegionEntry re = ((EntryEventImpl) event).getRegionEntry();
           if (re != null) {
-            ((EntryEventImpl) event).getRegionEntry()
-                .setCacheListenerInvocationInProgress(true);
+            ((EntryEventImpl) event).getRegionEntry().setCacheListenerInvocationInProgress(true);
           }
         }
-        
+
         if (this.cache.getEventThreadPool() == null) {
           dispatchEvent(this, event, op);
-        }
-        else {
+        } else {
           final EventDispatcher ed = new EventDispatcher(event, op);
           try {
             this.cache.getEventThreadPool().execute(ed);
-          }
-          catch (RejectedExecutionException rex) {
+          } catch (RejectedExecutionException rex) {
             ed.release();
             dispatchEvent(this, event, op);
           }
         }
-      }
-      finally {
+      } finally {
         getCachePerfStats().endCacheListenerCall(start);
         if (isOriginRemoteSet) {
-          ((EntryEventImpl)event).setOriginRemote(origOriginRemote);
+          ((EntryEventImpl) event).setOriginRemote(origOriginRemote);
         }
         if (isEntryEvent) {
           RegionEntry re = ((EntryEventImpl) event).getRegionEntry();
           if (re != null) {
-              re.setCacheListenerInvocationInProgress(false);
+            re.setCacheListenerInvocationInProgress(false);
           }
         }
       }
     }
   }
-  
+
   /** @return true if initialization is complete */
-  public boolean isInitialized()
-  {
+  public boolean isInitialized() {
     if (this.initialized) {
       return true;
-    }
-    else {
+    } else {
       long count;
       StoppableCountDownLatch latch = this.initializationLatchAfterGetInitialImage;
       if (latch == null) {
@@ -7545,16 +7268,14 @@ public class LocalRegion extends AbstractRegion
       if (count == 0) {
         this.initialized = true;
         return true;
-      }
-      else {
+      } else {
         return false;
       }
     }
   }
-  
+
   /**
-   * @return true if event state has been transfered to this region
-   *         from another cache
+   * @return true if event state has been transfered to this region from another cache
    */
   public boolean isEventTrackerInitialized() {
     if (this.eventTracker != null) {
@@ -7562,7 +7283,7 @@ public class LocalRegion extends AbstractRegion
     }
     return false;
   }
-  
+
   /**
    * @return true if this region has an event tracker
    */
@@ -7570,8 +7291,7 @@ public class LocalRegion extends AbstractRegion
     return (this.eventTracker != null);
   }
 
-  public void acquireDestroyLock()
-  {
+  public void acquireDestroyLock() {
     LocalRegion root = getRoot();
     boolean acquired = false;
     do {
@@ -7580,12 +7300,10 @@ public class LocalRegion extends AbstractRegion
       try {
         root.destroyLock.acquire();
         acquired = true;
-      }
-      catch (InterruptedException ie) {
+      } catch (InterruptedException ie) {
         interrupted = true;
         this.cache.getCancelCriterion().checkCancelInProgress(ie);
-      }
-      finally {
+      } finally {
         if (interrupted) {
           Thread.currentThread().interrupt();
         }
@@ -7596,26 +7314,23 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
-  public void releaseDestroyLock()
-  {
+  public void releaseDestroyLock() {
     LocalRegion root = getRoot();
     if (logger.isDebugEnabled()) {
       logger.debug("Releasing Destroy Lock: {}", root.getName());
     }
     root.destroyLock.release();
   }
-  
+
   /**
-   * Cleans up any resources that may have been allocated for this region during
-   * its initialization.
+   * Cleans up any resources that may have been allocated for this region during its initialization.
    */
-  void cleanupFailedInitialization()
-  {
+  void cleanupFailedInitialization() {
     // mark as destroyed fixes 49555.
     this.isDestroyed = true;
     // after isDestroyed is set to true call removeResourceListener to fix bug 49555
     this.cache.getResourceManager(false).removeResourceListener(this);
-    closeEntries(); //fixes bug 41333
+    closeEntries(); // fixes bug 41333
     this.destroyedSubregionSerialNumbers = collectSubregionSerialNumbers();
     try {
       if (this.eventTracker != null) {
@@ -7625,14 +7340,12 @@ public class LocalRegion extends AbstractRegion
         // This was needed to fix bug 30937
         try {
           diskRegion.cleanupFailedInitialization(this);
-        }
-        catch (IllegalStateException ex) {
+        } catch (IllegalStateException ex) {
           // just ignore this exception since whoever called us is going
           // to report the exception that caused initialization to fail.
         }
       }
-    }
-    finally {
+    } finally {
       // make sure any waiters on initializing Latch are released
       this.releaseLatches();
     }
@@ -7640,8 +7353,7 @@ public class LocalRegion extends AbstractRegion
 
   //////////////////// Private Methods ////////////////////////////////////////
 
-  LocalRegion getRoot()
-  {
+  LocalRegion getRoot() {
     LocalRegion r = this;
     while (r.parentRegion != null) {
       r = r.parentRegion;
@@ -7649,8 +7361,7 @@ public class LocalRegion extends AbstractRegion
     return r;
   }
 
-  private void initializationFailed(LocalRegion subregion)
-  {
+  private void initializationFailed(LocalRegion subregion) {
     synchronized (this.subregionsLock) { // bugfix for bug#34883 (tushar)
       this.subregions.remove(subregion.getName());
     }
@@ -7658,26 +7369,23 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * PRECONDITIONS: Synchronized on updateMonitor for this key in order to
-   * guarantee write-through to map entry, and key must be in map
+   * PRECONDITIONS: Synchronized on updateMonitor for this key in order to guarantee write-through
+   * to map entry, and key must be in map
    *
-   * @param p_lastModified
-   *          time, may be 0 in which case uses now instead
+   * @param p_lastModified time, may be 0 in which case uses now instead
    *
    * @return the actual lastModifiedTime used.
    */
-  long updateStatsForPut(RegionEntry entry, long p_lastModified,
-      boolean lruRecentUse)
-  {
+  long updateStatsForPut(RegionEntry entry, long p_lastModified, boolean lruRecentUse) {
     long lastModified = p_lastModified;
+    long lastAccessed = cacheTimeMillis();
     if (lruRecentUse) {
       entry.setRecentlyUsed(); // fix for bug 31102
     }
     if (lastModified == 0L) {
-      lastModified = cacheTimeMillis();
+      lastModified = lastAccessed;
     }
-    entry.updateStatsForPut(lastModified);
-    IndexManager.setIndexBufferTime(lastModified, cacheTimeMillis());
+    entry.updateStatsForPut(lastModified, lastAccessed);
     if (this.statisticsEnabled && !isProxy()) {
       // do not reschedule if there is already a task in the queue.
       // this prevents bloat in the TimerTask since cancelled tasks
@@ -7692,13 +7400,11 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Returns a region in the subregion map first, then looks in the
-   * reinitializing region registry.
+   * Returns a region in the subregion map first, then looks in the reinitializing region registry.
    *
    * @return the region or null if not found, may be destroyed
    */
-  private LocalRegion basicGetSubregion(String name)
-  {
+  private LocalRegion basicGetSubregion(String name) {
     LocalRegion r = toRegion(this.subregions.get(name));
     // don't wait for reinitialization if the init_level for this thread is
     // ANY_INIT: We don't want CreateRegion messages to wait on a future
@@ -7720,15 +7426,12 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Make a LocalRegion from an element in the subregion map Sent to parent
-   * region.
+   * Make a LocalRegion from an element in the subregion map Sent to parent region.
    *
-   * @return This method may return null or a destroyed region if the region was
-   *         just destroyed
+   * @return This method may return null or a destroyed region if the region was just destroyed
    */
-  private LocalRegion toRegion(Object element)
-  {
-    LocalRegion rgn = (LocalRegion)element;
+  private LocalRegion toRegion(Object element) {
+    LocalRegion rgn = (LocalRegion) element;
     if (rgn != null) {
       // do not return until done initializing (unless this is an initializing
       // thread)
@@ -7740,8 +7443,7 @@ public class LocalRegion extends AbstractRegion
   /**
    * Update the API statistics appropriately for returning this value from get.
    *
-   * @param re
-   *          the entry whose value was accessed
+   * @param re the entry whose value was accessed
    */
   public void updateStatsForGet(final RegionEntry re, final boolean hit) {
     if (!this.statisticsEnabled) {
@@ -7760,31 +7462,26 @@ public class LocalRegion extends AbstractRegion
     setLastAccessedTime(now, hit);
   }
 
-  private void sendPendingRegionDestroyEvents(HashSet set)
-  {
+  private void sendPendingRegionDestroyEvents(HashSet set) {
     Iterator iterator = set.iterator();
     while (iterator.hasNext()) {
-      RegionEventImpl event = (RegionEventImpl)iterator.next();
-      event.region.dispatchListenerEvent(
-          EnumListenerEvent.AFTER_REGION_DESTROY, event);
+      RegionEventImpl event = (RegionEventImpl) iterator.next();
+      event.region.dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_DESTROY, event);
       if (!cache.forcedDisconnect()) {
-        SystemMemberCacheEventProcessor.send(getCache(), event.getRegion(), event
-            .getOperation());
+        SystemMemberCacheEventProcessor.send(getCache(), event.getRegion(), event.getOperation());
       }
     }
   }
 
   /** The listener is not closed until after the afterRegionDestroy event */
-  protected void closeCallbacksExceptListener()
-  {
+  protected void closeCallbacksExceptListener() {
     closeCacheCallback(getCacheLoader());
     closeCacheCallback(getCacheWriter());
     closeCacheCallback(getEvictionController());
   }
 
   /** This is only done when the cache is closed. */
-  private void closeAllCallbacks()
-  {
+  private void closeAllCallbacks() {
     closeCallbacksExceptListener();
     CacheListener[] listeners = fetchCacheListenersField();
     if (listeners != null) {
@@ -7796,22 +7493,23 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Release the client connection pool if we have one
+   * 
    * @since GemFire 5.7
    */
   private void detachPool() {
     ServerRegionProxy mySRP = getServerProxy();
     if (mySRP != null) {
       GemFireCacheImpl gc = getCache();
-      String poolname =this.getPoolName();
-      PoolImpl dpool= (PoolImpl)PoolManager.find(this.getPoolName());
-      if(poolname!=null && dpool!=null){
-             mySRP.detach(gc.keepDurableSubscriptionsAlive() || dpool.getKeepAlive()); 
-      }else{
-          mySRP.detach(gc.keepDurableSubscriptionsAlive());
+      String poolname = this.getPoolName();
+      PoolImpl dpool = (PoolImpl) PoolManager.find(this.getPoolName());
+      if (poolname != null && dpool != null) {
+        mySRP.detach(gc.keepDurableSubscriptionsAlive() || dpool.getKeepAlive());
+      } else {
+        mySRP.detach(gc.keepDurableSubscriptionsAlive());
       }
     }
   }
-  
+
   /**
    * Closes the cqs created based on this region (Cache Client/writer/loader).
    */
@@ -7820,81 +7518,85 @@ public class LocalRegion extends AbstractRegion
     if (cqService != null) {
       try {
         cqService.closeCqs(getFullPath());
-      } 
-      catch (VirtualMachineError err) {
+      } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
-        // If this ever returns, rethrow the error.  We're poisoned
+        // If this ever returns, rethrow the error. We're poisoned
         // now, so don't let this thread continue.
         throw err;
-      }
-      catch (Throwable t) {
+      } catch (Throwable t) {
         // Whenever you catch Error or Throwable, you must also
-        // catch VirtualMachineError (see above).  However, there is
+        // catch VirtualMachineError (see above). However, there is
         // _still_ a possibility that you are dealing with a cascading
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_EXCEPTION_OCCURRED_WHILE_CLOSING_CQS_ON_REGION_DESTORY), t);
+        logger.warn(
+            LocalizedMessage.create(
+                LocalizedStrings.LocalRegion_EXCEPTION_OCCURRED_WHILE_CLOSING_CQS_ON_REGION_DESTORY),
+            t);
       }
     }
   }
 
   /**
-   * Called when the cache is closed. Behaves just like a Region.close except
-   * the operation is CACHE_CLOSE
+   * Called when the cache is closed. Behaves just like a Region.close except the operation is
+   * CACHE_CLOSE
    */
-  void handleCacheClose(Operation op)
-  {
-    RegionEventImpl ev = new RegionEventImpl(this, op, null, false, getMyId(),
-        generateEventID());
+  void handleCacheClose(Operation op) {
+    RegionEventImpl ev = new RegionEventImpl(this, op, null, false, getMyId(), generateEventID());
     if (!this.isDestroyed) { // bruce: don't destroy if already destroyed
       try {
         basicDestroyRegion(ev, false, true, true);
-      }
-      catch (CancelException ignore) {
+      } catch (CancelException ignore) {
         // If the region was destroyed we see this because the cache is closing.
         // Since we are trying to close the cache don't get upset if
         // a region was destroyed out from under us
         if (logger.isDebugEnabled()) {
-          logger.debug("handleCacheClose: Encountered cache closure while closing region {}", getFullPath());
+          logger.debug("handleCacheClose: Encountered cache closure while closing region {}",
+              getFullPath());
         }
-      }
-      catch (RegionDestroyedException ignore) {
+      } catch (RegionDestroyedException ignore) {
         // Since we are trying to close the cache don't get upset if
         // a region was destroyed out from under us
-      }
-      catch (CacheWriterException e) {
+      } catch (CacheWriterException e) {
         // not possible with local operation, CacheWriter not called
-        throw new Error(LocalizedStrings.LocalRegion_CACHEWRITEREXCEPTION_SHOULD_NOT_BE_THROWN_HERE.toLocalizedString(), e);
-      }
-      catch (TimeoutException e) {
+        throw new Error(LocalizedStrings.LocalRegion_CACHEWRITEREXCEPTION_SHOULD_NOT_BE_THROWN_HERE
+            .toLocalizedString(), e);
+      } catch (TimeoutException e) {
         // not possible with local operation, no distributed locks possible
         InternalDistributedSystem ids = (this.getCache().getDistributedSystem());
         if (!ids.isDisconnecting()) {
-          throw new InternalGemFireError(LocalizedStrings.LocalRegion_TIMEOUTEXCEPTION_SHOULD_NOT_BE_THROWN_HERE.toLocalizedString(), e);
+          throw new InternalGemFireError(
+              LocalizedStrings.LocalRegion_TIMEOUTEXCEPTION_SHOULD_NOT_BE_THROWN_HERE
+                  .toLocalizedString(),
+              e);
         }
       }
     }
   }
+
   void cleanUpOnIncompleteOp(EntryEventImpl event, RegionEntry re) {
-    //Ok to remove entry as index has not been modified yet by the operation
-    this.entries.removeEntry(event.getKey(), re, false) ;      
+    // Ok to remove entry as index has not been modified yet by the operation
+    this.entries.removeEntry(event.getKey(), re, false);
   }
 
-  static void validateRegionName(String name, InternalRegionArguments internalRegionArgs)
-  {
+  public static void validateRegionName(String name, InternalRegionArguments internalRegionArgs) {
     if (name == null) {
-      throw new IllegalArgumentException(LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
+      throw new IllegalArgumentException(
+          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_NULL.toLocalizedString());
     }
     if (name.isEmpty()) {
-      throw new IllegalArgumentException(LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
+      throw new IllegalArgumentException(
+          LocalizedStrings.LocalRegion_NAME_CANNOT_BE_EMPTY.toLocalizedString());
     }
     if (name.contains(SEPARATOR)) {
-      throw new IllegalArgumentException(LocalizedStrings.LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0.toLocalizedString(SEPARATOR));
+      throw new IllegalArgumentException(
+          LocalizedStrings.LocalRegion_NAME_CANNOT_CONTAIN_THE_SEPARATOR_0
+              .toLocalizedString(SEPARATOR));
     }
 
     // Validate the name of the region only if it isn't an internal region
-    if (internalRegionArgs.isInternalRegion()){
+    if (internalRegionArgs.isInternalRegion()) {
       return;
     }
     if (internalRegionArgs.isUsedForMetaRegion()) {
@@ -7908,25 +7610,25 @@ public class LocalRegion extends AbstractRegion
     }
 
     if (name.startsWith("__")) {
-      throw new IllegalArgumentException("Region names may not begin with a double-underscore: " + name);
+      throw new IllegalArgumentException(
+          "Region names may not begin with a double-underscore: " + name);
     }
 
     // Ensure the region only contains valid characters
     Matcher matcher = NAME_PATTERN.matcher(name);
     if (!matcher.matches()) {
-      throw new IllegalArgumentException("Region names may only be alphanumeric and may contain hyphens or underscores: " + name);
+      throw new IllegalArgumentException(
+          "Region names may only be alphanumeric and may contain hyphens or underscores: " + name);
     }
   }
 
-  private void checkCacheClosed()
-  {
+  private void checkCacheClosed() {
     if (this.cache.isClosed()) {
       throw cache.getCacheClosedException(null, null);
     }
   }
 
-  private void checkRegionDestroyed(boolean checkCancel)
-  {
+  private void checkRegionDestroyed(boolean checkCancel) {
     if (checkCancel) {
       this.cache.getCancelCriterion().checkCancelInProgress(null);
     }
@@ -7936,8 +7638,7 @@ public class LocalRegion extends AbstractRegion
         ex = new RegionReinitializedException(toString(), getFullPath());
       } else if (this.cache.isCacheAtShutdownAll()) {
         throw new CacheClosedException("Cache is being closed by ShutdownAll");
-      }
-      else {
+      } else {
         ex = new RegionDestroyedException(toString(), getFullPath());
       }
       // Race condition could cause the cache to be destroyed after the
@@ -7947,27 +7648,30 @@ public class LocalRegion extends AbstractRegion
       }
       throw ex;
     }
-    
+
     if (this.isDestroyedForParallelWAN) {
       throw new RegionDestroyedException(
           LocalizedStrings.LocalRegion_REGION_IS_BEING_DESTROYED_WAITING_FOR_PARALLEL_QUEUE_TO_DRAIN
-              .toLocalizedString(), getFullPath());
+              .toLocalizedString(),
+          getFullPath());
     }
   }
 
   /**
    * For each region entry in this region call the callback
+   * 
    * @since GemFire prPersistSprint2
    */
   public void foreachRegionEntry(RegionEntryCallback callback) {
     Iterator it = this.entries.regionEntriesInVM().iterator();
     while (it.hasNext()) {
-      callback.handleRegionEntry((RegionEntry)it.next());
+      callback.handleRegionEntry((RegionEntry) it.next());
     }
   }
 
   /**
    * Used by {@link #foreachRegionEntry}.
+   * 
    * @since GemFire prPersistSprint2
    */
   public interface RegionEntryCallback {
@@ -7976,21 +7680,22 @@ public class LocalRegion extends AbstractRegion
 
   protected void checkIfReplicatedAndLocalDestroy(EntryEventImpl event) {
     // Actiual: disallow local invalidation for replicated regions
-    if (getScope().isDistributed() && getDataPolicy().withReplication()
-        && (!event.isDistributed()) && !isUsedForSerialGatewaySenderQueue()) {
-      throw new IllegalStateException(LocalizedStrings.LocalRegion_NOT_ALLOWED_TO_DO_A_LOCAL_DESTROY_ON_A_REPLICATED_REGION.toLocalizedString());
+    if (getScope().isDistributed() && getDataPolicy().withReplication() && (!event.isDistributed())
+        && !isUsedForSerialGatewaySenderQueue()) {
+      throw new IllegalStateException(
+          LocalizedStrings.LocalRegion_NOT_ALLOWED_TO_DO_A_LOCAL_DESTROY_ON_A_REPLICATED_REGION
+              .toLocalizedString());
     }
   }
 
   /**
-   * Return the number of subregions, including this region. Used for recursive
-   * size calculation in SubregionsSet.size
+   * Return the number of subregions, including this region. Used for recursive size calculation in
+   * SubregionsSet.size
    */
-  protected int allSubregionsSize()
-  {
+  protected int allSubregionsSize() {
     int sz = 1; /* 1 for this region */
     for (Iterator itr = this.subregions.values().iterator(); itr.hasNext();) {
-      LocalRegion r = (LocalRegion)itr.next();
+      LocalRegion r = (LocalRegion) itr.next();
       if (r != null && r.isInitialized() && !r.isDestroyed()) {
         sz += r.allSubregionsSize();
       }
@@ -7999,12 +7704,10 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Return the number of entries including in subregions. Used for recursive
-   * size calculation in EntriesSet.size.  This does not include tombstone
-   * entries stored in the region.
+   * Return the number of entries including in subregions. Used for recursive size calculation in
+   * EntriesSet.size. This does not include tombstone entries stored in the region.
    */
-  protected int allEntriesSize()
-  {
+  protected int allEntriesSize() {
     int sz = entryCount();
     for (Iterator itr = this.subregions.values().iterator(); itr.hasNext();) {
       LocalRegion r = toRegion(itr.next());
@@ -8016,60 +7719,56 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * @param rgnEvent
-   *          the RegionEvent for region invalidation
+   * @param rgnEvent the RegionEvent for region invalidation
    */
-  protected void invalidateAllEntries(RegionEvent rgnEvent)
-  {
+  protected void invalidateAllEntries(RegionEvent rgnEvent) {
     Operation op = Operation.LOCAL_INVALIDATE;
     if (rgnEvent.getOperation().isDistributed()) {
       op = Operation.INVALIDATE;
     }
-   
+
 
     // if this is a local invalidation, then set local invalid flag on event
     // so LOCAL_INVALID tokens is used (even though each individual entry
     // invalidation is not distributed).
-   
+
 
     // region operation so it is ok to ignore tx state
     for (Iterator itr = keySet().iterator(); itr.hasNext();) {
       try {
-        //EventID will not be generated by this constructor
-        @Released EntryEventImpl event = EntryEventImpl.create(
-            this, op, itr.next() /*key*/,
-            null/* newValue */, null/* callbackArg */, rgnEvent.isOriginRemote(),
-            rgnEvent.getDistributedMember());
+        // EventID will not be generated by this constructor
+        @Released
+        EntryEventImpl event =
+            EntryEventImpl.create(this, op, itr.next() /* key */, null/* newValue */,
+                null/* callbackArg */, rgnEvent.isOriginRemote(), rgnEvent.getDistributedMember());
         try {
-        event.setLocalInvalid(!rgnEvent.getOperation().isDistributed());
-        basicInvalidate(event, false);
+          event.setLocalInvalid(!rgnEvent.getOperation().isDistributed());
+          basicInvalidate(event, false);
         } finally {
           event.release();
         }
-      }
-      catch (EntryNotFoundException e) {
+      } catch (EntryNotFoundException e) {
         // ignore
       }
     }
   }
 
-  boolean hasListener()
-  {
+  boolean hasListener() {
     CacheListener[] listeners = fetchCacheListenersField();
     return listeners != null && listeners.length > 0;
   }
 
   private final DiskStoreImpl dsi;
+
   public DiskStoreImpl getDiskStore() {
     return this.dsi;
   }
 
   /**
-   * Return true if all disk attributes are defaults.
-   * DWA.isSynchronous can be true or false.
+   * Return true if all disk attributes are defaults. DWA.isSynchronous can be true or false.
    */
   private boolean useDefaultDiskStore() {
-    assert(getDiskStoreName()== null);
+    assert (getDiskStoreName() == null);
     if (!Arrays.equals(getDiskDirs(), DiskStoreFactory.DEFAULT_DISK_DIRS)) {
       return false;
     }
@@ -8089,54 +7788,55 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Returns true if this region's config indicates that it will use a disk store.
-   * Added for bug 42055.
+   * Returns true if this region's config indicates that it will use a disk store. Added for bug
+   * 42055.
    */
   protected boolean usesDiskStore(RegionAttributes ra) {
-    return !isProxy()
-      && (getAttributes().getDataPolicy().withPersistence()
-          || isOverflowEnabled());
+    return !isProxy() && (getAttributes().getDataPolicy().withPersistence() || isOverflowEnabled());
   }
-  
-  protected DiskStoreImpl findDiskStore(RegionAttributes ra, InternalRegionArguments internalRegionArgs) {
-    //validate that persistent type registry is persistent
-    if(getAttributes().getDataPolicy().withPersistence()) {
+
+  protected DiskStoreImpl findDiskStore(RegionAttributes ra,
+      InternalRegionArguments internalRegionArgs) {
+    // validate that persistent type registry is persistent
+    if (getAttributes().getDataPolicy().withPersistence()) {
       getCache().getPdxRegistry().creatingPersistentRegion();
     }
-    
+
     if (usesDiskStore(ra)) {
-        if (getDiskStoreName() != null) {
-          DiskStoreImpl diskStore = (DiskStoreImpl)getGemFireCache().findDiskStore(getDiskStoreName());
-          if (diskStore == null) {
-            throw new IllegalStateException(LocalizedStrings.CacheCreation_DISKSTORE_NOTFOUND_0.toLocalizedString(getDiskStoreName()));
-          }
-          return diskStore;
+      if (getDiskStoreName() != null) {
+        DiskStoreImpl diskStore =
+            (DiskStoreImpl) getGemFireCache().findDiskStore(getDiskStoreName());
+        if (diskStore == null) {
+          throw new IllegalStateException(LocalizedStrings.CacheCreation_DISKSTORE_NOTFOUND_0
+              .toLocalizedString(getDiskStoreName()));
         }
-        else if (useDefaultDiskStore()){
-          return getGemFireCache().getOrCreateDefaultDiskStore();
-        } else /* backwards compat mode */{
-          DiskStoreFactory dsf = getGemFireCache().createDiskStoreFactory();
-          dsf.setDiskDirsAndSizes(getDiskDirs(), getDiskDirSizes());
-          DiskWriteAttributes dwa = getDiskWriteAttributes();
-          dsf.setAutoCompact(dwa.isRollOplogs());
-          dsf.setMaxOplogSize(dwa.getMaxOplogSize());
-          dsf.setTimeInterval(dwa.getTimeInterval());
-          if (dwa.getBytesThreshold() > 0) {
-            dsf.setQueueSize(1);
-          } else {
-            dsf.setQueueSize(0);
-          }
-          DiskStoreFactoryImpl dsfi = (DiskStoreFactoryImpl)dsf;
-          return dsfi.createOwnedByRegion(getFullPath().replace('/', '_'),
-              this instanceof PartitionedRegion, internalRegionArgs);
+        return diskStore;
+      } else if (useDefaultDiskStore()) {
+        return getGemFireCache().getOrCreateDefaultDiskStore();
+      } else /* backwards compat mode */ {
+        DiskStoreFactory dsf = getGemFireCache().createDiskStoreFactory();
+        dsf.setDiskDirsAndSizes(getDiskDirs(), getDiskDirSizes());
+        DiskWriteAttributes dwa = getDiskWriteAttributes();
+        dsf.setAutoCompact(dwa.isRollOplogs());
+        dsf.setMaxOplogSize(dwa.getMaxOplogSize());
+        dsf.setTimeInterval(dwa.getTimeInterval());
+        if (dwa.getBytesThreshold() > 0) {
+          dsf.setQueueSize(1);
+        } else {
+          dsf.setQueueSize(0);
         }
+        DiskStoreFactoryImpl dsfi = (DiskStoreFactoryImpl) dsf;
+        return dsfi.createOwnedByRegion(getFullPath().replace('/', '_'),
+            this instanceof PartitionedRegion, internalRegionArgs);
+      }
     }
-    
+
     return null;
   }
+
   /**
-   * Creates a new <code>DiskRegion</code> for this region. We assume that the
-   * attributes and the name of the region have been set.
+   * Creates a new <code>DiskRegion</code> for this region. We assume that the attributes and the
+   * name of the region have been set.
    *
    * @return <code>null</code> is a disk region is not desired
    *
@@ -8160,15 +7860,12 @@ public class LocalRegion extends AbstractRegion
 
       EnumSet<DiskRegionFlag> diskFlags = EnumSet.noneOf(DiskRegionFlag.class);
       // Add flag if this region has versioning enabled
-      if(this.getAttributes().getConcurrencyChecksEnabled()) {
+      if (this.getAttributes().getConcurrencyChecksEnabled()) {
         diskFlags.add(DiskRegionFlag.IS_WITH_VERSIONING);
       }
-      return DiskRegion.create(dsi, getFullPath(), false,
-                               getDataPolicy().withPersistence(),
-                               isOverflowEnabled(), isDiskSynchronous(),
-                               stats, getCancelCriterion(), this, getAttributes(),
-                               diskFlags, "NO_PARTITITON", -1,
-                               getCompressor(), getOffHeap());
+      return DiskRegion.create(dsi, getFullPath(), false, getDataPolicy().withPersistence(),
+          isOverflowEnabled(), isDiskSynchronous(), stats, getCancelCriterion(), this,
+          getAttributes(), diskFlags, "NO_PARTITITON", -1, getCompressor(), getOffHeap());
     } else {
       return null;
     }
@@ -8176,6 +7873,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Returns the object sizer on this region or null if it has no sizer.
+   * 
    * @since GemFire 6.1.2.9
    */
   public ObjectSizer getObjectSizer() {
@@ -8192,17 +7890,15 @@ public class LocalRegion extends AbstractRegion
   /**
    * Add the Region TTL expiry task to the scheduler
    */
-  void addTTLExpiryTask()
-  {
+  void addTTLExpiryTask() {
     synchronized (this.regionExpiryLock) {
       RegionTTLExpiryTask task = this.regionTTLExpiryTask;
       if (task != null) {
         task.cancel();
       }
       if (this.regionTimeToLive > 0) {
-        this.regionTTLExpiryTask = (RegionTTLExpiryTask)
-        this.cache.getExpirationScheduler().addExpiryTask(
-            new RegionTTLExpiryTask(this));
+        this.regionTTLExpiryTask = (RegionTTLExpiryTask) this.cache.getExpirationScheduler()
+            .addExpiryTask(new RegionTTLExpiryTask(this));
         if (this.regionTTLExpiryTask != null) {
           if (logger.isDebugEnabled()) {
             logger.debug("Initialized Region TTL Expiry Task {}", this.regionTTLExpiryTask);
@@ -8214,8 +7910,7 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
-  void addTTLExpiryTask(RegionTTLExpiryTask callingTask)
-  {
+  void addTTLExpiryTask(RegionTTLExpiryTask callingTask) {
     synchronized (this.regionExpiryLock) {
       if (this.regionTTLExpiryTask != null && this.regionTTLExpiryTask != callingTask) {
         return;
@@ -8226,27 +7921,26 @@ public class LocalRegion extends AbstractRegion
       }
       RegionTTLExpiryTask task = new RegionTTLExpiryTask(this);
       if (logger.isDebugEnabled()) {
-        logger.debug("Scheduling Region TTL Expiry Task {} which replaces {}", task, this.regionTTLExpiryTask);
+        logger.debug("Scheduling Region TTL Expiry Task {} which replaces {}", task,
+            this.regionTTLExpiryTask);
       }
-      this.regionTTLExpiryTask = (RegionTTLExpiryTask)
-          this.cache.getExpirationScheduler().addExpiryTask(task);
+      this.regionTTLExpiryTask =
+          (RegionTTLExpiryTask) this.cache.getExpirationScheduler().addExpiryTask(task);
     }
   }
 
   /**
    * Add the Region Idle expiry task to the scheduler
    */
-  final void addIdleExpiryTask()
-  {
+  final void addIdleExpiryTask() {
     synchronized (this.regionExpiryLock) {
       RegionIdleExpiryTask task = this.regionIdleExpiryTask;
       if (task != null) {
         task.cancel();
       }
       if (this.regionIdleTimeout > 0) {
-        this.regionIdleExpiryTask = (RegionIdleExpiryTask)
-            this.cache.getExpirationScheduler().addExpiryTask(
-                new RegionIdleExpiryTask(this));
+        this.regionIdleExpiryTask = (RegionIdleExpiryTask) this.cache.getExpirationScheduler()
+            .addExpiryTask(new RegionIdleExpiryTask(this));
         if (this.regionIdleExpiryTask != null) {
           if (logger.isDebugEnabled()) {
             logger.debug("Initialized Region Idle Expiry Task {}", this.regionIdleExpiryTask);
@@ -8258,8 +7952,7 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
-  void addIdleExpiryTask(RegionIdleExpiryTask callingTask)
-  {
+  void addIdleExpiryTask(RegionIdleExpiryTask callingTask) {
     synchronized (this.regionExpiryLock) {
       if (this.regionIdleExpiryTask != null && this.regionIdleExpiryTask != callingTask) {
         return;
@@ -8270,23 +7963,22 @@ public class LocalRegion extends AbstractRegion
       }
       RegionIdleExpiryTask task = new RegionIdleExpiryTask(this);
       if (logger.isDebugEnabled()) {
-        logger.debug("Scheduling Region Idle Expiry Task {} which replaces ", task, this.regionIdleExpiryTask);
+        logger.debug("Scheduling Region Idle Expiry Task {} which replaces ", task,
+            this.regionIdleExpiryTask);
       }
-      this.regionIdleExpiryTask = (RegionIdleExpiryTask)
-          this.cache.getExpirationScheduler().addExpiryTask(task);
+      this.regionIdleExpiryTask =
+          (RegionIdleExpiryTask) this.cache.getExpirationScheduler().addExpiryTask(task);
     }
   }
 
   /**
    * Added to fix bug 31204
    */
-  protected boolean isEntryIdleExpiryPossible()
-  {
+  protected boolean isEntryIdleExpiryPossible() {
     return this.entryIdleTimeout > 0 || this.customEntryIdleTimeout != null;
   }
 
-  private void cancelTTLExpiryTask()
-  {
+  private void cancelTTLExpiryTask() {
     RegionTTLExpiryTask task;
     synchronized (this.regionExpiryLock) {
       task = this.regionTTLExpiryTask;
@@ -8299,8 +7991,7 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
-  private void cancelIdleExpiryTask()
-  {
+  private void cancelIdleExpiryTask() {
     RegionIdleExpiryTask task;
     synchronized (this.regionExpiryLock) {
       task = this.regionIdleExpiryTask;
@@ -8314,55 +8005,42 @@ public class LocalRegion extends AbstractRegion
   }
 
   @Override
-  protected void regionTimeToLiveChanged(ExpirationAttributes oldTimeToLive)
-  {
+  protected void regionTimeToLiveChanged(ExpirationAttributes oldTimeToLive) {
     addTTLExpiryTask();
   }
 
   @Override
-  protected void regionIdleTimeoutChanged(ExpirationAttributes oldIdleTimeout)
-  {
+  protected void regionIdleTimeoutChanged(ExpirationAttributes oldIdleTimeout) {
     addIdleExpiryTask();
   }
 
   @Override
-  protected void timeToLiveChanged(ExpirationAttributes oldTimeToLive)
-  {
+  protected void timeToLiveChanged(ExpirationAttributes oldTimeToLive) {
     int oldTimeout = oldTimeToLive.getTimeout();
     if (customEntryTimeToLive != null) {
       rescheduleEntryExpiryTasks();
-    }
-    else
-    if (entryTimeToLive > 0
-        && (oldTimeout == 0 || entryTimeToLive < oldTimeout)) {
+    } else if (entryTimeToLive > 0 && (oldTimeout == 0 || entryTimeToLive < oldTimeout)) {
       rescheduleEntryExpiryTasks();
-    }
-    else {
+    } else {
       // It's safe to let them get rescheduled lazily, as the old expiration
       // time will cause the tasks to fire sooner than the new ones.
     }
   }
 
   @Override
-  protected void idleTimeoutChanged(ExpirationAttributes oldIdleTimeout)
-  {
+  protected void idleTimeoutChanged(ExpirationAttributes oldIdleTimeout) {
     int oldTimeout = oldIdleTimeout.getTimeout();
     if (customEntryIdleTimeout != null) {
       rescheduleEntryExpiryTasks();
-    }
-    else
-    if (entryIdleTimeout > 0
-        && (oldTimeout == 0 || entryIdleTimeout < oldTimeout)) {
+    } else if (entryIdleTimeout > 0 && (oldTimeout == 0 || entryIdleTimeout < oldTimeout)) {
       rescheduleEntryExpiryTasks();
-    }
-    else {
+    } else {
       // It's safe to let them get rescheduled lazily, as the old expiration
       // time will cause the tasks to fire sooner than the new ones.
     }
   }
 
-  protected void rescheduleEntryExpiryTasks()
-  {
+  protected void rescheduleEntryExpiryTasks() {
     if (isProxy()) {
       return;
     }
@@ -8385,16 +8063,14 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
-  void addExpiryTaskIfAbsent(RegionEntry re)
-  {
+  void addExpiryTaskIfAbsent(RegionEntry re) {
     addExpiryTask(re, true);
   }
 
-  void addExpiryTask(RegionEntry re)
-  {
+  void addExpiryTask(RegionEntry re) {
     addExpiryTask(re, false);
   }
-  
+
   /**
    * Used to create a cheap Region.Entry that can be passed to the CustomExpiry callback
    *
@@ -8408,7 +8084,7 @@ public class LocalRegion extends AbstractRegion
       this.re = re;
     }
 
-   @Override
+    @Override
     public int hashCode() {
       final int prime = 31;
       int result = 1;
@@ -8439,7 +8115,7 @@ public class LocalRegion extends AbstractRegion
       return true;
     }
 
-  @Override
+    @Override
     public String toString() {
       return "region=" + region.getFullPath() + ", key=" + getKey() + " value=" + getValue();
     }
@@ -8448,10 +8124,11 @@ public class LocalRegion extends AbstractRegion
     public Region getRegion() {
       return this.region;
     }
-    
+
     /**
-     * Returns the entry's  RegionEntry if it "checks" out. The check is to
-     * see if the region entry still exists.
+     * Returns the entry's RegionEntry if it "checks" out. The check is to see if the region entry
+     * still exists.
+     * 
      * @throws EntryNotFoundException if the RegionEntry has been removed.
      */
     private RegionEntry getCheckedRegionEntry() throws EntryNotFoundException {
@@ -8464,11 +8141,11 @@ public class LocalRegion extends AbstractRegion
 
     @Override
     public Object getValue() {
-      Object value = this.region.getDeserialized(getCheckedRegionEntry(), false, false, false, false);
+      Object value =
+          this.region.getDeserialized(getCheckedRegionEntry(), false, false, false, false);
       if (value == null) {
         throw new EntryDestroyedException(getKey().toString());
-      }
-      else if(Token.isInvalid(value)) {
+      } else if (Token.isInvalid(value)) {
         return null;
       }
       return value;
@@ -8483,7 +8160,9 @@ public class LocalRegion extends AbstractRegion
     public CacheStatistics getStatistics() {
       LocalRegion lr = this.region;
       if (!lr.statisticsEnabled) {
-        throw new StatisticsDisabledException(LocalizedStrings.LocalRegion_STATISTICS_DISABLED_FOR_REGION_0.toLocalizedString(lr.getFullPath()));
+        throw new StatisticsDisabledException(
+            LocalizedStrings.LocalRegion_STATISTICS_DISABLED_FOR_REGION_0
+                .toLocalizedString(lr.getFullPath()));
       }
       return new CacheStatisticsImpl(getCheckedRegionEntry(), lr);
     }
@@ -8508,7 +8187,8 @@ public class LocalRegion extends AbstractRegion
 
     @Override
     public boolean isDestroyed() {
-      if (this.re.isDestroyedOrRemoved()) return true;
+      if (this.re.isDestroyedOrRemoved())
+        return true;
       return false;
     }
 
@@ -8522,11 +8202,11 @@ public class LocalRegion extends AbstractRegion
       return this.re.getKey();
     }
   }
+
   /**
-   * If custom expiration returns non-null expiration attributes
-   * then create a CustomEntryExpiryTask for this region and the given entry and return it.
-   * Otherwise if the region is configured for expiration
-   * then create an EntryExpiryTask for this region and the given entry and return it.
+   * If custom expiration returns non-null expiration attributes then create a CustomEntryExpiryTask
+   * for this region and the given entry and return it. Otherwise if the region is configured for
+   * expiration then create an EntryExpiryTask for this region and the given entry and return it.
    * Null is returned if the expiration attributes indicate that expiration is disabled.
    */
   private EntryExpiryTask createExpiryTask(RegionEntry re) {
@@ -8537,55 +8217,49 @@ public class LocalRegion extends AbstractRegion
       ExpiryRegionEntry ere = new ExpiryRegionEntry(this, re);
       ExpirationAttributes ttlAtts = null;
       ExpirationAttributes idleAtts = null;
-      final RegionAttributes<?,?> ra = this.getAttributes();
+      final RegionAttributes<?, ?> ra = this.getAttributes();
       {
-        final CustomExpiry<?,?> customTTL = ra.getCustomEntryTimeToLive();
+        final CustomExpiry<?, ?> customTTL = ra.getCustomEntryTimeToLive();
         if (customTTL != null) {
           try {
             ttlAtts = customTTL.getExpiry(ere);
             if (ttlAtts != null) {
               this.checkEntryTimeoutAction("timeToLive", ttlAtts.getAction());
             }
-          }
-          catch (RegionDestroyedException rde) {
+          } catch (RegionDestroyedException rde) {
             // Ignore - #42273
-          }
-          catch (EntryNotFoundException enfe){
-            //Ignore - #51933
-          }
-          catch (EntryDestroyedException edf){
-            //Ignore - #51933
-          }
-          catch (Exception e) {
-            logger.fatal(LocalizedMessage.create(LocalizedStrings.EntryExpiryTask_ERROR_CALCULATING_EXPIRATION_0,
-                e.getMessage()), e);
+          } catch (EntryNotFoundException enfe) {
+            // Ignore - #51933
+          } catch (EntryDestroyedException edf) {
+            // Ignore - #51933
+          } catch (Exception e) {
+            logger.fatal(LocalizedMessage.create(
+                LocalizedStrings.EntryExpiryTask_ERROR_CALCULATING_EXPIRATION_0, e.getMessage()),
+                e);
           }
         }
         if (ttlAtts == null) {
-          ttlAtts = ra.getEntryTimeToLive();  
+          ttlAtts = ra.getEntryTimeToLive();
         }
       }
       {
-        CustomExpiry<?,?> customIdle = ra.getCustomEntryIdleTimeout();
+        CustomExpiry<?, ?> customIdle = ra.getCustomEntryIdleTimeout();
         if (customIdle != null) {
           try {
             idleAtts = customIdle.getExpiry(ere);
             if (idleAtts != null) {
               this.checkEntryTimeoutAction("idleTimeout", idleAtts.getAction());
             }
-          }
-          catch (RegionDestroyedException rde) {
+          } catch (RegionDestroyedException rde) {
             // Ignore - #42273
-          }
-          catch (EntryNotFoundException enfe){
-            //Ignore - #51933
-          }
-          catch (EntryDestroyedException edf){
-            //Ignore - #51933
-          }
-          catch (Exception e) {
-            logger.fatal(LocalizedMessage.create(LocalizedStrings.EntryExpiryTask_ERROR_CALCULATING_EXPIRATION_0,
-                e.getMessage()), e);
+          } catch (EntryNotFoundException enfe) {
+            // Ignore - #51933
+          } catch (EntryDestroyedException edf) {
+            // Ignore - #51933
+          } catch (Exception e) {
+            logger.fatal(LocalizedMessage.create(
+                LocalizedStrings.EntryExpiryTask_ERROR_CALCULATING_EXPIRATION_0, e.getMessage()),
+                e);
           }
         }
         if (idleAtts == null) {
@@ -8611,9 +8285,9 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Used by unit tests to get access to the EntryExpiryTask
-   * of the given key. Returns null if the entry exists but
-   * does not have an expiry task.
+   * Used by unit tests to get access to the EntryExpiryTask of the given key. Returns null if the
+   * entry exists but does not have an expiry task.
+   * 
    * @throws EntryNotFoundException if no entry exists key.
    */
   public EntryExpiryTask getEntryExpiryTask(Object key) {
@@ -8623,23 +8297,24 @@ public class LocalRegion extends AbstractRegion
     }
     return this.entryExpiryTasks.get(re);
   }
+
   /**
-   * Used by unit tests to get access to the RegionIdleExpiryTask
-   * of this region. Returns null if no task exists.
+   * Used by unit tests to get access to the RegionIdleExpiryTask of this region. Returns null if no
+   * task exists.
    */
   public RegionIdleExpiryTask getRegionIdleExpiryTask() {
     return this.regionIdleExpiryTask;
   }
+
   /**
-   * Used by unit tests to get access to the RegionTTLExpiryTask
-   * of this region. Returns null if no task exists.
+   * Used by unit tests to get access to the RegionTTLExpiryTask of this region. Returns null if no
+   * task exists.
    */
   public RegionTTLExpiryTask getRegionTTLExpiryTask() {
     return this.regionTTLExpiryTask;
   }
-  
-  private void addExpiryTask(RegionEntry re, boolean ifAbsent)
-  {
+
+  private void addExpiryTask(RegionEntry re, boolean ifAbsent) {
     if (isProxy()) {
       return;
     }
@@ -8651,31 +8326,31 @@ public class LocalRegion extends AbstractRegion
       EntryExpiryTask newTask = null;
       EntryExpiryTask oldTask = null;
       if (ifAbsent) {
-        oldTask = (EntryExpiryTask)this.entryExpiryTasks.get(re);
+        oldTask = (EntryExpiryTask) this.entryExpiryTasks.get(re);
         if (oldTask != null) {
           boolean keepOldTask = true;
           if (this.customEntryIdleTimeout != null || this.customEntryTimeToLive != null) {
             newTask = createExpiryTask(re);
             if (newTask == null) {
-              cancelExpiryTask(re); // cancel any old task
               return;
             }
             // to fix bug 44418 see if the new tasks expiration would be earlier than
             // the scheduled task.
             long ntTime = newTask.getExpirationTime();
-            try{
-            if (ntTime != 0 && ntTime < oldTask.getExpirationTime()) {
-              // it is so get rid of the old task and schedule the new one.
+            try {
+              if (ntTime != 0 && ntTime < oldTask.getExpirationTime()) {
+                // it is so get rid of the old task and schedule the new one.
+                keepOldTask = false;
+              }
+            } catch (EntryNotFoundException ex) {
               keepOldTask = false;
-            }
-            }catch(EntryNotFoundException ex){
-                keepOldTask=false;
             }
           }
           if (keepOldTask) {
             // if an oldTask is present leave it be
             if (logger.isTraceEnabled()) {
-              logger.trace("Expiry Task not added because one already present. Key={}" + re.getKey());
+              logger
+                  .trace("Expiry Task not added because one already present. Key={}" + re.getKey());
             }
             return;
           }
@@ -8684,7 +8359,6 @@ public class LocalRegion extends AbstractRegion
       if (newTask == null) {
         newTask = createExpiryTask(re);
         if (newTask == null) {
-          cancelExpiryTask(re); // cancel any old task
           return;
         }
       }
@@ -8704,36 +8378,45 @@ public class LocalRegion extends AbstractRegion
       }
       // @todo darrel: merge question: should we catch EntryNotFoundException
       // if addExpiryTask throws it?
-      //       } catch (EntryNotFoundException e) {
-      //         // ignore - there are unsynchronized paths that allow an entry to
-      //         // be destroyed out from under us.
-      //         return;
-      //       }
-    }
-    else {
-      cancelExpiryTask(re);
+      // } catch (EntryNotFoundException e) {
+      // // ignore - there are unsynchronized paths that allow an entry to
+      // // be destroyed out from under us.
+      // return;
+      // }
+    } else {
       if (logger.isTraceEnabled()) {
         logger.trace("addExpiryTask(key) ignored");
       }
     }
   }
 
-  void cancelExpiryTask(RegionEntry re)
-  {
-    EntryExpiryTask oldTask = this.entryExpiryTasks.remove(re);
-    if (oldTask != null) {
-      if (oldTask.cancel()) {
+  void cancelExpiryTask(RegionEntry re) {
+    cancelExpiryTask(re, null);
+  }
+
+  void cancelExpiryTask(RegionEntry re, ExpiryTask expiryTask) {
+    if (expiryTask != null) {
+      this.entryExpiryTasks.remove(re, expiryTask);
+      if (expiryTask.cancel()) {
         this.cache.getExpirationScheduler().incCancels();
+      }
+    } else {
+      EntryExpiryTask oldTask = this.entryExpiryTasks.remove(re);
+      if (oldTask != null) {
+        if (oldTask.cancel()) {
+          this.cache.getExpirationScheduler().incCancels();
+        }
       }
     }
   }
 
-  public void cancelAllEntryExpiryTasks()
-  {
+  public void cancelAllEntryExpiryTasks() {
     // This method gets called during LocalRegion construction
     // in which case the final entryExpiryTasks field can still be null
-    if (this.entryExpiryTasks == null) return;
-    if (this.entryExpiryTasks.isEmpty()) return;
+    if (this.entryExpiryTasks == null)
+      return;
+    if (this.entryExpiryTasks.isEmpty())
+      return;
     boolean doPurge = false;
     Iterator<EntryExpiryTask> tasksIter = this.entryExpiryTasks.values().iterator();
     while (tasksIter.hasNext()) {
@@ -8752,15 +8435,13 @@ public class LocalRegion extends AbstractRegion
    *
    * @return 0 if statistics not available
    */
-  long getLastAccessedTime(Object key) throws EntryNotFoundException
-  {
+  long getLastAccessedTime(Object key) throws EntryNotFoundException {
     RegionEntry entry = this.entries.getEntry(key);
     if (entry == null)
       throw new EntryNotFoundException(key.toString());
     try {
       return entry.getLastAccessed();
-    }
-    catch (InternalStatisticsDisabledException e) {
+    } catch (InternalStatisticsDisabledException e) {
       return 0;
     }
   }
@@ -8768,8 +8449,7 @@ public class LocalRegion extends AbstractRegion
   /**
    * Used internally by EntryExpiryTask. Ok for it to ignore transaction.
    */
-  long getLastModifiedTime(Object key) throws EntryNotFoundException
-  {
+  long getLastModifiedTime(Object key) throws EntryNotFoundException {
     RegionEntry entry = this.entries.getEntry(key);
     if (entry == null)
       throw new EntryNotFoundException(key.toString());
@@ -8779,14 +8459,13 @@ public class LocalRegion extends AbstractRegion
   /**
    * get the ImageState for this region
    */
-  protected final ImageState getImageState()
-  {
+  protected final ImageState getImageState() {
     return this.imageState;
   }
 
   /**
-   * Callers of this method should always follow the call with: if (lockGII()) {
-   * try { } finally { unlockGII(); } }
+   * Callers of this method should always follow the call with: if (lockGII()) { try { } finally {
+   * unlockGII(); } }
    *
    * @return true if lock obtained and unlock needs to be called
    */
@@ -8812,8 +8491,8 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Callers of this method should always follow the call with: if (lockRIReadLock()) {
-   * try { } finally { unlockRIReadLock(); } }
+   * Callers of this method should always follow the call with: if (lockRIReadLock()) { try { }
+   * finally { unlockRIReadLock(); } }
    *
    * @return true if lock obtained and unlock needs to be called
    */
@@ -8832,13 +8511,11 @@ public class LocalRegion extends AbstractRegion
   }
 
   /** doesn't throw RegionDestroyedException, used by CacheDistributionAdvisor */
-  public LocalRegion basicGetParentRegion()
-  {
+  public LocalRegion basicGetParentRegion() {
     return this.parentRegion;
   }
 
-  Object basicGetEntryUserAttribute(Object entryKey)
-  {
+  Object basicGetEntryUserAttribute(Object entryKey) {
     Map userAttr = this.entryUserAttributes;
     if (userAttr == null) {
       return null;
@@ -8851,8 +8528,7 @@ public class LocalRegion extends AbstractRegion
   public final TXStateProxy getTXState() {
     if (this.supportsTX) {
       return TXManagerImpl.getCurrentTXState();
-    }
-    else {
+    } else {
       return null;
     }
   }
@@ -8862,16 +8538,14 @@ public class LocalRegion extends AbstractRegion
     if (tx == null) {
       return null;
     }
-    return (TXId)tx.getTransactionId();
+    return (TXId) tx.getTransactionId();
   }
 
-  protected final TXRegionState txReadRegion()
-  {
+  protected final TXRegionState txReadRegion() {
     final TXStateInterface tx = getTXState();
     if (tx != null) {
       return tx.txReadRegion(this);
-    }
-    else {
+    } else {
       return null;
     }
   }
@@ -8885,7 +8559,7 @@ public class LocalRegion extends AbstractRegion
         synchronized (re) {
           if (!re.isRemoved()) {
             if (re instanceof DiskEntry && re instanceof LRUEntry) {
-              LRUEntry le = (LRUEntry)re;
+              LRUEntry le = (LRUEntry) re;
               if (le.testEvicted()) {
                 // Handle the case where we fault in a disk entry
                 txLRUStart();
@@ -8894,12 +8568,12 @@ public class LocalRegion extends AbstractRegion
                 // Fault in the value from disk
                 re.getValue(this);
               }
-            }        
+            }
 
             Object value = re.getValueInVM(this);
             /*
-             * The tx will need the raw value for identity comparison.
-             * Please see TXEntryState#checkForConflict(LocalRegion,Object)
+             * The tx will need the raw value for identity comparison. Please see
+             * TXEntryState#checkForConflict(LocalRegion,Object)
              */
             Object id = re.getTransformedValue();
 
@@ -8922,20 +8596,18 @@ public class LocalRegion extends AbstractRegion
     }
     return result;
   }
-  
+
   protected static final TXEntryState NOOP_INVALIDATE = new TXEntryState();
 
-  protected TXStateInterface getJTAEnlistedTX()
-  {
+  protected TXStateInterface getJTAEnlistedTX() {
     if (ignoreJTA) {
       // fixes bug 45541
       return null;
     }
-    TXStateInterface tx = getTXState(); 
+    TXStateInterface tx = getTXState();
     if (tx != null) {
       return tx;
-    }
-    else {
+    } else {
       javax.transaction.Transaction jtaTx;
       try {
         if (!ignoreJTA && this.cache.getJTATransactionManager() != null) {
@@ -8948,22 +8620,18 @@ public class LocalRegion extends AbstractRegion
           tx = this.cache.getTXMgr().beginJTA();
           jtaTx.registerSynchronization(tx);
           return tx;
-        }
-        else {
+        } else {
           return null;
         }
-      }
-      catch (javax.transaction.SystemException se) {
+      } catch (javax.transaction.SystemException se) {
         // this can be thrown when the system is shutting down (see bug #39728)
         stopper.checkCancelInProgress(se);
         jtaEnlistmentFailureCleanup(tx, se);
         return null;
-      }
-      catch (javax.transaction.RollbackException re) {
+      } catch (javax.transaction.RollbackException re) {
         jtaEnlistmentFailureCleanup(tx, re);
         return null;
-      }
-      catch (IllegalStateException ie) {
+      } catch (IllegalStateException ie) {
         jtaEnlistmentFailureCleanup(tx, ie);
         return null;
       }
@@ -8980,52 +8648,48 @@ public class LocalRegion extends AbstractRegion
     }
     String jtaTransName = null;
     try {
-      jtaTransName = cache.getJTATransactionManager().getTransaction()
-          .toString();
-    }
-    catch (VirtualMachineError err) {
+      jtaTransName = cache.getJTATransactionManager().getTransaction().toString();
+    } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
+      // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
       throw err;
-    }
-    catch (Throwable ignore) {
+    } catch (Throwable ignore) {
       // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
+      // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
     }
 
-    throw new FailedSynchronizationException(LocalizedStrings.LocalRegion_FAILED_ENLISTEMENT_WITH_TRANSACTION_0.toLocalizedString(jtaTransName), reason);
+    throw new FailedSynchronizationException(
+        LocalizedStrings.LocalRegion_FAILED_ENLISTEMENT_WITH_TRANSACTION_0
+            .toLocalizedString(jtaTransName),
+        reason);
   }
 
-  final void txLRUStart()
-  {
+  final void txLRUStart() {
     this.entries.disableLruUpdateCallback();
   }
 
-  final void txLRUEnd()
-  {
+  final void txLRUEnd() {
     this.entries.enableLruUpdateCallback();
-    try { 
+    try {
       this.entries.lruUpdateCallback();
-    }catch(DiskAccessException dae) {
+    } catch (DiskAccessException dae) {
       handleDiskAccessException(dae);
       throw dae;
     }
   }
 
-  final void txDecRefCount(RegionEntry re)
-  {
+  final void txDecRefCount(RegionEntry re) {
     this.entries.decTxRefCount(re);
   }
 
   /** ******* DEBUG Methods */
   /** Does not throw RegionDestroyedException even if destroyed */
-  List debugGetSubregionNames()
-  {
+  List debugGetSubregionNames() {
     List names = new ArrayList();
     for (Iterator itr = this.subregions.keySet().iterator(); itr.hasNext();)
       names.add(itr.next());
@@ -9036,10 +8700,9 @@ public class LocalRegion extends AbstractRegion
    * INNER CLASSES
    ****************************************************************************/
 
-  protected final static void dispatchEvent(LocalRegion region,
-      InternalCacheEvent event, EnumListenerEvent op)
-  {
-    
+  protected final static void dispatchEvent(LocalRegion region, InternalCacheEvent event,
+      EnumListenerEvent op) {
+
     CacheListener[] listeners = region.fetchCacheListenersField();
     if (event.getOperation().isCreate()) {
       if (logger.isDebugEnabled()) {
@@ -9052,54 +8715,51 @@ public class LocalRegion extends AbstractRegion
     if (op != EnumListenerEvent.AFTER_REGION_CREATE) {
       try {
         region.waitForRegionCreateEvent();
-      }
-      catch (CancelException e) {
+      } catch (CancelException e) {
         // ignore and keep going
         if (logger.isTraceEnabled()) {
-          logger.trace("Dispatching events after cache closure for region {}", region.getFullPath());
+          logger.trace("Dispatching events after cache closure for region {}",
+              region.getFullPath());
         }
       }
     }
-    //Assert.assertTrue(event.getRegion() == region);
+    // Assert.assertTrue(event.getRegion() == region);
     if (!event.isGenerateCallbacks()) {
       return;
     }
-// this check moved earlier for bug 36983
-//    CacheListener[] listeners = region.fetchCacheListenersField();
-//    if (listeners == null || listeners.length == 0)
-//      return;
+    // this check moved earlier for bug 36983
+    // CacheListener[] listeners = region.fetchCacheListenersField();
+    // if (listeners == null || listeners.length == 0)
+    // return;
     for (int i = 0; i < listeners.length; i++) {
       CacheListener listener = listeners[i];
       if (listener != null) {
         try {
           op.dispatchEvent(event, listener);
-        }
-        catch (CancelException ignore) {
+        } catch (CancelException ignore) {
           // ignore for bug 37105
-        }
-        catch (VirtualMachineError err) {
+        } catch (VirtualMachineError err) {
           SystemFailure.initiateFailure(err);
-          // If this ever returns, rethrow the error.  We're poisoned
+          // If this ever returns, rethrow the error. We're poisoned
           // now, so don't let this thread continue.
           throw err;
-        }
-        catch (Throwable t) {
+        } catch (Throwable t) {
           // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above).  However, there is
+          // catch VirtualMachineError (see above). However, there is
           // _still_ a possibility that you are dealing with a cascading
           // error condition, so you also need to check to see if the JVM
           // is still usable:
           SystemFailure.checkFailure();
-          logger.error(LocalizedMessage.create(LocalizedStrings.LocalRegion_EXCEPTION_OCCURRED_IN_CACHELISTENER), t);
+          logger.error(LocalizedMessage
+              .create(LocalizedStrings.LocalRegion_EXCEPTION_OCCURRED_IN_CACHELISTENER), t);
         }
       }
-    }    
+    }
   }
 
   /** ********************* Class EventDispatcher ***************************** */
 
-  class EventDispatcher implements Runnable
-  {
+  class EventDispatcher implements Runnable {
     /**
      * released by the release method
      */
@@ -9109,38 +8769,36 @@ public class LocalRegion extends AbstractRegion
     EnumListenerEvent op;
 
     EventDispatcher(InternalCacheEvent event, EnumListenerEvent op) {
-                
+
       if (LocalRegion.this.offHeap && event instanceof EntryEventImpl) {
         // Make a copy that has its own off-heap refcount so fix bug 48837
-        event = new EntryEventImpl( (EntryEventImpl)event);   
+        event = new EntryEventImpl((EntryEventImpl) event);
       }
       this.event = event;
       this.op = op;
     }
 
-    public void run()
-    {
+    public void run() {
       try {
         dispatchEvent(LocalRegion.this, this.event, this.op);
-      }finally {
+      } finally {
         this.release();
       }
     }
-    
+
     public void release() {
       if (LocalRegion.this.offHeap && this.event instanceof EntryEventImpl) {
-        ((EntryEventImpl)this.event).release();
-      }      
+        ((EntryEventImpl) this.event).release();
+      }
     }
   }
-  
-  
+
+
 
   /** ******************* Class SubregionsSet ********************************* */
 
   /** Set view of subregions */
-  private class SubregionsSet extends AbstractSet
-   {
+  private class SubregionsSet extends AbstractSet {
     final boolean recursive;
 
     SubregionsSet(boolean recursive) {
@@ -9148,8 +8806,7 @@ public class LocalRegion extends AbstractRegion
     }
 
     @Override
-    public Iterator iterator()
-    {
+    public Iterator iterator() {
 
       // iterates breadth-first (if recursive)
       return new Iterator() {
@@ -9159,44 +8816,40 @@ public class LocalRegion extends AbstractRegion
 
         Object nextElem = null;
 
-        public void remove()
-        {
-          throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_THIS_ITERATOR_DOES_NOT_SUPPORT_MODIFICATION.toLocalizedString());
+        public void remove() {
+          throw new UnsupportedOperationException(
+              LocalizedStrings.LocalRegion_THIS_ITERATOR_DOES_NOT_SUPPORT_MODIFICATION
+                  .toLocalizedString());
         }
 
-        public boolean hasNext()
-        {
+        public boolean hasNext() {
           if (nextElem != null) {
             return true;
-          }
-          else {
+          } else {
             Object el = next(true);
             if (el != null) {
               nextElem = el;
               return true;
-            }
-            else {
+            } else {
               return false;
             }
           }
         }
 
-        private boolean _hasNext()
-        {
+        private boolean _hasNext() {
           return this.currItr != null && this.currItr.hasNext();
         }
-        
+
         public Object next() {
           return next(false);
         }
-        
+
         /**
          * @param nullOK if true, return null instead of throwing NoSuchElementException
          * @return the next element
          */
 
-        private Object next(boolean nullOK)
-        {
+        private Object next(boolean nullOK) {
           if (nextElem != null) {
             Object next = nextElem;
             nextElem = null;
@@ -9210,17 +8863,15 @@ public class LocalRegion extends AbstractRegion
               if (itrQ == null || itrQ.isEmpty()) {
                 if (nullOK) {
                   return null;
-                }
-                else {
+                } else {
                   throw new NoSuchElementException();
                 }
-              }
-              else {
-                this.currItr = (Iterator)itrQ.remove(0);
+              } else {
+                this.currItr = (Iterator) itrQ.remove(0);
                 continue;
               }
             }
-            rgn = (LocalRegion)currItr.next();
+            rgn = (LocalRegion) currItr.next();
           } while (rgn == null || !rgn.isInitialized() || rgn.isDestroyed());
 
           if (recursive) {
@@ -9235,9 +8886,8 @@ public class LocalRegion extends AbstractRegion
           if (!_hasNext()) {
             if (itrQ == null || itrQ.isEmpty()) {
               this.currItr = null;
-            }
-            else {
-              this.currItr = (Iterator)itrQ.remove(0);
+            } else {
+              this.currItr = (Iterator) itrQ.remove(0);
             }
           }
           return rgn;
@@ -9246,19 +8896,16 @@ public class LocalRegion extends AbstractRegion
     }
 
     @Override
-    public int size()
-    {
+    public int size() {
       if (this.recursive) {
         return allSubregionsSize() - 1 /* don't count this region */;
-      }
-      else {
+      } else {
         return LocalRegion.this.subregions.size();
       }
     }
 
     @Override
-    public Object[] toArray()
-    {
+    public Object[] toArray() {
       List temp = new ArrayList(this.size());
       for (Iterator iter = this.iterator(); iter.hasNext();) {
         temp.add(iter.next());
@@ -9267,8 +8914,7 @@ public class LocalRegion extends AbstractRegion
     }
 
     @Override
-    public Object[] toArray(Object[] array)
-    {
+    public Object[] toArray(Object[] array) {
       List temp = new ArrayList(this.size());
       for (Iterator iter = this.iterator(); iter.hasNext();) {
         temp.add(iter.next());
@@ -9279,8 +8925,7 @@ public class LocalRegion extends AbstractRegion
 
   /** ******************* Class EntriesSet ************************************ */
 
-  public class NonTXEntry implements Region.Entry
-  {
+  public class NonTXEntry implements Region.Entry {
 
     private final Object key;
 
@@ -9291,12 +8936,12 @@ public class LocalRegion extends AbstractRegion
     }
 
     /**
-     * Create an Entry given a key. The returned Entry may or may not be
-     * destroyed
+     * Create an Entry given a key. The returned Entry may or may not be destroyed
      */
     public NonTXEntry(RegionEntry regionEntry) {
       if (regionEntry == null) {
-        throw new IllegalArgumentException(LocalizedStrings.LocalRegion_REGIONENTRY_SHOULD_NOT_BE_NULL.toLocalizedString());
+        throw new IllegalArgumentException(
+            LocalizedStrings.LocalRegion_REGIONENTRY_SHOULD_NOT_BE_NULL.toLocalizedString());
       }
       // for a soplog region, since the entry may not be in memory,
       // we will have to fetch it from soplog, if the entry is in
@@ -9322,8 +8967,7 @@ public class LocalRegion extends AbstractRegion
       return re;
     }
 
-    public boolean isDestroyed()
-    {
+    public boolean isDestroyed() {
       if (this.entryIsDestroyed) {
         return true;
       }
@@ -9335,64 +8979,58 @@ public class LocalRegion extends AbstractRegion
       return this.entryIsDestroyed;
     }
 
-    public Object getKey()
-    {
+    public Object getKey() {
       return this.basicGetEntry().getKey();
     }
 
-    public Object getValue()
-    {
-        return getValue(false);
+    public Object getValue() {
+      return getValue(false);
     }
 
-    public Object getValue(boolean ignoreCopyOnRead)
-    {
-        Object value = getDeserialized(this.basicGetEntry(), false, ignoreCopyOnRead, false, false);
-        if (value == null) {
-          throw new EntryDestroyedException(getKey().toString());
-        }
-        else if(Token.isInvalid(value)) {
-          return null;
-        }
+    public Object getValue(boolean ignoreCopyOnRead) {
+      Object value = getDeserialized(this.basicGetEntry(), false, ignoreCopyOnRead, false, false);
+      if (value == null) {
+        throw new EntryDestroyedException(getKey().toString());
+      } else if (Token.isInvalid(value)) {
+        return null;
+      }
 
-        return value;
+      return value;
     }
 
     /**
      * To get the value from region in serialized form
+     * 
      * @return {@link VMCachedDeserializable}
      */
-    public Object getRawValue()
-    {
-        Object value = this.basicGetEntry().getValue((LocalRegion) getRegion());
-        if (value == null) {
-          throw new EntryDestroyedException(this.getRegionEntry().getKey().toString());
-        }
-        else if(Token.isInvalid(value)) {
-          return null;
-        }
+    public Object getRawValue() {
+      Object value = this.basicGetEntry().getValue((LocalRegion) getRegion());
+      if (value == null) {
+        throw new EntryDestroyedException(this.getRegionEntry().getKey().toString());
+      } else if (Token.isInvalid(value)) {
+        return null;
+      }
 
-        return value;
+      return value;
     }
 
-    public Region getRegion()
-    {
+    public Region getRegion() {
       this.basicGetEntry();
       return LocalRegion.this;
     }
 
-    public CacheStatistics getStatistics()
-    {
+    public CacheStatistics getStatistics() {
       // prefer entry destroyed exception over statistics disabled exception
       this.basicGetEntry();
       if (!LocalRegion.this.statisticsEnabled) {
-        throw new StatisticsDisabledException(LocalizedStrings.LocalRegion_STATISTICS_DISABLED_FOR_REGION_0.toLocalizedString(getFullPath()));
+        throw new StatisticsDisabledException(
+            LocalizedStrings.LocalRegion_STATISTICS_DISABLED_FOR_REGION_0
+                .toLocalizedString(getFullPath()));
       }
       return new CacheStatisticsImpl(this.basicGetEntry(), LocalRegion.this);
     }
 
-    public Object getUserAttribute()
-    {
+    public Object getUserAttribute() {
       this.basicGetEntry();
       Map userAttr = LocalRegion.this.entryUserAttributes;
       if (userAttr == null) {
@@ -9401,36 +9039,32 @@ public class LocalRegion extends AbstractRegion
       return userAttr.get(this.basicGetEntry().getKey());
     }
 
-    public Object setUserAttribute(Object value)
-    {
+    public Object setUserAttribute(Object value) {
       if (LocalRegion.this.entryUserAttributes == null) {
         LocalRegion.this.entryUserAttributes = new Hashtable();
       }
-      return LocalRegion.this.entryUserAttributes.put(
-          this.basicGetEntry().getKey(), value);
+      return LocalRegion.this.entryUserAttributes.put(this.basicGetEntry().getKey(), value);
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
+    public boolean equals(Object obj) {
       if (!(obj instanceof LocalRegion.NonTXEntry)) {
         return false;
       }
-      LocalRegion.NonTXEntry lre = (LocalRegion.NonTXEntry)obj;
+      LocalRegion.NonTXEntry lre = (LocalRegion.NonTXEntry) obj;
       return this.basicGetEntry().equals(lre.getRegionEntry())
           && this.getRegion() == lre.getRegion();
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
       return this.basicGetEntry().hashCode() ^ this.getRegion().hashCode();
     }
 
     @Override
     public String toString() {
-      return new StringBuilder("NonTXEntry@").append(
-          Integer.toHexString(System.identityHashCode(this))).append(' ')
+      return new StringBuilder("NonTXEntry@")
+          .append(Integer.toHexString(System.identityHashCode(this))).append(' ')
           .append(this.getRegionEntry()).toString();
     }
 
@@ -9440,29 +9074,27 @@ public class LocalRegion extends AbstractRegion
     /**
      * @since GemFire 5.0
      */
-    public Object setValue(Object arg0)
-    {
+    public Object setValue(Object arg0) {
       return put(this.getKey(), arg0);
     }
   }
-  
+
   /**
-   * Checks to make sure current thread does not have a transaction. If it does
-   * then throws UnsupportedOperationException
+   * Checks to make sure current thread does not have a transaction. If it does then throws
+   * UnsupportedOperationException
    */
-  public void checkForTransaction(String opName)
-  {
+  public void checkForTransaction(String opName) {
     if (isTX()) {
-      throw new UnsupportedOperationException(LocalizedStrings.LocalRegion_0_OPERATIONS_ARE_NOT_ALLOWED_BECAUSE_THIS_THREAD_HAS_AN_ACTIVE_TRANSACTION
-          .toLocalizedString(opName));
+      throw new UnsupportedOperationException(
+          LocalizedStrings.LocalRegion_0_OPERATIONS_ARE_NOT_ALLOWED_BECAUSE_THIS_THREAD_HAS_AN_ACTIVE_TRANSACTION
+              .toLocalizedString(opName));
     }
   }
 
   /**
    * For internal use only.
    */
-  public RegionMap getRegionMap()
-  {
+  public RegionMap getRegionMap() {
     // OK to ignore tx state
     return this.entries;
   }
@@ -9474,16 +9106,14 @@ public class LocalRegion extends AbstractRegion
    */
 
   /**
-   * (description copied from entryCount() Returns the number of entries in this
-   * region. Note that because of the concurrency properties of the
-   * {@link RegionMap}, the number of entries is only an approximate. That is,
-   * other threads may change the number of entries in this region while this
-   * method is being invoked.
+   * (description copied from entryCount() Returns the number of entries in this region. Note that
+   * because of the concurrency properties of the {@link RegionMap}, the number of entries is only
+   * an approximate. That is, other threads may change the number of entries in this region while
+   * this method is being invoked.
    *
    * @see LocalRegion#entryCount()
    */
-  public int size()
-  {
+  public int size() {
     checkReadiness();
     checkForNoAccess();
     discoverJTA();
@@ -9501,17 +9131,16 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * returns an estimate of the number of entries in this region. This method
-   * should be prefered over size() for hdfs regions where an accurate size is
-   * not needed. This method is not supported on a client
+   * returns an estimate of the number of entries in this region. This method should be prefered
+   * over size() for hdfs regions where an accurate size is not needed. This method is not supported
+   * on a client
    * 
    * @return the estimated size of this region
    */
   public int sizeEstimate() {
     boolean isClient = this.imageState.isClient();
     if (isClient) {
-      throw new UnsupportedOperationException(
-          "Method not supported on a client");
+      throw new UnsupportedOperationException("Method not supported on a client");
     }
     return entryCount(null, true);
   }
@@ -9519,19 +9148,19 @@ public class LocalRegion extends AbstractRegion
   /**
    * This method returns true if Region is Empty.
    */
-  public boolean isEmpty()
-  {
-    //checkForNoAccess(); // size does this check
+  public boolean isEmpty() {
+    // checkForNoAccess(); // size does this check
     return this.size() > 0 ? false : true;
   }
 
   /**
    * Returns true if the value is present in the Map
    */
-  public boolean containsValue(final Object value)
-  {
+  public boolean containsValue(final Object value) {
     if (value == null) {
-      throw new NullPointerException(LocalizedStrings.LocalRegion_VALUE_FOR_CONTAINSVALUEVALUE_CANNOT_BE_NULL.toLocalizedString());
+      throw new NullPointerException(
+          LocalizedStrings.LocalRegion_VALUE_FOR_CONTAINSVALUEVALUE_CANNOT_BE_NULL
+              .toLocalizedString());
     }
     checkReadiness();
     checkForNoAccess();
@@ -9551,63 +9180,56 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Returns a set of the entries present in the Map. This set is Not
-   * Modifiable. If changes are made to this set, they will be not reflected in
-   * the map
+   * Returns a set of the entries present in the Map. This set is Not Modifiable. If changes are
+   * made to this set, they will be not reflected in the map
    */
-  public Set entrySet()
-  {
-    //entries(false) takes care of open transactions
+  public Set entrySet() {
+    // entries(false) takes care of open transactions
     return entries(false);
   }
 
-  
-  
+
+
   /**
-   * Returns a set of the keys present in the Map. This set is Not Modifiable.
-   * If changes are made to this set, they will be not reflected in the map
+   * Returns a set of the keys present in the Map. This set is Not Modifiable. If changes are made
+   * to this set, they will be not reflected in the map
    */
 
-  public Set keySet()
-  {
-    //keys() takes care of open transactions
+  public Set keySet() {
+    // keys() takes care of open transactions
     return keys();
   }
 
   /**
-   * removes the object from the Map and returns the object removed. The object
-   * is returned only if present in the localMap. If the value is present in
-   * another Node, null is returned
+   * removes the object from the Map and returns the object removed. The object is returned only if
+   * present in the localMap. If the value is present in another Node, null is returned
    */
-  public Object remove(Object obj)
-  {
+  public Object remove(Object obj) {
     // no validations needed here since destroy does it for us
     Object returnObject = null;
     try {
       returnObject = destroy(obj);
-    }
-    catch (EntryNotFoundException e) {
+    } catch (EntryNotFoundException e) {
       // No need to log this exception; caller can test for null;
     }
     return returnObject;
   }
 
-  public void basicBridgeDestroyRegion( Object p_callbackArg, final ClientProxyMembershipID client,
-      boolean fromClient, EventID eventId) throws TimeoutException,
-      EntryExistsException, CacheWriterException
-  {
+  public void basicBridgeDestroyRegion(Object p_callbackArg, final ClientProxyMembershipID client,
+      boolean fromClient, EventID eventId)
+      throws TimeoutException, EntryExistsException, CacheWriterException {
     Object callbackArg = p_callbackArg;
-    //long startPut = CachePerfStats.getStatTime();
+    // long startPut = CachePerfStats.getStatTime();
     if (fromClient) {
       // If this region is also wan-enabled, then wrap that callback arg in a
       // GatewayEventCallbackArgument to store the event id.
-      if(isGatewaySenderEnabled()) {
+      if (isGatewaySenderEnabled()) {
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
 
-    RegionEventImpl event = new ClientRegionEventImpl(this, Operation.REGION_DESTROY,
-         callbackArg,false, client.getDistributedMember(), client/* context */, eventId);
+    RegionEventImpl event = new ClientRegionEventImpl(this, Operation.REGION_DESTROY, callbackArg,
+        false, client.getDistributedMember(), client/* context */, eventId);
 
     basicDestroyRegion(event, true);
 
@@ -9615,24 +9237,21 @@ public class LocalRegion extends AbstractRegion
 
 
 
-
-  public void basicBridgeClear( Object p_callbackArg, 
-      final ClientProxyMembershipID client,
-      boolean fromClient, EventID eventId) throws TimeoutException,
-      EntryExistsException, CacheWriterException
-  {
+  public void basicBridgeClear(Object p_callbackArg, final ClientProxyMembershipID client,
+      boolean fromClient, EventID eventId)
+      throws TimeoutException, EntryExistsException, CacheWriterException {
     Object callbackArg = p_callbackArg;
-    //long startPut = CachePerfStats.getStatTime();
+    // long startPut = CachePerfStats.getStatTime();
     if (fromClient) {
       // If this region is also wan-enabled, then wrap that callback arg in a
       // GatewayEventCallbackArgument to store the event id.
-      if(isGatewaySenderEnabled()) {
+      if (isGatewaySenderEnabled()) {
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
 
-    RegionEventImpl event = new ClientRegionEventImpl(this, Operation.REGION_CLEAR,
-         callbackArg,false, client.getDistributedMember(), client/* context */, eventId);
+    RegionEventImpl event = new ClientRegionEventImpl(this, Operation.REGION_CLEAR, callbackArg,
+        false, client.getDistributedMember(), client/* context */, eventId);
 
     basicClear(event, true);
   }
@@ -9640,17 +9259,16 @@ public class LocalRegion extends AbstractRegion
 
 
   @Override
-  void basicClear(RegionEventImpl regionEvent)
-  {
+  void basicClear(RegionEventImpl regionEvent) {
     getDataView().checkSupportsRegionClear();
     basicClear(regionEvent, true/* cacheWrite */);
   }
 
-  void basicClear(RegionEventImpl regionEvent, boolean cacheWrite)  {
+  void basicClear(RegionEventImpl regionEvent, boolean cacheWrite) {
     cmnClearRegion(regionEvent, cacheWrite, true);
   }
-  
-  
+
+
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     RegionVersionVector rvv = null;
     if (useRVV && this.dataPolicy.withReplication() && this.concurrencyChecksEnabled) {
@@ -9660,50 +9278,49 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Common code used by both clear and localClear. Asif : On the lines of
-   * destroyRegion, this method will be invoked for clearing the local cache.The
-   * cmnClearRegion will be overridden in the derived class DistributedRegion
-   * too. For clear operation , no CacheWriter will be invoked . It will only
-   * have afterClear callback. Also like destroyRegion & invalidateRegion , the
-   * clear operation will not take distributedLock. The clear operation will
-   * also clear the local tranxnl entries . The clear operation will have
-   * immediate committed state.
+   * Common code used by both clear and localClear. Asif : On the lines of destroyRegion, this
+   * method will be invoked for clearing the local cache.The cmnClearRegion will be overridden in
+   * the derived class DistributedRegion too. For clear operation , no CacheWriter will be invoked .
+   * It will only have afterClear callback. Also like destroyRegion & invalidateRegion , the clear
+   * operation will not take distributedLock. The clear operation will also clear the local tranxnl
+   * entries . The clear operation will have immediate committed state.
    */
-  void clearRegionLocally(RegionEventImpl regionEvent, boolean cacheWrite, RegionVersionVector vector)
-  {
+  void clearRegionLocally(RegionEventImpl regionEvent, boolean cacheWrite,
+      RegionVersionVector vector) {
     final boolean isRvvDebugEnabled = logger.isTraceEnabled(LogMarker.RVV);
-    
+
     RegionVersionVector rvv = vector;
     if (this.srp != null) {
-      // clients and local regions do not maintain a full RVV.  can't use it with clear()
+      // clients and local regions do not maintain a full RVV. can't use it with clear()
       rvv = null;
     }
-    if (rvv != null && this.dataPolicy.withStorage()) { 
+    if (rvv != null && this.dataPolicy.withStorage()) {
       if (isRvvDebugEnabled) {
-        logger.trace(LogMarker.RVV, "waiting for my version vector to dominate\nmine={}\nother=", this.versionVector.fullToString(), rvv);
+        logger.trace(LogMarker.RVV, "waiting for my version vector to dominate\nmine={}\nother=",
+            this.versionVector.fullToString(), rvv);
       }
       boolean result = this.versionVector.waitToDominate(rvv, this);
       if (!result) {
         if (isRvvDebugEnabled) {
-          logger.trace(LogMarker.RVV, "incrementing clearTimeouts for {} rvv={}", this.getName(), this.versionVector.fullToString());
+          logger.trace(LogMarker.RVV, "incrementing clearTimeouts for {} rvv={}", this.getName(),
+              this.versionVector.fullToString());
         }
         getCachePerfStats().incClearTimeouts();
       }
     }
-    
-    //If the initial image operation is still in progress
+
+    // If the initial image operation is still in progress
     // then we need will have to do the clear operation at the
     // end of the GII.For this we try to acquire the lock of GII
     // the boolean returned is true that means lock was obtained which
     // also means that GII is still in progress.
     boolean isGIIInProg = lockGII();
     if (isGIIInProg) {
-      //Set a flag which will indicate that the Clear was invoked.
+      // Set a flag which will indicate that the Clear was invoked.
       // Also we should try & abort the GII
       try {
         getImageState().setClearRegionFlag(true /* Clear region */, rvv);
-      }
-      finally {
+      } finally {
         unlockGII();
       }
     }
@@ -9711,7 +9328,7 @@ public class LocalRegion extends AbstractRegion
     if (cacheWrite && !isGIIInProg) {
       this.cacheWriteBeforeRegionClear(regionEvent);
     }
-    
+
     RegionVersionVector myVector = getVersionVector();
     if (myVector != null) {
       if (isRvvDebugEnabled) {
@@ -9732,15 +9349,16 @@ public class LocalRegion extends AbstractRegion
           if (isRvvDebugEnabled) {
             logger.trace(LogMarker.RVV, "recording version tag for clear: {}", tag);
           }
-          myVector.recordVersion(tag.getMemberID(), tag); // clear() events always have the ID in the tag
+          myVector.recordVersion(tag.getMemberID(), tag); // clear() events always have the ID in
+                                                          // the tag
         }
       }
     }
 
-    //  Asif:Clear the expirational task for all the entries. It is possible that
-    //after clearing it some new entries may get added befoe issuing clear
-    //on the map , but that should be OK, as the expirational thread will
-    //silently move ahead if the entry to be expired no longer existed
+    // Asif:Clear the expirational task for all the entries. It is possible that
+    // after clearing it some new entries may get added befoe issuing clear
+    // on the map , but that should be OK, as the expirational thread will
+    // silently move ahead if the entry to be expired no longer existed
     this.cancelAllEntryExpiryTasks();
     if (this.entryUserAttributes != null) {
       this.entryUserAttributes.clear();
@@ -9749,14 +9367,13 @@ public class LocalRegion extends AbstractRegion
     // if all current content has been removed then the version vector
     // does not need to retain any exceptions and the GC versions can
     // be set to the current vector versions
-    if (rvv == null  &&  myVector != null) {
+    if (rvv == null && myVector != null) {
       myVector.removeOldVersions();
     }
-    
+
     /*
-     * Asif : First we need to clear the Tranxl state for the current region for
-     * the thread. The operation will not take global lock similar to
-     * regionInvalidateor regionDestroy behaviour.
+     * Asif : First we need to clear the Tranxl state for the current region for the thread. The
+     * operation will not take global lock similar to regionInvalidateor regionDestroy behaviour.
      */
 
     // mbid : clear the disk region if present
@@ -9765,12 +9382,13 @@ public class LocalRegion extends AbstractRegion
       if (this.getDataPolicy().withPersistence()) {
         // null means not to change dr.rvvTrust
         if (isRvvDebugEnabled) {
-          logger.trace(LogMarker.RVV, "Clear: Saved current rvv: {}", diskRegion.getRegionVersionVector());
+          logger.trace(LogMarker.RVV, "Clear: Saved current rvv: {}",
+              diskRegion.getRegionVersionVector());
         }
         diskRegion.writeRVV(this, null);
         diskRegion.writeRVVGC(this);
       }
-      
+
       // clear the entries in disk
       diskRegion.clear(this, rvv);
     }
@@ -9787,29 +9405,31 @@ public class LocalRegion extends AbstractRegion
         }
       }
     }
-    
+
     if (!isProxy()) {
       // Now we need to recreate all the indexes.
-      //If the indexManager is null we don't have to worry
-      //for any other thread creating index at that instant
+      // If the indexManager is null we don't have to worry
+      // for any other thread creating index at that instant
       // because the region has already been cleared
-      //of entries.
-      //TODO Asif:Have made indexManager variable is made volatile. Is it
+      // of entries.
+      // TODO Asif:Have made indexManager variable is made volatile. Is it
       // necessary?
       if (this.indexManager != null) {
         try {
           this.indexManager.rerunIndexCreationQuery();
-        }
-        catch (QueryException qe) {
+        } catch (QueryException qe) {
           // Asif : Create an anonymous inner class of CacheRuntimeException so
           // that a RuntimeException is thrown
-          throw new CacheRuntimeException(LocalizedStrings.LocalRegion_EXCEPTION_OCCURED_WHILE_RE_CREATING_INDEX_DATA_ON_CLEARED_REGION.toLocalizedString(), qe) {
-            private static final long serialVersionUID = 0L;            
+          throw new CacheRuntimeException(
+              LocalizedStrings.LocalRegion_EXCEPTION_OCCURED_WHILE_RE_CREATING_INDEX_DATA_ON_CLEARED_REGION
+                  .toLocalizedString(),
+              qe) {
+            private static final long serialVersionUID = 0L;
           };
         }
       }
     }
-    
+
     if (ISSUE_CALLBACKS_TO_CACHE_OBSERVER) {
       CacheObserverHolder.getInstance().afterRegionClear(regionEvent);
     }
@@ -9819,7 +9439,7 @@ public class LocalRegion extends AbstractRegion
     }
     regionEvent.setEventType(EnumListenerEvent.AFTER_REGION_CLEAR);
     // notifyBridgeClients(EnumListenerEvent.AFTER_REGION_CLEAR, regionEvent);
-    //Issue a callback to afterClear if the region is initialized
+    // Issue a callback to afterClear if the region is initialized
     boolean hasListener = hasListener();
     if (hasListener) {
       dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_CLEAR, regionEvent);
@@ -9827,23 +9447,22 @@ public class LocalRegion extends AbstractRegion
   }
 
   @Override
-  void basicLocalClear(RegionEventImpl rEvent)
-  {
+  void basicLocalClear(RegionEventImpl rEvent) {
     getDataView().checkSupportsRegionClear();
-    cmnClearRegion(rEvent, false/* cacheWrite */, false/*useRVV*/);
+    cmnClearRegion(rEvent, false/* cacheWrite */, false/* useRVV */);
   }
-       
+
   public void handleInterestEvent(InterestRegistrationEvent event) {
-    throw new UnsupportedOperationException(LocalizedStrings.
-        LocalRegion_REGION_INTEREST_REGISTRATION_IS_ONLY_SUPPORTED_FOR_PARTITIONEDREGIONS
-        .toLocalizedString());
-  }  
-  
+    throw new UnsupportedOperationException(
+        LocalizedStrings.LocalRegion_REGION_INTEREST_REGISTRATION_IS_ONLY_SUPPORTED_FOR_PARTITIONEDREGIONS
+            .toLocalizedString());
+  }
+
   @Override
   Map basicGetAll(Collection keys, Object callback) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     final boolean isTraceEnabled = logger.isTraceEnabled();
-    
+
     if (isDebugEnabled) {
       logger.debug("Processing getAll request for: {}", keys);
     }
@@ -9860,24 +9479,24 @@ public class LocalRegion extends AbstractRegion
 
       // Gather any local values
       // We only need to do this if this region has local storage
-      if(getTXState() == null && hasStorage()) {
+      if (getTXState() == null && hasStorage()) {
         if (keysList == keys) {
           // Create a copy of the collection of keys
           // to keep the original collection intact
           keysList = new ArrayList(keys);
         }
-	      for (Iterator i = keysList.iterator(); i.hasNext();) {
-	        Object key = i.next();
-	        Object value;
-	        Region.Entry entry = accessEntry(key, true);
-	        if (entry != null && (value = entry.getValue()) != null) {
-	          allResults.put(key, value);
-	          i.remove();
-	        }
-	      }
-	      if (isDebugEnabled) {
-	        logger.debug("Added local results for getAll request: {}", allResults);
-	      }
+        for (Iterator i = keysList.iterator(); i.hasNext();) {
+          Object key = i.next();
+          Object value;
+          Region.Entry entry = accessEntry(key, true);
+          if (entry != null && (value = entry.getValue()) != null) {
+            allResults.put(key, value);
+            i.remove();
+          }
+        }
+        if (isDebugEnabled) {
+          logger.debug("Added local results for getAll request: {}", allResults);
+        }
       }
 
       // Send the rest of the keys to the server (if necessary)
@@ -9904,7 +9523,7 @@ public class LocalRegion extends AbstractRegion
               continue;
             }
           }
-          
+
           Object value;
           if (createTombstone) {
             // the value is null in this case, so use TOKEN_TOMBSTONE
@@ -9913,7 +9532,7 @@ public class LocalRegion extends AbstractRegion
             value = entry.getObject();
           }
 
-          if (value instanceof Throwable){
+          if (value instanceof Throwable) {
             continue;
           }
           // The following basicPutEntry needs to be done
@@ -9921,33 +9540,36 @@ public class LocalRegion extends AbstractRegion
           // correct events will be delivered to any callbacks we have.
           long startPut = CachePerfStats.getStatTime();
           validateKey(key);
-          @Released EntryEventImpl event = EntryEventImpl.create(
-              this, Operation.LOCAL_LOAD_CREATE, key, value,
-              callback, false, getMyId(), true);
+          @Released
+          EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_LOAD_CREATE, key,
+              value, callback, false, getMyId(), true);
           try {
-          event.setFromServer(true);
-          event.setVersionTag(entry.getVersionTag());
+            event.setFromServer(true);
+            event.setVersionTag(entry.getVersionTag());
 
-          if (!alreadyInvalid(key, event)) { // bug #47716 - don't update if it's already here & invalid
-            TXStateProxy tx = this.cache.getTXMgr().internalSuspend();
-            try {
-              basicPutEntry(event, 0L);
-            } catch (ConcurrentCacheModificationException e) {
-              if (isDebugEnabled) {
-                logger.debug("getAll result for {} not stored in cache due to concurrent modification", key);
+            if (!alreadyInvalid(key, event)) { // bug #47716 - don't update if it's already here &
+                                               // invalid
+              TXStateProxy tx = this.cache.getTXMgr().internalSuspend();
+              try {
+                basicPutEntry(event, 0L);
+              } catch (ConcurrentCacheModificationException e) {
+                if (isDebugEnabled) {
+                  logger.debug(
+                      "getAll result for {} not stored in cache due to concurrent modification",
+                      key);
+                }
+              } finally {
+                this.cache.getTXMgr().resume(tx);
               }
-            } finally {
-              this.cache.getTXMgr().resume(tx);
+              getCachePerfStats().endPut(startPut, event.isOriginRemote());
             }
-            getCachePerfStats().endPut(startPut, event.isOriginRemote());
-          }
 
-          if (!createTombstone) {
-            allResults.put(key, value);
-            if (isTraceEnabled) {
-              logger.trace("Added remote result for getAll request: {}, {}", key, value);
+            if (!createTombstone) {
+              allResults.put(key, value);
+              if (isTraceEnabled) {
+                logger.trace("Added remote result for getAll request: {}, {}", key, value);
+              }
             }
-          }
           } finally {
             event.release();
           }
@@ -9961,7 +9583,9 @@ public class LocalRegion extends AbstractRegion
         try {
           allResults.put(key, get(key, callback));
         } catch (Exception e) {
-          logger.warn(LocalizedMessage.create(LocalizedStrings.LocalRegion_THE_FOLLOWING_EXCEPTION_OCCURRED_ATTEMPTING_TO_GET_KEY_0, key), e);
+          logger.warn(LocalizedMessage.create(
+              LocalizedStrings.LocalRegion_THE_FOLLOWING_EXCEPTION_OCCURRED_ATTEMPTING_TO_GET_KEY_0,
+              key), e);
         }
       }
     }
@@ -9980,7 +9604,7 @@ public class LocalRegion extends AbstractRegion
     Collection theEntries = map.entrySet();
     Iterator iterator = theEntries.iterator();
     while (iterator.hasNext()) {
-      mapEntry = (Map.Entry)iterator.next();
+      mapEntry = (Map.Entry) iterator.next();
       Object key = mapEntry.getKey();
       if (mapEntry.getValue() == null || key == null) {
         throw new NullPointerException("Any key or value in putAll should not be null");
@@ -9988,11 +9612,12 @@ public class LocalRegion extends AbstractRegion
       if (!MemoryThresholds.isLowMemoryExceptionDisabled()) {
         checkIfAboveThreshold(key);
       }
-      // Threshold check should not be performed again 
+      // Threshold check should not be performed again
     }
   }
+
   private void verifyRemoveAllKeys(Collection<Object> keys) {
-    for (Object key: keys) {
+    for (Object key : keys) {
       if (key == null) {
         throw new NullPointerException("Any key in removeAll must not be null");
       }
@@ -10002,91 +9627,94 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Called on a bridge server when it has a received a putAll command from a client.
+   * 
    * @param map a map of key->value for the entries we are putting
-   * @param retryVersions a map of key->version tag. If any of the entries
-   * are the result of a retried client event, we need to make sure we send
-   * the original version tag along with the event.
+   * @param retryVersions a map of key->version tag. If any of the entries are the result of a
+   *        retried client event, we need to make sure we send the original version tag along with
+   *        the event.
    * @param callbackArg callback argument from client
    */
-  public VersionedObjectList basicBridgePutAll(Map map, Map<Object, VersionTag> retryVersions, ClientProxyMembershipID memberId,
-      EventID eventId, boolean skipCallbacks, Object callbackArg) throws TimeoutException, CacheWriterException
-  {
+  public VersionedObjectList basicBridgePutAll(Map map, Map<Object, VersionTag> retryVersions,
+      ClientProxyMembershipID memberId, EventID eventId, boolean skipCallbacks, Object callbackArg)
+      throws TimeoutException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
-    if(isGatewaySenderEnabled()) {
+    if (isGatewaySenderEnabled()) {
       callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
     }
-  
-    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE, null,
-        null /* new value */, callbackArg,
-        false /* origin remote */, memberId.getDistributedMember(),
-        !skipCallbacks /* generateCallbacks */,
-        eventId);
+
+    @Released
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE, null,
+        null /* new value */, callbackArg, false /* origin remote */,
+        memberId.getDistributedMember(), !skipCallbacks /* generateCallbacks */, eventId);
     try {
-    event.setContext(memberId);
-    DistributedPutAllOperation putAllOp = new DistributedPutAllOperation(event,
-        map.size(), true);
-    try {
-    VersionedObjectList result = basicPutAll(map, putAllOp, retryVersions);
-    getCachePerfStats().endPutAll(startPut);
-    return result;
-    } finally {
-      putAllOp.freeOffHeapResources();
-    }
+      event.setContext(memberId);
+      DistributedPutAllOperation putAllOp = new DistributedPutAllOperation(event, map.size(), true);
+      try {
+        VersionedObjectList result = basicPutAll(map, putAllOp, retryVersions);
+        getCachePerfStats().endPutAll(startPut);
+        return result;
+      } finally {
+        putAllOp.freeOffHeapResources();
+      }
     } finally {
       event.release();
     }
   }
-  
+
   /**
    * Called on a bridge server when it has a received a removeAll command from a client.
+   * 
    * @param keys a collection of the keys we are putting
-   * @param retryVersions a collection of version tags. If the client is retrying a key
-   * then that keys slot will be non-null in this collection. Note that keys and retryVersions are parallel lists.
+   * @param retryVersions a collection of version tags. If the client is retrying a key then that
+   *        keys slot will be non-null in this collection. Note that keys and retryVersions are
+   *        parallel lists.
    * @param callbackArg callback argument from client
    */
-  public VersionedObjectList basicBridgeRemoveAll(ArrayList<Object> keys, ArrayList<VersionTag> retryVersions, ClientProxyMembershipID memberId,
-      EventID eventId, Object callbackArg) throws TimeoutException, CacheWriterException
-  {
+  public VersionedObjectList basicBridgeRemoveAll(ArrayList<Object> keys,
+      ArrayList<VersionTag> retryVersions, ClientProxyMembershipID memberId, EventID eventId,
+      Object callbackArg) throws TimeoutException, CacheWriterException {
     long startOp = CachePerfStats.getStatTime();
-    if(isGatewaySenderEnabled()) {
+    if (isGatewaySenderEnabled()) {
       callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
     }
-  
-    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVEALL_DESTROY, null,
-        null /* new value */, callbackArg,
-        false /* origin remote */, memberId.getDistributedMember(),
-        true /* generateCallbacks */,
-        eventId);
+
+    @Released
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVEALL_DESTROY, null,
+        null /* new value */, callbackArg, false /* origin remote */,
+        memberId.getDistributedMember(), true /* generateCallbacks */, eventId);
     try {
-    event.setContext(memberId);
-    DistributedRemoveAllOperation removeAllOp = new DistributedRemoveAllOperation(event, keys.size(), true);
-    try {
-    VersionedObjectList result = basicRemoveAll(keys, removeAllOp, retryVersions);
-    getCachePerfStats().endRemoveAll(startOp);
-    return result;
-    } finally {
-      removeAllOp.freeOffHeapResources();
-    }
+      event.setContext(memberId);
+      DistributedRemoveAllOperation removeAllOp =
+          new DistributedRemoveAllOperation(event, keys.size(), true);
+      try {
+        VersionedObjectList result = basicRemoveAll(keys, removeAllOp, retryVersions);
+        getCachePerfStats().endRemoveAll(startOp);
+        return result;
+      } finally {
+        removeAllOp.freeOffHeapResources();
+      }
     } finally {
       event.release();
     }
   }
-  
+
   public VersionedObjectList basicImportPutAll(Map map, boolean skipCallbacks) {
     long startPut = CachePerfStats.getStatTime();
 
     // generateCallbacks == false
-    @Released EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE,
-        null, null, null, true, getMyId(), !skipCallbacks);
+    @Released
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE, null, null, null,
+        true, getMyId(), !skipCallbacks);
     try {
-    DistributedPutAllOperation putAllOp = new DistributedPutAllOperation(event, map.size(), false);
-    try {
-    VersionedObjectList result = basicPutAll(map, putAllOp, null);
-    getCachePerfStats().endPutAll(startPut);
-    return result;
-    } finally {
-      putAllOp.freeOffHeapResources();
-    }
+      DistributedPutAllOperation putAllOp =
+          new DistributedPutAllOperation(event, map.size(), false);
+      try {
+        VersionedObjectList result = basicPutAll(map, putAllOp, null);
+        getCachePerfStats().endPutAll(startPut);
+        return result;
+      } finally {
+        putAllOp.freeOffHeapResources();
+      }
     } finally {
       event.release();
     }
@@ -10098,13 +9726,13 @@ public class LocalRegion extends AbstractRegion
     final DistributedPutAllOperation putAllOp = newPutAllOperation(map, callbackArg);
     if (putAllOp != null) {
       try {
-      basicPutAll(map, putAllOp, null);
+        basicPutAll(map, putAllOp, null);
       } finally {
         putAllOp.getBaseEvent().release();
         putAllOp.freeOffHeapResources();
       }
     }
-    
+
     getCachePerfStats().endPutAll(startPut);
   }
 
@@ -10112,19 +9740,19 @@ public class LocalRegion extends AbstractRegion
   public final void putAll(Map map) {
     putAll(map, null);
   }
-  
+
   @Override
   public final void removeAll(Collection keys) {
     removeAll(keys, null);
   }
-  
+
   @Override
   public final void removeAll(Collection keys, Object callbackArg) {
     final long startOp = CachePerfStats.getStatTime();
     final DistributedRemoveAllOperation op = newRemoveAllOperation(keys, callbackArg);
     if (op != null) {
       try {
-      basicRemoveAll(keys, op, null);
+        basicRemoveAll(keys, op, null);
       } finally {
         op.getBaseEvent().release();
         op.freeOffHeapResources();
@@ -10132,10 +9760,10 @@ public class LocalRegion extends AbstractRegion
     }
     getCachePerfStats().endRemoveAll(startOp);
   }
-  
+
   /**
-   * Returns true if a one-hop (RemoteOperationMessage) should be used when applying the change
-   * to the system.
+   * Returns true if a one-hop (RemoteOperationMessage) should be used when applying the change to
+   * the system.
    */
   public boolean requiresOneHopForMissingEntry(EntryEventImpl event) {
     return false;
@@ -10163,7 +9791,8 @@ public class LocalRegion extends AbstractRegion
         tx.getRealDeal(null, this);
       }
       try {
-        proxyResult = getServerProxy().putAll(map, eventId, !event.isGenerateCallbacks(), event.getCallbackArgument());
+        proxyResult = getServerProxy().putAll(map, eventId, !event.isGenerateCallbacks(),
+            event.getCallbackArgument());
         if (isDebugEnabled) {
           logger.debug("PutAll received response from server: {}", proxyResult);
         }
@@ -10172,7 +9801,8 @@ public class LocalRegion extends AbstractRegion
         proxyResult = e1.getSucceededKeysAndVersions();
         partialResult = true;
         if (isDebugEnabled) {
-          logger.debug("putAll in client encountered a PutAllPartialResultException:{}\n. Adjusted keys are: ",
+          logger.debug(
+              "putAll in client encountered a PutAllPartialResultException:{}\n. Adjusted keys are: ",
               e1.getMessage(), proxyResult.getKeys());
         }
         Throwable txException = e1.getFailure();
@@ -10184,16 +9814,21 @@ public class LocalRegion extends AbstractRegion
           txException = txException.getCause();
         }
         if (e == null) {
-          e = getCancelCriterion().generateCancelledException(e1.getFailure());//for cache close
-          if(e == null) {
-            e = new ServerOperationException(LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0.toLocalizedString(getFullPath()), e1.getFailure());
+          e = getCancelCriterion().generateCancelledException(e1.getFailure());// for cache close
+          if (e == null) {
+            e = new ServerOperationException(
+                LocalizedStrings.Region_PutAll_Applied_PartialKeys_At_Server_0
+                    .toLocalizedString(getFullPath()),
+                e1.getFailure());
           }
         }
       }
     }
-    
-    final VersionedObjectList succeeded = new VersionedObjectList(map.size(), true, this.concurrencyChecksEnabled);
-    // if this is a transactional putAll, we will not have version information as it is only generated at commit
+
+    final VersionedObjectList succeeded =
+        new VersionedObjectList(map.size(), true, this.concurrencyChecksEnabled);
+    // if this is a transactional putAll, we will not have version information as it is only
+    // generated at commit
     // so treat transactional putAll as if the server is not versioned
     final boolean serverIsVersioned = proxyResult != null && proxyResult.regionIsVersioned()
         && !isTX() && this.dataPolicy != DataPolicy.EMPTY;
@@ -10206,10 +9841,11 @@ public class LocalRegion extends AbstractRegion
       try {
 
         final DistributedPutAllOperation dpao = putAllOp;
-        int size = (proxyResult == null)? map.size() : proxyResult.size();
+        int size = (proxyResult == null) ? map.size() : proxyResult.size();
 
         if (isDebugEnabled) {
-          logger.debug( "size of put result is {} maps is {} proxyResult is {}", size, map, proxyResult);
+          logger.debug("size of put result is {} maps is {} proxyResult is {}", size, map,
+              proxyResult);
         }
 
         final PutAllPartialResult partialKeys = new PutAllPartialResult(size);
@@ -10228,24 +9864,25 @@ public class LocalRegion extends AbstractRegion
             VersionTagHolder tagHolder = new VersionTagHolder();
             while (iterator.hasNext()) {
               stopper.checkCancelInProgress(null);
-              Map.Entry mapEntry = (Map.Entry)iterator.next();
+              Map.Entry mapEntry = (Map.Entry) iterator.next();
               Object key = mapEntry.getKey();
               VersionTag versionTag = null;
               tagHolder.setVersionTag(null);
               final Object value;
               boolean overwritten = false;
               if (isVersionedResults) {
-                versionTag = ((VersionedObjectList.Entry)mapEntry).getVersionTag();
+                versionTag = ((VersionedObjectList.Entry) mapEntry).getVersionTag();
                 value = map.get(key);
                 if (isDebugEnabled) {
                   logger.debug("putAll key {} -> {} version={}", key, value, versionTag);
                 }
-                if (versionTag == null && serverIsVersioned && concurrencyChecksEnabled && dataPolicy.withStorage()) {
+                if (versionTag == null && serverIsVersioned && concurrencyChecksEnabled
+                    && dataPolicy.withStorage()) {
                   // server was unable to determine the version for this operation.
                   // I'm not sure this can still happen as described below on a pr.
                   // But it can happen on the server if NORMAL or PRELOADED. See bug 51644.
                   // This can happen in a PR with redundancy if there is a bucket
-                  // failure or migration during the operation.  We destroy the
+                  // failure or migration during the operation. We destroy the
                   // entry since we don't know what its state should be (but the server should)
                   if (isDebugEnabled) {
                     logger.debug("server returned no version information for {}", key);
@@ -10266,12 +9903,12 @@ public class LocalRegion extends AbstractRegion
                   if (isDebugEnabled) {
                     logger.debug("associating version tag with {} version={}", key, versionTag);
                   }
-                  //If we have received a version tag from a server, add it to the event
+                  // If we have received a version tag from a server, add it to the event
                   tagHolder.setVersionTag(versionTag);
                   tagHolder.setFromServer(true);
                 } else if (retryVersions != null && retryVersions.containsKey(key)) {
-                  //If this is a retried event, and we have a version tag for the retry,
-                  //add it to the event.
+                  // If this is a retried event, and we have a version tag for the retry,
+                  // add it to the event.
                   tagHolder.setVersionTag(retryVersions.get(key));
                 }
 
@@ -10283,8 +9920,7 @@ public class LocalRegion extends AbstractRegion
                 // event for clients
                 stopper.checkCancelInProgress(null);
                 succeeded.addKeyAndVersion(key, tagHolder.getVersionTag());
-              } 
-              catch (Exception ex) {
+              } catch (Exception ex) {
                 // TODO ask Gester if this debug logging can be removed
                 if (isDebugEnabled) {
                   logger.debug("PutAll operation encountered exception for key {}", key, ex);
@@ -10297,12 +9933,13 @@ public class LocalRegion extends AbstractRegion
         };
         this.syncBulkOp(r, eventId);
         if (partialKeys.hasFailure()) {
-          // Bug 51725: Now succeeded contains an order key list, may be missing the version tags. 
+          // Bug 51725: Now succeeded contains an order key list, may be missing the version tags.
           // Save reference of succeeded into partialKeys. The succeeded may be modified by
-          // postPutAll() to fill in the version tags. 
+          // postPutAll() to fill in the version tags.
           partialKeys.setSucceededKeysAndVersions(succeeded);
-          logger.info(LocalizedMessage.create(LocalizedStrings.Region_PutAll_Applied_PartialKeys_0_1,
-              new Object[] {getFullPath(), partialKeys}));
+          logger
+              .info(LocalizedMessage.create(LocalizedStrings.Region_PutAll_Applied_PartialKeys_0_1,
+                  new Object[] {getFullPath(), partialKeys}));
           if (isDebugEnabled) {
             logger.debug(partialKeys.detailString());
           }
@@ -10310,13 +9947,13 @@ public class LocalRegion extends AbstractRegion
             // if received exception from server first, ignore local exception
             if (dpao.isBridgeOperation()) {
               if (partialKeys.getFailure() instanceof CancelException) {
-                e = (CancelException)partialKeys.getFailure(); 
+                e = (CancelException) partialKeys.getFailure();
               } else if (partialKeys.getFailure() instanceof LowMemoryException) {
-                throw partialKeys.getFailure();  // fix for #43589
+                throw partialKeys.getFailure(); // fix for #43589
               } else {
                 e = new PutAllPartialResultException(partialKeys);
                 if (isDebugEnabled) {
-                  logger.debug("basicPutAll:"+partialKeys.detailString());
+                  logger.debug("basicPutAll:" + partialKeys.detailString());
                 }
               }
             } else {
@@ -10324,14 +9961,11 @@ public class LocalRegion extends AbstractRegion
             }
           }
         }
-      }
-      catch (LowMemoryException lme) {
+      } catch (LowMemoryException lme) {
         throw lme;
-      }
-      catch (RuntimeException ex) {
+      } catch (RuntimeException ex) {
         e = ex;
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         e = new RuntimeException(ex);
       } finally {
         putAllOp.getBaseEvent().release();
@@ -10348,7 +9982,7 @@ public class LocalRegion extends AbstractRegion
   }
 
   public VersionedObjectList basicRemoveAll(final Collection<Object> keys,
-    final DistributedRemoveAllOperation removeAllOp, final ArrayList<VersionTag> retryVersions) {
+      final DistributedRemoveAllOperation removeAllOp, final ArrayList<VersionTag> retryVersions) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     final boolean isTraceEnabled = logger.isTraceEnabled();
     final EntryEventImpl event = removeAllOp.getBaseEvent();
@@ -10379,7 +10013,9 @@ public class LocalRegion extends AbstractRegion
         proxyResult = e1.getSucceededKeysAndVersions();
         partialResult = true;
         if (isDebugEnabled) {
-          logger.debug("removeAll in client encountered a BulkOpPartialResultException: {}\n. Adjusted keys are: {}", e1.getMessage(), proxyResult.getKeys());
+          logger.debug(
+              "removeAll in client encountered a BulkOpPartialResultException: {}\n. Adjusted keys are: {}",
+              e1.getMessage(), proxyResult.getKeys());
         }
         Throwable txException = e1.getFailure();
         while (txException != null) {
@@ -10390,13 +10026,18 @@ public class LocalRegion extends AbstractRegion
           txException = txException.getCause();
         }
         if (e == null) {
-          e = new ServerOperationException(LocalizedStrings.Region_RemoveAll_Applied_PartialKeys_At_Server_0.toLocalizedString(getFullPath()), e1.getFailure());
+          e = new ServerOperationException(
+              LocalizedStrings.Region_RemoveAll_Applied_PartialKeys_At_Server_0
+                  .toLocalizedString(getFullPath()),
+              e1.getFailure());
         }
       }
     }
-    
-    final VersionedObjectList succeeded = new VersionedObjectList(keys.size(), true, this.concurrencyChecksEnabled);
-    // If this is a transactional removeAll, we will not have version information as it is only generated at commit
+
+    final VersionedObjectList succeeded =
+        new VersionedObjectList(keys.size(), true, this.concurrencyChecksEnabled);
+    // If this is a transactional removeAll, we will not have version information as it is only
+    // generated at commit
     // so treat transactional removeAll as if the server is not versioned.
     // If we have no storage then act as if the server is not versioned.
     final boolean serverIsVersioned = proxyResult != null && proxyResult.regionIsVersioned()
@@ -10411,22 +10052,22 @@ public class LocalRegion extends AbstractRegion
       try {
 
         final DistributedRemoveAllOperation op = removeAllOp;
-        int size = (proxyResult == null)? keys.size() : proxyResult.size();
+        int size = (proxyResult == null) ? keys.size() : proxyResult.size();
 
         if (isInternalRegion()) {
           if (isTraceEnabled) {
-            logger.trace(
-                "size of removeAll result is {} keys are {} proxyResult is {}", size, keys, proxyResult);
+            logger.trace("size of removeAll result is {} keys are {} proxyResult is {}", size, keys,
+                proxyResult);
           } else {
             if (isTraceEnabled) {
-              logger.trace(
-                  "size of removeAll result is {} keys are {} proxyResult is {}", size, keys, proxyResult);
+              logger.trace("size of removeAll result is {} keys are {} proxyResult is {}", size,
+                  keys, proxyResult);
             }
           }
         } else {
           if (isTraceEnabled) {
-            logger.trace(
-                "size of removeAll result is {} keys are {} proxyResult is {}", size, keys, proxyResult);
+            logger.trace("size of removeAll result is {} keys are {} proxyResult is {}", size, keys,
+                proxyResult);
           }
         }
 
@@ -10450,15 +10091,17 @@ public class LocalRegion extends AbstractRegion
               VersionTag versionTag = null;
               tagHolder.setVersionTag(null);
               if (isVersionedResults) {
-                Map.Entry mapEntry = (Map.Entry)iterator.next();
+                Map.Entry mapEntry = (Map.Entry) iterator.next();
                 key = mapEntry.getKey();
-                versionTag = ((VersionedObjectList.Entry)mapEntry).getVersionTag();
+                versionTag = ((VersionedObjectList.Entry) mapEntry).getVersionTag();
                 if (isDebugEnabled) {
-                  logger.debug("removeAll key {} version={}",key, versionTag);
+                  logger.debug("removeAll key {} version={}", key, versionTag);
                 }
                 if (versionTag == null) {
                   if (isDebugEnabled) {
-                    logger.debug("removeAll found invalid version tag, which means the entry is not found at server for key={}.", key);
+                    logger.debug(
+                        "removeAll found invalid version tag, which means the entry is not found at server for key={}.",
+                        key);
                   }
                   succeeded.addKeyAndVersion(key, null);
                   continue;
@@ -10483,14 +10126,14 @@ public class LocalRegion extends AbstractRegion
                   if (isDebugEnabled) {
                     logger.debug("associating version tag with {} version={}", key, versionTag);
                   }
-                  //If we have received a version tag from a server, add it to the event
+                  // If we have received a version tag from a server, add it to the event
                   tagHolder.setVersionTag(versionTag);
                   tagHolder.setFromServer(true);
                 } else if (retryVersions != null) {
                   VersionTag vt = retryVersions.get(offset);
                   if (vt != null) {
-                    //If this is a retried event, and we have a version tag for the retry,
-                    //add it to the event.
+                    // If this is a retried event, and we have a version tag for the retry,
+                    // add it to the event.
                     tagHolder.setVersionTag(vt);
                   }
                 }
@@ -10501,8 +10144,7 @@ public class LocalRegion extends AbstractRegion
                 // event for clients
                 stopper.checkCancelInProgress(null);
                 succeeded.addKeyAndVersion(key, tagHolder.getVersionTag());
-              } 
-              catch (Exception ex) {
+              } catch (Exception ex) {
                 partialKeys.saveFailedKey(key, ex);
               }
               offset++;
@@ -10511,12 +10153,13 @@ public class LocalRegion extends AbstractRegion
         };
         syncBulkOp(r, eventId);
         if (partialKeys.hasFailure()) {
-          // Bug 51725: Now succeeded contains an order key list, may be missing the version tags. 
+          // Bug 51725: Now succeeded contains an order key list, may be missing the version tags.
           // Save reference of succeeded into partialKeys. The succeeded may be modified by
           // postRemoveAll() to fill in the version tags.
           partialKeys.setSucceededKeysAndVersions(succeeded);
-          logger.info(LocalizedMessage.create(LocalizedStrings.Region_RemoveAll_Applied_PartialKeys_0_1,
-              new Object[] {getFullPath(), partialKeys}));
+          logger.info(
+              LocalizedMessage.create(LocalizedStrings.Region_RemoveAll_Applied_PartialKeys_0_1,
+                  new Object[] {getFullPath(), partialKeys}));
           if (isDebugEnabled) {
             logger.debug(partialKeys.detailString());
           }
@@ -10524,13 +10167,13 @@ public class LocalRegion extends AbstractRegion
             // if received exception from server first, ignore local exception
             if (op.isBridgeOperation()) {
               if (partialKeys.getFailure() instanceof CancelException) {
-                e = (CancelException)partialKeys.getFailure(); 
+                e = (CancelException) partialKeys.getFailure();
               } else if (partialKeys.getFailure() instanceof LowMemoryException) {
-                throw partialKeys.getFailure();  // fix for #43589
+                throw partialKeys.getFailure(); // fix for #43589
               } else {
                 e = new PutAllPartialResultException(partialKeys);
                 if (isDebugEnabled) {
-                  logger.debug("basicRemoveAll:"+partialKeys.detailString());
+                  logger.debug("basicRemoveAll:" + partialKeys.detailString());
                 }
               }
             } else {
@@ -10538,14 +10181,11 @@ public class LocalRegion extends AbstractRegion
             }
           }
         }
-      }
-      catch (LowMemoryException lme) {
+      } catch (LowMemoryException lme) {
         throw lme;
-      }
-      catch (RuntimeException ex) {
+      } catch (RuntimeException ex) {
         e = ex;
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         e = new RuntimeException(ex);
       } finally {
         removeAllOp.getBaseEvent().release();
@@ -10560,40 +10200,39 @@ public class LocalRegion extends AbstractRegion
     }
     return succeeded;
   }
-  
+
   /**
-   *  bug #46924 - putAll can be partially applied when a clear() occurs, leaving
-   *  the cache in an inconsistent state.  Set the RVV to "cache op in progress"
-   *  so clear() will block until the putAll completes.  This won't work for
-   *  non-replicate regions though since they uses one-hop during basicPutPart2
-   *  to get a valid version tag.
+   * bug #46924 - putAll can be partially applied when a clear() occurs, leaving the cache in an
+   * inconsistent state. Set the RVV to "cache op in progress" so clear() will block until the
+   * putAll completes. This won't work for non-replicate regions though since they uses one-hop
+   * during basicPutPart2 to get a valid version tag.
    */
   private void lockRVVForBulkOp() {
     ARMLockTestHook alth = getRegionMap().getARMLockTestHook();
-    if(alth!=null) { 
-      alth.beforeBulkLock(this); 
+    if (alth != null) {
+      alth.beforeBulkLock(this);
     }
-    
+
     if (this.versionVector != null && this.dataPolicy.withReplication()) {
       this.versionVector.lockForCacheModification(this);
     }
-    
-    if(alth!=null) {
+
+    if (alth != null) {
       alth.afterBulkLock(this);
     }
   }
-  
+
   private void unlockRVVForBulkOp() {
     ARMLockTestHook alth = getRegionMap().getARMLockTestHook();
-    if(alth!=null) {
+    if (alth != null) {
       alth.beforeBulkRelease(this);
     }
-    
+
     if (this.versionVector != null && this.dataPolicy.withReplication()) {
       this.versionVector.releaseCacheModificationLock(this);
     }
-    
-    if(alth!=null) {
+
+    if (alth != null) {
       alth.afterBulkRelease(this);
     }
   }
@@ -10601,8 +10240,8 @@ public class LocalRegion extends AbstractRegion
 
   public final DistributedPutAllOperation newPutAllOperation(Map<?, ?> map, Object callbackArg) {
     if (map == null) {
-      throw new NullPointerException(LocalizedStrings
-          .AbstractRegion_MAP_CANNOT_BE_NULL.toLocalizedString());
+      throw new NullPointerException(
+          LocalizedStrings.AbstractRegion_MAP_CANNOT_BE_NULL.toLocalizedString());
     }
     if (map.isEmpty()) {
       return null;
@@ -10611,19 +10250,20 @@ public class LocalRegion extends AbstractRegion
     checkForLimitedOrNoAccess();
     discoverJTA();
 
-    // Create a dummy event for the PutAll operation.  Always create a
+    // Create a dummy event for the PutAll operation. Always create a
     // PutAll operation, even if there is no distribution, so that individual
     // events can be tracked and handed off to callbacks in postPutAll
     // No need for release since disallowOffHeapValues called.
-    final EntryEventImpl event = EntryEventImpl.create(this,
-        Operation.PUTALL_CREATE, null, null, callbackArg, true, getMyId());
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUTALL_CREATE, null, null,
+        callbackArg, true, getMyId());
 
     event.disallowOffHeapValues();
     DistributedPutAllOperation dpao = new DistributedPutAllOperation(event, map.size(), false);
     return dpao;
   }
-  
-  public final DistributedRemoveAllOperation newRemoveAllOperation(Collection<?> keys, Object callbackArg) {
+
+  public final DistributedRemoveAllOperation newRemoveAllOperation(Collection<?> keys,
+      Object callbackArg) {
     if (keys == null) {
       throw new NullPointerException("The keys Collection passed to removeAll was null.");
     }
@@ -10634,7 +10274,7 @@ public class LocalRegion extends AbstractRegion
     checkForLimitedOrNoAccess();
     discoverJTA();
 
-    // Create a dummy event for the removeAll operation.  Always create a
+    // Create a dummy event for the removeAll operation. Always create a
     // removeAll operation, even if there is no distribution, so that individual
     // events can be tracked and handed off to callbacks in postRemoveAll
     // No need for release since disallowOffHeapValues called.
@@ -10647,6 +10287,7 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * This performs the putAll operation for a specific key and value
+   * 
    * @param key the cache key
    * @param value the cache value
    * @param putallOp the DistributedPutAllOperation associated with the event
@@ -10654,98 +10295,99 @@ public class LocalRegion extends AbstractRegion
    * @throws TimeoutException if the operation times out
    * @throws CacheWriterException if a cache writer objects to the update
    */
-  protected final void basicEntryPutAll(Object key,
-      Object value,
-      DistributedPutAllOperation putallOp,
-      int offset,
-      EntryEventImpl tagHolder)
+  protected final void basicEntryPutAll(Object key, Object value,
+      DistributedPutAllOperation putallOp, int offset, EntryEventImpl tagHolder)
       throws TimeoutException, CacheWriterException {
     assert putallOp != null;
-//    long startPut = CachePerfStats.getStatTime();
+    // long startPut = CachePerfStats.getStatTime();
     checkReadiness();
     if (value == null) {
-      throw new NullPointerException(LocalizedStrings.LocalRegion_VALUE_CANNOT_BE_NULL.toLocalizedString());
+      throw new NullPointerException(
+          LocalizedStrings.LocalRegion_VALUE_CANNOT_BE_NULL.toLocalizedString());
     }
     validateArguments(key, value, null);
     // event is marked as a PUTALL_CREATE but if the entry exists it
     // will be changed to a PUTALL_UPDATE later on.
-    @Released EntryEventImpl event = EntryEventImpl.createPutAllEvent(
-        putallOp, this, Operation.PUTALL_CREATE, key, value);
+    @Released
+    EntryEventImpl event =
+        EntryEventImpl.createPutAllEvent(putallOp, this, Operation.PUTALL_CREATE, key, value);
 
     try {
-    if (tagHolder != null) {
-      event.setVersionTag(tagHolder.getVersionTag());
-      event.setFromServer(tagHolder.isFromServer());
-    }
-    if (generateEventID()) {
-      event.setEventId(new EventID(putallOp.getBaseEvent().getEventId(), offset));
-    }
-    discoverJTA(); // TODO: This could be called once for the entire putAll instead of calling it for every key
+      if (tagHolder != null) {
+        event.setVersionTag(tagHolder.getVersionTag());
+        event.setFromServer(tagHolder.isFromServer());
+      }
+      if (generateEventID()) {
+        event.setEventId(new EventID(putallOp.getBaseEvent().getEventId(), offset));
+      }
+      discoverJTA(); // TODO: This could be called once for the entire putAll instead of calling it
+                     // for every key
 
-    /*
-     * If this is tx, do putEntry, unless it is a local region? 
-     */
-    performPutAllEntry(event);
-    if (tagHolder != null) {
-      tagHolder.setVersionTag(event.getVersionTag());
-      tagHolder.isConcurrencyConflict(event.isConcurrencyConflict());
-    }
+      /*
+       * If this is tx, do putEntry, unless it is a local region?
+       */
+      performPutAllEntry(event);
+      if (tagHolder != null) {
+        tagHolder.setVersionTag(event.getVersionTag());
+        tagHolder.isConcurrencyConflict(event.isConcurrencyConflict());
+      }
     } finally {
       event.release();
     }
   }
-  
-  
-  protected final void basicEntryRemoveAll(Object key,
-      DistributedRemoveAllOperation op,
-      int offset,
-      EntryEventImpl tagHolder)
-      throws TimeoutException, CacheWriterException {
+
+
+  protected final void basicEntryRemoveAll(Object key, DistributedRemoveAllOperation op, int offset,
+      EntryEventImpl tagHolder) throws TimeoutException, CacheWriterException {
     assert op != null;
     checkReadiness();
     validateKey(key);
-    @Released EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(op, this, key);
+    @Released
+    EntryEventImpl event = EntryEventImpl.createRemoveAllEvent(op, this, key);
     try {
-    if (tagHolder != null) {
-      event.setVersionTag(tagHolder.getVersionTag());
-      event.setFromServer(tagHolder.isFromServer());
-    }
-    if (generateEventID()) {
-      event.setEventId(new EventID(op.getBaseEvent().getEventId(), offset));
-    }
-    discoverJTA(); // TODO: This could be called once for the entire removeAll instead of calling it for every key
+      if (tagHolder != null) {
+        event.setVersionTag(tagHolder.getVersionTag());
+        event.setFromServer(tagHolder.isFromServer());
+      }
+      if (generateEventID()) {
+        event.setEventId(new EventID(op.getBaseEvent().getEventId(), offset));
+      }
+      discoverJTA(); // TODO: This could be called once for the entire removeAll instead of calling
+                     // it for every key
 
-    /*
-     * If this is tx, do removeEntry, unless it is a local region? 
-     */
-    try {
-      performRemoveAllEntry(event);
-    } catch (EntryNotFoundException ignore) {
-      if (event.getVersionTag() == null) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("RemoveAll encoutered EntryNotFoundException: event={}", event);
+      /*
+       * If this is tx, do removeEntry, unless it is a local region?
+       */
+      try {
+        performRemoveAllEntry(event);
+      } catch (EntryNotFoundException ignore) {
+        if (event.getVersionTag() == null) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("RemoveAll encoutered EntryNotFoundException: event={}", event);
+          }
         }
       }
-    }
-    if (tagHolder != null) {
-      tagHolder.setVersionTag(event.getVersionTag());
-      tagHolder.isConcurrencyConflict(event.isConcurrencyConflict());
-    }
+      if (tagHolder != null) {
+        tagHolder.setVersionTag(event.getVersionTag());
+        tagHolder.isConcurrencyConflict(event.isConcurrencyConflict());
+      }
     } finally {
       event.release();
     }
   }
+
   public void performPutAllEntry(EntryEventImpl event) {
     getDataView().putEntry(event, false, false, null, false, 0L, false);
   }
+
   public void performRemoveAllEntry(EntryEventImpl event) {
     basicDestroy(event, true, null);
-    //getDataView().destroyExistingEntry(event, true, null);
+    // getDataView().destroyExistingEntry(event, true, null);
   }
 
 
-  public void postPutAllFireEvents(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts)
-  {
+  public void postPutAllFireEvents(DistributedPutAllOperation putallOp,
+      VersionedObjectList successfulPuts) {
     if (!this.dataPolicy.withStorage() && this.concurrencyChecksEnabled
         && putallOp.getBaseEvent().isBridgeEvent()) {
       // if there is no local storage we need to transfer version information
@@ -10754,21 +10396,26 @@ public class LocalRegion extends AbstractRegion
       putallOp.fillVersionedObjectList(successfulPuts);
     }
     Set successfulKeys = new HashSet(successfulPuts.size());
-    for (Object key: successfulPuts.getKeys()) {
+    for (Object key : successfulPuts.getKeys()) {
       successfulKeys.add(key);
     }
-    for (Iterator it=putallOp.eventIterator(); it.hasNext(); ) {
-      @Unretained EntryEventImpl event = (EntryEventImpl)it.next();
+    for (Iterator it = putallOp.eventIterator(); it.hasNext();) {
+      @Unretained
+      EntryEventImpl event = (EntryEventImpl) it.next();
       if (successfulKeys.contains(event.getKey())) {
         EnumListenerEvent op = event.getOperation().isCreate() ? EnumListenerEvent.AFTER_CREATE
-            : EnumListenerEvent.AFTER_UPDATE; 
+            : EnumListenerEvent.AFTER_UPDATE;
         invokePutCallbacks(op, event, !event.callbacksInvoked() && !event.isPossibleDuplicate(),
-            false /* We must notify gateways inside RegionEntry lock, NOT here, to preserve the order of events sent by gateways for same key*/);
+            false /*
+                   * We must notify gateways inside RegionEntry lock, NOT here, to preserve the
+                   * order of events sent by gateways for same key
+                   */);
       }
     }
   }
-  
-  public void postRemoveAllFireEvents(DistributedRemoveAllOperation op, VersionedObjectList successfulOps) {
+
+  public void postRemoveAllFireEvents(DistributedRemoveAllOperation op,
+      VersionedObjectList successfulOps) {
     if (!this.dataPolicy.withStorage() && this.concurrencyChecksEnabled
         && op.getBaseEvent().isBridgeEvent()) {
       // if there is no local storage we need to transfer version information
@@ -10777,28 +10424,34 @@ public class LocalRegion extends AbstractRegion
       op.fillVersionedObjectList(successfulOps);
     }
     Set successfulKeys = new HashSet(successfulOps.size());
-    for (Object key: successfulOps.getKeys()) {
+    for (Object key : successfulOps.getKeys()) {
       successfulKeys.add(key);
     }
-    for (Iterator it=op.eventIterator(); it.hasNext(); ) {
-      @Unretained EntryEventImpl event = (EntryEventImpl)it.next();
+    for (Iterator it = op.eventIterator(); it.hasNext();) {
+      @Unretained
+      EntryEventImpl event = (EntryEventImpl) it.next();
       if (successfulKeys.contains(event.getKey())) {
-        invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, !event.callbacksInvoked() && !event.isPossibleDuplicate(),
-            false /* We must notify gateways inside RegionEntry lock, NOT here, to preserve the order of events sent by gateways for same key*/);
+        invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event,
+            !event.callbacksInvoked() && !event.isPossibleDuplicate(),
+            false /*
+                   * We must notify gateways inside RegionEntry lock, NOT here, to preserve the
+                   * order of events sent by gateways for same key
+                   */);
       }
     }
   }
-  
-  public void postPutAllSend(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts)
-  { 
-          /* No-op for local region of course */
+
+  public void postPutAllSend(DistributedPutAllOperation putallOp,
+      VersionedObjectList successfulPuts) {
+    /* No-op for local region of course */
   }
-  public void postRemoveAllSend(DistributedRemoveAllOperation op, VersionedObjectList successfulOps)
-  { 
-          /* No-op for local region of course */
+
+  public void postRemoveAllSend(DistributedRemoveAllOperation op,
+      VersionedObjectList successfulOps) {
+    /* No-op for local region of course */
   }
-  
-  
+
+
 
   /**
    * DistributedRegion overrides isCurrentlyLockGrantor
@@ -10806,25 +10459,22 @@ public class LocalRegion extends AbstractRegion
    * @see DistributedRegion#isCurrentlyLockGrantor()
    */
   @Override
-  protected boolean isCurrentlyLockGrantor()
-  {
+  protected boolean isCurrentlyLockGrantor() {
     return false;
   }
 
   /**
-   * Handle a local region destroy or a region close that was done on this
-   * region in a remote vm. Currently the only thing needed is to have the
-   * advisor
+   * Handle a local region destroy or a region close that was done on this region in a remote vm.
+   * Currently the only thing needed is to have the advisor
    *
    * @param sender the id of the member that did the remote operation
    * @param topSerial the remote serialNumber for the top region (maybe root)
    * @param subregionSerialNumbers map of remote subregions to serialNumbers
-   * @param regionDestroyed true if the region was destroyed on the remote host (as opposed to closed)
+   * @param regionDestroyed true if the region was destroyed on the remote host (as opposed to
+   *        closed)
    * @since GemFire 5.0
    */
-  final void handleRemoteLocalRegionDestroyOrClose(
-      InternalDistributedMember sender,
-      int topSerial,
+  final void handleRemoteLocalRegionDestroyOrClose(InternalDistributedMember sender, int topSerial,
       Map subregionSerialNumbers, boolean regionDestroyed) {
 
     final int oldLevel = setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
@@ -10833,10 +10483,9 @@ public class LocalRegion extends AbstractRegion
     // initialization
     // latches
     try {
-      basicHandleRemoteLocalRegionDestroyOrClose(
-            sender, topSerial, subregionSerialNumbers, false, regionDestroyed);
-    }
-    finally {
+      basicHandleRemoteLocalRegionDestroyOrClose(sender, topSerial, subregionSerialNumbers, false,
+          regionDestroyed);
+    } finally {
       setThreadInitLevelRequirement(oldLevel);
     }
   }
@@ -10847,14 +10496,11 @@ public class LocalRegion extends AbstractRegion
    * @param sender the id of the member that did the remote operation
    * @param topSerial the remote serialNumber for the top region (maybe root)
    * @param subregionSerialNumbers remote map of subregions to serialNumbers
-   * @param regionDestroyed 
+   * @param regionDestroyed
    * @since GemFire 5.0
    */
-  private final void basicHandleRemoteLocalRegionDestroyOrClose(
-      InternalDistributedMember sender,
-      int topSerial,
-      Map subregionSerialNumbers,
-      boolean subregion, boolean regionDestroyed) {
+  private final void basicHandleRemoteLocalRegionDestroyOrClose(InternalDistributedMember sender,
+      int topSerial, Map subregionSerialNumbers, boolean subregion, boolean regionDestroyed) {
 
     // use topSerial unless this region is in subregionSerialNumbers map
     int serialForThisRegion = topSerial;
@@ -10865,8 +10511,7 @@ public class LocalRegion extends AbstractRegion
       if (serialNumber == null) {
         // sender didn't have this subregion
         return;
-      }
-      else {
+      } else {
         // non-null means this is a subregion under the destroyed region
         serialForThisRegion = serialNumber.intValue();
       }
@@ -10880,55 +10525,55 @@ public class LocalRegion extends AbstractRegion
       LocalRegion r = toRegion(itr.next());
       if (r != null && !r.isDestroyed()) {
         // recursively call basicHandleRemoteLocalRegionDestroyOrClose for subregions
-        r.basicHandleRemoteLocalRegionDestroyOrClose(
-            sender, topSerial, subregionSerialNumbers, true, regionDestroyed);
+        r.basicHandleRemoteLocalRegionDestroyOrClose(sender, topSerial, subregionSerialNumbers,
+            true, regionDestroyed);
       }
     }
   }
-  
+
   /**
    * Remove the specified sender from this regions advisor.
-   * @param regionDestroyed 
+   * 
+   * @param regionDestroyed
    *
    * @since GemFire 5.0
    */
-  protected void removeSenderFromAdvisor(InternalDistributedMember sender, int serial, boolean regionDestroyed)
-  {
+  protected void removeSenderFromAdvisor(InternalDistributedMember sender, int serial,
+      boolean regionDestroyed) {
     // nothing needs to be done here since LocalRegion does not have an advisor.
   }
 
   /**
    * @return Returns the isUsedForPartitionedRegionAdmin.
    */
-  final public boolean isUsedForPartitionedRegionAdmin()
-  {
+  final public boolean isUsedForPartitionedRegionAdmin() {
     return this.isUsedForPartitionedRegionAdmin;
   }
 
   /**
-   * This method determines whether this region should synchronize with peer replicated regions
-   * when the given member has crashed.
+   * This method determines whether this region should synchronize with peer replicated regions when
+   * the given member has crashed.
+   * 
    * @param id the crashed member
    * @return true if synchronization should be attempted
    */
   public boolean shouldSyncForCrashedMember(InternalDistributedMember id) {
-    return this.concurrencyChecksEnabled
-        && this.dataPolicy.withReplication()
-        && !this.isUsedForPartitionedRegionAdmin
-        && !this.isUsedForMetaRegion
+    return this.concurrencyChecksEnabled && this.dataPolicy.withReplication()
+        && !this.isUsedForPartitionedRegionAdmin && !this.isUsedForMetaRegion
         && !this.isUsedForSerialGatewaySenderQueue;
   }
 
- /**
+  /**
    * forces the diskRegion to switch the oplog
+   * 
    * @since GemFire 5.1
    */
   public void forceRolling() throws DiskAccessException {
-    if(this.diskRegion!=null){
+    if (this.diskRegion != null) {
       diskRegion.forceRolling();
     }
   }
-  
+
   /**
    * @deprecated as of prPersistSprint1 use forceCompaction instead
    */
@@ -10938,31 +10583,29 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * filterProfile holds CQ and registerInterest information for clients
-   * having this region
+   * filterProfile holds CQ and registerInterest information for clients having this region
    */
   FilterProfile filterProfile;
 
   /**
    * 
-   * @return int array containing the IDs of the oplogs which will potentially
-   * get rolled else null if no oplogs were available at the time of signal or region
-   * is not having disk persistence. Pls note that the actual number of oplogs 
-   * rolled may be more than what is indicated
+   * @return int array containing the IDs of the oplogs which will potentially get rolled else null
+   *         if no oplogs were available at the time of signal or region is not having disk
+   *         persistence. Pls note that the actual number of oplogs rolled may be more than what is
+   *         indicated
    * @since GemFire prPersistSprint1
    */
   @Override
-  public boolean forceCompaction()
-  {
+  public boolean forceCompaction() {
     DiskRegion dr = getDiskRegion();
     if (dr != null) {
       if (dr.isCompactionPossible()) {
         return dr.forceCompaction();
       } else {
-        throw new IllegalStateException("To call notifyToCompact you must configure the region with <disk-write-attributes allow-force-compaction=true/>");
+        throw new IllegalStateException(
+            "To call notifyToCompact you must configure the region with <disk-write-attributes allow-force-compaction=true/>");
       }
-    }
-    else {
+    } else {
       return false;
     }
   }
@@ -10988,20 +10631,19 @@ public class LocalRegion extends AbstractRegion
   /**
    * @return Returns the isUsedForPartitionedRegionBucket.
    */
-  public boolean isUsedForPartitionedRegionBucket()
-  {
+  public boolean isUsedForPartitionedRegionBucket() {
     return this.isUsedForPartitionedRegionBucket;
   }
-  
+
   public boolean isUsedForSerialGatewaySenderQueue() {
     return this.isUsedForSerialGatewaySenderQueue;
   }
-  
+
   public boolean isUsedForParallelGatewaySenderQueue() {
     return this.isUsedForParallelGatewaySenderQueue;
   }
-  
-  public AbstractGatewaySender getSerialGatewaySender(){
+
+  public AbstractGatewaySender getSerialGatewaySender() {
     return this.serialGatewaySender;
   }
 
@@ -11012,44 +10654,43 @@ public class LocalRegion extends AbstractRegion
     }
     Set<GatewaySender> cacheGatewaySenders = getCache().getAllGatewaySenders();
     for (GatewaySender sender : cacheGatewaySenders) {
-      if (regionGatewaySenderIds.contains(sender.getId())
-          && sender.isParallel()) {
+      if (regionGatewaySenderIds.contains(sender.getId()) && sender.isParallel()) {
         return true;
       }
     }
     return false;
   }
-  
+
   /**
    * A convenience method to get the PartitionedRegion for a Bucket
-   * @return If this is an instance of {@link BucketRegion}, returns the
-   * {@link PartitionedRegion} otherwise throws an IllegalArgumentException
+   * 
+   * @return If this is an instance of {@link BucketRegion}, returns the {@link PartitionedRegion}
+   *         otherwise throws an IllegalArgumentException
    */
   public PartitionedRegion getPartitionedRegion() {
     if (!this.isUsedForPartitionedRegionBucket) {
       throw new IllegalArgumentException();
     }
-    return ((BucketRegion)this).getPartitionedRegion();
+    return ((BucketRegion) this).getPartitionedRegion();
   }
+
   /**
    * @return Returns the isUsedForMetaRegion.
    */
-  final public boolean isUsedForMetaRegion()
-  {
+  final public boolean isUsedForMetaRegion() {
     return this.isUsedForMetaRegion;
   }
-  
-  final public boolean isMetaRegionWithTransactions()
-  {
+
+  final public boolean isMetaRegionWithTransactions() {
     return this.isMetaRegionWithTransactions;
   }
-  
+
   /**
    * @return true if this is not a user visible region
    */
-  final public boolean isInternalRegion(){
+  final public boolean isInternalRegion() {
     return isSecret() || isUsedForMetaRegion() || isUsedForPartitionedRegionAdmin()
-           || isUsedForPartitionedRegionBucket();
+        || isUsedForPartitionedRegionBucket();
   }
 
   public CacheServiceProfile getCacheServiceProfile(String id) {
@@ -11057,60 +10698,58 @@ public class LocalRegion extends AbstractRegion
   }
 
   public LoaderHelper createLoaderHelper(Object key, Object callbackArgument,
-      boolean netSearchAllowed, boolean netLoadAllowed,
-      SearchLoadAndWriteProcessor searcher)
-  {
-    return new LoaderHelperImpl(this, key, callbackArgument, netSearchAllowed,
-        netLoadAllowed, searcher);
+      boolean netSearchAllowed, boolean netLoadAllowed, SearchLoadAndWriteProcessor searcher) {
+    return new LoaderHelperImpl(this, key, callbackArgument, netSearchAllowed, netLoadAllowed,
+        searcher);
   }
 
   /** visitor over the CacheProfiles to check if the region has a CacheLoader */
-  private static final DistributionAdvisor.ProfileVisitor<Void> netLoaderVisitor
-      = new DistributionAdvisor.ProfileVisitor<Void>() {
-    public boolean visit(DistributionAdvisor advisor, Profile profile,
-        int profileIndex, int numProfiles, Void aggregate) {
-      assert profile instanceof CacheProfile;
-      final CacheProfile prof = (CacheProfile)profile;
+  private static final DistributionAdvisor.ProfileVisitor<Void> netLoaderVisitor =
+      new DistributionAdvisor.ProfileVisitor<Void>() {
+        public boolean visit(DistributionAdvisor advisor, Profile profile, int profileIndex,
+            int numProfiles, Void aggregate) {
+          assert profile instanceof CacheProfile;
+          final CacheProfile prof = (CacheProfile) profile;
 
-      // if region in cache is not yet initialized, exclude
-      if (prof.regionInitialized) { // fix for bug 41102
-        // cut the visit short if we find a CacheLoader
-        return !prof.hasCacheLoader;
-      }
-      // continue the visit
-      return true;
-    }
-  };
+          // if region in cache is not yet initialized, exclude
+          if (prof.regionInitialized) { // fix for bug 41102
+            // cut the visit short if we find a CacheLoader
+            return !prof.hasCacheLoader;
+          }
+          // continue the visit
+          return true;
+        }
+      };
 
   /** visitor over the CacheProfiles to check if the region has a CacheWriter */
-  private static final DistributionAdvisor.ProfileVisitor<Void> netWriterVisitor
-      = new DistributionAdvisor.ProfileVisitor<Void>() {
-    public boolean visit(DistributionAdvisor advisor, Profile profile,
-        int profileIndex, int numProfiles, Void aggregate) {
-      assert profile instanceof CacheProfile;
-      final CacheProfile prof = (CacheProfile)profile;
+  private static final DistributionAdvisor.ProfileVisitor<Void> netWriterVisitor =
+      new DistributionAdvisor.ProfileVisitor<Void>() {
+        public boolean visit(DistributionAdvisor advisor, Profile profile, int profileIndex,
+            int numProfiles, Void aggregate) {
+          assert profile instanceof CacheProfile;
+          final CacheProfile prof = (CacheProfile) profile;
 
-      // if region in cache is in recovery
-      if (!prof.inRecovery) {
-        // cut the visit short if we find a CacheWriter
-        return !prof.hasCacheWriter;
-      }
-      // continue the visit
-      return true;
-    }
-  };
+          // if region in cache is in recovery
+          if (!prof.inRecovery) {
+            // cut the visit short if we find a CacheWriter
+            return !prof.hasCacheWriter;
+          }
+          // continue the visit
+          return true;
+        }
+      };
 
   /**
-   * Return true if some other member of the distributed system, not including
-   * self, has a CacheLoader defined on the region.
+   * Return true if some other member of the distributed system, not including self, has a
+   * CacheLoader defined on the region.
    */
   public final boolean hasNetLoader(CacheDistributionAdvisor distAdvisor) {
     return !distAdvisor.accept(netLoaderVisitor, null);
   }
 
   /**
-   * Return true if some other member of the distributed system, not including
-   * self, has a CacheWriter defined on the region.
+   * Return true if some other member of the distributed system, not including self, has a
+   * CacheWriter defined on the region.
    */
   public final boolean hasNetWriter(CacheDistributionAdvisor distAdvisor) {
     return !distAdvisor.accept(netWriterVisitor, null);
@@ -11119,11 +10758,10 @@ public class LocalRegion extends AbstractRegion
   /**
    * Used to indicate that this region is used for internal purposes
    */
-  protected boolean isSecret()
-  {
+  protected boolean isSecret() {
     return false;
   }
-  
+
   /**
    * whether concurrency checks should be disabled for this region
    */
@@ -11132,36 +10770,31 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Used to prevent notification of bridge clients, typically used for internal
-   * "meta" regions and if the cache doesn't have any bridge servers
+   * Used to prevent notification of bridge clients, typically used for internal "meta" regions and
+   * if the cache doesn't have any bridge servers
    *
    * @return true only if it's cache has bridge servers and this is nt a meta region
    */
-  protected boolean shouldNotifyBridgeClients()
-  {
-    return (this.cache.getCacheServers().size() > 0)
-        && !this.isUsedForPartitionedRegionAdmin
-        && !this.isUsedForPartitionedRegionBucket
-        && !this.isUsedForMetaRegion;
+  protected boolean shouldNotifyBridgeClients() {
+    return (this.cache.getCacheServers().size() > 0) && !this.isUsedForPartitionedRegionAdmin
+        && !this.isUsedForPartitionedRegionBucket && !this.isUsedForMetaRegion;
   }
-  
+
   protected boolean shouldNotifyGatewaySender() {
     return (this.cache.getAllGatewaySenders().size() > 0);
   }
-  
+
   /**
    * Check if the region has has a Listener or not
    *
    * @return true only if this region has a Listener
    */
-  protected boolean shouldDispatchListenerEvent()
-  {
+  protected boolean shouldDispatchListenerEvent() {
     return hasListener();
   }
 
   /**
-   * Internal method to return cache as GemFireCache to avoid unnecessary
-   * typecasting.
+   * Internal method to return cache as GemFireCache to avoid unnecessary typecasting.
    * 
    * @return this region's GemFireCache instance
    */
@@ -11172,43 +10805,44 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Called by ccn when a client goes away
+   * 
    * @since GemFire 5.7
    */
-  void cleanupForClient(CacheClientNotifier ccn,
-                        ClientProxyMembershipID client) {
-    if (this.cache.isClosed()) return;
-    if (this.isDestroyed) return;
-    
+  void cleanupForClient(CacheClientNotifier ccn, ClientProxyMembershipID client) {
+    if (this.cache.isClosed())
+      return;
+    if (this.isDestroyed)
+      return;
+
     this.filterProfile.cleanupForClient(ccn, client);
-    
+
     Iterator it = (new SubregionsSet(false)).iterator();
     while (it.hasNext()) {
-      LocalRegion lr = (LocalRegion)it.next();
+      LocalRegion lr = (LocalRegion) it.next();
       lr.cleanupForClient(ccn, client);
     }
   }
-  
+
   /**
    * Returns the CQ/interest profile for this region
    */
   public FilterProfile getFilterProfile() {
     return this.filterProfile;
   }
-  
+
   /**
-   * Destroys the CQ/interest profile for this region.  Use this if your
-   * region does not support client interest (e.g., WAN gateway queue)
+   * Destroys the CQ/interest profile for this region. Use this if your region does not support
+   * client interest (e.g., WAN gateway queue)
    */
   public void destroyFilterProfile() {
     this.filterProfile = null;
   }
-  
+
   /**
-   * Returns a map of subregions that were destroyed when this region was
-   * destroyed. Map contains subregion full paths to SerialNumbers. Return is
-   * defined as HashMap because DestroyRegionOperation will provide the map to
-   * DataSerializer.writeHashMap which requires HashMap. Returns
-   * {@link #destroyedSubregionSerialNumbers}.
+   * Returns a map of subregions that were destroyed when this region was destroyed. Map contains
+   * subregion full paths to SerialNumbers. Return is defined as HashMap because
+   * DestroyRegionOperation will provide the map to DataSerializer.writeHashMap which requires
+   * HashMap. Returns {@link #destroyedSubregionSerialNumbers}.
    *
    * @return HashMap of subregions to SerialNumbers
    * @throws IllegalStateException if this region has not been destroyed
@@ -11216,16 +10850,15 @@ public class LocalRegion extends AbstractRegion
   protected HashMap getDestroyedSubregionSerialNumbers() {
     if (!this.isDestroyed) {
       throw new IllegalStateException(
-       LocalizedStrings.LocalRegion_REGION_0_MUST_BE_DESTROYED_BEFORE_CALLING_GETDESTROYEDSUBREGIONSERIALNUMBERS
-         .toLocalizedString(getFullPath()));
+          LocalizedStrings.LocalRegion_REGION_0_MUST_BE_DESTROYED_BEFORE_CALLING_GETDESTROYEDSUBREGIONSERIALNUMBERS
+              .toLocalizedString(getFullPath()));
     }
     return this.destroyedSubregionSerialNumbers;
   }
 
   /**
-   * Returns a map of subregion full paths to SerialNumbers. Caller must have
-   * acquired the destroyLock if a stable view is desired. Key is String, value
-   * is Integer.
+   * Returns a map of subregion full paths to SerialNumbers. Caller must have acquired the
+   * destroyLock if a stable view is desired. Key is String, value is Integer.
    *
    * @return HashMap of subregions to SerialNumbers
    */
@@ -11236,29 +10869,25 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Iterates over all subregions to put the full path and serial number into
-   * the provided map.
+   * Iterates over all subregions to put the full path and serial number into the provided map.
    *
-   * @param map the map to put the full path and serial number into for each
-   * subregion
+   * @param map the map to put the full path and serial number into for each subregion
    */
   private void addSubregionSerialNumbers(Map map) {
     // iterate over all subregions to gather serialNumbers and recurse
     for (Iterator iter = this.subregions.entrySet().iterator(); iter.hasNext();) {
-      Map.Entry entry = (Map.Entry)iter.next();
+      Map.Entry entry = (Map.Entry) iter.next();
       LocalRegion subregion = (LocalRegion) entry.getValue();
-      map.put(subregion.getFullPath(),
-              Integer.valueOf(subregion.getSerialNumber()));
+      map.put(subregion.getFullPath(), Integer.valueOf(subregion.getSerialNumber()));
 
       // recursively call down into each subregion tree
       subregion.addSubregionSerialNumbers(map);
     }
   }
 
-  
+
   public SelectResults query(String p_predicate) throws FunctionDomainException,
-      TypeMismatchException, NameResolutionException,
-      QueryInvocationTargetException {
+      TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     String predicate = p_predicate;
     if (predicate == null) {
       throw new IllegalArgumentException(
@@ -11270,93 +10899,107 @@ public class LocalRegion extends AbstractRegion
       String queryString = null;
 
       // Trim whitespace
-      predicate = predicate.trim();
+      queryString = constructRegionQueryString(predicate.trim());
 
-      // Compare the query patterns to the 'predicate'. If one matches,
-      // send it as is to the server
-      boolean matches = false;
-      for (int i=0; i<QUERY_PATTERNS.length; i++) {
-        if (QUERY_PATTERNS[i].matcher(predicate).matches()) {
-          matches = true;
-          break;
-        }
-      }
-      if (matches) {
-        queryString = predicate;
-      }
-      else {
-        queryString = "select * from " + getFullPath() + " this where " + predicate;
-      }
       try {
         results = getServerProxy().query(queryString, null);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         Throwable cause = e.getCause();
         if (cause == null) {
           cause = e;
         }
         throw new QueryInvocationTargetException(e.getMessage(), cause);
       }
-    }
-    else {
+    } else {
+      Object[] params = new Object[0];
       QueryService qs = getGemFireCache().getLocalQueryService();
-      String queryStr = "select * from " + getFullPath() + " this where " + predicate;
-      DefaultQuery query = (DefaultQuery)qs.newQuery(queryStr);
-      results = (SelectResults)query.execute(new Object[0]);
+      String queryStr = constructRegionQueryString(predicate.trim());
+      DefaultQuery query = (DefaultQuery) qs.newQuery(queryStr);
+      if (query.getRegionsInQuery(params).size() != 1) {
+        throw new QueryInvalidException(
+            "Prevent multiple region query from being executed through region.query()");
+      }
+      results = (SelectResults) query.execute(params);
     }
     return results;
   }
 
+  private String constructRegionQueryString(final String predicate) throws QueryInvalidException {
+    final String queryString;// Compare the query patterns to the 'predicate'. If one matches,
+    // send it as is to the server
+    boolean matches = false;
+    for (int i = 0; i < QUERY_PATTERNS.length; i++) {
+      if (QUERY_PATTERNS[i].matcher(predicate).matches()) {
+        if (!predicate.contains(getName())) {
+          throw new QueryInvalidException(
+              "Should not execute region.query with a different region in the from clause: "
+                  + getName() + " was not present in:" + predicate);
+        }
+        matches = true;
+        break;
+      }
+    }
+    if (matches) {
+      queryString = predicate;
+    } else {
+      queryString = "select * from " + getFullPath() + " this where " + predicate;
+    }
+    return queryString;
+  }
+
   /**
-   * Called from the RegionMap when the {@link RegionEntry} is synchronized
-   * and it is safe to make decisions about Entry state
+   * Called from the RegionMap when the {@link RegionEntry} is synchronized and it is safe to make
+   * decisions about Entry state
+   * 
    * @param txEvent the pending transaction event to be applied
    */
-  protected void checkBeforeEntrySync(TXRmtEvent txEvent) {
-  }
-  
-  
+  protected void checkBeforeEntrySync(TXRmtEvent txEvent) {}
+
+
   /**
-   * Execute the provided named function in all locations that contain the given
-   * keys. So function can be executed on just one fabric node, executed in
-   * parallel on a subset of nodes in parallel across all the nodes.
+   * Execute the provided named function in all locations that contain the given keys. So function
+   * can be executed on just one fabric node, executed in parallel on a subset of nodes in parallel
+   * across all the nodes.
    * 
    * @param function
    * @param args
    * @param filter
    * @since GemFire 5.8Beta
    */
-  public ResultCollector executeFunction(final DistributedRegionFunctionExecutor execution, final Function function, final Object args,
-      final ResultCollector rc,final Set filter, final ServerToClientFunctionResultSender sender) {   
+  public ResultCollector executeFunction(final DistributedRegionFunctionExecutor execution,
+      final Function function, final Object args, final ResultCollector rc, final Set filter,
+      final ServerToClientFunctionResultSender sender) {
 
-    if (function.optimizeForWrite() && memoryThresholdReached.get() &&
-        !MemoryThresholds.isLowMemoryExceptionDisabled()) {
+    if (function.optimizeForWrite() && memoryThresholdReached.get()
+        && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
       Set<DistributedMember> htrm = getMemoryThresholdReachedMembers();
-      throw new LowMemoryException(LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1.toLocalizedString(
-          new Object[] {function.getId(), htrm}), htrm);
+      throw new LowMemoryException(
+          LocalizedStrings.ResourceManager_LOW_MEMORY_FOR_0_FUNCEXEC_MEMBERS_1
+              .toLocalizedString(new Object[] {function.getId(), htrm}),
+          htrm);
     }
-    final LocalResultCollector<?, ?> localRC = execution
-        .getLocalResultCollector(function, rc);
+    final LocalResultCollector<?, ?> localRC = execution.getLocalResultCollector(function, rc);
     final DM dm = getDistributionManager();
     execution.setExecutionNodes(Collections.singleton(getMyId()));
 
-    final DistributedRegionFunctionResultSender resultSender = new DistributedRegionFunctionResultSender(
-        dm, localRC, function, sender);
-    final RegionFunctionContextImpl context = new RegionFunctionContextImpl(
-        function.getId(), LocalRegion.this, args, filter, null, null,
-        resultSender, execution.isReExecute());
+    final DistributedRegionFunctionResultSender resultSender =
+        new DistributedRegionFunctionResultSender(dm, localRC, function, sender);
+    final RegionFunctionContextImpl context = new RegionFunctionContextImpl(function.getId(),
+        LocalRegion.this, args, filter, null, null, resultSender, execution.isReExecute());
     execution.executeFunctionOnLocalNode(function, context, resultSender, dm, isTX());
     return localRC;
   }
-  
+
   /**
    * @return the set of members which are known to be critical
    */
   public Set<DistributedMember> getMemoryThresholdReachedMembers() {
-    return Collections.<DistributedMember> singleton(this.cache.getMyId());
+    return Collections.<DistributedMember>singleton(this.cache.getMyId());
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.cache.control.ResourceListener#onEvent(java.lang.Object)
    */
   public final void onEvent(MemoryEvent event) {
@@ -11369,34 +11012,37 @@ public class LocalRegion extends AbstractRegion
   protected void setMemoryThresholdFlag(MemoryEvent event) {
     assert getScope().isLocal();
     if (event.isLocal()) {
-      if (event.getState().isCritical()
-          && !event.getPreviousState().isCritical()
-          && (event.getType() == ResourceType.HEAP_MEMORY || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
+      if (event.getState().isCritical() && !event.getPreviousState().isCritical()
+          && (event.getType() == ResourceType.HEAP_MEMORY
+              || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
         // start rejecting operations
         memoryThresholdReached.set(true);
-      } else if (!event.getState().isCritical()
-          && event.getPreviousState().isCritical()
-          && (event.getType() == ResourceType.HEAP_MEMORY || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
+      } else if (!event.getState().isCritical() && event.getPreviousState().isCritical()
+          && (event.getType() == ResourceType.HEAP_MEMORY
+              || (event.getType() == ResourceType.OFFHEAP_MEMORY && getOffHeap()))) {
         memoryThresholdReached.set(false);
       }
     }
   }
+
   void updateSizeOnClearRegion(int sizeBeforeClear) {
     // Only needed by BucketRegion
   }
 
   /**
-   * Calculate and return the size of a value for updating the bucket size.
-   * Zero is always returned for non-bucket regions.
+   * Calculate and return the size of a value for updating the bucket size. Zero is always returned
+   * for non-bucket regions.
    */
   public int calculateValueSize(Object val) {
     // Only needed by BucketRegion
     return 0;
   }
+
   public int calculateRegionEntryValueSize(RegionEntry re) {
     // Only needed by BucketRegion
     return 0;
   }
+
   void updateSizeOnPut(Object key, int oldSize, int newSize) {
     // Only needed by BucketRegion
   }
@@ -11413,32 +11059,35 @@ public class LocalRegion extends AbstractRegion
     // Only needed by BucketRegion
     return 0;
   }
+
   public void updateSizeOnFaultIn(Object key, int newSize, int bytesOnDisk) {
     // Only needed by BucketRegion
   }
 
   public void initializeStats(long numEntriesInVM, long numOverflowOnDisk,
       long numOverflowBytesOnDisk) {
-    getDiskRegion().getStats().incNumEntriesInVM(numEntriesInVM); 
+    getDiskRegion().getStats().incNumEntriesInVM(numEntriesInVM);
     getDiskRegion().getStats().incNumOverflowOnDisk(numOverflowOnDisk);
   }
 
   /**
-   * This method is meant to be overriden by DistributedRegion
-   * and PartitionedRegions to cleanup CRITICAL state
+   * This method is meant to be overriden by DistributedRegion and PartitionedRegions to cleanup
+   * CRITICAL state
    */
   public void removeMemberFromCriticalList(DistributedMember member) {
-    Assert.assertTrue(false);   //should not be called for LocalRegion
+    Assert.assertTrue(false); // should not be called for LocalRegion
   }
 
   /**
-   * Initialize the set of remote members whose memory state is critical.  This is
-   * called when registering using {@link InternalResourceManager#addResourceListener(ResourceType, ResourceListener)}.
-   * It should only be called once and very early in this region's lifetime.
+   * Initialize the set of remote members whose memory state is critical. This is called when
+   * registering using
+   * {@link InternalResourceManager#addResourceListener(ResourceType, ResourceListener)}. It should
+   * only be called once and very early in this region's lifetime.
    *
    * @param localMemoryIsCritical true if the local memory is in a critical state
    * @param critialMembers set of members whose memory is in a critical state
-   * @see ResourceManager#setCriticalHeapPercentage(float) and ResourceManager#setCriticalOffHeapPercentage(float)
+   * @see ResourceManager#setCriticalHeapPercentage(float) and
+   *      ResourceManager#setCriticalOffHeapPercentage(float)
    * @since GemFire 6.0
    */
   public void initialCriticalMembers(boolean localMemoryIsCritical,
@@ -11448,17 +11097,19 @@ public class LocalRegion extends AbstractRegion
       memoryThresholdReached.set(true);
     }
   }
-  
+
   public void destroyRecoveredEntry(Object key) {
-    @Released EntryEventImpl event = EntryEventImpl.create(this,
-        Operation.LOCAL_DESTROY, key, null, null, false, getMyId(), false);
+    @Released
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.LOCAL_DESTROY, key, null, null,
+        false, getMyId(), false);
     try {
-    event.inhibitCacheListenerNotification(true);
-    mapDestroy(event, true, false, null, false, true);
+      event.inhibitCacheListenerNotification(true);
+      mapDestroy(event, true, false, null, false, true);
     } finally {
       event.release();
     }
   }
+
   public boolean lruLimitExceeded() {
     return this.entries.lruLimitExceeded();
   }
@@ -11469,12 +11120,13 @@ public class LocalRegion extends AbstractRegion
     if (re != null && re.isRemoved() && !re.isTombstone()) {
       re = null;
     }
-    return (DiskEntry)re;
+    return (DiskEntry) re;
   }
 
   /**
-   * Fetch the Region which stores the given key
-   * The resulting Region will be used for a read operation e.g. Region.get
+   * Fetch the Region which stores the given key The resulting Region will be used for a read
+   * operation e.g. Region.get
+   * 
    * @param entryKey key to evaluate to determine the returned region
    * @return region that stores the key
    */
@@ -11483,8 +11135,9 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Fetch the Region which stores the given key.
-   * The resulting Region will be used for a write operation e.g. Region.put
+   * Fetch the Region which stores the given key. The resulting Region will be used for a write
+   * operation e.g. Region.put
+   * 
    * @param entryKey key to evaluate to determine the returned region
    * @return region that stores the key
    */
@@ -11494,8 +11147,8 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * 
-   * @return a set of keys, intended for use by the various Region set operations
-   * such as {@link EntriesSet}
+   * @return a set of keys, intended for use by the various Region set operations such as
+   *         {@link EntriesSet}
    */
   Set getRegionKeysForIteration() {
     return getRegionMap().keySet();
@@ -11507,9 +11160,10 @@ public class LocalRegion extends AbstractRegion
 
   /**
    * Used to bootstrap txState.
+   * 
    * @param key
-   * @return localMember for local and distributedRegions,
-   * member with parimary bucket for partitionedRegions
+   * @return localMember for local and distributedRegions, member with parimary bucket for
+   *         partitionedRegions
    */
   public DistributedMember getOwnerForKey(KeyInfo key) {
     return getMyId();
@@ -11526,7 +11180,7 @@ public class LocalRegion extends AbstractRegion
   public KeyInfo getKeyInfo(Object key, Object callbackArg) {
     return getKeyInfo(key, null, callbackArg);
   }
-  
+
   public KeyInfo getKeyInfo(Object key, Object value, Object callbackArg) {
     return new KeyInfo(key, null, callbackArg);
   }
@@ -11537,63 +11191,65 @@ public class LocalRegion extends AbstractRegion
   protected RegionEntry basicGetTXEntry(KeyInfo keyInfo) {
     return basicGetEntry(keyInfo.getKey());
   }
-  
-  void senderCreated()
-  {
+
+  void senderCreated() {
     distributeUpdatedProfileOnSenderCreation();
   }
-  
-  void distributeUpdatedProfileOnSenderCreation()
-  {
+
+  void distributeUpdatedProfileOnSenderCreation() {
     // No op
-  } 
-  
-  static class RegionPerfStats extends CachePerfStats{
+  }
+
+  static class RegionPerfStats extends CachePerfStats {
     CachePerfStats cachePerfStats;
-    
+
     public RegionPerfStats(GemFireCacheImpl cache, CachePerfStats superStats, String regionName) {
       super(cache.getDistributedSystem(), regionName);
       this.cachePerfStats = superStats;
     }
-    
-     @Override
+
+    @Override
     public void incReliableQueuedOps(int inc) {
-       stats.incInt(reliableQueuedOpsId, inc);
-       this.cachePerfStats.incReliableQueuedOps(inc);
-     }
-     
-     @Override
+      stats.incInt(reliableQueuedOpsId, inc);
+      this.cachePerfStats.incReliableQueuedOps(inc);
+    }
+
+    @Override
     public void incReliableQueueSize(int inc) {
-       stats.incInt(reliableQueueSizeId, inc);
-       this.cachePerfStats.incReliableQueueSize(inc);
-     }
-     @Override
+      stats.incInt(reliableQueueSizeId, inc);
+      this.cachePerfStats.incReliableQueueSize(inc);
+    }
+
+    @Override
     public void incReliableQueueMax(int inc) {
-       stats.incInt(reliableQueueMaxId, inc);
-       this.cachePerfStats.incReliableQueueMax(inc);
-     }
-     @Override
+      stats.incInt(reliableQueueMaxId, inc);
+      this.cachePerfStats.incReliableQueueMax(inc);
+    }
+
+    @Override
     public void incReliableRegions(int inc) {
-       stats.incInt(reliableRegionsId, inc);
-       this.cachePerfStats.incReliableRegions(inc);
-     }
-     @Override
+      stats.incInt(reliableRegionsId, inc);
+      this.cachePerfStats.incReliableRegions(inc);
+    }
+
+    @Override
     public void incReliableRegionsMissing(int inc) {
-       stats.incInt(reliableRegionsMissingId, inc);
-       this.cachePerfStats.incReliableRegionsMissing(inc);
-     }
-     @Override
+      stats.incInt(reliableRegionsMissingId, inc);
+      this.cachePerfStats.incReliableRegionsMissing(inc);
+    }
+
+    @Override
     public void incReliableRegionsQueuing(int inc) {
-       stats.incInt(reliableRegionsQueuingId, inc);
-       this.cachePerfStats.incReliableRegionsQueuing(inc);
-     }
+      stats.incInt(reliableRegionsQueuingId, inc);
+      this.cachePerfStats.incReliableRegionsQueuing(inc);
+    }
 
     @Override
     public void incReliableRegionsMissingFullAccess(int inc) {
       stats.incInt(reliableRegionsMissingFullAccessId, inc);
       this.cachePerfStats.incReliableRegionsMissingFullAccess(inc);
     }
-     
+
     @Override
     public void incReliableRegionsMissingLimitedAccess(int inc) {
       stats.incInt(reliableRegionsMissingLimitedAccessId, inc);
@@ -11619,22 +11275,23 @@ public class LocalRegion extends AbstractRegion
     public long startLoad() {
       stats.incInt(loadsInProgressId, 1);
       return this.cachePerfStats.startLoad();
-      //return NanoTimer.getTime(); // don't use getStatTime so always enabled
-    } 
+      // return NanoTimer.getTime(); // don't use getStatTime so always enabled
+    }
+
     /**
-     * @param start the timestamp taken when the operation started 
+     * @param start the timestamp taken when the operation started
      */
     @Override
     public void endLoad(long start) {
       // note that load times are used in health checks and
       // should not be disabled by enableClockStats==false
       long ts = NanoTimer.getTime(); // don't use getStatTime so always enabled
-      stats.incLong(loadTimeId, ts-start);
+      stats.incLong(loadTimeId, ts - start);
       stats.incInt(loadsInProgressId, -1);
       stats.incInt(loadsCompletedId, 1);
-      this.cachePerfStats.endLoad(start); //need to think about timings
+      this.cachePerfStats.endLoad(start); // need to think about timings
     }
-    
+
     /**
      * @return the timestamp that marks the start of the operation
      */
@@ -11643,14 +11300,15 @@ public class LocalRegion extends AbstractRegion
       stats.incInt(netloadsInProgressId, 1);
       this.cachePerfStats.startNetload();
       return getStatTime();
-    } 
+    }
+
     /**
-     * @param start the timestamp taken when the operation started 
+     * @param start the timestamp taken when the operation started
      */
     @Override
     public void endNetload(long start) {
       if (enableClockStats) {
-        stats.incLong(netloadTimeId, getStatTime()-start);
+        stats.incLong(netloadTimeId, getStatTime() - start);
       }
       stats.incInt(netloadsInProgressId, -1);
       stats.incInt(netloadsCompletedId, 1);
@@ -11664,22 +11322,23 @@ public class LocalRegion extends AbstractRegion
     public long startNetsearch() {
       stats.incInt(netsearchesInProgressId, 1);
       return this.cachePerfStats.startNetsearch();
-      //return NanoTimer.getTime(); // don't use getStatTime so always enabled
+      // return NanoTimer.getTime(); // don't use getStatTime so always enabled
     }
+
     /**
-     * @param start the timestamp taken when the operation started 
+     * @param start the timestamp taken when the operation started
      */
     @Override
     public void endNetsearch(long start) {
       // note that netsearch is used in health checks and timings should
       // not be disabled by enableClockStats==false
       long ts = NanoTimer.getTime(); // don't use getStatTime so always enabled
-      stats.incLong(netsearchTimeId, ts-start);
+      stats.incLong(netsearchTimeId, ts - start);
       stats.incInt(netsearchesInProgressId, -1);
       stats.incInt(netsearchesCompletedId, 1);
       this.cachePerfStats.endNetsearch(start);
     }
-    
+
     /**
      * @return the timestamp that marks the start of the operation
      */
@@ -11689,19 +11348,20 @@ public class LocalRegion extends AbstractRegion
       this.cachePerfStats.startCacheWriterCall();
       return getStatTime();
     }
+
     /**
-     * @param start the timestamp taken when the operation started 
+     * @param start the timestamp taken when the operation started
      */
     @Override
     public void endCacheWriterCall(long start) {
       if (enableClockStats) {
-        stats.incLong(cacheWriterCallTimeId, getStatTime()-start);
+        stats.incLong(cacheWriterCallTimeId, getStatTime() - start);
       }
       stats.incInt(cacheWriterCallsInProgressId, -1);
       stats.incInt(cacheWriterCallsCompletedId, 1);
       this.cachePerfStats.endCacheWriterCall(start);
     }
-    
+
     /**
      * @return the timestamp that marks the start of the operation
      * @since GemFire 3.5
@@ -11712,20 +11372,21 @@ public class LocalRegion extends AbstractRegion
       this.cachePerfStats.startCacheListenerCall();
       return getStatTime();
     }
+
     /**
-     * @param start the timestamp taken when the operation started 
+     * @param start the timestamp taken when the operation started
      * @since GemFire 3.5
      */
     @Override
     public void endCacheListenerCall(long start) {
       if (enableClockStats) {
-        stats.incLong(cacheListenerCallTimeId, getStatTime()-start);
+        stats.incLong(cacheListenerCallTimeId, getStatTime() - start);
       }
       stats.incInt(cacheListenerCallsInProgressId, -1);
       stats.incInt(cacheListenerCallsCompletedId, 1);
       this.cachePerfStats.endCacheListenerCall(start);
     }
-    
+
     /**
      * @return the timestamp that marks the start of the operation
      */
@@ -11735,26 +11396,27 @@ public class LocalRegion extends AbstractRegion
       this.cachePerfStats.startGetInitialImage();
       return getStatTime();
     }
+
     /**
-     * @param start the timestamp taken when the operation started 
+     * @param start the timestamp taken when the operation started
      */
     @Override
     public void endGetInitialImage(long start) {
       if (enableClockStats) {
-        stats.incLong(getInitialImageTimeId, getStatTime()-start);
+        stats.incLong(getInitialImageTimeId, getStatTime() - start);
       }
       stats.incInt(getInitialImagesInProgressId, -1);
       stats.incInt(getInitialImagesCompletedId, 1);
       this.cachePerfStats.endGetInitialImage(start);
     }
-    
+
     /**
-     * @param start the timestamp taken when the operation started 
+     * @param start the timestamp taken when the operation started
      */
     @Override
     public void endNoGIIDone(long start) {
       if (enableClockStats) {
-        stats.incLong(getInitialImageTimeId, getStatTime()-start);
+        stats.incLong(getInitialImageTimeId, getStatTime() - start);
       }
       stats.incInt(getInitialImagesInProgressId, -1);
       this.cachePerfStats.endNoGIIDone(start);
@@ -11765,17 +11427,18 @@ public class LocalRegion extends AbstractRegion
       stats.incInt(getInitialImageKeysReceivedId, 1);
       this.cachePerfStats.incGetInitialImageKeysReceived();
     }
-    
+
     @Override
     public long startIndexUpdate() {
       stats.incInt(indexUpdateInProgressId, 1);
       this.cachePerfStats.startIndexUpdate();
       return getStatTime();
-    } 
+    }
+
     @Override
     public void endIndexUpdate(long start) {
       long ts = getStatTime();
-      stats.incLong(indexUpdateTimeId, ts-start);
+      stats.incLong(indexUpdateTimeId, ts - start);
       stats.incInt(indexUpdateInProgressId, -1);
       stats.incInt(indexUpdateCompletedId, 1);
       this.cachePerfStats.endIndexUpdate(start);
@@ -11785,56 +11448,64 @@ public class LocalRegion extends AbstractRegion
     public void incRegions(int inc) {
       stats.incInt(regionsId, inc);
       this.cachePerfStats.incRegions(inc);
-      
+
     }
+
     @Override
     public void incPartitionedRegions(int inc) {
       stats.incInt(partitionedRegionsId, inc);
       this.cachePerfStats.incPartitionedRegions(inc);
     }
+
     @Override
     public void incDestroys() {
       stats.incInt(destroysId, 1);
       this.cachePerfStats.incDestroys();
     }
+
     @Override
     public void incCreates() {
       stats.incInt(createsId, 1);
       this.cachePerfStats.incCreates();
     }
+
     @Override
     public void incInvalidates() {
       stats.incInt(invalidatesId, 1);
       this.cachePerfStats.incInvalidates();
     }
+
     @Override
     public void incTombstoneCount(int delta) {
       stats.incInt(tombstoneCountId, delta);
       this.cachePerfStats.incTombstoneCount(delta);
     }
+
     @Override
     public void incTombstoneGCCount() {
       this.stats.incInt(tombstoneGCCountId, 1);
       this.cachePerfStats.incTombstoneGCCount();
     }
+
     @Override
     public void incClearTimeouts() {
       this.stats.incInt(clearTimeoutsId, 1);
       this.cachePerfStats.incClearTimeouts();
     }
+
     @Override
     public void incConflatedEventsCount() {
       this.stats.incLong(conflatedEventsId, 1);
       this.cachePerfStats.incConflatedEventsCount();
     }
-    
+
     /**
-     * @param start the timestamp taken when the operation started 
+     * @param start the timestamp taken when the operation started
      */
     @Override
     public void endGet(long start, boolean miss) {
       if (enableClockStats) {
-        stats.incLong(getTimeId, getStatTime()-start);
+        stats.incLong(getTimeId, getStatTime() - start);
       }
       stats.incInt(getsId, 1);
       if (miss) {
@@ -11842,6 +11513,7 @@ public class LocalRegion extends AbstractRegion
       }
       this.cachePerfStats.endGet(start, miss);
     }
+
     /**
      * @param start the timestamp taken when the operation started
      * @param isUpdate true if the put was an update (origin remote)
@@ -11852,28 +11524,28 @@ public class LocalRegion extends AbstractRegion
       if (isUpdate) {
         stats.incInt(updatesId, 1);
         if (enableClockStats) {
-          total = getStatTime()-start;
+          total = getStatTime() - start;
           stats.incLong(updateTimeId, total);
         }
       } else {
         stats.incInt(putsId, 1);
         if (enableClockStats) {
-          total = getStatTime()-start;
+          total = getStatTime() - start;
           stats.incLong(putTimeId, total);
         }
       }
       this.cachePerfStats.endPut(start, isUpdate);
       return total;
     }
-    
+
     @Override
     public void endPutAll(long start) {
       stats.incInt(putallsId, 1);
       if (enableClockStats)
-        stats.incLong(putallTimeId, getStatTime()-start);
+        stats.incLong(putallTimeId, getStatTime() - start);
       this.cachePerfStats.endPutAll(start);
     }
-      
+
     @Override
     public void endQueryExecution(long executionTime) {
       stats.incInt(queryExecutionsId, 1);
@@ -11882,27 +11554,27 @@ public class LocalRegion extends AbstractRegion
       }
       this.cachePerfStats.endQueryExecution(executionTime);
     }
-    
+
     @Override
     public void endQueryResultsHashCollisionProbe(long start) {
       if (enableClockStats) {
         stats.incLong(queryResultsHashCollisionProbeTimeId, getStatTime() - start);
       }
       this.cachePerfStats.endQueryResultsHashCollisionProbe(start);
-    }  
-    
+    }
+
     @Override
     public void incQueryResultsHashCollisions() {
       stats.incInt(queryResultsHashCollisionsId, 1);
       this.cachePerfStats.incQueryResultsHashCollisions();
     }
-    
+
     @Override
     public void incTxConflictCheckTime(long delta) {
       stats.incLong(txConflictCheckTimeId, delta);
       this.cachePerfStats.incTxConflictCheckTime(delta);
     }
-    
+
     @Override
     public void txSuccess(long opTime, long txLifeTime, int txChanges) {
       stats.incInt(txCommitsId, 1);
@@ -11911,6 +11583,7 @@ public class LocalRegion extends AbstractRegion
       stats.incLong(txSuccessLifeTimeId, txLifeTime);
       this.cachePerfStats.txSuccess(opTime, txLifeTime, txChanges);
     }
+
     @Override
     public void txFailure(long opTime, long txLifeTime, int txChanges) {
       stats.incInt(txFailuresId, 1);
@@ -11919,6 +11592,7 @@ public class LocalRegion extends AbstractRegion
       stats.incLong(txFailedLifeTimeId, txLifeTime);
       this.cachePerfStats.txFailure(opTime, txLifeTime, txChanges);
     }
+
     @Override
     public void txRollback(long opTime, long txLifeTime, int txChanges) {
       stats.incInt(txRollbacksId, 1);
@@ -11951,7 +11625,7 @@ public class LocalRegion extends AbstractRegion
       this.stats.incInt(eventThreadsId, items);
       this.cachePerfStats.incEventThreads(items);
     }
-    
+
     @Override
     public void incEntryCount(int delta) {
       this.stats.incLong(entryCountId, delta);
@@ -11969,32 +11643,37 @@ public class LocalRegion extends AbstractRegion
       this.stats.incInt(diskTasksWaitingId, 1);
       this.cachePerfStats.incDiskTasksWaiting();
     }
+
     @Override
     public void decDiskTasksWaiting() {
       this.stats.incInt(diskTasksWaitingId, -1);
       this.cachePerfStats.decDiskTasksWaiting();
     }
+
     @Override
     public void decDiskTasksWaiting(int count) {
       this.stats.incInt(diskTasksWaitingId, -count);
       this.cachePerfStats.decDiskTasksWaiting(count);
     }
-    
+
     @Override
     public void incEvictorJobsStarted() {
       this.stats.incInt(evictorJobsStartedId, 1);
       this.cachePerfStats.incEvictorJobsStarted();
     }
+
     @Override
     public void incEvictorJobsCompleted() {
       this.stats.incInt(evictorJobsCompletedId, 1);
       this.cachePerfStats.incEvictorJobsCompleted();
     }
+
     @Override
     public void incEvictorQueueSize(int delta) {
       this.stats.incInt(evictorQueueSizeId, delta);
       this.cachePerfStats.incEvictorQueueSize(delta);
     }
+
     @Override
     public void incEvictWorkTime(long delta) {
       this.stats.incLong(evictWorkTimeId, delta);
@@ -12014,17 +11693,11 @@ public class LocalRegion extends AbstractRegion
     }
 
     @Override
-    public void incNonSingleHopsCount() {
-      this.stats.incLong(nonSingleHopsCountId, 1);
-      this.cachePerfStats.incNonSingleHopsCount();
-    }
-
-    @Override
     public void incMetaDataRefreshCount() {
       this.stats.incLong(metaDataRefreshCountId, 1);
       this.cachePerfStats.incMetaDataRefreshCount();
     }
-    
+
     @Override
     public void endImport(long entryCount, long start) {
       stats.incLong(importedEntriesCountId, entryCount);
@@ -12033,7 +11706,7 @@ public class LocalRegion extends AbstractRegion
       }
       cachePerfStats.endImport(entryCount, start);
     }
-    
+
     @Override
     public void endExport(long entryCount, long start) {
       stats.incLong(exportedEntriesCountId, entryCount);
@@ -12050,173 +11723,174 @@ public class LocalRegion extends AbstractRegion
     }
 
     public void endCompression(long startTime, long startSize, long endSize) {
-      if(enableClockStats) {
-        long time = getStatTime() - startTime;        
+      if (enableClockStats) {
+        long time = getStatTime() - startTime;
         stats.incLong(compressionCompressTimeId, time);
         cachePerfStats.stats.incLong(compressionCompressTimeId, time);
       }
-      
+
       stats.incLong(compressionPreCompressedBytesId, startSize);
-      stats.incLong(compressionPostCompressedBytesId, endSize); 
+      stats.incLong(compressionPostCompressedBytesId, endSize);
 
       cachePerfStats.stats.incLong(compressionPreCompressedBytesId, startSize);
-      cachePerfStats.stats.incLong(compressionPostCompressedBytesId, endSize); 
+      cachePerfStats.stats.incLong(compressionPostCompressedBytesId, endSize);
     }
 
     public long startDecompression() {
-      stats.incLong(compressionDecompressionsId, 1);     
-      cachePerfStats.stats.incLong(compressionDecompressionsId, 1);  
+      stats.incLong(compressionDecompressionsId, 1);
+      cachePerfStats.stats.incLong(compressionDecompressionsId, 1);
       return getStatTime();
     }
 
     public void endDecompression(long startTime) {
-      if(enableClockStats) {
-        long time = getStatTime() - startTime;        
+      if (enableClockStats) {
+        long time = getStatTime() - startTime;
         stats.incLong(compressionDecompressTimeId, time);
         cachePerfStats.stats.incLong(compressionDecompressTimeId, time);
-      }   
-    }
-  }
-  
-  /** test hook - dump the backing map for this region */
-  public void dumpBackingMap() {
-    synchronized(this.entries) {
-        if (this.entries instanceof AbstractRegionMap) {
-          ((AbstractRegionMap)(this.entries)).verifyTombstoneCount(this.tombstoneCount);
-        }
-        logger.debug("Dumping region of size {} tombstones: {}: {}", size(), getTombstoneCount(), this.toString());
-        if (this.entries instanceof AbstractRegionMap) {
-          ((AbstractRegionMap)this.entries).dumpMap();
-        }
-    }
-  }
-  
-  /** test hook - verify tombstone count matches what is in the entry map */
-  public void verifyTombstoneCount() {
-    synchronized(this.entries) {
-      if (this.entries instanceof AbstractRegionMap) {
-//        if (!((AbstractRegionMap)(this.entries)).verifyTombstoneCount(this.tombstoneCount)) {
-//          throw new RuntimeException("tombstone count is wrong in " + this);
-//        }
       }
     }
   }
 
-  //////////////////  ConcurrentMap methods //////////////////               
+  /** test hook - dump the backing map for this region */
+  public void dumpBackingMap() {
+    synchronized (this.entries) {
+      if (this.entries instanceof AbstractRegionMap) {
+        ((AbstractRegionMap) (this.entries)).verifyTombstoneCount(this.tombstoneCount);
+      }
+      logger.debug("Dumping region of size {} tombstones: {}: {}", size(), getTombstoneCount(),
+          this.toString());
+      if (this.entries instanceof AbstractRegionMap) {
+        ((AbstractRegionMap) this.entries).dumpMap();
+      }
+    }
+  }
+
+  /** test hook - verify tombstone count matches what is in the entry map */
+  public void verifyTombstoneCount() {
+    synchronized (this.entries) {
+      if (this.entries instanceof AbstractRegionMap) {
+        // if (!((AbstractRegionMap)(this.entries)).verifyTombstoneCount(this.tombstoneCount)) {
+        // throw new RuntimeException("tombstone count is wrong in " + this);
+        // }
+      }
+    }
+  }
+
+  ////////////////// ConcurrentMap methods //////////////////
 
   private void checkIfConcurrentMapOpsAllowed() {
     // This check allows NORMAL with local scope to fix bug 44856
-    if (this.srp == null && 
-        ((this.dataPolicy == DataPolicy.NORMAL && this.scope.isDistributed()) || this.dataPolicy == DataPolicy.EMPTY)) {
+    if (this.srp == null && ((this.dataPolicy == DataPolicy.NORMAL && this.scope.isDistributed())
+        || this.dataPolicy == DataPolicy.EMPTY)) {
       // the functional spec says these data policies do not support concurrent map
       // operations
       throw new UnsupportedOperationException();
     }
   }
+
   /**
-   * If the specified key is not already associated
-   * with a value, associate it with the given value.
+   * If the specified key is not already associated with a value, associate it with the given value.
    * This is equivalent to
+   * 
    * <pre>
-   *   if (!region.containsKey(key)) 
-   *      return region.put(key, value);
-   *   else
-   *      return region.get(key);
+   * if (!region.containsKey(key))
+   *   return region.put(key, value);
+   * else
+   *   return region.get(key);
    * </pre>
+   * 
    * Except that the action is performed atomically.
    *
-   * <i>Note that if this method returns null then there is no way to determine
-   * definitely whether this operation succeeded and modified the region, or
-   * if the entry is in an invalidated state and no modification occurred.</i>
+   * <i>Note that if this method returns null then there is no way to determine definitely whether
+   * this operation succeeded and modified the region, or if the entry is in an invalidated state
+   * and no modification occurred.</i>
    *
-   * If this method does not modify the region then no listeners or other
-   * callbacks are executed. If a modification does occur, then the behavior
-   * with respect to callbacks is the same as {@link Region#create(Object, Object)}.
+   * If this method does not modify the region then no listeners or other callbacks are executed. If
+   * a modification does occur, then the behavior with respect to callbacks is the same as
+   * {@link Region#create(Object, Object)}.
    *
    * @param key key with which the specified value is to be associated.
-   * @param value the value for the new entry, which may be null meaning
-   *              the new entry starts as if it had been locally invalidated.
+   * @param value the value for the new entry, which may be null meaning the new entry starts as if
+   *        it had been locally invalidated.
    * @param callbackArgument
-   * @return previous value associated with specified key, or <tt>null</tt>
-   *         if there was no mapping for key.  A <tt>null</tt> return can
-   *         also indicate that the entry in the region was previously in
-   *         an invalidated state.
+   * @return previous value associated with specified key, or <tt>null</tt> if there was no mapping
+   *         for key. A <tt>null</tt> return can also indicate that the entry in the region was
+   *         previously in an invalidated state.
    *
    * @throws ClassCastException if key does not satisfy the keyConstraint
-   * @throws IllegalArgumentException if the key or value
-   *         is not serializable and this is a distributed region
+   * @throws IllegalArgumentException if the key or value is not serializable and this is a
+   *         distributed region
    * @throws TimeoutException if timed out getting distributed lock for <code>Scope.GLOBAL</code>
    * @throws NullPointerException if key is <tt>null</tt>
    * @throws PartitionedRegionStorageException if the operation could not be completed.
    */
-   public Object putIfAbsent(Object key, Object value, Object callbackArgument) {
-     long startPut = CachePerfStats.getStatTime();
-     
-     checkIfConcurrentMapOpsAllowed();
-     validateArguments(key, value, callbackArgument);
-     // TODO ConcurrentMap.putIfAbsent() treats null as an invalidation operation
-     // BUT we need to return the old value, which Invalidate isn't currently doing
-//     if (value == null) {
-//       throw new NullPointerException(LocalizedStrings.LocalRegion_VALUE_MUST_NOT_BE_NULL.toLocalizedString());
-//     }
-     checkReadiness();
-     checkForLimitedOrNoAccess();
-     discoverJTA();
+  public Object putIfAbsent(Object key, Object value, Object callbackArgument) {
+    long startPut = CachePerfStats.getStatTime();
 
-     // This used to call the constructor which took the old value. It
-     // was modified to call the other EntryEventImpl constructor so that
-     // an id will be generated by default. Null was passed in anyway.
-     //   generate EventID
-     @Released EntryEventImpl event = EntryEventImpl.create(
-         this, Operation.PUT_IF_ABSENT, key,
-         value, callbackArgument, false, getMyId());
-     final Object oldValue = null;
-     final boolean ifNew = true;
-     final boolean ifOld = false;
-     final boolean requireOldValue = true;
-     try {
-       if (generateEventID()) {
-         event.setNewEventId(cache.getDistributedSystem());
-       }
-       if (!basicPut(event,
-           ifNew,
-           ifOld,
-           oldValue,
-           requireOldValue
-       )) {
-         return event.getOldValue();
-       } else {
-         if (!getDataView().isDeferredStats()) {
-           getCachePerfStats().endPut(startPut, false);
-         }
-         return null;
-       }
-     } catch (EntryNotFoundException e) {
-       return event.getOldValue();
-     } finally {
-       event.release();
-     }
-   }
-          
-  /* (non-Javadoc)
+    checkIfConcurrentMapOpsAllowed();
+    validateArguments(key, value, callbackArgument);
+    // TODO ConcurrentMap.putIfAbsent() treats null as an invalidation operation
+    // BUT we need to return the old value, which Invalidate isn't currently doing
+    // if (value == null) {
+    // throw new
+    // NullPointerException(LocalizedStrings.LocalRegion_VALUE_MUST_NOT_BE_NULL.toLocalizedString());
+    // }
+    checkReadiness();
+    checkForLimitedOrNoAccess();
+    discoverJTA();
+
+    // This used to call the constructor which took the old value. It
+    // was modified to call the other EntryEventImpl constructor so that
+    // an id will be generated by default. Null was passed in anyway.
+    // generate EventID
+    @Released
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.PUT_IF_ABSENT, key, value,
+        callbackArgument, false, getMyId());
+    final Object oldValue = null;
+    final boolean ifNew = true;
+    final boolean ifOld = false;
+    final boolean requireOldValue = true;
+    try {
+      if (generateEventID()) {
+        event.setNewEventId(cache.getDistributedSystem());
+      }
+      if (!basicPut(event, ifNew, ifOld, oldValue, requireOldValue)) {
+        return event.getOldValue();
+      } else {
+        if (!getDataView().isDeferredStats()) {
+          getCachePerfStats().endPut(startPut, false);
+        }
+        return null;
+      }
+    } catch (EntryNotFoundException e) {
+      return event.getOldValue();
+    } finally {
+      event.release();
+    }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.util.concurrent.ConcurrentMap#putIfAbsent(java.lang.Object, java.lang.Object)
    */
   public Object putIfAbsent(Object key, Object value) {
     return putIfAbsent(key, value, null);
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
    */
   public boolean remove(Object key, Object value) {
     return remove(key, value, null);
   }
-              
+
   // @todo expand on this javadoc
   /**
-   * Same as {@link #remove(Object, Object)} except a callback argument
-   * is supplied to be passed on to <tt>CacheListener</tt>s and/or
-   * <tt>CacheWriter</tt>s.
+   * Same as {@link #remove(Object, Object)} except a callback argument is supplied to be passed on
+   * to <tt>CacheListener</tt>s and/or <tt>CacheWriter</tt>s.
    */
   public boolean remove(Object key, Object pvalue, Object callbackArg) {
     Object value = pvalue;
@@ -12228,29 +11902,22 @@ public class LocalRegion extends AbstractRegion
     if (value == null) {
       value = Token.INVALID;
     }
-    @Released EntryEventImpl event = EntryEventImpl.create(this,
-                                              Operation.REMOVE,
-                                              key,
-                                              null, // newValue
-                                              callbackArg,
-                                              false,
-                                              getMyId());
-    
+    @Released
+    EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVE, key, null, // newValue
+        callbackArg, false, getMyId());
+
     try {
       if (generateEventID() && event.getEventId() == null) {
         event.setNewEventId(this.cache.getDistributedSystem());
       }
       discoverJTA();
       getDataView().destroyExistingEntry(event, true, value);
-    }
-    catch (EntryNotFoundException enfe) {
+    } catch (EntryNotFoundException enfe) {
       return false;
-    }
-    catch (RegionDestroyedException rde) {
+    } catch (RegionDestroyedException rde) {
       if (!rde.getRegionFullPath().equals(getFullPath())) {
         // Handle when a bucket is destroyed
-        RegionDestroyedException rde2 =
-           new RegionDestroyedException(toString(), getFullPath());
+        RegionDestroyedException rde2 = new RegionDestroyedException(toString(), getFullPath());
         rde2.initCause(rde);
         throw rde2;
       } else {
@@ -12265,16 +11932,13 @@ public class LocalRegion extends AbstractRegion
   public boolean replace(Object key, Object oldValue, Object newValue) {
     return replace(key, oldValue, newValue, null);
   }
-              
+
   /**
-   * Same as {@link #replace(Object, Object, Object)} except a callback argument
-   * is supplied to be passed on to <tt>CacheListener</tt>s and/or
-   * <tt>CacheWriter</tt>s.
+   * Same as {@link #replace(Object, Object, Object)} except a callback argument is supplied to be
+   * passed on to <tt>CacheListener</tt>s and/or <tt>CacheWriter</tt>s.
    */
-  public boolean replace(Object key,
-             Object pexpectedOldValue,
-             Object newValue,
-             Object callbackArg) {
+  public boolean replace(Object key, Object pexpectedOldValue, Object newValue,
+      Object callbackArg) {
 
     checkIfConcurrentMapOpsAllowed();
     if (newValue == null) {
@@ -12285,21 +11949,18 @@ public class LocalRegion extends AbstractRegion
     validateArguments(key, newValue, callbackArg);
     checkReadiness();
     checkForLimitedOrNoAccess();
-    @Released EntryEventImpl event = EntryEventImpl.create(this,
-                                              Operation.REPLACE,
-                                              key,
-                                              newValue,
-                                              callbackArg,
-                                              false, // originRemote
-                                              getMyId());
-    
+    @Released
+    EntryEventImpl event =
+        EntryEventImpl.create(this, Operation.REPLACE, key, newValue, callbackArg, false, // originRemote
+            getMyId());
+
     try {
       if (generateEventID()) {
         event.setNewEventId(cache.getDistributedSystem());
       }
-      
+
       discoverJTA();
-      
+
       // In general, expectedOldValue null is used when there is no particular
       // old value expected (it can be anything). Here, however, if null
       // is passed as expectedOldValue, then it specifically means that the
@@ -12309,62 +11970,53 @@ public class LocalRegion extends AbstractRegion
         expectedOldValue = Token.INVALID;
       }
 
-      if (!basicPut(event,
-          false, // ifNew
-          true,  // ifOld
-          expectedOldValue,
-          false // requireOldValue
+      if (!basicPut(event, false, // ifNew
+          true, // ifOld
+          expectedOldValue, false // requireOldValue
       )) {
         return false;
-      }
-      else {
+      } else {
         if (!getDataView().isDeferredStats()) {
           getCachePerfStats().endPut(startPut, false);
         }
         return true;
       }
-    } catch (EntryNotFoundException e) {  // put failed on server
+    } catch (EntryNotFoundException e) { // put failed on server
       return false;
     } finally {
       event.release();
     }
   }
-  
+
   public Object replace(Object key, Object value) {
     return replaceWithCallbackArgument(key, value, null);
   }
-              
+
   /**
-   * Same as {@link #replace(Object, Object)} except a callback argument
-   * is supplied to be passed on to <tt>CacheListener</tt>s and/or
-   * <tt>CacheWriter</tt>s.
+   * Same as {@link #replace(Object, Object)} except a callback argument is supplied to be passed on
+   * to <tt>CacheListener</tt>s and/or <tt>CacheWriter</tt>s.
    */
-  public Object replaceWithCallbackArgument(Object key,
-                                            Object value,
-                                            Object callbackArg) {
+  public Object replaceWithCallbackArgument(Object key, Object value, Object callbackArg) {
     long startPut = CachePerfStats.getStatTime();
 
     checkIfConcurrentMapOpsAllowed();
-    
+
     if (value == null) {
       throw new NullPointerException();
     }
-    
+
     validateArguments(key, value, callbackArg);
     checkReadiness();
     checkForLimitedOrNoAccess();
-    @Released EntryEventImpl event = EntryEventImpl.create(this,
-                                              Operation.REPLACE,
-                                              key,
-                                              value,
-                                              callbackArg,
-                                              false, // originRemote
-                                              getMyId());
+    @Released
+    EntryEventImpl event =
+        EntryEventImpl.create(this, Operation.REPLACE, key, value, callbackArg, false, // originRemote
+            getMyId());
     try {
       if (generateEventID()) {
         event.setNewEventId(cache.getDistributedSystem());
       }
-      
+
       discoverJTA();
 
       if (!basicPut(event, false, // ifNew
@@ -12386,71 +12038,68 @@ public class LocalRegion extends AbstractRegion
     }
   }
 
-  public Object basicBridgePutIfAbsent(final Object key, Object value,
-      boolean isObject, Object p_callbackArg, final ClientProxyMembershipID client,
-      boolean fromClient, EntryEventImpl clientEvent) throws TimeoutException,
-      EntryExistsException, CacheWriterException
-  {
+  public Object basicBridgePutIfAbsent(final Object key, Object value, boolean isObject,
+      Object p_callbackArg, final ClientProxyMembershipID client, boolean fromClient,
+      EntryEventImpl clientEvent)
+      throws TimeoutException, EntryExistsException, CacheWriterException {
     EventID eventId = clientEvent.getEventId();
     Object callbackArg = p_callbackArg;
     long startPut = CachePerfStats.getStatTime();
     if (fromClient) {
       // If this region is also wan-enabled, then wrap that callback arg in a
       // GatewayEventCallbackArgument to store the event id.
-      if(isGatewaySenderEnabled()) {
+      if (isGatewaySenderEnabled()) {
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
-    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUT_IF_ABSENT, key,
-        null /* new value */, callbackArg,
-        false /* origin remote */, client.getDistributedMember(),
-        true /* generateCallbacks */,
-        eventId);
+    @Released
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.PUT_IF_ABSENT, key,
+        null /* new value */, callbackArg, false /* origin remote */, client.getDistributedMember(),
+        true /* generateCallbacks */, eventId);
     try {
-    event.setContext(client);
-    
-    // if this is a replayed operation we may already have a version tag
-    event.setVersionTag(clientEvent.getVersionTag());
+      event.setContext(client);
 
-    // Set the new value to the input byte[] if it isn't null
-    ///*
-    if (value != null) {
-      // If the byte[] represents an object, then store it serialized
-      // in a CachedDeserializable; otherwise store it directly as a byte[]
-      if (isObject) {
-        // The value represents an object
-        event.setSerializedNewValue((byte[])value);
+      // if this is a replayed operation we may already have a version tag
+      event.setVersionTag(clientEvent.getVersionTag());
+
+      // Set the new value to the input byte[] if it isn't null
+      /// *
+      if (value != null) {
+        // If the byte[] represents an object, then store it serialized
+        // in a CachedDeserializable; otherwise store it directly as a byte[]
+        if (isObject) {
+          // The value represents an object
+          event.setSerializedNewValue((byte[]) value);
+        } else {
+          // The value does not represent an object
+          event.setNewValue(value);
+        }
       }
-      else {
-        // The value does not represent an object
-        event.setNewValue(value);
+
+      validateArguments(key, event.basicGetNewValue(), p_callbackArg);
+
+      boolean ifNew = true; // cannot overwrite an existing key
+      boolean ifOld = false; // can create a new key
+      boolean requireOldValue = true; // need the old value if the create fails
+      boolean basicPut = basicPut(event, ifNew, ifOld, null, requireOldValue);
+      getCachePerfStats().endPut(startPut, false);
+      this.stopper.checkCancelInProgress(null);
+      // to fix bug 42968 call getRawOldValue instead of getOldValue
+      Object oldValue = event.getRawOldValueAsHeapObject();
+      if (oldValue == Token.NOT_AVAILABLE) {
+        oldValue = AbstractRegion.handleNotAvailable(oldValue);
       }
-    }
-
-    validateArguments(key, event.basicGetNewValue(), p_callbackArg);
-
-    boolean ifNew = true; // cannot overwrite an existing key
-    boolean ifOld = false; // can create a new key
-    boolean requireOldValue = true; // need the old value if the create fails
-    boolean basicPut = basicPut(event, ifNew, ifOld, null, requireOldValue);
-    getCachePerfStats().endPut(startPut, false);
-    this.stopper.checkCancelInProgress(null);
-    // to fix bug 42968 call getRawOldValue instead of getOldValue
-    Object oldValue = event.getRawOldValueAsHeapObject();
-    if (oldValue == Token.NOT_AVAILABLE) {
-      oldValue = AbstractRegion.handleNotAvailable(oldValue);
-    }
-    if (basicPut) {
-      clientEvent.setVersionTag(event.getVersionTag());
-      clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
-    } else if (oldValue == null) {
-      // fix for 42189, putIfAbsent on server can return null if the
-      // operation was not performed (oldValue in cache was null).
-      // We return the INVALID token instead of null to distinguish
-      // this case from successful operation
-      return Token.INVALID;
-    }
-    return oldValue;
+      if (basicPut) {
+        clientEvent.setVersionTag(event.getVersionTag());
+        clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
+      } else if (oldValue == null) {
+        // fix for 42189, putIfAbsent on server can return null if the
+        // operation was not performed (oldValue in cache was null).
+        // We return the INVALID token instead of null to distinguish
+        // this case from successful operation
+        return Token.INVALID;
+      }
+      return oldValue;
     } finally {
       event.release();
     }
@@ -12461,170 +12110,162 @@ public class LocalRegion extends AbstractRegion
     return null;
   }
 
-  
-  public boolean basicBridgeReplace(final Object key, Object expectedOldValue,
-      Object value, boolean isObject, Object p_callbackArg,
-      final ClientProxyMembershipID client,
-      boolean fromClient, EntryEventImpl clientEvent) throws TimeoutException,
-      EntryExistsException, CacheWriterException
-  {
+
+  public boolean basicBridgeReplace(final Object key, Object expectedOldValue, Object value,
+      boolean isObject, Object p_callbackArg, final ClientProxyMembershipID client,
+      boolean fromClient, EntryEventImpl clientEvent)
+      throws TimeoutException, EntryExistsException, CacheWriterException {
     EventID eventId = clientEvent.getEventId();
     Object callbackArg = p_callbackArg;
     long startPut = CachePerfStats.getStatTime();
     if (fromClient) {
       // If this region is also wan-enabled, then wrap that callback arg in a
       // GatewayEventCallbackArgument to store the event id.
-      if(isGatewaySenderEnabled()) {
+      if (isGatewaySenderEnabled()) {
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
-    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.REPLACE, key,
-        null /* new value */, callbackArg,
-        false /* origin remote */, client.getDistributedMember(),
-        true /* generateCallbacks */,
-        eventId);
+    @Released
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REPLACE, key,
+        null /* new value */, callbackArg, false /* origin remote */, client.getDistributedMember(),
+        true /* generateCallbacks */, eventId);
     try {
-    event.setContext(client);
+      event.setContext(client);
 
-    // Set the new value to the input byte[] if it isn't null
-    ///*
-    if (value != null) {
-      // If the byte[] represents an object, then store it serialized
-      // in a CachedDeserializable; otherwise store it directly as a byte[]
-      if (isObject) {
-        // The value represents an object
-        event.setSerializedNewValue((byte[])value);
+      // Set the new value to the input byte[] if it isn't null
+      /// *
+      if (value != null) {
+        // If the byte[] represents an object, then store it serialized
+        // in a CachedDeserializable; otherwise store it directly as a byte[]
+        if (isObject) {
+          // The value represents an object
+          event.setSerializedNewValue((byte[]) value);
+        } else {
+          // The value does not represent an object
+          event.setNewValue(value);
+        }
       }
-      else {
-        // The value does not represent an object
-        event.setNewValue(value);
+
+      validateArguments(key, event.basicGetNewValue(), p_callbackArg);
+
+      boolean ifNew = false; // can overwrite an existing key
+      boolean ifOld = true; // cannot create a new key
+      boolean requireOldValue = false;
+      boolean success = basicPut(event, ifNew, ifOld, expectedOldValue, requireOldValue);
+      clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
+      if (success) {
+        clientEvent.setVersionTag(event.getVersionTag());
       }
-    }
-
-    validateArguments(key, event.basicGetNewValue(), p_callbackArg);
-
-    boolean ifNew = false; // can overwrite an existing key
-    boolean ifOld = true; // cannot create a new key
-    boolean requireOldValue = false;
-    boolean success = basicPut(event, ifNew, ifOld, expectedOldValue, requireOldValue);
-    clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
-    if (success) {
-      clientEvent.setVersionTag(event.getVersionTag());
-    }
-    getCachePerfStats().endPut(startPut, false);
-    this.stopper.checkCancelInProgress(null);
-    return success;
+      getCachePerfStats().endPut(startPut, false);
+      this.stopper.checkCancelInProgress(null);
+      return success;
     } finally {
       event.release();
     }
   }
 
-  public Object basicBridgeReplace(final Object key,
-      Object value, boolean isObject, Object p_callbackArg,
-      final ClientProxyMembershipID client,
-      boolean fromClient, EntryEventImpl clientEvent) throws TimeoutException,
-      EntryExistsException, CacheWriterException
-  {
+  public Object basicBridgeReplace(final Object key, Object value, boolean isObject,
+      Object p_callbackArg, final ClientProxyMembershipID client, boolean fromClient,
+      EntryEventImpl clientEvent)
+      throws TimeoutException, EntryExistsException, CacheWriterException {
     EventID eventId = clientEvent.getEventId();
     Object callbackArg = p_callbackArg;
     long startPut = CachePerfStats.getStatTime();
     if (fromClient) {
       // If this region is also wan-enabled, then wrap that callback arg in a
       // GatewayEventCallbackArgument to store the event id.
-      if(isGatewaySenderEnabled()) {
+      if (isGatewaySenderEnabled()) {
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
-    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.REPLACE, key,
-        null /* new value */, callbackArg,
-        false /* origin remote */, client.getDistributedMember(),
-        true /* generateCallbacks */,
-        eventId);
+    @Released
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REPLACE, key,
+        null /* new value */, callbackArg, false /* origin remote */, client.getDistributedMember(),
+        true /* generateCallbacks */, eventId);
     try {
-    event.setContext(client);
+      event.setContext(client);
 
-    // Set the new value to the input byte[] if it isn't null
-    ///*
-    if (value != null) {
-      // If the byte[] represents an object, then store it serialized
-      // in a CachedDeserializable; otherwise store it directly as a byte[]
-      if (isObject) {
-        // The value represents an object
-        event.setSerializedNewValue((byte[])value);
+      // Set the new value to the input byte[] if it isn't null
+      /// *
+      if (value != null) {
+        // If the byte[] represents an object, then store it serialized
+        // in a CachedDeserializable; otherwise store it directly as a byte[]
+        if (isObject) {
+          // The value represents an object
+          event.setSerializedNewValue((byte[]) value);
+        } else {
+          // The value does not represent an object
+          event.setNewValue(value);
+        }
       }
-      else {
-        // The value does not represent an object
-        event.setNewValue(value);
-      }
-    }
 
-    validateArguments(key, event.basicGetNewValue(), p_callbackArg);
+      validateArguments(key, event.basicGetNewValue(), p_callbackArg);
 
-    boolean ifNew = false; // can overwrite an existing key
-    boolean ifOld = true; // cannot create a new key
-    boolean requireOldValue = true;
-    boolean succeeded = basicPut(event, ifNew, ifOld, null, requireOldValue);
-    getCachePerfStats().endPut(startPut, false);
-    this.stopper.checkCancelInProgress(null);
-    clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
-    if (succeeded) {
-      clientEvent.setVersionTag(event.getVersionTag());
-      // to fix bug 42968 call getRawOldValue instead of getOldValue
-      Object oldValue = event.getRawOldValueAsHeapObject();
-      if (oldValue == Token.NOT_AVAILABLE) {
-        oldValue = AbstractRegion.handleNotAvailable(oldValue);
+      boolean ifNew = false; // can overwrite an existing key
+      boolean ifOld = true; // cannot create a new key
+      boolean requireOldValue = true;
+      boolean succeeded = basicPut(event, ifNew, ifOld, null, requireOldValue);
+      getCachePerfStats().endPut(startPut, false);
+      this.stopper.checkCancelInProgress(null);
+      clientEvent.isConcurrencyConflict(event.isConcurrencyConflict());
+      if (succeeded) {
+        clientEvent.setVersionTag(event.getVersionTag());
+        // to fix bug 42968 call getRawOldValue instead of getOldValue
+        Object oldValue = event.getRawOldValueAsHeapObject();
+        if (oldValue == Token.NOT_AVAILABLE) {
+          oldValue = AbstractRegion.handleNotAvailable(oldValue);
+        }
+        if (oldValue == null) { // EntryEventImpl.setOldValue translates INVALID to null
+          oldValue = Token.INVALID;
+        }
+        return oldValue;
+      } else {
+        return null;
       }
-      if (oldValue == null) {  // EntryEventImpl.setOldValue translates INVALID to null
-        oldValue = Token.INVALID;
-      }
-      return oldValue;
-    } else {
-      return null;
-    }
     } finally {
       event.release();
     }
   }
 
-  public void basicBridgeRemove(Object key, Object expectedOldValue,
-      Object p_callbackArg,
+  public void basicBridgeRemove(Object key, Object expectedOldValue, Object p_callbackArg,
       ClientProxyMembershipID memberId, boolean fromClient, EntryEventImpl clientEvent)
-      throws TimeoutException, EntryNotFoundException, CacheWriterException
-  {
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
     Object callbackArg = p_callbackArg;
     if (fromClient) {
       // If this region is also wan-enabled, then wrap that callback arg in a
       // GatewayEventCallbackArgument to store the event id.
-      if(isGatewaySenderEnabled()) {
+      if (isGatewaySenderEnabled()) {
         callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
       }
     }
 
     // Create an event and put the entry
-    @Released final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVE, key,
-        null /* new value */, callbackArg,
-        false /* origin remote */, memberId.getDistributedMember(),
-        true /* generateCallbacks */,
-        clientEvent.getEventId());
+    @Released
+    final EntryEventImpl event = EntryEventImpl.create(this, Operation.REMOVE, key,
+        null /* new value */, callbackArg, false /* origin remote */,
+        memberId.getDistributedMember(), true /* generateCallbacks */, clientEvent.getEventId());
     try {
-    event.setContext(memberId);
-    // we rely on exceptions to tell us that the operation didn't take
-    // place.  AbstractRegionMap performs the checks and throws the exception
-    try {
-    basicDestroy(event,
-        true,  // cacheWrite
-        expectedOldValue);
-    } finally {
-      clientEvent.setVersionTag(event.getVersionTag());
-      clientEvent.setIsRedestroyedEntry(event.getIsRedestroyedEntry());
-    }
+      event.setContext(memberId);
+      // we rely on exceptions to tell us that the operation didn't take
+      // place. AbstractRegionMap performs the checks and throws the exception
+      try {
+        basicDestroy(event, true, // cacheWrite
+            expectedOldValue);
+      } finally {
+        clientEvent.setVersionTag(event.getVersionTag());
+        clientEvent.setIsRedestroyedEntry(event.getIsRedestroyedEntry());
+      }
     } finally {
       event.release();
     }
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.geode.internal.cache.DiskRecoveryStore#getVersionForMember(org.apache.geode.internal.cache.versions.VersionSource)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.apache.geode.internal.cache.DiskRecoveryStore#getVersionForMember(org.apache.geode.internal
+   * .cache.versions.VersionSource)
    */
   @Override
   public long getVersionForMember(VersionSource member) {
@@ -12632,15 +12273,13 @@ public class LocalRegion extends AbstractRegion
   }
 
   /**
-   * Return an IndexMap that is persisted to the disk store used
-   * by this region.
+   * Return an IndexMap that is persisted to the disk store used by this region.
    * 
-   * This IndexMap should be used as the backing map for any
-   * regions that are using the Soplog persistence.
+   * This IndexMap should be used as the backing map for any regions that are using the Soplog
+   * persistence.
    * 
-   * Calling this method may create a branch new index map on disk,
-   * or it may recover an index map that was previously persisted, depending
-   * on whether the index previously existed.
+   * Calling this method may create a branch new index map on disk, or it may recover an index map
+   * that was previously persisted, depending on whether the index previously existed.
    * 
    * @param indexName the name of the index
    * @param indexedExpression the index expression
@@ -12648,29 +12287,25 @@ public class LocalRegion extends AbstractRegion
    * 
    * @return The index map.
    * 
-   * @throws IllegalStateException if this region is not using
-   * soplog persistence
+   * @throws IllegalStateException if this region is not using soplog persistence
    * 
-   * @throws IllegalStateException if this index was previously
-   * persisted with a different expression or from clause.
+   * @throws IllegalStateException if this index was previously persisted with a different
+   *         expression or from clause.
    * 
    */
-  public IndexMap getIndexMap(String indexName, String indexedExpression, 
-      String fromClause) {
-      return new IndexMapImpl();
+  public IndexMap getIndexMap(String indexName, String indexedExpression, String fromClause) {
+    return new IndexMapImpl();
   }
-  
+
   /**
-   * Return an IndexMap that is persisted to the disk store used
-   * by this region. This method returns map that might not support
-   * range queries.
+   * Return an IndexMap that is persisted to the disk store used by this region. This method returns
+   * map that might not support range queries.
    * 
-   * This IndexMap should be used as the backing map for any
-   * regions that are using the Soplog persistence.
+   * This IndexMap should be used as the backing map for any regions that are using the Soplog
+   * persistence.
    * 
-   * Calling this method may create a branch new index map on disk,
-   * or it may recover an index map that was previously persisted, depending
-   * on whether the index previously existed.
+   * Calling this method may create a branch new index map on disk, or it may recover an index map
+   * that was previously persisted, depending on whether the index previously existed.
    * 
    * @param indexName the name of the index
    * @param indexedExpression the index expression
@@ -12678,18 +12313,17 @@ public class LocalRegion extends AbstractRegion
    * 
    * @return The index map.
    * 
-   * @throws IllegalStateException if this region is not using
-   * soplog persistence
+   * @throws IllegalStateException if this region is not using soplog persistence
    * 
-   * @throws IllegalStateException if this index was previously
-   * persisted with a different expression or from clause.
+   * @throws IllegalStateException if this index was previously persisted with a different
+   *         expression or from clause.
    * 
    */
-  public IndexMap getUnsortedIndexMap(String indexName, String indexedExpression, 
+  public IndexMap getUnsortedIndexMap(String indexName, String indexedExpression,
       String fromClause) {
-      return new IndexMapImpl();
+    return new IndexMapImpl();
   }
-  //////////////////  End of ConcurrentMap methods ////////////////// 
+  ////////////////// End of ConcurrentMap methods //////////////////
 
   public void setInUseByTransaction(boolean v) {
     synchronized (this.regionExpiryLock) {
@@ -12713,7 +12347,8 @@ public class LocalRegion extends AbstractRegion
   /**
    * Return true if the region expiry task should be rescheduled
    */
-  public boolean expireRegion(RegionExpiryTask regionExpiryTask, boolean distributed, boolean destroy) {
+  public boolean expireRegion(RegionExpiryTask regionExpiryTask, boolean distributed,
+      boolean destroy) {
     synchronized (this.regionExpiryLock) {
       if (regionExpiryTask instanceof RegionTTLExpiryTask) {
         if (regionExpiryTask != this.regionTTLExpiryTask) {
@@ -12735,9 +12370,12 @@ public class LocalRegion extends AbstractRegion
       }
     }
     { // release the sync before doing the operation to prevent deadlock caused by r48875
-      Operation op = destroy ? (distributed ? Operation.REGION_EXPIRE_DESTROY : Operation.REGION_EXPIRE_LOCAL_DESTROY)
-          : (distributed ? Operation.REGION_EXPIRE_INVALIDATE : Operation.REGION_EXPIRE_LOCAL_INVALIDATE);
-      RegionEventImpl event = new RegionEventImpl(this, op, null, false, getMyId(), generateEventID());
+      Operation op = destroy
+          ? (distributed ? Operation.REGION_EXPIRE_DESTROY : Operation.REGION_EXPIRE_LOCAL_DESTROY)
+          : (distributed ? Operation.REGION_EXPIRE_INVALIDATE
+              : Operation.REGION_EXPIRE_LOCAL_INVALIDATE);
+      RegionEventImpl event =
+          new RegionEventImpl(this, op, null, false, getMyId(), generateEventID());
       if (destroy) {
         basicDestroyRegion(event, distributed);
       } else {
@@ -12746,48 +12384,52 @@ public class LocalRegion extends AbstractRegion
       return true;
     }
   }
+
   private boolean isTest = false;
   protected static boolean simulateClearForTests = false;
 
-  private AtomicInteger countNotFoundInLocal = null; 
+  private AtomicInteger countNotFoundInLocal = null;
+
   public void setIsTest() {
     isTest = true;
     countNotFoundInLocal = new AtomicInteger();
   }
+
   public boolean isTest() {
     return isTest;
-  } 
+  }
+
   public void incCountNotFoundInLocal() {
     countNotFoundInLocal.incrementAndGet();
   }
-  
+
   public Integer getCountNotFoundInLocal() {
     return countNotFoundInLocal.get();
   }
 
   public static void simulateClearForTests(boolean flag) {
     simulateClearForTests = flag;
-    
+
   }
-  
+
   public int testHookGetValuesInVM() {
     int result = 0;
-    for (RegionEntry re: getRegionMap().regionEntries()) {
+    for (RegionEntry re : getRegionMap().regionEntries()) {
       if (re.getValueAsToken() == Token.NOT_A_TOKEN) {
         result++;
       }
     }
     return result;
   }
-  
+
   public int testHookGetValuesOnDisk() {
     int result = 0;
-    for (RegionEntry re: getRegionMap().regionEntries()) {
+    for (RegionEntry re : getRegionMap().regionEntries()) {
       if (re.getValueAsToken() == null) {
         result++;
       }
     }
     return result;
   }
-  
+
 }

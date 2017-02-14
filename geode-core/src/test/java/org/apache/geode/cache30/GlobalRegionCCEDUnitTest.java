@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 /**
@@ -47,8 +45,8 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * This test is only for GLOBAL REPLICATE Regions. Tests are
- * similar to {@link DistributedAckRegionCCEDUnitTest}.
+ * This test is only for GLOBAL REPLICATE Regions. Tests are similar to
+ * {@link DistributedAckRegionCCEDUnitTest}.
  */
 @Category(DistributedTest.class)
 public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
@@ -63,8 +61,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
     Properties p = super.getDistributedSystemProperties();
     p.put(CONSERVE_SOCKETS, "false");
     if (distributedSystemID > 0) {
-      p.put(DISTRIBUTED_SYSTEM_ID, ""
-          + distributedSystemID);
+      p.put(DISTRIBUTED_SYSTEM_ID, "" + distributedSystemID);
     }
     return p;
   }
@@ -85,8 +82,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
   protected RegionAttributes getRegionAttributes(String type) {
     RegionAttributes ra = getCache().getRegionAttributes(type);
     if (ra == null) {
-      throw new IllegalStateException("The region shortcut " + type
-          + " has been removed.");
+      throw new IllegalStateException("The region shortcut " + type + " has been removed.");
     }
     AttributesFactory factory = new AttributesFactory(ra);
     factory.setConcurrencyChecksEnabled(true);
@@ -109,10 +105,9 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
   }
 
   /**
-   * This test creates a server cache in vm0 and a peer cache in vm1. It then
-   * tests to see if GII transferred tombstones to vm1 like it's supposed to. A
-   * client cache is created in vm2 and the same sort of check is performed for
-   * register-interest.
+   * This test creates a server cache in vm0 and a peer cache in vm1. It then tests to see if GII
+   * transferred tombstones to vm1 like it's supposed to. A client cache is created in vm2 and the
+   * same sort of check is performed for register-interest.
    */
   @Test
   public void testGIISendsTombstones() throws Exception {
@@ -120,15 +115,14 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
   }
 
   // TODO: delete this unused method
-  protected void do_version_recovery_if_necessary(final VM vm0, final VM vm1,
-      final VM vm2, final Object[] params) {
+  protected void do_version_recovery_if_necessary(final VM vm0, final VM vm1, final VM vm2,
+      final Object[] params) {
     // do nothing here
   }
 
   /**
-   * This tests the concurrency versioning system to ensure that event
-   * conflation happens correctly and that the statistic is being updated
-   * properly
+   * This tests the concurrency versioning system to ensure that event conflation happens correctly
+   * and that the statistic is being updated properly
    */
   @Test
   public void testConcurrentEvents() throws Exception {
@@ -162,9 +156,8 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
   }
 
   /**
-   * make sure that an operation performed on a new region entry created after a
-   * tombstone has been reaped is accepted by another member that has yet to
-   * reap the tombstone
+   * make sure that an operation performed on a new region entry created after a tombstone has been
+   * reaped is accepted by another member that has yet to reap the tombstone
    */
   @Test
   public void testTombstoneExpirationRace() {
@@ -173,12 +166,10 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
     // VM vm2 = Host.getHost(0).getVM(2);
 
     final String name = this.getUniqueName() + "-CC";
-    SerializableRunnable createRegion = new SerializableRunnable(
-        "Create Region") {
+    SerializableRunnable createRegion = new SerializableRunnable("Create Region") {
       public void run() {
         try {
-          RegionFactory f = getCache().createRegionFactory(
-              getRegionAttributes());
+          RegionFactory f = getCache().createRegionFactory(getRegionAttributes());
           CCRegion = (LocalRegion) f.create(name);
           CCRegion.put("cckey0", "ccvalue");
           CCRegion.put("cckey0", "ccvalue"); // version number will end up at 4
@@ -190,8 +181,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
     vm0.invoke(createRegion);
     vm1.invoke(createRegion);
     // vm2.invoke(createRegion);
-    vm1.invoke(new SerializableRunnable(
-        "Create local tombstone and adjust time") {
+    vm1.invoke(new SerializableRunnable("Create local tombstone and adjust time") {
       public void run() {
         // make the entry for cckey0 a tombstone in this VM and set its
         // modification time to be older than the tombstone GC interval. This
@@ -199,8 +189,8 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
         RegionEntry entry = CCRegion.getRegionEntry("cckey0");
         VersionTag tag = entry.getVersionStamp().asVersionTag();
         assertTrue(tag.getEntryVersion() > 1);
-        tag.setVersionTimeStamp(System.currentTimeMillis()
-            - TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT - 1000);
+        tag.setVersionTimeStamp(
+            System.currentTimeMillis() - TombstoneService.REPLICATE_TOMBSTONE_TIMEOUT - 1000);
         entry.getVersionStamp().setVersionTimeStamp(tag.getVersionTimeStamp());
         try {
           entry.makeTombstone(CCRegion, tag);
@@ -214,8 +204,7 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
     vm0.invoke(new SerializableRunnable(
         "Locally destroy the entry and do a create that will be propagated with v1") {
       public void run() {
-        CCRegion.getRegionMap().removeEntry("cckey0",
-            CCRegion.getRegionEntry("cckey0"), true);
+        CCRegion.getRegionMap().removeEntry("cckey0", CCRegion.getRegionEntry("cckey0"), true);
         if (CCRegion.getRegionEntry("ckey0") != null) {
           fail("expected removEntry to remove the entry from the region's map");
         }
@@ -232,9 +221,8 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
   }
 
   /**
-   * This tests the concurrency versioning system to ensure that event
-   * conflation happens correctly and that the statistic is being updated
-   * properly
+   * This tests the concurrency versioning system to ensure that event conflation happens correctly
+   * and that the statistic is being updated properly
    */
   @Ignore("Disabling due to bug #52347")
   @Test
@@ -243,16 +231,15 @@ public class GlobalRegionCCEDUnitTest extends GlobalRegionDUnitTest {
   }
 
   /**
-   * This tests the concurrency versioning system to ensure that event
-   * conflation happens correctly and that the statistic is being updated
-   * properly
+   * This tests the concurrency versioning system to ensure that event conflation happens correctly
+   * and that the statistic is being updated properly
    */
   @Ignore("TODO: reenable this test")
   @Test
   public void testConcurrentEventsOnNonReplicatedRegion() {
     // Shobhit: Just commenting out for now as it is being fixed by Bruce.
     // TODO: uncomment the test asa the bug is fixed.
-    //versionTestConcurrentEventsOnNonReplicatedRegion();
+    // versionTestConcurrentEventsOnNonReplicatedRegion();
   }
 
   @Test

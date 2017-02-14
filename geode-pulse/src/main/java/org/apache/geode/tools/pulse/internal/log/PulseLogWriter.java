@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -62,11 +60,9 @@ public class PulseLogWriter implements LogWriter {
     try {
       // Get file handler to log messages into log file.
       if (fileHandler == null) {
-        fileHandler = new FileHandler(
-            pulseConfig.getLogFileFullName(),
-            pulseConfig.getLogFileSize(),
-            pulseConfig.getLogFileCount(),
-            pulseConfig.getLogAppend());
+        fileHandler =
+            new FileHandler(pulseConfig.getLogFileFullName(), pulseConfig.getLogFileSize(),
+                pulseConfig.getLogFileCount(), pulseConfig.getLogAppend());
 
         // Log Message Formatter
         messageformatter = new MessageFormatter();
@@ -103,8 +99,7 @@ public class PulseLogWriter implements LogWriter {
       this.fine("JSON Error Details : " + swBuffer.toString() + "\n");
 
       this.fine("Erroneous Data : "
-          + ((errorData != null) ? errorData.toString()
-              : "Not Available for output") + "\n");
+          + ((errorData != null) ? errorData.toString() : "Not Available for output") + "\n");
     }
   }
 
@@ -136,30 +131,20 @@ public class PulseLogWriter implements LogWriter {
   }
 
   /*
-  @Override
-  public boolean errorEnabled() {
-    // TODO Auto-generated method stub
-    return false;
-  }
-
-  @Override
-  public void error(String msg, Throwable ex) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void error(String msg) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void error(Throwable ex) {
-    // TODO Auto-generated method stub
-
-  }
-  */
+   * @Override public boolean errorEnabled() { // TODO Auto-generated method stub return false; }
+   * 
+   * @Override public void error(String msg, Throwable ex) { // TODO Auto-generated method stub
+   * 
+   * }
+   * 
+   * @Override public void error(String msg) { // TODO Auto-generated method stub
+   * 
+   * }
+   * 
+   * @Override public void error(Throwable ex) { // TODO Auto-generated method stub
+   * 
+   * }
+   */
 
   @Override
   public boolean warningEnabled() {

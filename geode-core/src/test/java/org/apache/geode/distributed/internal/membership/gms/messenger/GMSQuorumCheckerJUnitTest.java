@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
@@ -26,6 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.jgroups.Event;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
@@ -44,7 +44,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class GMSQuorumCheckerJUnitTest {
 
   private InternalDistributedMember[] mockMembers;
@@ -65,7 +65,7 @@ public class GMSQuorumCheckerJUnitTest {
     when(channel.getReceiver()).thenCallRealMethod();
     Mockito.doReturn(address).when(channel).down(any(Event.class));
   }
-  
+
   @Test
   public void testQuorumCheckerAllRespond() throws Exception {
     NetView view = prepareView();
@@ -84,7 +84,7 @@ public class GMSQuorumCheckerJUnitTest {
     assertTrue(qc.checkForQuorum(500));
     assertSame(qc.getMembershipInfo(), channel);
   }
-  
+
   @Test
   public void testQuorumCheckerMajorityRespond() throws Exception {
     NetView view = prepareView();
@@ -101,7 +101,7 @@ public class GMSQuorumCheckerJUnitTest {
     assertTrue(quorum);
     assertSame(view.getMembers().size(), answerer.getPingCount());
   }
-  
+
   @Test
   public void testQuorumCheckerNotEnoughWeightForQuorum() throws Exception {
     NetView view = prepareView();
@@ -116,12 +116,12 @@ public class GMSQuorumCheckerJUnitTest {
     assertFalse(quorum);
     assertSame(view.getMembers().size(), answerer.getPingCount());
   }
-  
+
   @Test
   public void testQuorumCheckerNoQuorumNoResponders() throws Exception {
     NetView view = prepareView();
     Set<Integer> pongResponders = new HashSet<Integer>();
-    PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);    
+    PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
     GMSQuorumChecker qc = new GMSQuorumChecker(view, 51, channel);
@@ -130,24 +130,24 @@ public class GMSQuorumCheckerJUnitTest {
     assertFalse(quorum);
     assertSame(view.getMembers().size(), answerer.getPingCount());
   }
-  
+
   @Test
   public void testQuorumChecker10Servers2Locators4ServersLost() throws Exception {
     NetView view = prepareView();
     mockMembers[0].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
-    
+
     Set<Integer> pongResponders = new HashSet<Integer>();
     for (int i = 0; i < mockMembers.length; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
 
-    //remove 4 servers
+    // remove 4 servers
     pongResponders.remove(mockMembers[8].getPort());
     pongResponders.remove(mockMembers[9].getPort());
     pongResponders.remove(mockMembers[10].getPort());
     pongResponders.remove(mockMembers[11].getPort());
-    
+
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
 
@@ -157,25 +157,25 @@ public class GMSQuorumCheckerJUnitTest {
     assertTrue(quorum);
     assertSame(view.getMembers().size(), answerer.getPingCount());
   }
-  
+
   @Test
   public void testQuorumChecker10Servers2Locators4ServersAnd1LocatorLost() throws Exception {
     NetView view = prepareView();
     mockMembers[0].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
-    
+
     Set<Integer> pongResponders = new HashSet<Integer>();
     for (int i = 0; i < mockMembers.length; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
 
-    //remove 4 servers
+    // remove 4 servers
     pongResponders.remove(mockMembers[8].getPort());
     pongResponders.remove(mockMembers[9].getPort());
     pongResponders.remove(mockMembers[10].getPort());
     pongResponders.remove(mockMembers[11].getPort());
 
-    //remove 1 locator
+    // remove 1 locator
     pongResponders.remove(mockMembers[1].getPort());
 
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
@@ -187,26 +187,27 @@ public class GMSQuorumCheckerJUnitTest {
     assertTrue(quorum);
     assertSame(view.getMembers().size(), answerer.getPingCount());
   }
-  
+
   @Test
-  public void testQuorumChecker10Servers2Locators5ServersAnd2LocatorsButNotLeadMemberLost() throws Exception {
+  public void testQuorumChecker10Servers2Locators5ServersAnd2LocatorsButNotLeadMemberLost()
+      throws Exception {
     NetView view = prepareView();
     mockMembers[0].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
-    
+
     Set<Integer> pongResponders = new HashSet<Integer>();
     for (int i = 0; i < mockMembers.length; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
 
-    //remove 5 servers
+    // remove 5 servers
     pongResponders.remove(mockMembers[7].getPort());
     pongResponders.remove(mockMembers[8].getPort());
     pongResponders.remove(mockMembers[9].getPort());
     pongResponders.remove(mockMembers[10].getPort());
     pongResponders.remove(mockMembers[11].getPort());
 
-    //remove locators
+    // remove locators
     pongResponders.remove(mockMembers[0].getPort());
     pongResponders.remove(mockMembers[1].getPort());
 
@@ -219,25 +220,26 @@ public class GMSQuorumCheckerJUnitTest {
     assertFalse(quorum);
     assertSame(view.getMembers().size(), answerer.getPingCount());
   }
-  
+
   @Test
-  public void testQuorumChecker10Servers2Locators5ServerAnd1LocatorWithLeadMemberLost() throws Exception {
+  public void testQuorumChecker10Servers2Locators5ServerAnd1LocatorWithLeadMemberLost()
+      throws Exception {
     NetView view = prepareView();
     mockMembers[0].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
-    
+
     Set<Integer> pongResponders = new HashSet<Integer>();
     for (int i = 0; i < mockMembers.length; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
-    //remove 5 servers
-    pongResponders.remove(mockMembers[2].getPort()); //lead member
+    // remove 5 servers
+    pongResponders.remove(mockMembers[2].getPort()); // lead member
     pongResponders.remove(mockMembers[8].getPort());
     pongResponders.remove(mockMembers[9].getPort());
     pongResponders.remove(mockMembers[10].getPort());
     pongResponders.remove(mockMembers[11].getPort());
-    
-    //remove locator
+
+    // remove locator
     pongResponders.remove(mockMembers[0].getPort());
 
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
@@ -249,20 +251,20 @@ public class GMSQuorumCheckerJUnitTest {
     assertFalse(quorum);
     assertSame(view.getMembers().size(), answerer.getPingCount());
   }
-  
+
   @Test
   public void testQuorumChecker2Servers2LocatorsLeadMemberLost() throws Exception {
     int numMembers = 4;
     NetView view = prepareView(numMembers);
     mockMembers[0].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
-    
+
     Set<Integer> pongResponders = new HashSet<Integer>();
     for (int i = 0; i < numMembers; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
-    //remove lead member
-    pongResponders.remove(mockMembers[2].getPort()); //lead member
+    // remove lead member
+    pongResponders.remove(mockMembers[2].getPort()); // lead member
 
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
@@ -273,21 +275,21 @@ public class GMSQuorumCheckerJUnitTest {
     assertTrue(quorum);
     assertSame(view.getMembers().size(), answerer.getPingCount());
   }
-  
+
   @Test
   public void testQuorumChecker2Servers2LocatorsLeadMemberAnd1LocatorLost() throws Exception {
     int numMembers = 4;
     NetView view = prepareView(numMembers);
     mockMembers[0].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
     mockMembers[1].setVmKind(DistributionManager.LOCATOR_DM_TYPE);
-    
+
     Set<Integer> pongResponders = new HashSet<Integer>();
     for (int i = 0; i < numMembers; i++) {
       pongResponders.add(mockMembers[i].getPort());
     }
-    //remove members
-    pongResponders.remove(mockMembers[2].getPort()); //lead member
-    pongResponders.remove(mockMembers[0].getPort()); //locator
+    // remove members
+    pongResponders.remove(mockMembers[2].getPort()); // lead member
+    pongResponders.remove(mockMembers[0].getPort()); // locator
 
     PingMessageAnswer answerer = new PingMessageAnswer(channel, pongResponders);
     Mockito.doAnswer(answerer).when(channel).send(any(Message.class));
@@ -338,8 +340,9 @@ public class GMSQuorumCheckerJUnitTest {
           if (content instanceof byte[]) {
             if (pingPonger.isPingMessage((byte[]) content)) {
               pingCount++;
-              if (simulatedPongRespondersByPort.contains(((JGAddress)msg.getDest()).getPort())) {
-                channel.getReceiver().receive(pingPonger.createPongMessage(msg.getDest(), msg.getSrc()));
+              if (simulatedPongRespondersByPort.contains(((JGAddress) msg.getDest()).getPort())) {
+                channel.getReceiver()
+                    .receive(pingPonger.createPongMessage(msg.getDest(), msg.getSrc()));
               }
             }
           }

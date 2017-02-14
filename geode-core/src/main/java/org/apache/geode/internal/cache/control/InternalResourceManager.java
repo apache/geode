@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.control;
 
@@ -45,53 +43,56 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Implementation of ResourceManager with additional internal-only methods.
- * TODO: cleanup raw and typed collections
+ * Implementation of ResourceManager with additional internal-only methods. TODO: cleanup raw and
+ * typed collections
  * 
  */
 public class InternalResourceManager implements ResourceManager {
   private static final Logger logger = LogService.getLogger();
 
-  final int MAX_RESOURCE_MANAGER_EXE_THREADS = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads", 1);
-  
+  final int MAX_RESOURCE_MANAGER_EXE_THREADS =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads", 1);
+
   public enum ResourceType {
     HEAP_MEMORY(0x1), OFFHEAP_MEMORY(0x2), MEMORY(0x3), ALL(0xFFFFFFFF);
-    
+
     int id;
+
     private ResourceType(final int id) {
       this.id = id;
     }
   };
-  
-  private Map<ResourceType, Set<ResourceListener>> listeners = new HashMap<ResourceType, Set<ResourceListener>>();
-  
+
+  private Map<ResourceType, Set<ResourceListener>> listeners =
+      new HashMap<ResourceType, Set<ResourceListener>>();
+
   private final ScheduledExecutorService scheduledExecutor;
   private final ExecutorService notifyExecutor;
-  
-  //The set of in progress rebalance operations.
-  private final Set<RebalanceOperation> inProgressOperations = new HashSet<RebalanceOperation>(); 
+
+  // The set of in progress rebalance operations.
+  private final Set<RebalanceOperation> inProgressOperations = new HashSet<RebalanceOperation>();
   private final Object inProgressOperationsLock = new Object();
 
   final GemFireCacheImpl cache;
-  
+
   private LoadProbe loadProbe;
-  
+
   private final ResourceManagerStats stats;
   private final ResourceAdvisor resourceAdvisor;
   private boolean closed = true;
-  
+
   private final Map<ResourceType, ResourceMonitor> resourceMonitors;
-  
+
   private static ResourceObserver observer = new ResourceObserverAdapter();
-  
-  private static String PR_LOAD_PROBE_CLASS = System.getProperty(
-      DistributionConfig.GEMFIRE_PREFIX + "ResourceManager.PR_LOAD_PROBE_CLASS", SizedBasedLoadProbe.class
-          .getName());
-  
+
+  private static String PR_LOAD_PROBE_CLASS =
+      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "ResourceManager.PR_LOAD_PROBE_CLASS",
+          SizedBasedLoadProbe.class.getName());
+
   public static InternalResourceManager getInternalResourceManager(Cache cache) {
     return (InternalResourceManager) cache.getResourceManager();
   }
-  
+
   public static InternalResourceManager createResourceManager(final GemFireCacheImpl cache) {
     return new InternalResourceManager(cache);
   }
@@ -100,19 +101,19 @@ public class InternalResourceManager implements ResourceManager {
     this.cache = cache;
     this.resourceAdvisor = (ResourceAdvisor) cache.getDistributionAdvisor();
     this.stats = new ResourceManagerStats(cache.getDistributedSystem());
-    
+
     // Create a new executor that other classes may use for handling resource
     // related tasks
-    final ThreadGroup threadGroup = LoggingThreadGroup.createThreadGroup(
-        "ResourceManagerThreadGroup", logger);
+    final ThreadGroup threadGroup =
+        LoggingThreadGroup.createThreadGroup("ResourceManagerThreadGroup", logger);
 
     ThreadFactory tf = new ThreadFactory() {
       AtomicInteger ai = new AtomicInteger();
+
       @Override
       public Thread newThread(Runnable r) {
         int tId = ai.getAndIncrement();
-        Thread thread = new Thread(threadGroup, r,
-        "ResourceManagerRecoveryThread " + tId);
+        Thread thread = new Thread(threadGroup, r, "ResourceManagerRecoveryThread " + tId);
         thread.setDaemon(true);
         return thread;
       }
@@ -131,8 +132,8 @@ public class InternalResourceManager implements ResourceManager {
 
     // Create a new executor the resource manager and the monitors it creates
     // can use to handle dispatching of notifications.
-    final ThreadGroup listenerInvokerthrdGrp = LoggingThreadGroup.createThreadGroup(
-        "ResourceListenerInvokerThreadGroup", logger);
+    final ThreadGroup listenerInvokerthrdGrp =
+        LoggingThreadGroup.createThreadGroup("ResourceListenerInvokerThreadGroup", logger);
 
     ThreadFactory eventProcessorFactory = new ThreadFactory() {
       @Override
@@ -143,18 +144,21 @@ public class InternalResourceManager implements ResourceManager {
         return thread;
       }
     };
-    BlockingQueue<Runnable> threadQ = new OverflowQueueWithDMStats(this.stats.getResourceEventQueueStatHelper());
-    this.notifyExecutor = new SerialQueuedExecutorWithDMStats(threadQ, this.stats.getResourceEventPoolStatHelper(),
-        eventProcessorFactory);
-    
+    BlockingQueue<Runnable> threadQ =
+        new OverflowQueueWithDMStats(this.stats.getResourceEventQueueStatHelper());
+    this.notifyExecutor = new SerialQueuedExecutorWithDMStats(threadQ,
+        this.stats.getResourceEventPoolStatHelper(), eventProcessorFactory);
+
     // Create the monitors
     Map<ResourceType, ResourceMonitor> tempMonitors = new HashMap<ResourceType, ResourceMonitor>();
     tempMonitors.put(ResourceType.HEAP_MEMORY, new HeapMemoryMonitor(this, cache, this.stats));
-    tempMonitors.put(ResourceType.OFFHEAP_MEMORY, new OffHeapMemoryMonitor(this, cache, cache.getOffHeapStore(), this.stats));
+    tempMonitors.put(ResourceType.OFFHEAP_MEMORY,
+        new OffHeapMemoryMonitor(this, cache, cache.getOffHeapStore(), this.stats));
     this.resourceMonitors = Collections.unmodifiableMap(tempMonitors);
-    
+
     // Initialize the listener sets so that it only needs to be done once
-    for (ResourceType resourceType : new ResourceType[] { ResourceType.HEAP_MEMORY, ResourceType.OFFHEAP_MEMORY }) {
+    for (ResourceType resourceType : new ResourceType[] {ResourceType.HEAP_MEMORY,
+        ResourceType.OFFHEAP_MEMORY}) {
       Set<ResourceListener> emptySet = new CopyOnWriteArraySet<ResourceListener>();
       this.listeners.put(resourceType, emptySet);
     }
@@ -166,70 +170,72 @@ public class InternalResourceManager implements ResourceManager {
     for (ResourceMonitor monitor : this.resourceMonitors.values()) {
       monitor.stopMonitoring();
     }
-    
+
     stopExecutor(this.scheduledExecutor);
     stopExecutor(this.notifyExecutor);
-    
+
     this.stats.close();
     this.closed = true;
   }
-  
+
   boolean isClosed() {
     return this.closed;
   }
 
   public void fillInProfile(final Profile profile) {
     assert profile instanceof ResourceManagerProfile;
-    
+
     for (ResourceMonitor monitor : this.resourceMonitors.values()) {
       monitor.fillInProfile((ResourceManagerProfile) profile);
     }
   }
-  
+
   public void addResourceListener(final ResourceListener listener) {
     addResourceListener(ResourceType.ALL, listener);
   }
-  
-  public void addResourceListener(final ResourceType resourceType, final ResourceListener listener) {
+
+  public void addResourceListener(final ResourceType resourceType,
+      final ResourceListener listener) {
     for (Map.Entry<ResourceType, Set<ResourceListener>> mapEntry : this.listeners.entrySet()) {
       if ((mapEntry.getKey().id & resourceType.id) != 0) {
         mapEntry.getValue().add(listener);
       }
     }
   }
-  
+
   public void removeResourceListener(final ResourceListener listener) {
     removeResourceListener(ResourceType.ALL, listener);
   }
-  
-  public void removeResourceListener(final ResourceType resourceType, final ResourceListener listener) {
+
+  public void removeResourceListener(final ResourceType resourceType,
+      final ResourceListener listener) {
     for (Map.Entry<ResourceType, Set<ResourceListener>> mapEntry : this.listeners.entrySet()) {
       if ((mapEntry.getKey().id & resourceType.id) != 0) {
         mapEntry.getValue().remove(listener);
       }
     }
   }
-  
+
   public Set<ResourceListener> getResourceListeners(final ResourceType resourceType) {
     return this.listeners.get(resourceType);
   }
-  
+
   /**
-   * Deliver an event received from remote resource managers to the local
-   * listeners.
+   * Deliver an event received from remote resource managers to the local listeners.
    * 
-   * @param event
-   *          Event to deliver.
+   * @param event Event to deliver.
    */
   public void deliverEventFromRemote(final ResourceEvent event) {
     assert !event.isLocal();
 
     if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n().fine("New remote event to deliver for member " + event.getMember() + ": event=" + event);
+      this.cache.getLoggerI18n()
+          .fine("New remote event to deliver for member " + event.getMember() + ": event=" + event);
     }
 
     if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n().fine("Remote event to deliver for member " + event.getMember() + ":" + event);
+      this.cache.getLoggerI18n()
+          .fine("Remote event to deliver for member " + event.getMember() + ":" + event);
     }
 
     runWithNotifyExecutor(new Runnable() {
@@ -240,74 +246,75 @@ public class InternalResourceManager implements ResourceManager {
     });
     return;
   }
-  
+
   void deliverLocalEvent(ResourceEvent event) {
     // Wait for an event to be handled by all listeners before starting to send another event
     synchronized (this.listeners) {
-      this.resourceMonitors.get(event.getType()).notifyListeners(this.listeners.get(event.getType()), event);
+      this.resourceMonitors.get(event.getType())
+          .notifyListeners(this.listeners.get(event.getType()), event);
     }
-    
+
     this.stats.incResourceEventsDelivered();
   }
- 
+
   public HeapMemoryMonitor getHeapMonitor() {
     return (HeapMemoryMonitor) this.resourceMonitors.get(ResourceType.HEAP_MEMORY);
   }
-  
+
   public OffHeapMemoryMonitor getOffHeapMonitor() {
     return (OffHeapMemoryMonitor) this.resourceMonitors.get(ResourceType.OFFHEAP_MEMORY);
   }
-  
+
   /**
-   * Use threshold event processor to execute the event embedded in the
-   * runnable.
+   * Use threshold event processor to execute the event embedded in the runnable.
    * 
-   * @param runnable
-   *          Runnable to execute.
+   * @param runnable Runnable to execute.
    */
   void runWithNotifyExecutor(Runnable runnable) {
     try {
       this.notifyExecutor.execute(runnable);
     } catch (RejectedExecutionException e) {
       if (!isClosed()) {
-        this.cache.getLoggerI18n().warning(LocalizedStrings.ResourceManager_REJECTED_EXECUTION_CAUSE_NOHEAP_EVENTS);
+        this.cache.getLoggerI18n()
+            .warning(LocalizedStrings.ResourceManager_REJECTED_EXECUTION_CAUSE_NOHEAP_EVENTS);
       }
     }
   }
-  
+
   @Override
   public RebalanceFactory createRebalanceFactory() {
     return new RebalanceFactoryImpl();
   }
-    
+
   @Override
   public Set<RebalanceOperation> getRebalanceOperations() {
-    synchronized(this.inProgressOperationsLock) {
+    synchronized (this.inProgressOperationsLock) {
       return new HashSet<RebalanceOperation>(this.inProgressOperations);
     }
   }
-  
+
   void addInProgressRebalance(RebalanceOperation op) {
-    synchronized(this.inProgressOperationsLock) {
+    synchronized (this.inProgressOperationsLock) {
       this.inProgressOperations.add(op);
     }
   }
-  
+
   void removeInProgressRebalance(RebalanceOperation op) {
-    synchronized(this.inProgressOperationsLock) {
+    synchronized (this.inProgressOperationsLock) {
       this.inProgressOperations.remove(op);
     }
   }
-  
+
   class RebalanceFactoryImpl implements RebalanceFactory {
 
-    private Set<String> includedRegions; 
+    private Set<String> includedRegions;
     private Set<String> excludedRegions;
-    
+
     @Override
     public RebalanceOperation simulate() {
       RegionFilter filter = new FilterByPath(this.includedRegions, this.excludedRegions);
-      RebalanceOperationImpl op = new RebalanceOperationImpl(InternalResourceManager.this.cache, true, filter);
+      RebalanceOperationImpl op =
+          new RebalanceOperationImpl(InternalResourceManager.this.cache, true, filter);
       op.start();
       return op;
     }
@@ -315,7 +322,8 @@ public class InternalResourceManager implements ResourceManager {
     @Override
     public RebalanceOperation start() {
       RegionFilter filter = new FilterByPath(this.includedRegions, this.excludedRegions);
-      RebalanceOperationImpl op = new RebalanceOperationImpl(InternalResourceManager.this.cache, false,filter);
+      RebalanceOperationImpl op =
+          new RebalanceOperationImpl(InternalResourceManager.this.cache, false, filter);
       op.start();
       return op;
     }
@@ -333,49 +341,49 @@ public class InternalResourceManager implements ResourceManager {
     }
 
   }
-  
+
   void stopExecutor(ExecutorService executor) {
     if (executor == null) {
       return;
     }
     executor.shutdown();
-    final int secToWait = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "prrecovery-close-timeout", 120).intValue();
+    final int secToWait = Integer
+        .getInteger(DistributionConfig.GEMFIRE_PREFIX + "prrecovery-close-timeout", 120).intValue();
     try {
       executor.awaitTermination(secToWait, TimeUnit.SECONDS);
-    }
-    catch (InterruptedException x) {
+    } catch (InterruptedException x) {
       Thread.currentThread().interrupt();
       logger.debug("Failed in interrupting the Resource Manager Thread due to interrupt");
     }
-    if (! executor.isTerminated()) {
-        logger.warn(LocalizedMessage.create(
-            LocalizedStrings.ResourceManager_FAILED_TO_STOP_RESOURCE_MANAGER_THREADS,
-            new Object[]{secToWait}));
+    if (!executor.isTerminated()) {
+      logger.warn(LocalizedMessage.create(
+          LocalizedStrings.ResourceManager_FAILED_TO_STOP_RESOURCE_MANAGER_THREADS,
+          new Object[] {secToWait}));
     }
   }
 
   public ScheduledExecutorService getExecutor() {
     return this.scheduledExecutor;
   }
-  
+
   public ResourceManagerStats getStats() {
     return this.stats;
   }
-  
+
   /**
-   * For testing only, an observer which is called when
-   * rebalancing is started and finished for a particular region.
-   * This observer is called even the "rebalancing" is actually
-   * redundancy recovery for a particular region.
+   * For testing only, an observer which is called when rebalancing is started and finished for a
+   * particular region. This observer is called even the "rebalancing" is actually redundancy
+   * recovery for a particular region.
+   * 
    * @param observer
    */
   public static void setResourceObserver(ResourceObserver observer) {
-    if(observer == null) {
+    if (observer == null) {
       observer = new ResourceObserverAdapter();
     }
     InternalResourceManager.observer = observer;
   }
-  
+
 
   /**
    * Get the resource observer used for testing. Never returns null.
@@ -383,128 +391,134 @@ public class InternalResourceManager implements ResourceManager {
   public static ResourceObserver getResourceObserver() {
     return observer;
   }
-  
+
   /**
    * For testing only. Receives callbacks for resource related events.
    */
   public static interface ResourceObserver {
     /**
      * Indicates that rebalancing has started on a given region.
+     * 
      * @param region
      */
     public void rebalancingStarted(Region region);
-    
+
     /**
      * Indicates that rebalancing has finished on a given region.
+     * 
      * @param region
      */
     public void rebalancingFinished(Region region);
-    
+
     /**
      * Indicates that recovery has started on a given region.
+     * 
      * @param region
      */
     public void recoveryStarted(Region region);
-    
+
     /**
      * Indicates that recovery has finished on a given region.
+     * 
      * @param region
      */
     public void recoveryFinished(Region region);
 
     /**
-     * Indicated that a membership event triggered a recovery
-     * operation, but the recovery operation will not be executed
-     * because there is already an existing recovery operation
-     * waiting to happen on this region.
+     * Indicated that a membership event triggered a recovery operation, but the recovery operation
+     * will not be executed because there is already an existing recovery operation waiting to
+     * happen on this region.
+     * 
      * @param region
      */
     public void recoveryConflated(PartitionedRegion region);
-   
+
     /**
-     * Indicates that a bucket is being moved from the source member to the
-     * target member.
+     * Indicates that a bucket is being moved from the source member to the target member.
+     * 
      * @param region the region
      * @param bucketId the bucket being moved
      * @param source the member the bucket is moving from
      * @param target the member the bucket is moving to
      */
-    public void movingBucket(Region region,
-                             int bucketId, 
-                             DistributedMember source, 
-                             DistributedMember target);
-    
+    public void movingBucket(Region region, int bucketId, DistributedMember source,
+        DistributedMember target);
+
     /**
-     * Indicates that a bucket primary is being moved from the source member 
-     * to the target member.
+     * Indicates that a bucket primary is being moved from the source member to the target member.
+     * 
      * @param region the region
      * @param bucketId the bucket primary being moved
      * @param source the member the bucket primary is moving from
      * @param target the member the bucket primary is moving to
      */
-    public void movingPrimary(Region region,
-                              int bucketId, 
-                              DistributedMember source, 
-                              DistributedMember target);
+    public void movingPrimary(Region region, int bucketId, DistributedMember source,
+        DistributedMember target);
   }
-  
+
   public static class ResourceObserverAdapter implements ResourceObserver {
-    
-    
+
+
     @Override
     public void rebalancingFinished(Region region) {
       rebalancingOrRecoveryFinished(region);
-      
+
     }
+
     @Override
     public void rebalancingStarted(Region region) {
       rebalancingOrRecoveryStarted(region);
-      
+
     }
+
     @Override
     public void recoveryFinished(Region region) {
       rebalancingOrRecoveryFinished(region);
-      
+
     }
+
     @Override
     public void recoveryStarted(Region region) {
       rebalancingOrRecoveryStarted(region);
     }
+
     /**
      * Indicated the a rebalance or a recovery has started.
      */
     @SuppressWarnings("unused")
     public void rebalancingOrRecoveryStarted(Region region) {
-      //do nothing
+      // do nothing
     }
+
     /**
      * Indicated the a rebalance or a recovery has finished.
      */
     @SuppressWarnings("unused")
     public void rebalancingOrRecoveryFinished(Region region) {
-      //do nothing
+      // do nothing
     }
+
     @Override
     public void recoveryConflated(PartitionedRegion region) {
-      //do nothing
+      // do nothing
     }
+
     @Override
-    public void movingBucket(Region region,
-                             int bucketId, 
-                             DistributedMember source, 
-                             DistributedMember target) {
-      //do nothing
+    public void movingBucket(Region region, int bucketId, DistributedMember source,
+        DistributedMember target) {
+      // do nothing
     }
+
     @Override
-    public void movingPrimary(Region region,
-                              int bucketId, 
-                              DistributedMember source, 
-                              DistributedMember target) {
-      //do nothing
+    public void movingPrimary(Region region, int bucketId, DistributedMember source,
+        DistributedMember target) {
+      // do nothing
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.distributed.internal.DistributionAdvisee#getCancelCriterion()
    */
   public CancelCriterion getCancelCriterion() {
@@ -528,7 +542,9 @@ public class InternalResourceManager implements ResourceManager {
     return old;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.cache.control.ResourceManager#setEvictionHeapPercentage(int)
    */
   @Override
@@ -541,7 +557,7 @@ public class InternalResourceManager implements ResourceManager {
    */
   @Override
   public float getCriticalOffHeapPercentage() {
-    return getOffHeapMonitor().getCriticalThreshold(); 
+    return getOffHeapMonitor().getCriticalThreshold();
   }
 
   /**
@@ -573,7 +589,7 @@ public class InternalResourceManager implements ResourceManager {
    */
   @Override
   public float getCriticalHeapPercentage() {
-    return getHeapMonitor().getCriticalThreshold(); 
+    return getHeapMonitor().getCriticalThreshold();
   }
 
   /**
@@ -589,6 +605,6 @@ public class InternalResourceManager implements ResourceManager {
    */
   @Override
   public float getEvictionHeapPercentage() {
-    return getHeapMonitor().getEvictionThreshold(); 
+    return getHeapMonitor().getEvictionThreshold();
   }
 }

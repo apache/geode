@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin;
 
@@ -27,22 +25,22 @@ import org.apache.geode.distributed.DistributedMember;
  * {@link AdminDistributedSystem#backupAllMembers(java.io.File,java.io.File)}.
  * 
  * @since GemFire 6.5
- * @deprecated as of 7.0 use the <code><a href="{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code> package instead
+ * @deprecated as of 7.0 use the <code><a href=
+ *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
+ *             package instead
  */
 public interface BackupStatus {
-  
+
   /**
-   * Returns a map of disk stores that were successfully backed up.
-   * The key is an online distributed member. The value is the set of disk 
-   * stores on that distributed member. 
+   * Returns a map of disk stores that were successfully backed up. The key is an online distributed
+   * member. The value is the set of disk stores on that distributed member.
    */
   Map<DistributedMember, Set<PersistentID>> getBackedUpDiskStores();
-  
+
   /**
-   * Returns the set of disk stores that were known to be offline at the 
-   * time of the backup. These members were not backed up. If this set
-   * is not empty the backup may not contain a complete snapshot of 
-   * any partitioned regions in the distributed system.
+   * Returns the set of disk stores that were known to be offline at the time of the backup. These
+   * members were not backed up. If this set is not empty the backup may not contain a complete
+   * snapshot of any partitioned regions in the distributed system.
    */
   Set<PersistentID> getOfflineDiskStores();
 }

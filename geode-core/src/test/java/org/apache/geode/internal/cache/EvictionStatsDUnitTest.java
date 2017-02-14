@@ -1,21 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
+import org.apache.geode.test.dunit.IgnoredException;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -86,45 +85,51 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testEntryLruLimitNDestroyLimit() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prepareScenario(EvictionAlgorithm.LRU_ENTRY);
     putData("PR1", 100);
     putData("PR2", 60);
     dataStore1.invoke(new CacheSerializableRunnable("testlimit") {
       @Override
       public void run2() throws CacheException {
-        final PartitionedRegion pr1 = (PartitionedRegion)cache.getRegion("PR1");
-        final PartitionedRegion pr2 = (PartitionedRegion)cache.getRegion("PR2");
-        assertEquals(maxEnteries, ((AbstractLRURegionMap)pr1.entries)
-            ._getLruList().stats().getLimit());
-        assertEquals(maxEnteries, ((AbstractLRURegionMap)pr2.entries)
-            ._getLruList().stats().getLimit());
+        final PartitionedRegion pr1 = (PartitionedRegion) cache.getRegion("PR1");
+        final PartitionedRegion pr2 = (PartitionedRegion) cache.getRegion("PR2");
+        assertEquals(maxEnteries,
+            ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getLimit());
+        assertEquals(maxEnteries,
+            ((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getLimit());
 
-        assertEquals(1000, ((AbstractLRURegionMap)pr1.entries)._getLruList()
-            .stats().getDestroysLimit());
-        assertEquals(1000, ((AbstractLRURegionMap)pr2.entries)._getLruList()
-            .stats().getDestroysLimit());
+        assertEquals(1000,
+            ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getDestroysLimit());
+        assertEquals(1000,
+            ((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getDestroysLimit());
       }
     });
 
     dataStore2.invoke(new CacheSerializableRunnable("testlimit") {
       @Override
       public void run2() throws CacheException {
-        final PartitionedRegion pr1 = (PartitionedRegion)cache.getRegion("PR1");
-        final PartitionedRegion pr2 = (PartitionedRegion)cache.getRegion("PR2");
-        assertEquals(maxEnteries, ((AbstractLRURegionMap)pr1.entries)
-            ._getLruList().stats().getLimit());
-        assertEquals(maxEnteries, ((AbstractLRURegionMap)pr2.entries)
-            ._getLruList().stats().getLimit());
-        assertEquals(1000, ((AbstractLRURegionMap)pr1.entries)._getLruList()
-            .stats().getDestroysLimit());
-        assertEquals(1000, ((AbstractLRURegionMap)pr2.entries)._getLruList()
-            .stats().getDestroysLimit());
-       }
+        final PartitionedRegion pr1 = (PartitionedRegion) cache.getRegion("PR1");
+        final PartitionedRegion pr2 = (PartitionedRegion) cache.getRegion("PR2");
+        assertEquals(maxEnteries,
+            ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getLimit());
+        assertEquals(maxEnteries,
+            ((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getLimit());
+        assertEquals(1000,
+            ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getDestroysLimit());
+        assertEquals(1000,
+            ((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getDestroysLimit());
+      }
     });
   }
 
   @Test
   public void testMemLruLimitNDestroyLimit() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prepareScenario(EvictionAlgorithm.LRU_MEMORY);
     putData("PR1", 100);
     putData("PR2", 60);
@@ -132,37 +137,33 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run2() throws CacheException {
         final long ONE_MEG = 1024L * 1024L;
-        final PartitionedRegion pr1 = (PartitionedRegion)cache.getRegion("PR1");
-        final PartitionedRegion pr2 = (PartitionedRegion)cache.getRegion("PR2");
-        assertEquals(pr1.getLocalMaxMemory(), ((AbstractLRURegionMap)pr1.entries)
-            ._getLruList().stats().getLimit()
-            / ONE_MEG);
-        assertEquals(pr2.getLocalMaxMemory(), ((AbstractLRURegionMap)pr2.entries)
-            ._getLruList().stats().getLimit()
-            / ONE_MEG);
-        assertEquals(1000, ((AbstractLRURegionMap)pr1.entries)._getLruList()
-            .stats().getDestroysLimit());
-        assertEquals(1000, ((AbstractLRURegionMap)pr2.entries)._getLruList()
-            .stats().getDestroysLimit());
-       }
+        final PartitionedRegion pr1 = (PartitionedRegion) cache.getRegion("PR1");
+        final PartitionedRegion pr2 = (PartitionedRegion) cache.getRegion("PR2");
+        assertEquals(pr1.getLocalMaxMemory(),
+            ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getLimit() / ONE_MEG);
+        assertEquals(pr2.getLocalMaxMemory(),
+            ((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getLimit() / ONE_MEG);
+        assertEquals(1000,
+            ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getDestroysLimit());
+        assertEquals(1000,
+            ((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getDestroysLimit());
+      }
     });
 
     dataStore2.invoke(new CacheSerializableRunnable("testlimit") {
       @Override
       public void run2() throws CacheException {
         final long ONE_MEG = 1024L * 1024L;
-        final PartitionedRegion pr1 = (PartitionedRegion)cache.getRegion("PR1");
-        final PartitionedRegion pr2 = (PartitionedRegion)cache.getRegion("PR2");
-        assertEquals(pr1.getLocalMaxMemory(), ((AbstractLRURegionMap)pr1.entries)
-            ._getLruList().stats().getLimit()
-            / ONE_MEG);
-        assertEquals(pr2.getLocalMaxMemory(), ((AbstractLRURegionMap)pr2.entries)
-            ._getLruList().stats().getLimit()
-            / ONE_MEG);
-        assertEquals(1000, ((AbstractLRURegionMap)pr1.entries)._getLruList()
-            .stats().getDestroysLimit());
-        assertEquals(1000, ((AbstractLRURegionMap)pr2.entries)._getLruList()
-            .stats().getDestroysLimit());
+        final PartitionedRegion pr1 = (PartitionedRegion) cache.getRegion("PR1");
+        final PartitionedRegion pr2 = (PartitionedRegion) cache.getRegion("PR2");
+        assertEquals(pr1.getLocalMaxMemory(),
+            ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getLimit() / ONE_MEG);
+        assertEquals(pr2.getLocalMaxMemory(),
+            ((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getLimit() / ONE_MEG);
+        assertEquals(1000,
+            ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getDestroysLimit());
+        assertEquals(1000,
+            ((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getDestroysLimit());
       }
     });
 
@@ -170,6 +171,9 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testEntryLruCounter() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prepareScenario(EvictionAlgorithm.LRU_ENTRY);
     putData("PR1", 10);
     putData("PR2", 16);
@@ -185,6 +189,9 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testMemLruCounter() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prepareScenario(EvictionAlgorithm.LRU_MEMORY);
     putData("PR1", 10);
     putData("PR2", 16);
@@ -200,9 +207,11 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testHeapLruCounter() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     prepareScenario(EvictionAlgorithm.LRU_HEAP);
-    System.setProperty(
-        HeapLRUCapacityController.TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY,
+    System.setProperty(HeapLRUCapacityController.TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY,
         Float.toString(0));
     putData("PR1", 20);
     putData("PR2", 20);
@@ -215,22 +224,24 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testEntryLruAllCounterMethods() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     final long ONE_MEG = 1024L * 1024L;
     createCache();
-    createPartitionedRegion(true, EvictionAlgorithm.LRU_ENTRY, "PR1", 2, 1,
-        10000);
+    createPartitionedRegion(true, EvictionAlgorithm.LRU_ENTRY, "PR1", 2, 1, 10000);
     for (int counter = 1; counter <= maxEnteries; counter++) {
       region.put(new Integer(counter), new byte[(1 * 1024 * 1024) - 2]);
     }
-    long sizeOfPRegion = ((AbstractLRURegionMap)((PartitionedRegion)region).entries)
-        ._getLruList().stats().getCounter();
+    long sizeOfPRegion = ((AbstractLRURegionMap) ((PartitionedRegion) region).entries)._getLruList()
+        .stats().getCounter();
 
     assertEquals(sizeOfPRegion, 20);
     long bucketSize = 0;
-    for (final Iterator i = ((PartitionedRegion)region).getDataStore()
-        .getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry)i.next();
-      final BucketRegion bucketRegion = (BucketRegion)entry.getValue();
+    for (final Iterator i =
+        ((PartitionedRegion) region).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
+      final Map.Entry entry = (Map.Entry) i.next();
+      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
       }
@@ -245,14 +256,13 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
     for (int counter = 1; counter <= extraEnteries; counter++) {
       region.put(new Integer(counter), new byte[(1 * 1024 * 1024) - 2]);
     }
-    sizeOfPRegion = ((AbstractLRURegionMap)((PartitionedRegion)region).entries)
-        ._getLruList().stats().getCounter();
-    ;
+    sizeOfPRegion = ((AbstractLRURegionMap) ((PartitionedRegion) region).entries)._getLruList()
+        .stats().getCounter();;
     assertEquals(sizeOfPRegion, 20);
-    for (final Iterator i = ((PartitionedRegion)region).getDataStore()
-        .getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry)i.next();
-      final BucketRegion bucketRegion = (BucketRegion)entry.getValue();
+    for (final Iterator i =
+        ((PartitionedRegion) region).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
+      final Map.Entry entry = (Map.Entry) i.next();
+      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
       }
@@ -262,158 +272,156 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
     assertEquals(sizeOfPRegion, bucketSize);
 
     // Clear one bucket
-    for (final Iterator i = ((PartitionedRegion)region).getDataStore()
-        .getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry)i.next();
-      final BucketRegion bucketRegion = (BucketRegion)entry.getValue();
+    for (final Iterator i =
+        ((PartitionedRegion) region).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
+      final Map.Entry entry = (Map.Entry) i.next();
+      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
       }
-      //Don't just clear the bucket here, use the real region
-      //api to remove the entries.
-      for(Object key: bucketRegion.keySet()) {
+      // Don't just clear the bucket here, use the real region
+      // api to remove the entries.
+      for (Object key : bucketRegion.keySet()) {
         region.destroy(key);
       }
       assertEquals(bucketRegion.getCounter(), 0);
       break;
     }
-    sizeOfPRegion = ((AbstractLRURegionMap)((PartitionedRegion)region).entries)
-        ._getLruList().stats().getCounter();
-    ;
+    sizeOfPRegion = ((AbstractLRURegionMap) ((PartitionedRegion) region).entries)._getLruList()
+        .stats().getCounter();;
     assertEquals(sizeOfPRegion, 10);
   }
 
-  
+
 
   @Test
   public void testEntryLRUEvictionNDestroyNNumOverflowOnDiskCount() {
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
     final int extraEnteries = 24;
     prepareScenario(EvictionAlgorithm.LRU_ENTRY);
     putData("PR1", maxEnteries + extraEnteries);
     putData("PR2", maxEnteries + extraEnteries);
-    dataStore1.invoke(new CacheSerializableRunnable(
-        "testEntryLRUEvictionNDestroyNNumOverflowOnDiskCount") {
-      @Override
-      public void run2() throws CacheException {
-        PartitionedRegion pr1 = (PartitionedRegion)cache.getRegion("PR1");
-        assertEquals(((AbstractLRURegionMap)pr1.entries)._getLruList().stats()
-            .getEvictions(), (extraEnteries-maxEnteries) / 2);
-        assertEquals(((AbstractLRURegionMap)pr1.entries)._getLruList().stats()
-            .getDestroys(), ((AbstractLRURegionMap)pr1.entries)._getLruList()
-            .stats().getEvictions());
-        
-        PartitionedRegion pr2 = (PartitionedRegion)cache.getRegion("PR2");
-        assertEquals(((AbstractLRURegionMap)pr2.entries)._getLruList().stats()
-            .getEvictions(),  (extraEnteries-maxEnteries) / 2);
-        assertEquals(((AbstractLRURegionMap)pr2.entries)._getLruList().stats()
-            .getDestroys(), 0);
-        assertEquals(pr2.getDiskRegionStats().getNumOverflowOnDisk(),
-            (extraEnteries-maxEnteries) / 2);
-      }
-    });
+    dataStore1.invoke(
+        new CacheSerializableRunnable("testEntryLRUEvictionNDestroyNNumOverflowOnDiskCount") {
+          @Override
+          public void run2() throws CacheException {
+            PartitionedRegion pr1 = (PartitionedRegion) cache.getRegion("PR1");
+            assertEquals(((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getEvictions(),
+                (extraEnteries - maxEnteries) / 2);
+            assertEquals(((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getDestroys(),
+                ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getEvictions());
 
-    dataStore2.invoke(new CacheSerializableRunnable(
-        "testEntryLRUEvictionNDestroyNNumOverflowOnDiskCount") {
-      @Override
-      public void run2() throws CacheException {
-        PartitionedRegion pr1 = (PartitionedRegion)cache.getRegion("PR1");
-        assertEquals(((AbstractLRURegionMap)pr1.entries)._getLruList().stats()
-            .getEvictions(),  (extraEnteries-maxEnteries) / 2);
-        assertEquals(((AbstractLRURegionMap)pr1.entries)._getLruList().stats()
-            .getDestroys(), ((AbstractLRURegionMap)pr1.entries)._getLruList()
-            .stats().getEvictions());
-       
-        PartitionedRegion pr2 = (PartitionedRegion)cache.getRegion("PR2");
-        assertEquals(((AbstractLRURegionMap)pr2.entries)._getLruList().stats()
-            .getEvictions(),  (extraEnteries-maxEnteries) / 2);
-        assertEquals(((AbstractLRURegionMap)pr2.entries)._getLruList().stats()
-            .getDestroys(), 0);
-        assertEquals(pr2.getDiskRegionStats().getNumOverflowOnDisk(),
-            (extraEnteries-maxEnteries) / 2);
-      }
-    });
+            PartitionedRegion pr2 = (PartitionedRegion) cache.getRegion("PR2");
+            assertEquals(((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getEvictions(),
+                (extraEnteries - maxEnteries) / 2);
+            assertEquals(((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getDestroys(),
+                0);
+            assertEquals(pr2.getDiskRegionStats().getNumOverflowOnDisk(),
+                (extraEnteries - maxEnteries) / 2);
+          }
+        });
+
+    dataStore2.invoke(
+        new CacheSerializableRunnable("testEntryLRUEvictionNDestroyNNumOverflowOnDiskCount") {
+          @Override
+          public void run2() throws CacheException {
+            PartitionedRegion pr1 = (PartitionedRegion) cache.getRegion("PR1");
+            assertEquals(((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getEvictions(),
+                (extraEnteries - maxEnteries) / 2);
+            assertEquals(((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getDestroys(),
+                ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getEvictions());
+
+            PartitionedRegion pr2 = (PartitionedRegion) cache.getRegion("PR2");
+            assertEquals(((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getEvictions(),
+                (extraEnteries - maxEnteries) / 2);
+            assertEquals(((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getDestroys(),
+                0);
+            assertEquals(pr2.getDiskRegionStats().getNumOverflowOnDisk(),
+                (extraEnteries - maxEnteries) / 2);
+          }
+        });
   }
 
   @Test
   public void testMemLRUEvictionNDestroyNNumOverflowOnDiskCount() {
-    int localMaxMem=50;
+    // Ignore this excetion as this can happen if pool is shutting down
+    IgnoredException
+        .addIgnoredException(java.util.concurrent.RejectedExecutionException.class.getName());
+    int localMaxMem = 50;
     final int extraEntries = 6;
     prepareScenario(EvictionAlgorithm.LRU_MEMORY);
-    putData("PR1", (2 * localMaxMem)+extraEntries);
-    putData("PR2", (2 * localMaxMem/*localmaxmem*/)+extraEntries);
+    putData("PR1", (2 * localMaxMem) + extraEntries);
+    putData("PR2", (2 * localMaxMem/* localmaxmem */) + extraEntries);
     dataStore1.invoke(new CacheSerializableRunnable("testEvictionCount") {
       @Override
       public void run2() throws CacheException {
-        PartitionedRegion pr1 = (PartitionedRegion)cache.getRegion("PR1");
-        LogWriterUtils.getLogWriter().info("dddd  local"+pr1.getLocalMaxMemory());
-        LogWriterUtils.getLogWriter().info("dddd  local evi"+((AbstractLRURegionMap)pr1.entries)._getLruList().stats()
-        .getEvictions());
-        LogWriterUtils.getLogWriter().info("dddd  local entries"+((AbstractLRURegionMap)pr1.entries)._getLruList().stats()
-            .getCounter()/(1024*1024));
-        HeapMemoryMonitor hmm = ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
-        long memused=hmm.getBytesUsed()/(1024*1024);
-        LogWriterUtils.getLogWriter().info("dddd  local memused= "+memused);
-        assertTrue(((AbstractLRURegionMap)pr1.entries)._getLruList().stats()
+        PartitionedRegion pr1 = (PartitionedRegion) cache.getRegion("PR1");
+        LogWriterUtils.getLogWriter().info("dddd  local" + pr1.getLocalMaxMemory());
+        LogWriterUtils.getLogWriter().info("dddd  local evi"
+            + ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getEvictions());
+        LogWriterUtils.getLogWriter()
+            .info("dddd  local entries"
+                + ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getCounter()
+                    / (1024 * 1024));
+        HeapMemoryMonitor hmm =
+            ((InternalResourceManager) cache.getResourceManager()).getHeapMonitor();
+        long memused = hmm.getBytesUsed() / (1024 * 1024);
+        LogWriterUtils.getLogWriter().info("dddd  local memused= " + memused);
+        assertTrue(((AbstractLRURegionMap) pr1.entries)._getLruList().stats()
             .getEvictions() >= extraEntries / 2);
-        assertEquals(((AbstractLRURegionMap)pr1.entries)._getLruList().stats()
-            .getDestroys(), ((AbstractLRURegionMap)pr1.entries)._getLruList()
-            .stats().getEvictions());
+        assertEquals(((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getDestroys(),
+            ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getEvictions());
 
-        PartitionedRegion pr2 = (PartitionedRegion)cache.getRegion("PR2");
-        assertTrue(((AbstractLRURegionMap)pr2.entries)._getLruList().stats()
+        PartitionedRegion pr2 = (PartitionedRegion) cache.getRegion("PR2");
+        assertTrue(((AbstractLRURegionMap) pr2.entries)._getLruList().stats()
             .getEvictions() >= extraEntries / 2);
-        assertEquals(((AbstractLRURegionMap)pr2.entries)._getLruList().stats()
-            .getDestroys(), 0);
-        assertTrue(pr2.getDiskRegionStats().getNumOverflowOnDisk()>=
-            extraEntries / 2);
+        assertEquals(((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getDestroys(), 0);
+        assertTrue(pr2.getDiskRegionStats().getNumOverflowOnDisk() >= extraEntries / 2);
       }
     });
 
     dataStore2.invoke(new CacheSerializableRunnable("testEvictionCount") {
       @Override
       public void run2() throws CacheException {
-        PartitionedRegion pr1 = (PartitionedRegion)cache.getRegion("PR1");
-        assertTrue(((AbstractLRURegionMap)pr1.entries)._getLruList().stats()
+        PartitionedRegion pr1 = (PartitionedRegion) cache.getRegion("PR1");
+        assertTrue(((AbstractLRURegionMap) pr1.entries)._getLruList().stats()
             .getEvictions() >= extraEntries / 2);
-        assertEquals(((AbstractLRURegionMap)pr1.entries)._getLruList().stats()
-            .getDestroys(), ((AbstractLRURegionMap)pr1.entries)._getLruList()
-            .stats().getEvictions());
+        assertEquals(((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getDestroys(),
+            ((AbstractLRURegionMap) pr1.entries)._getLruList().stats().getEvictions());
 
-        PartitionedRegion pr2 = (PartitionedRegion)cache.getRegion("PR2");
-        assertTrue(((AbstractLRURegionMap)pr2.entries)._getLruList().stats()
+        PartitionedRegion pr2 = (PartitionedRegion) cache.getRegion("PR2");
+        assertTrue(((AbstractLRURegionMap) pr2.entries)._getLruList().stats()
             .getEvictions() >= extraEntries / 2);
-        assertEquals(((AbstractLRURegionMap)pr2.entries)._getLruList().stats()
-            .getDestroys(), 0);
-        assertTrue(pr2.getDiskRegionStats().getNumOverflowOnDisk()>=
-            extraEntries / 2);
+        assertEquals(((AbstractLRURegionMap) pr2.entries)._getLruList().stats().getDestroys(), 0);
+        assertTrue(pr2.getDiskRegionStats().getNumOverflowOnDisk() >= extraEntries / 2);
       }
     });
   }
- 
 
- public void prepareScenario(EvictionAlgorithm evictionAlgorithm) {
+
+  public void prepareScenario(EvictionAlgorithm evictionAlgorithm) {
     createCacheInAllVms();
-    createPartitionedRegionInAllVMS(true, evictionAlgorithm, "PR1",
-        totalNoOfBuckets, 1, 10000);
-    createPartitionedRegionInAllVMS(true, evictionAlgorithm, "PR2",
-        totalNoOfBuckets, 2, 10000);
+    createPartitionedRegionInAllVMS(true, evictionAlgorithm, "PR1", totalNoOfBuckets, 1, 10000);
+    createPartitionedRegionInAllVMS(true, evictionAlgorithm, "PR2", totalNoOfBuckets, 2, 10000);
   }
 
   public void createCacheInAllVms() {
     createCache();
-    
+
     dataStore1.invoke(new SerializableRunnable() {
       @Override
       public void run() {
         createCache();
-      }      
+      }
     });
-    
+
     dataStore2.invoke(new SerializableRunnable() {
       @Override
       public void run() {
         createCache();
-      }      
+      }
     });
   }
 
@@ -433,8 +441,7 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
       LogWriterUtils.getLogWriter().info("cache= " + cache);
       LogWriterUtils.getLogWriter().info("cache closed= " + cache.isClosed());
       cache.getResourceManager().setEvictionHeapPercentage(20);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("Failed while creating the cache", e);
     }
   }
@@ -446,21 +453,22 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
     dataStore1.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        createPartitionedRegion(setEvictionOn, evictionAlgorithm, regionName,totalNoOfBuckets, evictionAction, evictorInterval);
-      }      
+        createPartitionedRegion(setEvictionOn, evictionAlgorithm, regionName, totalNoOfBuckets,
+            evictionAction, evictorInterval);
+      }
     });
-    
+
     dataStore2.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        createPartitionedRegion(setEvictionOn, evictionAlgorithm, regionName,totalNoOfBuckets, evictionAction, evictorInterval);
-      }      
+        createPartitionedRegion(setEvictionOn, evictionAlgorithm, regionName, totalNoOfBuckets,
+            evictionAction, evictorInterval);
+      }
     });
   }
 
-  public void createPartitionedRegion(boolean setEvictionOn,
-      EvictionAlgorithm evictionAlgorithm, String regionName,
-      int totalNoOfBuckets, int evictionAction, int evictorInterval) {
+  public void createPartitionedRegion(boolean setEvictionOn, EvictionAlgorithm evictionAlgorithm,
+      String regionName, int totalNoOfBuckets, int evictionAction, int evictorInterval) {
 
     final AttributesFactory factory = new AttributesFactory();
     factory.setOffHeap(isOffHeapEnabled());
@@ -470,33 +478,24 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
     factory.setPartitionAttributes(partitionAttributesFactory.create());
     if (setEvictionOn) {
       if (evictionAlgorithm.isLRUHeap()) {
-        factory.setEvictionAttributes(EvictionAttributes
-            .createLRUHeapAttributes(null,
-                evictionAction == 1 ? EvictionAction.LOCAL_DESTROY
-                    : EvictionAction.OVERFLOW_TO_DISK));
-      }
-      else if (evictionAlgorithm.isLRUMemory()) {
-        factory.setEvictionAttributes(EvictionAttributes
-            .createLRUMemoryAttributes(maxSizeInMb, new ObjectSizerImpl(),
-                evictionAction == 1 ? EvictionAction.LOCAL_DESTROY
-                    : EvictionAction.OVERFLOW_TO_DISK));
-      }
-      else {
-        factory.setEvictionAttributes(EvictionAttributes
-            .createLRUEntryAttributes(maxEnteries,
-                evictionAction == 1 ? EvictionAction.LOCAL_DESTROY
-                    : EvictionAction.OVERFLOW_TO_DISK));
+        factory.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(null,
+            evictionAction == 1 ? EvictionAction.LOCAL_DESTROY : EvictionAction.OVERFLOW_TO_DISK));
+      } else if (evictionAlgorithm.isLRUMemory()) {
+        factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(maxSizeInMb,
+            new ObjectSizerImpl(),
+            evictionAction == 1 ? EvictionAction.LOCAL_DESTROY : EvictionAction.OVERFLOW_TO_DISK));
+      } else {
+        factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(maxEnteries,
+            evictionAction == 1 ? EvictionAction.LOCAL_DESTROY : EvictionAction.OVERFLOW_TO_DISK));
       }
       if (evictionAction == 2) {
         final File[] diskDirs = new File[1];
-        diskDirs[0] = new File("Partitioned_Region_EvictionStats/" + "LogFile"
-            + "_" + OSProcess.getId());
+        diskDirs[0] =
+            new File("Partitioned_Region_EvictionStats/" + "LogFile" + "_" + OSProcess.getId());
         diskDirs[0].mkdirs();
         factory.setDiskSynchronous(true);
-        factory.setDiskStoreName(cache.createDiskStoreFactory()
-                                 .setDiskDirs(diskDirs)
-                                 .create("EvictionStatsDUnitTest")
-                                 .getName());
+        factory.setDiskStoreName(cache.createDiskStoreFactory().setDiskDirs(diskDirs)
+            .create("EvictionStatsDUnitTest").getName());
       }
     }
 
@@ -512,7 +511,7 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
         final Region pr = cache.getRegion(regionName);
         for (int counter = 1; counter <= noOfElememts; counter++) {
           pr.put(new Integer(counter), new byte[1 * 1024 * 1024]);
-          //getLogWriter().info("Deep put data element no->" + counter);
+          // getLogWriter().info("Deep put data element no->" + counter);
         }
       }
     });
@@ -521,45 +520,40 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
   private long getPRCounter(String prRegionName) {
     final long ONE_MEG = 1024L * 1024L;
     long sizeOfPR = 0;
-    sizeOfPR = sizeOfPR
-        + (Long)dataStore1.invoke(() -> EvictionStatsDUnitTest.getPartionRegionCounter( prRegionName ));
-    sizeOfPR = sizeOfPR
-        + (Long)dataStore2.invoke(() -> EvictionStatsDUnitTest.getPartionRegionCounter( prRegionName ));
+    sizeOfPR = sizeOfPR + (Long) dataStore1
+        .invoke(() -> EvictionStatsDUnitTest.getPartionRegionCounter(prRegionName));
+    sizeOfPR = sizeOfPR + (Long) dataStore2
+        .invoke(() -> EvictionStatsDUnitTest.getPartionRegionCounter(prRegionName));
     return sizeOfPR / ONE_MEG;
   }
 
   public static long getPartionRegionCounter(String prRegionName) {
-    final PartitionedRegion pr = (PartitionedRegion)cache
-        .getRegion(prRegionName);
-    return ((AbstractLRURegionMap)pr.entries)._getLruList().stats()
-        .getCounter();
+    final PartitionedRegion pr = (PartitionedRegion) cache.getRegion(prRegionName);
+    return ((AbstractLRURegionMap) pr.entries)._getLruList().stats().getCounter();
   }
 
   private long getCounterForBucketsOfPR(String prRegionName) {
     final long ONE_MEG = 1024L * 1024L;
     long totalBucketSize = 0;
     totalBucketSize = totalBucketSize
-        + (Long)dataStore1.invoke(() -> EvictionStatsDUnitTest.getCounterForBuckets( prRegionName ));
+        + (Long) dataStore1.invoke(() -> EvictionStatsDUnitTest.getCounterForBuckets(prRegionName));
     totalBucketSize = totalBucketSize
-        + (Long)dataStore2.invoke(() -> EvictionStatsDUnitTest.getCounterForBuckets( prRegionName ));
+        + (Long) dataStore2.invoke(() -> EvictionStatsDUnitTest.getCounterForBuckets(prRegionName));
     return totalBucketSize / ONE_MEG;
 
   }
 
   public static long getCounterForBuckets(String prRegionName) {
     long bucketSize = 0;
-    final PartitionedRegion pr = (PartitionedRegion)cache
-        .getRegion(prRegionName);
-    for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
-        .hasNext();) {
-      final Map.Entry entry = (Map.Entry)i.next();
-      final BucketRegion bucketRegion = (BucketRegion)entry.getValue();
+    final PartitionedRegion pr = (PartitionedRegion) cache.getRegion(prRegionName);
+    for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
+      final Map.Entry entry = (Map.Entry) i.next();
+      final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
       }
-      LogWriterUtils.getLogWriter().info(
-          "Size of bucket " + bucketRegion.getName() + "of Pr " + prRegionName
-              + " = " + bucketRegion.getCounter() / (1000000));
+      LogWriterUtils.getLogWriter().info("Size of bucket " + bucketRegion.getName() + "of Pr "
+          + prRegionName + " = " + bucketRegion.getCounter() / (1000000));
       bucketSize = bucketSize + bucketRegion.getCounter();
     }
     return bucketSize;
@@ -567,5 +561,5 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
 
   public boolean isOffHeapEnabled() {
     return false;
-  }    
+  }
 }

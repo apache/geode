@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli;
 
@@ -64,7 +62,8 @@ public class GfshParserIntegrationTest {
 
   @Test
   public void optionStartsWithHyphenWithoutQuotes() throws Exception {
-    String input = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
+    String input =
+        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
     Map<String, String> params = params(input, "rebalance", "rebalance");
 
     assertThat(params.get("exclude-region")).isEqualTo("/GemfireDataCommandsDUnitTestRegion2");
@@ -74,7 +73,8 @@ public class GfshParserIntegrationTest {
 
   @Test
   public void optionStartsWithHyphenWithQuotes() throws Exception {
-    String input = "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
+    String input =
+        "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
     Map<String, String> params = params(input, "rebalance", "rebalance");
 
     assertThat(params.get("exclude-region")).isEqualTo("/GemfireDataCommandsDUnitTestRegion2");
@@ -129,25 +129,30 @@ public class GfshParserIntegrationTest {
 
   @Test
   public void twoJOptions() throws Exception {
-    String input = "start locator --J=-Dgemfire.http-service-port=8080 --name=loc1 --J=-Ddummythinghere";
+    String input =
+        "start locator --J=-Dgemfire.http-service-port=8080 --name=loc1 --J=-Ddummythinghere";
     Map<String, String> params = params(input, "start locator", "startLocator");
 
     assertThat(params.get("name")).isEqualTo("loc1");
-    assertThat(params.get("J")).isEqualTo("\"-Dgemfire.http-service-port=8080\",\"-Ddummythinghere\"");
+    assertThat(params.get("J"))
+        .isEqualTo("\"-Dgemfire.http-service-port=8080\",\"-Ddummythinghere\"");
   }
 
   @Test
   public void twoJOptionsOneWithQuotesOneWithout() throws Exception {
-    String input = "start locator --J=\"-Dgemfire.http-service-port=8080\" --name=loc1 --J=-Ddummythinghere";
+    String input =
+        "start locator --J=\"-Dgemfire.http-service-port=8080\" --name=loc1 --J=-Ddummythinghere";
     Map<String, String> params = params(input, "start locator", "startLocator");
 
     assertThat(params.get("name")).isEqualTo("loc1");
-    assertThat(params.get("J")).isEqualTo("\"-Dgemfire.http-service-port=8080\",\"-Ddummythinghere\"");
+    assertThat(params.get("J"))
+        .isEqualTo("\"-Dgemfire.http-service-port=8080\",\"-Ddummythinghere\"");
   }
 
   @Test
   public void oneJOptionWithQuotesAndLotsOfSpaces() throws Exception {
-    String input = "start locator       --J=\"-Dgemfire.http-service-port=8080\"      --name=loc1         ";
+    String input =
+        "start locator       --J=\"-Dgemfire.http-service-port=8080\"      --name=loc1         ";
     Map<String, String> params = params(input, "start locator", "startLocator");
 
     assertThat(params.get("name")).isEqualTo("loc1");

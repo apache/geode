@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal;
 
@@ -36,9 +34,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * 
  *
  */
-public class SortedStructBag extends SortedResultsBag<Object[]> implements StructFields{
+public class SortedStructBag extends SortedResultsBag<Object[]> implements StructFields {
 
-  
+
   /**
    * Constructor for unordered input
    * 
@@ -49,9 +47,10 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
     super(comparator, nullAtStart);
 
   }
-  
+
   /**
    * Constructor for unordered input
+   * 
    * @param comparator
    * @param elementType
    * @param nullAtStart
@@ -69,9 +68,9 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
    * @param stats
    * @param nullAtStart
    */
-  public SortedStructBag(Comparator<Object[]> comparator,
-      ObjectType elementType, CachePerfStats stats, boolean nullAtStart) {
-    super(comparator, elementType, stats,  nullAtStart);
+  public SortedStructBag(Comparator<Object[]> comparator, ObjectType elementType,
+      CachePerfStats stats, boolean nullAtStart) {
+    super(comparator, elementType, stats, nullAtStart);
 
   }
 
@@ -93,14 +92,13 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   public boolean add(Object obj) {
     if (!(obj instanceof StructImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL
-              .toLocalizedString());
+          LocalizedStrings.StructBag_THIS_SET_ONLY_ACCEPTS_STRUCTIMPL.toLocalizedString());
     }
     StructImpl s = (StructImpl) obj;
     if (!this.elementType.equals(s.getStructType())) {
       throw new IllegalArgumentException(
           LocalizedStrings.StructBag_OBJ_DOES_NOT_HAVE_THE_SAME_STRUCTTYPE
-              .toLocalizedString(this.elementType,s.getStructType()) );
+              .toLocalizedString(this.elementType, s.getStructType()));
     }
     return addFieldValues(s.getFieldValues());
   }
@@ -124,14 +122,13 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
     }
     return containsFieldValues(s.getFieldValues());
   }
-  
+
   public CollectionType getCollectionType() {
     return new CollectionTypeImpl(SortedStructBag.class, this.elementType);
   }
 
   /**
-   * Does this set contain a Struct of the correct type with the specified
-   * values?
+   * Does this set contain a Struct of the correct type with the specified values?
    */
   public boolean containsFieldValues(Object[] fieldValues) {
     // Asif: The fieldValues can never be null . If the Struc contained
@@ -291,8 +288,8 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   }
 
   /**
-   * Return an iterator over the elements in this collection. Duplicates will
-   * show up the number of times it has occurrances.
+   * Return an iterator over the elements in this collection. Duplicates will show up the number of
+   * times it has occurrances.
    */
   @Override
   public Iterator iterator() {
@@ -312,8 +309,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
   public void setElementType(ObjectType elementType) {
     if (!(elementType instanceof StructTypeImpl)) {
       throw new IllegalArgumentException(
-          LocalizedStrings.StructBag_ELEMENT_TYPE_MUST_BE_STRUCT
-              .toLocalizedString());
+          LocalizedStrings.StructBag_ELEMENT_TYPE_MUST_BE_STRUCT.toLocalizedString());
     }
     this.elementType = elementType;
   }
@@ -341,8 +337,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
     private final Iterator itr;
 
     /**
-     * @param itr
-     *          iterator over the Object[] instances of fieldValues
+     * @param itr iterator over the Object[] instances of fieldValues
      */
     StructBagIterator(Iterator itr) {
       this.itr = itr;

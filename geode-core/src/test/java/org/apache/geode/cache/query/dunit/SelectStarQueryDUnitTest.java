@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.dunit;
 
@@ -53,8 +51,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * Test for #44807 to eliminate unnecessary serialization/deserialization in
- * select * queries
+ * Test for #44807 to eliminate unnecessary serialization/deserialization in select * queries
  */
 @Category(DistributedTest.class)
 public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
@@ -65,35 +62,168 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
   private final String regName = "exampleRegion";
   private final String regName2 = "exampleRegion2";
 
-  private final String[] queries = { "SELECT * FROM /" + regName,// 0
-      "SELECT * FROM /" + regName + " limit 5",// 1
-      "SELECT p from  /" + regName + " p",// 2
-      "SELECT count(*) FROM /" + regName,// 3
-      "SELECT ALL * from /" + regName,// 4
-      "SELECT * from /" + regName + ".values",// 5
-      "SELECT distinct * FROM /" + regName,// 6
-      "SELECT distinct * FROM /" + regName + " p order by p.ID",// 7
+  private final String[] queries = {"SELECT * FROM /" + regName, // 0
+      "SELECT * FROM /" + regName + " limit 5", // 1
+      "SELECT p from  /" + regName + " p", // 2
+      "SELECT count(*) FROM /" + regName, // 3
+      "SELECT ALL * from /" + regName, // 4
+      "SELECT * from /" + regName + ".values", // 5
+      "SELECT distinct * FROM /" + regName, // 6
+      "SELECT distinct * FROM /" + regName + " p order by p.ID", // 7
       "SELECT * from /" + regName + " r, positions.values pos"// 8
   };
-  private final int[] resultSize = { 20, 5, 20, 1, 20, 20, 20, 20, 40 };
+  private final int[] resultSize = {20, 5, 20, 1, 20, 20, 20, 20, 40};
 
-  private final String[] multipleRegionQueries = {
-      " SELECT * FROM /" + regName + ", /" + regName2,
+  private final String[] multipleRegionQueries = {" SELECT * FROM /" + regName + ", /" + regName2,
       "SELECT * FROM /" + regName + ", /" + regName2 + " limit 5",
       "SELECT distinct * FROM /" + regName + ", /" + regName2,
-      "SELECT distinct * FROM /" + regName + " p1, /" + regName2
-          + " p2 order by p1.ID",
+      "SELECT distinct * FROM /" + regName + " p1, /" + regName2 + " p2 order by p1.ID",
       "SELECT count(*) FROM /" + regName + ", /" + regName2,
       "SELECT p, q from  /" + regName + " p, /" + regName2 + " q",
       "SELECT ALL * from /" + regName + " p, /" + regName2 + " q",
       "SELECT * from /" + regName + ".values" + ", /" + regName2 + ".values",
-      "SELECT * from /" + regName + " p, p.positions.values pos" + ", /"
-          + regName2 + " q, q.positions.values pos", };
-  private final int[] resultSize2 = { 400, 5, 400, 400, 1, 400, 400, 400, 1600 };
+      "SELECT * from /" + regName + " p, p.positions.values pos" + ", /" + regName2
+          + " q, q.positions.values pos",};
+  private final int[] resultSize2 = {400, 5, 400, 400, 1, 400, 400, 400, 1600};
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     invokeInEveryVM(() -> oldObserver = null);
+  }
+
+  @Test
+  public void functionWithStructTypeInInnerQueryShouldNotThrowException() throws Exception {
+    final Host host = Host.getHost(0);
+    final VM server1 = host.getVM(0);
+    final VM client = host.getVM(3);
+    PortfolioPdx[] portfolios = new PortfolioPdx[10];
+    for (int i = 0; i < portfolios.length; i++) {
+      portfolios[i] = new PortfolioPdx(i);
+    }
+
+    // create servers and regions
+    final int port1 = startPartitionedCacheServer(server1, portfolios);
+
+    // create client
+    client.invoke(new SerializableCallable("Create client") {
+      @Override
+      public Object call() throws Exception {
+        ClientCacheFactory cf = new ClientCacheFactory();
+        cf.addPoolServer(getServerHostName(server1.getHost()), port1);
+        ClientCache cache = getClientCache(cf);
+        cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(regName);
+        return null;
+      }
+    });
+
+    // put serialized PortfolioPdx objects
+    client.invoke(new SerializableCallable("Put objects") {
+      @Override
+      public Object call() throws Exception {
+        Region r1 = getRootRegion(regName);
+        for (int i = 10; i < 100; i++) {
+          r1.put("key-" + i, new PortfolioPdx(i));
+        }
+        return null;
+      }
+    });
+
+    // query remotely from client
+    client.invoke(new SerializableCallable("Query") {
+      @Override
+      public Object call() throws Exception {
+        getLogWriter().info("Querying remotely from client");
+        QueryService remoteQS = null;
+        try {
+          remoteQS = ((ClientCache) getCache()).getQueryService();
+          SelectResults sr = (SelectResults) remoteQS
+              .newQuery("select distinct oP.ID, oP.status, oP.getType from /" + regName
+                  + " oP where element(select distinct p.ID, p.status, p.getType from /" + regName
+                  + " p where p.ID = oP.ID).status = 'inactive'")
+              .execute();
+          assertEquals(50, sr.size());
+        } catch (Exception e) {
+          fail("Exception getting query service ", e);
+        }
+
+        return null;
+      }
+    });
+
+    closeCache(client);
+    closeCache(server1);
+  }
+
+  @Test
+  public void functionWithStructTypeInInnerQueryShouldNotThrowExceptionWhenRunOnMultipleNodes()
+      throws Exception {
+    final Host host = Host.getHost(0);
+    final VM server1 = host.getVM(0);
+    final VM server2 = host.getVM(1);
+    final VM server3 = host.getVM(2);
+    final VM client = host.getVM(3);
+    PortfolioPdx[] portfolios = new PortfolioPdx[10];
+    for (int i = 0; i < portfolios.length; i++) {
+      portfolios[i] = new PortfolioPdx(i);
+    }
+
+    // create servers and regions
+    final int port1 = startPartitionedCacheServer(server1, portfolios);
+    final int port2 = startPartitionedCacheServer(server2, portfolios);
+    final int port3 = startPartitionedCacheServer(server3, portfolios);
+
+    // create client
+    client.invoke(new SerializableCallable("Create client") {
+      @Override
+      public Object call() throws Exception {
+        ClientCacheFactory cf = new ClientCacheFactory();
+        cf.addPoolServer(getServerHostName(server1.getHost()), port1);
+        cf.addPoolServer(getServerHostName(server2.getHost()), port2);
+        cf.addPoolServer(getServerHostName(server3.getHost()), port3);
+        ClientCache cache = getClientCache(cf);
+        cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(regName);
+        return null;
+      }
+    });
+
+    // put serialized PortfolioPdx objects
+    client.invoke(new SerializableCallable("Put objects") {
+      @Override
+      public Object call() throws Exception {
+        Region r1 = getRootRegion(regName);
+        for (int i = 10; i < 100; i++) {
+          r1.put("key-" + i, new PortfolioPdx(i));
+        }
+        return null;
+      }
+    });
+
+    // query remotely from client
+    client.invoke(new SerializableCallable("Query") {
+      @Override
+      public Object call() throws Exception {
+        getLogWriter().info("Querying remotely from client");
+        QueryService remoteQS = null;
+        try {
+          remoteQS = ((ClientCache) getCache()).getQueryService();
+          SelectResults sr = (SelectResults) remoteQS
+              .newQuery("select distinct oP.ID, oP.status, oP.getType from /" + regName
+                  + " oP where element(select distinct p.ID, p.status, p.getType from /" + regName
+                  + " p where p.ID = oP.ID).status = 'inactive'")
+              .execute();
+          assertEquals(50, sr.size());
+        } catch (Exception e) {
+          fail("Exception getting query service ", e);
+        }
+        return null;
+      }
+    });
+
+
+    closeCache(client);
+    closeCache(server1);
+    closeCache(server2);
+    closeCache(server3);
   }
 
   @Test
@@ -114,12 +244,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     final int port3 = startPartitionedCacheServer(server3, portfolios);
 
     server1.invoke(new SerializableCallable("Set observer") {
-          @Override
-          public Object call() throws Exception {
-            oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
-            return null;
-          }
-        });
+      @Override
+      public Object call() throws Exception {
+        oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
+        return null;
+      }
+    });
 
     // create client
     client.invoke(new SerializableCallable("Create client") {
@@ -130,8 +260,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         cf.addPoolServer(getServerHostName(server2.getHost()), port2);
         cf.addPoolServer(getServerHostName(server3.getHost()), port3);
         ClientCache cache = getClientCache(cf);
-        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regName);
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regName);
         return null;
       }
     });
@@ -183,17 +312,14 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + queries[i]
-                        + " should be instance of PortfolioPdx and not "
-                        + obj.getClass());
+                    fail("Result objects for remote client query: " + queries[i]
+                        + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
               } else if (rs instanceof PortfolioPdx) {
               } else {
                 fail("Result objects for remote client query: " + queries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + rs.getClass());
+                    + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
             }
           }
@@ -219,8 +345,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     server1.invoke(new SerializableCallable("Query") {
       @Override
       public Object call() throws Exception {
-        QueryObserver observer = QueryObserverHolder
-            .setInstance(new QueryResultTrackingObserver());
+        QueryObserver observer = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
         QueryService qs = null;
         try {
           qs = getCache().getQueryService();
@@ -244,17 +369,14 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + queries[i]
-                        + " should be instance of PortfolioPdx and not "
-                        + obj.getClass());
+                    fail("Result objects for remote client query: " + queries[i]
+                        + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
               } else if (rs instanceof PortfolioPdx) {
               } else {
                 fail("Result objects for remote client query: " + queries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + rs.getClass());
+                    + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
             }
           }
@@ -285,12 +407,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     final int port1 = startReplicatedCacheServer(server1);
 
     server1.invoke(new SerializableCallable("Set observer") {
-          @Override
-          public Object call() throws Exception {
-            oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
-            return null;
-          }
-        });
+      @Override
+      public Object call() throws Exception {
+        oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
+        return null;
+      }
+    });
 
     // create client
     client.invoke(new SerializableCallable("Create client") {
@@ -299,10 +421,8 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(getServerHostName(server1.getHost()), port1);
         ClientCache cache = getClientCache(cf);
-        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regName);
-        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regName2);
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regName);
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regName2);
         return null;
       }
     });
@@ -339,11 +459,9 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
 
         for (int i = 0; i < multipleRegionQueries.length; i++) {
           try {
-            res = (SelectResults) localQS.newQuery(multipleRegionQueries[i])
-                .execute();
+            res = (SelectResults) localQS.newQuery(multipleRegionQueries[i]).execute();
             sr[0][0] = res;
-            res = (SelectResults) remoteQS.newQuery(multipleRegionQueries[i])
-                .execute();
+            res = (SelectResults) remoteQS.newQuery(multipleRegionQueries[i]).execute();
             sr[0][1] = res;
             CacheUtils.compareResultsOfWithAndWithoutIndex(sr);
           } catch (Exception e) {
@@ -360,18 +478,14 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + multipleRegionQueries[i]
-                        + " should be instance of PortfolioPdx and not "
-                        + obj.getClass());
+                    fail("Result objects for remote client query: " + multipleRegionQueries[i]
+                        + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
               } else if (rs instanceof PortfolioPdx) {
               } else {
-                fail("Result objects for remote client query: "
-                    + multipleRegionQueries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + rs.getClass());
+                fail("Result objects for remote client query: " + multipleRegionQueries[i]
+                    + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
             }
           }
@@ -398,8 +512,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     server1.invoke(new SerializableCallable("Query") {
       @Override
       public Object call() throws Exception {
-        QueryObserver observer = QueryObserverHolder
-            .setInstance(new QueryResultTrackingObserver());
+        QueryObserver observer = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
         QueryService qs = null;
         try {
           qs = getCache().getQueryService();
@@ -409,8 +522,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         SelectResults res = null;
         for (int i = 0; i < multipleRegionQueries.length; i++) {
           try {
-            res = (SelectResults) qs.newQuery(multipleRegionQueries[i])
-                .execute();
+            res = (SelectResults) qs.newQuery(multipleRegionQueries[i]).execute();
           } catch (Exception e) {
             fail("Error executing query: " + multipleRegionQueries[i], e);
           }
@@ -425,18 +537,14 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + multipleRegionQueries[i]
-                        + " should be instance of PortfolioPdx and not "
-                        + obj.getClass());
+                    fail("Result objects for remote client query: " + multipleRegionQueries[i]
+                        + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
               } else if (rs instanceof PortfolioPdx) {
               } else {
-                fail("Result objects for remote client query: "
-                    + multipleRegionQueries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + rs.getClass());
+                fail("Result objects for remote client query: " + multipleRegionQueries[i]
+                    + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
             }
 
@@ -462,15 +570,13 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     final Host host = Host.getHost(0);
     final VM server1 = host.getVM(0);
     final VM client = host.getVM(3);
-    final byte[] ba = new byte[] { 1, 2, 3, 4, 5 };
+    final byte[] ba = new byte[] {1, 2, 3, 4, 5};
 
     // create servers and regions
-    final int port = (Integer) server1.invoke(new SerializableCallable(
-        "Create Server1") {
+    final int port = (Integer) server1.invoke(new SerializableCallable("Create Server1") {
       @Override
       public Object call() throws Exception {
-        Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE)
-            .create(regName);
+        Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regName);
         // put domain objects
         for (int i = 0; i < 10; i++) {
           r1.put("key-" + i, ba);
@@ -484,12 +590,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     server1.invoke(new SerializableCallable("Set observer") {
-          @Override
-          public Object call() throws Exception {
-            oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
-            return null;
-          }
-        });
+      @Override
+      public Object call() throws Exception {
+        oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
+        return null;
+      }
+    });
 
     // create client
     client.invoke(new SerializableCallable("Create client") {
@@ -498,8 +604,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(getServerHostName(server1.getHost()), port);
         ClientCache cache = getClientCache(cf);
-        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regName);
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regName);
         return null;
       }
     });
@@ -558,8 +663,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 }
               } else {
                 fail("Result objects for remote client query: " + queries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + o.getClass());
+                    + " should be instance of PortfolioPdx and not " + o.getClass());
               }
             }
           }
@@ -585,8 +689,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     server1.invoke(new SerializableCallable("Query") {
       @Override
       public Object call() throws Exception {
-        QueryObserver observer = QueryObserverHolder
-            .setInstance(new QueryResultTrackingObserver());
+        QueryObserver observer = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
         QueryService qs = null;
         try {
           qs = getCache().getQueryService();
@@ -616,8 +719,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 }
               } else {
                 fail("Result objects for server local query: " + queries[i]
-                    + " should be instance of byte array and not "
-                    + o.getClass());
+                    + " should be instance of byte array and not " + o.getClass());
               }
             }
           }
@@ -647,7 +749,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     final byte[][] objs = new byte[10][5];
 
     for (int i = 0; i < objs.length; i++) {
-      objs[i] = new byte[] { 1, 2, 3, 4, 5 };
+      objs[i] = new byte[] {1, 2, 3, 4, 5};
     }
 
     // create servers and regions
@@ -656,12 +758,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     final int port3 = startPartitionedCacheServer(server3, objs);
 
     server1.invoke(new SerializableCallable("Set observer") {
-          @Override
-          public Object call() throws Exception {
-            oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
-            return null;
-          }
-        });
+      @Override
+      public Object call() throws Exception {
+        oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
+        return null;
+      }
+    });
 
     // create client
     client.invoke(new SerializableCallable("Create client") {
@@ -672,8 +774,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         cf.addPoolServer(getServerHostName(server2.getHost()), port2);
         cf.addPoolServer(getServerHostName(server3.getHost()), port3);
         ClientCache cache = getClientCache(cf);
-        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regName);
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regName);
         return null;
       }
     });
@@ -684,7 +785,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         Region r1 = getRootRegion(regName);
         for (int i = 10; i < 20; i++) {
-          r1.put("key-" + i, new byte[] { 1, 2, 3, 4, 5 });
+          r1.put("key-" + i, new byte[] {1, 2, 3, 4, 5});
         }
         return null;
       }
@@ -732,8 +833,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 }
               } else {
                 fail("Result objects for remote client query: " + queries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + o.getClass());
+                    + " should be instance of PortfolioPdx and not " + o.getClass());
               }
             }
           }
@@ -759,8 +859,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     server1.invoke(new SerializableCallable("Query") {
       @Override
       public Object call() throws Exception {
-        QueryObserver observer = QueryObserverHolder
-            .setInstance(new QueryResultTrackingObserver());
+        QueryObserver observer = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
         QueryService qs = null;
         try {
           qs = getCache().getQueryService();
@@ -790,8 +889,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 }
               } else {
                 fail("Result objects for server local query: " + queries[i]
-                    + " should be instance of byte array and not "
-                    + o.getClass());
+                    + " should be instance of byte array and not " + o.getClass());
               }
             }
           }
@@ -827,10 +925,8 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(getServerHostName(server1.getHost()), port1);
         ClientCache cache = getClientCache(cf);
-        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regName);
-        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regName2);
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regName);
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regName2);
         return null;
       }
     });
@@ -883,11 +979,9 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
 
         for (int i = 0; i < multipleRegionQueries.length; i++) {
           try {
-            res = (SelectResults) localQS.newQuery(multipleRegionQueries[i])
-                .execute();
+            res = (SelectResults) localQS.newQuery(multipleRegionQueries[i]).execute();
             sr[0][0] = res;
-            res = (SelectResults) remoteQS.newQuery(multipleRegionQueries[i])
-                .execute();
+            res = (SelectResults) remoteQS.newQuery(multipleRegionQueries[i]).execute();
             sr[0][1] = res;
             CacheUtils.compareResultsOfWithAndWithoutIndex(sr);
           } catch (Exception e) {
@@ -904,18 +998,14 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + multipleRegionQueries[i]
-                        + " should be instance of PortfolioPdx and not "
-                        + obj.getClass());
+                    fail("Result objects for remote client query: " + multipleRegionQueries[i]
+                        + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
               } else if (rs instanceof PortfolioPdx) {
               } else {
-                fail("Result objects for remote client query: "
-                    + multipleRegionQueries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + rs.getClass());
+                fail("Result objects for remote client query: " + multipleRegionQueries[i]
+                    + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
             }
           }
@@ -959,11 +1049,9 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
 
         for (int i = 0; i < multipleRegionQueries.length; i++) {
           try {
-            res = (SelectResults) localQS.newQuery(multipleRegionQueries[i])
-                .execute();
+            res = (SelectResults) localQS.newQuery(multipleRegionQueries[i]).execute();
             sr[0][0] = res;
-            res = (SelectResults) remoteQS.newQuery(multipleRegionQueries[i])
-                .execute();
+            res = (SelectResults) remoteQS.newQuery(multipleRegionQueries[i]).execute();
             sr[0][1] = res;
             CacheUtils.compareResultsOfWithAndWithoutIndex(sr);
           } catch (Exception e) {
@@ -980,18 +1068,14 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + multipleRegionQueries[i]
-                        + " should be instance of PortfolioPdx and not "
-                        + obj.getClass());
+                    fail("Result objects for remote client query: " + multipleRegionQueries[i]
+                        + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
               } else if (rs instanceof PortfolioPdx) {
               } else {
-                fail("Result objects for remote client query: "
-                    + multipleRegionQueries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + rs.getClass());
+                fail("Result objects for remote client query: " + multipleRegionQueries[i]
+                    + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
             }
           }
@@ -1014,12 +1098,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     final int port1 = startReplicatedCacheServer(server1);
 
     server1.invoke(new SerializableCallable("Set observer") {
-          @Override
-          public Object call() throws Exception {
-            oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
-            return null;
-          }
-        });
+      @Override
+      public Object call() throws Exception {
+        oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
+        return null;
+      }
+    });
 
     // create client
     client.invoke(new SerializableCallable("Create client") {
@@ -1028,8 +1112,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(getServerHostName(server1.getHost()), port1);
         ClientCache cache = getClientCache(cf);
-        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regName);
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regName);
         return null;
       }
     });
@@ -1083,17 +1166,14 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + queries[i]
-                        + " should be instance of PortfolioPdx and not "
-                        + obj.getClass());
+                    fail("Result objects for remote client query: " + queries[i]
+                        + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
               } else if (rs instanceof PortfolioPdx) {
               } else {
                 fail("Result objects for remote client query: " + queries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + rs.getClass());
+                    + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
             }
           }
@@ -1119,8 +1199,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     server1.invoke(new SerializableCallable("Query") {
       @Override
       public Object call() throws Exception {
-        QueryObserver observer = QueryObserverHolder
-            .setInstance(new QueryResultTrackingObserver());
+        QueryObserver observer = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
         QueryService qs = null;
         try {
           qs = getCache().getQueryService();
@@ -1145,17 +1224,14 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + queries[i]
-                        + " should be instance of PortfolioPdx and not "
-                        + obj.getClass());
+                    fail("Result objects for remote client query: " + queries[i]
+                        + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
               } else if (rs instanceof PortfolioPdx) {
               } else {
                 fail("Result objects for remote client query: " + queries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + rs.getClass());
+                    + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
             }
           }
@@ -1196,22 +1272,19 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             assertEquals(20, cnt);
 
           } else {
-            for(Object rs : res){
+            for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PdxInstance) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + queries[i]
-                        + " should be instance of PdxInstance and not "
-                        + obj.getClass());
+                    fail("Result objects for remote client query: " + queries[i]
+                        + " should be instance of PdxInstance and not " + obj.getClass());
                   }
                 }
               } else if (rs instanceof PdxInstance) {
               } else {
                 fail("Result objects for remote client query: " + queries[i]
-                    + " should be instance of PdxInstance and not "
-                    + rs.getClass());
+                    + " should be instance of PdxInstance and not " + rs.getClass());
               }
             }
           }
@@ -1234,12 +1307,12 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     final int port1 = startReplicatedCacheServer(server1);
 
     server1.invoke(new SerializableCallable("Set observer") {
-          @Override
-          public Object call() throws Exception {
-            oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
-            return null;
-          }
-        });
+      @Override
+      public Object call() throws Exception {
+        oldObserver = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
+        return null;
+      }
+    });
 
     // create client
     client.invoke(new SerializableCallable("Create client") {
@@ -1248,8 +1321,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(getServerHostName(server1.getHost()), port1);
         ClientCache cache = getClientCache(cf);
-        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regName);
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regName);
         return null;
       }
     });
@@ -1302,11 +1374,9 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else if (obj instanceof PortfolioPdx
-                      || obj instanceof PositionPdx) {
+                  } else if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + queries[i]
+                    fail("Result objects for remote client query: " + queries[i]
                         + " should be instance of PortfolioPdx or PortfolioPdx and not "
                         + obj.getClass());
                   }
@@ -1314,8 +1384,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
               } else if (rs instanceof PortfolioPdx || rs instanceof PortfolioPdx) {
               } else {
                 fail("Result objects for remote client query: " + queries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + rs.getClass());
+                    + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
             }
           }
@@ -1341,8 +1410,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     server1.invoke(new SerializableCallable("Query") {
       @Override
       public Object call() throws Exception {
-        QueryObserver observer = QueryObserverHolder
-            .setInstance(new QueryResultTrackingObserver());
+        QueryObserver observer = QueryObserverHolder.setInstance(new QueryResultTrackingObserver());
         QueryService qs = null;
         try {
           qs = getCache().getQueryService();
@@ -1366,11 +1434,9 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
-                  } else if (obj instanceof PortfolioPdx
-                      || obj instanceof PositionPdx) {
+                  } else if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + queries[i]
+                    fail("Result objects for remote client query: " + queries[i]
                         + " should be instance of PortfolioPdx or PortfolioPdx and not "
                         + obj.getClass());
                   }
@@ -1378,8 +1444,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
               } else if (rs instanceof PortfolioPdx || rs instanceof PortfolioPdx) {
               } else {
                 fail("Result objects for remote client query: " + queries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + rs.getClass());
+                    + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
             }
           }
@@ -1418,23 +1483,20 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
             assertEquals(20, cnt);
 
           } else {
-            for(Object rs : res){
+            for (Object rs : res) {
               if (rs instanceof StructImpl) {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else if (obj instanceof PdxInstance) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + queries[i]
-                        + " should be instance of PdxInstance and not "
-                        + obj.getClass());
+                    fail("Result objects for remote client query: " + queries[i]
+                        + " should be instance of PdxInstance and not " + obj.getClass());
                   }
                 }
               } else if (rs instanceof PdxInstance || rs instanceof PortfolioPdx) {
               } else {
                 fail("Result objects for remote client query: " + queries[i]
-                    + " should be instance of PdxInstance and not "
-                    + rs.getClass());
+                    + " should be instance of PdxInstance and not " + rs.getClass());
               }
             }
           }
@@ -1453,13 +1515,11 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     final VM server1 = host.getVM(0);
     final VM client = host.getVM(3);
     // create servers and regions
-    final int port = (Integer) server1.invoke(new SerializableCallable(
-        "Create Server1") {
+    final int port = (Integer) server1.invoke(new SerializableCallable("Create Server1") {
       @Override
       public Object call() throws Exception {
         ((GemFireCacheImpl) getCache()).setReadSerialized(true);
-        Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE)
-            .create(regName);
+        Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regName);
         CacheServer server = getCache().addCacheServer();
         int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
         server.setPort(port);
@@ -1475,8 +1535,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         ClientCacheFactory cf = new ClientCacheFactory();
         cf.addPoolServer(getServerHostName(server1.getHost()), port);
         ClientCache cache = getClientCache(cf);
-        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
-            .create(regName);
+        cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create(regName);
         Region r1 = getRootRegion(regName);
         for (int i = 0; i < 20; i++) {
           r1.put("key-" + i, new PortfolioPdx(i));
@@ -1522,17 +1581,14 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                 for (Object obj : ((StructImpl) rs).getFieldValues()) {
                   if (obj instanceof PortfolioPdx || obj instanceof PositionPdx) {
                   } else {
-                    fail("Result objects for remote client query: "
-                        + queries[i]
-                        + " should be instance of PortfolioPdx and not "
-                        + obj.getClass());
+                    fail("Result objects for remote client query: " + queries[i]
+                        + " should be instance of PortfolioPdx and not " + obj.getClass());
                   }
                 }
               } else if (rs instanceof PortfolioPdx) {
               } else {
                 fail("Result objects for remote client query: " + queries[i]
-                    + " should be instance of PortfolioPdx and not "
-                    + rs.getClass());
+                    + " should be instance of PortfolioPdx and not " + rs.getClass());
               }
             }
           }
@@ -1546,12 +1602,10 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   private int startPartitionedCacheServer(VM vm, final Object[] objs) {
-    final int port = (Integer) vm.invoke(new SerializableCallable(
-        "Create Server1") {
+    final int port = (Integer) vm.invoke(new SerializableCallable("Create Server1") {
       @Override
       public Object call() throws Exception {
-        Region r1 = getCache().createRegionFactory(RegionShortcut.PARTITION)
-            .create(regName);
+        Region r1 = getCache().createRegionFactory(RegionShortcut.PARTITION).create(regName);
         // put domain objects
         for (int i = 0; i < objs.length; i++) {
           r1.put("key-" + i, objs[i]);
@@ -1568,14 +1622,11 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   private int startReplicatedCacheServer(VM vm) {
-    final int port = (Integer) vm.invoke(new SerializableCallable(
-        "Create Server1") {
+    final int port = (Integer) vm.invoke(new SerializableCallable("Create Server1") {
       @Override
       public Object call() throws Exception {
-        Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE)
-            .create(regName);
-        Region r2 = getCache().createRegionFactory(RegionShortcut.REPLICATE)
-            .create(regName2);
+        Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regName);
+        Region r2 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regName2);
         // put domain objects
         for (int i = 0; i < 10; i++) {
           r1.put("key-" + i, new PortfolioPdx(i));

@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.lucene.internal.distributed;
@@ -67,25 +63,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
   @Test
   public void testGetResultsBlocksTillEnd() throws Exception {
     final TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
-    final CountDownLatch insideThread = new CountDownLatch(1);
-    final CountDownLatch resultReceived = new CountDownLatch(1);
-    Thread resultClient = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        insideThread.countDown();
-        collector.getResult();
-        resultReceived.countDown();
-      }
-    });
-    resultClient.start();
-
-    insideThread.await(1, TimeUnit.SECONDS);
-    assertEquals(0, insideThread.getCount());
-    assertEquals(1, resultReceived.getCount());
-
-    collector.endResults();
-    resultReceived.await(1, TimeUnit.SECONDS);
-    assertEquals(0, resultReceived.getCount());
+    TopEntries merged = collector.getResult();
+    assertEquals(0, merged.size());
   }
 
   @Test
@@ -98,114 +77,16 @@ public class TopEntriesFunctionCollectorJUnitTest {
     final CountDownLatch resultReceived = new CountDownLatch(1);
 
     final AtomicReference<TopEntries> result = new AtomicReference<>();
-
-    Thread resultClient = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        insideThread.countDown();
-        result.set(collector.getResult(1, TimeUnit.SECONDS));
-        resultReceived.countDown();
-      }
-    });
-    resultClient.start();
-
-    insideThread.await(1, TimeUnit.SECONDS);
-    assertEquals(0, insideThread.getCount());
-    assertEquals(1, resultReceived.getCount());
-
-    collector.endResults();
-
-    resultReceived.await(1, TimeUnit.SECONDS);
-    assertEquals(0, resultReceived.getCount());
-
-    TopEntries merged = result.get();
+    TopEntries merged = collector.getResult(1, TimeUnit.SECONDS);
     assertEquals(4, merged.size());
     TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
   }
 
-  @Test(expected = FunctionException.class)
-  public void testGetResultsWaitInterrupted() throws Exception {
-    interruptWhileWaiting(false);
-  }
-
-  @Test(expected = FunctionException.class)
-  public void testGetResultsTimedWaitInterrupted() throws Exception {
-    interruptWhileWaiting(false);
-  }
-
-  private void interruptWhileWaiting(final boolean timedWait) throws InterruptedException, Exception {
-    GemFireCacheImpl mockCache = mock(GemFireCacheImpl.class);
-    final TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(null, mockCache);
-
-    final CountDownLatch insideThread = new CountDownLatch(1);
-    final CountDownLatch endGetResult = new CountDownLatch(1);
-    final AtomicReference<Exception> exception = new AtomicReference<>();
-
-    Thread resultClient = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        insideThread.countDown();
-        try {
-          if (timedWait) {
-            collector.getResult(1, TimeUnit.SECONDS);
-          } else {
-            collector.getResult();
-          }
-        } catch (FunctionException e) {
-          exception.set(e);
-          endGetResult.countDown();
-        }
-      }
-    });
-    resultClient.start();
-
-    insideThread.await(1, TimeUnit.SECONDS);
-    assertEquals(0, insideThread.getCount());
-    assertEquals(1, endGetResult.getCount());
-
-    CancelCriterion mockCriterion = mock(CancelCriterion.class);
-    when(mockCache.getCancelCriterion()).thenReturn(mockCriterion);
-    resultClient.interrupt();
-    endGetResult.await(1, TimeUnit.SECONDS);
-    assertEquals(0, endGetResult.getCount());
-    throw exception.get();
-  }
-
-  @Test(expected = FunctionException.class)
-  public void expectErrorAfterWaitTime() throws Exception {
-    final TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(null);
-
-    final CountDownLatch insideThread = new CountDownLatch(1);
-    final CountDownLatch endGetResult = new CountDownLatch(1);
-    final AtomicReference<Exception> exception = new AtomicReference<>();
-
-    Thread resultClient = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        insideThread.countDown();
-        try {
-          collector.getResult(10, TimeUnit.MILLISECONDS);
-        } catch (FunctionException e) {
-          exception.set(e);
-          endGetResult.countDown();
-        }
-      }
-    });
-    resultClient.start();
-
-    insideThread.await(1, TimeUnit.SECONDS);
-    assertEquals(0, insideThread.getCount());
-    assertEquals(1, endGetResult.getCount());
-
-    endGetResult.await(1, TimeUnit.SECONDS);
-    assertEquals(0, endGetResult.getCount());
-    throw exception.get();
-  }
-
   @Test
   public void mergeShardAndLimitResults() throws Exception {
-    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(null, null, null, 3);
-    
+    LuceneFunctionContext<TopEntriesCollector> context =
+        new LuceneFunctionContext<>(null, null, null, 3);
+
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.addResult(null, result1);
     collector.addResult(null, result2);
@@ -216,7 +97,7 @@ public class TopEntriesFunctionCollectorJUnitTest {
     assertEquals(3, merged.size());
     TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2);
   }
-  
+
   @Test
   public void mergeResultsDefaultCollectorManager() throws Exception {
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
@@ -236,18 +117,18 @@ public class TopEntriesFunctionCollectorJUnitTest {
     collector.addResult(null, result1);
     collector.addResult(null, result2);
     collector.endResults();
-    
+
     TopEntries merged = collector.getResult();
     Assert.assertNotNull(merged);
     assertEquals(4, merged.size());
     TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
-    
+
     merged = collector.getResult();
     Assert.assertNotNull(merged);
     assertEquals(4, merged.size());
     TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
   }
-  
+
   @Test
   public void mergeResultsCustomCollectorManager() throws Exception {
     TopEntries resultEntries = new TopEntries();
@@ -264,7 +145,8 @@ public class TopEntriesFunctionCollectorJUnitTest {
           }
         }));
 
-    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(null, null, mockManager);
+    LuceneFunctionContext<TopEntriesCollector> context =
+        new LuceneFunctionContext<>(null, null, mockManager);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.addResult(null, result1);
     collector.addResult(null, result2);
@@ -293,24 +175,11 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntriesCollectorManager mockManager = mock(TopEntriesCollectorManager.class);
     Mockito.doThrow(new RuntimeException()).when(mockManager).reduce(any(Collection.class));
 
-    LuceneFunctionContext<TopEntriesCollector> context = new LuceneFunctionContext<>(null, null, mockManager);
+    LuceneFunctionContext<TopEntriesCollector> context =
+        new LuceneFunctionContext<>(null, null, mockManager);
     TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
     collector.endResults();
     collector.getResult();
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void addResultDisallowedAfterEndResult() {
-    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
-    collector.endResults();
-    collector.addResult(null, new TopEntriesCollector(null));
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void clearResultDisallowedAfterEndResult() {
-    TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector();
-    collector.endResults();
-    collector.clearResults();
   }
 
   @Test

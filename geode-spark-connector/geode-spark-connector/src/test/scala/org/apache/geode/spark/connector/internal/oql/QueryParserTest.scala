@@ -80,4 +80,14 @@ class QueryParserTest extends FunSuite {
     val r = QueryParser.parseOQL("SELECT r.id, r.\"type\", r.positions, r.status FROM /obj_obj_region r, r.positions.values f WHERE r.status = 'active' and f.secId = 'MSFT'").get
     assert(r == "List(/obj_obj_region, r.positions.values)")
   }
+
+  test("SELECT (Int)r.id, r.\"type\", (Double)r.positions, r.status FROM /obj_obj_region r, r.positions.values f WHERE r.status = 'active'") {
+    val r = QueryParser.parseOQL("SELECT (Int)r.id, r.\"type\", (Double)r.positions, r.status FROM /obj_obj_region r, r.positions.values f WHERE r.status = 'active'").get
+    assert(r == "List(/obj_obj_region, r.positions.values)")
+  }
+
+  test("SELECT distinct (Double)f1, (Float)f2 FROM /r1/r2 WHere f = 100") {
+    val r = QueryParser.parseOQL("SELECT distinct (Double)f1, (Float)f2 FROM /r1/r2 WHere f = 100").get
+    assert(r == "List(/r1/r2)")
+  }
 }

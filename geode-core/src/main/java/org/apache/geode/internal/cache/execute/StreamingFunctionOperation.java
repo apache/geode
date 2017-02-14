@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.execute;
 
@@ -48,9 +46,8 @@ public abstract class StreamingFunctionOperation {
   protected int totalLastMsgRecieved = 0;
 
   /** Creates a new instance of StreamingOperation */
-  public StreamingFunctionOperation(InternalDistributedSystem sys,
-      ResultCollector rc, Function function,
-      final HashMap<InternalDistributedMember, Object> memberArgs,
+  public StreamingFunctionOperation(InternalDistributedSystem sys, ResultCollector rc,
+      Function function, final HashMap<InternalDistributedMember, Object> memberArgs,
       Set recipients, ResultSender resultSender) {
     this.sys = sys;
     this.rc = rc;
@@ -61,16 +58,15 @@ public abstract class StreamingFunctionOperation {
   }
 
   /** Creates a new instance of StreamingOperation */
-  public StreamingFunctionOperation(InternalDistributedSystem sys,
-      ResultCollector rc, Function function, ResultSender resultSender) {
+  public StreamingFunctionOperation(InternalDistributedSystem sys, ResultCollector rc,
+      Function function, ResultSender resultSender) {
     this.sys = sys;
     this.rc = rc;
     this.functionObject = function;
     this.resultSender = resultSender;
   }
 
-  public void processData(Object result, boolean lastMsg,
-      DistributedMember memberID) {
+  public void processData(Object result, boolean lastMsg, DistributedMember memberID) {
     boolean completelyDone = false;
     if (lastMsg) {
       this.totalLastMsgRecieved++;
@@ -80,39 +76,34 @@ public abstract class StreamingFunctionOperation {
     }
 
     if (resultSender instanceof MemberFunctionResultSender) {
-      MemberFunctionResultSender rs = (MemberFunctionResultSender)resultSender;
+      MemberFunctionResultSender rs = (MemberFunctionResultSender) resultSender;
       rs.lastResult(result, completelyDone, this.reply, memberID);
-    }
-    else {
+    } else {
       if (completelyDone) {
-        ((DistributedRegionFunctionResultSender)resultSender).lastResult(
-            result, memberID);
-      }
-      else {
-        ((DistributedRegionFunctionResultSender)resultSender).sendResult(
-            result, memberID);
+        ((DistributedRegionFunctionResultSender) resultSender).lastResult(result, memberID);
+      } else {
+        ((DistributedRegionFunctionResultSender) resultSender).sendResult(result, memberID);
       }
     }
   }
 
-  public ResultCollector getFunctionResultFrom(Set recipients,
-      Function function, AbstractExecution execution) {
+  public ResultCollector getFunctionResultFrom(Set recipients, Function function,
+      AbstractExecution execution) {
     if (recipients.isEmpty())
       return rc;
 
-    FunctionStreamingResultCollector processor = new FunctionStreamingResultCollector(
-        this, this.sys, recipients, rc, function, execution);
+    FunctionStreamingResultCollector processor =
+        new FunctionStreamingResultCollector(this, this.sys, recipients, rc, function, execution);
     this.reply = processor;
     for (InternalDistributedMember recip : this.memberArgs.keySet()) {
       DistributionMessage m = null;
       if (execution instanceof DistributedRegionFunctionExecutor
           || execution instanceof MultiRegionFunctionExecutor) {
-        m = createRequestMessage(Collections.singleton(recip), processor,
-            execution.isReExecute(), execution.isFnSerializationReqd());
-      }
-      else {
-        m = createRequestMessage(Collections.singleton(recip), processor,
-            false, execution.isFnSerializationReqd());
+        m = createRequestMessage(Collections.singleton(recip), processor, execution.isReExecute(),
+            execution.isFnSerializationReqd());
+      } else {
+        m = createRequestMessage(Collections.singleton(recip), processor, false,
+            execution.isFnSerializationReqd());
       }
       this.sys.getDistributionManager().putOutgoing(m);
     }
@@ -120,7 +111,6 @@ public abstract class StreamingFunctionOperation {
   }
 
   protected abstract DistributionMessage createRequestMessage(
-      Set<InternalDistributedMember> singleton,
-      FunctionStreamingResultCollector processor, boolean isReExecute,
-      boolean isFnSerializationReqd); 
+      Set<InternalDistributedMember> singleton, FunctionStreamingResultCollector processor,
+      boolean isReExecute, boolean isFnSerializationReqd);
 }

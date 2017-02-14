@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -53,9 +51,9 @@ public class BackupJUnitTest {
   private File backupDir;
   private File[] diskDirs;
   private final Random random = new Random();
-  
+
   private String getName() {
-    return "BackupJUnitTest_"+System.identityHashCode(this);
+    return "BackupJUnitTest_" + System.identityHashCode(this);
   }
 
   @Before
@@ -64,7 +62,7 @@ public class BackupJUnitTest {
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, "");
       String tmpDirName = System.getProperty("java.io.tmpdir");
-      TMP_DIR = tmpDirName == null ? new File("") : new File(tmpDirName); 
+      TMP_DIR = tmpDirName == null ? new File("") : new File(tmpDirName);
       try {
         URL url = BackupJUnitTest.class.getResource("BackupJUnitTest.cache.xml");
         cacheXmlFile = new File(url.toURI().getPath());
@@ -76,7 +74,7 @@ public class BackupJUnitTest {
     }
 
     createCache();
-    
+
     backupDir = new File(TMP_DIR, getName() + "backup_Dir");
     backupDir.mkdir();
     diskDirs = new File[2];
@@ -105,18 +103,18 @@ public class BackupJUnitTest {
     FileUtil.delete(diskDirs[1]);
     diskDirs[1].mkdir();
   }
-  
+
   @Test
   public void testBackupAndRecover() throws IOException, InterruptedException {
     backupAndRecover(new RegionCreator() {
       public Region createRegion() {
         DiskStoreImpl ds = createDiskStore();
-        Region region = BackupJUnitTest.this.createRegion(); 
-        return region;        
+        Region region = BackupJUnitTest.this.createRegion();
+        return region;
       }
     });
   }
-  
+
   @Test
   public void testBackupAndRecoverOldConfig() throws IOException, InterruptedException {
     backupAndRecover(new RegionCreator() {
@@ -129,27 +127,28 @@ public class BackupJUnitTest {
         daf.setMaxOplogSize(1);
         rf.setDiskWriteAttributes(daf.create());
         Region region = rf.create("region");
-        return region;        
+        return region;
       }
     });
   }
-  
-  public void backupAndRecover(RegionCreator regionFactory) throws IOException, InterruptedException {
+
+  public void backupAndRecover(RegionCreator regionFactory)
+      throws IOException, InterruptedException {
     Region region = regionFactory.createRegion();
 
-    //Put enough data to roll some oplogs
-    for(int i =0; i < 1024; i++) {
+    // Put enough data to roll some oplogs
+    for (int i = 0; i < 1024; i++) {
       region.put(i, getBytes(i));
     }
-    
-    for(int i =0; i < 512; i++) {
+
+    for (int i = 0; i < 512; i++) {
       region.destroy(i);
     }
-    
-    for(int i =1024; i < 2048; i++) {
+
+    for (int i = 1024; i < 2048; i++) {
       region.put(i, getBytes(i));
     }
-    
+
     // This section of the test is for bug 43951
     findDiskStore().forceRoll();
     // add a put to the current crf
@@ -165,7 +164,7 @@ public class BackupJUnitTest {
     // restore the deleted entry.
     region.put(2047, getBytes(2047));
 
-    for(DiskStoreImpl store : cache.listDiskStoresIncludingRegionOwned()) {
+    for (DiskStoreImpl store : cache.listDiskStoresIncludingRegionOwned()) {
       store.flush();
     }
 
@@ -173,54 +172,54 @@ public class BackupJUnitTest {
     createCache();
     region = regionFactory.createRegion();
     validateEntriesExist(region, 512, 2048);
-    for(int i =0; i < 512; i++) {
+    for (int i = 0; i < 512; i++) {
       assertNull(region.get(i));
     }
-    
+
     BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
     backup.prepareBackup();
     backup.finishBackup(backupDir, null, false);
-    
-    //Put another key to make sure we restore
-    //from a backup that doesn't contain this key
+
+    // Put another key to make sure we restore
+    // from a backup that doesn't contain this key
     region.put("A", "A");
-    
+
     cache.close();
-    
-    //Make sure the restore script refuses to run before we destroy the files. 
+
+    // Make sure the restore script refuses to run before we destroy the files.
     restoreBackup(true);
 
-    //Make sure the disk store is unaffected by the failed restore
+    // Make sure the disk store is unaffected by the failed restore
     createCache();
     region = regionFactory.createRegion();
     validateEntriesExist(region, 512, 2048);
-    for(int i =0; i < 512; i++) {
+    for (int i = 0; i < 512; i++) {
       assertNull(region.get(i));
     }
     assertEquals("A", region.get("A"));
-    
+
     region.put("B", "B");
-    
+
     cache.close();
-    //destroy the disk directories
+    // destroy the disk directories
     destroyDiskDirs();
-    
-    //Now the restore script should work 
+
+    // Now the restore script should work
     restoreBackup(false);
-    
-    //Make sure the cache has the restored backup
+
+    // Make sure the cache has the restored backup
     createCache();
     region = regionFactory.createRegion();
     validateEntriesExist(region, 512, 2048);
-    for(int i =0; i < 512; i++) {
+    for (int i = 0; i < 512; i++) {
       assertNull(region.get(i));
     }
-    
+
     assertNull(region.get("A"));
     assertNull(region.get("B"));
   }
-  
-  
+
+
   @Test
   public void testBackupEmptyDiskStore() throws IOException, InterruptedException {
     DiskStoreImpl ds = createDiskStore();
@@ -228,26 +227,28 @@ public class BackupJUnitTest {
     BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
     backup.prepareBackup();
     backup.finishBackup(backupDir, null, false);
-    assertEquals("No backup files should have been created", Collections.emptyList(), Arrays.asList(backupDir.list()));
+    assertEquals("No backup files should have been created", Collections.emptyList(),
+        Arrays.asList(backupDir.list()));
   }
-  
+
   @Test
   public void testBackupOverflowOnlyDiskStore() throws IOException, InterruptedException {
     DiskStoreImpl ds = createDiskStore();
     Region region = createOverflowRegion();
-    //Put another key to make sure we restore
-    //from a backup that doesn't contain this key
+    // Put another key to make sure we restore
+    // from a backup that doesn't contain this key
     region.put("A", "A");
 
     BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
     backup.prepareBackup();
     backup.finishBackup(backupDir, null, false);
-    
-    
-    assertEquals("No backup files should have been created", Collections.emptyList(), Arrays.asList(backupDir.list()));
+
+
+    assertEquals("No backup files should have been created", Collections.emptyList(),
+        Arrays.asList(backupDir.list()));
   }
 
-  
+
   @Test
   public void testCompactionDuringBackup() throws IOException, InterruptedException {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -258,28 +259,28 @@ public class BackupJUnitTest {
     dsf.setCompactionThreshold(20);
     String name = "diskStore";
     DiskStoreImpl ds = (DiskStoreImpl) dsf.create(name);
-    
+
     Region region = createRegion();
 
-    //Put enough data to roll some oplogs
-    for(int i =0; i < 1024; i++) {
+    // Put enough data to roll some oplogs
+    for (int i = 0; i < 1024; i++) {
       region.put(i, getBytes(i));
     }
-    
-    RestoreScript script= new RestoreScript();
+
+    RestoreScript script = new RestoreScript();
     ds.startBackup(backupDir, null, script);
-    
-    for(int i =2; i < 1024; i++) {
+
+    for (int i = 2; i < 1024; i++) {
       assertTrue(region.destroy(i) != null);
     }
     assertTrue(ds.forceCompaction());
-    //Put another key to make sure we restore
-    //from a backup that doesn't contain this key
+    // Put another key to make sure we restore
+    // from a backup that doesn't contain this key
     region.put("A", "A");
-    
+
     ds.finishBackup(new BackupManager(cache.getDistributedSystem().getDistributedMember(), cache));
     script.generate(backupDir);
-    
+
     cache.close();
     destroyDiskDirs();
     restoreBackup(false);
@@ -287,10 +288,10 @@ public class BackupJUnitTest {
     ds = createDiskStore();
     region = createRegion();
     validateEntriesExist(region, 0, 1024);
-    
+
     assertNull(region.get("A"));
   }
-  
+
   @Test
   public void testBackupCacheXml() throws Exception {
     DiskStoreImpl ds = createDiskStore();
@@ -304,13 +305,13 @@ public class BackupJUnitTest {
     byte[] expectedBytes = getBytes(cacheXmlFile);
     byte[] backupBytes = getBytes(cacheXmlBackup);
     assertEquals(expectedBytes.length, backupBytes.length);
-    for(int i = 0; i < expectedBytes.length; i++) {
-      assertEquals("byte "+ i, expectedBytes[i], backupBytes[i]);
+    for (int i = 0; i < expectedBytes.length; i++) {
+      assertEquals("byte " + i, expectedBytes[i], backupBytes[i]);
     }
   }
-  
+
   private byte[] getBytes(File file) throws IOException {
-    //The cache xml file should be small enough to fit in one byte array
+    // The cache xml file should be small enough to fit in one byte array
     int size = (int) file.length();
     byte[] contents = new byte[size];
     FileInputStream fis = new FileInputStream(file);
@@ -324,15 +325,15 @@ public class BackupJUnitTest {
   }
 
   private void validateEntriesExist(Region region, int start, int end) {
-    for(int i =start; i < end; i++) {
+    for (int i = start; i < end; i++) {
       byte[] bytes = (byte[]) region.get(i);
       byte[] expected = getBytes(i);
       assertTrue("Null entry " + i, bytes != null);
       assertEquals("Size mismatch on entry " + i, expected.length, bytes.length);
-      for(int j = 0; j < expected.length; j++) {
+      for (int j = 0; j < expected.length; j++) {
         assertEquals("Byte wrong on entry " + i + ", byte " + j, expected[j], bytes[j]);
       }
-      
+
     }
   }
 
@@ -346,37 +347,38 @@ public class BackupJUnitTest {
   private void restoreBackup(boolean expectFailure) throws IOException, InterruptedException {
     List<File> restoreScripts = FileUtil.findAll(backupDir, ".*restore.*");
     assertEquals("Restore scripts " + restoreScripts, 1, restoreScripts.size());
-    for(File script : restoreScripts) {
+    for (File script : restoreScripts) {
       execute(script, expectFailure);
     }
-    
+
   }
 
-  private void execute(File script, boolean expectFailure) throws IOException, InterruptedException {
+  private void execute(File script, boolean expectFailure)
+      throws IOException, InterruptedException {
     ProcessBuilder pb = new ProcessBuilder(script.getAbsolutePath());
     pb.redirectErrorStream(true);
     Process process = pb.start();
-    
+
     InputStream is = process.getInputStream();
     BufferedReader br = new BufferedReader(new InputStreamReader(is));
     String line;
-    while((line = br.readLine()) != null) {
+    while ((line = br.readLine()) != null) {
       System.out.println("OUTPUT:" + line);
-      //TODO validate output
-    };
-    
+      // TODO validate output
+    } ;
+
     int result = process.waitFor();
     boolean isWindows = script.getName().endsWith("bat");
-    //On Windows XP, the process returns 0 even though we exit with a non-zero status.
-    //So let's not bother asserting the return value on XP.
-    if(!isWindows) {
-      if(expectFailure) {
+    // On Windows XP, the process returns 0 even though we exit with a non-zero status.
+    // So let's not bother asserting the return value on XP.
+    if (!isWindows) {
+      if (expectFailure) {
         assertEquals(1, result);
       } else {
         assertEquals(0, result);
       }
     }
-    
+
   }
 
   protected Region createRegion() {
@@ -386,11 +388,12 @@ public class BackupJUnitTest {
     Region region = rf.create("region");
     return region;
   }
-  
+
   private Region createOverflowRegion() {
     RegionFactory rf = new RegionFactory();
     rf.setDiskStoreName("diskStore");
-    rf.setEvictionAttributes(EvictionAttributes.createLIFOEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
+    rf.setEvictionAttributes(
+        EvictionAttributes.createLIFOEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK));
     rf.setDataPolicy(DataPolicy.NORMAL);
     Region region = rf.create("region");
     return region;
@@ -399,6 +402,7 @@ public class BackupJUnitTest {
   private DiskStore findDiskStore() {
     return this.cache.findDiskStore("diskStore");
   }
+
   private DiskStoreImpl createDiskStore() {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     dsf.setDiskDirs(diskDirs);
@@ -407,7 +411,7 @@ public class BackupJUnitTest {
     DiskStoreImpl ds = (DiskStoreImpl) dsf.create(name);
     return ds;
   }
-  
+
   private static interface RegionCreator {
     public Region createRegion();
   }

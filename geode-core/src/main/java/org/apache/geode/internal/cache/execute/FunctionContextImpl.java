@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.execute;
 
@@ -23,8 +21,7 @@ import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 
 /**
- * Context available to application functions which is passed from GemFire to
- * {@link Function}. <br>
+ * Context available to application functions which is passed from GemFire to {@link Function}. <br>
  * 
  * For data dependent functions refer to {@link RegionFunctionContext}
  * 
@@ -39,11 +36,11 @@ public class FunctionContextImpl implements FunctionContext {
   private Object args = null;
 
   private String functionId = null;
-  
-  private ResultSender resultSender = null ;
-  
+
+  private ResultSender resultSender = null;
+
   private final boolean isPossDup;
-  
+
   public FunctionContextImpl(final String functionId, final Object args,
       ResultSender resultSender) {
     this.functionId = functionId;
@@ -51,9 +48,9 @@ public class FunctionContextImpl implements FunctionContext {
     this.resultSender = resultSender;
     this.isPossDup = false;
   }
-  
-  public FunctionContextImpl(final String functionId, final Object args,
-      ResultSender resultSender, boolean isPossibleDuplicate) {
+
+  public FunctionContextImpl(final String functionId, final Object args, ResultSender resultSender,
+      boolean isPossibleDuplicate) {
     this.functionId = functionId;
     this.args = args;
     this.resultSender = resultSender;
@@ -61,9 +58,8 @@ public class FunctionContextImpl implements FunctionContext {
   }
 
   /**
-   * Returns the arguments provided to this function execution. These are the
-   * arguments specified by caller using
-   * {@link Execution#withArgs(Object)}
+   * Returns the arguments provided to this function execution. These are the arguments specified by
+   * caller using {@link Execution#withArgs(Object)}
    * 
    * @return the arguments or null if there are no arguments
    */
@@ -72,8 +68,7 @@ public class FunctionContextImpl implements FunctionContext {
   }
 
   /**
-   * Get the identifier of the running function used for logging and
-   * administration purposes
+   * Get the identifier of the running function used for logging and administration purposes
    * 
    * @return String uniquely identifying this running instance
    * @see Function#getId()
@@ -94,12 +89,12 @@ public class FunctionContextImpl implements FunctionContext {
     return buf.toString();
   }
 
-  public <T> ResultSender<T> getResultSender() {    
+  public <T> ResultSender<T> getResultSender() {
     return this.resultSender;
   }
 
   public boolean isPossibleDuplicate() {
     return this.isPossDup;
   }
-  
+
 }

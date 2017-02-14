@@ -25,7 +25,7 @@ The `gfsh` command-line tool allows you to configure and start a Geode cluster. 
 
 This section provides a walk-through example of configuring a simple Apache Geode cluster and then re-using that configuration in a new context.
 
-1.  Create a working directory (For example:`/home/username/my_gemfire`) and switch to the new directory. This directory will contain the configurations for your cluster.
+1.  Create a working directory (For example:`/home/username/my_geode`) and switch to the new directory. This directory will contain the configurations for your cluster.
 
 2.  Start the `gfsh` command-line tool. For example:
 
@@ -51,20 +51,20 @@ This section provides a walk-through example of configuring a simple Apache Geod
 
     ``` pre
     gfsh>start locator --name=locator1
-    Starting a GemFire Locator in /Users/username/my_gemfire/locator1...
+    Starting a Geode Locator in /Users/username/my_geode/locator1...
     .............................
-    Locator in /Users/username/my_gemfire/locator1 on 192.0.2.0[10334] as locator1 is currently online.
+    Locator in /Users/username/my_geode/locator1 on 192.0.2.0[10334] as locator1 is currently online.
     Process ID: 5203
     Uptime: 15 seconds
-    GemFire Version: 8.1.0
-    Java Version: 1.7.0_71
-    Log File: /Users/username/my_gemfire/locator1/locator1.log
+    Geode Version: 1.0.0
+    Java Version: 1.8.0_101
+    Log File: /Users/username/my_geode/locator1/locator1.log
     JVM Arguments: -Dgemfire.enable-cluster-configuration=true
     -Dgemfire.load-cluster-configuration-from-dir=false
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
-    :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/locator-dependencies.jar
+    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    :/Users/username/Apache_Geode_1.0.0_Linux/lib/locator-dependencies.jar
 
     Successfully connected to: [host=192.0.2.0, port=1099]
 
@@ -77,52 +77,52 @@ This section provides a walk-through example of configuring a simple Apache Geod
 
     ``` pre
     gfsh>start server --name=server1 --group=group1
-    Starting a GemFire Server in /Users/username/my_gemfire/server1...
+    Starting a Geode Server in /Users/username/my_geode/server1...
     .....
-    Server in /Users/username/my_gemfire/server1 on 192.0.2.0[40404] as server1 is currently online.
+    Server in /Users/username/my_geode/server1 on 192.0.2.0[40404] as server1 is currently online.
     Process ID: 5627
     Uptime: 2 seconds
-    GemFire Version: 8.1.0
-    Java Version: 1.7.0_71
-    Log File: /Users/username/my_gemfire/server1/server1.log
+    Geode Version: 1.0.0
+    Java Version: 1.8.0_101
+    Log File: /Users/username/my_geode/server1/server1.log
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.groups=group1
     -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
-    :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
+    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    :/Users/username/Apache_Geode_1.0.0_Linux/lib/server-dependencies.jar
 
     gfsh>start server --name=server2 --group=group1 --server-port=40405
-    Starting a GemFire Server in /Users/username/my_gemfire/server2...
+    Starting a Geode Server in /Users/username/my_geode/server2...
     .....
-    Server in /Users/username/my_gemfire/server2 on 192.0.2.0[40405] as server2 is currently online.
+    Server in /Users/username/my_geode/server2 on 192.0.2.0[40405] as server2 is currently online.
     Process ID: 5634
     Uptime: 2 seconds
-    GemFire Version: 8.1.0
-    Java Version: 1.7.0_71
-    Log File: /Users/username/my_gemfire/server2/server2.log
+    Geode Version: 1.0.0
+    Java Version: 1.8.0_101
+    Log File: /Users/username/my_geode/server2/server2.log
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334] -Dgemfire.groups=group1
     -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
-    :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
+    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    :/Users/username/Apache_Geode_1.0.0_Linux/lib/server-dependencies.jar
 
     gfsh>start server --name=server3 --server-port=40406
-    Starting a GemFire Server in /Users/username/my_gemfire/server3...
+    Starting a Geode Server in /Users/username/my_geode/server3...
     .....
-    Server in /Users/username/my_gemfire/server3 on 192.0.2.0[40406] as server3 is currently online.
+    Server in /Users/username/my_geode/server3 on 192.0.2.0[40406] as server3 is currently online.
     Process ID: 5637
     Uptime: 2 seconds
-    GemFire Version: 8.1.0
-    Java Version: 1.7.0_71
-    Log File: /Users/username/my_gemfire/server3/server3.log
+    Geode Version: 1.0.0
+    Java Version: 1.8.0_101
+    Log File: /Users/username/my_geode/server3/server3.log
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10334]
     -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
-    :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
+    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    :/Users/username/Apache_Geode_1.0.0_Linux/lib/server-dependencies.jar
     ```
 
     Note that the `gfsh` commands you used to start `server1` and `server2` specify a group named `group1` while the command for `server3` did not specify a group name.
@@ -146,26 +146,26 @@ This section provides a walk-through example of configuring a simple Apache Geod
 
     Note that `region1` is created on all cache servers that specified the group named `group1` when starting the cache server (`server1` and `server2`, in this example). `region2` is created on all members because no group was specified.
 
-6.  Deploy jar files. Use the `gfsh deploy` command to deploy application jar files to all members or to a specified group of members. The following example deploys the `mail.jar` and `mx4j.jar` files from the distribution. (Note: This is only an example, you do not need to deploy these files to use the Cluster Configuration Service. Alternately, you can use any two jar files for this demonstration.)
+6.  Deploy jar files. Use the `gfsh deploy` command to deploy application jar files to all members or to a specified group of members. The following example deploys the `mx4j-3.0.1.jar` and `mx4j.jar` files from the distribution. (Note: This is only an example, you do not need to deploy these files to use the Cluster Configuration Service. Alternately, you can use any two jar files for this demonstration.)
 
     ``` pre
-    gfsh>deploy --group=group1 --jar=${SYS_GEMFIRE_DIR}/lib/mail.jar
-    Post substitution: deploy --group=group1 --jar=/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/mail.jar
-    Member  | Deployed JAR | Deployed JAR Location
-    ------- | ------------ | -------------------------------------------------
-    server1 | mail.jar     | /Users/username/my_gemfire/server1/vf.gf#mail.jar#1
-    server2 | mail.jar     | /Users/username/my_gemfire/server2/vf.gf#mail.jar#1
+    gfsh>deploy --group=group1 --jar=/lib/mail.jar
+    Post substitution: deploy --group=group1 --jar=/Users/username/Apache_Geode_1.0.0_Linux/lib/mx4j-3.0.1.jar
+    Member  |    Deployed JAR    | Deployed JAR Location
+    ------- | ------------------ | -------------------------------------------------------
+    server1 | mx4j-3.0.1.jar     | /Users/username/my_geode/server1/vf.gf#mx4j-3.0.1.jar#1
+    server2 | mx4j-3.0.1.jar     | /Users/username/my_geode/server2/vf.gf#mx4j-3.0.1.jar#1
 
-    gfsh>deploy --jar=${SYS_GEMFIRE_DIR}/lib/mx4j.jar
-    Post substitution: deploy --jar=/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/mx4j.jar
+    gfsh>deploy --jar=/lib/mx4j.jar
+    Post substitution: deploy --jar=/Users/username/Apache_Geode_1.0.0_Linux/lib/ra.jar
     Member  | Deployed JAR | Deployed JAR Location
-    ------- | ------------ | -------------------------------------------------
-    server1 | mx4j.jar     | /Users/username/my_gemfire/server1/vf.gf#mx4j.jar#1
-    server2 | mx4j.jar     | /Users/username/my_gemfire/server2/vf.gf#mx4j.jar#1
-    server3 | mx4j.jar     | /Users/username/my_gemfire/server3/vf.gf#mx4j.jar#1
+    ------- | ------------ | -----------------------------------------------
+    server1 | ra.jar       | /Users/username/my_geode/server1/vf.gf#ra.jar#1
+    server2 | ra.jar       | /Users/username/my_geode/server1/vf.gf#ra.jar#1
+    server3 | ra.jar       | /Users/username/my_geode/server1/vf.gf#ra.jar#1
     ```
 
-    Note that the `mail.jar` file was deployed only to the members of `group1` and the `mx4j.jar` was deployed to all members.
+    Note that the `mx4j-3.0.1.jar` file was deployed only to the members of `group1` and the `ra.jar` was deployed to all members.
 
 7.  Export the cluster configuration.
     You can use the `gfsh export cluster-configuration` command to create a zip file that contains the cluster's persisted configuration. The zip file contains a copy of the contents of the `cluster_config` directory. For example:
@@ -202,7 +202,7 @@ This section provides a walk-through example of configuring a simple Apache Geod
     Exiting...
     ```
 
-10. Create a new working directory (for example: `new_gemfire`) and switch to the new directory.
+10. Create a new working directory (for example: `new_geode`) and switch to the new directory.
 11. Start the `gfsh` command shell:
 
     ``` pre
@@ -213,20 +213,20 @@ This section provides a walk-through example of configuring a simple Apache Geod
 
     ``` pre
     gfsh>start locator --name=locator2 --port=10335
-    Starting a GemFire Locator in /Users/username/new_gemfire/locator2...
+    Starting a Geode Locator in /Users/username/new_geode/locator2...
     .............................
-    Locator in /Users/username/new_gemfire/locator2 on 192.0.2.0[10335] as locator2 is currently online.
+    Locator in /Users/username/new_geode/locator2 on 192.0.2.0[10335] as locator2 is currently online.
     Process ID: 5749
     Uptime: 15 seconds
-    GemFire Version: 8.1.0
-    Java Version: 1.7.0_71
-    Log File: /Users/username/new_gemfire/locator2/locator2.log
+    Geode Version: 1.0.0
+    Java Version: 1.8.0_101
+    Log File: /Users/username/new_geode/locator2/locator2.log
     JVM Arguments: -Dgemfire.enable-cluster-configuration=true
     -Dgemfire.load-cluster-configuration-from-dir=false
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
-    :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/locator-dependencies.jar
+    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    :/Users/username/Apache_Geode_1.0.0_Linux/lib/locator-dependencies.jar
 
     Successfully connected to: [host=192.0.2.0, port=1099]
 
@@ -246,40 +246,40 @@ This section provides a walk-through example of configuring a simple Apache Geod
 
     ``` pre
     gfsh>start server --name=server4 --server-port=40414
-    Starting a GemFire Server in /Users/username/new_gemfire/server4...
+    Starting a Geode Server in /Users/username/new_geode/server4...
     ........
-    Server in /Users/username/new_gemfire/server4 on 192.0.2.0[40414] as server4 is currently online.
+    Server in /Users/username/new_geode/server4 on 192.0.2.0[40414] as server4 is currently online.
     Process ID: 5813
     Uptime: 4 seconds
-    GemFire Version: 8.1.0
-    Java Version: 1.7.0_71
-    Log File: /Users/username/new_gemfire/server4/server4.log
+    Geode Version: 1.0.0
+    Java Version: 1.8.0_101
+    Log File: /Users/username/new_geode/server4/server4.log
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10335]
     -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
-    :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
+    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    :/Users/username/Apache_Geode_1.0.0_Linux/lib/server-dependencies.jar
     ```
 
 15. Start another server that references `group1`:
 
     ``` pre
     gfsh>start server --name=server5 --group=group1 --server-port=40415
-    Starting a GemFire Server in /Users/username/new_gemfire/server5...
+    Starting a Geode Server in /Users/username/new_geode/server5...
     .....
-    Server in /Users/username/new_gemfire/server2 on 192.0.2.0[40415] as server5 is currently online.
+    Server in /Users/username/new_geode/server2 on 192.0.2.0[40415] as server5 is currently online.
     Process ID: 5954
     Uptime: 2 seconds
-    GemFire Version: 8.1.0
-    Java Version: 1.7.0_71
-    Log File: /Users/username/new_gemfire/server5/server5.log
+    Geode Version: 1.0.0
+    Java Version: 1.8.0_101
+    Log File: /Users/username/new_geode/server5/server5.log
     JVM Arguments: -Dgemfire.default.locators=192.0.2.0[10335] -Dgemfire.groups=group1
     -Dgemfire.use-cluster-configuration=true -XX:OnOutOfMemoryError=kill -KILL %p
     -Dgemfire.launcher.registerSignalHandlers=true -Djava.awt.headless=true
     -Dsun.rmi.dgc.server.gcInterval=9223372036854775806
-    Class-Path: /Users/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar
-    :/Users/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
+    Class-Path: /Users/username/Apache_Geode_1.0.0_Linux/lib/geode-dependencies.jar
+    :/Users/username/Apache_Geode_1.0.0_Linux/lib/server-dependencies.jar
     ```
 
 16. Use the `list regions` command to display the configured regions. Note that region1 and region2, which were configured in the original cluster level are available.
@@ -303,10 +303,11 @@ This section provides a walk-through example of configuring a simple Apache Geod
 
     Non-Default Attributes Shared By Hosting Members
 
-     Type  | Name | Value
-    ------ | ---- | -----
-    Region | size | 0
-
+     Type  |    Name     | Value
+    ------ | ----------- | ---------------
+    Region | data-policy | REPLICATE
+           | size        | 0
+           | scope       | distributed-ack
 
     gfsh>describe region --name=region2
     ..........................................................
@@ -317,9 +318,11 @@ This section provides a walk-through example of configuring a simple Apache Geod
 
     Non-Default Attributes Shared By Hosting Members
 
-     Type  | Name | Value
-    ------ | ---- | -----
-    Region | size | 0
+     Type  |    Name     | Value
+    ------ | ----------- | ---------------
+    Region | data-policy | REPLICATE
+           | size        | 0
+           | scope       | distributed-ack
     ```
 
     This new cluster uses the same configuration as the original system. You can start any number of servers using this cluster configuration. All servers will receive the cluster-level configuration. Servers that specify `group1` also receive the `group1` configuration.

@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.util;
 
 import org.apache.geode.DataSerializable;
@@ -28,8 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Class <code>RegionConfiguration</code> encapsulates the configuration attributes for a <code>Region</code> to be
- * created on the server.
+ * Class <code>RegionConfiguration</code> encapsulates the configuration attributes for a
+ * <code>Region</code> to be created on the server.
  *
  * @since GemFire 6.5
  */
@@ -82,16 +80,15 @@ public class RegionConfiguration implements DataSerializable {
   private boolean enableSessionExpirationCacheListener = false;
 
   /**
-   * name for the CacheWriter to be associated with this region. This cache writer must have a zero arg constructor and
-   * must be present on the classpath on the server.
+   * name for the CacheWriter to be associated with this region. This cache writer must have a zero
+   * arg constructor and must be present on the classpath on the server.
    */
   private String cacheWriterName;
 
   /**
    * Default constructor used by the <code>DataSerialiable</code> interface
    */
-  public RegionConfiguration() {
-  }
+  public RegionConfiguration() {}
 
   /**
    * Sets the name of the <code>Region</code> to be created
@@ -168,7 +165,8 @@ public class RegionConfiguration implements DataSerializable {
   /**
    * Enables/disables delta replication across a <code>Gateway</code>.
    *
-   * @param enableGatewayDeltaReplication true to enable, false to disable gateway delta replication.
+   * @param enableGatewayDeltaReplication true to enable, false to disable gateway delta
+   *        replication.
    */
   public void setEnableGatewayDeltaReplication(boolean enableGatewayDeltaReplication) {
     this.enableGatewayDeltaReplication = enableGatewayDeltaReplication;
@@ -269,30 +267,21 @@ public class RegionConfiguration implements DataSerializable {
   }
 
   public String toString() {
-    return new StringBuilder().append("RegionConfiguration[")
-        .append("regionName=")
-        .append(this.regionName)
-        .append("; regionAttributesId=")
-        .append(this.regionAttributesId)
-        .append("; maxInactiveInterval=")
-        .append(this.maxInactiveInterval)
-        .append("; enableGatewayDeltaReplication=")
-        .append(this.enableGatewayDeltaReplication)
-        .append("; enableGatewayReplication=")
-        .append(this.enableGatewayReplication)
-        .append("; enableDebugListener=")
-        .append(this.enableDebugListener)
+    return new StringBuilder().append("RegionConfiguration[").append("regionName=")
+        .append(this.regionName).append("; regionAttributesId=").append(this.regionAttributesId)
+        .append("; maxInactiveInterval=").append(this.maxInactiveInterval)
+        .append("; enableGatewayDeltaReplication=").append(this.enableGatewayDeltaReplication)
+        .append("; enableGatewayReplication=").append(this.enableGatewayReplication)
+        .append("; enableDebugListener=").append(this.enableDebugListener)
         .append("; enableSessionExpirationCacheListener=")
-        .append(this.enableSessionExpirationCacheListener)
-        .append("; cacheWriter=")
-        .append(this.cacheWriterName)
-        .append("]")
-        .toString();
+        .append(this.enableSessionExpirationCacheListener).append("; cacheWriter=")
+        .append(this.cacheWriterName).append("]").toString();
   }
 
   /**
-   * set the fully qualified name of the {@link CacheWriter} to be created on the server. The cacheWriter must have a
-   * zero arg constructor, and must be present on the classpath on the server.
+   * set the fully qualified name of the {@link CacheWriter} to be created on the server. The
+   * cacheWriter must have a zero arg constructor, and must be present on the classpath on the
+   * server.
    *
    * @param cacheWriterName fully qualified class name of the cacheWriter
    */

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  *
@@ -41,15 +39,14 @@ public class Size extends BaseCommand {
 
   private final static Size singleton = new Size();
 
-  private Size() {
-  }
+  private Size() {}
 
   public static Command getCommand() {
     return singleton;
   }
 
-  private static void writeSizeResponse(Integer sizeCount, Message origMsg, ServerConnection servConn)
-    throws IOException {
+  private static void writeSizeResponse(Integer sizeCount, Message origMsg,
+      ServerConnection servConn) throws IOException {
     Message responseMsg = servConn.getResponseMessage();
     responseMsg.setMessageType(MessageType.RESPONSE);
     responseMsg.setNumberOfParts(1);
@@ -59,7 +56,8 @@ public class Size extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(Message msg, ServerConnection servConn, long start) throws IOException, InterruptedException {
+  public void cmdExecute(Message msg, ServerConnection servConn, long start)
+      throws IOException, InterruptedException {
     StringBuilder errMessage = new StringBuilder();
     CachedRegionHelper crHelper = servConn.getCachedRegionHelper();
     CacheServerStats stats = servConn.getCacheServerStats();
@@ -73,8 +71,11 @@ public class Size extends BaseCommand {
     String regionName = regionNamePart.getString();
 
     if (regionName == null) {
-      logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL, "size"));
-      errMessage.append(LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL.toLocalizedString("size"));
+      logger.warn(LocalizedMessage.create(
+          LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL, "size"));
+      errMessage
+          .append(LocalizedStrings.BaseCommand__THE_INPUT_REGION_NAME_FOR_THE_0_REQUEST_IS_NULL
+              .toLocalizedString("size"));
       writeErrorResponse(msg, MessageType.SIZE_ERROR, errMessage.toString(), servConn);
       servConn.setAsTrue(RESPONDED);
       return;
@@ -82,7 +83,8 @@ public class Size extends BaseCommand {
 
     LocalRegion region = (LocalRegion) crHelper.getRegion(regionName);
     if (region == null) {
-      String reason = LocalizedStrings.BaseCommand__0_WAS_NOT_FOUND_DURING_1_REQUEST.toLocalizedString(regionName, "size");
+      String reason = LocalizedStrings.BaseCommand__0_WAS_NOT_FOUND_DURING_1_REQUEST
+          .toLocalizedString(regionName, "size");
       writeRegionDestroyedEx(msg, regionName, reason, servConn);
       servConn.setAsTrue(RESPONDED);
       return;
@@ -107,7 +109,8 @@ public class Size extends BaseCommand {
           logger.debug("{}: Unexpected Security exception", servConn.getName(), e);
         }
       } else {
-        logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand_0_UNEXPECTED_EXCEPTION, servConn.getName()), e);
+        logger.warn(LocalizedMessage.create(LocalizedStrings.BaseCommand_0_UNEXPECTED_EXCEPTION,
+            servConn.getName()), e);
       }
     } finally {
       if (logger.isDebugEnabled()) {

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
@@ -54,19 +52,21 @@ import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 /**
- * This DUnit tests uses same code as GemFireDeadlockDetectorDUnitTest and uses the command processor for executing the
- * "show deadlock" command
+ * This DUnit tests uses same code as GemFireDeadlockDetectorDUnitTest and uses the command
+ * processor for executing the "show deadlock" command
  */
 @Category(DistributedTest.class)
 public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
 
   private static final long serialVersionUID = 1L;
-  private static final Set<Thread> stuckThreads = Collections.synchronizedSet(new HashSet<Thread>());
+  private static final Set<Thread> stuckThreads =
+      Collections.synchronizedSet(new HashSet<Thread>());
   private static final Map<String, String> EMPTY_ENV = Collections.emptyMap();
 
   @Override
   public final void postSetUp() throws Exception {
-    // This test does not require an actual Gfsh connection to work, however when run as part of a suite, prior tests
+    // This test does not require an actual Gfsh connection to work, however when run as part of a
+    // suite, prior tests
     // may mess up the environment causing this test to fail. Setting this prevents false failures.
     CliUtil.isGfshVM = false;
   }
@@ -91,7 +91,7 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    //Make sure a deadlock from a previous test is cleared.
+    // Make sure a deadlock from a previous test is cleared.
     disconnectAllFromDS();
 
     createCache(vm0);
@@ -112,7 +112,8 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     getLogWriter().info("output = " + deadLockOutputFromCommand);
     assertEquals(true, result.hasIncomingFiles());
     assertEquals(true, result.getStatus().equals(Status.OK));
-    assertEquals(true, deadLockOutputFromCommand.startsWith(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK));
+    assertEquals(true,
+        deadLockOutputFromCommand.startsWith(CliStrings.SHOW_DEADLOCK__NO__DEADLOCK));
     result.saveIncomingFiles(null);
     File file = new File(fileName);
     assertTrue(file.exists());
@@ -124,7 +125,8 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
   private static final Lock lock = new ReentrantLock();
 
   @Test
-  public void testDistributedDeadlockWithFunction() throws InterruptedException, ClassNotFoundException, IOException {
+  public void testDistributedDeadlockWithFunction()
+      throws InterruptedException, ClassNotFoundException, IOException {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -132,10 +134,10 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     InternalDistributedMember member1 = createCache(vm0);
     final InternalDistributedMember member2 = createCache(vm1);
     createCache(new Properties());
-    //Have two threads lock locks on different members in different orders.
-    //This thread locks the lock member1 first, then member2.
+    // Have two threads lock locks on different members in different orders.
+    // This thread locks the lock member1 first, then member2.
     lockTheLocks(vm0, member2);
-    //This thread locks the lock member2 first, then member1.
+    // This thread locks the lock member2 first, then member1.
     lockTheLocks(vm1, member1);
 
     Thread.sleep(5000);
@@ -147,7 +149,8 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
     String deadLockOutputFromCommand = getResultAsString(result);
     getLogWriter().info("Deadlock = " + deadLockOutputFromCommand);
     result.saveIncomingFiles(null);
-    assertEquals(true, deadLockOutputFromCommand.startsWith(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED));
+    assertEquals(true,
+        deadLockOutputFromCommand.startsWith(CliStrings.SHOW_DEADLOCK__DEADLOCK__DETECTED));
     assertEquals(true, result.getStatus().equals(Status.OK));
     File file = new File(filename);
     assertTrue(file.exists());
@@ -164,7 +167,8 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
   private Properties createProperties(Host host, int locatorPort) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-//    props.setProperty(DistributionConfig.LOCATORS_NAME, getServerHostName(host) + "[" + locatorPort + "]");
+    // props.setProperty(DistributionConfig.LOCATORS_NAME, getServerHostName(host) + "[" +
+    // locatorPort + "]");
     props.setProperty(LOG_LEVEL, "info");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     props.setProperty(ENABLE_TIME_STATISTICS, "true");
@@ -184,8 +188,9 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
         } catch (InterruptedException e) {
           fail("interrupted", e);
         }
-        ResultCollector collector = FunctionService.onMember(basicGetSystem(), member).execute(new TestFunction());
-        //wait the function to lock the lock on member.
+        ResultCollector collector =
+            FunctionService.onMember(basicGetSystem(), member).execute(new TestFunction());
+        // wait the function to lock the lock on member.
         collector.getResult();
         lock.unlock();
       }
@@ -249,7 +254,7 @@ public class ShowDeadlockDUnitTest extends JUnit4CacheTestCase {
         stuckThreads.add(Thread.currentThread());
         lock.tryLock(LOCK_WAIT_TIME, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
-        //ingore
+        // ingore
       }
       context.getResultSender().lastResult(null);
     }

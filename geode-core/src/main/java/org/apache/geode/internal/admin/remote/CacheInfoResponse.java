@@ -1,55 +1,53 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
-   
-   
+
+
 package org.apache.geode.internal.admin.remote;
 
-//import org.apache.geode.internal.admin.*;
+// import org.apache.geode.internal.admin.*;
 import org.apache.geode.distributed.internal.*;
 import org.apache.geode.*;
 import org.apache.geode.cache.*;
-//import org.apache.geode.internal.*;
+// import org.apache.geode.internal.*;
 import org.apache.geode.internal.cache.*;
 import java.io.*;
-//import java.net.*;
-//import java.util.*;
+// import java.net.*;
+// import java.util.*;
 import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * A message that is sent in response to a {@link CacheInfoRequest}.
+ * 
  * @since GemFire 3.5
  */
 public final class CacheInfoResponse extends AdminResponse {
   // instance variables
   private RemoteCacheInfo info;
-  
-  
+
+
   /**
-   * Returns a <code>CacheInfoResponse</code> that will be returned to the
-   * specified recipient.
+   * Returns a <code>CacheInfoResponse</code> that will be returned to the specified recipient.
    */
-  public static CacheInfoResponse create(DistributionManager dm, InternalDistributedMember recipient) {
+  public static CacheInfoResponse create(DistributionManager dm,
+      InternalDistributedMember recipient) {
     CacheInfoResponse m = new CacheInfoResponse();
     m.setRecipient(recipient);
     try {
-      GemFireCacheImpl c = (GemFireCacheImpl)CacheFactory.getInstanceCloseOk(dm.getSystem());
+      GemFireCacheImpl c = (GemFireCacheImpl) CacheFactory.getInstanceCloseOk(dm.getSystem());
       m.info = new RemoteCacheInfo(c);
-    } 
-    catch (CancelException ex) {
+    } catch (CancelException ex) {
       m.info = null;
     }
     return m;
@@ -58,7 +56,7 @@ public final class CacheInfoResponse extends AdminResponse {
   public RemoteCacheInfo getCacheInfo() {
     return this.info;
   }
-  
+
   public int getDSFID() {
     return CACHE_INFO_RESPONSE;
   }
@@ -70,10 +68,9 @@ public final class CacheInfoResponse extends AdminResponse {
   }
 
   @Override
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.info = (RemoteCacheInfo)DataSerializer.readObject(in);
+    this.info = (RemoteCacheInfo) DataSerializer.readObject(in);
   }
 
   @Override

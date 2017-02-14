@@ -42,7 +42,7 @@ Or directly from a command line:
 prompt# gfsh start locator --name=locator_name --port=41111 
 ```
 
-Specify a name for the locator that you wish to start on the localhost.
+Specify a name for the locator that you wish to start on the localhost. If you do not specify the member name, gfsh will automatically pick a random name. This is useful for automation.
 
 The server’s `cache.xml` declares a `cache-server` element, which identifies the JVM as a server in the distributed system.
 

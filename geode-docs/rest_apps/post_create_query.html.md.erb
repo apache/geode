@@ -89,9 +89,21 @@ Location: http://localhost:8080/gemfire-api/v1/queries/selectOrders
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>400 BAD REQUEST</td>
-<td>Returned if user does not specify a query ID or a malformed OQL statement.</td>
+<td>Query ID not specified or malformed OQL statement</td>
+</tr>
+<tr>
+<td>401 UNAUTHORIZED</td>
+<td>Invalid Username or Password</td>
+</tr>
+<tr>
+<td>403 FORBIDDEN</td>
+<td>Insufficient privileges for operation</td>
+</tr>
+<tr>
+<td>409 CONFLICT</td>
+<td>QueryId already assigned to another query</td>
 </tr>
 <tr class="even">
 <td>500 INTERNAL SERVER ERROR</td>

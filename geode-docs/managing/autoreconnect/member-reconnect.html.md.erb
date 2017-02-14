@@ -23,13 +23,37 @@ A Geode member may be forcibly disconnected from a Geode distributed system if t
 
 ## How the Autoreconnection Process Works
 
-After being disconnected from a distributed system a Geode member shuts down and then automatically restarts into a "reconnecting" state, while periodically attempting to rejoin the distributed system by contacting a list of known locators. If the member succeeds in reconnecting to a known locator, the member rebuilds its view of the distributed system from existing members and receives a new distributed system ID.
+After being disconnected from a distributed system,
+a Geode member shuts down and, by default, automatically restarts into 
+a "reconnecting" state,
+while periodically attempting to rejoin the distributed system 
+by contacting a list of known locators.
+If the member succeeds in reconnecting to a known locator, the member rebuilds its view of the distributed system from existing members and receives a new distributed member ID.
 
 If the member cannot connect to a known locator, the member will then check to see if it itself is a locator (or hosting an embedded locator process). If the member is a locator, then the member does a quorum-based reconnect; it will attempt to contact a quorum of the members that were in the membership view just before it became disconnected. If a quorum of members can be contacted, then startup of the distributed system is allowed to begin. Since the reconnecting member does not know which members survived the network partition event, all members that are in a reconnecting state will keep their UDP unicast ports open and respond to ping requests.
 
 Membership quorum is determined using the same member weighting system used in network partition detection. See [Membership Coordinators, Lead Members and Member Weighting](../network_partitioning/membership_coordinators_lead_members_and_weighting.html#concept_23C2606D59754106AFBFE17515DF4330).
 
-Note that when a locator is in the reconnecting state, it provides no discovery services for the distributed system.
+Note that when a locator is in the reconnecting state,
+it provides no discovery services for the distributed system.
+
+The default settings for reconfiguration of the cache once
+reconnected assume that the cluster configuration service has
+a valid (XML) configuration.
+This will not be the case if the cluster was configured using
+API calls.
+To handle this case,
+either disable autoreconnect by setting the property to
+
+```
+disable-auto-reconnect = true
+```
+
+or, disable the cluster configuration service by setting the property to
+
+```
+enable-cluster-configuration = false
+```
 
 After the cache has reconnected, applications must fetch a reference to the new Cache, Regions, DistributedSystem and other artifacts. Old references will continue to throw cancellation exceptions like `CacheClosedException(cause=ForcedDisconnectException)`.
 

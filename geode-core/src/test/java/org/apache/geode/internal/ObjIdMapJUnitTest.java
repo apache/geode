@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -97,15 +95,15 @@ public class ObjIdMapJUnitTest {
   public void testRandomMap() {
     final ObjIdMap map = new ObjIdMap();
     final int size = 1000;
-    
+
     // ----------------------
     // This test naively assumed that a list of 1000 ints or 1000 longs would
-    // yield 1000 distinct values.  This has been rewritten to ensure
+    // yield 1000 distinct values. This has been rewritten to ensure
     // this invariant...
     // ----------------------
     Random random = new Random();
 
-    // Loop until we have 1000 keys.  This addresses the slight
+    // Loop until we have 1000 keys. This addresses the slight
     // possibility of duplicates...
     HashSet<Integer> keySet = new HashSet<Integer>();
     while (keySet.size() != size) {
@@ -119,12 +117,12 @@ public class ObjIdMapJUnitTest {
       long value = Math.abs(random.nextLong());
       valueSet.add(new Long(value));
     }
-    
+
     Iterator<Integer> keyIt = keySet.iterator();
     Iterator<Long> valueIt = valueSet.iterator();
     int keys[] = new int[size];
     Long values[] = new Long[size];
-    for (int i = 0; i < size; i ++) {
+    for (int i = 0; i < size; i++) {
       keys[i] = keyIt.next().intValue();
       values[i] = valueIt.next();;
     }
@@ -132,14 +130,14 @@ public class ObjIdMapJUnitTest {
     // ----------------------
     // Now back to your regularly scheduled program...
     // ----------------------
-    
+
     // Now populate the map...
-    for (int i = 0; i < size; i ++) {
+    for (int i = 0; i < size; i++) {
       map.put(keys[i], values[i]);
     }
     assertEquals("Map is not correct size", size, map.size());
 
-    for (int i = 0; i < size; i ++) {
+    for (int i = 0; i < size; i++) {
       int key = keys[i];
       assertTrue("Map does not contain key", map.containsKey(key));
       assertEquals("Map has wrong value for key", values[i], map.get(key));
@@ -178,12 +176,13 @@ public class ObjIdMapJUnitTest {
 
     while (growing || saver.size() > 0) {
       int op = random.nextInt(8);
-      //System.out.println("saver size: " + saver.size() + ", map size: " + map.size());
+      // System.out.println("saver size: " + saver.size() + ", map size: " + map.size());
       switch (op) {
-        case 0:  // Add new value - more likely to occur than removes
+        case 0: // Add new value - more likely to occur than removes
         case 1:
         case 2:
-          if (!growing) break;
+          if (!growing)
+            break;
           int key = Math.abs(random.nextInt(10 * maxSize));
           if (bits.get(key)) {
             // We don't want the newValue in the saver List twice
@@ -195,30 +194,34 @@ public class ObjIdMapJUnitTest {
           map.put(key, new WeakReference(newValue));
           saver.add(newValue);
           bits.set(key);
-          if (saver.size() >= maxSize) growing = false;
+          if (saver.size() >= maxSize)
+            growing = false;
           break;
-        case 3:     // Explicitly remove random entry
-          if (saver.size() == 0) break;
+        case 3: // Explicitly remove random entry
+          if (saver.size() == 0)
+            break;
           numRemoves++;
           key = random.nextInt(saver.size());
-          Integer value = (Integer)saver.remove(key);
+          Integer value = (Integer) saver.remove(key);
           bits.clear(value.intValue());
           assertNotNull(map.remove(value.intValue()));
           break;
-        case 4:     // Release reference to random entry
-          if (saver.size() == 0) break;
+        case 4: // Release reference to random entry
+          if (saver.size() == 0)
+            break;
           numReleases++;
           key = random.nextInt(saver.size());
           value = (Integer) saver.remove(key);
           bits.clear(value.intValue());
           break;
-        case 5:     // Validate random entry
+        case 5: // Validate random entry
         case 6:
         case 7:
-          if (saver.size() == 0) break;
+          if (saver.size() == 0)
+            break;
           numChecks++;
-          Integer valueToCheck = (Integer)saver.get(random.nextInt(saver.size()));
-          WeakReference ref = (WeakReference)map.get(valueToCheck.intValue());
+          Integer valueToCheck = (Integer) saver.get(random.nextInt(saver.size()));
+          WeakReference ref = (WeakReference) map.get(valueToCheck.intValue());
           assertTrue(ref != null);
           assertEquals(valueToCheck, ref.get());
           break;
@@ -226,13 +229,8 @@ public class ObjIdMapJUnitTest {
           fail("Bad op: " + op);
       }
     }
-    System.out.println(
-      "map size: " + map.size() +
-      ", numAdds: " + numAdds + 
-      ", numRemoves: " + numRemoves + 
-      ", numReleases: " + numReleases + 
-      ", numChecks: " + numChecks
-    );
+    System.out.println("map size: " + map.size() + ", numAdds: " + numAdds + ", numRemoves: "
+        + numRemoves + ", numReleases: " + numReleases + ", numChecks: " + numChecks);
   }
 
   @Test
@@ -249,7 +247,7 @@ public class ObjIdMapJUnitTest {
     ObjIdMap.EntryIterator iter = map.iterator();
     for (ObjIdMap.Entry e = iter.next(); e != null; e = iter.next()) {
       int key = e.key;
-//       System.out.println(key);
+      // System.out.println(key);
       assertFalse("Already saw " + key, found[key]);
       found[key] = true;
     }

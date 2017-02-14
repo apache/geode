@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.ha;
 
@@ -21,6 +19,7 @@ import static org.junit.Assert.*;
 import java.net.SocketException;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,7 +45,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
 
   protected static Cache cache = null;
@@ -68,7 +67,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
   protected static LogWriter logger = null;
 
   static PoolImpl pool = null;
-  
+
   private static boolean isUnresponsiveClientRemoved = false;
 
   @Override
@@ -79,8 +78,10 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     clientVM = host.getVM(3);
 
     PORT0 = createServerCache().intValue();
-    PORT1 = ((Integer)serverVM1.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
-    PORT2 = ((Integer)serverVM2.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
+    PORT1 =
+        ((Integer) serverVM1.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
+    PORT2 =
+        ((Integer) serverVM2.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
   }
 
   @Override
@@ -111,12 +112,10 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     return createServerCache(ePolicy, new Integer(1));
   }
 
-  public static Integer createServerCache(String ePolicy, Integer cap)
-      throws Exception {
+  public static Integer createServerCache(String ePolicy, Integer cap) throws Exception {
 
     Properties prop = new Properties();
-    prop.setProperty(REMOVE_UNRESPONSIVE_CLIENT,
-        "true");
+    prop.setProperty(REMOVE_UNRESPONSIVE_CLIENT, "true");
     new HASlowReceiverDUnitTest().createCache(prop);
 
     AttributesFactory factory = new AttributesFactory();
@@ -139,9 +138,8 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     return new Integer(server1.getPort());
   }
 
-  public static void createClientCache(String host, Integer port1,
-      Integer port2, Integer port3, Integer rLevel, Boolean addListener)
-      throws Exception {
+  public static void createClientCache(String host, Integer port1, Integer port2, Integer port3,
+      Integer rLevel, Boolean addListener) throws Exception {
     CacheServerTestUtil.disableShufflingOfEndpoints();
 
     Properties props = new Properties();
@@ -150,12 +148,11 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     new HASlowReceiverDUnitTest().createCache(props);
 
     AttributesFactory factory = new AttributesFactory();
-    PoolImpl p = (PoolImpl)PoolManager.createFactory().addServer("localhost",
-        port1).addServer("localhost", port2).addServer("localhost", port3)
-        .setSubscriptionEnabled(true).setSubscriptionRedundancy(
-            rLevel.intValue()).setThreadLocalConnections(true)
-        .setMinConnections(6).setReadTimeout(20000).setPingInterval(1000)
-        .setRetryAttempts(5).create("HASlowRecieverDUnitTestPool");
+    PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer("localhost", port1)
+        .addServer("localhost", port2).addServer("localhost", port3).setSubscriptionEnabled(true)
+        .setSubscriptionRedundancy(rLevel.intValue()).setThreadLocalConnections(true)
+        .setMinConnections(6).setReadTimeout(20000).setPingInterval(1000).setRetryAttempts(5)
+        .create("HASlowRecieverDUnitTestPool");
 
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
@@ -167,8 +164,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
           if (event.getNewValue().equals("v20")) {
             try {
               Thread.sleep(120000);
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
               // TODO Auto-generated catch block
               e.printStackTrace();
             }
@@ -181,8 +177,8 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     pool = p;
   }
 
-  public static void createClientCache(String host, Integer port1,
-      Integer port2, Integer port3, Integer rLevel) throws Exception {
+  public static void createClientCache(String host, Integer port1, Integer port2, Integer port3,
+      Integer rLevel) throws Exception {
     createClientCache(host, port1, port2, port3, rLevel, Boolean.TRUE);
   }
 
@@ -191,8 +187,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
       Region r = cache.getRegion("/" + regionName);
       assertNotNull(r);
       r.registerInterest("ALL_KEYS");
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("failed in registerInterestListAll", ex);
     }
   }
@@ -206,8 +201,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
         r.put("k" + (i % 10), "v" + i);
         r.put("k" + (i % 10), new byte[1000]);
       }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("failed in putEntries()", ex);
     }
   }
@@ -219,8 +213,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
       for (long i = 0; i < num.longValue(); i++) {
         r.create("k" + i, "v" + i);
       }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("failed in createEntries(Long)", ex);
     }
   }
@@ -232,8 +225,8 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
       }
 
       public String description() {
-        return "Expected redundant count (" + pool.getRedundantNames().size()
-            + ") to become " + redundantServers.intValue();
+        return "Expected redundant count (" + pool.getRedundantNames().size() + ") to become "
+            + redundantServers.intValue();
       }
     };
     Wait.waitForCriterion(wc, 200 * 1000, 1000, true);
@@ -244,33 +237,33 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
   public void testSlowClient() throws Exception {
     setBridgeObeserverForAfterQueueDestroyMessage();
     Host host = Host.getHost(0);
-    clientVM.invoke(() -> HASlowReceiverDUnitTest.createClientCache( NetworkUtils.getServerHostName(host), new Integer(PORT0),
-            new Integer(PORT1), new Integer(PORT2), new Integer(2) ));
+    clientVM.invoke(
+        () -> HASlowReceiverDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
+            new Integer(PORT0), new Integer(PORT1), new Integer(PORT2), new Integer(2)));
     clientVM.invoke(() -> HASlowReceiverDUnitTest.registerInterest());
     // add expected socket exception string
-    final IgnoredException ex1 = IgnoredException.addIgnoredException(SocketException.class
-        .getName());
-    final IgnoredException ex2 = IgnoredException.addIgnoredException(InterruptedException.class
-        .getName());
+    final IgnoredException ex1 =
+        IgnoredException.addIgnoredException(SocketException.class.getName());
+    final IgnoredException ex2 =
+        IgnoredException.addIgnoredException(InterruptedException.class.getName());
     putEntries();
     Thread.sleep(20000);// wait for put to block and allow server to remove
                         // client queue
-    clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel( new Integer(2) ));
+    clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel(new Integer(2)));
     // check for slow client queue is removed or not.
-    assertTrue("isUnresponsiveClientRemoved is false, but should be true "
-        + "after 20 seconds", isUnresponsiveClientRemoved);
+    assertTrue("isUnresponsiveClientRemoved is false, but should be true " + "after 20 seconds",
+        isUnresponsiveClientRemoved);
     ex1.remove();
     ex2.remove();
   }
 
-  public static void setBridgeObeserverForAfterQueueDestroyMessage()
-      throws Exception {
+  public static void setBridgeObeserverForAfterQueueDestroyMessage() throws Exception {
     PoolImpl.AFTER_QUEUE_DESTROY_MESSAGE_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       @Override
-      public void afterQueueDestroyMessage() {       
-        clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel( new Integer(0) ));
-        isUnresponsiveClientRemoved = true;   
+      public void afterQueueDestroyMessage() {
+        clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel(new Integer(0)));
+        isUnresponsiveClientRemoved = true;
         PoolImpl.AFTER_QUEUE_DESTROY_MESSAGE_FLAG = false;
       }
     });

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -25,22 +23,19 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * This listener is attached to the Monitoring Region to receive any addition or
- * deletion of MBEans
+ * This listener is attached to the Monitoring Region to receive any addition or deletion of MBEans
  * 
- * It updates the last refreshed time of proxy once it gets the update request
- * from the Managed Node
+ * It updates the last refreshed time of proxy once it gets the update request from the Managed Node
  * 
  * 
  */
-public class ManagementCacheListener extends
-    CacheListenerAdapter<String, Object> {
+public class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   private MBeanProxyFactory proxyHelper;
-  
-  private volatile boolean  readyForEvents;
+
+  private volatile boolean readyForEvents;
 
   public ManagementCacheListener(MBeanProxyFactory proxyHelper) {
     this.proxyHelper = proxyHelper;
@@ -57,8 +52,8 @@ public class ManagementCacheListener extends
     try {
       objectName = ObjectName.getInstance(event.getKey());
       Object newObject = event.getNewValue();
-      proxyHelper.createProxy(event.getDistributedMember(), objectName, event
-          .getRegion(), newObject);
+      proxyHelper.createProxy(event.getDistributedMember(), objectName, event.getRegion(),
+          newObject);
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
         logger.debug("Proxy Create failed for {} with exception {}", objectName, e.getMessage(), e);
@@ -74,11 +69,11 @@ public class ManagementCacheListener extends
     try {
       objectName = ObjectName.getInstance(event.getKey());
       Object oldObject = event.getOldValue();
-      proxyHelper.removeProxy(event.getDistributedMember(), objectName,
-          oldObject);
+      proxyHelper.removeProxy(event.getDistributedMember(), objectName, oldObject);
     } catch (Exception e) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Proxy Destroy failed for {} with exception {}", objectName, e.getMessage(), e);
+        logger.debug("Proxy Destroy failed for {} with exception {}", objectName, e.getMessage(),
+            e);
       }
     }
 
@@ -113,8 +108,8 @@ public class ManagementCacheListener extends
     }
 
   }
-  
-  void markReady(){
+
+  void markReady() {
     readyForEvents = true;
   }
 

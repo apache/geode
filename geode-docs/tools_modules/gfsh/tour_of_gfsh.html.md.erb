@@ -71,7 +71,12 @@ Successfully connected to: [host=ubuntu.local, port=1099]
 Cluster configuration service is up and running.
 ```
 
-In your file system, examine the folder location where you executed `gfsh`. Notice that the `start locator` command has automatically created a working directory (using the name of the locator), and within that working directory, it has created a log file, a status file, and a .pid (containing the locator's process ID) for this locator.
+If you run `start locator` from gfsh without specifying the member name, gfsh will automatically pick a random member name. This is useful for automation.
+
+In your file system, examine the folder location where you executed `gfsh`. Notice that the `start
+locator` command has automatically created a working directory (using the name of the locator), and
+within that working directory, it has created a log file, a status file, and a .pid (containing the
+locator's process ID) for this locator.
 
 In addition, because no other JMX Manager exists yet, notice that `gfsh` has automatically started an embedded JMX Manager on port 1099 within the locator and has connected you to that JMX Manager.
 
@@ -178,7 +183,13 @@ JVM Arguments: -Dgemfire.locators=localhost[10334] -Dgemfire.use-cluster-configu
 Class-Path: /home/username/Pivotal_GemFire_810_b50582_Linux/lib/gemfire.jar:/home/username/Pivotal_GemFire_810_b50582_Linux/lib/server-dependencies.jar
 ```
 
-In your file system, examine the folder location where you executed `gfsh`. Notice that just like the `start locator` command, the `start server` command has automatically created a working directory (named after the server), and within that working directory, it has created a log file and a .pid (containing the server's process ID) for this cache server. In addition, it has also written log files.
+If you run `start server` from gfsh without specifying the member name, gfsh will automatically pick a random member name. This is useful for automation.
+
+In your file system, examine the folder location where you executed `gfsh`. Notice that just like
+the `start locator` command, the `start server` command has automatically created a working
+directory (named after the server), and within that working directory, it has created a log file and
+a .pid (containing the server's process ID) for this cache server. In addition, it has also written
+log files.
 
 **Step 7: List members.** Use the `list members` command to view the current members of the Apache Geode distributed system you have just created.
 

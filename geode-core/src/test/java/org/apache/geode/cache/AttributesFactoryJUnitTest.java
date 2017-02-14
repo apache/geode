@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache;
 
@@ -41,10 +39,10 @@ public class AttributesFactoryJUnitTest {
   public void testCopyConstructor() {
     AttributesFactory f1 = new AttributesFactory();
     f1.setLockGrantor(true);
-    
+
     RegionAttributes origAttrs = f1.create();
     assertEquals(true, origAttrs.isLockGrantor());
-     
+
     AttributesFactory f2 = new AttributesFactory(origAttrs);
     RegionAttributes attrs = f2.create();
 
@@ -52,17 +50,16 @@ public class AttributesFactoryJUnitTest {
   }
 
   /**
-   * Tests the {@link AttributesFactory#create} throws
-   * the appropriate exception with poorly-configured factory.
+   * Tests the {@link AttributesFactory#create} throws the appropriate exception with
+   * poorly-configured factory.
    */
   @Test
   public void testInvalidConfigurations() {
     AttributesFactory factory;
 
     ExpirationAttributes invalidate =
-      new ExpirationAttributes(1, ExpirationAction.LOCAL_INVALIDATE);
-    ExpirationAttributes destroy =
-      new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY);
+        new ExpirationAttributes(1, ExpirationAction.LOCAL_INVALIDATE);
+    ExpirationAttributes destroy = new ExpirationAttributes(1, ExpirationAction.LOCAL_DESTROY);
 
     // DataPolicy.REPLICATE is incompatible with
     // ExpirationAction.LOCAL_INVALIDATE
@@ -73,10 +70,9 @@ public class AttributesFactoryJUnitTest {
     {
       RegionAttributes ra = factory.create();
       assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
-      assertEquals(new SubscriptionAttributes(InterestPolicy.ALL),
-                   ra.getSubscriptionAttributes());
+      assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     }
-    
+
     // DataPolicy.REPLICATE is incompatible with
     // ExpirationAction.LOCAL_DESTROY.
     factory = new AttributesFactory();
@@ -86,10 +82,9 @@ public class AttributesFactoryJUnitTest {
     {
       RegionAttributes ra = factory.create();
       assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
-      assertEquals(new SubscriptionAttributes(InterestPolicy.ALL),
-                   ra.getSubscriptionAttributes());
+      assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     }
-    
+
     // MirrorType KEYS is incompatible with
     // ExpirationAction.LOCAL_INVALIDATE
     factory = new AttributesFactory();
@@ -99,10 +94,9 @@ public class AttributesFactoryJUnitTest {
     {
       RegionAttributes ra = factory.create();
       assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
-      assertEquals(new SubscriptionAttributes(InterestPolicy.ALL),
-                   ra.getSubscriptionAttributes());
+      assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     }
-    
+
     // MirrorType.KEYS are incompatible with
     // ExpirationAction.LOCAL_DESTROY.
     factory = new AttributesFactory();
@@ -112,8 +106,7 @@ public class AttributesFactoryJUnitTest {
     {
       RegionAttributes ra = factory.create();
       assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
-      assertEquals(new SubscriptionAttributes(InterestPolicy.ALL),
-                   ra.getSubscriptionAttributes());
+      assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     }
 
     // Entry idle expiration requires that
@@ -144,7 +137,7 @@ public class AttributesFactoryJUnitTest {
       // pass...
     }
 
-    // MembershipAttributes (required roles) 
+    // MembershipAttributes (required roles)
     // requires distributed scope
     factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
@@ -158,7 +151,7 @@ public class AttributesFactoryJUnitTest {
       assertTrue(ex instanceof IllegalStateException);
       // pass...
     }
-    
+
     // Used mixed mode API for disk store and DWA
     factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -171,7 +164,7 @@ public class AttributesFactoryJUnitTest {
       assertTrue(ex instanceof IllegalStateException);
       // pass...
     }
-    
+
     // Used mixed mode API for disk store and DWA
     factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -184,21 +177,21 @@ public class AttributesFactoryJUnitTest {
       assertTrue(ex instanceof IllegalStateException);
       // pass...
     }
-    
+
     // Used mixed mode API for disk store and DWA
     factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
     File[] dirs1 = new File[] {new File("").getAbsoluteFile()};
     factory.setDiskStoreName("ds1");
-    
+
     try {
-      factory.setDiskDirs(dirs1);      
+      factory.setDiskDirs(dirs1);
       fail("Should have thrown an IllegalStateException");
     } catch (Exception ex) {
       assertTrue(ex instanceof IllegalStateException);
       // pass...
     }
-    
+
     // Used mixed mode API for disk store and DWA
     factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
@@ -211,7 +204,7 @@ public class AttributesFactoryJUnitTest {
       assertTrue(ex instanceof IllegalStateException);
       // pass...
     }
-    
+
     // Cloning cannot be disabled when a compressor is set
     factory = new AttributesFactory();
     factory.setCompressor(SnappyCompressor.getDefaultInstance());
@@ -225,9 +218,8 @@ public class AttributesFactoryJUnitTest {
   }
 
   /**
-   * Tests that the {@link AttributesFactory#AttributesFactory()
-   * default} attributes factory has the advertised default
-   * configuration.
+   * Tests that the {@link AttributesFactory#AttributesFactory() default} attributes factory has the
+   * advertised default configuration.
    */
   @Test
   public void testDefaultConfiguration() {
@@ -308,8 +300,7 @@ public class AttributesFactoryJUnitTest {
     }
     {
       AttributesFactory factory = new AttributesFactory();
-      factory.setDiskDirsAndSizes(new File[] {new File("").getAbsoluteFile()},
-                                  new int[] {100});
+      factory.setDiskDirsAndSizes(new File[] {new File("").getAbsoluteFile()}, new int[] {100});
       RegionAttributes attrs = factory.create();
       assertEquals(false, attrs.getDiskWriteAttributes().isSynchronous());
       assertEquals(false, attrs.isDiskSynchronous());
@@ -318,6 +309,7 @@ public class AttributesFactoryJUnitTest {
 
   /**
    * Tests the cacheListener functionality
+   * 
    * @since GemFire 5.0
    */
   @Test
@@ -326,7 +318,8 @@ public class AttributesFactoryJUnitTest {
     CacheListener cl1 = new MyCacheListener();
     CacheListener cl2 = new MyCacheListener();
     assertFalse(cl1.equals(cl2));
-    assertFalse((Arrays.asList(new CacheListener[]{cl1, cl2})).equals(Arrays.asList(new CacheListener[]{cl2, cl1})));
+    assertFalse((Arrays.asList(new CacheListener[] {cl1, cl2}))
+        .equals(Arrays.asList(new CacheListener[] {cl2, cl1})));
 
     AttributesFactory factory = new AttributesFactory();
     try {
@@ -335,7 +328,7 @@ public class AttributesFactoryJUnitTest {
     } catch (IllegalArgumentException expected) {
     }
     try {
-      factory.initCacheListeners(new CacheListener[]{null});
+      factory.initCacheListeners(new CacheListener[] {null});
       fail("expected IllegalArgumentException");
     } catch (IllegalArgumentException expected) {
     }
@@ -347,12 +340,12 @@ public class AttributesFactoryJUnitTest {
     factory.setCacheListener(cl1);
     ra = factory.create();
     assertEquals(cl1, ra.getCacheListener());
-    assertEquals(Arrays.asList(new CacheListener[]{cl1}), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(new CacheListener[] {cl1}), Arrays.asList(ra.getCacheListeners()));
 
     factory.setCacheListener(cl2);
     ra = factory.create();
     assertEquals(cl2, ra.getCacheListener());
-    assertEquals(Arrays.asList(new CacheListener[]{cl2}), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(new CacheListener[] {cl2}), Arrays.asList(ra.getCacheListeners()));
 
     factory.setCacheListener(null);
     ra = factory.create();
@@ -360,14 +353,15 @@ public class AttributesFactoryJUnitTest {
     assertEquals(Arrays.asList(new CacheListener[0]), Arrays.asList(ra.getCacheListeners()));
 
     factory.setCacheListener(cl1);
-    factory.initCacheListeners(new CacheListener[]{cl1, cl2});
+    factory.initCacheListeners(new CacheListener[] {cl1, cl2});
     ra = factory.create();
     try {
       ra.getCacheListener();
       fail("expected IllegalStateException");
     } catch (IllegalStateException expected) {
     }
-    assertEquals(Arrays.asList(new CacheListener[]{cl1, cl2}), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(new CacheListener[] {cl1, cl2}),
+        Arrays.asList(ra.getCacheListeners()));
 
     factory.initCacheListeners(null);
     ra = factory.create();
@@ -379,13 +373,14 @@ public class AttributesFactoryJUnitTest {
 
     factory.addCacheListener(cl1);
     ra = factory.create();
-    assertEquals(Arrays.asList(new CacheListener[]{cl1}), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(new CacheListener[] {cl1}), Arrays.asList(ra.getCacheListeners()));
     factory.addCacheListener(cl2);
     ra = factory.create();
-    assertEquals(Arrays.asList(new CacheListener[]{cl1, cl2}), Arrays.asList(ra.getCacheListeners()));
-    factory.initCacheListeners(new CacheListener[]{cl2});
+    assertEquals(Arrays.asList(new CacheListener[] {cl1, cl2}),
+        Arrays.asList(ra.getCacheListeners()));
+    factory.initCacheListeners(new CacheListener[] {cl2});
     ra = factory.create();
-    assertEquals(Arrays.asList(new CacheListener[]{cl2}), Arrays.asList(ra.getCacheListeners()));
+    assertEquals(Arrays.asList(new CacheListener[] {cl2}), Arrays.asList(ra.getCacheListeners()));
   }
 
   /**
@@ -394,26 +389,28 @@ public class AttributesFactoryJUnitTest {
   @Test
   public void testConnectionPool() {
     CacheLoader cl = new CacheLoader() {
-        public Object load(LoaderHelper helper) throws CacheLoaderException {
-          return null;
-        }
-        public void close() {}
-      };
-      
+      public Object load(LoaderHelper helper) throws CacheLoaderException {
+        return null;
+      }
+
+      public void close() {}
+    };
+
     AttributesFactory factory = new AttributesFactory();
     factory.setPoolName("mypool");
-    
+
     factory = new AttributesFactory();
     factory.setCacheWriter(new CacheWriterAdapter());
     factory.setPoolName("mypool");
-    
+
     factory = new AttributesFactory();
     factory.setCacheLoader(cl);
     factory.setPoolName("mypool");
   }
-  
- /**
+
+  /**
    * Trivial cache listener impl
+   * 
    * @since GemFire 5.0
    */
   private static class MyCacheListener extends CacheListenerAdapter {

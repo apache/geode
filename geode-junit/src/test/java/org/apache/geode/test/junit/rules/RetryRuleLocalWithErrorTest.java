@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.test.junit.rules;
 
@@ -32,9 +30,8 @@ import org.apache.geode.test.junit.Retry;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * Unit tests for {@link RetryRule} involving local scope (ie rule affects
- * only the test methods annotated with {@code @Retry}) with failures due to
- * an {@code Error}.
+ * Unit tests for {@link RetryRule} involving local scope (ie rule affects only the test methods
+ * annotated with {@code @Retry}) with failures due to an {@code Error}.
  */
 @Category(UnitTest.class)
 public class RetryRuleLocalWithErrorTest {
@@ -42,65 +39,68 @@ public class RetryRuleLocalWithErrorTest {
   @Test
   public void failsUnused() {
     Result result = TestRunner.runTest(FailsUnused.class);
-    
+
     assertThat(result.wasSuccessful()).isFalse();
-    
+
     List<Failure> failures = result.getFailures();
     assertThat(failures.size()).as("Failures: " + failures).isEqualTo(1);
 
     Failure failure = failures.get(0);
-    assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class).hasMessage(FailsUnused.message);
+    assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class)
+        .hasMessage(FailsUnused.message);
     assertThat(FailsUnused.count).isEqualTo(1);
   }
-  
+
   @Test
   public void passesUnused() {
     Result result = TestRunner.runTest(PassesUnused.class);
-    
+
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(PassesUnused.count).isEqualTo(1);
   }
-  
+
   @Test
   public void failsOnSecondAttempt() {
     Result result = TestRunner.runTest(FailsOnSecondAttempt.class);
-    
+
     assertThat(result.wasSuccessful()).isFalse();
-    
+
     List<Failure> failures = result.getFailures();
     assertThat(failures.size()).as("Failures: " + failures).isEqualTo(1);
 
     Failure failure = failures.get(0);
-    assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class).hasMessage(FailsOnSecondAttempt.message);
+    assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class)
+        .hasMessage(FailsOnSecondAttempt.message);
     assertThat(FailsOnSecondAttempt.count).isEqualTo(2);
   }
 
   @Test
   public void passesOnSecondAttempt() {
     Result result = TestRunner.runTest(PassesOnSecondAttempt.class);
-    
+
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(PassesOnSecondAttempt.count).isEqualTo(2);
   }
-  
+
   @Test
   public void failsOnThirdAttempt() {
     Result result = TestRunner.runTest(FailsOnThirdAttempt.class);
-    
+
     assertThat(result.wasSuccessful()).isFalse();
-    
+
     List<Failure> failures = result.getFailures();
     assertThat(failures.size()).as("Failures: " + failures).isEqualTo(1);
 
     Failure failure = failures.get(0);
-    assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class).hasMessage(FailsOnThirdAttempt.message);
+    assertThat(failure.getException()).isExactlyInstanceOf(AssertionError.class)
+        .hasMessage(FailsOnThirdAttempt.message);
     assertThat(FailsOnThirdAttempt.count).isEqualTo(3);
   }
 
   @Test
   public void passesOnThirdAttempt() {
     Result result = TestRunner.runTest(PassesOnThirdAttempt.class);
-    
+
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(PassesOnThirdAttempt.count).isEqualTo(3);
   }

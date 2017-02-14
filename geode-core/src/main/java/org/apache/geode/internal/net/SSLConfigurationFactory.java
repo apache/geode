@@ -1,42 +1,45 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.net;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.commons.lang.ArrayUtils;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 public class SSLConfigurationFactory {
+
+  public static final String JAVAX_KEYSTORE = "javax.net.ssl.keyStore";
+  public static final String JAVAX_KEYSTORE_TYPE = "javax.net.ssl.keyStoreType";
+  public static final String JAVAX_KEYSTORE_PASSWORD = "javax.net.ssl.keyStorePassword";
+  public static final String JAVAX_TRUSTSTORE = "javax.net.ssl.trustStore";
+  public static final String JAVAX_TRUSTSTORE_PASSWORD = "javax.net.ssl.trustStorePassword";
+  public static final String JAVAX_TRUSTSTORE_TYPE = "javax.net.ssl.trustStoreType";
 
   private static SSLConfigurationFactory instance = new SSLConfigurationFactory();
   private DistributionConfig distributionConfig = null;
   private Map<SecurableCommunicationChannel, SSLConfig> registeredSSLConfig = new HashMap<>();
 
-  private SSLConfigurationFactory() {
-  }
+  private SSLConfigurationFactory() {}
 
   private synchronized static SSLConfigurationFactory getInstance() {
     if (instance == null) {
@@ -46,22 +49,21 @@ public class SSLConfigurationFactory {
   }
 
   private DistributionConfig getDistributionConfig() {
-    if(distributionConfig == null)
-    {
+    if (distributionConfig == null) {
       throw new GemFireConfigException("SSL Configuration requires a valid distribution config.");
     }
     return distributionConfig;
   }
 
   public static void setDistributionConfig(final DistributionConfig distributionConfig) {
-    if(distributionConfig == null)
-    {
+    if (distributionConfig == null) {
       throw new GemFireConfigException("SSL Configuration requires a valid distribution config.");
     }
     getInstance().distributionConfig = distributionConfig;
   }
 
-  public static SSLConfig getSSLConfigForComponent(SecurableCommunicationChannel sslEnabledComponent) {
+  public static SSLConfig getSSLConfigForComponent(
+      SecurableCommunicationChannel sslEnabledComponent) {
     SSLConfig sslConfig = getInstance().getRegisteredSSLConfigForComponent(sslEnabledComponent);
     if (sslConfig == null) {
       sslConfig = getInstance().createSSLConfigForComponent(sslEnabledComponent);
@@ -70,27 +72,30 @@ public class SSLConfigurationFactory {
     return sslConfig;
   }
 
-  private synchronized void registeredSSLConfigForComponent(final SecurableCommunicationChannel sslEnabledComponent, final SSLConfig sslConfig) {
+  private synchronized void registeredSSLConfigForComponent(
+      final SecurableCommunicationChannel sslEnabledComponent, final SSLConfig sslConfig) {
     registeredSSLConfig.put(sslEnabledComponent, sslConfig);
   }
 
-  private SSLConfig createSSLConfigForComponent(final SecurableCommunicationChannel sslEnabledComponent) {
+  private SSLConfig createSSLConfigForComponent(
+      final SecurableCommunicationChannel sslEnabledComponent) {
     SSLConfig sslConfig = createSSLConfig(sslEnabledComponent);
-    SecurableCommunicationChannel[] sslEnabledComponents = getDistributionConfig().getSecurableCommunicationChannels();
+    SecurableCommunicationChannel[] sslEnabledComponents =
+        getDistributionConfig().getSecurableCommunicationChannels();
     if (sslEnabledComponents.length == 0) {
       sslConfig = configureLegacyClusterSSL(sslConfig);
     }
     sslConfig.setSecurableCommunicationChannel(sslEnabledComponent);
     switch (sslEnabledComponent) {
       case ALL: {
-        //Create a SSLConfig separate for HTTP Service. As the require-authentication might differ
+        // Create a SSLConfig separate for HTTP Service. As the require-authentication might differ
         createSSLConfigForComponent(SecurableCommunicationChannel.WEB);
         break;
       }
       case CLUSTER: {
         if (sslEnabledComponents.length > 0) {
           sslConfig = setAliasForComponent(sslConfig, getDistributionConfig().getClusterSSLAlias());
-        }else {
+        } else {
           sslConfig = configureLegacyClusterSSL(sslConfig);
         }
         break;
@@ -119,7 +124,8 @@ public class SSLConfigurationFactory {
       }
       case WEB: {
         if (sslEnabledComponents.length > 0) {
-          sslConfig = setAliasForComponent(sslConfig, getDistributionConfig().getHTTPServiceSSLAlias());
+          sslConfig =
+              setAliasForComponent(sslConfig, getDistributionConfig().getHTTPServiceSSLAlias());
           sslConfig.setRequireAuth(getDistributionConfig().getSSLWebRequireAuthentication());
         } else {
           sslConfig = configureLegacyHttpServiceSSL(sslConfig);
@@ -161,20 +167,24 @@ public class SSLConfigurationFactory {
     return sslConfig;
   }
 
-  private boolean determineIfSSLEnabledForSSLComponent(final SecurableCommunicationChannel sslEnabledComponent) {
-    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(), SecurableCommunicationChannel.NONE)) {
+  private boolean determineIfSSLEnabledForSSLComponent(
+      final SecurableCommunicationChannel sslEnabledComponent) {
+    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(),
+        SecurableCommunicationChannel.NONE)) {
       return false;
     }
-    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(), SecurableCommunicationChannel.ALL)) {
+    if (ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(),
+        SecurableCommunicationChannel.ALL)) {
       return true;
     }
-    return ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(), sslEnabledComponent) ? true : false;
+    return ArrayUtils.contains(getDistributionConfig().getSecurableCommunicationChannels(),
+        sslEnabledComponent) ? true : false;
   }
 
   /**
    * Configure a sslConfig for the cluster using the legacy configuration
+   * 
    * @return A sslConfig object describing the ssl config for the server component
-   *
    * @deprecated as of Geode 1.0
    */
   private SSLConfig configureLegacyClusterSSL(SSLConfig sslConfig) {
@@ -192,8 +202,8 @@ public class SSLConfigurationFactory {
 
   /**
    * Configure a sslConfig for the server using the legacy configuration
+   * 
    * @return A sslConfig object describing the ssl config for the server component
-   *
    * @deprecated as of Geode 1.0
    */
   private SSLConfig configureLegacyServerSSL(SSLConfig sslConfig) {
@@ -211,8 +221,8 @@ public class SSLConfigurationFactory {
 
   /**
    * Configure a sslConfig for the jmx using the legacy configuration
+   * 
    * @return A sslConfig object describing the ssl config for the jmx component
-   *
    * @deprecated as of Geode 1.0
    */
   private SSLConfig configureLegacyJMXSSL(SSLConfig sslConfig) {
@@ -230,8 +240,8 @@ public class SSLConfigurationFactory {
 
   /**
    * Configure a sslConfig for the gateway using the legacy configuration
+   * 
    * @return A sslConfig object describing the ssl config for the gateway component
-   *
    * @deprecated as of Geode 1.0
    */
   private SSLConfig configureLegacyGatewaySSL(SSLConfig sslConfig) {
@@ -249,8 +259,8 @@ public class SSLConfigurationFactory {
 
   /**
    * Configure a sslConfig for the http service using the legacy configuration
+   * 
    * @return A sslConfig object describing the ssl config for the http service component
-   *
    * @deprecated as of Geode 1.0
    */
   private SSLConfig configureLegacyHttpServiceSSL(SSLConfig sslConfig) {
@@ -270,24 +280,27 @@ public class SSLConfigurationFactory {
     return configureSSLPropertiesFromSystemProperties(sslConfig, null);
   }
 
-  private SSLConfig configureSSLPropertiesFromSystemProperties(SSLConfig sslConfig, Properties properties) {
+  private SSLConfig configureSSLPropertiesFromSystemProperties(SSLConfig sslConfig,
+      Properties properties) {
     if (StringUtils.isEmpty(sslConfig.getKeystore())) {
-      sslConfig.setKeystore(getValueFromSystemProperties(properties, "javax.net.ssl.keyStore"));
+      sslConfig.setKeystore(getValueFromSystemProperties(properties, JAVAX_KEYSTORE));
     }
     if (StringUtils.isEmpty(sslConfig.getKeystoreType())) {
-      sslConfig.setKeystoreType(getValueFromSystemProperties(properties, "javax.net.ssl.keyStoreType"));
+      sslConfig.setKeystoreType(getValueFromSystemProperties(properties, JAVAX_KEYSTORE_TYPE));
     }
     if (StringUtils.isEmpty(sslConfig.getKeystorePassword())) {
-      sslConfig.setKeystorePassword(getValueFromSystemProperties(properties, "javax.net.ssl.keyStorePassword"));
+      sslConfig
+          .setKeystorePassword(getValueFromSystemProperties(properties, JAVAX_KEYSTORE_PASSWORD));
     }
     if (StringUtils.isEmpty(sslConfig.getTruststore())) {
-      sslConfig.setTruststore(getValueFromSystemProperties(properties, "javax.net.ssl.trustStore"));
+      sslConfig.setTruststore(getValueFromSystemProperties(properties, JAVAX_TRUSTSTORE));
     }
     if (StringUtils.isEmpty(sslConfig.getTruststorePassword())) {
-      sslConfig.setTruststorePassword(getValueFromSystemProperties(properties, "javax.net.ssl.trustStorePassword"));
+      sslConfig.setTruststorePassword(
+          getValueFromSystemProperties(properties, JAVAX_TRUSTSTORE_PASSWORD));
     }
     if (StringUtils.isEmpty(sslConfig.getTruststoreType())) {
-      sslConfig.setTruststoreType(getValueFromSystemProperties(properties, "javax.net.ssl.trustStoreType"));
+      sslConfig.setTruststoreType(getValueFromSystemProperties(properties, JAVAX_TRUSTSTORE_TYPE));
     }
     return sslConfig;
   }
@@ -308,7 +321,8 @@ public class SSLConfigurationFactory {
     return propertyValue;
   }
 
-  private SSLConfig getRegisteredSSLConfigForComponent(final SecurableCommunicationChannel sslEnabledComponent) {
+  private SSLConfig getRegisteredSSLConfigForComponent(
+      final SecurableCommunicationChannel sslEnabledComponent) {
     return registeredSSLConfig.get(sslEnabledComponent);
   }
 
@@ -323,11 +337,8 @@ public class SSLConfigurationFactory {
 
   @Deprecated
   public static SSLConfig getSSLConfigForComponent(final boolean useSSL,
-                                                   final boolean needClientAuth,
-                                                   final String protocols,
-                                                   final String ciphers,
-                                                   final Properties gfsecurityProps,
-                                                   final String alias) {
+      final boolean needClientAuth, final String protocols, final String ciphers,
+      final Properties gfsecurityProps, final String alias) {
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setAlias(alias);
     sslConfig.setCiphers(ciphers);
@@ -335,7 +346,8 @@ public class SSLConfigurationFactory {
     sslConfig.setRequireAuth(needClientAuth);
     sslConfig.setEnabled(useSSL);
 
-    sslConfig = getInstance().configureSSLPropertiesFromSystemProperties(sslConfig, gfsecurityProps);
+    sslConfig =
+        getInstance().configureSSLPropertiesFromSystemProperties(sslConfig, gfsecurityProps);
 
     return sslConfig;
   }

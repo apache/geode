@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /*
  * ConnectionPoolCacheImplJUnitTest.java JUnit based test
@@ -47,10 +45,10 @@ import static org.junit.Assert.fail;
 @Category(IntegrationTest.class)
 public class ConnectionPoolCacheImplJUnitTest {
 
-	protected static ConnectionPoolCacheImpl poolCache = null;
+  protected static ConnectionPoolCacheImpl poolCache = null;
   private Thread ThreadA;
   protected Thread ThreadB;
-//  private Thread ThreadC;
+  // private Thread ThreadC;
   protected static int maxPoolSize;
   protected static GemFireConnPooledDataSource ds = null;
   private static GemFireConnectionPoolManager provider = null;
@@ -63,12 +61,12 @@ public class ConnectionPoolCacheImplJUnitTest {
     try {
       props = new Properties();
       props.setProperty(MCAST_PORT, "0");
-      String path = TestUtil.getResourcePath(ConnectionPoolCacheImplJUnitTest.class, "/jta/cachejta.xml");
+      String path =
+          TestUtil.getResourcePath(ConnectionPoolCacheImplJUnitTest.class, "/jta/cachejta.xml");
       props.setProperty(CACHE_XML_FILE, path);
       ds1 = DistributedSystem.connect(props);
       cache = CacheFactory.create(ds1);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       fail("Exception occured in creation of ds and cache due to " + e);
       e.printStackTrace();
     }
@@ -81,12 +79,12 @@ public class ConnectionPoolCacheImplJUnitTest {
 
   @Test
   public void testGetSimpleDataSource() throws Exception {
-      Context ctx = cache.getJNDIContext();
-      GemFireBasicDataSource ds = (GemFireBasicDataSource) ctx
-          .lookup("java:/SimpleDataSource");
-      Connection conn = ds.getConnection();
-      if (conn == null)
-          fail("DataSourceFactoryTest-testGetSimpleDataSource() Error in creating the GemFireBasicDataSource");
+    Context ctx = cache.getJNDIContext();
+    GemFireBasicDataSource ds = (GemFireBasicDataSource) ctx.lookup("java:/SimpleDataSource");
+    Connection conn = ds.getConnection();
+    if (conn == null)
+      fail(
+          "DataSourceFactoryTest-testGetSimpleDataSource() Error in creating the GemFireBasicDataSource");
   }
 
   @Test
@@ -98,8 +96,7 @@ public class ConnectionPoolCacheImplJUnitTest {
       PoolClient_2 clientB = new PoolClient_2();
       ThreadB = new Thread(clientB, "ThreadB");
       ThreadA.start();
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       fail("Exception occured in testConnectionPoolFunctions due to " + e);
       e.printStackTrace();
     }
@@ -107,8 +104,8 @@ public class ConnectionPoolCacheImplJUnitTest {
 
   public static void createPool() throws Exception {
     Context ctx = cache.getJNDIContext();
-    GemFireConnPooledDataSource ds = (GemFireConnPooledDataSource) ctx
-        .lookup("java:/PooledDataSource");
+    GemFireConnPooledDataSource ds =
+        (GemFireConnPooledDataSource) ctx.lookup("java:/PooledDataSource");
     provider = (GemFireConnectionPoolManager) ds.getConnectionProvider();
     poolCache = (ConnectionPoolCacheImpl) provider.getConnectionPoolCache();
     maxPoolSize = poolCache.getMaxLimit();
@@ -120,31 +117,27 @@ public class ConnectionPoolCacheImplJUnitTest {
 
     public void run() {
       String threadName = Thread.currentThread().getName();
-      //	System.out.println(" Inside Run method of " + threadName);
+      // System.out.println(" Inside Run method of " + threadName);
       int numConn = 0;
       while (poolConnlist.size() < maxPoolSize) {
         try {
-          //	System.out.println(" Getting a connection from " + threadName);
-          PooledConnection conn = (PooledConnection) poolCache
-              .getPooledConnectionFromPool();
+          // System.out.println(" Getting a connection from " + threadName);
+          PooledConnection conn = (PooledConnection) poolCache.getPooledConnectionFromPool();
           poolConnlist.add(conn);
           numConn++;
-          //System.out.println(" Got connection " + numConn + "from "+
+          // System.out.println(" Got connection " + numConn + "from "+
           // threadName);
-        }
-        catch (Exception ex) {
-          fail("Exception occured in trying to getPooledConnectionfromPool due to "
-              + ex);
+        } catch (Exception ex) {
+          fail("Exception occured in trying to getPooledConnectionfromPool due to " + ex);
           ex.printStackTrace();
         }
       }
       if (numConn != maxPoolSize)
-          fail("#### Error in filling the the connection pool from "
-              + threadName);
+        fail("#### Error in filling the the connection pool from " + threadName);
       ThreadB.start();
-      //System.out.println(" AFTER starting THREADB");
+      // System.out.println(" AFTER starting THREADB");
       int numC = 0;
-//      int display = 0;
+      // int display = 0;
       long birthTime = 0;
       long newTime = 0;
       long duration = 0;
@@ -154,27 +147,23 @@ public class ConnectionPoolCacheImplJUnitTest {
           while (true) {
             newTime = System.currentTimeMillis();
             duration = newTime - birthTime;
-            if (duration > 5) break;
+            if (duration > 5)
+              break;
           }
-//          display = numC + 1;
-          //System.out.println(" Returning connection " + display + "from "+
+          // display = numC + 1;
+          // System.out.println(" Returning connection " + display + "from "+
           // threadName);
-          poolCache
-              .returnPooledConnectionToPool(poolConnlist
-                  .get(numC));
-          //System.out.println(" Returned connection " + display + "from "+
+          poolCache.returnPooledConnectionToPool(poolConnlist.get(numC));
+          // System.out.println(" Returned connection " + display + "from "+
           // threadName);
-        }
-        catch (Exception ex) {
-          fail("Exception occured in trying to returnPooledConnectiontoPool due to "
-              + ex);
+        } catch (Exception ex) {
+          fail("Exception occured in trying to returnPooledConnectiontoPool due to " + ex);
           ex.printStackTrace();
         }
       }
       if (numC != maxPoolSize)
-          fail("#### Error in returning all the connections to the  pool from "
-              + threadName);
-      //System.out.println(" ****************Returned all connections " +
+        fail("#### Error in returning all the connections to the  pool from " + threadName);
+      // System.out.println(" ****************Returned all connections " +
       // threadName + "***********");
     }
   }
@@ -185,27 +174,24 @@ public class ConnectionPoolCacheImplJUnitTest {
 
     public void run() {
       String threadName = Thread.currentThread().getName();
-      //System.out.println(" Inside Run method of " + threadName);
+      // System.out.println(" Inside Run method of " + threadName);
       int numConn2 = 0;
-//      int display = 0;
+      // int display = 0;
       while (numConn2 < maxPoolSize) {
         try {
-          PooledConnection conn = (PooledConnection) poolCache
-              .getPooledConnectionFromPool();
+          PooledConnection conn = (PooledConnection) poolCache.getPooledConnectionFromPool();
           poolConnlist.add(conn);
           numConn2++;
-          //	System.out.println(" ********** Got connection " + numConn2+ "from
+          // System.out.println(" ********** Got connection " + numConn2+ "from
           // " + threadName);
-        }
-        catch (Exception ex) {
-          fail("Exception occured in trying to getPooledConnectionFromPool due to "
-              + ex);
+        } catch (Exception ex) {
+          fail("Exception occured in trying to getPooledConnectionFromPool due to " + ex);
           ex.printStackTrace();
         }
       }
       if (numConn2 != maxPoolSize)
-          fail("#### Error in getting all connections from the " + threadName);
-      //System.out.println(" ****************GOT ALL connections "+ threadName
+        fail("#### Error in getting all connections from the " + threadName);
+      // System.out.println(" ****************GOT ALL connections "+ threadName
       // + "***********");
     }
   }

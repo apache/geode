@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache.execute;
@@ -29,18 +27,18 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.LocalDataSet;
 
 /**
- * Context available to data dependent functions. When function is executed
- * using {@link FunctionService#onRegion(Region)}, the FunctionContext can be
- * type casted to RegionFunctionContext. Methods provided to retrieve the Region
- * and filter passed to the function execution
+ * Context available to data dependent functions. When function is executed using
+ * {@link FunctionService#onRegion(Region)}, the FunctionContext can be type casted to
+ * RegionFunctionContext. Methods provided to retrieve the Region and filter passed to the function
+ * execution
  * 
  * 
  * @since GemFire 6.0
  * 
  * @see FunctionContextImpl
  */
-public class RegionFunctionContextImpl extends FunctionContextImpl implements
-    InternalRegionFunctionContext {
+public class RegionFunctionContextImpl extends FunctionContextImpl
+    implements InternalRegionFunctionContext {
 
   private final Region dataSet;
 
@@ -52,12 +50,9 @@ public class RegionFunctionContextImpl extends FunctionContextImpl implements
 
   private final boolean isPossibleDuplicate;
 
-  public RegionFunctionContextImpl(final String functionId,
-      final Region dataSet, final Object args,
-      final Set<?> routingObjects,
-      final Map<String, LocalDataSet> colocatedLocalDataMap,
-      Set<Integer> localBucketSet, ResultSender<?> resultSender,
-      boolean isPossibleDuplicate) {
+  public RegionFunctionContextImpl(final String functionId, final Region dataSet, final Object args,
+      final Set<?> routingObjects, final Map<String, LocalDataSet> colocatedLocalDataMap,
+      Set<Integer> localBucketSet, ResultSender<?> resultSender, boolean isPossibleDuplicate) {
     super(functionId, args, resultSender);
     this.dataSet = dataSet;
     this.filter = routingObjects;
@@ -87,8 +82,8 @@ public class RegionFunctionContextImpl extends FunctionContextImpl implements
   }
 
   /**
-   * Returns subset of keys provided by the invoking thread (aka routing
-   * objects) which may exist in the local data set.
+   * Returns subset of keys provided by the invoking thread (aka routing objects) which may exist in
+   * the local data set.
    * 
    * @see Execution#withFilter(Set)
    * 
@@ -115,20 +110,18 @@ public class RegionFunctionContextImpl extends FunctionContextImpl implements
   public Region getLocalDataSet(Region r) {
     if (this.colocatedLocalDataMap != null) {
       return this.colocatedLocalDataMap.get(r.getFullPath());
-    }
-    else {
+    } else {
       return null;
     }
   }
 
   public Map<String, LocalDataSet> getColocatedLocalDataSets() {
     if (this.colocatedLocalDataMap != null) {
-      HashMap<String, LocalDataSet> ret = new HashMap<String, LocalDataSet>(
-          this.colocatedLocalDataMap);
+      HashMap<String, LocalDataSet> ret =
+          new HashMap<String, LocalDataSet>(this.colocatedLocalDataMap);
       ret.remove(this.dataSet.getFullPath());
       return Collections.unmodifiableMap(ret);
-    }
-    else {
+    } else {
       return Collections.emptyMap();
     }
   }

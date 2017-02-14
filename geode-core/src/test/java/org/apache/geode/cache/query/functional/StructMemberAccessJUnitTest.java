@@ -1,22 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /*
- * StructMemberAcessJUnitTest.java
- * JUnit based test
+ * StructMemberAcessJUnitTest.java JUnit based test
  *
  * Created on March 24, 2005, 5:54 PM
  */
@@ -72,26 +69,21 @@ public class StructMemberAccessJUnitTest {
   @Test
   public void testUnsupportedQueries() throws Exception {
     String queries[] = {
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos)"
             + " WHERE value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
             + " WHERE p.get(1).value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
             + " WHERE p[1].value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
             + " WHERE p.value.secId = 'IBM'"};
     for (int i = 0; i < queries.length; i++) {
       try {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
         fail(queries[i]);
       } catch (Exception e) {
-        //e.printStackTrace();
+        // e.printStackTrace();
       }
     }
   }
@@ -99,40 +91,30 @@ public class StructMemberAccessJUnitTest {
   @Test
   public void testSupportedQueries() throws Exception {
     String queries[] = {
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos)"
             + " WHERE pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM /Portfolios AS ptf, positions AS pos)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios AS ptf, positions AS pos)"
             + " WHERE pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM ptf IN /Portfolios, pos IN positions)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM ptf IN /Portfolios, pos IN positions)"
             + " WHERE pos.value.secId = 'IBM'",
         "SELECT DISTINCT * FROM"
             + " (SELECT DISTINCT pos AS myPos FROM /Portfolios ptf, positions pos)"
             + " WHERE myPos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
             + " WHERE p.pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
             + " WHERE pos.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM /Portfolios, positions) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios, positions) p"
             + " WHERE p.positions.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM /Portfolios, positions)"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios, positions)"
             + " WHERE positions.value.secId = 'IBM'",
-        "SELECT DISTINCT * FROM"
-            + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
+        "SELECT DISTINCT * FROM" + " (SELECT DISTINCT * FROM /Portfolios ptf, positions pos) p"
             + " WHERE p.get('pos').value.secId = 'IBM'",
-        "SELECT DISTINCT name FROM"
-            + " /Portfolios , secIds name where length > 0 ",};
+        "SELECT DISTINCT name FROM" + " /Portfolios , secIds name where length > 0 ",};
     for (int i = 0; i < queries.length; i++) {
       try {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
       } catch (Exception e) {
         e.printStackTrace();
         fail(queries[i]);
@@ -142,7 +124,7 @@ public class StructMemberAccessJUnitTest {
 
   @Test
   public void testResultComposition() throws Exception {
-    String queries[] = { "select distinct p from /Portfolios p where p.ID > 0",
+    String queries[] = {"select distinct p from /Portfolios p where p.ID > 0",
         "select distinct p.getID from /Portfolios p where p.ID > 0 ",
         "select distinct p.getID as secID from /Portfolios p where p.ID > 0 "};
     for (int i = 0; i < queries.length; i++) {
@@ -151,23 +133,21 @@ public class StructMemberAccessJUnitTest {
       if (o instanceof SelectResults) {
         SelectResults sr = (SelectResults) o;
         if (sr instanceof StructSet && i != 2)
-            fail(" StructMemberAccess::testResultComposition: Got StrcutSet when expecting ResultSet");
+          fail(
+              " StructMemberAccess::testResultComposition: Got StrcutSet when expecting ResultSet");
         CollectionType ct = sr.getCollectionType();
-        CacheUtils.log("***Elememt Type of Colelction = "
-            + ct.getElementType());
-        CacheUtils.log((sr.getCollectionType())
-            .getElementType().getSimpleClassName());
+        CacheUtils.log("***Elememt Type of Colelction = " + ct.getElementType());
+        CacheUtils.log((sr.getCollectionType()).getElementType().getSimpleClassName());
         List ls = sr.asList();
         for (int j = 0; j < ls.size(); ++j)
-          CacheUtils.log("Object in the resultset = "
-              + ls.get(j).getClass());
+          CacheUtils.log("Object in the resultset = " + ls.get(j).getClass());
         switch (i) {
           case 0:
             if (ct.getElementType().getSimpleClassName().equals("Portfolio")) {
               assertTrue(true);
             } else {
-              System.out
-                  .println("StructMemberAcessJUnitTest::testResultComposition:Colelction Element's class="
+              System.out.println(
+                  "StructMemberAcessJUnitTest::testResultComposition:Colelction Element's class="
                       + ct.getElementType().getSimpleClassName());
               fail();
             }
@@ -176,8 +156,8 @@ public class StructMemberAccessJUnitTest {
             if (ct.getElementType().getSimpleClassName().equals("int")) {
               assertTrue(true);
             } else {
-              System.out
-                  .println("StructMemberAcessJUnitTest::testResultComposition:Colelction Element's class="
+              System.out.println(
+                  "StructMemberAcessJUnitTest::testResultComposition:Colelction Element's class="
                       + ct.getElementType().getSimpleClassName());
               fail();
             }
@@ -186,8 +166,8 @@ public class StructMemberAccessJUnitTest {
             if (ct.getElementType().getSimpleClassName().equals("Struct")) {
               assertTrue(true);
             } else {
-              System.out
-                  .println("StructMemberAcessJUnitTest::testResultComposition:Colelction Element's class="
+              System.out.println(
+                  "StructMemberAcessJUnitTest::testResultComposition:Colelction Element's class="
                       + ct.getElementType().getSimpleClassName());
               fail();
             }
@@ -206,25 +186,23 @@ public class StructMemberAccessJUnitTest {
     Region region = CacheUtils.createRegion("employees", Employee.class);
     region.put("1", new Manager("aaa", 27, 270, "QA", 1800, add1, 2701));
     region.put("2", new Manager("bbb", 28, 280, "QA", 1900, add2, 2801));
-    String queries[] = { "SELECT DISTINCT e.manager_id FROM /employees e"};
+    String queries[] = {"SELECT DISTINCT e.manager_id FROM /employees e"};
     for (int i = 0; i < queries.length; i++) {
       Query q = CacheUtils.getQueryService().newQuery(queries[i]);
       Object r = q.execute();
-      CacheUtils.log(Utils.printResult(r));
-      String className = (((SelectResults) r).getCollectionType())
-          .getElementType().getSimpleClassName();
-      if (className.equals("Employee")) {
-        CacheUtils.log("pass");
-      } else {
-        fail("StructMemberAccessTest::testSubClassQuery:failed .Expected class name Employee. Actualy obtained="
-            + className);
+      String className =
+          (((SelectResults) r).getCollectionType()).getElementType().getSimpleClassName();
+      if (!className.equals("Employee")) {
+        fail(
+            "StructMemberAccessTest::testSubClassQuery:failed .Expected class name Employee. Actualy obtained="
+                + className);
       }
     }
   }
 
   @Test
   public void testBugNumber_32354() {
-    String queries[] = { "select distinct * from /root/portfolios.values, positions.values ",};
+    String queries[] = {"select distinct * from /root/portfolios.values, positions.values ",};
     int i = 0;
     try {
       tearDown();
@@ -232,25 +210,19 @@ public class StructMemberAccessJUnitTest {
       Region rootRegion = CacheUtils.createRegion("root", null);
       AttributesFactory attributesFactory = new AttributesFactory();
       attributesFactory.setValueConstraint(Portfolio.class);
-      RegionAttributes regionAttributes = attributesFactory
-          .create();
-      Region region = rootRegion
-          .createSubregion("portfolios", regionAttributes);
+      RegionAttributes regionAttributes = attributesFactory.create();
+      Region region = rootRegion.createSubregion("portfolios", regionAttributes);
       for (i = 0; i < 4; i++) {
         region.put("" + i, new Portfolio(i));
       }
       for (i = 0; i < queries.length; i++) {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
-        StructType type = ((StructType) ((SelectResults) r).getCollectionType()
-            .getElementType());
+        StructType type = ((StructType) ((SelectResults) r).getCollectionType().getElementType());
         String fieldNames[] = type.getFieldNames();
         for (i = 0; i < fieldNames.length; ++i) {
           String name = fieldNames[i];
-          CacheUtils.log("Struct Field name = " + name);
-          if (name.equals("/root/portfolios")
-              || name.equals("positions.values")) {
+          if (name.equals("/root/portfolios") || name.equals("positions.values")) {
             fail("The field name in struct = " + name);
           }
         }
@@ -263,15 +235,14 @@ public class StructMemberAccessJUnitTest {
 
   @Test
   public void testBugNumber_32355() {
-    String queries[] = { "select distinct positions.values.toArray[0], positions.values.toArray[0],status from /Portfolios",};
+    String queries[] = {
+        "select distinct positions.values.toArray[0], positions.values.toArray[0],status from /Portfolios",};
     int i = 0;
     try {
       for (i = 0; i < queries.length; i++) {
         Query q = CacheUtils.getQueryService().newQuery(queries[i]);
         Object r = q.execute();
-        CacheUtils.log(Utils.printResult(r));
-        StructType type = ((StructType) ((SelectResults) r).getCollectionType()
-            .getElementType());
+        StructType type = ((StructType) ((SelectResults) r).getCollectionType().getElementType());
         String fieldNames[] = type.getFieldNames();
         for (i = 0; i < fieldNames.length; ++i) {
           String name = fieldNames[i];

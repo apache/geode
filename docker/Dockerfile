@@ -14,22 +14,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM geode/base:0.1
-MAINTAINER Geode Community <dev@geode.incubator.apache.org>
+FROM centos:7
+MAINTAINER Apache Geode Community <dev@geode.apache.org>
 
-LABEL Vendor="Apache Geode (incubating)"
-LABEL version=unstable
+LABEL Vendor="Apache Geode"
+LABEL version=1.0.0
 
-# download JDK 8
-# ENV	JAVA_HOME /jdk1.8.0_51
-
-RUN	git clone -b develop https://github.com/apache/incubator-geode.git \
+RUN	yum install -y wget which tar git java-1.8.0-openjdk-devel \
+	&& git clone https://github.com/apache/incubator-geode.git \
 	&& cd incubator-geode \
-	&& ./gradlew build -Dskip.tests=true \
+	&& git checkout rel/v1.0.0-incubating \
+	&& ./gradlew build -Dskip.tests=true -xjavadoc \
 	&& ls /incubator-geode | grep -v geode-assembly | xargs rm -rf \
 	&& rm -rf /root/.gradle/ \
 	&& rm -rf /incubator-geode/geode-assembly/build/distributions/ \
-    && yum remove -y perl
+	&& rm -rf /usr/share/locale/* \
+	&& yum remove -y perl \
+	&& yum clean all
 
 ENV GEODE_HOME /incubator-geode/geode-assembly/build/install/apache-geode
 ENV PATH $PATH:$GEODE_HOME/bin
@@ -43,4 +44,3 @@ ENV PATH $PATH:$GEODE_HOME/bin
 EXPOSE  8080 10334 40404 1099 7070
 VOLUME ["/data/"]
 CMD ["gfsh"]
-

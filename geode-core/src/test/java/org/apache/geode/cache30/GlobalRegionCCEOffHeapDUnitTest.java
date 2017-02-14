@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -36,7 +34,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
  * @since Geode 1.0
  */
 @Category(DistributedTest.class)
-@SuppressWarnings({ "deprecation", "serial" })
+@SuppressWarnings({"deprecation", "serial"})
 public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
 
   @Override
@@ -45,7 +43,7 @@ public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
 
       @Override
       public void run() {
-        if(hasCache()) {
+        if (hasCache()) {
           OffHeapTestUtil.checkOrphans();
         }
       }
@@ -60,8 +58,8 @@ public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
     props.setProperty(OFF_HEAP_MEMORY_SIZE, "10m");
     return props;
   }
-  
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   protected RegionAttributes getRegionAttributes() {
     RegionAttributes attrs = super.getRegionAttributes();
@@ -69,13 +67,13 @@ public class GlobalRegionCCEOffHeapDUnitTest extends GlobalRegionCCEDUnitTest {
     factory.setOffHeap(true);
     return factory.create();
   }
-  
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
   @Override
   protected RegionAttributes getRegionAttributes(String type) {
     RegionAttributes ra = super.getRegionAttributes(type);
     AttributesFactory factory = new AttributesFactory(ra);
-    if(!ra.getDataPolicy().isEmpty()) {
+    if (!ra.getDataPolicy().isEmpty()) {
       factory.setOffHeap(true);
     }
     return factory.create();

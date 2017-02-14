@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.management.internal.cli.functions;
@@ -124,7 +122,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
   }
 
   /**
-   * Test method for {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#getCache()}.
+   * Test method for
+   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#getCache()}.
    */
   @Test
   public final void testGetCache() {
@@ -133,7 +132,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
   }
 
   /**
-   * Test method for {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
+   * Test method for
+   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
   public final void testExecute() {
@@ -153,7 +153,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
   }
 
   /**
-   * Test method for {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
+   * Test method for
+   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
   public final void testExecuteWithNullContextThrowsRuntimeException() {
@@ -165,7 +166,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
   }
 
   /**
-   * Test method for {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
+   * Test method for
+   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
   public final void testExecuteWithNullCacheInstanceHasEmptyResults() {
@@ -180,12 +182,13 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
       fail("Unexpected exception");
     }
     assertNotNull(results);
-    assertEquals(1,results.size());
+    assertEquals(1, results.size());
     assertNull(results.get(0));
   }
 
   /**
-   * Test method for {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
+   * Test method for
+   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
   public final void testExecuteWithNullGFCIResultValueIsNull() {
@@ -203,12 +206,13 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
       fail("Unexpected exception");
     }
     assertNotNull(results);
-    assertEquals(1,results.size());
+    assertEquals(1, results.size());
     assertNull(results.get(0));
   }
 
   /**
-   * Test method for {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
+   * Test method for
+   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
   public final void testExecuteWhenGFCIClosedResultValueIsNull() {
@@ -216,7 +220,7 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     List<?> results = null;
 
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
-    when(((GemFireCacheImpl)cache).isClosed()).thenReturn(true);
+    when(((GemFireCacheImpl) cache).isClosed()).thenReturn(true);
     rff.execute(context);
     try {
       results = resultSender.getResults();
@@ -228,8 +232,10 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
   }
 
   /**
-   * Test method for {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
-   * @throws UnknownHostException 
+   * Test method for
+   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
+   * 
+   * @throws UnknownHostException
    */
   @Test
   public final void testExecuteReturnsMissingDiskStores() throws UnknownHostException {
@@ -240,9 +246,12 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
 
     // Fake missing disk-stores
     Set<PersistentMemberID> regions1 = new HashSet<PersistentMemberID>();
-    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(), "/diskStore1", 1L, (short)1));
-    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(), "/diskStore2", 2L, (short)2));
-    Map<String,Set<PersistentMemberID>> mapMember1 = new HashMap<String,Set<PersistentMemberID>>();;
+    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(),
+        "/diskStore1", 1L, (short) 1));
+    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(),
+        "/diskStore2", 2L, (short) 2));
+    Map<String, Set<PersistentMemberID>> mapMember1 =
+        new HashMap<String, Set<PersistentMemberID>>();;
     mapMember1.put("member1", regions1);
     when(memberManager.getWaitingRegions()).thenReturn(mapMember1);
 
@@ -254,23 +263,27 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
       fail("Unexpected exception");
     }
     assertNotNull(results);
-    assertEquals(1,results.size());
-    Set<?> detailSet = (Set<?>)results.get(0);
+    assertEquals(1, results.size());
+    Set<?> detailSet = (Set<?>) results.get(0);
     assertEquals(2, detailSet.toArray().length);
     assertTrue(detailSet.toArray()[0] instanceof PersistentMemberPattern);
     assertTrue(detailSet.toArray()[1] instanceof PersistentMemberPattern);
     // Results are not sorted so verify results in either order
-    if (((PersistentMemberPattern)detailSet.toArray()[0]).getDirectory().equals("/diskStore1")) {
-      assertEquals("/diskStore2", ((PersistentMemberPattern)detailSet.toArray()[1]).getDirectory());
-    } else if (((PersistentMemberPattern)detailSet.toArray()[0]).getDirectory().equals("/diskStore2")) {
-      assertEquals("/diskStore1", ((PersistentMemberPattern)detailSet.toArray()[1]).getDirectory());
+    if (((PersistentMemberPattern) detailSet.toArray()[0]).getDirectory().equals("/diskStore1")) {
+      assertEquals("/diskStore2",
+          ((PersistentMemberPattern) detailSet.toArray()[1]).getDirectory());
+    } else if (((PersistentMemberPattern) detailSet.toArray()[0]).getDirectory()
+        .equals("/diskStore2")) {
+      assertEquals("/diskStore1",
+          ((PersistentMemberPattern) detailSet.toArray()[1]).getDirectory());
     } else {
       fail("Incorrect missing colocated region results");
     }
   }
 
   /**
-   * Test method for {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
+   * Test method for
+   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
   public final void testExecuteReturnsMissingColocatedRegions() {
@@ -295,26 +308,28 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
       e.printStackTrace();
       fail("Unexpected exception");
     }
-    assertEquals(1,results.size());
-    Set<?> detailSet = (Set<?>)results.get(0);
+    assertEquals(1, results.size());
+    Set<?> detailSet = (Set<?>) results.get(0);
     assertEquals(2, detailSet.toArray().length);
     assertTrue(detailSet.toArray()[0] instanceof ColocatedRegionDetails);
     assertTrue(detailSet.toArray()[1] instanceof ColocatedRegionDetails);
-    assertEquals("/pr1", ((ColocatedRegionDetails)detailSet.toArray()[0]).getParent());
-    assertEquals("/pr1", ((ColocatedRegionDetails)detailSet.toArray()[1]).getParent());
+    assertEquals("/pr1", ((ColocatedRegionDetails) detailSet.toArray()[0]).getParent());
+    assertEquals("/pr1", ((ColocatedRegionDetails) detailSet.toArray()[1]).getParent());
     // Results are not sorted so verify results in either order
-    if (((ColocatedRegionDetails)detailSet.toArray()[0]).getChild().equals("child1")) {
-      assertEquals("child2", ((ColocatedRegionDetails)detailSet.toArray()[1]).getChild());
-    } else if (((ColocatedRegionDetails)detailSet.toArray()[0]).getChild().equals("child2")) {
-      assertEquals("child1", ((ColocatedRegionDetails)detailSet.toArray()[1]).getChild());
+    if (((ColocatedRegionDetails) detailSet.toArray()[0]).getChild().equals("child1")) {
+      assertEquals("child2", ((ColocatedRegionDetails) detailSet.toArray()[1]).getChild());
+    } else if (((ColocatedRegionDetails) detailSet.toArray()[0]).getChild().equals("child2")) {
+      assertEquals("child1", ((ColocatedRegionDetails) detailSet.toArray()[1]).getChild());
     } else {
       fail("Incorrect missing colocated region results");
     }
   }
 
   /**
-   * Test method for {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
-   * @throws UnknownHostException 
+   * Test method for
+   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
+   * 
+   * @throws UnknownHostException
    */
   @Test
   public final void testExecuteReturnsMissingStoresAndRegions() throws UnknownHostException {
@@ -325,9 +340,12 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
 
     // Fake missing disk-stores
     Set<PersistentMemberID> regions1 = new HashSet<PersistentMemberID>();
-    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(), "/diskStore1", 1L, (short)1));
-    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(), "/diskStore2", 2L, (short)2));
-    Map<String,Set<PersistentMemberID>> mapMember1 = new HashMap<String,Set<PersistentMemberID>>();;
+    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(),
+        "/diskStore1", 1L, (short) 1));
+    regions1.add(new PersistentMemberID(new DiskStoreID(), InetAddress.getLocalHost(),
+        "/diskStore2", 2L, (short) 2));
+    Map<String, Set<PersistentMemberID>> mapMember1 =
+        new HashMap<String, Set<PersistentMemberID>>();;
     mapMember1.put("member1", regions1);
     when(memberManager.getWaitingRegions()).thenReturn(mapMember1);
 
@@ -347,30 +365,34 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
       e.printStackTrace();
       fail("Unexpected exception");
     }
-    assertEquals(2,results.size());
-    for (Object result:results) {
-      Set<?> detailSet = (Set<?>)result;
+    assertEquals(2, results.size());
+    for (Object result : results) {
+      Set<?> detailSet = (Set<?>) result;
       if (detailSet.toArray()[0] instanceof PersistentMemberPattern) {
         assertEquals(2, detailSet.toArray().length);
         assertTrue(detailSet.toArray()[1] instanceof PersistentMemberPattern);
         // Results are not sorted so verify results in either order
-        if (((PersistentMemberPattern)detailSet.toArray()[0]).getDirectory().equals("/diskStore1")) {
-          assertEquals("/diskStore2", ((PersistentMemberPattern)detailSet.toArray()[1]).getDirectory());
-        } else if (((PersistentMemberPattern)detailSet.toArray()[0]).getDirectory().equals("/diskStore2")) {
-          assertEquals("/diskStore1", ((PersistentMemberPattern)detailSet.toArray()[1]).getDirectory());
+        if (((PersistentMemberPattern) detailSet.toArray()[0]).getDirectory()
+            .equals("/diskStore1")) {
+          assertEquals("/diskStore2",
+              ((PersistentMemberPattern) detailSet.toArray()[1]).getDirectory());
+        } else if (((PersistentMemberPattern) detailSet.toArray()[0]).getDirectory()
+            .equals("/diskStore2")) {
+          assertEquals("/diskStore1",
+              ((PersistentMemberPattern) detailSet.toArray()[1]).getDirectory());
         } else {
           fail("Incorrect missing colocated region results");
         }
       } else if (detailSet.toArray()[0] instanceof ColocatedRegionDetails) {
         assertEquals(2, detailSet.toArray().length);
         assertTrue(detailSet.toArray()[1] instanceof ColocatedRegionDetails);
-        assertEquals("/pr1", ((ColocatedRegionDetails)detailSet.toArray()[0]).getParent());
-        assertEquals("/pr1", ((ColocatedRegionDetails)detailSet.toArray()[1]).getParent());
+        assertEquals("/pr1", ((ColocatedRegionDetails) detailSet.toArray()[0]).getParent());
+        assertEquals("/pr1", ((ColocatedRegionDetails) detailSet.toArray()[1]).getParent());
         // Results are not sorted so verify results in either order
-        if (((ColocatedRegionDetails)detailSet.toArray()[0]).getChild().equals("child1")) {
-          assertEquals("child2", ((ColocatedRegionDetails)detailSet.toArray()[1]).getChild());
-        } else if (((ColocatedRegionDetails)detailSet.toArray()[0]).getChild().equals("child2")) {
-          assertEquals("child1", ((ColocatedRegionDetails)detailSet.toArray()[1]).getChild());
+        if (((ColocatedRegionDetails) detailSet.toArray()[0]).getChild().equals("child1")) {
+          assertEquals("child2", ((ColocatedRegionDetails) detailSet.toArray()[1]).getChild());
+        } else if (((ColocatedRegionDetails) detailSet.toArray()[0]).getChild().equals("child2")) {
+          assertEquals("child1", ((ColocatedRegionDetails) detailSet.toArray()[1]).getChild());
         } else {
           fail("Incorrect missing colocated region results");
         }
@@ -381,8 +403,10 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
   }
 
   /**
-   * Test method for {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
-   * @throws Throwable 
+   * Test method for
+   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
+   * 
+   * @throws Throwable
    */
   @Test
   public final void testExecuteCatchesExceptions() throws Throwable {
@@ -399,7 +423,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
 
 
   /**
-   * Test method for {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#getId()}.
+   * Test method for
+   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#getId()}.
    */
   @Test
   public final void testGetId() {

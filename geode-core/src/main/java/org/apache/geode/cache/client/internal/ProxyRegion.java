@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal;
 
@@ -49,17 +47,17 @@ import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 
 /**
- * A wrapper class over an actual Region instance. This is used when the
- * multiuser-authentication attribute is set to true.
+ * A wrapper class over an actual Region instance. This is used when the multiuser-authentication
+ * attribute is set to true.
  * 
  * @see ProxyCache
  * @since GemFire 6.5
  */
 public class ProxyRegion implements Region {
-  
+
   private final ProxyCache proxyCache;
   private final Region realRegion;
-  
+
   public ProxyRegion(ProxyCache proxyCache, Region realRegion) {
     this.proxyCache = proxyCache;
     this.realRegion = realRegion;
@@ -123,8 +121,8 @@ public class ProxyRegion implements Region {
     }
   }
 
-  public void create(Object key, Object value) throws TimeoutException,
-      EntryExistsException, CacheWriterException {
+  public void create(Object key, Object value)
+      throws TimeoutException, EntryExistsException, CacheWriterException {
     try {
       preOp();
       this.realRegion.create(key, value);
@@ -143,14 +141,13 @@ public class ProxyRegion implements Region {
     }
   }
 
-  public Region createSubregion(String subregionName,
-      RegionAttributes regionAttributes) throws RegionExistsException,
-      TimeoutException {
+  public Region createSubregion(String subregionName, RegionAttributes regionAttributes)
+      throws RegionExistsException, TimeoutException {
     throw new UnsupportedOperationException();
   }
 
-  public Object destroy(Object key) throws TimeoutException,
-      EntryNotFoundException, CacheWriterException {
+  public Object destroy(Object key)
+      throws TimeoutException, EntryNotFoundException, CacheWriterException {
     try {
       preOp();
       return this.realRegion.destroy(key);
@@ -178,8 +175,7 @@ public class ProxyRegion implements Region {
     }
   }
 
-  public void destroyRegion(Object callbackArgument)
-      throws CacheWriterException, TimeoutException {
+  public void destroyRegion(Object callbackArgument) throws CacheWriterException, TimeoutException {
     try {
       preOp();
       this.realRegion.destroyRegion(callbackArgument);
@@ -215,9 +211,8 @@ public class ProxyRegion implements Region {
     }
   }
 
-  public boolean existsValue(String queryPredicate)
-      throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException {
+  public boolean existsValue(String queryPredicate) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     try {
       preOp();
       return this.realRegion.existsValue(queryPredicate);
@@ -277,9 +272,9 @@ public class ProxyRegion implements Region {
   public RegionService getRegionService() {
     return this.proxyCache;
   }
-  
+
   public ProxyCache getAuthenticatedCache() {
-    return this.proxyCache;    
+    return this.proxyCache;
   }
 
   public Lock getDistributedLock(Object key) throws IllegalStateException {
@@ -332,8 +327,7 @@ public class ProxyRegion implements Region {
     return this.realRegion.getUserAttribute();
   }
 
-  public void invalidate(Object key) throws TimeoutException,
-      EntryNotFoundException {
+  public void invalidate(Object key) throws TimeoutException, EntryNotFoundException {
     try {
       preOp();
       this.realRegion.invalidate(key);
@@ -400,8 +394,8 @@ public class ProxyRegion implements Region {
     }
   }
 
-  public void loadSnapshot(InputStream inputStream) throws IOException,
-      ClassNotFoundException, CacheWriterException, TimeoutException {
+  public void loadSnapshot(InputStream inputStream)
+      throws IOException, ClassNotFoundException, CacheWriterException, TimeoutException {
     throw new UnsupportedOperationException();
   }
 
@@ -415,8 +409,7 @@ public class ProxyRegion implements Region {
         "Local operations are not supported when multiuser-authentication is true.");
   }
 
-  public void localDestroy(Object key, Object callbackArgument)
-      throws EntryNotFoundException {
+  public void localDestroy(Object key, Object callbackArgument) throws EntryNotFoundException {
     throw new UnsupportedOperationException(
         "Local operations are not supported when multiuser-authentication is true.");
   }
@@ -436,8 +429,7 @@ public class ProxyRegion implements Region {
         "Local operations are not supported when multiuser-authentication is true.");
   }
 
-  public void localInvalidate(Object key, Object callbackArgument)
-      throws EntryNotFoundException {
+  public void localInvalidate(Object key, Object callbackArgument) throws EntryNotFoundException {
     throw new UnsupportedOperationException(
         "Local operations are not supported when multiuser-authentication is true.");
   }
@@ -452,8 +444,7 @@ public class ProxyRegion implements Region {
         "Local operations are not supported when multiuser-authentication is true.");
   }
 
-  public Object put(Object key, Object value) throws TimeoutException,
-      CacheWriterException {
+  public Object put(Object key, Object value) throws TimeoutException, CacheWriterException {
     try {
       preOp();
       return this.realRegion.put(key, value);
@@ -475,7 +466,7 @@ public class ProxyRegion implements Region {
   public void putAll(Map map) {
     putAll(map, null);
   }
-  
+
   @Override
   public void putAll(Map map, Object callbackArg) {
     try {
@@ -486,9 +477,8 @@ public class ProxyRegion implements Region {
     }
   }
 
-  public SelectResults query(String queryPredicate)
-      throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException {
+  public SelectResults query(String queryPredicate) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     try {
       preOp();
       return this.realRegion.query(queryPredicate);
@@ -509,18 +499,16 @@ public class ProxyRegion implements Region {
     throw new UnsupportedOperationException();
   }
 
-  public void registerInterest(Object key, boolean isDurable,
+  public void registerInterest(Object key, boolean isDurable, boolean receiveValues) {
+    throw new UnsupportedOperationException();
+  }
+
+  public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable,
       boolean receiveValues) {
     throw new UnsupportedOperationException();
   }
 
-  public void registerInterest(Object key, InterestResultPolicy policy,
-      boolean isDurable, boolean receiveValues) {
-    throw new UnsupportedOperationException();
-  }
-
-  public void registerInterest(Object key, InterestResultPolicy policy,
-      boolean isDurable) {
+  public void registerInterest(Object key, InterestResultPolicy policy, boolean isDurable) {
     throw new UnsupportedOperationException();
   }
 
@@ -536,18 +524,16 @@ public class ProxyRegion implements Region {
     throw new UnsupportedOperationException();
   }
 
-  public void registerInterestRegex(String regex, boolean isDurable,
+  public void registerInterestRegex(String regex, boolean isDurable, boolean receiveValues) {
+    throw new UnsupportedOperationException();
+  }
+
+  public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable) {
+    throw new UnsupportedOperationException();
+  }
+
+  public void registerInterestRegex(String regex, InterestResultPolicy policy, boolean isDurable,
       boolean receiveValues) {
-    throw new UnsupportedOperationException();
-  }
-
-  public void registerInterestRegex(String regex, InterestResultPolicy policy,
-      boolean isDurable) {
-    throw new UnsupportedOperationException();
-  }
-
-  public void registerInterestRegex(String regex, InterestResultPolicy policy,
-      boolean isDurable, boolean receiveValues) {
     throw new UnsupportedOperationException();
   }
 
@@ -564,9 +550,8 @@ public class ProxyRegion implements Region {
     throw new UnsupportedOperationException();
   }
 
-  public Object selectValue(String queryPredicate)
-      throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException {
+  public Object selectValue(String queryPredicate) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     try {
       preOp();
       return this.realRegion.selectValue(queryPredicate);
@@ -629,7 +614,9 @@ public class ProxyRegion implements Region {
     return realRegion;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.util.concurrent.ConcurrentMap#putIfAbsent(java.lang.Object, java.lang.Object)
    */
   public Object putIfAbsent(Object key, Object value) {
@@ -638,10 +625,12 @@ public class ProxyRegion implements Region {
       return this.realRegion.putIfAbsent(key, value);
     } finally {
       postOp();
-}
+    }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
    */
   public boolean remove(Object key, Object value) {
@@ -653,7 +642,9 @@ public class ProxyRegion implements Region {
     }
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object)
    */
   public Object replace(Object key, Object value) {
@@ -665,8 +656,11 @@ public class ProxyRegion implements Region {
     }
   }
 
-  /* (non-Javadoc)
-   * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object, java.lang.Object)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object,
+   * java.lang.Object)
    */
   public boolean replace(Object key, Object oldValue, Object newValue) {
     try {
@@ -676,7 +670,7 @@ public class ProxyRegion implements Region {
       postOp();
     }
   }
-  
+
   public RegionSnapshotService<?, ?> getSnapshotService() {
     return new RegionSnapshotServiceImpl(this);
   }

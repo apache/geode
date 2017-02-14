@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.lucene.test;
 
@@ -42,7 +38,8 @@ import org.mockito.stubbing.Answer;
 
 public class IndexRepositorySpy extends IndexRepositoryFactory {
 
-  private Consumer<Object> beforeWrite = key -> {};
+  private Consumer<Object> beforeWrite = key -> {
+  };
 
   public static IndexRepositorySpy injectSpy() {
     IndexRepositorySpy factory = new IndexRepositorySpy();
@@ -54,15 +51,14 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
     PartitionedRepositoryManager.indexRepositoryFactory = new IndexRepositoryFactory();
   }
 
-  private IndexRepositorySpy() {
-  }
+  private IndexRepositorySpy() {}
 
   @Override
-  public IndexRepository createIndexRepository(final Integer bucketId,
-      LuceneSerializer serializer,
+  public IndexRepository createIndexRepository(final Integer bucketId, LuceneSerializer serializer,
       LuceneIndexImpl index, PartitionedRegion userRegion) throws IOException {
-    LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion)index;
-    final IndexRepository indexRepo = super.createIndexRepository(bucketId, serializer, index, userRegion);
+    LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
+    final IndexRepository indexRepo =
+        super.createIndexRepository(bucketId, serializer, index, userRegion);
     final IndexRepository spy = Mockito.spy(indexRepo);
 
     Answer invokeBeforeWrite = invocation -> {
@@ -79,10 +75,8 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
 
 
   /**
-   * Add a callback that runs before a call to
-   * {@link IndexRepository#create(Object, Object)},
-   * {@link IndexRepository#update(Object, Object)} or
-   * {@link IndexRepository#delete(Object)}
+   * Add a callback that runs before a call to {@link IndexRepository#create(Object, Object)},
+   * {@link IndexRepository#update(Object, Object)} or {@link IndexRepository#delete(Object)}
    */
   public void beforeWriteIndexRepository(Consumer<Object> action) {
     this.beforeWrite = action;
@@ -106,8 +100,8 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
   }
 
   /**
-   * Return a consumer that will invoke the passed in consumer only after
-   * it has been called exactly N times.
+   * Return a consumer that will invoke the passed in consumer only after it has been called exactly
+   * N times.
    */
   public static <T> Consumer<T> doAfterN(Consumer<T> consumer, int times) {
     return new Consumer<T>() {

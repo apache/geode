@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.client.internal.pooling;
 
@@ -33,15 +31,18 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 
 /**
- * A connection managed by the connection manager. Keeps track
- * of the current state of the connection. 
+ * A connection managed by the connection manager. Keeps track of the current state of the
+ * connection.
+ * 
  * @since GemFire 5.7
  *
  */
 class PooledConnection implements Connection {
 
-  /* connection is volatile because we may asynchronously
-   * destroy the pooled connection while shutting down. */
+  /*
+   * connection is volatile because we may asynchronously destroy the pooled connection while
+   * shutting down.
+   */
   private volatile Connection connection;
   private volatile Endpoint endpoint;
   private volatile long birthDate;
@@ -49,10 +50,10 @@ class PooledConnection implements Connection {
   private boolean active = true; // read and write while synchronized on this
   private final AtomicBoolean shouldDestroy = new AtomicBoolean();
   private boolean waitingToSwitch = false;
-//  private final ConnectionManagerImpl manager;
+  // private final ConnectionManagerImpl manager;
 
   public PooledConnection(ConnectionManagerImpl manager, Connection connection) {
-//    this.manager = manager;
+    // this.manager = manager;
     this.connection = connection;
     this.endpoint = connection.getEndpoint();
     this.birthDate = System.nanoTime();
@@ -68,7 +69,7 @@ class PooledConnection implements Connection {
       return this.active;
     }
   }
-  
+
   public void internalDestroy() {
     this.shouldDestroy.set(true); // probably already set but make sure
     synchronized (this) {
@@ -82,13 +83,14 @@ class PooledConnection implements Connection {
     }
   }
 
-  /** When a pooled connection is destroyed, it's not destroyed
-   * right away, but when it is returned to the pool.
+  /**
+   * When a pooled connection is destroyed, it's not destroyed right away, but when it is returned
+   * to the pool.
    */
   public void destroy() {
     this.shouldDestroy.set(true);
   }
-  
+
   public void internalClose(boolean keepAlive) throws Exception {
     try {
       Connection con = this.connection;
@@ -99,21 +101,21 @@ class PooledConnection implements Connection {
       internalDestroy();
     }
   }
-  
+
   public void close(boolean keepAlive) throws Exception {
     // needed to junit test
     internalClose(keepAlive);
-//     throw new UnsupportedOperationException(
-//         "Pooled connections should only be closed by the connection manager");
+    // throw new UnsupportedOperationException(
+    // "Pooled connections should only be closed by the connection manager");
   }
-  
+
   public void emergencyClose() {
     Connection con = this.connection;
     if (con != null) {
       this.connection.emergencyClose();
     }
     this.connection = null;
-    
+
   }
 
   Connection getConnection() {
@@ -126,16 +128,17 @@ class PooledConnection implements Connection {
 
   /**
    * Set the destroy bit if it is not already set.
+   * 
    * @return true if we were able to set to bit; false if someone else already did
    */
   public boolean setShouldDestroy() {
     return this.shouldDestroy.compareAndSet(false, true);
   }
-  
+
   public boolean shouldDestroy() {
     return this.shouldDestroy.get();
   }
-  
+
   public boolean isDestroyed() {
     return connection == null;
   }
@@ -147,10 +150,10 @@ class PooledConnection implements Connection {
       now = System.nanoTime();
     }
     synchronized (this) {
-      if(isDestroyed()) {
+      if (isDestroyed()) {
         return;
       }
-      if(!this.active) {
+      if (!this.active) {
         throw new InternalGemFireException("Connection not active");
       }
       this.active = false;
@@ -160,26 +163,27 @@ class PooledConnection implements Connection {
       }
     }
   }
-  
-  
-  public synchronized boolean switchConnection(Connection newCon)
-    throws InterruptedException {
+
+
+  public synchronized boolean switchConnection(Connection newCon) throws InterruptedException {
     Connection oldCon = null;
     synchronized (this) {
-      if (shouldDestroy()) return false;
-      
+      if (shouldDestroy())
+        return false;
+
       if (this.active && !shouldDestroy()) {
-          this.waitingToSwitch = true;
-          try {
-            while (this.active && !shouldDestroy()) {
-              wait();
-            }
-          } finally {
-            this.waitingToSwitch = false;
-            notifyAll();
+        this.waitingToSwitch = true;
+        try {
+          while (this.active && !shouldDestroy()) {
+            wait();
           }
+        } finally {
+          this.waitingToSwitch = false;
+          notifyAll();
+        }
       }
-      if (shouldDestroy()) return false;
+      if (shouldDestroy())
+        return false;
       assert !this.active;
       final long now = System.nanoTime();
       oldCon = this.connection;
@@ -208,10 +212,10 @@ class PooledConnection implements Connection {
         Thread.currentThread().interrupt();
       }
       getConnection(); // it checks if we are destroyed
-      if(active) {
+      if (active) {
         throw new InternalGemFireException("Connection already active");
       }
-      if(shouldDestroy()) {
+      if (shouldDestroy()) {
         throw new ConnectionDestroyedException();
       }
       active = true;
@@ -225,7 +229,7 @@ class PooledConnection implements Connection {
   public long getBirthDate() {
     return this.birthDate;
   }
-  
+
   public void setBirthDate(long ts) {
     this.birthDate = ts;
   }
@@ -242,17 +246,15 @@ class PooledConnection implements Connection {
   }
 
   /**
-   * If we were able to idle timeout this connection then return
-   * -1.
-   * If this connection has already been destroyed return 0.
-   * Otherwise return the amount of idle time he has remaining.
-   * If he is active we can't time him out now and a hint is returned
-   * as when we should check him next.
-   
+   * If we were able to idle timeout this connection then return -1. If this connection has already
+   * been destroyed return 0. Otherwise return the amount of idle time he has remaining. If he is
+   * active we can't time him out now and a hint is returned as when we should check him next.
+   * 
    * 
    */
   public long doIdleTimeout(long now, long timeoutNanos) {
-    if (shouldDestroy()) return 0;
+    if (shouldDestroy())
+      return 0;
     synchronized (this) {
       if (isActive()) {
         // this is a reasonable value to return since odds are that
@@ -274,6 +276,7 @@ class PooledConnection implements Connection {
       }
     }
   }
+
   /**
    * Return true if the connection has been idle long enough to expire.
    */
@@ -294,11 +297,11 @@ class PooledConnection implements Connection {
   public Socket getSocket() {
     return getConnection().getSocket();
   }
-  
+
   public OutputStream getOutputStream() {
     return getConnection().getOutputStream();
   }
-  
+
   public InputStream getInputStream() {
     return getConnection().getInputStream();
   }
@@ -306,10 +309,11 @@ class PooledConnection implements Connection {
   public ConnectionStats getStats() {
     return getEndpoint().getStats();
   }
-  
+
   public Endpoint getEndpoint() {
     return this.endpoint;
   }
+
   public ServerQueueStatus getQueueStatus() {
     return getConnection().getQueueStatus();
   }
@@ -331,15 +335,16 @@ class PooledConnection implements Connection {
   public static void loadEmergencyClasses() {
     ConnectionImpl.loadEmergencyClasses();
   }
-  public short getWanSiteVersion(){
+
+  public short getWanSiteVersion() {
     return getConnection().getWanSiteVersion();
   }
-  
+
   public int getDistributedSystemId() {
     return getConnection().getDistributedSystemId();
   }
-  
-  public void setWanSiteVersion(short wanSiteVersion){
+
+  public void setWanSiteVersion(short wanSiteVersion) {
     getConnection().setWanSiteVersion(wanSiteVersion);
   }
 

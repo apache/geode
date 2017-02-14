@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -32,7 +30,7 @@ import org.apache.geode.distributed.internal.*;
  *
  */
 public class SendQueueOperation {
-  //private ReplyProcessor21 processor = null;
+  // private ReplyProcessor21 processor = null;
   private DM dm;
   private DistributedRegion r;
   private List l;
@@ -46,8 +44,8 @@ public class SendQueueOperation {
   }
 
   /**
-   * Returns true if distribution successful. Also modifies message list by
-   * removing messages sent to the required role.
+   * Returns true if distribution successful. Also modifies message list by removing messages sent
+   * to the required role.
    */
   boolean distribute() {
     CacheDistributionAdvisor advisor = this.r.getCacheDistributionAdvisor();
@@ -75,19 +73,16 @@ public class SendQueueOperation {
       return false;
     }
     // @todo darrel: now remove sent items from the list
-    this.r.getCachePerfStats().incReliableQueuedOps(- l.size());
+    this.r.getCachePerfStats().incReliableQueuedOps(-l.size());
     this.l.clear();
     return true;
   }
 
   /**
-   * A batch of queued messages. Once they are processed on the other side
-   * an ack is sent.
+   * A batch of queued messages. Once they are processed on the other side an ack is sent.
    */
-  public static final class SendQueueMessage
-    extends SerialDistributionMessage
-    implements MessageWithReply
-  {
+  public static final class SendQueueMessage extends SerialDistributionMessage
+      implements MessageWithReply {
     private int processorId;
     private String regionPath;
     /**
@@ -99,31 +94,36 @@ public class SendQueueOperation {
     public int getProcessorId() {
       return this.processorId;
     }
+
     public void setProcessorId(int id) {
       this.processorId = id;
     }
+
     public String getRegionPath() {
       return this.regionPath;
     }
+
     public void setRegionPath(String rp) {
       this.regionPath = rp;
     }
+
     public void setOperations(List l) {
       this.ops = l;
     }
+
     @Override
     protected void process(DistributionManager dm) {
       ReplyException rex = null;
       boolean ignored = false;
       try {
-        GemFireCacheImpl gfc = (GemFireCacheImpl)CacheFactory.getInstance(dm.getSystem());
+        GemFireCacheImpl gfc = (GemFireCacheImpl) CacheFactory.getInstance(dm.getSystem());
         final LocalRegion lclRgn = gfc.getRegionByPathForProcessing(this.regionPath);
         if (lclRgn != null) {
           lclRgn.waitOnInitialization();
           final long lastMod = gfc.cacheTimeMillis();
           Iterator it = this.ops.iterator();
           while (it.hasNext()) {
-            QueuedOperation op = (QueuedOperation)it.next();
+            QueuedOperation op = (QueuedOperation) it.next();
             op.process(lclRgn, getSender(), lastMod);
           }
         } else {
@@ -137,7 +137,7 @@ public class SendQueueOperation {
         ReplyMessage.send(getSender(), this.processorId, rex, dm, ignored, false, false);
       }
     }
-    
+
     public int getDSFID() {
       return SEND_QUEUE_MESSAGE;
     }
@@ -150,13 +150,13 @@ public class SendQueueOperation {
       {
         int opCount = in.readInt();
         QueuedOperation[] ops = new QueuedOperation[opCount];
-        for (int i=0; i < opCount; i++) {
+        for (int i = 0; i < opCount; i++) {
           ops[i] = QueuedOperation.createFromData(in);
         }
         this.ops = Arrays.asList(ops);
       }
     }
-    
+
     @Override
     public void toData(DataOutput out) throws IOException {
       super.toData(out);
@@ -165,8 +165,8 @@ public class SendQueueOperation {
       {
         int opCount = this.ops.size();
         out.writeInt(opCount);
-        for (int i=0; i < opCount; i++) {
-          QueuedOperation op = (QueuedOperation)this.ops.get(i);
+        for (int i = 0; i < opCount; i++) {
+          QueuedOperation op = (QueuedOperation) this.ops.get(i);
           op.toData(out);
         }
       }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.partitioned;
 
@@ -22,8 +20,7 @@ import java.util.Set;
 
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 
-public class PartitionRegionInfoImpl 
-implements InternalPRInfo, Serializable {
+public class PartitionRegionInfoImpl implements InternalPRInfo, Serializable {
 
   private static final long serialVersionUID = 6462414089469761476L;
   private final String regionPath;
@@ -35,16 +32,11 @@ implements InternalPRInfo, Serializable {
   private final Set<InternalPartitionDetails> memberDetails;
   private final String colocatedWith;
   private final OfflineMemberDetails offlineMembers;
-  
-  public PartitionRegionInfoImpl(String regionPath,
-                                      int configuredBucketCount,
-                                      int createdBucketCount,
-                                      int lowRedundancyBucketCount,
-                                      int configuredRedundantCopies,
-                                      int actualRedundantCopies,
-                                      Set<InternalPartitionDetails> memberDetails,
-                                      String colocatedPath,
-                                      OfflineMemberDetails offlineMembers) {
+
+  public PartitionRegionInfoImpl(String regionPath, int configuredBucketCount,
+      int createdBucketCount, int lowRedundancyBucketCount, int configuredRedundantCopies,
+      int actualRedundantCopies, Set<InternalPartitionDetails> memberDetails, String colocatedPath,
+      OfflineMemberDetails offlineMembers) {
     this.regionPath = regionPath;
     this.configuredBucketCount = configuredBucketCount;
     this.createdBucketCount = createdBucketCount;
@@ -55,7 +47,7 @@ implements InternalPRInfo, Serializable {
     this.colocatedWith = colocatedPath;
     this.offlineMembers = offlineMembers;
   }
-  
+
   public int getActualRedundantCopies() {
     return this.actualRedundantCopies;
   }
@@ -81,18 +73,19 @@ implements InternalPRInfo, Serializable {
   }
 
   public Set<PartitionMemberInfo> getPartitionMemberInfo() {
-    return Collections.unmodifiableSet((Set<? extends PartitionMemberInfo>)this.memberDetails);
+    return Collections.unmodifiableSet((Set<? extends PartitionMemberInfo>) this.memberDetails);
   }
-  
+
   public Set<InternalPartitionDetails> getInternalPartitionDetails() {
-    return Collections.unmodifiableSet((Set<? extends InternalPartitionDetails>)this.memberDetails);
+    return Collections
+        .unmodifiableSet((Set<? extends InternalPartitionDetails>) this.memberDetails);
   }
 
 
   public String getRegionPath() {
     return this.regionPath;
   }
-  
+
   public OfflineMemberDetails getOfflineMembers() {
     return offlineMembers;
   }
@@ -114,25 +107,24 @@ implements InternalPRInfo, Serializable {
   }
 
   /**
-   * hashCode is defined for this class to make
-   * sure that the before details and after details for
-   * RebalanceResults are in the same order. This makes
-   * debugging printouts easier, and it also removes
-   * discrepancies due to rounding errors when calculating
-   * the stddev in tests.
+   * hashCode is defined for this class to make sure that the before details and after details for
+   * RebalanceResults are in the same order. This makes debugging printouts easier, and it also
+   * removes discrepancies due to rounding errors when calculating the stddev in tests.
    */
   @Override
   public int hashCode() {
     return regionPath.hashCode();
   }
+
   @Override
   public boolean equals(Object other) {
     if (!(other instanceof PartitionRegionInfoImpl)) {
       return false;
     }
-    PartitionRegionInfoImpl o = (PartitionRegionInfoImpl)other;
+    PartitionRegionInfoImpl o = (PartitionRegionInfoImpl) other;
     return this.regionPath.equals(o.regionPath);
   }
+
   public int compareTo(InternalPRInfo other) {
     return this.regionPath.compareTo(other.getRegionPath());
   }

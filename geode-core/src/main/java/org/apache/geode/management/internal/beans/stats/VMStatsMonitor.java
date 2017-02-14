@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.beans.stats;
 
@@ -26,8 +24,7 @@ import org.apache.geode.internal.statistics.StatisticsNotification;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 
 /**
- * This class acts as a monitor and listen for VM stats update on behalf of
- * MemberMBean.
+ * This class acts as a monitor and listen for VM stats update on behalf of MemberMBean.
  * 
  * 
  */
@@ -47,9 +44,9 @@ public final class VMStatsMonitor extends MBeanStatsMonitor {
 
   public VMStatsMonitor(String name) {
     super(name);
-    processCPUTimeAvailable = MBeanJMXAdapter.isAttributeAvailable(
-        processCPUTimeAttr, ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
-    if(!processCPUTimeAvailable){
+    processCPUTimeAvailable = MBeanJMXAdapter.isAttributeAvailable(processCPUTimeAttr,
+        ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
+    if (!processCPUTimeAvailable) {
       cpuUsage = MBeanJMXAdapter.VALUE_NOT_AVAILABLE;
     }
 
@@ -68,7 +65,7 @@ public final class VMStatsMonitor extends MBeanStatsMonitor {
       } catch (StatisticNotFoundException e) {
         value = 0;
       }
-      log(name,value);
+      log(name, value);
       statsMap.put(name, value);
     }
     refreshStats();
@@ -76,21 +73,22 @@ public final class VMStatsMonitor extends MBeanStatsMonitor {
 
 
   /**
-   * Right now it only refreshes CPU usage in terms of percentage. This method
-   * can be used for any other computation based on Stats in future.
+   * Right now it only refreshes CPU usage in terms of percentage. This method can be used for any
+   * other computation based on Stats in future.
    * 
-   * Returns the time (as a percentage) that this member's process time with
-   * respect to Statistics sample time interval. If process time between two
-   * sample time t1 & t2 is p1 and p2 cpuUsage = ((p2-p1) * 100) / ((t2-t1)
-   *  
+   * Returns the time (as a percentage) that this member's process time with respect to Statistics
+   * sample time interval. If process time between two sample time t1 & t2 is p1 and p2 cpuUsage =
+   * ((p2-p1) * 100) / ((t2-t1)
+   * 
    */
   private void refreshStats() {
 
     if (processCPUTimeAvailable) {
       Number processCpuTime = statsMap.get(StatsKey.VM_PROCESS_CPU_TIME);
-      
-      //Some JVM like IBM is not handled by Stats layer properly. Ignoring the attribute for such cases
-      if(processCpuTime == null){
+
+      // Some JVM like IBM is not handled by Stats layer properly. Ignoring the attribute for such
+      // cases
+      if (processCpuTime == null) {
         cpuUsage = MBeanJMXAdapter.VALUE_NOT_AVAILABLE;
         return;
       }

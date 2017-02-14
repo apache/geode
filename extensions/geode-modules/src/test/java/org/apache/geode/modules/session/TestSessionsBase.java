@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.session;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
@@ -72,8 +70,8 @@ public abstract class TestSessionsBase {
     server.startContainer();
 
     /*
-     * Can only retrieve the region once the container has started up
-     * (and the cache has started too).
+     * Can only retrieve the region once the container has started up (and the cache has started
+     * too).
      */
     region = sessionManager.getSessionCache().getSessionRegion();
   }
@@ -107,8 +105,9 @@ public abstract class TestSessionsBase {
   }
 
   /**
-   * Test callback functionality. This is here really just as an example. Callbacks are useful to implement per test
-   * actions which can be defined within the actual test method instead of in a separate servlet class.
+   * Test callback functionality. This is here really just as an example. Callbacks are useful to
+   * implement per test actions which can be defined within the actual test method instead of in a
+   * separate servlet class.
    */
   @Test
   public void testCallback() throws Exception {
@@ -116,7 +115,8 @@ public abstract class TestSessionsBase {
     Callback c = new Callback() {
 
       @Override
-      public void call(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      public void call(HttpServletRequest request, HttpServletResponse response)
+          throws IOException {
         PrintWriter out = response.getWriter();
         out.write(helloWorld);
       }
@@ -141,7 +141,8 @@ public abstract class TestSessionsBase {
     Callback c = new Callback() {
 
       @Override
-      public void call(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      public void call(HttpServletRequest request, HttpServletResponse response)
+          throws IOException {
         HttpSession session = request.getSession();
         response.getWriter().write(Boolean.toString(session.isNew()));
       }
@@ -162,7 +163,8 @@ public abstract class TestSessionsBase {
   }
 
   /**
-   * Check that our session persists. The values we pass in as query params are used to set attributes on the session.
+   * Check that our session persists. The values we pass in as query params are used to set
+   * attributes on the session.
    */
   @Test
   public void testSessionPersists1() throws Exception {
@@ -251,13 +253,14 @@ public abstract class TestSessionsBase {
   }
 
   /**
-   * Test setting the session expiration via a property change as would happen under normal deployment conditions.
+   * Test setting the session expiration via a property change as would happen under normal
+   * deployment conditions.
    */
   @Test
   public void testSessionExpiration2() throws Exception {
     // TestSessions only live for a minute
-    sessionManager.propertyChange(
-        new PropertyChangeEvent(server.getRootContext(), "sessionTimeout", new Integer(30), new Integer(1)));
+    sessionManager.propertyChange(new PropertyChangeEvent(server.getRootContext(), "sessionTimeout",
+        new Integer(30), new Integer(1)));
 
     // Check that the value has been set to 60 seconds
     assertEquals(60, sessionManager.getMaxInactiveInterval());
@@ -343,7 +346,8 @@ public abstract class TestSessionsBase {
   }
 
   /**
-   * Test that multiple attribute updates, within the same request result in only the latest one being effective.
+   * Test that multiple attribute updates, within the same request result in only the latest one
+   * being effective.
    */
   @Test
   public void testMultipleAttributeUpdates() throws Exception {
@@ -351,7 +355,8 @@ public abstract class TestSessionsBase {
     Callback c = new Callback() {
 
       @Override
-      public void call(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      public void call(HttpServletRequest request, HttpServletResponse response)
+          throws IOException {
         HttpSession session = request.getSession();
         for (int i = 0; i < 1000; i++) {
           session.setAttribute(key, Integer.toString(i));
@@ -380,7 +385,8 @@ public abstract class TestSessionsBase {
   public void testCommitSessionValveInvalidSession() throws Exception {
     Callback c = new Callback() {
       @Override
-      public void call(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      public void call(HttpServletRequest request, HttpServletResponse response)
+          throws IOException {
         HttpSession session = request.getSession();
         session.invalidate();
         response.getWriter().write("done");
@@ -406,7 +412,8 @@ public abstract class TestSessionsBase {
   public void testExtraSessionsNotCreated() throws Exception {
     Callback c = new Callback() {
       @Override
-      public void call(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      public void call(HttpServletRequest request, HttpServletResponse response)
+          throws IOException {
         // Do nothing with sessions
         response.getWriter().write("done");
       }
@@ -426,13 +433,15 @@ public abstract class TestSessionsBase {
   }
 
   /**
-   * Test for issue #46 lastAccessedTime is not updated at the start of the request, but only at the end.
+   * Test for issue #46 lastAccessedTime is not updated at the start of the request, but only at the
+   * end.
    */
   @Test
   public void testLastAccessedTime() throws Exception {
     Callback c = new Callback() {
       @Override
-      public void call(HttpServletRequest request, HttpServletResponse response) throws IOException {
+      public void call(HttpServletRequest request, HttpServletResponse response)
+          throws IOException {
         HttpSession session = request.getSession();
         // Hack to expose the session to our test context
         session.getServletContext().setAttribute("session", session);
@@ -460,7 +469,8 @@ public abstract class TestSessionsBase {
     Long lastAccess = (Long) session.getAttribute("lastAccessTime");
 
     assertTrue(
-        "Last access time not set correctly: " + lastAccess.longValue() + " not <= " + session.getLastAccessedTime(),
+        "Last access time not set correctly: " + lastAccess.longValue() + " not <= "
+            + session.getLastAccessedTime(),
         lastAccess.longValue() <= session.getLastAccessedTime());
   }
 }

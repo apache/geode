@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -40,20 +38,20 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.i18n.StringId;
 
 /**
- * This class keeps track of how many InitialImageMessages are in flight between the
- * initial image provider and the image target.
+ * This class keeps track of how many InitialImageMessages are in flight between the initial image
+ * provider and the image target.
  * 
- * The provider is responsible for calling acquirePermit before sending an initial image
- * chunk. The acquire will block if two many messages are in flight.
+ * The provider is responsible for calling acquirePermit before sending an initial image chunk. The
+ * acquire will block if two many messages are in flight.
  * 
- * The initial image target sends FlowControlPermitMessage to the image provider after
- * each processed chunk. Upon receiving the FlowControlPermit message, the provider
- * will increase the number of permits available.
+ * The initial image target sends FlowControlPermitMessage to the image provider after each
+ * processed chunk. Upon receiving the FlowControlPermit message, the provider will increase the
+ * number of permits available.
  *
  */
 public class InitialImageFlowControl implements MembershipListener {
   private static final Logger logger = LogService.getLogger();
-  
+
   private static final ProcessorKeeper21 keeper = new ProcessorKeeper21(false);
   private int id;
   private int maxPermits = InitialImageOperation.CHUNK_PERMITS;
@@ -61,14 +59,14 @@ public class InitialImageFlowControl implements MembershipListener {
   private final DM dm;
   private final InternalDistributedMember target;
   private final AtomicBoolean aborted = new AtomicBoolean();
-  
+
   public static InitialImageFlowControl register(DM dm, InternalDistributedMember target) {
-    InitialImageFlowControl control =new InitialImageFlowControl(dm, target);
+    InitialImageFlowControl control = new InitialImageFlowControl(dm, target);
     int id = keeper.put(control);
     control.id = id;
-    
+
     Set availableIds = dm.addMembershipListenerAndGetDistributionManagerIds(control);
-    if(!availableIds.contains(target)) {
+    if (!availableIds.contains(target)) {
       control.abort();
     }
     return control;
@@ -78,17 +76,17 @@ public class InitialImageFlowControl implements MembershipListener {
     this.dm = dm;
     this.target = target;
   }
-  
+
   private void releasePermit() {
     permits.release();
     incMessagesInFlight(-1);
   }
-  
+
   private void incMessagesInFlight(int val) {
     dm.getStats().incInitialImageMessagesInFlight(val);
   }
-  
-  
+
+
   /**
    * Acquire a permit to send another message
    */
@@ -101,47 +99,48 @@ public class InitialImageFlowControl implements MembershipListener {
       try {
         basicWait(startWaitTime);
         break;
-      }
-      catch (InterruptedException e) {
+      } catch (InterruptedException e) {
         interrupted = true; // keep looping
         checkCancellation();
-      }
-      finally {
+      } finally {
         if (interrupted) {
           Thread.currentThread().interrupt();
         }
       }
     } // while
-    if(!aborted.get()) {
+    if (!aborted.get()) {
       incMessagesInFlight(1);
     }
   }
-  
+
   private void basicWait(long startWaitTime) throws InterruptedException {
     long timeout = getAckWaitThreshold() * 1000L;
     long timeSoFar = System.currentTimeMillis() - startWaitTime;
     if (timeout <= 0) {
       timeout = Long.MAX_VALUE;
     }
-    if (!aborted.get() && !permits.tryAcquire(timeout-timeSoFar-1, TimeUnit.MILLISECONDS)) {
+    if (!aborted.get() && !permits.tryAcquire(timeout - timeSoFar - 1, TimeUnit.MILLISECONDS)) {
       checkCancellation();
 
       Set activeMembers = dm.getDistributionManagerIds();
-      final Object[] msgArgs = new Object[] {getAckWaitThreshold(), this, dm.getId(), activeMembers};
-      final StringId msg = LocalizedStrings.ReplyProcessor21_0_SEC_HAVE_ELAPSED_WHILE_WAITING_FOR_REPLIES_1_ON_2_WHOSE_CURRENT_MEMBERSHIP_LIST_IS_3;
+      final Object[] msgArgs =
+          new Object[] {getAckWaitThreshold(), this, dm.getId(), activeMembers};
+      final StringId msg =
+          LocalizedStrings.ReplyProcessor21_0_SEC_HAVE_ELAPSED_WHILE_WAITING_FOR_REPLIES_1_ON_2_WHOSE_CURRENT_MEMBERSHIP_LIST_IS_3;
       logger.warn(LocalizedMessage.create(msg, msgArgs));
 
       permits.acquire();
-      
+
       // Give an info message since timeout gave a warning.
-      logger.info(LocalizedMessage.create(LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_COMPLETED_1, "InitialImageFlowControl"));
+      logger.info(
+          LocalizedMessage.create(LocalizedStrings.ReplyProcessor21_WAIT_FOR_REPLIES_COMPLETED_1,
+              "InitialImageFlowControl"));
     }
   }
-      
+
   /**
-   * Return the time in sec to wait before sending an alert while
-   * waiting for ack replies.  Note that the ack wait threshold may
-   * change at runtime, so we have to consult the system every time.
+   * Return the time in sec to wait before sending an alert while waiting for ack replies. Note that
+   * the ack wait threshold may change at runtime, so we have to consult the system every time.
    */
   private int getAckWaitThreshold() {
     return dm.getConfig().getAckWaitThreshold();
@@ -149,28 +148,28 @@ public class InitialImageFlowControl implements MembershipListener {
 
   private void checkCancellation() {
     dm.getCancelCriterion().checkCancelInProgress(null);
-  } 
+  }
 
   public void unregister() {
     dm.removeMembershipListener(this);
     keeper.remove(id);
     abort();
   }
-  
+
   public int getId() {
     return id;
   }
-  
+
   public void memberDeparted(InternalDistributedMember id, boolean crashed) {
-    if(id.equals(target)) {
+    if (id.equals(target)) {
       abort();
     }
-    
+
   }
 
   private void abort() {
-    if(!aborted.getAndSet(true)) {
-      incMessagesInFlight(- (maxPermits - permits.availablePermits()));
+    if (!aborted.getAndSet(true)) {
+      incMessagesInFlight(-(maxPermits - permits.availablePermits()));
       // Just in case java has issues with semaphores rolling over, set this
       // to half Integer.MAX_VALUE rather to release all of the waiters
       permits.release(Integer.MAX_VALUE / 2);
@@ -178,32 +177,33 @@ public class InitialImageFlowControl implements MembershipListener {
   }
 
   public void memberJoined(InternalDistributedMember id) {
-    //Do nothing
+    // Do nothing
   }
 
-  public void quorumLost(Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
-  }
+  public void quorumLost(Set<InternalDistributedMember> failures,
+      List<InternalDistributedMember> remaining) {}
 
-  public void memberSuspect(InternalDistributedMember id,
-      InternalDistributedMember whoSuspected, String reason) {
-    //Do nothing
+  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
+      String reason) {
+    // Do nothing
   }
 
   @Override
   public String toString() {
-    return "<InitialImageFlowControl for GII to " + target + " with " + permits.availablePermits() + " available permits>";
+    return "<InitialImageFlowControl for GII to " + target + " with " + permits.availablePermits()
+        + " available permits>";
   }
 
 
-  public static class FlowControlPermitMessage extends DistributionMessage implements DataSerializableFixedID {
+  public static class FlowControlPermitMessage extends DistributionMessage
+      implements DataSerializableFixedID {
     private int keeperId;
-    
+
     private FlowControlPermitMessage(int keeperId2) {
       this.keeperId = keeperId2;
     }
 
-    public FlowControlPermitMessage() {
-    }
+    public FlowControlPermitMessage() {}
 
     public static void send(DM dm, InternalDistributedMember recipient, int keeperId) {
       FlowControlPermitMessage message = new FlowControlPermitMessage(keeperId);
@@ -215,7 +215,7 @@ public class InitialImageFlowControl implements MembershipListener {
     public int getProcessorType() {
       return DistributionManager.STANDARD_EXECUTOR;
     }
-    
+
     @Override
     public boolean getInlineProcess() {
       return true;
@@ -224,7 +224,7 @@ public class InitialImageFlowControl implements MembershipListener {
     @Override
     protected void process(DistributionManager dm) {
       InitialImageFlowControl control = (InitialImageFlowControl) keeper.retrieve(keeperId);
-      if(control != null) {
+      if (control != null) {
         control.releasePermit();
       }
     }
@@ -234,8 +234,7 @@ public class InitialImageFlowControl implements MembershipListener {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       keeperId = in.readInt();
     }
@@ -245,8 +244,8 @@ public class InitialImageFlowControl implements MembershipListener {
       super.toData(out);
       out.writeInt(keeperId);
     }
-    
-    
-    
+
+
+
   }
 }

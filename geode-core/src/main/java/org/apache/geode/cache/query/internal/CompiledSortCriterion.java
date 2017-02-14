@@ -1,42 +1,33 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.query.internal;
 
 import java.util.*;
 
-import org.apache.geode.GemFireCacheException;
-import org.apache.geode.GemFireException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
-import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.NameResolutionException;
-import org.apache.geode.cache.query.QueryException;
-import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * This class represents a compiled form of sort criterian present in order by
- * clause
+ * This class represents a compiled form of sort criterian present in order by clause
  * 
  */
 public class CompiledSortCriterion extends AbstractCompiledValue {
@@ -83,8 +74,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
     try {
       return this.expr.evaluate(context);
     } catch (Exception e) {
-      throw new CacheException(e) {
-      };
+      throw new CacheException(e) {};
     }
 
   }
@@ -119,10 +109,9 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
    */
 
   @Override
-  public Object evaluate(ExecutionContext context)
-      throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException {
-    
+  public Object evaluate(ExecutionContext context) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
+
     return this.expr.evaluate(context);
   }
 
@@ -136,14 +125,11 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
     this.columnIndex = columnIndex;
   }
 
-  private CompiledValue getReconstructedExpression(String projAttribStr,
-      ExecutionContext context) throws AmbiguousNameException,
-      TypeMismatchException, NameResolutionException {
-    List<CompiledValue> expressions = PathUtils.collectCompiledValuesInThePath(
-        expr, context);
+  private CompiledValue getReconstructedExpression(String projAttribStr, ExecutionContext context)
+      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+    List<CompiledValue> expressions = PathUtils.collectCompiledValuesInThePath(expr, context);
     StringBuffer tempBuff = new StringBuffer();
-    ListIterator<CompiledValue> listIter = expressions.listIterator(expressions
-        .size());
+    ListIterator<CompiledValue> listIter = expressions.listIterator(expressions.size());
     while (listIter.hasPrevious()) {
       listIter.previous().generateCanonicalizedExpression(tempBuff, context);
       if (tempBuff.toString().equals(projAttribStr)) {
@@ -164,21 +150,20 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
     int index = 0;
     do {
       prevCV = cv;
-      
-      switch( cv.getType()) {     
-      case CompiledOperation.METHOD_INV:
-        reconstruct.add(0, ((CompiledOperation) cv).getArguments());
-        reconstruct.add(0, ((CompiledOperation) cv).getMethodName());
-        break;       
-      case CompiledPath.PATH:
-        reconstruct.add(0, ((CompiledPath) cv).getTailID());
-        break;      
-      case CompiledIndexOperation.TOK_LBRACK:
-        reconstruct.add(0, ((CompiledIndexOperation) cv).getExpression());
-        break;     
-       default:
-         throw new IllegalStateException(
-             "Unexpected CompiledValue in order by clause");
+
+      switch (cv.getType()) {
+        case CompiledOperation.METHOD_INV:
+          reconstruct.add(0, ((CompiledOperation) cv).getArguments());
+          reconstruct.add(0, ((CompiledOperation) cv).getMethodName());
+          break;
+        case CompiledPath.PATH:
+          reconstruct.add(0, ((CompiledPath) cv).getTailID());
+          break;
+        case CompiledIndexOperation.TOK_LBRACK:
+          reconstruct.add(0, ((CompiledIndexOperation) cv).getExpression());
+          break;
+        default:
+          throw new IllegalStateException("Unexpected CompiledValue in order by clause");
       }
       reconstruct.add(0, Integer.valueOf(prevCV.getType()));
       cv = expressions.get(++index);
@@ -190,17 +175,16 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
     while (iter.hasNext()) {
       int type = ((Integer) iter.next()).intValue();
       switch (type) {
-      case CompiledValue.PATH:
-        currentValue = new CompiledPath(currentValue, (String) iter.next());
-        break;
-      case OQLLexerTokenTypes.METHOD_INV:
-        currentValue = new CompiledOperation(currentValue,
-            (String) iter.next(), (List) iter.next());
-        break;
-      case OQLLexerTokenTypes.TOK_LBRACK:
-        currentValue = new CompiledIndexOperation(currentValue,
-            (CompiledValue) iter.next());
-        break;
+        case CompiledValue.PATH:
+          currentValue = new CompiledPath(currentValue, (String) iter.next());
+          break;
+        case OQLLexerTokenTypes.METHOD_INV:
+          currentValue =
+              new CompiledOperation(currentValue, (String) iter.next(), (List) iter.next());
+          break;
+        case OQLLexerTokenTypes.TOK_LBRACK:
+          currentValue = new CompiledIndexOperation(currentValue, (CompiledValue) iter.next());
+          break;
       }
 
     }
@@ -208,9 +192,8 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
     return currentValue;
   }
 
-  boolean mapExpressionToProjectionField(List projAttrs,
-      ExecutionContext context) throws AmbiguousNameException,
-      TypeMismatchException, NameResolutionException {
+  boolean mapExpressionToProjectionField(List projAttrs, ExecutionContext context)
+      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
     boolean mappedColumn = false;
     this.originalCorrectedExpression = expr;
     if (projAttrs != null) {
@@ -218,8 +201,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
       if (expr.getType() == OQLLexerTokenTypes.Identifier) {
 
         for (int i = 0; i < projAttrs.size() && !mappedColumn; ++i) {
-          Object[] prj = (Object[]) TypeUtils.checkCast(projAttrs.get(i),
-              Object[].class);
+          Object[] prj = (Object[]) TypeUtils.checkCast(projAttrs.get(i), Object[].class);
           if (prj[0] != null && prj[0].equals(((CompiledID) expr).getId())) {
             // set the field index
             this.substituteExpressionWithProjectionField(i);
@@ -236,10 +218,8 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
         expr.generateCanonicalizedExpression(orderByExprBuffer, context);
         final String orderByExprStr = orderByExprBuffer.toString();
         for (int i = 0; i < projAttrs.size(); ++i) {
-          Object[] prj = (Object[]) TypeUtils.checkCast(projAttrs.get(i),
-              Object[].class);
-          CompiledValue cvProj = (CompiledValue) TypeUtils.checkCast(prj[1],
-              CompiledValue.class);
+          Object[] prj = (Object[]) TypeUtils.checkCast(projAttrs.get(i), Object[].class);
+          CompiledValue cvProj = (CompiledValue) TypeUtils.checkCast(prj[1], CompiledValue.class);
           cvProj.generateCanonicalizedExpression(projAttribBuffer, context);
           final String projAttribStr = projAttribBuffer.toString();
           if (projAttribStr.equals(orderByExprStr)) {
@@ -248,8 +228,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
             mappedColumn = true;
             break;
           } else if (orderByExprStr.startsWith(projAttribStr)) {
-            CompiledValue newExpr = getReconstructedExpression(projAttribStr,
-                context);
+            CompiledValue newExpr = getReconstructedExpression(projAttribStr, context);
             this.substituteExpression(newExpr, i);
             mappedColumn = true;
             break;
@@ -277,8 +256,7 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
             mappedColumn = true;
             break;
           } else {
-            CompiledValue newExpr = getReconstructedExpression(projAttribStr,
-                context);
+            CompiledValue newExpr = getReconstructedExpression(projAttribStr, context);
             this.substituteExpression(newExpr, i);
             mappedColumn = true;
             break;
@@ -294,12 +272,10 @@ public class CompiledSortCriterion extends AbstractCompiledValue {
 
     private static ProjectionField singleton = new ProjectionField();
 
-    private ProjectionField() {
-    }
+    private ProjectionField() {}
 
-    public Object evaluate(ExecutionContext context)
-        throws FunctionDomainException, TypeMismatchException,
-        NameResolutionException, QueryInvocationTargetException {
+    public Object evaluate(ExecutionContext context) throws FunctionDomainException,
+        TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
       return context.getCurrentProjectionField();
 
     }

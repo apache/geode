@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.management.internal.web.controllers;
@@ -66,9 +64,9 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
- * The AbstractCommandsController class is the abstract base class encapsulating common functionality across all
- * Management Controller classes that expose REST API web service endpoints (URLs/URIs) for GemFire shell (Gfsh)
- * commands.
+ * The AbstractCommandsController class is the abstract base class encapsulating common
+ * functionality across all Management Controller classes that expose REST API web service endpoints
+ * (URLs/URIs) for GemFire shell (Gfsh) commands.
  * 
  * @see org.apache.geode.management.MemberMXBean
  * @see org.apache.geode.management.internal.cli.shell.Gfsh
@@ -81,7 +79,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 public abstract class AbstractCommandsController {
 
   private static final Logger logger = LogService.getLogger();
-  
+
   protected static final String DEFAULT_ENCODING = UriUtils.DEFAULT_ENCODING;
   protected static final String REST_API_VERSION = "/v1";
 
@@ -93,14 +91,14 @@ public abstract class AbstractCommandsController {
 
 
   // Convert a predefined exception to an HTTP Status code
-  @ResponseStatus(value=HttpStatus.UNAUTHORIZED, reason="Not authenticated")  // 401
+  @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "Not authenticated") // 401
   @ExceptionHandler(org.apache.geode.security.AuthenticationFailedException.class)
   public void authenticate() {
 
   }
 
   // Convert a predefined exception to an HTTP Status code
-  @ResponseStatus(value=HttpStatus.FORBIDDEN, reason="Access Denied")  // 403
+  @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Access Denied") // 403
   @ExceptionHandler(java.lang.SecurityException.class)
   public void authorize() {
 
@@ -108,16 +106,19 @@ public abstract class AbstractCommandsController {
 
 
   /**
-   * Asserts the argument is valid, as determined by the caller passing the result of an evaluated expression to this
-   * assertion.
+   * Asserts the argument is valid, as determined by the caller passing the result of an evaluated
+   * expression to this assertion.
    * 
-   * @param validArg a boolean value indicating the evaluation of the expression validating the argument.
-   * @param message a String value used as the message when constructing an IllegalArgumentException.
+   * @param validArg a boolean value indicating the evaluation of the expression validating the
+   *        argument.
+   * @param message a String value used as the message when constructing an
+   *        IllegalArgumentException.
    * @param args Object arguments used to populate placeholder's in the message.
    * @throws IllegalArgumentException if the argument is not valid.
    * @see java.lang.String#format(String, Object...)
    */
-  protected static void assertArgument(final boolean validArg, final String message, final Object... args) {
+  protected static void assertArgument(final boolean validArg, final String message,
+      final Object... args) {
     if (!validArg) {
       throw new IllegalArgumentException(String.format(message, args));
     }
@@ -127,37 +128,42 @@ public abstract class AbstractCommandsController {
    * Asserts the Object reference is not null!
    * 
    * @param obj the reference to the Object.
-   * @param message the String value used as the message when constructing and throwing a NullPointerException.
+   * @param message the String value used as the message when constructing and throwing a
+   *        NullPointerException.
    * @param args Object arguments used to populate placeholder's in the message.
    * @throws NullPointerException if the Object reference is null.
    * @see java.lang.String#format(String, Object...)
    */
-  protected static void assertNotNull(final Object obj, final String message, final Object... args) {
+  protected static void assertNotNull(final Object obj, final String message,
+      final Object... args) {
     if (obj == null) {
       throw new NullPointerException(String.format(message, args));
     }
   }
 
   /**
-   * Asserts whether state, based on the evaluation of a conditional expression, passed to this assertion is valid.
+   * Asserts whether state, based on the evaluation of a conditional expression, passed to this
+   * assertion is valid.
    * 
-   * @param validState a boolean value indicating the evaluation of the expression from which the conditional state
-   * is based.  For example, a caller might use an expression of the form (initableObj.isInitialized()).
+   * @param validState a boolean value indicating the evaluation of the expression from which the
+   *        conditional state is based. For example, a caller might use an expression of the form
+   *        (initableObj.isInitialized()).
    * @param message a String values used as the message when constructing an IllegalStateException.
    * @param args Object arguments used to populate placeholder's in the message.
    * @throws IllegalStateException if the conditional state is not valid.
    * @see java.lang.String#format(String, Object...)
    */
-  protected static void assertState(final boolean validState, final String message, final Object... args) {
+  protected static void assertState(final boolean validState, final String message,
+      final Object... args) {
     if (!validState) {
       throw new IllegalStateException(String.format(message, args));
     }
   }
 
   /**
-   * Decodes the encoded String value using the default encoding UTF-8.  It is assumed the String value was encoded
-   * with the URLEncoder using the UTF-8 encoding.  This method handles UnsupportedEncodingException by just returning
-   * the encodedValue.
+   * Decodes the encoded String value using the default encoding UTF-8. It is assumed the String
+   * value was encoded with the URLEncoder using the UTF-8 encoding. This method handles
+   * UnsupportedEncodingException by just returning the encodedValue.
    * 
    * @param encodedValue the encoded String value to decode.
    * @return the decoded value of the String or encodedValue if the UTF-8 encoding is unsupported.
@@ -168,13 +174,14 @@ public abstract class AbstractCommandsController {
   }
 
   /**
-   * Decodes the encoded String value using the specified encoding (such as UTF-8).  It is assumed the String value
-   * was encoded with the URLEncoder using the specified encoding.  This method handles UnsupportedEncodingException
-   * by just returning the encodedValue.
+   * Decodes the encoded String value using the specified encoding (such as UTF-8). It is assumed
+   * the String value was encoded with the URLEncoder using the specified encoding. This method
+   * handles UnsupportedEncodingException by just returning the encodedValue.
    * 
    * @param encodedValue a String value encoded in the encoding.
    * @param encoding a String value specifying the encoding.
-   * @return the decoded value of the String or encodedValue if the specified encoding is unsupported.
+   * @return the decoded value of the String or encodedValue if the specified encoding is
+   *         unsupported.
    * @see org.apache.geode.management.internal.web.util.UriUtils#decode(String, String)
    */
   protected static String decode(final String encodedValue, final String encoding) {
@@ -197,8 +204,8 @@ public abstract class AbstractCommandsController {
    * Encodes the String value using the default encoding UTF-8.
    * 
    * @param value the String value to encode.
-   * @return an encoded value of the String using the default encoding UTF-8 or value if the UTF-8 encoding
-   * is unsupported.
+   * @return an encoded value of the String using the default encoding UTF-8 or value if the UTF-8
+   *         encoding is unsupported.
    * @see org.apache.geode.management.internal.web.util.UriUtils#encode(String)
    */
   protected static String encode(final String value) {
@@ -210,8 +217,8 @@ public abstract class AbstractCommandsController {
    * 
    * @param value the String value to encode.
    * @param encoding a String value indicating the encoding.
-   * @return an encoded value of the String using the specified encoding or value if the specified encoding
-   * is unsupported.
+   * @return an encoded value of the String using the specified encoding or value if the specified
+   *         encoding is unsupported.
    * @see org.apache.geode.management.internal.web.util.UriUtils#encode(String, String)
    */
   protected static String encode(final String value, final String encoding) {
@@ -219,7 +226,8 @@ public abstract class AbstractCommandsController {
   }
 
   /**
-   * Determines whether the specified Object has value, which is determined by a non-null Object reference.
+   * Determines whether the specified Object has value, which is determined by a non-null Object
+   * reference.
    * 
    * @param value the Object value being evaluated for value.
    * @return a boolean value indicating whether the specified Object has value.
@@ -227,12 +235,12 @@ public abstract class AbstractCommandsController {
    */
   protected static boolean hasValue(final Object value) {
     return (value instanceof String[] ? hasValue((String[]) value)
-      : (value instanceof String ? hasValue((String) value) : value != null));
+        : (value instanceof String ? hasValue((String) value) : value != null));
   }
 
   /**
-   * Determines whether the specified String has value, determined by whether the String is non-null, not empty
-   * and not blank.
+   * Determines whether the specified String has value, determined by whether the String is
+   * non-null, not empty and not blank.
    * 
    * @param value the String being evaluated for value.
    * @return a boolean indicating whether the specified String has value or not.
@@ -243,8 +251,9 @@ public abstract class AbstractCommandsController {
   }
 
   /**
-   * Determines whether the specified String array has any value, which is determined by a non-null String array
-   * reference along with containing at least 1 non-null, not empty and not blank element.
+   * Determines whether the specified String array has any value, which is determined by a non-null
+   * String array reference along with containing at least 1 non-null, not empty and not blank
+   * element.
    * 
    * @param array an String array being evaluated for value.
    * @return a boolean indicating whether the specified String array has any value.
@@ -286,18 +295,18 @@ public abstract class AbstractCommandsController {
    * @see java.net.URI
    * @see org.springframework.web.servlet.support.ServletUriComponentsBuilder
    */
-  protected /*static*/ URI toUri(final String path, final String scheme) {
-    return ServletUriComponentsBuilder.fromCurrentContextPath()
-        .path(REST_API_VERSION).path(path).scheme(scheme).build().toUri();
+  protected /* static */ URI toUri(final String path, final String scheme) {
+    return ServletUriComponentsBuilder.fromCurrentContextPath().path(REST_API_VERSION).path(path)
+        .scheme(scheme).build().toUri();
   }
 
   /**
-   * Handles any Exception thrown by a REST API web service endpoint, HTTP request handler method during the invocation
-   * and processing of a command.
+   * Handles any Exception thrown by a REST API web service endpoint, HTTP request handler method
+   * during the invocation and processing of a command.
    * 
    * @param cause the Exception causing the error.
-   * @return a ResponseEntity with an appropriate HTTP status code (500 - Internal Server Error) and HTTP response body
-   * containing the stack trace of the Exception.
+   * @return a ResponseEntity with an appropriate HTTP status code (500 - Internal Server Error) and
+   *         HTTP response body containing the stack trace of the Exception.
    * @see java.lang.Exception
    * @see org.springframework.http.ResponseEntity
    * @see org.springframework.web.bind.annotation.ExceptionHandler
@@ -320,13 +329,13 @@ public abstract class AbstractCommandsController {
    */
   @InitBinder
   public void initBinder(final WebDataBinder dataBinder) {
-    dataBinder.registerCustomEditor(String[].class, new StringArrayPropertyEditor(
-      StringArrayPropertyEditor.DEFAULT_SEPARATOR, false));
+    dataBinder.registerCustomEditor(String[].class,
+        new StringArrayPropertyEditor(StringArrayPropertyEditor.DEFAULT_SEPARATOR, false));
   }
 
   /**
-   * Logs the client's HTTP (web) request including details of the HTTP headers and request parameters along with the
-   * web request context and description.
+   * Logs the client's HTTP (web) request including details of the HTTP headers and request
+   * parameters along with the web request context and description.
    * 
    * @param request the object encapsulating the details of the client's HTTP (web) request.
    * @see org.springframework.web.context.request.WebRequest
@@ -335,26 +344,29 @@ public abstract class AbstractCommandsController {
     if (request != null) {
       final Map<String, String> headers = new HashMap<java.lang.String, java.lang.String>();
 
-      for (Iterator<String> it = request.getHeaderNames(); it.hasNext(); ) {
+      for (Iterator<String> it = request.getHeaderNames(); it.hasNext();) {
         final String headerName = it.next();
-        headers.put(headerName, ArrayUtils.toString((Object[]) request.getHeaderValues(headerName)));
+        headers.put(headerName,
+            ArrayUtils.toString((Object[]) request.getHeaderValues(headerName)));
       }
 
-      final Map<String, String> parameters = new HashMap<String, String>(request.getParameterMap().size());
+      final Map<String, String> parameters =
+          new HashMap<String, String>(request.getParameterMap().size());
 
-      for (Iterator<String> it = request.getParameterNames(); it.hasNext(); ) {
+      for (Iterator<String> it = request.getParameterNames(); it.hasNext();) {
         final String parameterName = it.next();
-        parameters.put(parameterName, ArrayUtils.toString((Object[]) request.getParameterValues(parameterName)));
+        parameters.put(parameterName,
+            ArrayUtils.toString((Object[]) request.getParameterValues(parameterName)));
       }
 
       logger.info("HTTP-request: description ({}), context ({}), headers ({}), parameters ({})",
-        request.getDescription(false), request.getContextPath(), headers, parameters);
+          request.getDescription(false), request.getContextPath(), headers, parameters);
     }
   }
-  
+
   /**
-   * Gets a reference to the platform MBeanServer running in this JVM process.  The MBeanServer instance constitutes
-   * a connection to the MBeanServer.
+   * Gets a reference to the platform MBeanServer running in this JVM process. The MBeanServer
+   * instance constitutes a connection to the MBeanServer.
    * 
    * @return a reference to the platform MBeanServer for this JVM process.
    * @see java.lang.management.ManagementFactory#getPlatformMBeanServer()
@@ -365,51 +377,54 @@ public abstract class AbstractCommandsController {
   }
 
   /**
-   * Gets the MemberMXBean from the JVM Platform MBeanServer for the specified member, identified by name or ID
-   * in the GemFire cluster.
+   * Gets the MemberMXBean from the JVM Platform MBeanServer for the specified member, identified by
+   * name or ID in the GemFire cluster.
    * 
    * @param memberNameId a String indicating the name or ID of the GemFire member.
    * @return a proxy to the GemFire member's MemberMXBean.
-   * @throws IllegalStateException if no MemberMXBean could be found for GemFire member with ID or name.
-   * @throws RuntimeException wrapping the MalformedObjectNameException if the ObjectName pattern is malformed.
+   * @throws IllegalStateException if no MemberMXBean could be found for GemFire member with ID or
+   *         name.
+   * @throws RuntimeException wrapping the MalformedObjectNameException if the ObjectName pattern is
+   *         malformed.
    * @see #getMBeanServer()
    * @see #isMemberMXBeanFound(java.util.Collection)
    * @see javax.management.ObjectName
    * @see javax.management.QueryExp
-   * @see javax.management.MBeanServer#queryNames(javax.management.ObjectName, javax.management.QueryExp)
-   * @see javax.management.JMX#newMXBeanProxy(javax.management.MBeanServerConnection, javax.management.ObjectName, Class)
+   * @see javax.management.MBeanServer#queryNames(javax.management.ObjectName,
+   *      javax.management.QueryExp)
+   * @see javax.management.JMX#newMXBeanProxy(javax.management.MBeanServerConnection,
+   *      javax.management.ObjectName, Class)
    * @see org.apache.geode.management.MemberMXBean
    */
   protected MemberMXBean getMemberMXBean(final String memberNameId) {
     try {
       final MBeanServer connection = getMBeanServer();
 
-      final String objectNamePattern = ManagementConstants.OBJECTNAME__PREFIX.concat("type=Member,*");
+      final String objectNamePattern =
+          ManagementConstants.OBJECTNAME__PREFIX.concat("type=Member,*");
 
-      // NOTE throws a MalformedObjectNameException, but this should not happen since we constructed the ObjectName above
+      // NOTE throws a MalformedObjectNameException, but this should not happen since we constructed
+      // the ObjectName above
       final ObjectName objectName = ObjectName.getInstance(objectNamePattern);
 
-      final QueryExp query = Query.or(
-        Query.eq(Query.attr("Name"), Query.value(memberNameId)),
-        Query.eq(Query.attr("Id"), Query.value(memberNameId))
-      );
+      final QueryExp query = Query.or(Query.eq(Query.attr("Name"), Query.value(memberNameId)),
+          Query.eq(Query.attr("Id"), Query.value(memberNameId)));
 
       final Set<ObjectName> objectNames = connection.queryNames(objectName, query);
 
       assertState(isMemberMXBeanFound(objectNames),
-        "No MemberMXBean with ObjectName (%1$s) based on Query (%2$s) was found in the Platform MBeanServer for member (%3$s)!",
+          "No MemberMXBean with ObjectName (%1$s) based on Query (%2$s) was found in the Platform MBeanServer for member (%3$s)!",
           objectName, query, memberNameId);
 
       return JMX.newMXBeanProxy(connection, objectNames.iterator().next(), MemberMXBean.class);
-    }
-    catch (MalformedObjectNameException e) {
+    } catch (MalformedObjectNameException e) {
       throw new RuntimeException(e);
     }
   }
 
   /**
-   * Determines whether the desired MemberMXBean, identified by name or ID, was found in the platform MBeanServer
-   * of this JVM process.
+   * Determines whether the desired MemberMXBean, identified by name or ID, was found in the
+   * platform MBeanServer of this JVM process.
    * 
    * @param objectNames a Collection of ObjectNames possibly referring to the desired MemberMXBean.
    * @return a boolean value indicating whether the desired MemberMXBean was found.
@@ -420,13 +435,15 @@ public abstract class AbstractCommandsController {
   }
 
   /**
-   * Lookup operation for the MemberMXBean representing the Manager in the GemFire cluster.  This method gets
-   * an instance fo the Platform MBeanServer for this JVM process and uses it to lookup the MemberMXBean for the
-   * GemFire Manager based on the ObjectName declared in the DistributedSystemMXBean.getManagerObjectName() operation.
+   * Lookup operation for the MemberMXBean representing the Manager in the GemFire cluster. This
+   * method gets an instance fo the Platform MBeanServer for this JVM process and uses it to lookup
+   * the MemberMXBean for the GemFire Manager based on the ObjectName declared in the
+   * DistributedSystemMXBean.getManagerObjectName() operation.
    * 
    * @return a proxy instance to the MemberMXBean of the GemFire Manager.
    * @see #getMBeanServer()
-   * @see #createMemberMXBeanForManagerUsingProxy(javax.management.MBeanServer, javax.management.ObjectName)
+   * @see #createMemberMXBeanForManagerUsingProxy(javax.management.MBeanServer,
+   *      javax.management.ObjectName)
    * @see org.apache.geode.management.DistributedSystemMXBean
    * @see org.apache.geode.management.MemberMXBean
    */
@@ -437,10 +454,10 @@ public abstract class AbstractCommandsController {
       MBeanServer mbs = getMBeanServer();
 
       final DistributedSystemMXBean distributedSystemMXBean = JMX.newMXBeanProxy(mbs,
-        MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
+          MBeanJMXAdapter.getDistributedSystemName(), DistributedSystemMXBean.class);
 
       managingMemberMXBeanProxy = createMemberMXBeanForManagerUsingProxy(mbs,
-        distributedSystemMXBean.getMemberObjectName());
+          distributedSystemMXBean.getMemberObjectName());
     }
 
     return managingMemberMXBeanProxy;
@@ -456,21 +473,25 @@ public abstract class AbstractCommandsController {
   }
 
   /**
-   * Creates a Proxy using the Platform MBeanServer and ObjectName in order to access attributes and invoke operations
-   * on the GemFire Manager's MemberMXBean.
+   * Creates a Proxy using the Platform MBeanServer and ObjectName in order to access attributes and
+   * invoke operations on the GemFire Manager's MemberMXBean.
    * 
    * @param server a reference to this JVM's Platform MBeanServer.
-   * @param managingMemberObjectName the ObjectName of the GemFire Manager's MemberMXBean registered in
-   * the Platform MBeanServer.
-   * @return a Proxy for accessing attributes and invoking operations on the GemFire Manager's MemberMXBean.
-   * @see javax.management.JMX#newMXBeanProxy(javax.management.MBeanServerConnection, javax.management.ObjectName, Class)
+   * @param managingMemberObjectName the ObjectName of the GemFire Manager's MemberMXBean registered
+   *        in the Platform MBeanServer.
+   * @return a Proxy for accessing attributes and invoking operations on the GemFire Manager's
+   *         MemberMXBean.
+   * @see javax.management.JMX#newMXBeanProxy(javax.management.MBeanServerConnection,
+   *      javax.management.ObjectName, Class)
    */
-  private MemberMXBean createMemberMXBeanForManagerUsingProxy(final MBeanServer server, final ObjectName managingMemberObjectName) {
+  private MemberMXBean createMemberMXBeanForManagerUsingProxy(final MBeanServer server,
+      final ObjectName managingMemberObjectName) {
     return JMX.newMXBeanProxy(server, managingMemberObjectName, MemberMXBean.class);
   }
 
   /**
-   * Gets the environment setup during this HTTP/command request for the current command process execution.
+   * Gets the environment setup during this HTTP/command request for the current command process
+   * execution.
    * 
    * @return a mapping of environment variables to values.
    * @see LoginHandlerInterceptor#getEnvironment()
@@ -485,11 +506,11 @@ public abstract class AbstractCommandsController {
   }
 
   /**
-   * Adds the named option to the command String to be processed if the named option has value or the named option is
-   * present in the HTTP request.
+   * Adds the named option to the command String to be processed if the named option has value or
+   * the named option is present in the HTTP request.
    * 
-   * @param request the WebRequest object encapsulating the details (headers, request parameters and message body)
-   * of the user HTTP request.
+   * @param request the WebRequest object encapsulating the details (headers, request parameters and
+   *        message body) of the user HTTP request.
    * @param command the Gfsh command String to append options and process.
    * @param optionName the name of the command option.
    * @param optionValue the value for the named command option.
@@ -498,33 +519,32 @@ public abstract class AbstractCommandsController {
    * @see org.apache.geode.management.internal.cli.util.CommandStringBuilder
    * @see org.springframework.web.context.request.WebRequest
    */
-  protected void addCommandOption(final WebRequest request,
-                                  final CommandStringBuilder command,
-                                  final String optionName,
-                                  final Object optionValue)
-  {
+  protected void addCommandOption(final WebRequest request, final CommandStringBuilder command,
+      final String optionName, final Object optionValue) {
     assertNotNull(command, "The command to append options to cannot be null!");
     assertNotNull(optionName, "The name of the option to add to the command cannot be null!");
 
     if (hasValue(optionValue)) {
-      final String optionValueString = (optionValue instanceof String[] ?
-        StringUtils.concat((String[]) optionValue, StringUtils.COMMA_DELIMITER) : String.valueOf(optionValue));
+      final String optionValueString = (optionValue instanceof String[]
+          ? StringUtils.concat((String[]) optionValue, StringUtils.COMMA_DELIMITER)
+          : String.valueOf(optionValue));
       command.addOption(optionName, optionValueString);
-    }
-    else if (request != null && request.getParameterMap().containsKey(optionName)) {
+    } else if (request != null && request.getParameterMap().containsKey(optionName)) {
       command.addOption(optionName);
-    }
-    else {
+    } else {
       // do nothing!
     }
   }
 
   /**
-   * Executes the specified command as entered by the user using the GemFire Shell (Gfsh).  Note, Gfsh performs
-   * validation of the command during parsing before sending the command to the Manager for processing.
+   * Executes the specified command as entered by the user using the GemFire Shell (Gfsh). Note,
+   * Gfsh performs validation of the command during parsing before sending the command to the
+   * Manager for processing.
    *
-   * @param command a String value containing a valid command String as would be entered by the user in Gfsh.
-   * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
+   * @param command a String value containing a valid command String as would be entered by the user
+   *        in Gfsh.
+   * @return a result of the command execution as a String, typically marshalled in JSON to be
+   *         serialized back to Gfsh.
    * @see org.apache.geode.management.internal.cli.shell.Gfsh
    * @see LoginHandlerInterceptor#getEnvironment()
    * @see #getEnvironment()
@@ -534,22 +554,21 @@ public abstract class AbstractCommandsController {
     return processCommand(command, getEnvironment(), null);
   }
 
-  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command){
+  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command) {
     return getProcessCommandCallable(command, getEnvironment(), null);
   }
 
-  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command, final Map<String, String> environment, final byte[][] fileData){
+  protected Callable<ResponseEntity<String>> getProcessCommandCallable(final String command,
+      final Map<String, String> environment, final byte[][] fileData) {
     Callable callable = new Callable<ResponseEntity<String>>() {
       @Override
       public ResponseEntity<String> call() throws Exception {
         String result = null;
         try {
           result = processCommand(command, environment, fileData);
-        }
-        catch(NotAuthorizedException ex){
+        } catch (NotAuthorizedException ex) {
           return new ResponseEntity<String>(ex.getMessage(), HttpStatus.FORBIDDEN);
-        }
-        catch(Exception ex){
+        } catch (Exception ex) {
           return new ResponseEntity<String>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<String>(result, HttpStatus.OK);
@@ -560,13 +579,16 @@ public abstract class AbstractCommandsController {
 
 
   /**
-   * Executes the specified command as entered by the user using the GemFire Shell (Gfsh).  Note, Gfsh performs
-   * validation of the command during parsing before sending the command to the Manager for processing.
+   * Executes the specified command as entered by the user using the GemFire Shell (Gfsh). Note,
+   * Gfsh performs validation of the command during parsing before sending the command to the
+   * Manager for processing.
    * 
-   * @param command a String value containing a valid command String as would be entered by the user in Gfsh.
-   * @param fileData is a two-dimensional byte array containing the pathnames and contents of file data streamed to
-   * the Manager, usually for the 'deploy' Gfsh command.
-   * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
+   * @param command a String value containing a valid command String as would be entered by the user
+   *        in Gfsh.
+   * @param fileData is a two-dimensional byte array containing the pathnames and contents of file
+   *        data streamed to the Manager, usually for the 'deploy' Gfsh command.
+   * @return a result of the command execution as a String, typically marshalled in JSON to be
+   *         serialized back to Gfsh.
    * @see org.apache.geode.management.internal.cli.shell.Gfsh
    * @see LoginHandlerInterceptor#getEnvironment()
    * @see #getEnvironment()
@@ -577,15 +599,19 @@ public abstract class AbstractCommandsController {
   }
 
   /**
-   * Executes the specified command as entered by the user using the GemFire Shell (Gfsh).  Note, Gfsh performs
-   * validation of the command during parsing before sending the command to the Manager for processing.
+   * Executes the specified command as entered by the user using the GemFire Shell (Gfsh). Note,
+   * Gfsh performs validation of the command during parsing before sending the command to the
+   * Manager for processing.
    * 
-   * @param command a String value containing a valid command String as would be entered by the user in Gfsh.
-   * @param environment a Map containing any environment configuration settings to be used by the Manager during
-   * command execution.  For example, when executing commands originating from Gfsh, the key/value pair (APP_NAME=gfsh)
-   * is a specified mapping in the "environment.  Note, it is common for the REST API to act as a bridge, or an adapter
-   * between Gfsh and the Manager, and thus need to specify this key/value pair mapping.
-   * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
+   * @param command a String value containing a valid command String as would be entered by the user
+   *        in Gfsh.
+   * @param environment a Map containing any environment configuration settings to be used by the
+   *        Manager during command execution. For example, when executing commands originating from
+   *        Gfsh, the key/value pair (APP_NAME=gfsh) is a specified mapping in the "environment.
+   *        Note, it is common for the REST API to act as a bridge, or an adapter between Gfsh and
+   *        the Manager, and thus need to specify this key/value pair mapping.
+   * @return a result of the command execution as a String, typically marshalled in JSON to be
+   *         serialized back to Gfsh.
    * @see org.apache.geode.management.internal.cli.shell.Gfsh
    * @see LoginHandlerInterceptor#getEnvironment()
    * @see #processCommand(String, java.util.Map, byte[][])
@@ -595,23 +621,30 @@ public abstract class AbstractCommandsController {
   }
 
   /**
-   * Executes the specified command as entered by the user using the GemFire Shell (Gfsh).  Note, Gfsh performs
-   * validation of the command during parsing before sending the command to the Manager for processing.
+   * Executes the specified command as entered by the user using the GemFire Shell (Gfsh). Note,
+   * Gfsh performs validation of the command during parsing before sending the command to the
+   * Manager for processing.
    * 
-   * @param command a String value containing a valid command String as would be entered by the user in Gfsh.
-   * @param environment a Map containing any environment configuration settings to be used by the Manager during
-   * command execution.  For example, when executing commands originating from Gfsh, the key/value pair (APP_NAME=gfsh)
-   * is a specified mapping in the "environment.  Note, it is common for the REST API to act as a bridge, or an adapter
-   * between Gfsh and the Manager, and thus need to specify this key/value pair mapping.
-   * @param fileData is a two-dimensional byte array containing the pathnames and contents of file data streamed to
-   * the Manager, usually for the 'deploy' Gfsh command.
-   * @return a result of the command execution as a String, typically marshalled in JSON to be serialized back to Gfsh.
+   * @param command a String value containing a valid command String as would be entered by the user
+   *        in Gfsh.
+   * @param environment a Map containing any environment configuration settings to be used by the
+   *        Manager during command execution. For example, when executing commands originating from
+   *        Gfsh, the key/value pair (APP_NAME=gfsh) is a specified mapping in the "environment.
+   *        Note, it is common for the REST API to act as a bridge, or an adapter between Gfsh and
+   *        the Manager, and thus need to specify this key/value pair mapping.
+   * @param fileData is a two-dimensional byte array containing the pathnames and contents of file
+   *        data streamed to the Manager, usually for the 'deploy' Gfsh command.
+   * @return a result of the command execution as a String, typically marshalled in JSON to be
+   *         serialized back to Gfsh.
    * @see org.apache.geode.management.MemberMXBean#processCommand(String, java.util.Map, Byte[][])
    */
-  protected String processCommand(final String command, final Map<String, String> environment, final byte[][] fileData) {
-    logger.info(LogMarker.CONFIG, "Processing Command ({}) with Environment ({}) having File Data ({})...", command,
-      environment, (fileData != null));
-    return getManagingMemberMXBean().processCommand(command, environment, ArrayUtils.toByteArray(fileData));
+  protected String processCommand(final String command, final Map<String, String> environment,
+      final byte[][] fileData) {
+    logger.info(LogMarker.CONFIG,
+        "Processing Command ({}) with Environment ({}) having File Data ({})...", command,
+        environment, (fileData != null));
+    return getManagingMemberMXBean().processCommand(command, environment,
+        ArrayUtils.toByteArray(fileData));
   }
 
   @ExceptionHandler(NotAuthorizedException.class)

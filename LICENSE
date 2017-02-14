@@ -313,8 +313,6 @@ Apache Geode bundles the following files under the MIT license:
     Jeremy Ashkenas, DocumentCloud Inc.
   - Bootflat v1.0.1 (http://bootflat.github.io/), Copyright (c) 2014
     bootflat
-  - Bootstrap v3.0.0 (http://getbootstrap.com/), Copyright (c) 2011-2016
-    Twitter, Inc.
   - Font Awesome v4.0.3 (code files) (http://fontawesome.io), Copyright (c)
     Dave Gandy
   - Handlebars v1.0.0 (http://handlebarsjs.com), Copyright (c) 2011, Yehuda
@@ -346,11 +344,8 @@ Apache Geode bundles the following files under the MIT license:
   - jQuery UI MultiSelect Widget v1.14pre
     (http://www.erichynds.com/jquery/jquery-ui-multiselect-widget/),
     Copyright (c) 2011 Eric Hynds
-  - jQuery UI v1.8.18 (http://jqueryui.com/about), Copyright (c) jQuery
+  - jQuery UI v1.10.2 (http://jqueryui.com/about), Copyright (c) jQuery
     Foundation and other contributors, http://jquery.org
-  - jQuery Wiggle (https://github.com/wilhelm-murdoch/jQuery-Wiggle),
-    Copyright (c) 2011 Wilhelm Murdoch <wilhelm.murdoch@gmail.com>,
-     TheDrunkenEpic <http://www.thedrunkenepic.com>
   - jScrollPane (http://jscrollpane.kelvinluck.com/), Copyright (c) 2010
     Kelvin Luck
   - matchMedia() polyfill (https://github.com/paulirish/matchMedia.js),

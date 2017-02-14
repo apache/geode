@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal;
 
@@ -20,14 +18,13 @@ import java.util.Set;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
 
-public class StartupMessageReplyProcessor extends ReplyProcessor21
-{
+public class StartupMessageReplyProcessor extends ReplyProcessor21 {
   /** has a rejection message (license mismatch, etc) been received? */
   private boolean receivedRejectionMessage;
 
-  /** set to true once we receive a reply from someone who accepted us
-   * into the group. Note that we receive replies from admin dm but
-   * they do not have the authority to accept us into the group.
+  /**
+   * set to true once we receive a reply from someone who accepted us into the group. Note that we
+   * receive replies from admin dm but they do not have the authority to accept us into the group.
    */
   private boolean receivedAcceptance;
   private DM dm;
@@ -43,7 +40,7 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21
     dm.removeUnfinishedStartup(m, true);
     return result;
   }
-  
+
   protected boolean getReceivedRejectionMessage() {
     return this.receivedRejectionMessage;
   }
@@ -51,7 +48,7 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21
   protected boolean getReceivedAcceptance() {
     return this.receivedAcceptance;
   }
-  
+
   protected void setReceivedRejectionMessage(boolean v) {
     this.receivedRejectionMessage = v;
   }
@@ -67,7 +64,7 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21
     if (stillWaiting()) {
       InternalDistributedMember[] memberList = getMembers();
       synchronized (memberList) {
-        for (int i=0; i < memberList.length; i++) {
+        for (int i = 0; i < memberList.length; i++) {
           InternalDistributedMember m = memberList[i];
           if (m != null) {
             s.add(m);
@@ -76,14 +73,13 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21
       }
     }
   }
-  
+
   @Override
   public void process(DistributionMessage msg) {
     final LogWriterI18n log = this.system.getLogWriter().convertToLogWriterI18n();
     super.process(msg);
     if (log.fineEnabled()) {
-      log.fine(this.toString() + " done processing " + msg + " from " +
-               msg.getSender());
+      log.fine(this.toString() + " done processing " + msg + " from " + msg.getSender());
     }
   }
 
@@ -96,23 +92,13 @@ public class StartupMessageReplyProcessor extends ReplyProcessor21
     // because this is the startup message and we do not yet have any
     // members in the dm's list.
     mgr.addMembershipListener(this);
-//     Set activeMembers = mgr.addMembershipListenerAndGetDistributionManagerIds(this);
-//     synchronized (this.members) {
-//       for (int i = 0; i < getMembers().length; i++) {
-//         if (!activeMembers.contains(getMembers()[i])) {
-//           memberDeparted(getMembers()[i], false);
-//         }
-//       }
-//     }
+    // Set activeMembers = mgr.addMembershipListenerAndGetDistributionManagerIds(this);
+    // synchronized (this.members) {
+    // for (int i = 0; i < getMembers().length; i++) {
+    // if (!activeMembers.contains(getMembers()[i])) {
+    // memberDeparted(getMembers()[i], false);
+    // }
+    // }
+    // }
   }
-  
-  /** overridden from ReplyProcessor21 to allow early-out. 
-   * If an existing member accepted or rejected us then we are done.
-   */
-  @Override
-  protected boolean canStopWaiting() {
-    return this.receivedAcceptance || this.receivedRejectionMessage;
-  }
-  
-  
 }

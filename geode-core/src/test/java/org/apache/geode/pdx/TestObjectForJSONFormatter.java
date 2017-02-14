@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.pdx;
 
@@ -38,6 +36,7 @@ enum Day {
   Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
 }
 
+
 public class TestObjectForJSONFormatter implements PdxSerializable {
 
   private boolean p_bool;
@@ -47,8 +46,8 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
   private long p_long;
   private float p_float;
   private double p_double;
-  
-  //wrapper
+
+  // wrapper
   private Boolean w_bool;
   private Byte w_byte;
   private Short w_short;
@@ -59,8 +58,8 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
   private BigDecimal w_bigDec;
   private Double w_double;
   private String w_string;
-  
-  //Primitive_Arrays
+
+  // Primitive_Arrays
   private boolean[] p_boolArray;
   private byte[] p_byteArray;
   private short[] p_shortArray;
@@ -68,8 +67,8 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
   private long[] p_longArray;
   private float[] p_floatArray;
   private double[] p_doubleArray;
-   
-  //Wrapper_Arrays 
+
+  // Wrapper_Arrays
   private Boolean[] w_boolArray;
   private Byte[] w_byteArray;
   private Short[] w_shortArray;
@@ -79,109 +78,108 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
   private Float[] w_floatArray;
   private BigDecimal[] w_bigDecArray;
   private Double[] w_doubleArray;
-  private String [] w_strArray;
-  
-  //Collection Type: List, Set, Queue, Deque
+  private String[] w_strArray;
+
+  // Collection Type: List, Set, Queue, Deque
   private List<String> c_list;
   private Set<Object> c_set;
   private Queue<String> c_queue;
   private Deque<Integer> c_deque;
   private Stack<String> c_stack;
-  
-  //Map - Classify Person objects by city
+
+  // Map - Classify Person objects by city
   Map<String, List<Employee>> m_empByCity;
-  
-  //Enum
+
+  // Enum
   private Day day;
 
   private Employee employee;
-  
-  public TestObjectForJSONFormatter(){
-  }
-  
+
+  public TestObjectForJSONFormatter() {}
+
   public String addClassTypeToJson(String json) throws JSONException {
     JSONObject jsonObj = new JSONObject(json);
     jsonObj.put("@type", "org.apache.geode.pdx.TestObjectForJSONFormatter");
     return jsonObj.toString();
   }
-  
-  public void defaultInitialization(){
-    
-    employee = new Employee(1010L, "NilkanthKumar", "Patel");  
-    
-    //Initialize Map type member
+
+  public void defaultInitialization() {
+
+    employee = new Employee(1010L, "NilkanthKumar", "Patel");
+
+    // Initialize Map type member
     Employee e1 = new Employee(1L, "Nilkanth", "Patel");
     Employee e2 = new Employee(2L, "Amey", "Barve");
     Employee e3 = new Employee(3L, "Shankar", "Hundekar");
     Employee e4 = new Employee(4L, "Avinash", "Dongre");
     Employee e5 = new Employee(5L, "supriya", "Patil");
-    Employee e6 = new Employee(6L, "Rajesh", "Kumar");
+    Employee e6 = new Employee(6L, "Rajesh", null);
     Employee e7 = new Employee(7L, "Vishal", "Rao");
     Employee e8 = new Employee(8L, "Hitesh", "Khamesara");
     Employee e9 = new Employee(9L, "Sudhir", "Menon");
-    
+
     m_empByCity = new HashMap<String, List<Employee>>();
     List<Employee> list1 = new ArrayList<Employee>();
     List<Employee> list2 = new ArrayList<Employee>();
     List<Employee> list3 = new ArrayList<Employee>();
-    
+
     list1.add(e1);
     list1.add(e2);
     list1.add(e3);
-    
+
     list2.add(e4);
     list2.add(e5);
     list2.add(e6);
-    
+
     list3.add(e7);
     list3.add(e8);
     list3.add(e9);
-    
+
     m_empByCity.put("Ahmedabad", list1);
     m_empByCity.put("mumbai", list2);
     m_empByCity.put("Pune", list3);
-    
-    
-    //Initialize Collection types members
+
+
+    // Initialize Collection types members
     c_list = new ArrayList<String>();
     c_list.add("Java");
     c_list.add("scala");
     c_list.add("closure");
-    
+
     c_set = new HashSet<Object>();
     c_set.add("element 0");
     c_set.add("element 1");
     c_set.add("element 2");
-    
+
     c_queue = new PriorityQueue<String>(3);
     c_queue.add("short");
     c_queue.add("very long indeed");
     c_queue.add("medium");
-    
+
     c_deque = new ArrayDeque<Integer>(4);
     c_deque.add(15);
     c_deque.add(30);
     c_deque.add(20);
     c_deque.add(18);
-    
+
     c_stack = new Stack();
-    c_stack.push( "bat" );
-    c_stack.push( "cat" );
-    c_stack.push( "dog" );
-    
-    //Initialize primitive types members
+    c_stack.push("bat");
+    c_stack.push("cat");
+    c_stack.push("dog");
+
+    // Initialize primitive types members
     p_bool = true;
     p_byte = 101;
     p_short = 32001;
     p_int = 100001;
     p_long = 1234567898765432L;
     p_float = 123.456f;
-    p_double = 98765.12345d; 
-    
-    //Wrapper type member initialization
+    p_double = 98765.12345d;
+
+    // Wrapper type member initialization
     w_bool = new Boolean(false);
-    w_byte = new Byte((byte)11);
-    w_short = new Short((short)101);
+    w_byte = new Byte((byte) 11);
+    w_short = new Short((short) 101);
     w_int = new Integer(1001);
     w_long = new Long(987654321234567L);
     w_bigInt = new BigInteger("12345678910");
@@ -189,17 +187,17 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
     w_bigDec = new BigDecimal(8866333);
     w_double = new Double(123456.9876d);
     w_string = new String("Nilkanth Patel");
-  
-    //Initialization for members of type primitive arrays
-    p_boolArray = new boolean[]{ true, false, false};
-    p_byteArray = new byte[]{10, 11, 12};
-    p_shortArray = new short[]{101, 102, 103};
-    p_intArray = new int[]{1001,1002, 1003, 1004, 1005, 1006};
-    p_longArray = new long[]{ 12345678910L, 12345678911L, 12345678912L };
-    p_floatArray = new float[]{ 123.45f, 456.78f, -91011.123f};
-    p_doubleArray = new double[]{1234.5678d, -91011.1213d, 1415.1617d };
-  
-    //Initialization for members of type wrapper arrays
+
+    // Initialization for members of type primitive arrays
+    p_boolArray = new boolean[] {true, false, false};
+    p_byteArray = new byte[] {10, 11, 12};
+    p_shortArray = new short[] {101, 102, 103};
+    p_intArray = new int[] {1001, 1002, 1003, 1004, 1005, 1006};
+    p_longArray = new long[] {12345678910L, 12345678911L, 12345678912L};
+    p_floatArray = new float[] {123.45f, 456.78f, -91011.123f};
+    p_doubleArray = new double[] {1234.5678d, -91011.1213d, 1415.1617d};
+
+    // Initialization for members of type wrapper arrays
     w_boolArray = new Boolean[3];
     w_byteArray = new Byte[3];
     w_shortArray = new Short[3];
@@ -208,29 +206,30 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
     w_floatArray = new Float[3];
     w_doubleArray = new Double[3];
     w_strArray = new String[3];
-  
-    for (int i=0; i< 3; i++){
+
+    for (int i = 0; i < 3; i++) {
       w_boolArray[i] = p_boolArray[i];
       w_byteArray[i] = p_byteArray[i];
       w_shortArray[i] = p_shortArray[i];
-      w_intArray[i] =  p_intArray[i];
+      w_intArray[i] = p_intArray[i];
       w_longArray[i] = p_longArray[i];
-      w_floatArray[i] =  p_floatArray[i];
+      w_floatArray[i] = p_floatArray[i];
       w_doubleArray[i] = p_doubleArray[i];
     }
-  
-    w_bigIntArray = new BigInteger[] {BigInteger.ZERO, BigInteger.ONE, new BigInteger("12345678910")};
-    w_bigDecArray = new BigDecimal[] {BigDecimal.TEN, new BigDecimal("143.145"), new BigDecimal("10.01")};
-    w_strArray = new String[]{"Nilkanth", "Vishal", "Hitesh"};
-  
-    //Enum type initialization
+
+    w_bigIntArray =
+        new BigInteger[] {BigInteger.ZERO, BigInteger.ONE, new BigInteger("12345678910")};
+    w_bigDecArray =
+        new BigDecimal[] {BigDecimal.TEN, new BigDecimal("143.145"), new BigDecimal("10.01")};
+    w_strArray = new String[] {"Nilkanth", "Vishal", "Hitesh"};
+
+    // Enum type initialization
     day = Day.Thursday;
   }
 
-  public TestObjectForJSONFormatter(boolean p_bool, byte p_byte, short p_short,
-      int p_int, long p_long, float p_float, double p_double, Boolean w_bool,
-      Byte w_byte, Short w_short, Integer w_int, Long w_long,
-      BigInteger w_bigInt, Float w_float, BigDecimal w_bigDec,
+  public TestObjectForJSONFormatter(boolean p_bool, byte p_byte, short p_short, int p_int,
+      long p_long, float p_float, double p_double, Boolean w_bool, Byte w_byte, Short w_short,
+      Integer w_int, Long w_long, BigInteger w_bigInt, Float w_float, BigDecimal w_bigDec,
       Double w_double, String w_string) {
     super();
     this.p_bool = p_bool;
@@ -259,7 +258,7 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
   public void setEmployee(Employee employee) {
     this.employee = employee;
   }
-  
+
   public List<String> getC_list() {
     return c_list;
   }
@@ -311,135 +310,135 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
   public boolean isP_bool() {
     return p_bool;
   }
-        
+
   public void setP_bool(boolean p_bool) {
     this.p_bool = p_bool;
   }
-  
+
   public byte getP_byte() {
     return p_byte;
   }
-  
+
   public void setP_byte(byte p_byte) {
     this.p_byte = p_byte;
   }
-  
+
   public short getP_short() {
     return p_short;
   }
-  
+
   public void setP_short(short p_short) {
     this.p_short = p_short;
   }
-  
+
   public int getP_int() {
     return p_int;
   }
-  
+
   public void setP_int(int p_int) {
     this.p_int = p_int;
   }
-  
+
   public long getP_long() {
     return p_long;
   }
-  
+
   public void setP_long(long p_long) {
     this.p_long = p_long;
   }
-  
+
   public float getP_float() {
     return p_float;
   }
-  
+
   public void setP_float(float p_float) {
     this.p_float = p_float;
   }
-  
+
   public double getP_double() {
     return p_double;
   }
-  
+
   public void setP_double(double p_double) {
     this.p_double = p_double;
   }
-  
+
   public Boolean getW_bool() {
     return w_bool;
   }
-  
+
   public void setW_bool(Boolean w_bool) {
     this.w_bool = w_bool;
   }
-  
+
   public Byte getW_byte() {
     return w_byte;
   }
-  
+
   public void setW_byte(Byte w_byte) {
     this.w_byte = w_byte;
   }
-  
+
   public Short getW_short() {
     return w_short;
   }
-  
+
   public void setW_short(Short w_short) {
     this.w_short = w_short;
   }
-  
+
   public Integer getW_int() {
     return w_int;
   }
-  
+
   public void setW_int(Integer w_int) {
     this.w_int = w_int;
   }
-  
+
   public Long getW_long() {
     return w_long;
   }
-  
+
   public void setW_long(Long w_long) {
     this.w_long = w_long;
   }
-  
+
   public BigInteger getW_bigInt() {
     return w_bigInt;
   }
-  
+
   public void setW_bigInt(BigInteger w_bigInt) {
     this.w_bigInt = w_bigInt;
   }
-  
+
   public Float getW_float() {
     return w_float;
   }
-  
+
   public void setW_float(Float w_float) {
     this.w_float = w_float;
   }
-  
+
   public BigDecimal getW_bigDec() {
     return w_bigDec;
   }
-  
+
   public void setW_bigDec(BigDecimal w_bigDec) {
     this.w_bigDec = w_bigDec;
   }
-  
+
   public Double getW_double() {
     return w_double;
   }
-  
+
   public void setW_double(Double w_double) {
     this.w_double = w_double;
   }
-  
+
   public String getW_string() {
     return w_string;
   }
-  
+
   public void setW_string(String w_string) {
     this.w_string = w_string;
   }
@@ -806,15 +805,15 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
 
     // Enum
     this.day = (Day) (in.readObject("day"));
-    
-    //User Object
+
+    // User Object
     this.employee = (Employee) in.readObject("employee");
-    //String type= in.readString("@type");
+    // String type= in.readString("@type");
   }
 
   @Override
   public void toData(PdxWriter out) {
-    //if(m_unreadFields != null){ out.writeUnreadFields(m_unreadFields); }
+    // if(m_unreadFields != null){ out.writeUnreadFields(m_unreadFields); }
     out.writeBoolean("p_bool", this.p_bool);
     out.writeByte("p_byte", this.p_byte);
     out.writeShort("p_short", p_short);
@@ -868,7 +867,7 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
     out.writeObject("day", day);
 
     out.writeObject("employee", this.employee);
-    //out.writeString("@type", "org.apache.geode.pdx.TestObjectForJSONFormatter");
+    // out.writeString("@type", "org.apache.geode.pdx.TestObjectForJSONFormatter");
   }
 
   @Override
@@ -959,23 +958,19 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
       return false;
 
     // comparing Collections based on content, order not considered
-    if (!(c_list.size() == other.c_list.size()
-        && c_list.containsAll(other.c_list) 
+    if (!(c_list.size() == other.c_list.size() && c_list.containsAll(other.c_list)
         && other.c_list.containsAll(c_list)))
       return false;
-    if (!(c_set.size() == other.c_set.size()
-        && c_set.containsAll(other.c_set) 
+    if (!(c_set.size() == other.c_set.size() && c_set.containsAll(other.c_set)
         && other.c_set.containsAll(c_set)))
       return false;
-    if (!(c_queue.size() == other.c_queue.size()
-        && c_queue.containsAll(other.c_queue)
+    if (!(c_queue.size() == other.c_queue.size() && c_queue.containsAll(other.c_queue)
         && other.c_queue.containsAll(c_queue)))
       return false;
-    if (!(c_deque.size() == other.c_deque.size()
-        && c_deque.containsAll(other.c_deque) 
+    if (!(c_deque.size() == other.c_deque.size() && c_deque.containsAll(other.c_deque)
         && other.c_deque.containsAll(c_deque)))
       return false;
-    
+
     // map comparision.
     if (!(compareMaps(m_empByCity, other.m_empByCity)))
       return false;
@@ -983,7 +978,7 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
     // Enum validation
     if (!(day.equals(other.day)))
       return false;
-    
+
     return true;
   }
 
@@ -995,6 +990,31 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
         return false;
     return true;
   }
+
+  @Override
+  public String toString() {
+    return "TestObjectForJSONFormatter [p_bool=" + p_bool + ", p_byte=" + p_byte + ", p_short="
+        + p_short + ", p_int=" + p_int + ", p_long=" + p_long + ", p_float=" + p_float
+        + ", p_double=" + p_double + ", w_bool=" + w_bool + ", w_byte=" + w_byte + ", w_short="
+        + w_short + ", w_int=" + w_int + ", w_long=" + w_long + ", w_bigInt=" + w_bigInt
+        + ", w_float=" + w_float + ", w_bigDec=" + w_bigDec + ", w_double=" + w_double
+        + ", w_string=" + w_string + ", p_boolArray=" + Arrays.toString(p_boolArray)
+        + ", p_byteArray=" + Arrays.toString(p_byteArray) + ", p_shortArray="
+        + Arrays.toString(p_shortArray) + ", p_intArray=" + Arrays.toString(p_intArray)
+        + ", p_longArray=" + Arrays.toString(p_longArray) + ", p_floatArray="
+        + Arrays.toString(p_floatArray) + ", p_doubleArray=" + Arrays.toString(p_doubleArray)
+        + ", w_boolArray=" + Arrays.toString(w_boolArray) + ", w_byteArray="
+        + Arrays.toString(w_byteArray) + ", w_shortArray=" + Arrays.toString(w_shortArray)
+        + ", w_intArray=" + Arrays.toString(w_intArray) + ", w_longArray="
+        + Arrays.toString(w_longArray) + ", w_bigIntArray=" + Arrays.toString(w_bigIntArray)
+        + ", w_floatArray=" + Arrays.toString(w_floatArray) + ", w_bigDecArray="
+        + Arrays.toString(w_bigDecArray) + ", w_doubleArray=" + Arrays.toString(w_doubleArray)
+        + ", w_strArray=" + Arrays.toString(w_strArray) + ", c_list=" + c_list + ", c_set=" + c_set
+        + ", c_queue=" + c_queue + ", c_deque=" + c_deque + ", c_stack=" + c_stack
+        + ", m_empByCity=" + m_empByCity + ", day=" + day + ", employee=" + employee + "]";
+  }
+
+
 }
 
 

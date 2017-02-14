@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
@@ -31,9 +29,9 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   private Object credentials;
   private int failureDetectionPort = -1;
   private int requestId;
-    
-  public JoinRequestMessage(InternalDistributedMember coord,
-                            InternalDistributedMember id, Object credentials, int fdPort, int requestId) {
+
+  public JoinRequestMessage(InternalDistributedMember coord, InternalDistributedMember id,
+      Object credentials, int fdPort, int requestId) {
     super();
     setRecipient(coord);
     this.memberID = id;
@@ -41,6 +39,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
     this.failureDetectionPort = fdPort;
     this.requestId = requestId;
   }
+
   public JoinRequestMessage() {
     // no-arg constructor for serialization
   }
@@ -48,15 +47,15 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public int getRequestId() {
     return requestId;
   }
-  
+
   @Override
   public int getDSFID() {
     return JOIN_REQUEST;
   }
-  
+
   @Override
   public void process(DistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool"); 
+    throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 
   public InternalDistributedMember getMemberID() {
@@ -69,7 +68,9 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
 
   @Override
   public String toString() {
-    return getShortClassName() + "(" + memberID + (credentials==null? ")" : "; with credentials)") + " failureDetectionPort:" + failureDetectionPort;
+    return getShortClassName() + "(" + memberID
+        + (credentials == null ? ")" : "; with credentials)") + " failureDetectionPort:"
+        + failureDetectionPort;
   }
 
   @Override
@@ -100,7 +101,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   public int getFailureDetectionPort() {
     return failureDetectionPort;
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -125,5 +126,5 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
     if (requestId != other.requestId)
       return false;
     return true;
-  }  
+  }
 }

@@ -1,19 +1,17 @@
 /*
  *
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  *
  */
 
@@ -39,8 +37,8 @@ import org.springframework.stereotype.Service;
 /**
  * Class MemberGatewayHubService
  * 
- * This class contains implementations of getting Gateway Receivers and Senders
- * details of Cluster Member.
+ * This class contains implementations of getting Gateway Receivers and Senders details of Cluster
+ * Member.
  * 
  * @since GemFire version 7.5
  */
@@ -62,8 +60,7 @@ public class MemberGatewayHubService implements PulseService {
     JsonNode requestDataJSON = mapper.readTree(request.getParameter("pulseData"));
     String memberName = requestDataJSON.get("MemberGatewayHub").get("memberName").textValue();
 
-    Cluster.Member clusterMember = cluster.getMember(StringUtils
-        .makeCompliantName(memberName));
+    Cluster.Member clusterMember = cluster.getMember(StringUtils.makeCompliantName(memberName));
 
     if (clusterMember != null) {
       // response
@@ -101,7 +98,8 @@ public class MemberGatewayHubService implements PulseService {
         gatewaySenderJSON.put("batchSize", gatewaySender.getBatchSize());
         gatewaySenderJSON.put("PersistenceEnabled", gatewaySender.getPersistenceEnabled());
         gatewaySenderJSON.put("remoteDSId", gatewaySender.getRemoteDSId());
-        gatewaySenderJSON.put("eventsExceedingAlertThreshold", gatewaySender.getEventsExceedingAlertThreshold());
+        gatewaySenderJSON.put("eventsExceedingAlertThreshold",
+            gatewaySender.getEventsExceedingAlertThreshold());
 
         gatewaySendersJsonList.add(gatewaySenderJSON);
       }
@@ -119,7 +117,8 @@ public class MemberGatewayHubService implements PulseService {
         asyncEventQueueJSON.put("senderType", asyncEventQueue.isParallel());
         asyncEventQueueJSON.put("batchSize", asyncEventQueue.getBatchSize());
         asyncEventQueueJSON.put("batchTimeInterval", asyncEventQueue.getBatchTimeInterval());
-        asyncEventQueueJSON.put("batchConflationEnabled", asyncEventQueue.isBatchConflationEnabled());
+        asyncEventQueueJSON.put("batchConflationEnabled",
+            asyncEventQueue.isBatchConflationEnabled());
         asyncEventQueueJSON.put("asyncEventListener", asyncEventQueue.getAsyncEventListener());
         asyncEventQueueJSON.put("queueSize", asyncEventQueue.getEventQueueSize());
 
@@ -127,7 +126,7 @@ public class MemberGatewayHubService implements PulseService {
       }
       responseJSON.put("asyncEventQueues", asyncEventQueueJsonList);
 
-      Map<String,Cluster.Region> clusterRegions = cluster.getClusterRegions();
+      Map<String, Cluster.Region> clusterRegions = cluster.getClusterRegions();
 
       List<Cluster.Region> clusterRegionsList = new ArrayList<Cluster.Region>();
       clusterRegionsList.addAll(clusterRegions.values());

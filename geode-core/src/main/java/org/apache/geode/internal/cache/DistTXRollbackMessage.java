@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -59,11 +57,9 @@ public final class DistTXRollbackMessage extends TXMessage {
   private static final Logger logger = LogService.getLogger();
 
   /** for deserialization */
-  public DistTXRollbackMessage() {
-  }
+  public DistTXRollbackMessage() {}
 
-  public DistTXRollbackMessage(TXId txUniqId,
-      InternalDistributedMember onBehalfOfClientMember,
+  public DistTXRollbackMessage(TXId txUniqId, InternalDistributedMember onBehalfOfClientMember,
       ReplyProcessor21 processor) {
     super(txUniqId.getUniqId(), onBehalfOfClientMember, processor);
   }
@@ -74,8 +70,7 @@ public final class DistTXRollbackMessage extends TXMessage {
   }
 
   @Override
-  protected boolean operateOnTx(TXId txId, DistributionManager dm)
-      throws RemoteOperationException {
+  protected boolean operateOnTx(TXId txId, DistributionManager dm) throws RemoteOperationException {
     if (logger.isDebugEnabled()) {
       logger.debug("Dist TX: Rollback: {}", txId);
     }
@@ -88,10 +83,9 @@ public final class DistTXRollbackMessage extends TXMessage {
       // do the actual rollback, only if it was not done before
       if (txMgr.isHostedTxRecentlyCompleted(txId)) {
         if (logger.isDebugEnabled()) {
-          logger
-              .debug(
-                  "DistTXRollbackMessage.operateOnTx: found a previously committed transaction:{}",
-                  txId);
+          logger.debug(
+              "DistTXRollbackMessage.operateOnTx: found a previously committed transaction:{}",
+              txId);
         }
         // TXCommitMessage cmsg = txMgr.getRecentlyCompletedMessage(txId);
         // if (txMgr.isExceptionToken(cmsg)) {
@@ -108,8 +102,8 @@ public final class DistTXRollbackMessage extends TXMessage {
       txMgr.removeHostedTXState(txId);
     }
 
-    DistTXRollbackReplyMessage.send(getSender(), getProcessorId(),
-        rollbackSuccessful, getReplySender(dm));
+    DistTXRollbackReplyMessage.send(getSender(), getProcessorId(), rollbackSuccessful,
+        getReplySender(dm));
 
     /*
      * return false so there isn't another reply
@@ -148,11 +142,9 @@ public final class DistTXRollbackMessage extends TXMessage {
     /**
      * Empty constructor to conform to DataSerializable interface
      */
-    public DistTXRollbackReplyMessage() {
-    }
+    public DistTXRollbackReplyMessage() {}
 
-    public DistTXRollbackReplyMessage(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public DistTXRollbackReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
       fromData(in);
     }
 
@@ -168,53 +160,40 @@ public final class DistTXRollbackMessage extends TXMessage {
     }
 
     /**
-     * Return the value from the get operation, serialize it bytes as late as
-     * possible to avoid making un-neccesary byte[] copies. De-serialize those
-     * same bytes as late as possible to avoid using precious threads (aka P2P
-     * readers).
+     * Return the value from the get operation, serialize it bytes as late as possible to avoid
+     * making un-neccesary byte[] copies. De-serialize those same bytes as late as possible to avoid
+     * using precious threads (aka P2P readers).
      * 
-     * @param recipient
-     *          the origin VM that performed the get
-     * @param processorId
-     *          the processor on which the origin thread is waiting
-     * @param val
-     *          the raw value that will eventually be serialized
-     * @param replySender
-     *          distribution manager used to send the reply
+     * @param recipient the origin VM that performed the get
+     * @param processorId the processor on which the origin thread is waiting
+     * @param val the raw value that will eventually be serialized
+     * @param replySender distribution manager used to send the reply
      */
-    public static void send(InternalDistributedMember recipient,
-        int processorId, Boolean val, ReplySender replySender)
-        throws RemoteOperationException {
-      Assert.assertTrue(recipient != null,
-          "DistTXRollbackReplyMessage NULL reply message");
-      DistTXRollbackReplyMessage m = new DistTXRollbackReplyMessage(
-          processorId, val);
+    public static void send(InternalDistributedMember recipient, int processorId, Boolean val,
+        ReplySender replySender) throws RemoteOperationException {
+      Assert.assertTrue(recipient != null, "DistTXRollbackReplyMessage NULL reply message");
+      DistTXRollbackReplyMessage m = new DistTXRollbackReplyMessage(processorId, val);
       m.setRecipient(recipient);
       replySender.putOutgoing(m);
     }
 
     /**
-     * Processes this message. This method is invoked by the receiver of the
-     * message.
+     * Processes this message. This method is invoked by the receiver of the message.
      * 
-     * @param dm
-     *          the distribution manager that is processing the message.
+     * @param dm the distribution manager that is processing the message.
      */
     @Override
     public void process(final DM dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
-        logger
-            .trace(
-                LogMarker.DM,
-                "DistTXRollbackReplyMessage process invoking reply processor with processorId:{}",
-                this.processorId);
+        logger.trace(LogMarker.DM,
+            "DistTXRollbackReplyMessage process invoking reply processor with processorId:{}",
+            this.processorId);
       }
 
       if (processor == null) {
         if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM,
-              "DistTXRollbackReplyMessage processor not found");
+          logger.trace(LogMarker.DM, "DistTXRollbackReplyMessage processor not found");
         }
         return;
       }
@@ -233,8 +212,7 @@ public final class DistTXRollbackMessage extends TXMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException,
-        ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
       this.rollbackState = DataSerializer.readBoolean(in);
     }
@@ -242,9 +220,8 @@ public final class DistTXRollbackMessage extends TXMessage {
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("DistTXRollbackReplyMessage ").append("processorid=")
-          .append(this.processorId).append(" reply to sender ")
-          .append(this.getSender());
+      sb.append("DistTXRollbackReplyMessage ").append("processorid=").append(this.processorId)
+          .append(" reply to sender ").append(this.getSender());
       return sb.toString();
     }
 
@@ -254,8 +231,7 @@ public final class DistTXRollbackMessage extends TXMessage {
   }
 
   /**
-   * A processor to capture the value returned by
-   * {@link DistTXRollbackReplyMessage}
+   * A processor to capture the value returned by {@link DistTXRollbackReplyMessage}
    * 
    */
   public static class DistTXRollbackResponse extends RemoteOperationResponse {
@@ -306,30 +282,30 @@ public final class DistTXRollbackMessage extends TXMessage {
       return rollbackState;
     }
   }
-  
+
   /**
-   * Reply processor which collects all CommitReplyExceptions for Dist Tx and emits
-   * a detailed failure exception if problems occur
+   * Reply processor which collects all CommitReplyExceptions for Dist Tx and emits a detailed
+   * failure exception if problems occur
    * 
    * @see TXCommitMessage.CommitReplyProcessor
    * 
-   * [DISTTX] TODO see if need ReliableReplyProcessor21? departed members?
+   *      [DISTTX] TODO see if need ReliableReplyProcessor21? departed members?
    */
   public static final class DistTxRollbackReplyProcessor extends ReplyProcessor21 {
     private HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap;
     private Map<DistributedMember, Boolean> rollbackResponseMap;
     private transient TXId txIdent = null;
-    
+
     public DistTxRollbackReplyProcessor(TXId txUniqId, DM dm, Set initMembers,
         HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap) {
       super(dm, initMembers);
       this.msgMap = msgMap;
       // [DISTTX] TODO Do we need synchronised map?
-      this.rollbackResponseMap = Collections
-          .synchronizedMap(new HashMap<DistributedMember, Boolean>());
+      this.rollbackResponseMap =
+          Collections.synchronizedMap(new HashMap<DistributedMember, Boolean>());
       this.txIdent = txUniqId;
     }
-    
+
     @Override
     public void process(DistributionMessage msg) {
       if (msg instanceof DistTXRollbackReplyMessage) {
@@ -338,26 +314,25 @@ public final class DistTXRollbackMessage extends TXMessage {
       }
       super.process(msg);
     }
-  
+
     public void waitForPrecommitCompletion() {
       try {
         waitForRepliesUninterruptibly();
-      }
-      catch (DistTxRollbackExceptionCollectingException e) {
+      } catch (DistTxRollbackExceptionCollectingException e) {
         e.handlePotentialCommitFailure(msgMap);
       }
     }
 
     @Override
-    protected void processException(DistributionMessage msg,
-        ReplyException ex) {
+    protected void processException(DistributionMessage msg, ReplyException ex) {
       if (msg instanceof ReplyMessage) {
-        synchronized(this) {
+        synchronized (this) {
           if (this.exception == null) {
             // Exception Container
             this.exception = new DistTxRollbackExceptionCollectingException(txIdent);
           }
-          DistTxRollbackExceptionCollectingException cce = (DistTxRollbackExceptionCollectingException) this.exception;
+          DistTxRollbackExceptionCollectingException cce =
+              (DistTxRollbackExceptionCollectingException) this.exception;
           if (ex instanceof CommitReplyException) {
             CommitReplyException cre = (CommitReplyException) ex;
             cce.addExceptionsFromMember(msg.getSender(), cre.getExceptions());
@@ -372,24 +347,27 @@ public final class DistTXRollbackMessage extends TXMessage {
     protected boolean stopBecauseOfExceptions() {
       return false;
     }
-    
+
     public Set getCacheClosedMembers() {
       if (this.exception != null) {
-        DistTxRollbackExceptionCollectingException cce = (DistTxRollbackExceptionCollectingException) this.exception;
+        DistTxRollbackExceptionCollectingException cce =
+            (DistTxRollbackExceptionCollectingException) this.exception;
         return cce.getCacheClosedMembers();
       } else {
         return Collections.EMPTY_SET;
       }
     }
+
     public Set getRegionDestroyedMembers(String regionFullPath) {
       if (this.exception != null) {
-        DistTxRollbackExceptionCollectingException cce = (DistTxRollbackExceptionCollectingException) this.exception;
+        DistTxRollbackExceptionCollectingException cce =
+            (DistTxRollbackExceptionCollectingException) this.exception;
         return cce.getRegionDestroyedMembers(regionFullPath);
       } else {
         return Collections.EMPTY_SET;
       }
     }
-    
+
     public Map<DistributedMember, Boolean> getRollbackResponseMap() {
       return rollbackResponseMap;
     }
@@ -400,8 +378,7 @@ public final class DistTXRollbackMessage extends TXMessage {
    * 
    * @see TXCommitMessage.CommitExceptionCollectingException
    */
-  public static class DistTxRollbackExceptionCollectingException extends
-      ReplyException {
+  public static class DistTxRollbackExceptionCollectingException extends ReplyException {
     private static final long serialVersionUID = -2681117727592137893L;
     /** Set of members that threw CacheClosedExceptions */
     private final Set<InternalDistributedMember> cacheExceptions;
@@ -423,17 +400,16 @@ public final class DistTXRollbackMessage extends TXMessage {
     }
 
     /**
-     * Determine if the commit processing was incomplete, if so throw a detailed
-     * exception indicating the source of the problem
+     * Determine if the commit processing was incomplete, if so throw a detailed exception
+     * indicating the source of the problem
      * 
      * @param msgMap
      */
     public void handlePotentialCommitFailure(
         HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap) {
       if (fatalExceptions.size() > 0) {
-        StringBuffer errorMessage = new StringBuffer(
-            "Incomplete commit of transaction ").append(id).append(
-            ".  Caused by the following exceptions: ");
+        StringBuffer errorMessage = new StringBuffer("Incomplete commit of transaction ").append(id)
+            .append(".  Caused by the following exceptions: ");
         for (Iterator i = fatalExceptions.entrySet().iterator(); i.hasNext();) {
           Map.Entry me = (Map.Entry) i.next();
           DistributedMember mem = (DistributedMember) me.getKey();
@@ -478,8 +454,7 @@ public final class DistTXRollbackMessage extends TXMessage {
      * @param member
      * @param exceptions
      */
-    public void addExceptionsFromMember(InternalDistributedMember member,
-        Set exceptions) {
+    public void addExceptionsFromMember(InternalDistributedMember member, Set exceptions) {
       for (Iterator iter = exceptions.iterator(); iter.hasNext();) {
         Exception ex = (Exception) iter.next();
         if (ex instanceof CancelException) {

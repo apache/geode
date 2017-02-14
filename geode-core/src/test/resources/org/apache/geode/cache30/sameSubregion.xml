@@ -17,8 +17,8 @@
 -->
 
 <!DOCTYPE cache PUBLIC
-    "-//GemStone Systems, Inc.//GemFire Declarative Caching 4.1//EN"
-    "http://www.gemstone.com/dtd/cache4_1.dtd">
+    "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
+    "http://www.gemstone.com/dtd/cache7_0.dtd">
 
 <!-- This file contains a cache with the same root region declared
      twice -->

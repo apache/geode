@@ -1,3 +1,5 @@
+import org.apache.geode.gradle.TestPropertiesWriter
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -68,7 +70,11 @@ dependencies {
   testCompile project(':geode-core')
   testCompile files(project(':geode-core').sourceSets.test.output)
 
-  testCompile 'org.seleniumhq.selenium:selenium-firefox-driver:' + project.'selenium.version'
+  testCompile(group: 'com.codeborne', name: 'phantomjsdriver', version: project.'phantomjsdriver.version') {
+      exclude module: 'selenium-remote-driver' //by artifact name
+      exclude module: 'selenium-java' //by artifact name
+  }
+
   testCompile 'org.seleniumhq.selenium:selenium-api:' + project.'selenium.version'
   testCompile 'org.seleniumhq.selenium:selenium-remote-driver:' + project.'selenium.version'
   testCompile 'org.seleniumhq.selenium:selenium-support:' + project.'selenium.version'
@@ -76,6 +82,7 @@ dependencies {
   testCompile 'org.powermock:powermock-core:' + project.'powermock.version'
   testCompile 'org.powermock:powermock-module-junit4:' + project.'powermock.version'
   testCompile 'org.powermock:powermock-api-mockito:' + project.'powermock.version'
+  testCompile 'com.tdunning:json:' + project.'open-json.version'
 
   testRuntime 'com.google.code.gson:gson:' + project.'google-gson.version'
   testRuntime 'org.apache.commons:commons-exec:' + project.'commons-exec.version'
@@ -122,4 +129,19 @@ war {
   classpath project(':geode-core').webJar.archivePath
 }
 
+task uiTest(type:Test) {
+  useJUnit {
+    includeCategories 'org.apache.geode.test.junit.categories.UITest'
+    excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
+  }
+
+  forkEvery(1)
+  doFirst {
+    TestPropertiesWriter.writeTestProperties(buildDir, name)
+  }
+}
+
 uiTest.dependsOn war
+uiTest.finalizedBy rootProject.combineReports
+rootProject.combineReports.mustRunAfter uiTest
+

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -20,6 +18,7 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -44,20 +43,20 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * Test to verify EventID generated from a peer is correctly passed on to the
- * other peer for create, update and destroy operations. In case of D-ACK or
- * GLOBAL scope the EventIDs should be same in P2P for a propagation of given
- * operation. In case of NO-ACK EventIDs should be different.Currently this test
- * is commented because of a bug.
+ * Test to verify EventID generated from a peer is correctly passed on to the other peer for create,
+ * update and destroy operations. In case of D-ACK or GLOBAL scope the EventIDs should be same in
+ * P2P for a propagation of given operation. In case of NO-ACK EventIDs should be
+ * different.Currently this test is commented because of a bug.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;
 
   static VM vm0 = null;
 
-  private static final String REGION_NAME = EventIDVerificationInP2PDUnitTest.class.getSimpleName() + "_region";
+  private static final String REGION_NAME =
+      EventIDVerificationInP2PDUnitTest.class.getSimpleName() + "_region";
 
   protected static EventID eventId;
 
@@ -77,18 +76,17 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
   }
 
   @Test
-  public void testEventIDsDACK() throws Exception
-  {
+  public void testEventIDsDACK() throws Exception {
     createServerCache(new Integer(DISTRIBUTED_ACK));
-    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache( new Integer(DISTRIBUTED_ACK) ));
+    vm0.invoke(
+        () -> EventIDVerificationInP2PDUnitTest.createServerCache(new Integer(DISTRIBUTED_ACK)));
     verifyOperations();
   }
 
   @Test
-  public void testEventIDsGLOBAL() throws Exception
-  {
+  public void testEventIDsGLOBAL() throws Exception {
     createServerCache(new Integer(GLOBAL));
-    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache( new Integer(GLOBAL) ));
+    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache(new Integer(GLOBAL)));
     verifyOperations();
   }
 
@@ -96,24 +94,24 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
   @Test
   public void testEventIDsNOACK() throws Exception {
     createServerCache(new Integer(0));
-    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache( new Integer(0) ));
+    vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.createServerCache(new Integer(0)));
 
     createEntry();
-    Boolean pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
+    Boolean pass =
+        (Boolean) vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
     put();
-    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
+    pass = (Boolean) vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
     destroy();
-    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
+    pass = (Boolean) vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
     destroyRegion();
-    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
+    pass = (Boolean) vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertFalse(pass.booleanValue());
   }
 
-  private void createCache(Properties props) throws Exception
-  {
+  private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     ds.disconnect();
     ds = getSystem(props);
@@ -122,8 +120,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
     assertNotNull(cache);
   }
 
-  public static void createServerCache(Integer type) throws Exception
-  {
+  public static void createServerCache(Integer type) throws Exception {
     new EventIDVerificationInP2PDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     if (type.intValue() == DISTRIBUTED_ACK)
@@ -135,10 +132,9 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
 
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.addCacheListener(new CacheListenerAdapter() {
-      public void afterCreate(EntryEvent event)
-      {
+      public void afterCreate(EntryEvent event) {
 
-        eventId = ((InternalCacheEvent)event).getEventId();
+        eventId = ((InternalCacheEvent) event).getEventId();
         if (receiver) {
           synchronized (EventIDVerificationInP2PDUnitTest.class) {
             gotCallback = true;
@@ -147,9 +143,8 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
         }
       }
 
-      public void afterUpdate(EntryEvent event)
-      {
-        eventId = ((InternalCacheEvent)event).getEventId();
+      public void afterUpdate(EntryEvent event) {
+        eventId = ((InternalCacheEvent) event).getEventId();
         if (receiver) {
           synchronized (EventIDVerificationInP2PDUnitTest.class) {
             gotCallback = true;
@@ -158,9 +153,8 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
         }
       }
 
-      public void afterDestroy(EntryEvent event)
-      {
-        eventId = ((InternalCacheEvent)event).getEventId();
+      public void afterDestroy(EntryEvent event) {
+        eventId = ((InternalCacheEvent) event).getEventId();
         if (receiver) {
           synchronized (EventIDVerificationInP2PDUnitTest.class) {
             gotCallback = true;
@@ -169,9 +163,8 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
         }
       }
 
-      public void afterRegionDestroy(RegionEvent event)
-      {
-        eventId = ((InternalCacheEvent)event).getEventId();
+      public void afterRegionDestroy(RegionEvent event) {
+        eventId = ((InternalCacheEvent) event).getEventId();
         if (receiver) {
           synchronized (EventIDVerificationInP2PDUnitTest.class) {
             gotCallback = true;
@@ -179,10 +172,9 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
           }
         }
       }
-      
-      public void afterRegionInvalidate(RegionEvent event)
-      {
-        eventId = ((InternalCacheEvent)event).getEventId();
+
+      public void afterRegionInvalidate(RegionEvent event) {
+        eventId = ((InternalCacheEvent) event).getEventId();
         if (receiver) {
           synchronized (EventIDVerificationInP2PDUnitTest.class) {
             gotCallback = true;
@@ -197,8 +189,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
 
   }
 
-  public static void createEntry()
-  {
+  public static void createEntry() {
     try {
       Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
@@ -208,14 +199,12 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
       }
       // Verify that no invalidates occurred to this region
       assertEquals(r.getEntry("key-1").getValue(), "key-1");
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("failed while createEntries()", ex);
     }
   }
 
-  public static void put()
-  {
+  public static void put() {
     try {
       Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
@@ -224,56 +213,47 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
       // Verify that no invalidates occurred to this region
       assertEquals(r.getEntry("key-1").getValue(), "vm0-key-1");
 
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("failed while r.put()", ex);
     }
   }
 
-  public static void destroy()
-  {
+  public static void destroy() {
     try {
       Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       r.destroy("key-1");
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("test failed due to exception in destroy ", ex);
     }
   }
 
-  public static void destroyRegion()
-  {
+  public static void destroyRegion() {
     try {
       Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       r.destroyRegion();
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("test failed due to exception in destroyRegion ", ex);
     }
   }
-  
-  public static void invalidateRegion()
-  {
+
+  public static void invalidateRegion() {
     try {
       Region r = cache.getRegion("/" + REGION_NAME);
       assertNotNull(r);
       r.invalidateRegion();
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("test failed due to exception in invalidateRegion ", ex);
     }
   }
 
-  public static Boolean verifyResult(EventID correctId)
-  {
+  public static Boolean verifyResult(EventID correctId) {
     synchronized (EventIDVerificationInP2PDUnitTest.class) {
       if (!gotCallback) {
         try {
           EventIDVerificationInP2PDUnitTest.class.wait();
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
           gotCallback = false;
           e.printStackTrace();
@@ -287,8 +267,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
   }
 
 
-  public static void verifyOperations()
-  {
+  public static void verifyOperations() {
     createEntry();
     Boolean pass;
     verifyEventID();
@@ -299,13 +278,13 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
     destroy();
     verifyEventID();
     destroyRegion();
-    verifyEventID();   
+    verifyEventID();
   }
 
   protected static void verifyEventID() {
     Boolean pass;
     EventID eventId = EventIDVerificationInP2PDUnitTest.eventId;
-    pass = (Boolean)vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
+    pass = (Boolean) vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.verifyResult(eventId));
     assertTrue(pass.booleanValue());
   }
 
@@ -315,8 +294,7 @@ public class EventIDVerificationInP2PDUnitTest extends JUnit4DistributedTestCase
     vm0.invoke(() -> EventIDVerificationInP2PDUnitTest.closeCache());
   }
 
-  public static void closeCache()
-  {
+  public static void closeCache() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();

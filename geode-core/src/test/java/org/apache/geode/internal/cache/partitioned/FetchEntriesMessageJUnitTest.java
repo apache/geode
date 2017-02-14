@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.partitioned;
 
@@ -41,8 +39,9 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class FetchEntriesMessageJUnitTest {
 
   private GemFireCacheImpl cache;
-  
-  private VersionTag createVersionTag(boolean validVersionTag) throws ClassNotFoundException, IOException {
+
+  private VersionTag createVersionTag(boolean validVersionTag)
+      throws ClassNotFoundException, IOException {
     VersionTag tag = VersionTag.create(cache.getMyId());
     if (validVersionTag) {
       tag.setRegionVersion(1);
@@ -52,7 +51,8 @@ public class FetchEntriesMessageJUnitTest {
   }
 
   private HeapDataOutputStream createDummyChunk() throws IOException, ClassNotFoundException {
-    HeapDataOutputStream mos = new HeapDataOutputStream(InitialImageOperation.CHUNK_SIZE_IN_BYTES+2048, Version.CURRENT);
+    HeapDataOutputStream mos =
+        new HeapDataOutputStream(InitialImageOperation.CHUNK_SIZE_IN_BYTES + 2048, Version.CURRENT);
     mos.reset();
     DataSerializer.writeObject("keyWithOutVersionTag", mos);
     DataSerializer.writeObject("valueWithOutVersionTag", mos);
@@ -60,14 +60,14 @@ public class FetchEntriesMessageJUnitTest {
 
     DataSerializer.writeObject("keyWithVersionTag", mos);
     DataSerializer.writeObject("valueWithVersionTag", mos);
-    
+
     VersionTag tag = createVersionTag(true);
     DataSerializer.writeObject(tag, mos);
 
-    DataSerializer.writeObject((Object)null, mos);
+    DataSerializer.writeObject((Object) null, mos);
     return mos;
   }
-  
+
   @Test
   public void testProcessChunk() throws Exception {
     cache = Fakes.cache();
@@ -76,7 +76,8 @@ public class FetchEntriesMessageJUnitTest {
 
     FetchEntriesResponse response = new FetchEntriesResponse(system, pr, null, 0);
     HeapDataOutputStream chunkStream = createDummyChunk();
-    FetchEntriesReplyMessage reply = new FetchEntriesReplyMessage(null, 0, 0, chunkStream, 0, 0, 0, false, false);
+    FetchEntriesReplyMessage reply =
+        new FetchEntriesReplyMessage(null, 0, 0, chunkStream, 0, 0, 0, false, false);
     reply.chunk = chunkStream.toByteArray();
     response.processChunk(reply);
     assertNull(response.returnRVV);

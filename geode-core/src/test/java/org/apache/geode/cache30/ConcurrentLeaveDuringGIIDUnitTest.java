@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -51,25 +49,24 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
   public ConcurrentLeaveDuringGIIDUnitTest() {
     super();
   }
-  
+
   @Test
   public void testRemoveWhenBug50988IsFixed() {
     // remove this placeholder
   }
+
   /**
-   * In #48962 a member X has replicated region and is updating it.  Members A and B
-   * are started up in parallel.  At the same time X decides to close the region.
-   * Member A manages to tell X that it's creating the region and receives an
-   * update that B does not see.  B finishes GII with no content and then A
-   * gets its initial image from B, leaving an inconsistency between them.
+   * In #48962 a member X has replicated region and is updating it. Members A and B are started up
+   * in parallel. At the same time X decides to close the region. Member A manages to tell X that
+   * it's creating the region and receives an update that B does not see. B finishes GII with no
+   * content and then A gets its initial image from B, leaving an inconsistency between them.
    * <p>
-   * The test installs a GII hook in A that causes it to pause after announcing
-   * creation of the region.
+   * The test installs a GII hook in A that causes it to pause after announcing creation of the
+   * region.
    * <p>
    * X then creates its region and does an operation and closes its cache.
    * <p>
-   * B then starts and creates its region, not doing a GII from A since A is
-   * still initializing.
+   * B then starts and creates its region, not doing a GII from A since A is still initializing.
    * <p>
    * A is then allowed to start its GII and pulls an image from B.
    * 
@@ -80,14 +77,14 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
     VM X = Host.getHost(0).getVM(1);
     VM A = Host.getHost(0).getVM(2);
     VM B = Host.getHost(0).getVM(3);
-    
+
     final String regionName = getUniqueName() + "_Region";
-    
+
     SerializableCallable createRegionXB = new SerializableCallable("create region in X and B") {
       public Object call() {
         Region r = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
         Object result = null;
-        if (VM.getCurrentVMNum() == 1) { // VM X 
+        if (VM.getCurrentVMNum() == 1) { // VM X
           r.put("keyFromX", "valueFromX");
           result = getCache().getDistributedSystem().getDistributedMember();
           r.getCache().getDistributedSystem().disconnect();
@@ -99,10 +96,11 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
         return result;
       }
     };
-    
+
     SerializableCallable createRegionA = new SerializableCallable("create region in A") {
       public Object call() {
-        final GiiCallback cb = new GiiCallback(InitialImageOperation.GIITestHookType.BeforeGetInitialImage, regionName);
+        final GiiCallback cb = new GiiCallback(
+            InitialImageOperation.GIITestHookType.BeforeGetInitialImage, regionName);
         InitialImageOperation.setGIITestHook(cb);
         Thread t = new Thread("create region in a thread that will block before GII") {
           public void run() {
@@ -114,6 +112,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
           public boolean done() {
             return cb.isRunning;
           }
+
           public String description() {
             return "waiting for GII test hook to be invoked";
           }
@@ -124,14 +123,14 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
     };
 
     A.invoke(createRegionA);
-    
-    final InternalDistributedMember Xid = (InternalDistributedMember)X.invoke(createRegionXB);
+
+    final InternalDistributedMember Xid = (InternalDistributedMember) X.invoke(createRegionXB);
 
     A.invoke(new SerializableRunnable("make sure A got keyFromX from X") {
       public void run() {
         // use internal methods to get the region since it's still initializing
-        GemFireCacheImpl cache = (GemFireCacheImpl)getCache(); 
-        final RegionMap r = cache.getRegionByPathForProcessing(regionName).getRegionMap(); 
+        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
+        final RegionMap r = cache.getRegionByPathForProcessing(regionName).getRegionMap();
 
         // X's update should have been propagated to A and put into the cache.
         // If this throws an assertion error then there's no point in
@@ -141,6 +140,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
           public boolean done() {
             return r.containsKey("keyFromX");
           }
+
           public String description() {
             return "waiting for region " + regionName + " to contain keyFromX";
           }
@@ -148,31 +148,33 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
         Wait.waitForCriterion(wc, 20000, 1000, true);
       }
     });
-    
+
     // create in B and make sure the key isn't there
     B.invoke(createRegionXB);
-    
+
     A.invoke(new SerializableRunnable("allow A to continue GII from B") {
       public void run() {
-        GiiCallback cb = (GiiCallback)InitialImageOperation.getGIITestHookForCheckingPurpose(
+        GiiCallback cb = (GiiCallback) InitialImageOperation.getGIITestHookForCheckingPurpose(
             InitialImageOperation.GIITestHookType.BeforeGetInitialImage);
-        synchronized(cb.lockObject) {
+        synchronized (cb.lockObject) {
           cb.lockObject.notify();
         }
         WaitCriterion wc = new WaitCriterion() {
           public boolean done() {
             return getCache().getRegion(regionName) != null;
           }
+
           public String description() {
             return "waiting for region " + regionName + " to initialize";
           }
         };
         Wait.waitForCriterion(wc, 20000, 1000, true);
         // ensure that the RVV has recorded the event
-        DistributedRegion r = (DistributedRegion)getCache().getRegion(regionName);
+        DistributedRegion r = (DistributedRegion) getCache().getRegion(regionName);
         if (!r.getVersionVector().contains(Xid, 1)) {
-          LogWriterUtils.getLogWriter().info("r's version vector is " + r.getVersionVector().fullToString());
-          ((LocalRegion)r).dumpBackingMap();
+          LogWriterUtils.getLogWriter()
+              .info("r's version vector is " + r.getVersionVector().fullToString());
+          ((LocalRegion) r).dumpBackingMap();
         }
         assertTrue(r.containsKey("keyFromX"));
         // if the test fails here then the op received from X was not correctly
@@ -180,7 +182,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
         assertTrue(r.getVersionVector().contains(Xid, 1));
       }
     });
-    
+
     // Now ensure the B has done the sync and received the entry
     B.invoke(new SerializableRunnable("ensure B is now consistent") {
       public void run() {
@@ -189,6 +191,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
           public boolean done() {
             return r.containsKey("keyFromX");
           }
+
           public String description() {
             return "waiting for region " + regionName + " to contain keyFromX";
           }
@@ -197,7 +200,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
         Wait.waitForCriterion(wc, 20000, 500, true);
         // if the test fails here something is odd because the sync was done
         // but the RVV doesn't know about it
-        assertTrue(((LocalRegion)r).getVersionVector().contains(Xid, 1));
+        assertTrue(((LocalRegion) r).getVersionVector().contains(Xid, 1));
       }
     });
   }
@@ -208,7 +211,7 @@ public class ConcurrentLeaveDuringGIIDUnitTest extends JUnit4CacheTestCase {
     public GiiCallback(GIITestHookType type, String region_name) {
       super(type, region_name);
     }
-    
+
     @Override
     public void reset() {
       synchronized (this.lockObject) {

@@ -1,21 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.admin.internal;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.distributed.internal.tcpserver.*;
@@ -27,62 +26,63 @@ import java.util.Properties;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
- * Provides an implementation of
- * <code>DistributionLocatorConfig</code>.
+ * Provides an implementation of <code>DistributionLocatorConfig</code>.
  *
  * @since GemFire 4.0
  */
-public class DistributionLocatorConfigImpl 
-  extends ManagedEntityConfigImpl 
-  implements DistributionLocatorConfig {
+public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
+    implements DistributionLocatorConfig {
 
   /** The minimum networking port (0) */
   public static final int MIN_PORT = 0;
 
   /** The maximum networking port (65535) */
   public static final int MAX_PORT = 65535;
-  
-  //////////////////////  Instance Fields  //////////////////////
+
+  ////////////////////// Instance Fields //////////////////////
 
   /** The port on which this locator listens */
   private int port;
 
   /** The address to bind to on a multi-homed host */
   private String bindAddress;
-  
-  /** The properties used to configure the DistributionLocator's
-      DistributedSystem */
+
+  /**
+   * The properties used to configure the DistributionLocator's DistributedSystem
+   */
   private Properties dsProperties;
 
   /** The DistributionLocator that was created with this config */
   private DistributionLocator locator;
 
-  //////////////////////  Static Methods  //////////////////////
+  ////////////////////// Static Methods //////////////////////
 
   /**
-   * Contacts a distribution locator on the given host and port and
-   * creates a <code>DistributionLocatorConfig</code> for it.
+   * Contacts a distribution locator on the given host and port and creates a
+   * <code>DistributionLocatorConfig</code> for it.
    *
    * @see TcpClient#getLocatorInfo
    *
    * @return <code>null</code> if the locator cannot be contacted
    */
-  static DistributionLocatorConfig
-    createConfigFor(String host, int port, InetAddress bindAddress) {
-    TcpClient client = new TcpClient();
-    String[] info = null;
-    if (bindAddress != null) {
-      info = client.getInfo(bindAddress, port);
-    }
-    else {
-      info = client.getInfo(InetAddressUtil.toInetAddress(host), port);
-    }
-    if (info == null) {
-      return null;
+  static DistributionLocatorConfig createConfigFor(String host, int port, InetAddress bindAddress) {
+    String[] info = new String[] {"unknown", "unknown"};
+
+    try {
+      TcpClient client = new TcpClient();
+      if (bindAddress != null) {
+        info = client.getInfo(bindAddress, port);
+      } else {
+        info = client.getInfo(InetAddressUtil.toInetAddress(host), port);
+      }
+      if (info == null) {
+        return null;
+      }
+    } catch (GemFireConfigException e) {
+      // communications are not initialized at this point
     }
 
-    DistributionLocatorConfigImpl config =
-      new DistributionLocatorConfigImpl();
+    DistributionLocatorConfigImpl config = new DistributionLocatorConfigImpl();
     config.setHost(host);
     config.setPort(port);
     if (bindAddress != null) {
@@ -94,11 +94,10 @@ public class DistributionLocatorConfigImpl
     return config;
   }
 
-  ///////////////////////  Constructors  ///////////////////////
+  /////////////////////// Constructors ///////////////////////
 
   /**
-   * Creates a new <code>DistributionLocatorConfigImpl</code> with the
-   * default settings.
+   * Creates a new <code>DistributionLocatorConfigImpl</code> with the default settings.
    */
   public DistributionLocatorConfigImpl() {
     this.port = 0;
@@ -108,11 +107,10 @@ public class DistributionLocatorConfigImpl
     this.dsProperties.setProperty(MCAST_PORT, "0");
   }
 
-  /////////////////////  Instance Methods  /////////////////////
+  ///////////////////// Instance Methods /////////////////////
 
   /**
-   * Sets the locator that was configured with this
-   * <Code>DistributionLocatorConfigImpl</code>. 
+   * Sets the locator that was configured with this <Code>DistributionLocatorConfigImpl</code>.
    */
   void setLocator(DistributionLocator locator) {
     this.locator = locator;
@@ -142,11 +140,11 @@ public class DistributionLocatorConfigImpl
     this.bindAddress = bindAddress;
     configChanged();
   }
-  
+
   public void setDistributedSystemProperties(Properties props) {
     this.dsProperties = props;
   }
-  
+
   public Properties getDistributedSystemProperties() {
     return this.dsProperties;
   }
@@ -156,12 +154,16 @@ public class DistributionLocatorConfigImpl
     super.validate();
 
     if (port < MIN_PORT || port > MAX_PORT) {
-      throw new IllegalArgumentException(LocalizedStrings.DistributionLocatorConfigImpl_PORT_0_MUST_BE_AN_INTEGER_BETWEEN_1_AND_2.toLocalizedString(new Object[] {Integer.valueOf(port), Integer.valueOf(MIN_PORT), Integer.valueOf(MAX_PORT)}));
+      throw new IllegalArgumentException(
+          LocalizedStrings.DistributionLocatorConfigImpl_PORT_0_MUST_BE_AN_INTEGER_BETWEEN_1_AND_2
+              .toLocalizedString(new Object[] {Integer.valueOf(port), Integer.valueOf(MIN_PORT),
+                  Integer.valueOf(MAX_PORT)}));
     }
 
-    if (this.bindAddress != null &&
-        InetAddressUtil.validateHost(this.bindAddress) == null) {
-      throw new IllegalArgumentException(LocalizedStrings.DistributionLocatorConfigImpl_INVALID_HOST_0.toLocalizedString(this.bindAddress));
+    if (this.bindAddress != null && InetAddressUtil.validateHost(this.bindAddress) == null) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.DistributionLocatorConfigImpl_INVALID_HOST_0
+              .toLocalizedString(this.bindAddress));
     }
   }
 
@@ -175,8 +177,7 @@ public class DistributionLocatorConfigImpl
 
   @Override
   public Object clone() throws CloneNotSupportedException {
-    DistributionLocatorConfigImpl clone =
-      (DistributionLocatorConfigImpl) super.clone();
+    DistributionLocatorConfigImpl clone = (DistributionLocatorConfigImpl) super.clone();
     clone.locator = null;
     return clone;
   }

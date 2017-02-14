@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.offheap;
 
@@ -69,7 +67,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     OutOfOffHeapMemoryListener ooohml = mock(OutOfOffHeapMemoryListener.class);
     OffHeapMemoryStats stats = mock(OffHeapMemoryStats.class);
 
-    ma = MemoryAllocatorImpl.create(ooohml, stats, 3, OffHeapStorage.MIN_SLAB_SIZE * 3, OffHeapStorage.MIN_SLAB_SIZE);
+    ma = MemoryAllocatorImpl.create(ooohml, stats, 3, OffHeapStorage.MIN_SLAB_SIZE * 3,
+        OffHeapStorage.MIN_SLAB_SIZE);
   }
 
   @After
@@ -127,7 +126,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
   }
 
   private OffHeapStoredObject createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
-    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(v, isSerialized, isCompressed);
+    OffHeapStoredObject chunk =
+        (OffHeapStoredObject) ma.allocateAndInitialize(v, isSerialized, isCompressed);
     return chunk;
   }
 
@@ -235,7 +235,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     assertThat(chunk1.compareTo(chunk2)).isEqualTo(0);
 
     OffHeapStoredObject chunkWithSameValue = createValueAsSerializedStoredObject(getValue());
-    assertThat(chunk1.compareTo(chunkWithSameValue)).isEqualTo(Long.signum(chunk1.getAddress() - chunkWithSameValue.getAddress()));
+    assertThat(chunk1.compareTo(chunkWithSameValue))
+        .isEqualTo(Long.signum(chunk1.getAddress() - chunkWithSameValue.getAddress()));
 
     OffHeapStoredObject chunk3 = createValueAsSerializedStoredObject(Long.MAX_VALUE);
     OffHeapStoredObject chunk4 = createValueAsSerializedStoredObject(Long.MAX_VALUE);
@@ -243,7 +244,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     int newSizeForChunk3 = 2;
     int newSizeForChunk4 = 3;
 
-    assertThat(chunk3.compareTo(chunk4)).isEqualTo(Integer.signum(newSizeForChunk3 - newSizeForChunk4));
+    assertThat(chunk3.compareTo(chunk4))
+        .isEqualTo(Integer.signum(newSizeForChunk3 - newSizeForChunk4));
 
     chunk1.release();
     chunk4.release();
@@ -257,9 +259,11 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma
+        .allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
-    int headerBeforeSerializedBitSet = AddressableMemoryManager.readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
+    int headerBeforeSerializedBitSet = AddressableMemoryManager
+        .readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
 
     assertThat(chunk.isSerialized()).isFalse();
 
@@ -267,9 +271,11 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
     assertThat(chunk.isSerialized()).isTrue();
 
-    int headerAfterSerializedBitSet = AddressableMemoryManager.readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
+    int headerAfterSerializedBitSet = AddressableMemoryManager
+        .readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
 
-    assertThat(headerAfterSerializedBitSet).isEqualTo(headerBeforeSerializedBitSet | OffHeapStoredObject.IS_SERIALIZED_BIT);
+    assertThat(headerAfterSerializedBitSet)
+        .isEqualTo(headerBeforeSerializedBitSet | OffHeapStoredObject.IS_SERIALIZED_BIT);
 
     chunk.release();
   }
@@ -291,9 +297,11 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma
+        .allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
-    int headerBeforeCompressedBitSet = AddressableMemoryManager.readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
+    int headerBeforeCompressedBitSet = AddressableMemoryManager
+        .readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
 
     assertThat(chunk.isCompressed()).isFalse();
 
@@ -301,9 +309,11 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
     assertThat(chunk.isCompressed()).isTrue();
 
-    int headerAfterCompressedBitSet = AddressableMemoryManager.readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
+    int headerAfterCompressedBitSet = AddressableMemoryManager
+        .readIntVolatile(chunk.getAddress() + OffHeapStoredObject.REF_COUNT_OFFSET);
 
-    assertThat(headerAfterCompressedBitSet).isEqualTo(headerBeforeCompressedBitSet | OffHeapStoredObject.IS_COMPRESSED_BIT);
+    assertThat(headerAfterCompressedBitSet)
+        .isEqualTo(headerBeforeCompressedBitSet | OffHeapStoredObject.IS_COMPRESSED_BIT);
 
     chunk.release();
   }
@@ -407,7 +417,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     chunkDifferBySize.setSize(0);
     assertThat(chunk1.checkDataEquals(chunkDifferBySize)).isFalse();
 
-    OffHeapStoredObject chunkDifferByValue = createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
+    OffHeapStoredObject chunkDifferByValue =
+        createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
     assertThat(chunk1.checkDataEquals(chunkDifferByValue)).isFalse();
 
     OffHeapStoredObject newChunk1 = createValueAsSerializedStoredObject(getValue());
@@ -425,7 +436,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
     assertThat(chunk.checkDataEquals(new byte[1])).isFalse();
 
-    OffHeapStoredObject chunkDifferByValue = createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
+    OffHeapStoredObject chunkDifferByValue =
+        createValueAsSerializedStoredObject(Long.MAX_VALUE - 1);
     assertThat(chunk.checkDataEquals(chunkDifferByValue.getSerializedValue())).isFalse();
 
     OffHeapStoredObject newChunk = createValueAsSerializedStoredObject(getValue());
@@ -444,7 +456,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = true;
     boolean isCompressed = true;
 
-    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma
+        .allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
     RegionEntryContext regionContext = mock(RegionEntryContext.class);
     CachePerfStats cacheStats = mock(CachePerfStats.class);
@@ -503,7 +516,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
   public void readyForAllocationShouldThrowExceptionIfAlreadyAllocated() {
     OffHeapStoredObject chunk = createValueAsSerializedStoredObject(getValue());
 
-    // chunk is already allocated when we created it, so calling readyForAllocation should throw exception.
+    // chunk is already allocated when we created it, so calling readyForAllocation should throw
+    // exception.
     chunk.readyForAllocation();
 
     chunk.release();
@@ -545,7 +559,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
   }
 
   @Test
-  public void sendToShouldWriteUnserializedValueToDataOutputIfValueIsUnserialized() throws IOException {
+  public void sendToShouldWriteUnserializedValueToDataOutputIfValueIsUnserialized()
+      throws IOException {
     byte[] regionEntryValue = getValueAsByteArray();
     OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(regionEntryValue);
 
@@ -714,7 +729,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
   public void retainShouldThrowExceptionAfterMaxNumberOfTimesRetained() {
     OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
 
-    // loop though and invoke retain for MAX_REF_COUNT-1 times, as create chunk above counted as one reference
+    // loop though and invoke retain for MAX_REF_COUNT-1 times, as create chunk above counted as one
+    // reference
     for (int i = 0; i < OffHeapStoredObject.MAX_REF_COUNT - 1; i++)
       chunk.retain();
 
@@ -756,7 +772,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
   public void testToString() {
     OffHeapStoredObject chunk = createValueAsUnserializedStoredObject(getValue());
 
-    String expected = ":<dataSize=" + chunk.getDataSize() + " refCount=" + chunk.getRefCount() + " addr=" + Long.toHexString(chunk.getAddress()) + ">";
+    String expected = ":<dataSize=" + chunk.getDataSize() + " refCount=" + chunk.getRefCount()
+        + " addr=" + Long.toHexString(chunk.getAddress()) + ">";
     assertThat(chunk.toString()).endsWith(expected);
 
     chunk.release();
@@ -831,7 +848,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = true;
     boolean isCompressed = true;
 
-    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma
+        .allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
     chunk.getRawBytes();
 
@@ -846,7 +864,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
+    OffHeapStoredObject chunk = (OffHeapStoredObject) ma
+        .allocateAndInitialize(regionEntryValueAsBytes, isSerialized, isCompressed);
 
     byte[] serializedValue = chunk.getSerializedValue();
 
@@ -860,7 +879,8 @@ public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
     boolean isSerialized = false;
     boolean isCompressed = false;
 
-    OffHeapStoredObject chunk = (OffHeapStoredObject) ma.allocateAndInitialize(new byte[100], isSerialized, isCompressed);
+    OffHeapStoredObject chunk =
+        (OffHeapStoredObject) ma.allocateAndInitialize(new byte[100], isSerialized, isCompressed);
 
     // first fill the unused part with FILL_PATTERN
     OffHeapStoredObject.fill(chunk.getAddress());

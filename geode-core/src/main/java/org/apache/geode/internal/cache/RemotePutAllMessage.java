@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -62,20 +60,21 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
- * A Replicate Region putAll message.  Meant to be sent only to
- * the peer who hosts transactional data.
+ * A Replicate Region putAll message. Meant to be sent only to the peer who hosts transactional
+ * data.
  *
  * @since GemFire 6.5
  */
-public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply
-  {
+public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
-  
+
   private PutAllEntryData[] putAllData;
 
   private int putAllDataCount = 0;
 
-  /** An additional object providing context for the operation, e.g., for BridgeServer notification */
+  /**
+   * An additional object providing context for the operation, e.g., for BridgeServer notification
+   */
   ClientProxyMembershipID bridgeContext;
 
   private boolean posDup;
@@ -84,12 +83,12 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
   protected static final short SKIP_CALLBACKS = (HAS_BRIDGE_CONTEXT << 1);
 
   private EventID eventId;
-  
+
   private boolean skipCallbacks;
-  
+
   private Object callbackArg;
 
-//  private boolean useOriginRemote;
+  // private boolean useOriginRemote;
 
   public void addEntry(PutAllEntryData entry) {
     this.putAllData[this.putAllDataCount++] = entry;
@@ -100,20 +99,19 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
     // allow forced-disconnect processing for all cache op messages
     return true;
   }
-  
+
   public int getSize() {
     return putAllDataCount;
   }
-  
+
   /*
-   * this is similar to send() but it selects an initialized replicate
-   * that is used to proxy the message
+   * this is similar to send() but it selects an initialized replicate that is used to proxy the
+   * message
    * 
    */
-  public static boolean distribute(EntryEventImpl event, PutAllEntryData[] data,
-      int dataCount) {
+  public static boolean distribute(EntryEventImpl event, PutAllEntryData[] data, int dataCount) {
     boolean successful = false;
-    DistributedRegion r = (DistributedRegion)event.getRegion();
+    DistributedRegion r = (DistributedRegion) event.getRegion();
     Collection replicates = r.getCacheDistributionAdvisor().adviseInitializedReplicates();
     if (replicates.isEmpty()) {
       return false;
@@ -124,7 +122,7 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
       replicates = l;
     }
     int attempts = 0;
-    for (Iterator<InternalDistributedMember> it=replicates.iterator(); it.hasNext(); ) {
+    for (Iterator<InternalDistributedMember> it = replicates.iterator(); it.hasNext();) {
       InternalDistributedMember replicate = it.next();
       try {
         attempts++;
@@ -148,18 +146,19 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
 
       } catch (TransactionDataNotColocatedException enfe) {
         throw enfe;
-      
+
       } catch (CancelException e) {
         event.getRegion().getCancelCriterion().checkCancelInProgress(e);
-      
+
       } catch (CacheException e) {
         if (logger.isDebugEnabled()) {
           logger.debug("RemotePutMessage caught CacheException during distribution", e);
         }
         successful = true; // not a cancel-exception, so don't complain any more about it
-      } catch(RemoteOperationException e) {
+      } catch (RemoteOperationException e) {
         if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "RemotePutMessage caught an unexpected exception during distribution", e);
+          logger.trace(LogMarker.DM,
+              "RemotePutMessage caught an unexpected exception during distribution", e);
         }
       }
     }
@@ -167,56 +166,62 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
   }
 
   RemotePutAllMessage(EntryEventImpl event, Set recipients, DirectReplyProcessor p,
-      PutAllEntryData[] putAllData, int putAllDataCount,
-      boolean useOriginRemote, int processorType, boolean possibleDuplicate, boolean skipCallbacks) {
+      PutAllEntryData[] putAllData, int putAllDataCount, boolean useOriginRemote, int processorType,
+      boolean possibleDuplicate, boolean skipCallbacks) {
     super(recipients, event.getRegion().getFullPath(), p);
     this.resetRecipients();
     if (recipients != null) {
       setRecipients(recipients);
     }
     this.processor = p;
-    this.processorId = p==null? 0 : p.getProcessorId();
+    this.processorId = p == null ? 0 : p.getProcessorId();
     if (p != null && this.isSevereAlertCompatible()) {
       p.enableSevereAlertProcessing();
     }
     this.putAllData = putAllData;
     this.putAllDataCount = putAllDataCount;
-//    this.useOriginRemote = useOriginRemote;
-//    this.processorType = processorType;
+    // this.useOriginRemote = useOriginRemote;
+    // this.processorType = processorType;
     this.posDup = possibleDuplicate;
     this.eventId = event.getEventId();
     this.skipCallbacks = skipCallbacks;
     this.callbackArg = event.getCallbackArgument();
   }
 
-  public RemotePutAllMessage() {
-  }
+  public RemotePutAllMessage() {}
 
 
   /*
    * Sends a LocalRegion RemotePutAllMessage to the recipient
+   * 
    * @param recipient the member to which the put message is sent
-   * @param r  the LocalRegion for which the put was performed
-   * @return the processor used to await acknowledgement that the update was
-   *         sent, or null to indicate that no acknowledgement will be sent
+   * 
+   * @param r the LocalRegion for which the put was performed
+   * 
+   * @return the processor used to await acknowledgement that the update was sent, or null to
+   * indicate that no acknowledgement will be sent
+   * 
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static PutAllResponse send(DistributedMember recipient, EntryEventImpl event,
-      PutAllEntryData[] putAllData, int putAllDataCount, boolean useOriginRemote,
-      int processorType, boolean possibleDuplicate) throws RemoteOperationException {
-    //Assert.assertTrue(recipient != null, "RemotePutAllMessage NULL recipient");  recipient can be null for event notifications
+      PutAllEntryData[] putAllData, int putAllDataCount, boolean useOriginRemote, int processorType,
+      boolean possibleDuplicate) throws RemoteOperationException {
+    // Assert.assertTrue(recipient != null, "RemotePutAllMessage NULL recipient"); recipient can be
+    // null for event notifications
     Set recipients = Collections.singleton(recipient);
     PutAllResponse p = new PutAllResponse(event.getRegion().getSystem(), recipients);
-    RemotePutAllMessage msg = new RemotePutAllMessage(event, recipients, p,
-        putAllData, putAllDataCount, useOriginRemote, processorType, possibleDuplicate, !event.isGenerateCallbacks());
+    RemotePutAllMessage msg =
+        new RemotePutAllMessage(event, recipients, p, putAllData, putAllDataCount, useOriginRemote,
+            processorType, possibleDuplicate, !event.isGenerateCallbacks());
     msg.setTransactionDistributed(event.getRegion().getCache().getTxManager().isDistributed());
     Set failures = event.getRegion().getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
-      throw new RemoteOperationException(LocalizedStrings.RemotePutMessage_FAILED_SENDING_0.toLocalizedString(msg));
+      throw new RemoteOperationException(
+          LocalizedStrings.RemotePutMessage_FAILED_SENDING_0.toLocalizedString(msg));
     }
     return p;
   }
-  
+
   public void setBridgeContext(ClientProxyMembershipID contx) {
     Assert.assertTrue(contx != null);
     this.bridgeContext = contx;
@@ -227,25 +232,22 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
   }
 
   @Override
-  public final void fromData(DataInput in) throws IOException,
-      ClassNotFoundException {
+  public final void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.eventId = (EventID)DataSerializer.readObject(in);
+    this.eventId = (EventID) DataSerializer.readObject(in);
     this.callbackArg = DataSerializer.readObject(in);
     this.posDup = (flags & POS_DUP) != 0;
     if ((flags & HAS_BRIDGE_CONTEXT) != 0) {
       this.bridgeContext = DataSerializer.readObject(in);
     }
     this.skipCallbacks = (flags & SKIP_CALLBACKS) != 0;
-    this.putAllDataCount = (int)InternalDataSerializer.readUnsignedVL(in);
+    this.putAllDataCount = (int) InternalDataSerializer.readUnsignedVL(in);
     this.putAllData = new PutAllEntryData[putAllDataCount];
     if (this.putAllDataCount > 0) {
-      final Version version = InternalDataSerializer
-          .getVersionForDataStreamOrNull(in);
+      final Version version = InternalDataSerializer.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < this.putAllDataCount; i++) {
-        this.putAllData[i] = new PutAllEntryData(in, this.eventId, i, version,
-            bytesIn);
+        this.putAllData[i] = new PutAllEntryData(in, this.eventId, i, version, bytesIn);
       }
 
       boolean hasTags = in.readBoolean();
@@ -295,9 +297,12 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
   @Override
   protected short computeCompressedShort() {
     short flags = super.computeCompressedShort();
-    if (this.posDup) flags |= POS_DUP;
-    if (this.bridgeContext != null) flags |= HAS_BRIDGE_CONTEXT;
-    if (this.skipCallbacks) flags |= SKIP_CALLBACKS;
+    if (this.posDup)
+      flags |= POS_DUP;
+    if (this.bridgeContext != null)
+      flags |= HAS_BRIDGE_CONTEXT;
+    if (this.skipCallbacks)
+      flags |= SKIP_CALLBACKS;
     return flags;
   }
 
@@ -307,8 +312,8 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
   }
 
   @Override
-  protected boolean operateOnRegion(DistributionManager dm,
-      LocalRegion r,long startTime) throws RemoteOperationException {
+  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
+      throws RemoteOperationException {
 
     final boolean sendReply;
 
@@ -317,10 +322,8 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
     long lastModified = 0L;
     try {
       sendReply = doLocalPutAll(r, eventSender, lastModified);
-    }
-    catch (RemoteOperationException e) {
-      sendReply(getSender(), getProcessorId(), dm, 
-          new ReplyException(e), r, startTime);
+    } catch (RemoteOperationException e) {
+      sendReply(getSender(), getProcessorId(), dm, new ReplyException(e), r, startTime);
       return false;
     }
 
@@ -332,78 +335,84 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
 
   /* we need a event with content for waitForNodeOrCreateBucket() */
   /**
-   * This method is called by both operateOnLocalRegion() when processing a remote msg
-   * or by sendMsgByBucket() when processing a msg targeted to local Jvm. 
-   * LocalRegion Note: It is very important that this message does NOT
-   * cause any deadlocks as the sender will wait indefinitely for the
-   * acknowledgment
-   * @param r partitioned region
-   *        eventSender the endpoint server who received request from client
+   * This method is called by both operateOnLocalRegion() when processing a remote msg or by
+   * sendMsgByBucket() when processing a msg targeted to local Jvm. LocalRegion Note: It is very
+   * important that this message does NOT cause any deadlocks as the sender will wait indefinitely
+   * for the acknowledgment
+   * 
+   * @param r partitioned region eventSender the endpoint server who received request from client
    *        lastModified timestamp for last modification
    * @return If succeeds, return true, otherwise, throw exception
    */
-  public final boolean doLocalPutAll(final LocalRegion r, final InternalDistributedMember eventSender, long lastModified)
-    throws EntryExistsException, RemoteOperationException {
-    final DistributedRegion dr = (DistributedRegion)r;
-    
+  public final boolean doLocalPutAll(final LocalRegion r,
+      final InternalDistributedMember eventSender, long lastModified)
+      throws EntryExistsException, RemoteOperationException {
+    final DistributedRegion dr = (DistributedRegion) r;
+
     // create a base event and a DPAO for PutAllMessage distributed btw redundant buckets
-    @Released EntryEventImpl baseEvent = EntryEventImpl.create(
-        r, Operation.PUTALL_CREATE,
-        null, null, this.callbackArg, false, eventSender, !skipCallbacks);
+    @Released
+    EntryEventImpl baseEvent = EntryEventImpl.create(r, Operation.PUTALL_CREATE, null, null,
+        this.callbackArg, false, eventSender, !skipCallbacks);
     try {
 
-    baseEvent.setCausedByMessage(this);
-    
-    // set baseEventId to the first entry's event id. We need the thread id for DACE
-    baseEvent.setEventId(this.eventId);
-    if (this.bridgeContext != null) {
-      baseEvent.setContext(this.bridgeContext);
-    }
-    baseEvent.setPossibleDuplicate(this.posDup);
-    if (logger.isDebugEnabled()) {
-      logger.debug("RemotePutAllMessage.doLocalPutAll: eventSender is {}, baseEvent is {}, msg is {}",
-          eventSender, baseEvent, this);
-    }
-    final DistributedPutAllOperation dpao = new DistributedPutAllOperation(baseEvent, putAllDataCount, false);
-    try {
-    final VersionedObjectList versions = new VersionedObjectList(putAllDataCount, true, dr.concurrencyChecksEnabled);
-    dr.syncBulkOp(new Runnable() {
-      @SuppressWarnings("synthetic-access")
-      public void run() {
-//        final boolean requiresRegionContext = dr.keyRequiresRegionContext();
-        InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
-        for (int i = 0; i < putAllDataCount; ++i) {
-          @Released EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(r, myId, eventSender, i, putAllData, false, bridgeContext, posDup, !skipCallbacks);
-          try {
-          ev.setPutAllOperation(dpao);
-          if (logger.isDebugEnabled()) {
-            logger.debug("invoking basicPut with {}", ev);
-          }
-          if (dr.basicPut(ev, false, false, null, false)) {
-            putAllData[i].versionTag = ev.getVersionTag();
-            versions.addKeyAndVersion(putAllData[i].key, ev.getVersionTag());
-          }
-          } finally {
-            ev.release();
-          }
-        }
+      baseEvent.setCausedByMessage(this);
+
+      // set baseEventId to the first entry's event id. We need the thread id for DACE
+      baseEvent.setEventId(this.eventId);
+      if (this.bridgeContext != null) {
+        baseEvent.setContext(this.bridgeContext);
       }
-    }, baseEvent.getEventId());
-    if(getTXUniqId()!=TXManagerImpl.NOTX || dr.getConcurrencyChecksEnabled()) {
-    	dr.getDataView().postPutAll(dpao, versions, dr);
-    }
-    PutAllReplyMessage.send(getSender(), this.processorId, 
-        getReplySender(r.getDistributionManager()), versions, this.putAllData, this.putAllDataCount);
-    return false;
-    } finally {
-      dpao.freeOffHeapResources();
-    }
+      baseEvent.setPossibleDuplicate(this.posDup);
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "RemotePutAllMessage.doLocalPutAll: eventSender is {}, baseEvent is {}, msg is {}",
+            eventSender, baseEvent, this);
+      }
+      final DistributedPutAllOperation dpao =
+          new DistributedPutAllOperation(baseEvent, putAllDataCount, false);
+      try {
+        final VersionedObjectList versions =
+            new VersionedObjectList(putAllDataCount, true, dr.concurrencyChecksEnabled);
+        dr.syncBulkOp(new Runnable() {
+          @SuppressWarnings("synthetic-access")
+          public void run() {
+            // final boolean requiresRegionContext = dr.keyRequiresRegionContext();
+            InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
+            for (int i = 0; i < putAllDataCount; ++i) {
+              @Released
+              EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(r, myId, eventSender, i,
+                  putAllData, false, bridgeContext, posDup, !skipCallbacks);
+              try {
+                ev.setPutAllOperation(dpao);
+                if (logger.isDebugEnabled()) {
+                  logger.debug("invoking basicPut with {}", ev);
+                }
+                if (dr.basicPut(ev, false, false, null, false)) {
+                  putAllData[i].versionTag = ev.getVersionTag();
+                  versions.addKeyAndVersion(putAllData[i].key, ev.getVersionTag());
+                }
+              } finally {
+                ev.release();
+              }
+            }
+          }
+        }, baseEvent.getEventId());
+        if (getTXUniqId() != TXManagerImpl.NOTX || dr.getConcurrencyChecksEnabled()) {
+          dr.getDataView().postPutAll(dpao, versions, dr);
+        }
+        PutAllReplyMessage.send(getSender(), this.processorId,
+            getReplySender(r.getDistributionManager()), versions, this.putAllData,
+            this.putAllDataCount);
+        return false;
+      } finally {
+        dpao.freeOffHeapResources();
+      }
     } finally {
       baseEvent.release();
     }
   }
 
-  
+
   // override reply processor type from PartitionMessage
   RemoteOperationResponse createReplyProcessor(LocalRegion r, Set recipients, Object key) {
     return new PutAllResponse(r.getSystem(), recipients);
@@ -411,27 +420,28 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
 
   // override reply message type from PartitionMessage
   @Override
-  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex, LocalRegion r, long startTime) {
+  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
+      LocalRegion r, long startTime) {
     ReplyMessage.send(member, procId, ex, getReplySender(dm), r != null && r.isInternalRegion());
   }
 
 
   @Override
-  protected final void appendFields(StringBuffer buff)
-  {
+  protected final void appendFields(StringBuffer buff) {
     super.appendFields(buff);
     buff.append("; putAllDataCount=").append(putAllDataCount);
     if (this.bridgeContext != null) {
       buff.append("; bridgeContext=").append(this.bridgeContext);
     }
-    for (int i=0; i<putAllDataCount; i++) {
-      buff.append("; entry"+i+":").append(putAllData[i]==null? "null" : putAllData[i].getKey());
+    for (int i = 0; i < putAllDataCount; i++) {
+      buff.append("; entry" + i + ":")
+          .append(putAllData[i] == null ? "null" : putAllData[i].getKey());
     }
   }
-  
+
   public static final class PutAllReplyMessage extends ReplyMessage {
     /** Result of the PutAll operation */
-    //private PutAllResponseData[] responseData;
+    // private PutAllResponseData[] responseData;
     private VersionedObjectList versions;
 
     @Override
@@ -439,24 +449,26 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
       return true;
     }
 
-    private PutAllReplyMessage(int processorId, VersionedObjectList versionList, PutAllEntryData[] putAllData, int putAllCount)  {
+    private PutAllReplyMessage(int processorId, VersionedObjectList versionList,
+        PutAllEntryData[] putAllData, int putAllCount) {
       super();
       this.versions = versionList;
       setProcessorId(processorId);
     }
 
     /** Send an ack */
-    public static void send(InternalDistributedMember recipient, int processorId, ReplySender dm, VersionedObjectList versions,
-        PutAllEntryData[] putAllData, int putAllDataCount)  {
+    public static void send(InternalDistributedMember recipient, int processorId, ReplySender dm,
+        VersionedObjectList versions, PutAllEntryData[] putAllData, int putAllDataCount) {
       Assert.assertTrue(recipient != null, "PutAllReplyMessage NULL reply message");
-      PutAllReplyMessage m = new PutAllReplyMessage(processorId, versions, putAllData, putAllDataCount);
+      PutAllReplyMessage m =
+          new PutAllReplyMessage(processorId, versions, putAllData, putAllDataCount);
       m.setRecipient(recipient);
       dm.putOutgoing(m);
     }
 
     /**
-     * Processes this message.  This method is invoked by the receiver
-     * of the message.
+     * Processes this message. This method is invoked by the receiver of the message.
+     * 
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -470,7 +482,7 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
         return;
       }
       if (rp instanceof PutAllResponse) {
-        PutAllResponse processor = (PutAllResponse)rp;
+        PutAllResponse processor = (PutAllResponse) rp;
         processor.setResponse(this);
       }
       rp.process(this);
@@ -478,7 +490,7 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM, "{} processed {}", rp, this);
       }
-      dm.getStats().incReplyMessageTime(NanoTimer.getTime()-startTime);
+      dm.getStats().incReplyMessageTime(NanoTimer.getTime() - startTime);
     }
 
     @Override
@@ -486,14 +498,12 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
       return REMOTE_PUTALL_REPLY_MESSAGE;
     }
 
-    public PutAllReplyMessage() {
-    }
+    public PutAllReplyMessage() {}
 
     @Override
-    public void fromData(DataInput in)
-      throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       super.fromData(in);
-      this.versions = (VersionedObjectList)DataSerializer.readObject(in); 
+      this.versions = (VersionedObjectList) DataSerializer.readObject(in);
     }
 
     @Override
@@ -505,19 +515,18 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("PutAllReplyMessage ")
-        .append(" processorid=").append(this.processorId)
-        .append(" returning versionTags=").append(this.versions);
+      sb.append("PutAllReplyMessage ").append(" processorid=").append(this.processorId)
+          .append(" returning versionTags=").append(this.versions);
       return sb.toString();
     }
 
   }
-  
+
   /**
    * A processor to capture the value returned by {@link RemotePutAllMessage}
    */
   public static class PutAllResponse extends RemoteOperationResponse {
-    //private volatile PutAllResponseData[] returnValue;
+    // private volatile PutAllResponseData[] returnValue;
     private VersionedObjectList versions;
 
     public PutAllResponse(InternalDistributedSystem ds, Set recipients) {
@@ -531,7 +540,7 @@ public final class RemotePutAllMessage extends RemoteOperationMessageWithDirectR
         this.versions.replaceNullIDs(putAllReplyMessage.getSender());
       }
     }
-    
+
     public VersionedObjectList getResponse() {
       return this.versions;
     }

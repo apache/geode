@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal.index;
 
@@ -36,17 +34,16 @@ public interface IndexStore {
   public void addMapping(Object indexKey, RegionEntry re) throws IMQException;
 
   /**
-   * Remove a mapping from the index store
-   * If entry at indexKey is not found, we must crawl the index to be sure the region entry does not exist
+   * Remove a mapping from the index store If entry at indexKey is not found, we must crawl the
+   * index to be sure the region entry does not exist
+   * 
    * @param indexKey
    * @param re
    */
-  public void removeMapping(Object indexKey, RegionEntry re)
-      throws IMQException;
+  public void removeMapping(Object indexKey, RegionEntry re) throws IMQException;
 
   /**
-   * Update a mapping in the index store. This method adds a new
-   * mapping and removes the old mapping
+   * Update a mapping in the index store. This method adds a new mapping and removes the old mapping
    * 
    * @param indexKey
    * @param oldKey
@@ -56,7 +53,7 @@ public interface IndexStore {
       throws IMQException;
 
   public String printAll();
-  
+
   /**
    * Return all of the IndexStoreEntries that map to a given region key.
    */
@@ -65,16 +62,14 @@ public interface IndexStore {
   /**
    * Return all of the IndexStoreEntries in the range between start and end.
    */
-  public CloseableIterator<IndexStoreEntry> iterator(Object start,
-      boolean startInclusive, Object end, boolean endInclusive,
-      Collection keysToRemove);
+  public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
+      Object end, boolean endInclusive, Collection keysToRemove);
 
   /**
-   * Return all of the IndexStorageEntries that from start to the tail of the
-   * map.
+   * Return all of the IndexStorageEntries that from start to the tail of the map.
    */
-  public CloseableIterator<IndexStoreEntry> iterator(Object start,
-      boolean startInclusive, Collection keysToRemove);
+  public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
+      Collection keysToRemove);
 
   /**
    * Return all of the IndexStorageEntries in the map.
@@ -84,21 +79,19 @@ public interface IndexStore {
   /**
    * Return all of the IndexStoreEntries from the end to the head of the map.
    */
-  public CloseableIterator<IndexStoreEntry> descendingIterator(Object end,
-      boolean endInclusive, Collection keysToRemove);
+  public CloseableIterator<IndexStoreEntry> descendingIterator(Object end, boolean endInclusive,
+      Collection keysToRemove);
 
   /**
    * Return all of the IndexStoreEntries in the map in descending order.
    */
-  public CloseableIterator<IndexStoreEntry> descendingIterator(
-      Collection keysToRemove);
+  public CloseableIterator<IndexStoreEntry> descendingIterator(Collection keysToRemove);
 
   /**
    * Return all of the IndexStoreEntries in the range between end and start.
    */
-  public CloseableIterator<IndexStoreEntry> descendingIterator(Object start,
-      boolean startInclusive, Object end, boolean endInclusive,
-      Collection keysToRemove);
+  public CloseableIterator<IndexStoreEntry> descendingIterator(Object start, boolean startInclusive,
+      Object end, boolean endInclusive, Collection keysToRemove);
 
   /**
    * Return the number of IndexStoreEntries that map to a given Index key.
@@ -119,8 +112,8 @@ public interface IndexStore {
     Object getDeserializedKey();
 
     /**
-     * returns deserialized Region key or Value based on the whether the index
-     * is on Region keys or Region values. Defaults to RegionEntry
+     * returns deserialized Region key or Value based on the whether the index is on Region keys or
+     * Region values. Defaults to RegionEntry
      */
     Object getDeserializedValue();
 

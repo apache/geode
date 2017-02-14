@@ -27,12 +27,12 @@ cache:
     - $HOME/.gradle/wrapper/
 
 after_failure:
-  - cat /home/travis/build/apache/incubator-geode/build/reports/rat/rat-report.txt
+  - cat /home/travis/build/apache/geode/build/reports/rat/rat-report.txt
 
 notifications:
   email:
     recipients:
-      - dev@geode.incubator.apache.org
+      - dev@geode.apache.org
     on_success: change
     on_failure: change
 

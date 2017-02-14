@@ -16,7 +16,7 @@
   limitations under the License.
 -->
 
-<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Cache 5.8//EN" "http://www.gemstone.com/dtd/cache5_8.dtd">
+<!DOCTYPE cache PUBLIC "-//GemStone Systems, Inc.//GemFire Declarative Cache 7.0//EN" "http://www.gemstone.com/dtd/cache7_0.dtd">
 <cache>
   <region name="Customer">
     <region-attributes data-policy="partition">

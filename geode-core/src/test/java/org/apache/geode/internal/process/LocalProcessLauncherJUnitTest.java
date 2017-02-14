@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.process;
 
@@ -65,30 +63,30 @@ public class LocalProcessLauncherJUnitTest {
       // not much to test if OSProcess native code is unusable
     }
   }
-  
+
   @Test
   public void testPidFileIsCreated() throws Exception {
     assertFalse(pidFile.exists());
     new LocalProcessLauncher(pidFile, false);
     assertTrue(pidFile.exists());
   }
-  
+
   @Test
   public void testPidFileContainsPid() throws Exception {
     final LocalProcessLauncher launcher = new LocalProcessLauncher(pidFile, false);
     assertNotNull(launcher);
     assertTrue(pidFile.exists());
-    
+
     final FileReader fr = new FileReader(pidFile);
     final BufferedReader br = new BufferedReader(fr);
     final int pid = Integer.parseInt(br.readLine());
     br.close();
-    
+
     assertTrue(pid > 0);
     assertEquals(launcher.getPid(), pid);
     assertEquals(ProcessUtils.identifyPid(), pid);
   }
-  
+
   @Test
   public void testPidFileIsCleanedUp() throws Exception {
     final LocalProcessLauncher launcher = new LocalProcessLauncher(pidFile, false);
@@ -96,12 +94,12 @@ public class LocalProcessLauncherJUnitTest {
     launcher.close(); // TODO: launch an external JVM and then close it nicely
     assertFalse(pidFile.exists());
   }
-  
+
   @Test
   public void testExistingPidFileThrows() throws Exception {
     assertTrue(pidFile.createNewFile());
     assertTrue(pidFile.exists());
-    
+
     final FileWriter writer = new FileWriter(pidFile);
     // use a read pid that exists
     writer.write(String.valueOf(ProcessUtils.identifyPid()));
@@ -119,7 +117,7 @@ public class LocalProcessLauncherJUnitTest {
   public void testStalePidFileIsReplaced() throws Exception {
     assertTrue(pidFile.createNewFile());
     assertTrue(pidFile.exists());
-    
+
     final FileWriter writer = new FileWriter(pidFile);
     writer.write(String.valueOf(Integer.MAX_VALUE));
     writer.close();
@@ -141,16 +139,16 @@ public class LocalProcessLauncherJUnitTest {
 
   @Test
   public void testForceReplacesExistingPidFile() throws Exception {
-    assertTrue("testForceReplacesExistingPidFile is broken if PID == Integer.MAX_VALUE", 
+    assertTrue("testForceReplacesExistingPidFile is broken if PID == Integer.MAX_VALUE",
         ProcessUtils.identifyPid() != Integer.MAX_VALUE);
 
     assertTrue(pidFile.createNewFile());
     assertTrue(pidFile.exists());
-    
+
     final FileWriter writer = new FileWriter(pidFile);
     writer.write(String.valueOf(Integer.MAX_VALUE));
     writer.close();
-    
+
     try {
       new LocalProcessLauncher(pidFile, true);
     } catch (FileAlreadyExistsException e) {
@@ -165,7 +163,7 @@ public class LocalProcessLauncherJUnitTest {
     assertTrue(pid > 0);
     assertEquals(ProcessUtils.identifyPid(), pid);
   }
-  
+
   @Test
   public void testPidUnavailableThrows() {
     final String name = "Name without PID";
@@ -173,7 +171,7 @@ public class LocalProcessLauncherJUnitTest {
       ProcessUtils.identifyPid(name);
       fail("PidUnavailableException should have been thrown for " + name);
     } catch (PidUnavailableException e) {
-     // passed
+      // passed
     }
   }
 }

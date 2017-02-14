@@ -1,37 +1,40 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.test.dunit;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.test.dunit.standalone.RemoteDUnitVMIF;
+import org.apache.geode.test.dunit.standalone.VersionManager;
 
 /**
- * <P>This class represents a host on which a remote method may be
- * invoked.  It provides access to the VMs and GemFire systems that
- * run on that host.</P>
+ * <P>
+ * This class represents a host on which a remote method may be invoked. It provides access to the
+ * VMs and GemFire systems that run on that host.
+ * </P>
  *
- * <P>Additionally, it provides access to the Java RMI registry that
- * runs on the host.  By default, an RMI registry is only started on
- * the host on which Hydra's Master VM runs.  RMI registries may be
- * started on other hosts via additional Hydra configuration.</P>
+ * <P>
+ * Additionally, it provides access to the Java RMI registry that runs on the host. By default, an
+ * RMI registry is only started on the host on which Hydra's Master VM runs. RMI registries may be
+ * started on other hosts via additional Hydra configuration.
+ * </P>
  *
  */
 @SuppressWarnings("serial")
@@ -45,7 +48,7 @@ public abstract class Host implements Serializable {
   /** Indicates an unstarted RMI registry */
   protected static int NO_REGISTRY = -1;
 
-  ////////////////////  Instance Fields  ////////////////////
+  //////////////////// Instance Fields ////////////////////
 
   /** The name of this host machine */
   private String hostName;
@@ -55,11 +58,11 @@ public abstract class Host implements Serializable {
 
   /** The GemFire systems that are available on this host */
   private List systems;
-  
+
   /** Key is system name, value is GemFireSystem instance */
   private HashMap systemNames;
-  
-  ////////////////////  Static Methods  /////////////////////
+
+  //////////////////// Static Methods /////////////////////
 
   /**
    * Returns the number of known hosts
@@ -78,17 +81,14 @@ public abstract class Host implements Serializable {
   /**
    * Returns a given host
    *
-   * @param n
-   *        A zero-based identifier of the host
+   * @param n A zero-based identifier of the host
    *
-   * @throws IllegalArgumentException
-   *         <code>n</code> is more than the number of hosts
+   * @throws IllegalArgumentException <code>n</code> is more than the number of hosts
    */
   public static Host getHost(int n) {
     int size = hosts.size();
     if (n >= size) {
-      String s = "Cannot request host " + n + ".  There are only " +
-        size + " hosts.";
+      String s = "Cannot request host " + n + ".  There are only " + size + " hosts.";
       throw new IllegalArgumentException(s);
 
     } else {
@@ -96,7 +96,27 @@ public abstract class Host implements Serializable {
     }
   }
 
-  /////////////////////  Constructors  //////////////////////
+  /**
+   * Reset all VMs to be using the current version of Geode. Some backward-compatibility tests will
+   * set a VM to a different version. This will ensure that all are using the current build.
+   */
+  public static void setAllVMsToCurrentVersion() {
+    int numHosts = getHostCount();
+    for (int hostIndex = 0; hostIndex < numHosts; hostIndex++) {
+      Host host = Host.getHost(hostIndex);
+      int numVMs = host.getVMCount();
+      for (int i = 0; i < numVMs; i++) {
+        try {
+          host.getVM(VersionManager.CURRENT_VERSION, i);
+        } catch (UnsupportedOperationException e) {
+          // not all implementations support versioning
+        }
+      }
+    }
+
+  }
+
+  ///////////////////// Constructors //////////////////////
 
   /**
    * Creates a new <code>Host</code> with the given name
@@ -113,7 +133,7 @@ public abstract class Host implements Serializable {
     this.systemNames = new HashMap();
   }
 
-  ////////////////////  Instance Methods  ////////////////////
+  //////////////////// Instance Methods ////////////////////
 
   /**
    * Returns the machine name of this host
@@ -132,22 +152,38 @@ public abstract class Host implements Serializable {
   /**
    * Returns a VM that runs on this host
    *
-   * @param n
-   *        A zero-based identifier of the VM
+   * @param n A zero-based identifier of the VM
    *
-   * @throws IllegalArgumentException
-   *         <code>n</code> is more than the number of VMs
+   * @throws IllegalArgumentException <code>n</code> is more than the number of VMs
    */
   public VM getVM(int n) {
     int size = vms.size();
     if (n >= size) {
-      String s = "Cannot request VM " + n + ".  There are only " +
-        size + " VMs on " + this;
+      String s = "Cannot request VM " + n + ".  There are only " + size + " VMs on " + this;
       throw new IllegalArgumentException(s);
 
     } else {
       return (VM) vms.get(n);
     }
+  }
+
+  /**
+   * return a collection of all VMs
+   */
+  public Set<VM> getAllVMs() {
+    return new HashSet<>(vms);
+  }
+
+  /**
+   * Returns the nth VM of the given version. Optional operation currently supported only in
+   * distributedTests.
+   * 
+   * @param version
+   * @param n
+   * @return the requested VM
+   */
+  public VM getVM(String version, int n) {
+    throw new UnsupportedOperationException("Not supported in this implementation of Host");
   }
 
   /**
@@ -161,11 +197,11 @@ public abstract class Host implements Serializable {
   public static VM getLocator() {
     return locator;
   }
-  
+
   private static void setLocator(VM l) {
     locator = l;
   }
-  
+
   protected void addLocator(int pid, RemoteDUnitVMIF client) {
     setLocator(new VM(this, pid, client));
   }
@@ -177,7 +213,7 @@ public abstract class Host implements Serializable {
     return this.systems.size();
   }
 
-  ////////////////////  Utility Methods  ////////////////////
+  //////////////////// Utility Methods ////////////////////
 
   public String toString() {
     StringBuffer sb = new StringBuffer("Host ");
@@ -189,8 +225,7 @@ public abstract class Host implements Serializable {
   }
 
   /**
-   * Two <code>Host</code>s are considered equal if they have the same
-   * name.
+   * Two <code>Host</code>s are considered equal if they have the same name.
    */
   public boolean equals(Object o) {
     if (o instanceof Host) {
@@ -202,8 +237,7 @@ public abstract class Host implements Serializable {
   }
 
   /**
-   * A <code>Host</code>'s hash code is based on the hash code of its
-   * name. 
+   * A <code>Host</code>'s hash code is based on the hash code of its name.
    */
   public int hashCode() {
     return this.getHostName().hashCode();

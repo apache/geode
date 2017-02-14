@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.stats50;
 
@@ -39,34 +37,31 @@ import static org.junit.Assert.assertEquals;
  */
 @Category(IntegrationTest.class)
 public class AtomicStatsJUnitTest {
-  
+
   /**
-   * Test for bug 41340. Do two gets at the same time of a dirty
-   * stat, and make sure we get the correct value for the stat.
+   * Test for bug 41340. Do two gets at the same time of a dirty stat, and make sure we get the
+   * correct value for the stat.
+   * 
    * @throws Throwable
    */
   @Test
   public void testConcurrentGets() throws Throwable {
-    
+
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    //    props.setProperty("statistic-sample-rate", "60000");
+    // props.setProperty("statistic-sample-rate", "60000");
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
     DistributedSystem ds = DistributedSystem.connect(props);
-    
-    String statName = "TestStats";
-    String statDescription =
-      "Tests stats";
 
-    final String statDesc =
-      "blah blah blah";
+    String statName = "TestStats";
+    String statDescription = "Tests stats";
+
+    final String statDesc = "blah blah blah";
 
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
-    StatisticsType type = f.createType(statName, statDescription,
-       new StatisticDescriptor[] {
-         f.createIntGauge("stat", statDesc, "bottles of beer on the wall"),
-       });
+    StatisticsType type = f.createType(statName, statDescription, new StatisticDescriptor[] {
+        f.createIntGauge("stat", statDesc, "bottles of beer on the wall"),});
 
     final int statId = type.nameToId("stat");
 
@@ -78,7 +73,7 @@ public class AtomicStatsJUnitTest {
       Thread thread1 = new Thread("thread1") {
         public void run() {
           try {
-            while(true) {
+            while (true) {
               beforeIncrement.await();
               statsRef.get().incInt(statId, 1);
               afterIncrement.await();
@@ -95,7 +90,7 @@ public class AtomicStatsJUnitTest {
       Thread thread3 = new Thread("thread1") {
         public void run() {
           try {
-            while(true) {
+            while (true) {
               beforeIncrement.await();
               afterIncrement.await();
               statsRef.get().getInt(statId);
@@ -111,7 +106,7 @@ public class AtomicStatsJUnitTest {
       };
       thread1.start();
       thread3.start();
-      for(int i =0; i < 5000; i++) {
+      for (int i = 0; i < 5000; i++) {
         Statistics stats = ds.createAtomicStatistics(type, "stats");
         statsRef.set(stats);
         beforeIncrement.await();
@@ -119,7 +114,7 @@ public class AtomicStatsJUnitTest {
         assertEquals("On loop " + i, 1, stats.getInt(statId));
         stats.close();
       }
-    
+
     } finally {
       ds.disconnect();
     }

@@ -1,34 +1,65 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.cache.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.SharedConfiguration;
 import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.Test;
@@ -36,10 +67,9 @@ import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
 
 @Category(DistributedTest.class)
 public class IndexCommandsDUnitTest extends CliCommandTestBase {
@@ -51,7 +81,8 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   private static final String parRegPersName = "ParRegPers";
   private static final String repRegPersName = "RepRegPer";
 
-  Region<?, ?> createParReg(String regionName, Cache cache, Class keyConstraint, Class valueConstraint) {
+  Region<?, ?> createParReg(String regionName, Cache cache, Class keyConstraint,
+      Class valueConstraint) {
     RegionFactory regionFactory = cache.createRegionFactory();
     regionFactory.setDataPolicy(DataPolicy.PARTITION);
     regionFactory.setKeyConstraint(keyConstraint);
@@ -59,7 +90,8 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     return regionFactory.create(regionName);
   }
 
-  private Region<?, ?> createParRegWithPersistence(String regionName, String diskStoreName, String diskDirName) {
+  private Region<?, ?> createParRegWithPersistence(String regionName, String diskStoreName,
+      String diskDirName) {
     Cache cache = getCache();
     File diskStoreDirFile = new File(diskDirName);
     diskStoreDirFile.deleteOnExit();
@@ -69,7 +101,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     }
 
     DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-    diskStoreFactory.setDiskDirs(new File[]{diskStoreDirFile});
+    diskStoreFactory.setDiskDirs(new File[] {diskStoreDirFile});
     diskStoreFactory.setMaxOplogSize(1);
     diskStoreFactory.setAllowForceCompaction(true);
     diskStoreFactory.setAutoCompact(false);
@@ -78,7 +110,8 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     /****
      * Eviction Attributes
      */
-    EvictionAttributes ea = EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK);
+    EvictionAttributes ea =
+        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK);
 
     RegionFactory regionFactory = cache.createRegionFactory();
     regionFactory.setDiskStoreName(diskStoreName);
@@ -89,7 +122,8 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     return regionFactory.create(regionName);
   }
 
-  private Region<?, ?> createRepRegWithPersistence(String regionName, String diskStoreName, String diskDirName) {
+  private Region<?, ?> createRepRegWithPersistence(String regionName, String diskStoreName,
+      String diskDirName) {
     Cache cache = getCache();
     File diskStoreDirFile = new File(diskDirName);
     diskStoreDirFile.deleteOnExit();
@@ -99,7 +133,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     }
 
     DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-    diskStoreFactory.setDiskDirs(new File[]{diskStoreDirFile});
+    diskStoreFactory.setDiskDirs(new File[] {diskStoreDirFile});
     diskStoreFactory.setMaxOplogSize(1);
     diskStoreFactory.setAllowForceCompaction(true);
     diskStoreFactory.setAutoCompact(false);
@@ -108,7 +142,8 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     /****
      * Eviction Attributes
      */
-    EvictionAttributes ea = EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK);
+    EvictionAttributes ea =
+        EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK);
 
     RegionFactory regionFactory = cache.createRegionFactory();
     regionFactory.setDiskStoreName(diskStoreName);
@@ -122,7 +157,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   public void testCreateKeyIndexOnRegionWithPersistence() {
     setupSystemPersist();
 
-    //Creating key indexes on Persistent Partitioned Region
+    // Creating key indexes on Persistent Partitioned Region
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, "id1");
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "ty");
@@ -134,7 +169,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     String resultAsString = commandResultToString(commandResult);
     writeToLog("Command Result :\n", resultAsString);
     assertTrue(Status.OK.equals(commandResult.getStatus()));
-    //Creating key indexes on Persistent Replicated Regions
+    // Creating key indexes on Persistent Replicated Regions
     csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, "id2");
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "ee");
@@ -151,7 +186,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   public void testCreateAndDestroyIndex() {
     setupSystem();
     /***
-     * Basic Create and Destroy 
+     * Basic Create and Destroy
      */
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
@@ -287,7 +322,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   public void testCreateAndDestroyIndexOnMember() {
     setupSystem();
     /***
-     * Basic Create and Destroy 
+     * Basic Create and Destroy
      */
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
@@ -333,11 +368,12 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(resultAsString.contains(VM1Name));
   }
 
+  @Category(FlakyTest.class) // GEODE-1684
   @Test
   public void testCreateAndDestroyIndexOnGroup() {
     setupSystem();
     /***
-     * Basic Create and Destroy 
+     * Basic Create and Destroy
      */
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
@@ -378,8 +414,8 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertFalse(resultAsString.contains(VM1Name));
 
     /***
-     * In case of a partitioned region , the index might get created on a 
-     * member which hosts the region and is not the member of the group1
+     * In case of a partitioned region , the index might get created on a member which hosts the
+     * region and is not the member of the group1
      */
     if (resultAsString.contains(indexName)) {
       csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
@@ -415,7 +451,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
     assertEquals(commandResult.getStatus(), Status.OK);
 
-    //CREATE the same index 
+    // CREATE the same index
     csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
@@ -426,12 +462,13 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     commandResult = executeCommand(commandString);
     resultAsString = commandResultToString(commandResult);
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
-    //assertTrue(resultAsString.contains(CliStrings.format(CliStrings.CREATE_INDEX__NAME__CONFLICT, indexName)));
+    // assertTrue(resultAsString.contains(CliStrings.format(CliStrings.CREATE_INDEX__NAME__CONFLICT,
+    // indexName)));
     writeToLog("Command String :\n ", commandString);
     writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
 
 
-    //Create index on a wrong regionPath
+    // Create index on a wrong regionPath
     csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
@@ -444,9 +481,10 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     writeToLog("Command String :\n ", commandString);
     writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
-    //assertTrue(resultAsString.contains(CliStrings.format(CliStrings.CREATE_INDEX__INVALID__REGIONPATH, "/StocsParReg")));
+    // assertTrue(resultAsString.contains(CliStrings.format(CliStrings.CREATE_INDEX__INVALID__REGIONPATH,
+    // "/StocsParReg")));
 
-    //Create index with wrong expression 
+    // Create index with wrong expression
     csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, "Id2");
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "rey");
@@ -460,7 +498,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
 
-    //Create index with wrong type 
+    // Create index with wrong type
     csb = new CommandStringBuilder(CliStrings.CREATE_INDEX);
     csb.addOption(CliStrings.CREATE_INDEX__NAME, indexName);
     csb.addOption(CliStrings.CREATE_INDEX__EXPRESSION, "key");
@@ -475,7 +513,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(resultAsString.contains(CliStrings.CREATE_INDEX__INVALID__INDEX__TYPE__MESSAGE));
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
 
-    //Destroy index with incorrect indexName 
+    // Destroy index with incorrect indexName
     csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, "Id2");
     commandString = csb.toString();
@@ -484,9 +522,10 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     writeToLog("Command String :\n ", commandString);
     writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
-    assertTrue(resultAsString.contains(CliStrings.format(CliStrings.DESTROY_INDEX__INDEX__NOT__FOUND, "Id2")));
+    assertTrue(resultAsString
+        .contains(CliStrings.format(CliStrings.DESTROY_INDEX__INDEX__NOT__FOUND, "Id2")));
 
-    //Destroy index with incorrect region 
+    // Destroy index with incorrect region
     csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, "Region");
@@ -496,9 +535,10 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     writeToLog("Command String :\n ", commandString);
     writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
-    assertTrue(resultAsString.contains(CliStrings.format(CliStrings.DESTROY_INDEX__REGION__NOT__FOUND, "Region")));
+    assertTrue(resultAsString
+        .contains(CliStrings.format(CliStrings.DESTROY_INDEX__REGION__NOT__FOUND, "Region")));
 
-    //Destroy index with incorrect memberName
+    // Destroy index with incorrect memberName
     csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, "Region");
@@ -510,7 +550,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     writeToLog("testCreateAndDestroyIndexWithIncorrectInput", resultAsString);
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
 
-    //Destroy index with no option
+    // Destroy index with no option
     csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     commandString = csb.toString();
     commandResult = executeCommand(commandString);
@@ -520,6 +560,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertTrue(commandResult.getStatus().equals(Status.ERROR));
   }
 
+  @Category(FlakyTest.class) // GEODE-1315
   @Test
   public void testDestroyIndexWithoutIndexName() {
     setupSystem();
@@ -582,28 +623,42 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
   /**
    * Asserts that creating and destroying indexes correctly updates the shared configuration.
    */
+  @Category(FlakyTest.class) // GEODE-1954
   @Test
   public void testCreateDestroyUpdatesSharedConfig() {
     disconnectAllFromDS();
+    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+    jmxPort = ports[0];
+    httpPort = ports[1];
+    try {
+      jmxHost = InetAddress.getLocalHost().getHostName();
+    } catch (UnknownHostException ignore) {
+      jmxHost = "localhost";
+    }
 
     final String regionName = "testIndexSharedConfigRegion";
     final String groupName = "testIndexSharedConfigGroup";
 
+    final Properties locatorProps = new Properties();
+    locatorProps.setProperty(NAME, "Locator");
+    locatorProps.setProperty(MCAST_PORT, "0");
+    locatorProps.setProperty(LOG_LEVEL, "fine");
+    locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
+    locatorProps.setProperty(JMX_MANAGER, "true");
+    locatorProps.setProperty(JMX_MANAGER_START, "true");
+    locatorProps.setProperty(JMX_MANAGER_BIND_ADDRESS, String.valueOf(jmxHost));
+    locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
+    locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
+
     // Start the Locator and wait for shared configuration to be available
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-
         final File locatorLogFile = new File("locator-" + locatorPort + ".log");
-        final Properties locatorProps = new Properties();
-        locatorProps.setProperty(NAME, "Locator");
-        locatorProps.setProperty(MCAST_PORT, "0");
-        locatorProps.setProperty(LOG_LEVEL, "fine");
-        locatorProps.setProperty(ENABLE_CLUSTER_CONFIGURATION, "true");
         try {
-          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort, locatorLogFile, null,
-              locatorProps);
+          final InternalLocator locator = (InternalLocator) Locator.startLocatorAndDS(locatorPort,
+              locatorLogFile, null, locatorProps);
 
           WaitCriterion wc = new WaitCriterion() {
             @Override
@@ -624,10 +679,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     });
 
     // Start the default manager
-    Properties managerProps = new Properties();
-    managerProps.setProperty(MCAST_PORT, "0");
-    managerProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
-    setUpJmxManagerOnVm0ThenConnect(managerProps);
+    connect(jmxHost, jmxPort, httpPort, getDefaultShell());
 
     // Create a cache in VM 1
     VM vm = Host.getHost(0).getVM(1);
@@ -636,7 +688,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
       public void run() {
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         localProps.setProperty(GROUPS, groupName);
         getSystem(localProps);
         assertNotNull(getCache());
@@ -656,10 +708,11 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure the index exists in the shared config
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+        ClusterConfigurationService sharedConfig =
+            ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
         String xmlFromConfig;
         try {
           xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
@@ -670,7 +723,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    //Restart a member and make sure he gets the shared configuration
+    // Restart a member and make sure he gets the shared configuration
     vm = Host.getHost(0).getVM(1);
     vm.invoke(new SerializableRunnable() {
       @Override
@@ -679,7 +732,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);
@@ -701,10 +754,11 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
     assertEquals(Result.Status.OK, cmdResult.getStatus());
 
     // Make sure the index was removed from the shared config
-    Host.getHost(0).getVM(3).invoke(new SerializableRunnable() {
+    Host.getHost(0).getVM(0).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        SharedConfiguration sharedConfig = ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
+        ClusterConfigurationService sharedConfig =
+            ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
         String xmlFromConfig;
         try {
           xmlFromConfig = sharedConfig.getConfiguration(groupName).getCacheXmlContent();
@@ -715,7 +769,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
       }
     });
 
-    //Restart the data member cache to make sure that the index is destroyed.
+    // Restart the data member cache to make sure that the index is destroyed.
     vm = Host.getHost(0).getVM(1);
     vm.invoke(new SerializableRunnable() {
       @Override
@@ -724,7 +778,7 @@ public class IndexCommandsDUnitTest extends CliCommandTestBase {
 
         Properties localProps = new Properties();
         localProps.setProperty(MCAST_PORT, "0");
-        localProps.setProperty(LOCATORS, "localhost[" + locatorPort+"]");
+        localProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
         localProps.setProperty(GROUPS, groupName);
         localProps.setProperty(USE_CLUSTER_CONFIGURATION, "true");
         getSystem(localProps);

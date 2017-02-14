@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal.index;
 
@@ -55,7 +53,7 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
   private static int bridgeServerPort;
   static long timeWithoutStructTypeIndex = 0;
   static long timeWithStructTypeIndex = 0;
-  
+
   @Override
   public final void postSetUp() throws Exception {
     disconnectAllFromDS();
@@ -77,79 +75,81 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
 
     // Start server
     vm0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
-        public void run2() throws CacheException {
-          Properties config = new Properties();
-          config.put(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-          Cache cache = new CacheFactory(config).create();
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.LOCAL);
-          cache.createRegionFactory(factory.create()).create(name);
-          try {
-            startBridgeServer(0, false);
-          } catch (Exception ex) {
-            Assert.fail("While starting CacheServer", ex);
-          }
-          //Create Index on empty region
-          try {
-            cache.getQueryService().createIndex("idIndex", "ID", "/"+name);
-          } catch (Exception e) {
-            Assert.fail("index creation failed", e);
-          }
+      public void run2() throws CacheException {
+        Properties config = new Properties();
+        config.put(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+        Cache cache = new CacheFactory(config).create();
+        AttributesFactory factory = new AttributesFactory();
+        factory.setScope(Scope.LOCAL);
+        cache.createRegionFactory(factory.create()).create(name);
+        try {
+          startBridgeServer(0, false);
+        } catch (Exception ex) {
+          Assert.fail("While starting CacheServer", ex);
         }
-      });
+        // Create Index on empty region
+        try {
+          cache.getQueryService().createIndex("idIndex", "ID", "/" + name);
+        } catch (Exception e) {
+          Assert.fail("index creation failed", e);
+        }
+      }
+    });
 
     // Create client region
     final int port = vm0.invoke(() -> PutAllWithIndexPerfDUnitTest.getCacheServerPort());
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     vm1.invoke(new CacheSerializableRunnable("Create region") {
-        public void run2() throws CacheException {
-          Properties config = new Properties();
-          config.setProperty(MCAST_PORT, "0");
-          ClientCache cache = new ClientCacheFactory().addPoolServer(host0, port).create();
-          AttributesFactory factory = new AttributesFactory();
-          factory.setScope(Scope.LOCAL);
-          cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(name);
-        }
-      });
+      public void run2() throws CacheException {
+        Properties config = new Properties();
+        config.setProperty(MCAST_PORT, "0");
+        ClientCache cache = new ClientCacheFactory().addPoolServer(host0, port).create();
+        AttributesFactory factory = new AttributesFactory();
+        factory.setScope(Scope.LOCAL);
+        cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(name);
+      }
+    });
 
     vm1.invoke(new CacheSerializableRunnable("putAll() test") {
-      
+
       @Override
       public void run2() throws CacheException {
         Region exampleRegion = ClientCacheFactory.getAnyInstance().getRegion(name);
 
         Map warmupMap = new HashMap();
-        Map data =  new HashMap();
-        for(int i=0; i<10000; i++){
+        Map data = new HashMap();
+        for (int i = 0; i < 10000; i++) {
           Object p = new PortfolioPdx(i);
-          if (i < 1000) warmupMap.put(i, p);
+          if (i < 1000)
+            warmupMap.put(i, p);
           data.put(i, p);
         }
-        
-        for (int i=0; i<10; i++) {
+
+        for (int i = 0; i < 10; i++) {
           exampleRegion.putAll(warmupMap);
         }
-        
+
         long start = System.currentTimeMillis();
-        for (int i=0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
           exampleRegion.putAll(data);
         }
         long end = System.currentTimeMillis();
-        timeWithoutStructTypeIndex = ((end-start)/10);
-        System.out.println("Total putall time for 10000 objects is: "+ ((end-start)/10) + "ms");
- 
+        timeWithoutStructTypeIndex = ((end - start) / 10);
+        System.out
+            .println("Total putall time for 10000 objects is: " + ((end - start) / 10) + "ms");
+
       }
     });
-    
+
     vm0.invoke(new CacheSerializableRunnable("Remove Index and create new one") {
-      
+
       @Override
       public void run2() throws CacheException {
         try {
           Cache cache = CacheFactory.getAnyInstance();
           cache.getQueryService().removeIndexes();
           cache.getRegion(name).clear();
-          cache.getQueryService().createIndex("idIndex", "p.ID", "/"+name+" p");
+          cache.getQueryService().createIndex("idIndex", "p.ID", "/" + name + " p");
         } catch (Exception e) {
           Assert.fail("index creation failed", e);
         }
@@ -157,46 +157,46 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
     });
 
     vm1.invoke(new CacheSerializableRunnable("putAll() test") {
-      
+
       @Override
       public void run2() throws CacheException {
         Region exampleRegion = ClientCacheFactory.getAnyInstance().getRegion(name);
         exampleRegion.clear();
         Map warmupMap = new HashMap();
-        Map data =  new HashMap();
-        for(int i=0; i<10000; i++){
+        Map data = new HashMap();
+        for (int i = 0; i < 10000; i++) {
           Object p = new PortfolioPdx(i);
-          if (i < 1000) warmupMap.put(i, p);
+          if (i < 1000)
+            warmupMap.put(i, p);
           data.put(i, p);
         }
-        
-        for (int i=0; i<10; i++) {
+
+        for (int i = 0; i < 10; i++) {
           exampleRegion.putAll(warmupMap);
         }
-        
+
         long start = System.currentTimeMillis();
-        for (int i=0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
           exampleRegion.putAll(data);
         }
         long end = System.currentTimeMillis();
-        timeWithStructTypeIndex  = ((end-start)/10);
-        System.out.println("Total putall time for 10000 objects is: "+ ((end-start)/10) + "ms");
- 
+        timeWithStructTypeIndex = ((end - start) / 10);
+        System.out
+            .println("Total putall time for 10000 objects is: " + ((end - start) / 10) + "ms");
+
       }
     });
-    
+
     if (timeWithoutStructTypeIndex > timeWithStructTypeIndex) {
       fail("putAll took more time without struct type index than simple index");
     }
   }
 
   /**
-   * Starts a bridge server on the given port, using the given
-   * deserializeValues and notifyBySubscription to serve up the
-   * given region.
+   * Starts a bridge server on the given port, using the given deserializeValues and
+   * notifyBySubscription to serve up the given region.
    */
-  protected void startBridgeServer(int port, boolean notifyBySubscription)
-    throws IOException {
+  protected void startBridgeServer(int port, boolean notifyBySubscription) throws IOException {
 
     Cache cache = CacheFactory.getAnyInstance();
     CacheServer bridge = cache.addCacheServer();

@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.lucene.internal.distributed;
 
@@ -48,7 +44,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class DistributedScoringJUnitTest {
 
-  private String[] indexedFields = new String[] { "txt" };
+  private String[] indexedFields = new String[] {"txt"};
   private HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
 
   private final StandardAnalyzer analyzer = new StandardAnalyzer();
@@ -65,26 +61,19 @@ public class DistributedScoringJUnitTest {
   }
 
   /**
-   * The goal of this test is to verify fair scoring if entries are uniformly distributed. It compares ordered results
-   * from a single IndexRepository (IR) with merged-ordered results from multiple repositories (ir1, ir2, ir3). The
-   * records inserted in IR are same as the combined records in irX. This simulates merging of results from buckets of a
-   * region.
+   * The goal of this test is to verify fair scoring if entries are uniformly distributed. It
+   * compares ordered results from a single IndexRepository (IR) with merged-ordered results from
+   * multiple repositories (ir1, ir2, ir3). The records inserted in IR are same as the combined
+   * records in irX. This simulates merging of results from buckets of a region.
    */
   @Test
   public void uniformDistributionProducesComparableScores() throws Exception {
     // the strings below have been grouped to be split between three index repositories
-    String[] testStrings = {
-        "hello world",
-        "foo bar",
-        "just any string",
+    String[] testStrings = {"hello world", "foo bar", "just any string",
 
-        "hello world is usually the first program",
-        "water on mars",
-        "test world",
+        "hello world is usually the first program", "water on mars", "test world",
 
-        "hello",
-        "test hello test",
-        "find the aliens", };
+        "hello", "test hello test", "find the aliens",};
 
     QueryParser parser = new QueryParser("txt", analyzer);
     Query query = parser.parse("hello world");
@@ -121,18 +110,20 @@ public class DistributedScoringJUnitTest {
     collectors.add(collector3);
 
     List<EntryScore<String>> distResult = manager.reduce(collectors).getEntries().getHits();
-    
+
     Assert.assertEquals(singleResult.size(), distResult.size());
     Assert.assertTrue(singleResult.size() > 0);
-    
-    for (Iterator single = distResult.iterator(), dist = singleResult.iterator(); single.hasNext() && dist.hasNext();) {
+
+    for (Iterator single = distResult.iterator(), dist = singleResult.iterator(); single.hasNext()
+        && dist.hasNext();) {
       EntryScore<String> singleScore = (EntryScore<String>) single.next();
       EntryScore<String> distScore = (EntryScore<String>) dist.next();
       Assert.assertEquals(singleScore.getKey(), distScore.getKey());
     }
   }
 
-  private void populateIndex(String[] testStrings, IndexRepositoryImpl repo, int start, int end) throws IOException {
+  private void populateIndex(String[] testStrings, IndexRepositoryImpl repo, int start, int end)
+      throws IOException {
     for (int i = start; i < end; i++) {
       String key = "key-" + i;
       repo.create(key, new TestType(testStrings[i]));

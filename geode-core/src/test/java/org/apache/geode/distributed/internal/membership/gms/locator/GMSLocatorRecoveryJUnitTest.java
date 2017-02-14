@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.distributed.internal.membership.gms.locator;
 
@@ -29,6 +27,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +43,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, MembershipTest.class})
 public class GMSLocatorRecoveryJUnitTest {
 
   File tempStateFile = null;
@@ -67,7 +66,8 @@ public class GMSLocatorRecoveryJUnitTest {
     }
   }
 
-  private void populateStateFile(File file, int fileStamp, int ordinal, Object object) throws Exception {
+  private void populateStateFile(File file, int fileStamp, int ordinal, Object object)
+      throws Exception {
     try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
       oos.writeInt(fileStamp);
       oos.writeInt(ordinal);
@@ -122,23 +122,22 @@ public class GMSLocatorRecoveryJUnitTest {
 
   @Test
   public void testRecoverFromOther() throws Exception {
-    
-    MembershipManager m1=null, m2=null;
+
+    MembershipManager m1 = null, m2 = null;
     Locator l = null;
-    
+
     try {
-      
+
       // boot up a locator
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
       InetAddress localHost = SocketCreator.getLocalHost();
-      
+
       // this locator will hook itself up with the first MembershipManager
       // to be created
-//      l = Locator.startLocator(port, new File(""), localHost);
-      l = InternalLocator.startLocator(port, new File(""), null,
-          null, null, localHost, false, new Properties(), true, false, null,
-          false);
-      
+      // l = Locator.startLocator(port, new File(""), localHost);
+      l = InternalLocator.startLocator(port, new File(""), null, null, null, localHost, false,
+          new Properties(), null);
+
       // create configuration objects
       Properties nonDefault = new Properties();
       nonDefault.put(DISABLE_TCP, "true");
@@ -148,23 +147,22 @@ public class GMSLocatorRecoveryJUnitTest {
       nonDefault.put(LOCATORS, localHost.getHostAddress() + '[' + port + ']');
       nonDefault.put(BIND_ADDRESS, localHost.getHostAddress());
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
-      RemoteTransportConfig transport = new RemoteTransportConfig(config,
-          DistributionManager.NORMAL_DM_TYPE);
+      RemoteTransportConfig transport =
+          new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
 
       // start the first membership manager
       DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);
       DMStats stats1 = mock(DMStats.class);
       m1 = MemberFactory.newMembershipManager(listener1, config, transport, stats1);
-      
+
       // hook up the locator to the membership manager
-      ((InternalLocator)l).getLocatorHandler().setMembershipManager(m1);
-      
+      ((InternalLocator) l).getLocatorHandler().setMembershipManager(m1);
+
       GMSLocator l2 = new GMSLocator(SocketCreator.getLocalHost(), new File("l2.dat"),
-          m1.getLocalMember().getHost()+"["+port+"]", true, true, new LocatorStats(), "");
+          m1.getLocalMember().getHost() + "[" + port + "]", true, true, new LocatorStats(), "");
       l2.init(null);
-      
-      assertTrue("expected view to contain "
-          + m1.getLocalMember() + ": " + l2.getMembers(),
+
+      assertTrue("expected view to contain " + m1.getLocalMember() + ": " + l2.getMembers(),
           l2.getMembers().contains(m1.getLocalMember()));
     } finally {
       if (m1 != null) {

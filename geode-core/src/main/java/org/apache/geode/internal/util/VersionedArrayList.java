@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.util;
@@ -32,15 +30,14 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.Node;
 
 /**
- * Versioned ArrayList which maintains the version everytime the list gets
- * modified. This is thread-safe in terms of add and remove operations and also
- * list is an unmodifiable list to avoid ConcurrentModificationException.
+ * Versioned ArrayList which maintains the version everytime the list gets modified. This is
+ * thread-safe in terms of add and remove operations and also list is an unmodifiable list to avoid
+ * ConcurrentModificationException.
  * 
  * @see java.util.ConcurrentModificationException
  * 
  */
-public class VersionedArrayList implements DataSerializable, Versionable, Iterable<Node>
-{
+public class VersionedArrayList implements DataSerializable, Versionable, Iterable<Node> {
   private static final long serialVersionUID = -1455442285961593385L;
 
   /** Version of the list. */
@@ -48,9 +45,9 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
 
   /** ArrayList */
   private List<Node> list;
-  
-//  private List vhist = new ArrayList();  // DEBUG
-  
+
+  // private List vhist = new ArrayList(); // DEBUG
+
   /**
    * Constructor for DataSerializable.
    */
@@ -69,49 +66,47 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
 
   public VersionedArrayList(List<? extends Node> list) {
     this.list = Collections.unmodifiableList(list);
-//    incrementVersion("i->" + list);
+    // incrementVersion("i->" + list);
     incrementVersion();
   }
 
   /**
-   * Adds obj to the list. Addition is done by making a copy of the existing
-   * list and then adding the obj to the new list and assigning the old list to
-   * the new unmodifiable list. This is to ensure that the iterator of the list
-   * doesn't get ConcurrentModificationException.
+   * Adds obj to the list. Addition is done by making a copy of the existing list and then adding
+   * the obj to the new list and assigning the old list to the new unmodifiable list. This is to
+   * ensure that the iterator of the list doesn't get ConcurrentModificationException.
    * 
    * @see java.util.ConcurrentModificationException
    * @param obj
    */
-  public synchronized void add(Node obj)
-  {
+  public synchronized void add(Node obj) {
 
     ArrayList newList = new ArrayList<Node>(this.list);
     newList.add(obj);
     this.list = Collections.unmodifiableList(newList);
-//    incrementVersion("a->" + obj);
+    // incrementVersion("a->" + obj);
     incrementVersion();
   }
 
   /**
-   * Removes obj from the list. Removal is done by making a copy of the existing
-   * list and then removing the obj from the new list.  If the object was removed, 
-   * the list is assigning to the new unmodifiable list. 
-   * This is to ensure that the iterator of the list doesn't get ConcurrentModificationException.
-   * @return true if the element was removed and the version was changed, otherwise version and list are left
-   * unmodified.
+   * Removes obj from the list. Removal is done by making a copy of the existing list and then
+   * removing the obj from the new list. If the object was removed, the list is assigning to the new
+   * unmodifiable list. This is to ensure that the iterator of the list doesn't get
+   * ConcurrentModificationException.
+   * 
+   * @return true if the element was removed and the version was changed, otherwise version and list
+   *         are left unmodified.
    * 
    * @see java.util.ConcurrentModificationException
    * @param obj the object to remove from the list
    */
-  public synchronized boolean remove(Node obj)
-  {
+  public synchronized boolean remove(Node obj) {
     ArrayList<Node> newList = new ArrayList<Node>(this.list);
     boolean ret = newList.remove(obj);
     if (ret) {
       this.list = Collections.unmodifiableList(newList);
-//      incrementVersion("r->" + obj);
+      // incrementVersion("r->" + obj);
       incrementVersion();
-    } 
+    }
     return ret;
   }
 
@@ -120,8 +115,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * 
    * @return a list Iterator
    */
-  public synchronized Iterator<Node> iterator()
-  {
+  public synchronized Iterator<Node> iterator() {
     return this.list.iterator();
   }
 
@@ -130,8 +124,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * 
    * @return int
    */
-  public synchronized int size()
-  {
+  public synchronized int size() {
     return this.list.size();
   }
 
@@ -141,16 +134,15 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * @param obj
    * @return true if obj is present in the list
    */
-  public boolean contains(Node obj)
-  {
-    final List<Node> l; 
-    synchronized(this) {
+  public boolean contains(Node obj) {
+    final List<Node> l;
+    synchronized (this) {
       l = this.list;
     }
     return l.contains(obj);
   }
 
-  
+
 
   /**
    * Returns Object at index i.
@@ -158,10 +150,9 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * @param i
    * @return Object
    */
-  public Object get(int i)
-  {
-    final List<Node> l; 
-    synchronized(this) {
+  public Object get(int i) {
+    final List<Node> l;
+    synchronized (this) {
       l = this.list;
     }
     return l.get(i);
@@ -173,10 +164,9 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * @param obj
    * @return int
    */
-  public int indexOf(Object obj)
-  {
+  public int indexOf(Object obj) {
     final List<Node> l;
-    synchronized(this) {
+    synchronized (this) {
       l = this.list;
     }
     return l.indexOf(obj);
@@ -187,10 +177,9 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * 
    * @return ArrayList
    */
-  public Set<Node> getListCopy()
-  {
+  public Set<Node> getListCopy() {
     final List<Node> l;
-    synchronized(this) {
+    synchronized (this) {
       l = this.list;
     }
     return new HashSet<Node>(l);
@@ -202,34 +191,32 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * @return String with version and elements of the list.
    */
   @Override
-  public String toString()
-  {
+  public String toString() {
     final List<Node> l;
-//    final List vh;
-    synchronized(this) {
+    // final List vh;
+    synchronized (this) {
       l = this.list;
-//      vh = this.vhist;
+      // vh = this.vhist;
     }
     StringBuffer sb = new StringBuffer();
     sb.append("ArrayList version = " + getVersion() + " Elements = { ");
     for (int i = 0; i < l.size(); i++) {
       sb.append(l.get(i).toString() + ", ");
     }
-//    sb.append("vhist:\n " + vh);
+    // sb.append("vhist:\n " + vh);
     sb.append("}");
     return sb.toString();
   }
 
- 
-  public void toData(DataOutput out) throws IOException
-  {
+
+  public void toData(DataOutput out) throws IOException {
     long v = -1;
     final List<Node> l;
-//    final List vh;
+    // final List vh;
     synchronized (this) {
       v = this.version;
       l = this.list;
-//      vh = this.vhist;
+      // vh = this.vhist;
     }
 
     out.writeLong(v);
@@ -239,107 +226,105 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
       InternalDataSerializer.invokeToData((l.get(k)), out);
     }
 
-//    final int sh = vh.size();
-//    out.writeInt(sh);
-//    for (int k = 0; k < sh; k++) {
-//      out.writeUTF((String) vh.get(k));
-//    }
+    // final int sh = vh.size();
+    // out.writeInt(sh);
+    // for (int k = 0; k < sh; k++) {
+    // out.writeUTF((String) vh.get(k));
+    // }
   }
 
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException
-  {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     final ArrayList<Node> l = new ArrayList<Node>();
     final long v = in.readLong();
     final int size = in.readInt();
-    for (int k = 0; k < size; k++) {      
+    for (int k = 0; k < size; k++) {
       l.add(new Node(in));
     }
-    
-//    final ArrayList vh = new ArrayList();
-//    final int vhsize = in.readInt();
-//    for (int k = 0; k < vhsize; k++) {      
-//      vh.add(in.readUTF());
-//    }
-    
+
+    // final ArrayList vh = new ArrayList();
+    // final int vhsize = in.readInt();
+    // for (int k = 0; k < vhsize; k++) {
+    // vh.add(in.readUTF());
+    // }
+
     synchronized (this) {
       this.version = v;
       this.list = Collections.unmodifiableList(l);
-//      this.vhist = Collections.unmodifiableList(vh);
+      // this.vhist = Collections.unmodifiableList(vh);
     }
   }
 
-  
-  /* (non-Javadoc)
+
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.geode.internal.util.Versionable#getVersion()
    */
-  public synchronized Comparable getVersion()
-  {
+  public synchronized Comparable getVersion() {
     return Long.valueOf(this.version);
   }
-  
+
   public boolean isNewerThan(Versionable other) {
     if (other instanceof VersionedArrayList) {
       final long v = ((Long) other.getVersion()).longValue();
-      synchronized(this) {
+      synchronized (this) {
         return this.version > v;
       }
     } else {
       final Comparable o = other.getVersion();
       return getVersion().compareTo(o) > 0;
-    } 
+    }
   }
-  
+
   public boolean isOlderThan(Versionable other) {
     if (other instanceof VersionedArrayList) {
       final long v;
-      synchronized(other) {
-        v = ((VersionedArrayList) other).version;        
+      synchronized (other) {
+        v = ((VersionedArrayList) other).version;
       }
-      synchronized(this) {
+      synchronized (this) {
         return this.version < v;
       }
     } else {
       final Comparable o = other.getVersion();
       return getVersion().compareTo(o) < 0;
-    } 
+    }
   }
-  
-  public boolean isSame(Versionable other)
-  {
+
+  public boolean isSame(Versionable other) {
     if (other instanceof VersionedArrayList) {
       final long v;
-      synchronized(other) {
-        v = ((VersionedArrayList) other).version;        
+      synchronized (other) {
+        v = ((VersionedArrayList) other).version;
       }
-      synchronized(this) {
+      synchronized (this) {
         return this.version == v;
       }
     } else {
       final Comparable o = other.getVersion();
       return getVersion().compareTo(o) == 0;
-    } 
+    }
   }
 
-//private synchronized void incrementVersion(String op)
-  private synchronized void incrementVersion()
-  {
-// DEBUG
-//    {
-//      StringWriter s = new StringWriter();
-//      final String pre = 
-//        "o=" + op + 
-//        ":t=" + System.currentTimeMillis() + 
-//        ":m=" + InternalDistributedSystem.getAnyInstance().getDistributedMember().toString() + ": ";
-//      s.write(pre);
-//      PrintWriter p = new PrintWriter(s);
-//      new Exception().fillInStackTrace().printStackTrace(p);
-//      
-//      ArrayList newList = new ArrayList(this.vhist);
-//      newList.add(pre); // Capture what code added this version
-//      this.vhist = Collections.unmodifiableList(newList);
-//    }
-    
+  // private synchronized void incrementVersion(String op)
+  private synchronized void incrementVersion() {
+    // DEBUG
+    // {
+    // StringWriter s = new StringWriter();
+    // final String pre =
+    // "o=" + op +
+    // ":t=" + System.currentTimeMillis() +
+    // ":m=" + InternalDistributedSystem.getAnyInstance().getDistributedMember().toString() + ": ";
+    // s.write(pre);
+    // PrintWriter p = new PrintWriter(s);
+    // new Exception().fillInStackTrace().printStackTrace(p);
+    //
+    // ArrayList newList = new ArrayList(this.vhist);
+    // newList.add(pre); // Capture what code added this version
+    // this.vhist = Collections.unmodifiableList(newList);
+    // }
+
     ++this.version;
   }
 }

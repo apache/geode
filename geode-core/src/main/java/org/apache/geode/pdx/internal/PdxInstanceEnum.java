@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.pdx.internal;
 
@@ -34,8 +32,10 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.WritablePdxInstance;
 import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
+
 /**
  * Used to represent an enum value as a PdxInstance
+ * 
  * @since GemFire 6.6.2
  */
 public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToBytes, ComparableEnum {
@@ -43,21 +43,23 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
   private final String className;
   private final String enumName;
   private final int enumOrdinal;
-  
+
   public PdxInstanceEnum(String className, String enumName, int enumOrdinal) {
     this.className = className;
     this.enumName = enumName;
     this.enumOrdinal = enumOrdinal;
   }
+
   public PdxInstanceEnum(Enum<?> e) {
     this.className = e.getDeclaringClass().getName();
     this.enumName = e.name();
     this.enumOrdinal = e.ordinal();
   }
-  
+
   public String getClassName() {
     return this.className;
   }
+
   public String getName() {
     return this.enumName;
   }
@@ -65,6 +67,7 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
   public boolean isEnum() {
     return true;
   }
+
   public int getOrdinal() {
     return this.enumOrdinal;
   }
@@ -77,13 +80,15 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
       c = InternalDataSerializer.getCachedClass(this.className);
     } catch (ClassNotFoundException ex) {
       throw new PdxSerializationException(
-              LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
-              .toLocalizedString(this.className), ex);
+          LocalizedStrings.DataSerializer_COULD_NOT_CREATE_AN_INSTANCE_OF_A_CLASS_0
+              .toLocalizedString(this.className),
+          ex);
     }
     try {
       return Enum.valueOf(c, this.enumName);
     } catch (IllegalArgumentException ex) {
-      throw new PdxSerializationException("Enum could not be deserialized because \"" + this.enumName + "\" is not a valid name in enum class " + c, ex);
+      throw new PdxSerializationException("Enum could not be deserialized because \""
+          + this.enumName + "\" is not a valid name in enum class " + c, ex);
     }
   }
 
@@ -98,6 +103,7 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     tmp.add("ordinal");
     fieldNames = Collections.unmodifiableList(tmp);
   }
+
   public List<String> getFieldNames() {
     return fieldNames;
   }
@@ -157,7 +163,7 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
       return false;
     return true;
   }
-  
+
   @Override
   public String toString() {
     return this.enumName;
@@ -168,15 +174,18 @@ public class PdxInstanceEnum implements PdxInstance, Sendable, ConvertableToByte
     sendTo(hdos);
     return hdos.toByteArray();
   }
+
   public int compareTo(Object o) {
     if (o instanceof ComparableEnum) {
-      ComparableEnum other = (ComparableEnum)o;
+      ComparableEnum other = (ComparableEnum) o;
       if (!getClassName().equals(other.getClassName())) {
-        throw new ClassCastException("Can not compare a " + getClassName() + " to a " + other.getClassName());
+        throw new ClassCastException(
+            "Can not compare a " + getClassName() + " to a " + other.getClassName());
       }
       return getOrdinal() - other.getOrdinal();
-   } else {
-      throw new ClassCastException("Can not compare an instance of " + o.getClass() + " to a " + this.getClass());
+    } else {
+      throw new ClassCastException(
+          "Can not compare an instance of " + o.getClass() + " to a " + this.getClass());
     }
   }
 }

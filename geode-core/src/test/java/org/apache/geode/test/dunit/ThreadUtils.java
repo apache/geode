@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.test.dunit;
 
@@ -25,11 +23,11 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * <code>ThreadUtils</code> provides static utility methods to perform thread
- * related actions such as dumping thread stacks.
+ * <code>ThreadUtils</code> provides static utility methods to perform thread related actions such
+ * as dumping thread stacks.
  * 
- * These methods can be used directly: <code>ThreadUtils.dumpAllStacks()</code>, 
- * however, they are intended to be referenced through static import:
+ * These methods can be used directly: <code>ThreadUtils.dumpAllStacks()</code>, however, they are
+ * intended to be referenced through static import:
  *
  * <pre>
  * import static org.apache.geode.test.dunit.ThreadUtils.*;
@@ -40,23 +38,22 @@ import org.apache.geode.internal.logging.LogService;
  * Extracted from DistributedTestCase.
  */
 public class ThreadUtils {
-  
+
   private static final Logger logger = LogService.getLogger();
 
-  protected ThreadUtils() {
-  }
-  
+  protected ThreadUtils() {}
+
   /**
    * Print stack dumps for all vms.
    * 
    * @since GemFire 5.0
    */
   public static void dumpAllStacks() {
-    for (int h=0; h < Host.getHostCount(); h++) {
+    for (int h = 0; h < Host.getHostCount(); h++) {
       dumpStack(Host.getHost(h));
     }
   }
-  
+
   /**
    * Dump all thread stacks
    */
@@ -64,7 +61,7 @@ public class ThreadUtils {
     OSProcess.printStacks(0, false);
   }
 
-  /** 
+  /**
    * Print a stack dump for this vm.
    * 
    * @since GemFire 5.0
@@ -73,35 +70,31 @@ public class ThreadUtils {
     OSProcess.printStacks(0, false);
   }
 
-  /** 
+  /**
    * Print stack dumps for all vms on the given host.
    * 
    * @since GemFire 5.0
    */
   public static void dumpStack(final Host host) {
-    for (int v=0; v < host.getVMCount(); v++) {
-      host.getVM(v).invoke(org.apache.geode.test.dunit.DistributedTestCase.class, "dumpStack");
+    for (int v = 0; v < host.getVMCount(); v++) {
+      host.getVM(v).invoke(org.apache.geode.test.dunit.ThreadUtils.class, "dumpStack");
     }
   }
 
-  /** 
+  /**
    * Print a stack dump for the given vm.
    * 
    * @since GemFire 5.0
    */
   public static void dumpStack(final VM vm) {
-    vm.invoke(org.apache.geode.test.dunit.DistributedTestCase.class, "dumpStack");
+    vm.invoke(org.apache.geode.test.dunit.ThreadUtils.class, "dumpStack");
   }
 
   public static void dumpStackTrace(final Thread thread, final StackTraceElement[] stackTrace) {
     StringBuilder msg = new StringBuilder();
-    msg.append("Thread=<")
-      .append(thread)
-      .append("> stackDump:\n");
-    for (int i=0; i < stackTrace.length; i++) {
-      msg.append("\t")
-        .append(stackTrace[i])
-        .append("\n");
+    msg.append("Thread=<").append(thread).append("> stackDump:\n");
+    for (int i = 0; i < stackTrace.length; i++) {
+      msg.append("\t").append(stackTrace[i]).append("\n");
     }
     logger.info(msg.toString());
   }
@@ -130,10 +123,10 @@ public class ThreadUtils {
     final long start = System.currentTimeMillis();
     for (;;) {
       // I really do *not* understand why this check is necessary
-      // but it is, at least with JDK 1.6.  According to the source code
+      // but it is, at least with JDK 1.6. According to the source code
       // and the javadocs, one would think that join() would exit immediately
-      // if the thread is dead.  However, I can tell you from experimentation
-      // that this is not the case. :-(  djp 2008-12-08
+      // if the thread is dead. However, I can tell you from experimentation
+      // that this is not the case. :-( djp 2008-12-08
       if (!thread.isAlive()) {
         break;
       }

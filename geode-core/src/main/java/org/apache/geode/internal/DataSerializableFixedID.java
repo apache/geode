@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal;
 
@@ -21,39 +19,34 @@ import org.apache.geode.*;
 import java.io.*;
 
 /**
- * An interface that implements data serialization
- * for internal GemFire product classes that have a fixed id.
- * The fixed id is used
- * to represent the class, on the wire, at serialization time and used
- * in a switch statement at deserialization time.
- * All the codes should be static final in this class.
- * <p> Implementors MUST have a public zero-arg constructor.
+ * An interface that implements data serialization for internal GemFire product classes that have a
+ * fixed id. The fixed id is used to represent the class, on the wire, at serialization time and
+ * used in a switch statement at deserialization time. All the codes should be static final in this
+ * class.
+ * <p>
+ * Implementors MUST have a public zero-arg constructor.
  *
- * <p> Note that this class is for internal use only. Customer classes
- * that want to do something similiar should implement a subclass of
- * {@link DataSerializer} or {@link Instantiator}.
+ * <p>
+ * Note that this class is for internal use only. Customer classes that want to do something
+ * similiar should implement a subclass of {@link DataSerializer} or {@link Instantiator}.
  *
  * <p>
  * To add a new DataSerializableFixedID do this following:
  * <ol>
- * <li> Define a constant with an id that is free and put it in
- *    <code>DataSerializableFixedID</code> as a "public static final byte".
- *    Make sure and update the "unused" comments to no longer mention your new id.
- *    If implementing a class used only for tests then there is no need to consume
- *    a fixed id and you should use {@link #NO_FIXED_ID}. In this case you can skip
- *    steps 3 and 4.
- * <li> Define a method in the class that
- *    implements <code>DataSerializableFixedID</code>
- *    named {@link #getDSFID} that returns the constant from step 1.
- * <li> Define a private static method in {@link DSFIDFactory} that returns an instance
- *    of the class from step 2 usually be calling its zero-arg constructor
- *    and then calling fromData(in).
- *    See the end of {@link DSFIDFactory} for examples.
- * <li> Add a case statement in {@link DSFIDFactory#create} for the constant
- *    from step 1 that calls the method from step 3.
- * <li> Implement {@link #toData} and {@link #fromData} just like you
- *    would on a <code>DataSerializer</code>. Make sure you follow the javadocs 
- *    for these methods to add support for rolling upgrades.
+ * <li>Define a constant with an id that is free and put it in <code>DataSerializableFixedID</code>
+ * as a "public static final byte". Make sure and update the "unused" comments to no longer mention
+ * your new id. If implementing a class used only for tests then there is no need to consume a fixed
+ * id and you should use {@link #NO_FIXED_ID}. In this case you can skip steps 3 and 4.
+ * <li>Define a method in the class that implements <code>DataSerializableFixedID</code> named
+ * {@link #getDSFID} that returns the constant from step 1.
+ * <li>Define a private static method in {@link DSFIDFactory} that returns an instance of the class
+ * from step 2 usually be calling its zero-arg constructor and then calling fromData(in). See the
+ * end of {@link DSFIDFactory} for examples.
+ * <li>Add a case statement in {@link DSFIDFactory#create} for the constant from step 1 that calls
+ * the method from step 3.
+ * <li>Implement {@link #toData} and {@link #fromData} just like you would on a
+ * <code>DataSerializer</code>. Make sure you follow the javadocs for these methods to add support
+ * for rolling upgrades.
  * </ol>
  *
  * @see DataSerializer
@@ -65,31 +58,25 @@ public interface DataSerializableFixedID extends SerializationVersions {
   // NOTE, codes < -65536 will take 4 bytes to serialize
   // NOTE, codes < -128 will take 2 bytes to serialize
 
-  /* In the class to be serialized, add
-  public FOO(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
-  }
-  
-  public int getDSFID() {
-    return FOO;
-  }
-  
-  In DataSerializableFixedId, allocate an ID for the class
-  public static final byte FOO = -54;
-
-  In DSFIDFactory, add a case for the new class
-    case FOO:
-      return new FOO(in);
-  */
+  /*
+   * In the class to be serialized, add public FOO(DataInput in) throws IOException,
+   * ClassNotFoundException { fromData(in); }
+   * 
+   * public int getDSFID() { return FOO; }
+   * 
+   * In DataSerializableFixedId, allocate an ID for the class public static final byte FOO = -54;
+   * 
+   * In DSFIDFactory, add a case for the new class case FOO: return new FOO(in);
+   */
   public static final short NETWORK_PARTITION_MESSAGE = -157;
   public static final short SUSPECT_MEMBERS_MESSAGE = -156;
-  
+
   public static final short HEARTBEAT_RESPONSE = -155;
   public static final short HEARTBEAT_REQUEST = -154;
   public static final short REMOVE_MEMBER_REQUEST = -153;
-  
+
   public static final short LEAVE_REQUEST_MESSAGE = -152;
-  
+
   public static final short VIEW_ACK_MESSAGE = -151;
   public static final short INSTALL_VIEW_MESSAGE = -150;
   public static final short GMSMEMBER = -149;
@@ -104,20 +91,20 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short JOIN_REQUEST = -142;
 
   public static final short SNAPPY_COMPRESSED_CACHED_DESERIALIZABLE = -140;
-  
+
   public static final short GATEWAY_EVENT_IMPL = -136;
   public static final short GATEWAY_SENDER_EVENT_CALLBACK_ARGUMENT = -135;
   public static final short GATEWAY_SENDER_EVENT_IMPL = -134;
 
   public static final short CLIENT_TOMBSTONE_MESSAGE = -133;
-  
+
   public static final short R_REGION_OP_REPLY = -132;
   public static final short R_REGION_OP = -131;
-  
+
   public static final short WAIT_FOR_VIEW_INSTALLATION = -130;
-  
+
   public static final short DISPATCHED_AND_CURRENT_EVENTS = -129;
-  
+
   public static final byte DLOCK_QUERY_MESSAGE = -128;
   public static final byte DLOCK_QUERY_REPLY = -127;
 
@@ -127,13 +114,13 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte SIZED_BASED_LOAD_PROBE = -123;
 
   public static final byte CLIENT_PING_MESSAGE_IMPL = -122;
-  
+
   public static final byte REMOTE_PUTALL_REPLY_MESSAGE = -121;
   public static final byte VERSION_TAG = -120;
 
   public static final byte REMOTE_PUTALL_MESSAGE = -119;
 
-  public static final byte ADD_CACHESERVER_PROFILE_UPDATE = -118;  
+  public static final byte ADD_CACHESERVER_PROFILE_UPDATE = -118;
   public static final byte SERVER_INTEREST_REGISTRATION_MESSAGE = -117;
   public static final byte FILTER_PROFILE_UPDATE = -116;
   public static final byte JTA_AFTER_COMPLETION_MESSAGE = -115;
@@ -147,11 +134,11 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte RESOURCE_MANAGER_PROFILE = -107;
   public static final byte PR_CREATE_BUCKET_MESSAGE = -106;
   public static final byte PR_CREATE_BUCKET_REPLY_MESSAGE = -105;
-  public static final byte DISTRIBUTED_REGION_FUNCTION_MESSAGE = -104; 
+  public static final byte DISTRIBUTED_REGION_FUNCTION_MESSAGE = -104;
   public static final byte DISTRIBUTED_REGION_FUNCTION_REPLY_MESSAGE = -103;
-  
-  public static final byte MEMBER_FUNCTION_MESSAGE = -102; 
-  public static final byte MEMBER_FUNCTION_REPLY_MESSAGE = -101;   
+
+  public static final byte MEMBER_FUNCTION_MESSAGE = -102;
+  public static final byte MEMBER_FUNCTION_REPLY_MESSAGE = -101;
   public static final byte PARTITION_REGION_CONFIG = -100;
   public static final byte PR_FETCH_KEYS_REPLY_MESSAGE = -99;
   public static final byte PR_DUMP_B2N_REGION_MSG = -98;
@@ -207,7 +194,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte CLIENT_CONNECTION_RESPONSE = -50;
   public static final byte QUEUE_CONNECTION_RESPONSE = -49;
   public static final byte CLIENT_REPLACEMENT_REQUEST = -48;
-  
+
   public static final byte INTEREST_EVENT_MESSAGE = -47;
   public static final byte INTEREST_EVENT_REPLY_MESSAGE = -46;
   public static final byte CLIENT_BLACKLIST_MESSAGE = -45;
@@ -231,27 +218,26 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte R_DESTROY_MESSAGE = -32;
   public static final byte R_INVALIDATE_MESSAGE = -31;
   public static final byte R_INVALIDATE_REPLY_MESSAGE = -30;
-  
+
   public static final byte R_PUT_MESSAGE = -29;
   public static final byte R_PUT_REPLY_MESSAGE = -28;
-  
+
   public static final byte R_CONTAINS_MESSAGE = -27;
   public static final byte R_CONTAINS_REPLY_MESSAGE = -26;
-  
+
   public static final byte R_GET_MESSAGE = -24;
   public static final byte R_GET_REPLY_MESSAGE = -25;
 
   public static final byte DURABLE_CLIENT_INFO_RESPONSE = -23;
-  
+
   public static final byte DURABLE_CLIENT_INFO_REQUEST = -22;
-  
+
   public static final byte CLIENT_INTEREST_MESSAGE = -21;
 
   // IDs -20 .. -16 are not used
 
   /**
-   * A header byte meaning that the next element in the stream is a
-   * <code>VMIdProfile</code>.
+   * A header byte meaning that the next element in the stream is a <code>VMIdProfile</code>.
    */
   public static final byte VMID_PROFILE_MESSAGE = -15;
 
@@ -275,46 +261,49 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte DISTTX_PRE_COMMIT_MESSAGE = -3;
   public static final byte DISTTX_COMMIT_REPLY_MESSAGE = -2;
   public static final byte DISTTX_PRE_COMMIT_REPLY_MESSAGE = -1;
-  
+
   public static final byte ILLEGAL = 0;
 
-  // 1 available for reuse.  Retired in Geode v1.0
-  //public static final byte JGROUPS_VIEW = 1;
-  
-  // 2 available for reuse.  Retired in Geode v1.0
-//  public static final byte JGROUPS_JOIN_RESP = 2;
-  
+  // 1 available for reuse. Retired in Geode v1.0
+  // public static final byte JGROUPS_VIEW = 1;
+
+  // 2 available for reuse. Retired in Geode v1.0
+  // public static final byte JGROUPS_JOIN_RESP = 2;
+
   public static final byte PUTALL_VERSIONS_LIST = 3;
 
   public static final byte INITIAL_IMAGE_VERSIONED_OBJECT_LIST = 4;
 
   public static final byte FIND_VERSION_TAG = 5;
-  
+
   public static final byte VERSION_TAG_REPLY = 6;
-  
+
   public static final byte VERSIONED_OBJECT_LIST = 7;
 
   public static final byte ENUM_ID = 8;
   public static final byte ENUM_INFO = 9;
 
-  
-  /** 
-   * A header byte meaning that the next element in the stream is 
-   * a <code>InitialImageOperation.EventStateMessage</code>. 
-   */ 
+
+  /**
+   * A header byte meaning that the next element in the stream is a
+   * <code>InitialImageOperation.EventStateMessage</code>.
+   */
   public static final byte REGION_STATE_MESSAGE = 10;
-  
-  /** A header byte meaning that the next element in the stream is a
+
+  /**
+   * A header byte meaning that the next element in the stream is a
    * <code>ClientInstantiatorMessage</code>.
    */
   public static final byte CLIENT_INSTANTIATOR_MESSAGE = 11;
 
-  /** A header byte meaning that the next element in the stream is a
+  /**
+   * A header byte meaning that the next element in the stream is a
    * <code>InternalInstantiator.RegistrationMessage</code>.
    */
   public static final byte REGISTRATION_MESSAGE = 12;
 
-  /** A header byte meaning that the next element in the stream is a
+  /**
+   * A header byte meaning that the next element in the stream is a
    * <code>InternalInstantiator.RegistrationContextMessage</code>.
    */
   public static final byte REGISTRATION_CONTEXT_MESSAGE = 13;
@@ -336,8 +325,8 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte FIND_DURABLE_QUEUE_REPLY = 23;
   public static final byte CACHE_SERVER_LOAD_MESSAGE = 24;
 
-  /** A header byte meaning that the next element in the stream is a
-   * <code>ObjectPartList</code>.
+  /**
+   * A header byte meaning that the next element in the stream is a <code>ObjectPartList</code>.
    */
   public static final byte OBJECT_PART_LIST = 25;
 
@@ -352,21 +341,28 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte STRUCT_IMPL = 32;
   public static final byte STRUCT_SET = 33;
 
-  /** A header byte meaning that the next element in the stream is a
-   * <code>ClearRegionWithContextMessage</code>. */
+  /**
+   * A header byte meaning that the next element in the stream is a
+   * <code>ClearRegionWithContextMessage</code>.
+   */
   public static final byte CLEAR_REGION_MESSAGE_WITH_CONTEXT = 34;
 
-  /** A header byte meaning that the next element in the stream is a
-   * <code>ClientUpdateMessage</code>. */
+  /**
+   * A header byte meaning that the next element in the stream is a
+   * <code>ClientUpdateMessage</code>.
+   */
   public static final byte CLIENT_UPDATE_MESSAGE = 35;
 
-  /** A header byte meaning that the next element in the stream is a
-   * <code>EventID</code>. */
+  /**
+   * A header byte meaning that the next element in the stream is a <code>EventID</code>.
+   */
   public static final byte EVENT_ID = 36;
 
   public static final byte INTEREST_RESULT_POLICY = 37;
-  /** A header byte meaning that the next element in the stream is a
-   * <code>ClientProxyMembershipID</code>. */
+  /**
+   * A header byte meaning that the next element in the stream is a
+   * <code>ClientProxyMembershipID</code>.
+   */
   public static final byte CLIENT_PROXY_MEMBERSHIPID = 38;
 
   public static final byte PR_BUCKET_BACKUP_MESSAGE = 39;
@@ -400,23 +396,28 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PR_IDENTITY_REPLY_MESSAGE = 67;
   public static final byte PR_INDEX_CREATION_REPLY_MSG = 68;
   public static final byte PR_MANAGE_BUCKET_REPLY_MESSAGE = 69;
-  
-  // 70 available for reuse - retired in Geode v1.0
-  //public static final byte IP_ADDRESS = 70;
 
-  /** A header byte meaning that the next element in the stream is a
-   * <code>UpdateOperation.UpdateMessage</code>. */
+  // 70 available for reuse - retired in Geode v1.0
+  // public static final byte IP_ADDRESS = 70;
+
+  /**
+   * A header byte meaning that the next element in the stream is a
+   * <code>UpdateOperation.UpdateMessage</code>.
+   */
   public static final byte UPDATE_MESSAGE = 71;
 
-  /** A header byte meaning that the next element in the stream is a
-   * <code>ReplyMessage</code>. */
+  /**
+   * A header byte meaning that the next element in the stream is a <code>ReplyMessage</code>.
+   */
   public static final byte REPLY_MESSAGE = 72;
 
   /** <code>DestroyMessage</code> */
   public static final byte PR_DESTROY = 73;
 
-  /** A header byte meaning that the next element in the stream is a
-   * <code>CreateRegionReplyMessage</code>. */
+  /**
+   * A header byte meaning that the next element in the stream is a
+   * <code>CreateRegionReplyMessage</code>.
+   */
   public static final byte CREATE_REGION_REPLY_MESSAGE = 74;
 
   public static final byte QUERY_MESSAGE = 75;
@@ -434,13 +435,15 @@ public interface DataSerializableFixedID extends SerializationVersions {
   // DLockReleaseMessage
   public static final byte DLOCK_RELEASE_MESSAGE = 85;
 
-  /** A header byte meaning that the next element in the stream is a
-   * <code>SystemMemberCacheMessage</code>. */
-  //added for feature requests #32887
+  /**
+   * A header byte meaning that the next element in the stream is a
+   * <code>SystemMemberCacheMessage</code>.
+   */
+  // added for feature requests #32887
   public static final byte ADMIN_CACHE_EVENT_MESSAGE = 86;
-  
+
   public static final byte CQ_ENTRY_EVENT = 87;
-  
+
   // InitialImageOperation
   public static final byte REQUEST_IMAGE_MESSAGE = 88;
   public static final byte IMAGE_REPLY_MESSAGE = 89;
@@ -451,8 +454,10 @@ public interface DataSerializableFixedID extends SerializationVersions {
 
   public static final byte DISTRIBUTED_MEMBER = 92;
 
-  /** A header byte meaning that the next element in the stream is a
-   * <code>UpdateOperation.UpdateWithContextMessage</code>. */
+  /**
+   * A header byte meaning that the next element in the stream is a
+   * <code>UpdateOperation.UpdateWithContextMessage</code>.
+   */
   public static final byte UPDATE_WITH_CONTEXT_MESSAGE = 93;
 
   // GrantorRequestProcessor
@@ -501,13 +506,14 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte TX_COMMIT_MESSAGE = 110;
 
   public static final byte HA_PROFILE = 111;
-    
+
   public static final byte ELDER_INIT_MESSAGE = 112;
   public static final byte ELDER_INIT_REPLY_MESSAGE = 113;
   public static final byte DEPOSE_GRANTOR_MESSAGE = 114;
 
-  /** A header byte meaning that the next element in the stream is a
-   * <code>HAEventWrapper</code>. */
+  /**
+   * A header byte meaning that the next element in the stream is a <code>HAEventWrapper</code>.
+   */
   public static final byte HA_EVENT_WRAPPER = 115;
 
   public static final byte DLOCK_RELEASE_REPLY = 116;
@@ -537,8 +543,10 @@ public interface DataSerializableFixedID extends SerializationVersions {
   /** {@link org.apache.geode.internal.cache.Node} */
   public static final byte PR_NODE = 126;
 
-  /** A header byte meaning that the next element in the stream is a
-   * <code>DestroyOperation.DestroyWithContextMessage</code>. */
+  /**
+   * A header byte meaning that the next element in the stream is a
+   * <code>DestroyOperation.DestroyWithContextMessage</code>.
+   */
   public static final byte DESTROY_WITH_CONTEXT_MESSAGE = 127;
 
   // NOTE, CODES > 127 will take two bytes to serialize
@@ -556,9 +564,9 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short TX_MANAGER_REMOVE_TRANSACTIONS = 138;
 
   public static final short REGION_VERSION_VECTOR = 139;
-  
+
   public static final short INVALIDATE_WITH_CONTEXT_MESSAGE = 140;
-  
+
   public static final short TOKEN_INVALID = 141;
   public static final short TOKEN_LOCAL_INVALID = 142;
   public static final short TOKEN_DESTROYED = 143;
@@ -567,27 +575,27 @@ public interface DataSerializableFixedID extends SerializationVersions {
 
   public static final short STARTUP_RESPONSE_WITHVERSION_MESSAGE = 146;
   public static final short SHUTDOWN_ALL_GATEWAYHUBS_REQUEST = 147;
-  
+
   public static final short TOKEN_TOMBSTONE = 149;
   public static final short PR_DESTROY_REPLY_MESSAGE = 150;
   public static final short R_DESTROY_REPLY_MESSAGE = 151;
 
   public static final short CLI_FUNCTION_RESULT = 152;
-  
+
   public static final short JMX_MANAGER_PROFILE = 153;
   public static final short JMX_MANAGER_PROFILE_MESSAGE = 154;
 
   public static final short R_FETCH_VERSION_MESSAGE = 155;
   public static final short R_FETCH_VERSION_REPLY = 156;
-  
+
   public static final short PR_TOMBSTONE_MESSAGE = 157;
-  
+
   public static final short UPDATE_ENTRY_VERSION_MESSAGE = 158;
   public static final short PR_UPDATE_ENTRY_VERSION_MESSAGE = 159;
-  
+
   public static final short SHUTDOWN_ALL_GATEWAYSENDERS_REQUEST = 160;
   public static final short SHUTDOWN_ALL_GATEWAYSENDERS_RESPONSE = 161;
-  
+
   public static final short SHUTDOWN_ALL_GATEWAYRECEIVERS_REQUEST = 162;
   public static final short SHUTDOWN_ALL_GATEWAYRECEIVERS_RESPONSE = 163;
 
@@ -694,12 +702,12 @@ public interface DataSerializableFixedID extends SerializationVersions {
 
   public static final short HIGH_PRIORITY_ACKED_MESSAGE = 2000;
   public static final short SERIAL_ACKED_MESSAGE = 2001;
-  public static final short CLIENT_DATASERIALIZER_MESSAGE=2002;
-  
-  //2003..2098 unused
-  
+  public static final short CLIENT_DATASERIALIZER_MESSAGE = 2002;
+
+  // 2003..2098 unused
+
   public static final short BUCKET_COUNT_LOAD_PROBE = 2099;
-  public static final short PERSISTENT_MEMBERSHIP_VIEW_REQUEST =2100;
+  public static final short PERSISTENT_MEMBERSHIP_VIEW_REQUEST = 2100;
   public static final short PERSISTENT_MEMBERSHIP_VIEW_REPLY = 2101;
   public static final short PERSISTENT_STATE_QUERY_REQUEST = 2102;
   public static final short PERSISTENT_STATE_QUERY_REPLY = 2103;
@@ -713,7 +721,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short SHUTDOWN_ALL_REQUEST = 2111;
   public static final short SHUTDOWN_ALL_RESPONSE = 2112;
   public static final short END_BUCKET_CREATION_MESSAGE = 2113;
-  
+
   public static final short FINISH_BACKUP_REQUEST = 2114;
   public static final short FINISH_BACKUP_RESPONSE = 2115;
   public static final short PREPARE_BACKUP_REQUEST = 2116;
@@ -726,29 +734,29 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short LINKED_RESULTSET = 2122;
   public static final short LINKED_STRUCTSET = 2123;
   public static final short PR_ALL_BUCKET_PROFILES_UPDATE_MESSAGE = 2124;
-  
+
   public static final short SERIALIZED_OBJECT_PART_LIST = 2125;
   public static final short FLUSH_TO_DISK_REQUEST = 2126;
-  public static final short FLUSH_TO_DISK_RESPONSE= 2127;
+  public static final short FLUSH_TO_DISK_RESPONSE = 2127;
 
-  public static final short CHECK_TYPE_REGISTRY_STATE= 2128;
-  public static final short  PREPARE_REVOKE_PERSISTENT_ID_REQUEST = 2129;
+  public static final short CHECK_TYPE_REGISTRY_STATE = 2128;
+  public static final short PREPARE_REVOKE_PERSISTENT_ID_REQUEST = 2129;
   public static final short MISSING_PERSISTENT_IDS_RESPONSE_662 = 2130;
 
   public static final short PERSISTENT_VERSION_TAG = 2131;
   public static final short PERSISTENT_RVV = 2132;
   public static final short DISK_STORE_ID = 2133;
-  
+
   public static final short SNAPSHOT_PACKET = 2134;
   public static final short SNAPSHOT_RECORD = 2135;
-  
+
   public static final short FLOW_CONTROL_ACK = 2136;
   public static final short FLOW_CONTROL_ABORT = 2137;
 
   public static final short REMOTE_LOCATOR_RESPONSE = 2138;
   public static final short LOCATOR_JOIN_MESSAGE = 2139;
 
-  public static final short  PARALLEL_QUEUE_BATCH_REMOVAL_MESSAGE= 2140;
+  public static final short PARALLEL_QUEUE_BATCH_REMOVAL_MESSAGE = 2140;
   public static final short PARALLEL_QUEUE_BATCH_REMOVAL_REPLY = 2141;
 
   // 2141 unused
@@ -758,10 +766,10 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short REMOTE_LOCATOR_JOIN_REQUEST = 2145;
   public static final short REMOTE_LOCATOR_JOIN_RESPONSE = 2146;
   public static final short REMOTE_LOCATOR_REQUEST = 2147;
-  
+
 
   public static final short BATCH_DESTROY_MESSAGE = 2148;
-  
+
   public static final short MANAGER_STARTUP_MESSAGE = 2149;
 
   public static final short JMX_MANAGER_LOCATOR_REQUEST = 2150;
@@ -769,30 +777,30 @@ public interface DataSerializableFixedID extends SerializationVersions {
 
   public static final short MGMT_COMPACT_REQUEST = 2152;
   public static final short MGMT_COMPACT_RESPONSE = 2153;
-  
+
   public static final short MGMT_FEDERATION_COMPONENT = 2154;
 
   public static final short LOCATOR_STATUS_REQUEST = 2155;
   public static final short LOCATOR_STATUS_RESPONSE = 2156;
   public static final short RELEASE_CLEAR_LOCK_MESSAGE = 2157;
   public static final short NULL_TOKEN = 2158;
-  
+
   public static final short CONFIGURATION_REQUEST = 2159;
   public static final short CONFIGURATION_RESPONSE = 2160;
-  
+
   public static final short PARALLEL_QUEUE_REMOVAL_MESSAGE = 2161;
-  
+
   public static final short PR_QUERY_TRACE_INFO = 2162;
 
   public static final short INDEX_CREATION_DATA = 2163;
-    
+
   public static final short SERVER_PING_MESSAGE = 2164;
   public static final short PR_DESTROY_ON_DATA_STORE_MESSAGE = 2165;
-  
+
   public static final short DIST_TX_OP = 2166;
   public static final short DIST_TX_PRE_COMMIT_RESPONSE = 2167;
   public static final short DIST_TX_THIN_ENTRY_STATE = 2168;
-  
+
   public static final short LUCENE_CHUNK_KEY = 2169;
   public static final short LUCENE_FILE = 2170;
   public static final short LUCENE_FUNCTION_CONTEXT = 2171;
@@ -802,13 +810,14 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short LUCENE_TOP_ENTRIES = 2175;
   public static final short LUCENE_TOP_ENTRIES_COLLECTOR = 2176;
 
+  public static final short WAIT_UNTIL_GATEWAY_SENDER_FLUSHED_MESSAGE = 2177;
+
   // NOTE, codes > 65535 will take 4 bytes to serialize
-  
+
   /**
-   * This special code is a way for an implementor if this interface
-   * to say that it does not have a fixed id.
-   * In that case its class name is serialized.
-   * Currently only test classes just return this code.
+   * This special code is a way for an implementor if this interface to say that it does not have a
+   * fixed id. In that case its class name is serialized. Currently only test classes just return
+   * this code.
    */
   public static final int NO_FIXED_ID = Integer.MAX_VALUE;
 
@@ -820,34 +829,30 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public int getDSFID();
 
   /**
-   * Writes the state of this object as primitive data to the given
-   * <code>DataOutput</code>.<br>
+   * Writes the state of this object as primitive data to the given <code>DataOutput</code>.<br>
    * <br>
-   * Note: For rolling upgrades, if there is a change in the object format from
-   * previous version, add a new toDataPre_GFE_X_X_X_X() method and add an entry for the
-   * current {@link Version} in the getSerializationVersions array of the implementing
-   * class. e.g. if msg format changed in version 80, create toDataPre_GFE_8_0_0_0, add
-   * Version.GFE_80 to the getSerializationVersions array and copy previous toData contents 
-   * to this newly created toDataPre_GFE_X_X_X_X() method.
-   * @throws IOException
-   *           A problem occurs while writing to <code>out</code>
+   * Note: For rolling upgrades, if there is a change in the object format from previous version,
+   * add a new toDataPre_GFE_X_X_X_X() method and add an entry for the current {@link Version} in
+   * the getSerializationVersions array of the implementing class. e.g. if msg format changed in
+   * version 80, create toDataPre_GFE_8_0_0_0, add Version.GFE_80 to the getSerializationVersions
+   * array and copy previous toData contents to this newly created toDataPre_GFE_X_X_X_X() method.
+   * 
+   * @throws IOException A problem occurs while writing to <code>out</code>
    */
   public void toData(DataOutput out) throws IOException;
 
   /**
-   * Reads the state of this object as primitive data from the given
-   * <code>DataInput</code>. <br>
+   * Reads the state of this object as primitive data from the given <code>DataInput</code>. <br>
    * <br>
-   * Note: For rolling upgrades, if there is a change in the object format from
-   * previous version, add a new fromDataPre_GFE_X_X_X_X() method and add an entry for
-   * the current {@link Version} in the getSerializationVersions array of the implementing
-   * class. e.g. if msg format changed in version 80, create fromDataPre_GFE_8_0_0_0, add
-   * Version.GFE_80 to the getSerializationVersions array  and copy previous fromData 
-   * contents to this newly created fromDataPre_GFE_X_X_X_X() method.
-   * @throws IOException
-   *           A problem occurs while reading from <code>in</code>
-   * @throws ClassNotFoundException
-   *           A class could not be loaded while reading from <code>in</code>
+   * Note: For rolling upgrades, if there is a change in the object format from previous version,
+   * add a new fromDataPre_GFE_X_X_X_X() method and add an entry for the current {@link Version} in
+   * the getSerializationVersions array of the implementing class. e.g. if msg format changed in
+   * version 80, create fromDataPre_GFE_8_0_0_0, add Version.GFE_80 to the getSerializationVersions
+   * array and copy previous fromData contents to this newly created fromDataPre_GFE_X_X_X_X()
+   * method.
+   * 
+   * @throws IOException A problem occurs while reading from <code>in</code>
+   * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>
    */
   public void fromData(DataInput in) throws IOException, ClassNotFoundException;
 

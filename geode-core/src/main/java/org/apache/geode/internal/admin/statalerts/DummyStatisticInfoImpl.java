@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.admin.statalerts;
 
@@ -25,16 +23,14 @@ import org.apache.geode.Statistics;
 import org.apache.geode.internal.admin.StatAlertsManager;
 
 /**
- * Implementation {@link StatisticInfo} This does not contains associated
- * statistics object
+ * Implementation {@link StatisticInfo} This does not contains associated statistics object
  * 
- * This has been created client(E.g GFMon2.0), where we actually don't need
- * statistic object. So, Instance of this will be light weight object So that we
- * can reduce the overhead of data transfer across network and
- * serialization/dserialization
+ * This has been created client(E.g GFMon2.0), where we actually don't need statistic object. So,
+ * Instance of this will be light weight object So that we can reduce the overhead of data transfer
+ * across network and serialization/dserialization
  * 
- * on server side , {@link StatAlertsManager} create instance of
- * {@link StatisticInfoImpl} class with help of this class instance
+ * on server side , {@link StatAlertsManager} create instance of {@link StatisticInfoImpl} class
+ * with help of this class instance
  * 
  */
 public class DummyStatisticInfoImpl implements StatisticInfo {
@@ -46,15 +42,14 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
 
   protected String statisticName;
 
-  public DummyStatisticInfoImpl() {
-  }
+  public DummyStatisticInfoImpl() {}
 
   /**
    * @param statisticsTextId
    * @param statisticName
    */
-  public DummyStatisticInfoImpl(String statisticsTypeName,
-      String statisticsTextId, String statisticName) {
+  public DummyStatisticInfoImpl(String statisticsTypeName, String statisticsTextId,
+      String statisticName) {
     super();
     this.statisticsTypeName = statisticsTypeName;
     this.statisticsTextId = statisticsTextId;
@@ -107,7 +102,7 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
       return false;
     }
 
-    DummyStatisticInfoImpl other = (DummyStatisticInfoImpl)object;
+    DummyStatisticInfoImpl other = (DummyStatisticInfoImpl) object;
 
     if (this.statisticName.equals(other.getStatisticName())
         && this.statisticsTypeName.equals(other.getStatisticsTypeName())
@@ -126,8 +121,7 @@ public class DummyStatisticInfoImpl implements StatisticInfo {
     out.writeUTF(this.statisticName);
   }
 
-  public void fromData(DataInput in)
-    throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.statisticsTypeName = in.readUTF();
     this.statisticsTextId = in.readUTF();
     this.statisticName = in.readUTF();

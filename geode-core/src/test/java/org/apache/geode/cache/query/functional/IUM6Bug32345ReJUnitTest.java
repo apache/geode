@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.functional;
 
@@ -52,30 +50,30 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * Created on May 5, 2005, 10:32 AM
  */
 @Category(IntegrationTest.class)
-public class IUM6Bug32345ReJUnitTest{
-  StructType resType1=null;
-  StructType resType2= null;
+public class IUM6Bug32345ReJUnitTest {
+  StructType resType1 = null;
+  StructType resType2 = null;
 
   String[] strg1 = null;
-  String[] strg2= null;
+  String[] strg2 = null;
 
-  int resSize1=0;
-  int resSize2=0;
+  int resSize1 = 0;
+  int resSize2 = 0;
 
-  Object valPf1=null;
-  Object valPos1=null;
+  Object valPf1 = null;
+  Object valPos1 = null;
 
-  Object valPf2=null;
-  Object valPos2=null;
+  Object valPf2 = null;
+  Object valPos2 = null;
 
-  Iterator itert1=null;
-  Iterator itert2=null;
+  Iterator itert1 = null;
+  Iterator itert2 = null;
 
-  Set set1=null;
-  Set set2=null;
+  Set set1 = null;
+  Set set2 = null;
 
-  boolean isActive1=false;
-  boolean isActive2=false;
+  boolean isActive1 = false;
+  boolean isActive2 = false;
 
   @Before
   public void setUp() throws java.lang.Exception {
@@ -91,14 +89,13 @@ public class IUM6Bug32345ReJUnitTest{
   public void testComparisonBetnWithAndWithoutIndexCreation() throws Exception {
 
     Region region = CacheUtils.createRegion("pos", Portfolio.class);
-    for(int i=0;i<4;i++){
-      region.put(""+i, new Portfolio(i));
+    for (int i = 0; i < 4; i++) {
+      region.put("" + i, new Portfolio(i));
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
     String queries[] = {
-        "SELECT DISTINCT * FROM /pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"        
-    };
+        "SELECT DISTINCT * FROM /pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
     SelectResults sr[][] = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -106,110 +103,105 @@ public class IUM6Bug32345ReJUnitTest{
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
-        sr[i][0] =(SelectResults) q.execute();
-        if(!observer.isIndexesUsed){
-          CacheUtils.log("NO INDEX USED");
-        }
-        CacheUtils.log(Utils.printResult(sr[i][0]));
-        resType1 =(StructType)(sr[i][0]).getCollectionType().getElementType();  
-        resSize1 =((sr[i][0]).size());
+        sr[i][0] = (SelectResults) q.execute();
+        resType1 = (StructType) (sr[i][0]).getCollectionType().getElementType();
+        resSize1 = ((sr[i][0]).size());
 
-        strg1=resType1.getFieldNames();
+        strg1 = resType1.getFieldNames();
 
-        set1=((sr[i][0]).asSet());
-        Iterator iter=set1.iterator();
-        while (iter.hasNext()){
-          Struct stc1=(Struct)iter.next();
-          valPf1=stc1.get(strg1[0]);
-          valPos1=stc1.get(strg1[1]);
-          isActive1=((Portfolio)stc1.get(strg1[0])).isActive();
+        set1 = ((sr[i][0]).asSet());
+        Iterator iter = set1.iterator();
+        while (iter.hasNext()) {
+          Struct stc1 = (Struct) iter.next();
+          valPf1 = stc1.get(strg1[0]);
+          valPos1 = stc1.get(strg1[1]);
+          isActive1 = ((Portfolio) stc1.get(strg1[0])).isActive();
 
         }
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
       }
     }
 
-    //  Create an Index on status and execute the same query again.
+    // Create an Index on status and execute the same query again.
 
     qs = CacheUtils.getQueryService();
-    qs.createIndex("statusIndex", IndexType.FUNCTIONAL,"pf.status","/pos pf, pf.positions.values pos");
-    //Retesting BUG # 32345
-    //Index index2 = (Index)qs.createIndex("secIdIndex", IndexType.FUNCTIONAL,"pos.secId","/pos pf, pf.positions.values pos");
-    qs.createIndex("IDIndex", IndexType.FUNCTIONAL,"pf.ID","/pos pf, pf.positions.values pos");
+    qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "pf.status",
+        "/pos pf, pf.positions.values pos");
+    // Retesting BUG # 32345
+    // Index index2 = (Index)qs.createIndex("secIdIndex", IndexType.FUNCTIONAL,"pos.secId","/pos pf,
+    // pf.positions.values pos");
+    qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID", "/pos pf, pf.positions.values pos");
     String queries2[] = {
-        "SELECT DISTINCT * FROM /pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"
-    };
+        "SELECT DISTINCT * FROM /pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         QueryObserverImpl observer2 = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer2);
-        sr[i][1] = (SelectResults)q.execute();
-        if(observer2.isIndexesUsed){
-          CacheUtils.log("YES INDEX IS USED!");
-        }
-        else {
+        sr[i][1] = (SelectResults) q.execute();
+        if (!observer2.isIndexesUsed) {
           fail("Index NOT Used");
         }
-        CacheUtils.log(Utils.printResult(sr[i][1]));
-        resType2 =(StructType)(sr[i][1]).getCollectionType().getElementType();  
-        resSize2 =((sr[i][1]).size());
-        //         CacheUtils.log(resType2);
-        strg2=resType2.getFieldNames();
-        //         CacheUtils.log(strg2[0]);
-        //         CacheUtils.log(strg2[1]);         
+        resType2 = (StructType) (sr[i][1]).getCollectionType().getElementType();
+        resSize2 = ((sr[i][1]).size());
+        // CacheUtils.log(resType2);
+        strg2 = resType2.getFieldNames();
+        // CacheUtils.log(strg2[0]);
+        // CacheUtils.log(strg2[1]);
 
-        set2=((sr[i][1]).asSet());
-        Iterator iter=set2.iterator();
-        while (iter.hasNext()){
-          Struct stc2=(Struct)iter.next();
-          valPf2=stc2.get(strg2[0]);
-          valPos2=stc2.get(strg2[1]);
-          isActive2=((Portfolio)stc2.get(strg2[0])).isActive();
-          //        CacheUtils.log(valPf2);
-          //        CacheUtils.log(valPos2);
+        set2 = ((sr[i][1]).asSet());
+        Iterator iter = set2.iterator();
+        while (iter.hasNext()) {
+          Struct stc2 = (Struct) iter.next();
+          valPf2 = stc2.get(strg2[0]);
+          valPos2 = stc2.get(strg2[1]);
+          isActive2 = ((Portfolio) stc2.get(strg2[0])).isActive();
+          // CacheUtils.log(valPf2);
+          // CacheUtils.log(valPos2);
         }
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
       }
     }
 
-    if ((resType1).equals(resType2)){      
-      CacheUtils.log("Both Search Results are of the same Type i.e.--> "+resType1);
-    }else {
+    if ((resType1).equals(resType2)) {
+      CacheUtils.log("Both Search Results are of the same Type i.e.--> " + resType1);
+    } else {
       fail("FAILED:Search result Type is different in both the cases");
     }
-    if (resSize1==resSize2 || resSize1 != 0){      
-      CacheUtils.log("Both Search Results are Non-zero and are of Same Size i.e.  Size= "+resSize1);
-    }else {
-      fail("FAILED:Search result Type is different in both the cases");   
+    if (resSize1 == resSize2 || resSize1 != 0) {
+      CacheUtils
+          .log("Both Search Results are Non-zero and are of Same Size i.e.  Size= " + resSize1);
+    } else {
+      fail("FAILED:Search result Type is different in both the cases");
     }
     itert2 = set2.iterator();
     itert1 = set1.iterator();
-    while (itert1.hasNext()){
-      Struct stc2=(Struct)itert2.next();
-      Struct stc1 = (Struct)itert1.next();
-      if( stc2.get(strg2[0]) != stc1.get(strg1[0])  )
-        fail("FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
-      if(stc2.get(strg2[1]) != stc1.get(strg1[1]))
+    while (itert1.hasNext()) {
+      Struct stc2 = (Struct) itert2.next();
+      Struct stc1 = (Struct) itert1.next();
+      if (stc2.get(strg2[0]) != stc1.get(strg1[0]))
+        fail(
+            "FAILED: In both the Cases the first member of StructSet i.e. Portfolio are different. ");
+      if (stc2.get(strg2[1]) != stc1.get(strg1[1]))
         fail("FAILED: In both the cases Positions are different");
-      if(!StringUtils.equals(((Position) stc2.get(strg2[1])).secId, ((Position) stc1.get(strg1[1])).secId))
+      if (!StringUtils.equals(((Position) stc2.get(strg2[1])).secId,
+          ((Position) stc1.get(strg1[1])).secId))
         fail("FAILED: In both the cases Positions secIds are different");
-      if (((Portfolio)stc2.get(strg2[0])).isActive() != ((Portfolio)stc1.get(strg1[0])).isActive() )
+      if (((Portfolio) stc2.get(strg2[0])).isActive() != ((Portfolio) stc1.get(strg1[0]))
+          .isActive())
         fail("FAILED: Status of the Portfolios found are different");
-      if (((Portfolio)stc2.get(strg2[0])).getID() != ((Portfolio)stc1.get(strg1[0])).getID() )
+      if (((Portfolio) stc2.get(strg2[0])).getID() != ((Portfolio) stc1.get(strg1[0])).getID())
         fail("FAILED: IDs of the Portfolios found are different");
     }
     CacheUtils.compareResultsOfWithAndWithoutIndex(sr, this);
   }
 
-  class QueryObserverImpl extends QueryObserverAdapter{
+  class QueryObserverImpl extends QueryObserverAdapter {
     boolean isIndexesUsed = false;
     ArrayList indexesUsed = new ArrayList();
 
@@ -218,7 +210,7 @@ public class IUM6Bug32345ReJUnitTest{
     }
 
     public void afterIndexLookup(Collection results) {
-      if(results != null){
+      if (results != null) {
         isIndexesUsed = true;
       }
     }

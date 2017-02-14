@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -37,13 +35,13 @@ import org.apache.logging.log4j.Logger;
  */
 public class SerializerCreation {
   private static final Logger logger = LogService.getLogger();
-  
+
   private final Vector<Class> serializerReg = new Vector<Class>();
   private final HashMap<Class, Integer> instantiatorReg = new HashMap<Class, Integer>();
- 
-  public static class InstantiatorImpl extends Instantiator{
+
+  public static class InstantiatorImpl extends Instantiator {
     private Class m_class;
-    
+
     /**
      * @param c
      * @param classId
@@ -53,42 +51,45 @@ public class SerializerCreation {
       m_class = c;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.apache.geode.Instantiator#newInstance()
      */
     @Override
     public DataSerializable newInstance() {
-      try {            
+      try {
         return (DataSerializable) m_class.newInstance();
-      }
-      catch(Exception ex) {
-        logger.error(LocalizedMessage.create(LocalizedStrings.SerializerCreation_A_0_INSTANTIATION_FAILED, new Object[] {m_class.getName()}), ex);
+      } catch (Exception ex) {
+        logger.error(
+            LocalizedMessage.create(LocalizedStrings.SerializerCreation_A_0_INSTANTIATION_FAILED,
+                new Object[] {m_class.getName()}),
+            ex);
         return null;
-      }              
-    }    
+      }
+    }
   }
-  
-  public SerializerCreation() {
-  }
-    
+
+  public SerializerCreation() {}
+
   public void registerSerializer(Class c) {
     serializerReg.add(c);
   }
-  
+
   public void registerInstantiator(Class c, Integer id) {
     instantiatorReg.put(c, id);
   }
-  
-  public void create(){
+
+  public void create() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    for(Class c : serializerReg ) {
+    for (Class c : serializerReg) {
       if (isDebugEnabled) {
         logger.debug("Registering serializer: {}", c.getName());
       }
       DataSerializer.register(c);
     }
-    
-    for(Map.Entry<Class, Integer> e : instantiatorReg.entrySet()) {
+
+    for (Map.Entry<Class, Integer> e : instantiatorReg.entrySet()) {
       final Class k = e.getKey();
       if (isDebugEnabled) {
         logger.debug("Registering instantiator: {}", k.getName());
@@ -96,11 +97,11 @@ public class SerializerCreation {
       Instantiator.register(new InstantiatorImpl(k, e.getValue()));
     }
   }
-  
-  public Vector<Class> getSerializerRegistrations(){
+
+  public Vector<Class> getSerializerRegistrations() {
     return serializerReg;
   }
-  
+
   public HashMap<Class, Integer> getInstantiatorRegistrations() {
     return instantiatorReg;
   }

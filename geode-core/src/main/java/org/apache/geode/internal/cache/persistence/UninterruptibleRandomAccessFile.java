@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.persistence;
 
@@ -43,15 +41,15 @@ public class UninterruptibleRandomAccessFile {
   public UninterruptibleFileChannel getChannel() {
     return channel;
   }
-  
+
   public synchronized void reopen(long lastPosition) throws IOException {
-    if(isClosed) {
+    if (isClosed) {
       throw new IOException("Random Access File is closed");
     }
     try {
       this.raf.close();
     } catch (IOException e) {
-      //ignore
+      // ignore
     }
     this.raf = new RandomAccessFile(file, mode);
     this.raf.seek(lastPosition);
@@ -64,7 +62,7 @@ public class UninterruptibleRandomAccessFile {
 
   public synchronized void setLength(long newLength) throws IOException {
     this.raf.setLength(newLength);
-    
+
   }
 
   public synchronized FileDescriptor getFD() throws IOException {
@@ -77,55 +75,55 @@ public class UninterruptibleRandomAccessFile {
 
   public synchronized void seek(long readPosition) throws IOException {
     this.raf.seek(readPosition);
-    
+
   }
 
   public synchronized void readFully(byte[] valueBytes) throws IOException {
     this.raf.readFully(valueBytes);
-    
+
   }
 
   public synchronized void readFully(byte[] valueBytes, int i, int valueLength) throws IOException {
     this.raf.readFully(valueBytes, i, valueLength);
-    
+
   }
 
   public synchronized long length() throws IOException {
     return this.raf.length();
   }
-  
+
   private static interface FileOperation {
     public long doOp(FileChannel channel) throws IOException;
   }
-  
+
   private class UninterruptibleFileChannelImpl implements UninterruptibleFileChannel {
-    
+
     private FileChannel delegate() {
       return UninterruptibleRandomAccessFile.this.raf.getChannel();
     }
 
     /**
-     * Perform an operation on the file, reopening the file and redoing the
-     * operation if necessary if we are interrupted in the middle of  the operation
+     * Perform an operation on the file, reopening the file and redoing the operation if necessary
+     * if we are interrupted in the middle of the operation
      */
     private long doUninterruptibly(FileOperation op) throws IOException {
       boolean interrupted = false;
       try {
-        synchronized(UninterruptibleRandomAccessFile.this) {
-          while(true) {
+        synchronized (UninterruptibleRandomAccessFile.this) {
+          while (true) {
             interrupted |= Thread.interrupted();
             FileChannel d = delegate();
             long lastPosition = UninterruptibleRandomAccessFile.this.getFilePointer();
             try {
               return op.doOp(d);
-            } catch(ClosedByInterruptException e) {
+            } catch (ClosedByInterruptException e) {
               interrupted = true;
               UninterruptibleRandomAccessFile.this.reopen(lastPosition);
             }
           }
         }
       } finally {
-        if(interrupted) {
+        if (interrupted) {
           Thread.currentThread().interrupt();
         }
       }
@@ -145,7 +143,7 @@ public class UninterruptibleRandomAccessFile {
     public long read(final ByteBuffer[] dsts) throws IOException {
       return doUninterruptibly(new FileOperation() {
         public long doOp(FileChannel channel) throws IOException {
-          return channel.read(dsts); 
+          return channel.read(dsts);
         }
       });
     }
@@ -246,6 +244,6 @@ public class UninterruptibleRandomAccessFile {
         }
       });
     }
-    
+
   }
 }

@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.logging;
 
@@ -43,9 +41,8 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class SortLogFileJUnitTest {
 
   /**
-   * Generates a "log file" whose entry timestamps are in a random
-   * order.  Then it sorts the log file and asserts that the entries
-   * are sorted order.
+   * Generates a "log file" whose entry timestamps are in a random order. Then it sorts the log file
+   * and asserts that the entries are sorted order.
    */
   @Test
   public void testRandomLog() throws Exception {
@@ -59,7 +56,7 @@ public class SortLogFileJUnitTest {
 
     pw.flush();
     pw.close();
-    
+
     byte[] bytes = baos.toByteArray();
 
     ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
@@ -78,7 +75,7 @@ public class SortLogFileJUnitTest {
       String timestamp = entry.getTimestamp();
       if (prevTimestamp != null) {
         assertTrue("Prev: " + prevTimestamp + ", current: " + timestamp,
-                   prevTimestamp.compareTo(timestamp) <= 0);
+            prevTimestamp.compareTo(timestamp) <= 0);
       }
       prevTimestamp = entry.getTimestamp();
     }
@@ -93,16 +90,14 @@ public class SortLogFileJUnitTest {
     private Random random = new Random();
 
     /**
-     * Creates a new <code>RandomLogWriter</code> that logs to the
-     * given <code>PrintWriter</code>.
+     * Creates a new <code>RandomLogWriter</code> that logs to the given <code>PrintWriter</code>.
      */
     public RandomLogWriter(PrintWriter pw) {
       super(ALL_LEVEL, pw);
     }
 
     /**
-     * Ignores <code>date</code> and returns the timestamp for a
-     * random date.
+     * Ignores <code>date</code> and returns the timestamp for a random date.
      */
     @Override
     protected String formatDate(Date date) {

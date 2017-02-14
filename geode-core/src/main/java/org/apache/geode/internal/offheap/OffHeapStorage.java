@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.offheap;
 
@@ -35,16 +33,17 @@ import java.lang.reflect.Method;
  * @since Geode 1.0
  */
 public class OffHeapStorage implements OffHeapMemoryStats {
-  public static final String STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY = DistributionConfig.GEMFIRE_PREFIX + "offheap.stayConnectedOnOutOfOffHeapMemory";
-  
+  public static final String STAY_CONNECTED_ON_OUTOFOFFHEAPMEMORY_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "offheap.stayConnectedOnOutOfOffHeapMemory";
+
   // statistics type
   private static final StatisticsType statsType;
   private static final String statsTypeName = "OffHeapMemoryStats";
   private static final String statsTypeDescription = "Statistics about off-heap memory storage.";
-  
+
   // statistics instance
   private static final String statsName = "offHeapMemoryStats";
-  
+
   // statistics fields
   private static final int freeMemoryId;
   private static final int maxMemoryId;
@@ -58,22 +57,31 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   private static final int fragmentationId;
   private static final int defragmentationsInProgressId;
   // NOTE!!!! When adding new stats make sure and update the initialize method on this class
-  
+
   // creates and registers the statistics type
   static {
     final StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
-    
-    final String usedMemoryDesc = "The amount of off-heap memory, in bytes, that is being used to store data.";
-    final String defragmentationDesc = "The total number of times off-heap memory has been defragmented.";
-    final String defragmentationsInProgressDesc = "Current number of defragment operations currently in progress.";
+
+    final String usedMemoryDesc =
+        "The amount of off-heap memory, in bytes, that is being used to store data.";
+    final String defragmentationDesc =
+        "The total number of times off-heap memory has been defragmented.";
+    final String defragmentationsInProgressDesc =
+        "Current number of defragment operations currently in progress.";
     final String defragmentationTimeDesc = "The total time spent defragmenting off-heap memory.";
-    final String fragmentationDesc = "The percentage of off-heap free memory that is fragmented.  Updated every time a defragmentation is performed.";
-    final String fragmentsDesc = "The number of fragments of free off-heap memory. Updated every time a defragmentation is done.";
-    final String freeMemoryDesc = "The amount of off-heap memory, in bytes, that is not being used.";
-    final String largestFragmentDesc = "The largest fragment of memory found by the last defragmentation of off heap memory. Updated every time a defragmentation is done.";
+    final String fragmentationDesc =
+        "The percentage of off-heap free memory that is fragmented.  Updated every time a defragmentation is performed.";
+    final String fragmentsDesc =
+        "The number of fragments of free off-heap memory. Updated every time a defragmentation is done.";
+    final String freeMemoryDesc =
+        "The amount of off-heap memory, in bytes, that is not being used.";
+    final String largestFragmentDesc =
+        "The largest fragment of memory found by the last defragmentation of off heap memory. Updated every time a defragmentation is done.";
     final String objectsDesc = "The number of objects stored in off-heap memory.";
-    final String readsDesc = "The total number of reads of off-heap memory. Only reads of a full object increment this statistic. If only a part of the object is read this statistic is not incremented.";
-    final String maxMemoryDesc = "The maximum amount of off-heap memory, in bytes. This is the amount of memory allocated at startup and does not change.";
+    final String readsDesc =
+        "The total number of reads of off-heap memory. Only reads of a full object increment this statistic. If only a part of the object is read this statistic is not incremented.";
+    final String maxMemoryDesc =
+        "The maximum amount of off-heap memory, in bytes. This is the amount of memory allocated at startup and does not change.";
 
     final String usedMemory = "usedMemory";
     final String defragmentations = "defragmentations";
@@ -86,14 +94,12 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     final String objects = "objects";
     final String reads = "reads";
     final String maxMemory = "maxMemory";
-    
-    statsType = f.createType(
-        statsTypeName,
-        statsTypeDescription,
-        new StatisticDescriptor[] {
-            f.createLongGauge(usedMemory, usedMemoryDesc, "bytes"),
+
+    statsType = f.createType(statsTypeName, statsTypeDescription,
+        new StatisticDescriptor[] {f.createLongGauge(usedMemory, usedMemoryDesc, "bytes"),
             f.createIntCounter(defragmentations, defragmentationDesc, "operations"),
-            f.createIntGauge(defragmentationsInProgress, defragmentationsInProgressDesc, "operations"),
+            f.createIntGauge(defragmentationsInProgress, defragmentationsInProgressDesc,
+                "operations"),
             f.createLongCounter(defragmentationTime, defragmentationTimeDesc, "nanoseconds", false),
             f.createIntGauge(fragmentation, fragmentationDesc, "percentage"),
             f.createLongGauge(fragments, fragmentsDesc, "fragments"),
@@ -101,10 +107,8 @@ public class OffHeapStorage implements OffHeapMemoryStats {
             f.createIntGauge(largestFragment, largestFragmentDesc, "bytes"),
             f.createIntGauge(objects, objectsDesc, "objects"),
             f.createLongCounter(reads, readsDesc, "operations"),
-            f.createLongGauge(maxMemory, maxMemoryDesc, "bytes"),
-        }
-    );
-    
+            f.createLongGauge(maxMemory, maxMemoryDesc, "bytes"),});
+
     usedMemoryId = statsType.nameToId(usedMemory);
     defragmentationId = statsType.nameToId(defragmentations);
     defragmentationsInProgressId = statsType.nameToId(defragmentationsInProgress);
@@ -119,18 +123,19 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
 
   public static long parseOffHeapMemorySize(String value) {
-    final long parsed = parseLongWithUnits(value, 0L, 1024*1024);
+    final long parsed = parseLongWithUnits(value, 0L, 1024 * 1024);
     if (parsed < 0) {
       return 0;
     }
     return parsed;
   }
-  
+
   public static long calcMaxSlabSize(long offHeapMemorySize) {
-    final String offHeapSlabConfig = System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
+    final String offHeapSlabConfig =
+        System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "OFF_HEAP_SLAB_SIZE");
     long result = 0;
     if (offHeapSlabConfig != null && !offHeapSlabConfig.equals("")) {
-      result = parseLongWithUnits(offHeapSlabConfig, MAX_SLAB_SIZE, 1024*1024);
+      result = parseLongWithUnits(offHeapSlabConfig, MAX_SLAB_SIZE, 1024 * 1024);
       if (result > offHeapMemorySize) {
         result = offHeapMemorySize;
       }
@@ -145,39 +150,49 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     assert result > 0 && result <= MAX_SLAB_SIZE && result <= offHeapMemorySize;
     return result;
   }
-  
+
   /**
-   * Validates that the running VM is compatible with off heap storage.  Throws a
+   * Validates that the running VM is compatible with off heap storage. Throws a
    * {@link CacheException} if incompatible.
    */
   @SuppressWarnings("serial")
   private static void validateVmCompatibility() {
-    try {    
-      // Do we have the Unsafe class?  Throw ClassNotFoundException if not.
+    try {
+      // Do we have the Unsafe class? Throw ClassNotFoundException if not.
       Class<?> klass = ClassPathLoader.getLatest().forName("sun.misc.Unsafe");
-      
-      // Okay, we have the class.  Do we have the copyMemory method (not all JVMs support it)?  Throw NoSuchMethodException if not.
+
+      // Okay, we have the class. Do we have the copyMemory method (not all JVMs support it)? Throw
+      // NoSuchMethodException if not.
       @SuppressWarnings("unused")
-      Method copyMemory = klass.getMethod("copyMemory", Object.class,long.class,Object.class,long.class,long.class);
+      Method copyMemory = klass.getMethod("copyMemory", Object.class, long.class, Object.class,
+          long.class, long.class);
     } catch (ClassNotFoundException e) {
-      throw new CacheException(LocalizedStrings.MEMSCALE_JVM_INCOMPATIBLE_WITH_OFF_HEAP.toLocalizedString("product"),e) {};
+      throw new CacheException(
+          LocalizedStrings.MEMSCALE_JVM_INCOMPATIBLE_WITH_OFF_HEAP.toLocalizedString("product"),
+          e) {};
     } catch (NoSuchMethodException e) {
-      throw new CacheException(LocalizedStrings.MEMSCALE_JVM_INCOMPATIBLE_WITH_OFF_HEAP.toLocalizedString("product"),e) {};
+      throw new CacheException(
+          LocalizedStrings.MEMSCALE_JVM_INCOMPATIBLE_WITH_OFF_HEAP.toLocalizedString("product"),
+          e) {};
     }
   }
-  
+
   /**
    * Constructs a MemoryAllocator for off-heap storage.
+   * 
    * @return MemoryAllocator for off-heap storage
    */
-  public static MemoryAllocator createOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize, DistributedSystem system) {
+  public static MemoryAllocator createOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize,
+      DistributedSystem system) {
     if (offHeapMemorySize == 0 || Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE)) {
-      // Checking the FORCE_LOCATOR_DM_TYPE is a quick hack to keep our locator from allocating off heap memory.
+      // Checking the FORCE_LOCATOR_DM_TYPE is a quick hack to keep our locator from allocating off
+      // heap memory.
       return null;
     }
 
     if (offHeapMemorySize < MIN_SLAB_SIZE) {
-      throw new IllegalArgumentException("The amount of off heap memory must be at least " + MIN_SLAB_SIZE + " but it was set to " + offHeapMemorySize);
+      throw new IllegalArgumentException("The amount of off heap memory must be at least "
+          + MIN_SLAB_SIZE + " but it was set to " + offHeapMemorySize);
     }
 
     // Ensure that using off-heap will work with this JVM.
@@ -187,21 +202,23 @@ public class OffHeapStorage implements OffHeapMemoryStats {
       throw new IllegalArgumentException("InternalDistributedSystem is null");
     }
     // ooohml provides the hook for disconnecting and closing cache on OutOfOffHeapMemoryException
-    OutOfOffHeapMemoryListener ooohml = new DisconnectingOutOfOffHeapMemoryListener((InternalDistributedSystem) system);
+    OutOfOffHeapMemoryListener ooohml =
+        new DisconnectingOutOfOffHeapMemoryListener((InternalDistributedSystem) system);
     return basicCreateOffHeapStorage(sf, offHeapMemorySize, ooohml);
   }
-  
-  static MemoryAllocator basicCreateOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize, OutOfOffHeapMemoryListener ooohml) {
+
+  static MemoryAllocator basicCreateOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize,
+      OutOfOffHeapMemoryListener ooohml) {
     final OffHeapMemoryStats stats = new OffHeapStorage(sf);
 
-   // determine off-heap and slab sizes
+    // determine off-heap and slab sizes
     final long maxSlabSize = calcMaxSlabSize(offHeapMemorySize);
 
     final int slabCount = calcSlabCount(maxSlabSize, offHeapMemorySize);
 
     return MemoryAllocatorImpl.create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize);
   }
-  
+
   private static final long MAX_SLAB_SIZE = Integer.MAX_VALUE;
   static final long MIN_SLAB_SIZE = 1024;
 
@@ -212,9 +229,11 @@ public class OffHeapStorage implements OffHeapMemoryStats {
       result++;
     }
     if (result > Integer.MAX_VALUE) {
-      throw new IllegalArgumentException("The number of slabs of off heap memory exceeded the limit of " + Integer.MAX_VALUE + ". Decrease the amount of off heap memory or increase the maximum slab size using gemfire.OFF_HEAP_SLAB_SIZE.");
+      throw new IllegalArgumentException(
+          "The number of slabs of off heap memory exceeded the limit of " + Integer.MAX_VALUE
+              + ". Decrease the amount of off heap memory or increase the maximum slab size using gemfire.OFF_HEAP_SLAB_SIZE.");
     }
-    return (int)result;
+    return (int) result;
   }
 
   private static long parseLongWithUnits(String v, long defaultValue, int defaultMultiplier) {
@@ -223,11 +242,11 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     }
     int unitMultiplier = defaultMultiplier;
     if (v.toLowerCase().endsWith("g")) {
-      unitMultiplier = 1024*1024*1024;
-      v = v.substring(0, v.length()-1);
+      unitMultiplier = 1024 * 1024 * 1024;
+      v = v.substring(0, v.length() - 1);
     } else if (v.toLowerCase().endsWith("m")) {
-      unitMultiplier = 1024*1024;
-      v = v.substring(0, v.length()-1);
+      unitMultiplier = 1024 * 1024;
+      v = v.substring(0, v.length() - 1);
     }
     try {
       long result = Long.parseLong(v);
@@ -238,35 +257,41 @@ public class OffHeapStorage implements OffHeapMemoryStats {
           "Memory size must be specified as <n>[g|m], where <n> is the size and [g|m] specifies the units in gigabytes or megabytes.");
     }
   }
-  
+
   private final Statistics stats;
-  
+
   private OffHeapStorage(StatisticsFactory f) {
     this.stats = f.createAtomicStatistics(statsType, statsName);
   }
-  
+
   public void incFreeMemory(long value) {
     this.stats.incLong(freeMemoryId, value);
   }
+
   public void incMaxMemory(long value) {
     this.stats.incLong(maxMemoryId, value);
   }
+
   public void incUsedMemory(long value) {
     this.stats.incLong(usedMemoryId, value);
   }
+
   public void incObjects(int value) {
     this.stats.incInt(objectsId, value);
   }
-  
+
   public long getFreeMemory() {
     return this.stats.getLong(freeMemoryId);
   }
+
   public long getMaxMemory() {
     return this.stats.getLong(maxMemoryId);
   }
+
   public long getUsedMemory() {
     return this.stats.getLong(usedMemoryId);
   }
+
   public int getObjects() {
     return this.stats.getInt(objectsId);
   }
@@ -309,27 +334,27 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   public int getLargestFragment() {
     return this.stats.getInt(largestFragmentId);
   }
-  
+
   @Override
   public int getDefragmentationsInProgress() {
     return this.stats.getInt(defragmentationsInProgressId);
   }
-  
+
   @Override
   public long startDefragmentation() {
     this.stats.incInt(defragmentationsInProgressId, 1);
     return DistributionStats.getStatTime();
   }
-  
+
   @Override
   public void endDefragmentation(long start) {
     incDefragmentations();
     this.stats.incInt(defragmentationsInProgressId, -1);
     if (DistributionStats.enableClockStats) {
-      stats.incLong(defragmentationTimeId, DistributionStats.getStatTime()-start);
+      stats.incLong(defragmentationTimeId, DistributionStats.getStatTime() - start);
     }
-  }  
-  
+  }
+
   @Override
   public long getDefragmentationTime() {
     return stats.getLong(defragmentationTimeId);
@@ -344,7 +369,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   public int getFragmentation() {
     return this.stats.getInt(fragmentationId);
   }
-  
+
   public Statistics getStats() {
     return this.stats;
   }
@@ -367,7 +392,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     setLargestFragment(oldStats.getLargestFragment());
     setDefragmentationTime(oldStats.getDefragmentationTime());
     setFragmentation(oldStats.getFragmentation());
-    
+
     oldStats.close();
   }
 
@@ -378,7 +403,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   private void setDefragmentations(int value) {
     this.stats.setInt(defragmentationId, value);
   }
-  
+
   private void setDefragmentationsInProgress(int value) {
     this.stats.setInt(defragmentationsInProgressId, value);
   }

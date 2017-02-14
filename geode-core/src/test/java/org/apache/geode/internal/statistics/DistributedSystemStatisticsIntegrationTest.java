@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.statistics;
 
@@ -66,7 +64,7 @@ public class DistributedSystemStatisticsIntegrationTest {
     this.statName1 = "one";
     this.statName2 = "two";
     this.statName3 = "three";
-    this.statNames = new String[] { statName1, statName2, statName3 };
+    this.statNames = new String[] {statName1, statName2, statName3};
 
     this.random = new Random();
   }
@@ -160,16 +158,22 @@ public class DistributedSystemStatisticsIntegrationTest {
     Statistics stats = setUpIntStatistics(1);
 
     assertThat(stats.getInt(this.statName1)).isEqualTo(0);
-    assertThatThrownBy(() -> stats.getDouble(this.statName1)).isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.getLong(this.statName1)).isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.getDouble(this.statName1))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.getLong(this.statName1))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
 
     stats.setInt(this.statName1, 4);
-    assertThatThrownBy(() -> stats.setDouble(this.statName1, 4.0)).isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.setLong(this.statName1, 4L)).isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.setDouble(this.statName1, 4.0))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.setLong(this.statName1, 4L))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
 
     stats.incInt(this.statName1, 4);
-    assertThatThrownBy(() -> stats.incDouble(this.statName1, 4.0)).isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.incLong(this.statName1, 4L)).isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.incDouble(this.statName1, 4.0))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.incLong(this.statName1, 4L))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
   }
 
   /**
@@ -180,16 +184,22 @@ public class DistributedSystemStatisticsIntegrationTest {
     Statistics stats = setUpLongStatistics(1);
 
     assertThat(stats.getLong(this.statName1)).isEqualTo(0L);
-    assertThatThrownBy(() -> stats.getDouble(this.statName1)).isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.getInt(this.statName1)).isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.getDouble(this.statName1))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.getInt(this.statName1))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
 
     stats.setLong(this.statName1, 4L);
-    assertThatThrownBy(() -> stats.setDouble(this.statName1, 4.0)).isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.setInt(this.statName1, 4)).isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.setDouble(this.statName1, 4.0))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.setInt(this.statName1, 4))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
 
     stats.incLong(this.statName1, 4L);
-    assertThatThrownBy(() -> stats.incDouble(this.statName1, 4.0)).isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.incInt(this.statName1, 4)).isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.incDouble(this.statName1, 4.0))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.incInt(this.statName1, 4))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
   }
 
   /**
@@ -200,16 +210,22 @@ public class DistributedSystemStatisticsIntegrationTest {
     Statistics stats = setUpDoubleStatistics(1);
 
     assertThat(stats.getDouble(this.statName1)).isEqualTo(0.0);
-    assertThatThrownBy(() -> stats.getInt(this.statName1)).isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.getLong(this.statName1)).isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.getInt(this.statName1))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.getLong(this.statName1))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
 
     stats.setDouble(this.statName1, 4.0);
-    assertThatThrownBy(() -> stats.setInt(this.statName1, 4)).isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.setLong(this.statName1, 4L)).isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.setInt(this.statName1, 4))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.setLong(this.statName1, 4L))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
 
     stats.incDouble(this.statName1, 4.0);
-    assertThatThrownBy(() -> stats.incInt(this.statName1, 4)).isExactlyInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> stats.incLong(this.statName1, 4L)).isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.incInt(this.statName1, 4))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> stats.incLong(this.statName1, 4L))
+        .isExactlyInstanceOf(IllegalArgumentException.class);
   }
 
   private StatisticsFactory factory() {

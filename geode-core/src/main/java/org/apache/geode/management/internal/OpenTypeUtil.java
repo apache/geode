@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal;
 
@@ -43,7 +41,7 @@ public class OpenTypeUtil {
   }
 
   static <K, V> Map<K, V> newSynchronizedMap() {
-    return Collections.synchronizedMap(OpenTypeUtil.<K, V> newMap());
+    return Collections.synchronizedMap(OpenTypeUtil.<K, V>newMap());
   }
 
   static <K, V> IdentityHashMap<K, V> newIdentityHashMap() {
@@ -89,11 +87,9 @@ public class OpenTypeUtil {
   }
 
   /**
-   * Utility method to take a string and convert it to normal Java variable name
-   * capitalization.
+   * Utility method to take a string and convert it to normal Java variable name capitalization.
    * 
-   * @param name
-   *          The string to be made in camel case.
+   * @param name The string to be made in camel case.
    * @return The camel case version of the string.
    */
   public static String decapitalize(String name) {
@@ -101,8 +97,7 @@ public class OpenTypeUtil {
       return name;
     }
     int offset1 = Character.offsetByCodePoints(name, 0, 1);
-    if (offset1 < name.length()
-        && Character.isUpperCase(name.codePointAt(offset1)))
+    if (offset1 < name.length() && Character.isUpperCase(name.codePointAt(offset1)))
       return name;
     return name.substring(0, offset1).toLowerCase() + name.substring(offset1);
   }

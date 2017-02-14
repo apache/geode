@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.ha;
 
@@ -28,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -73,7 +72,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * @since GemFire 5.7
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
   private final static int CREATE = 0;
@@ -100,21 +99,19 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
   private static LogWriter logger = null;
 
-  public static final String[] regions = new String[] { "regionA", "regionB" };
+  public static final String[] regions = new String[] {"regionA", "regionB"};
 
   public static final String KEY = "key-";
 
   public String[] cqs = new String[] {
-  // 0 - Test for ">"
+      // 0 - Test for ">"
       "SELECT ALL * FROM /root/" + regions[0] + " p where p.ID > 0",
 
       // 1 - Test for "=" and "and".
-      "SELECT ALL * FROM /root/" + regions[0]
-          + " p where p.ID = 2 and p.status='active'",
+      "SELECT ALL * FROM /root/" + regions[0] + " p where p.ID = 2 and p.status='active'",
 
       // 2 - Test for "<" and "and".
-      "SELECT ALL * FROM /root/" + regions[1]
-          + " p where p.ID < 5 and p.status='active'",
+      "SELECT ALL * FROM /root/" + regions[1] + " p where p.ID < 5 and p.status='active'",
 
       // FOLLOWING CQS ARE NOT TESTED WITH VALUES; THEY ARE USED TO TEST PARSING
       // LOGIC WITHIN CQ.
@@ -123,21 +120,19 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       // 4
       "SELECT ALL * FROM /root/" + regions[0],
       // 5
-      "import org.apache.geode.cache.\"query\".data.Portfolio; "
-          + "SELECT ALL * FROM /root/" + regions[0] + " TYPE Portfolio",
+      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM /root/"
+          + regions[0] + " TYPE Portfolio",
       // 6
-      "import org.apache.geode.cache.\"query\".data.Portfolio; "
-          + "SELECT ALL * FROM /root/" + regions[0] + " p TYPE Portfolio",
+      "import org.apache.geode.cache.\"query\".data.Portfolio; " + "SELECT ALL * FROM /root/"
+          + regions[0] + " p TYPE Portfolio",
       // 7
-      "SELECT ALL * FROM /root/" + regions[1]
-          + " p where p.ID < 5 and p.status='active';",
+      "SELECT ALL * FROM /root/" + regions[1] + " p where p.ID < 5 and p.status='active';",
       // 8
       "SELECT ALL * FROM /root/" + regions[0] + "  ;",
       // 9
       "SELECT ALL * FROM /root/" + regions[0] + " p where p.description = NULL",
       // 10
-      "SELECT ALL * FROM /root/" + regions[0]
-          + " p where p.ID > 0 and p.status='active'", };
+      "SELECT ALL * FROM /root/" + regions[0] + " p where p.ID > 0 and p.status='active'",};
 
   @Override
   public final void postSetUp() throws Exception {
@@ -147,8 +142,12 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     clientVM1 = host.getVM(2);
     clientVM2 = host.getVM(3);
 
-    PORT1 = ((Integer)serverVM0.invoke(() -> CQListGIIDUnitTest.createServerCache( HARegionQueue.HA_EVICTION_POLICY_MEMORY ))).intValue();
-    PORT2 = ((Integer)serverVM1.invoke(() -> CQListGIIDUnitTest.createServerCache( HARegionQueue.HA_EVICTION_POLICY_ENTRY ))).intValue();
+    PORT1 = ((Integer) serverVM0.invoke(
+        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY)))
+            .intValue();
+    PORT2 = ((Integer) serverVM1
+        .invoke(() -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY)))
+            .intValue();
   }
 
   @Override
@@ -163,7 +162,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     serverVM1.invoke(() -> CQListGIIDUnitTest.closeCache());
     disconnectAllFromDS();
   }
-  
+
   private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     ds.disconnect();
@@ -181,8 +180,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     return createServerCache(ePolicy, Integer.valueOf(1));
   }
 
-  public static Integer createServerCache(String ePolicy, Integer cap)
-      throws Exception {
+  public static Integer createServerCache(String ePolicy, Integer cap) throws Exception {
     new CQListGIIDUnitTest().createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -199,7 +197,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     if (ePolicy != null) {
-      File overflowDirectory = new File("bsi_overflow_"+port);
+      File overflowDirectory = new File("bsi_overflow_" + port);
       overflowDirectory.mkdir();
       DiskStoreFactory dsf = cache.createDiskStoreFactory();
       File[] dirs1 = new File[] {overflowDirectory};
@@ -207,28 +205,28 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       server1.getClientSubscriptionConfig().setEvictionPolicy(ePolicy);
       server1.getClientSubscriptionConfig().setCapacity(cap.intValue());
       // specify diskstore for this server
-      server1.getClientSubscriptionConfig().setDiskStoreName(dsf.setDiskDirs(dirs1).create("bsi").getName());
+      server1.getClientSubscriptionConfig()
+          .setDiskStoreName(dsf.setDiskDirs(dirs1).create("bsi").getName());
     }
     server1.start();
     Thread.sleep(2000);
     return Integer.valueOf(server1.getPort());
   }
 
-  public static Integer createOneMoreBridgeServer(Boolean notifyBySubscription)
-      throws Exception {
+  public static Integer createOneMoreBridgeServer(Boolean notifyBySubscription) throws Exception {
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
     server1.setNotifyBySubscription(notifyBySubscription.booleanValue());
-    server1.getClientSubscriptionConfig().setEvictionPolicy(
-        HARegionQueue.HA_EVICTION_POLICY_MEMORY);
+    server1.getClientSubscriptionConfig()
+        .setEvictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY);
     // let this server to use default diskstore
     server1.start();
     return Integer.valueOf(server1.getPort());
   }
 
-  public static final Region createRegion(String name, String rootName,
-      RegionAttributes attrs) throws CacheException {
+  public static final Region createRegion(String name, String rootName, RegionAttributes attrs)
+      throws CacheException {
     Region root = cache.getRegion(rootName);
     if (root == null) {
       // don't put listeners on root region
@@ -253,8 +251,8 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * A helper for creating a subregion, potentially using a package protected
-   * method to do so.  
+   * A helper for creating a subregion, potentially using a package protected method to do so.
+   * 
    * @param root the parent region
    * @param name the name of the subregion to create
    * @param attrs the attributes used to create the subregion
@@ -264,7 +262,8 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
    * @see Region#createSubregion(String, RegionAttributes)
    * @see LocalRegion#createSubregion(String, RegionAttributes, InternalRegionArguments)
    */
-  public static Region createSubregion(Region root, String name, RegionAttributes attrs, final InternalRegionArguments internalArgs) throws CacheException {
+  public static Region createSubregion(Region root, String name, RegionAttributes attrs,
+      final InternalRegionArguments internalArgs) throws CacheException {
     Region value = null;
     if (internalArgs == null) {
       value = root.createSubregion(name, attrs);
@@ -276,23 +275,23 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
         fail("unexpected exception", e);
       } catch (ClassNotFoundException e) {
         fail("unexpected exception", e);
-      } 
+      }
     }
     return value;
   }
-  
-  public static void createClientCache(Integer port1, Integer port2,
-      String rLevel) throws Exception {
+
+  public static void createClientCache(Integer port1, Integer port2, String rLevel)
+      throws Exception {
     createClientCache(port1, port2, Integer.valueOf(-1), rLevel, Boolean.FALSE);
   }
 
-  public static void createClientCache(Integer port1, Integer port2,
-      String rLevel, Boolean addListener) throws Exception {
+  public static void createClientCache(Integer port1, Integer port2, String rLevel,
+      Boolean addListener) throws Exception {
     createClientCache(port1, port2, Integer.valueOf(-1), rLevel, addListener);
   }
 
-  public static void createClientCache(Integer port1, Integer port2,
-      Integer port3, String rLevel) throws Exception {
+  public static void createClientCache(Integer port1, Integer port2, Integer port3, String rLevel)
+      throws Exception {
     createClientCache(port1, port2, port3, rLevel, Boolean.FALSE);
   }
 
@@ -301,9 +300,9 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     cache.getRegion("root").getSubregion(regions[1]).close();
     PoolManager.find("clientPool").destroy();
   }
-  
-  public static void createClientCache(Integer port1, Integer port2,
-      Integer port3, String rLevel, Boolean addListener) throws Exception {
+
+  public static void createClientCache(Integer port1, Integer port2, Integer port3, String rLevel,
+      Boolean addListener) throws Exception {
     CacheServerTestUtil.disableShufflingOfEndpoints();
     String host = NetworkUtils.getIPLiteral();
 
@@ -327,14 +326,13 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     pf.setReadTimeout(2500);
     pf.setSocketBufferSize(32768);
     pf.setPingInterval(1000);
-    pf.setMinConnections(endPointCount*2);
+    pf.setMinConnections(endPointCount * 2);
     pf.setSubscriptionRedundancy(Integer.parseInt(rLevel));
     pf.setSubscriptionEnabled(true).create("clientPool");
 
     try {
       cache.getQueryService();
-    }
-    catch (Exception cqe) {
+    } catch (Exception cqe) {
       Assert.fail("Failed to getCQService.", cqe);
     }
 
@@ -355,14 +353,14 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     QueryService cqService = null;
     try {
       cqService = cache.getQueryService();
-    }
-    catch (Exception cqe) {
+    } catch (Exception cqe) {
       Assert.fail("Failed to getCQService.", cqe);
     }
     // Create CQ Attributes.
     CqAttributesFactory cqf = new CqAttributesFactory();
-    CqListener[] cqListeners = { new CqQueryTestListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()) };
-    ((CqQueryTestListener)cqListeners[0]).cqName = cqName;
+    CqListener[] cqListeners =
+        {new CqQueryTestListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter())};
+    ((CqQueryTestListener) cqListeners[0]).cqName = cqName;
 
     cqf.initCqListeners(cqListeners);
     CqAttributes cqa = cqf.create();
@@ -371,14 +369,14 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     try {
       CqQuery cq1 = cqService.newCq(cqName, queryStr, cqa);
       assertTrue("newCq() state mismatch", cq1.getState().isStopped());
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       fail("Failed to create CQ " + cqName + " . ", ex);
     }
   }
 
   public static void executeCQ(String cqName, Boolean initialResults) {
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("### DEBUG EXECUTE CQ START ####");
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+        .info("### DEBUG EXECUTE CQ START ####");
     // Get CQ Service.
     QueryService cqService = null;
     CqQuery cq1 = null;
@@ -388,17 +386,15 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     try {
       cq1 = cqService.getCq(cqName);
       if (cq1 == null) {
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
-            "Failed to get CqQuery object for CQ name: " + cqName);
-        Assert.fail("Failed to get CQ " + cqName, new Exception("Failed to get CQ "
-            + cqName));
-      }
-      else {
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Obtained CQ, CQ name: " + cq1.getName());
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+            .info("Failed to get CqQuery object for CQ name: " + cqName);
+        Assert.fail("Failed to get CQ " + cqName, new Exception("Failed to get CQ " + cqName));
+      } else {
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+            .info("Obtained CQ, CQ name: " + cq1.getName());
         assertTrue("newCq() state mismatch", cq1.getState().isStopped());
       }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       fail("Failed to execute  CQ " + cqName, ex);
     }
 
@@ -407,20 +403,17 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
       try {
         cqResults = cq1.executeWithInitialResults();
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         fail("Failed to execute  CQ " + cqName, ex);
       }
-      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("initial result size = " + cqResults.size());
-      assertTrue("executeWithInitialResults() state mismatch", cq1.getState()
-          .isRunning());
-    }
-    else {
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+          .info("initial result size = " + cqResults.size());
+      assertTrue("executeWithInitialResults() state mismatch", cq1.getState().isRunning());
+    } else {
 
       try {
         cq1.execute();
-      }
-      catch (Exception ex) {
+      } catch (Exception ex) {
         fail("Failed to execute  CQ " + cqName, ex);
       }
       assertTrue("execute() state mismatch", cq1.getState().isRunning());
@@ -432,10 +425,9 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     Region region = null;
     try {
       region = cache.getRegion("root").getSubregion(regionName);
-      region.getAttributesMutator().setCacheListener(
-          new CertifiableTestCacheListener(org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()));
-    }
-    catch (Exception e) {
+      region.getAttributesMutator().setCacheListener(new CertifiableTestCacheListener(
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()));
+    } catch (Exception e) {
       fail("Failed to get Region.", e);
     }
 
@@ -445,8 +437,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
         list.add(KEY + i);
       }
       region.registerInterest(list);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       fail("Failed to Register InterestList", ex);
     }
   }
@@ -460,20 +451,19 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     QueryService cqService = null;
     try {
       cqService = cache.getQueryService();
-    }
-    catch (Exception cqe) {
+    } catch (Exception cqe) {
       Assert.fail("Failed to getCQService.", cqe);
     }
 
     CqQuery cQuery = cqService.getCq(cqName);
     if (cQuery == null) {
-      Assert.fail("Failed to get CqQuery for CQ : " + cqName, new Exception(
-          "Failed to get CqQuery for CQ : " + cqName));
+      Assert.fail("Failed to get CqQuery for CQ : " + cqName,
+          new Exception("Failed to get CqQuery for CQ : " + cqName));
     }
 
     CqAttributes cqAttr = cQuery.getCqAttributes();
     CqListener[] cqListener = cqAttr.getCqListeners();
-    CqQueryTestListener listener = (CqQueryTestListener)cqListener[0];
+    CqQueryTestListener listener = (CqQueryTestListener) cqListener[0];
 
     switch (event) {
       case CREATE:
@@ -511,8 +501,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       Region r = cache.getRegion("/" + regionName);
       assertNotNull(r);
       r.registerInterest("ALL_KEYS");
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("failed in registerInterestListAll", ex);
     }
   }
@@ -524,8 +513,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       r.registerInterest("k1");
       r.registerInterest("k3");
       r.registerInterest("k5");
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("failed while registering keys", ex);
     }
   }
@@ -537,10 +525,9 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       for (int i = 0; i < num.longValue(); i++) {
         r.put(KEY + i, new Portfolio(i + 1));
       }
-      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
-          "### Number of Entries in Region " + rName + ": " + r.keys().size());
-    }
-    catch (Exception ex) {
+      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+          .info("### Number of Entries in Region " + rName + ": " + r.keys().size());
+    } catch (Exception ex) {
       Assert.fail("failed in putEntries()", ex);
     }
   }
@@ -550,80 +537,73 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
   public void testSpecificClientCQIsGIIedPart1() throws Exception {
     Integer size = Integer.valueOf(10);
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart( "30000" ));
-    serverVM1.invoke(() -> ConflationDUnitTest.setIsSlowStart( "30000" ));
+    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
+    serverVM1.invoke(() -> ConflationDUnitTest.setIsSlowStart("30000"));
 
     // createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1");
-    clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache( Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1" ));
-    clientVM2.invoke(() -> CQListGIIDUnitTest.createClientCache( Integer.valueOf(PORT1), Integer.valueOf(PORT2), "0" ));
+    clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache(Integer.valueOf(PORT1),
+        Integer.valueOf(PORT2), "1"));
+    clientVM2.invoke(() -> CQListGIIDUnitTest.createClientCache(Integer.valueOf(PORT1),
+        Integer.valueOf(PORT2), "0"));
 
-    clientVM1.invoke(() -> CQListGIIDUnitTest.createCQ(
-        "testSpecificClientCQIsGIIed_0", cqs[0] ));
-    clientVM1.invoke(() -> CQListGIIDUnitTest.executeCQ(
-        "testSpecificClientCQIsGIIed_0", Boolean.FALSE ));
-    clientVM2.invoke(() -> CQListGIIDUnitTest.createCQ(
-        "testSpecificClientCQIsGIIed_0", cqs[0] ));
-    clientVM2.invoke(() -> CQListGIIDUnitTest.executeCQ(
-        "testSpecificClientCQIsGIIed_0", Boolean.FALSE ));
+    clientVM1.invoke(() -> CQListGIIDUnitTest.createCQ("testSpecificClientCQIsGIIed_0", cqs[0]));
+    clientVM1
+        .invoke(() -> CQListGIIDUnitTest.executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE));
+    clientVM2.invoke(() -> CQListGIIDUnitTest.createCQ("testSpecificClientCQIsGIIed_0", cqs[0]));
+    clientVM2
+        .invoke(() -> CQListGIIDUnitTest.executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE));
 
     serverVM1.invoke(() -> CQListGIIDUnitTest.stopServer());
 
-    serverVM0.invoke(() -> CQListGIIDUnitTest.putEntries(
-        regions[0], size ));
+    serverVM0.invoke(() -> CQListGIIDUnitTest.putEntries(regions[0], size));
 
     serverVM1.invoke(() -> CQListGIIDUnitTest.startServer());
     Thread.sleep(3000); // TODO: Find a better 'n reliable alternative
 
-    serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(
-        size, Integer.valueOf(2) ));
-    serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(
-        size, Integer.valueOf(1) ));
+    serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(2)));
+    serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(1)));
     serverVM0.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
     serverVM1.invoke(() -> ConflationDUnitTest.unsetIsSlowStart());
   }
 
   /**
-   * This test asserts that cq list of a client for an event is not lost if that
-   * client's queue has been GII'ed to a server where that event already
-   * existed.
+   * This test asserts that cq list of a client for an event is not lost if that client's queue has
+   * been GII'ed to a server where that event already existed.
    */
   @Test
   public void testClientCQNotLostAtGIIReceiver() throws Exception {
     Integer size = Integer.valueOf(10);
     VM serverVM2 = clientVM2;
 
-    int port3 = ((Integer)serverVM2.invoke(() -> CQListGIIDUnitTest.createServerCache( HARegionQueue.HA_EVICTION_POLICY_MEMORY ))).intValue();
+    int port3 = ((Integer) serverVM2.invoke(
+        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY)))
+            .intValue();
 
     // slow start for dispatcher
-    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart( "45000" ));
+    serverVM0.invoke(() -> ConflationDUnitTest.setIsSlowStart("45000"));
 
     // createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1");
-    createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2),
-        Integer.valueOf(port3), "1");
+    createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), Integer.valueOf(port3), "1");
     try {
-      clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache( Integer.valueOf(PORT1), Integer.valueOf(port3),
-              Integer.valueOf(PORT2), "1" ));
+      clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache(Integer.valueOf(PORT1),
+          Integer.valueOf(port3), Integer.valueOf(PORT2), "1"));
       try {
         createCQ("testSpecificClientCQIsGIIed_0", cqs[0]);
         executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE);
-        clientVM1.invoke(() -> CQListGIIDUnitTest.createCQ(
-            "testSpecificClientCQIsGIIed_0", cqs[0] ));
-        clientVM1.invoke(() -> CQListGIIDUnitTest.executeCQ(
-            "testSpecificClientCQIsGIIed_0", Boolean.FALSE ));
+        clientVM1
+            .invoke(() -> CQListGIIDUnitTest.createCQ("testSpecificClientCQIsGIIed_0", cqs[0]));
+        clientVM1.invoke(
+            () -> CQListGIIDUnitTest.executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE));
 
-        serverVM0.invoke(() -> CQListGIIDUnitTest.putEntries(
-            regions[0], size ));
+        serverVM0.invoke(() -> CQListGIIDUnitTest.putEntries(regions[0], size));
 
-        serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(
-            size, Integer.valueOf(1) ));
+        serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(1)));
 
         serverVM2.invoke(() -> CQListGIIDUnitTest.stopServer());
         Thread.sleep(3000); // TODO: Find a better 'n reliable alternative
 
-        serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(
-          size, Integer.valueOf(2) ));
-        serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(
-            size, Integer.valueOf(2) ));
+        serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(2)));
+        serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(2)));
       } finally {
         clientVM1.invoke(() -> CQListGIIDUnitTest.destroyClientPool());
       }
@@ -637,25 +617,23 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     try {
       Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
-        CacheServerImpl server = (CacheServerImpl)iter.next();
-        Map haContainer = server.getAcceptor().getCacheClientNotifier()
-            .getHaContainer();
+        CacheServerImpl server = (CacheServerImpl) iter.next();
+        Map haContainer = server.getAcceptor().getCacheClientNotifier().getHaContainer();
         Object[] keys = haContainer.keySet().toArray();
-        logger.fine("### numOfKeys :" + numOfKeys.intValue() + " keys.length : " + keys.length +
-            " haContainer size : " + haContainer.size());
+        logger.fine("### numOfKeys :" + numOfKeys.intValue() + " keys.length : " + keys.length
+            + " haContainer size : " + haContainer.size());
         assertEquals(numOfKeys.intValue(), keys.length);
         for (int i = 0; i < numOfKeys.intValue(); i++) {
           logger.fine("i=: " + i);
-          ClientUpdateMessageImpl cum = (ClientUpdateMessageImpl)haContainer
-              .get(keys[i]);
+          ClientUpdateMessageImpl cum = (ClientUpdateMessageImpl) haContainer.get(keys[i]);
           assertNotNull(cum);
           assertNotNull(cum.getClientCqs());
-          assertEquals("This test may fail if the image provider gets an ack from client before providing image",
+          assertEquals(
+              "This test may fail if the image provider gets an ack from client before providing image",
               numOfClients.intValue(), cum.getClientCqs().size());
         }
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       Assert.fail("failed in VerifyCUMCQList()" + e, e);
     }
   }
@@ -664,13 +642,12 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     try {
       Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
-        CacheServer server = (CacheServer)iter.next();
+        CacheServer server = (CacheServer) iter.next();
         if (server.getPort() == port.intValue()) {
           server.stop();
         }
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       fail("failed in stopOneBridgeServer()", e);
     }
   }
@@ -679,11 +656,10 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     try {
       Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
-        CacheServer server = (CacheServer)iter.next();
+        CacheServer server = (CacheServer) iter.next();
         server.stop();
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       fail("failed in stopServer()", e);
     }
   }
@@ -692,11 +668,10 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     try {
       Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
-        CacheServer server = (CacheServer)iter.next();
+        CacheServer server = (CacheServer) iter.next();
         server.start();
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       fail("failed in startServer()", e);
     }
   }
@@ -705,14 +680,14 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     try {
       boolean dispatched = false;
       Map haContainer = null;
-      haContainer = cache.getRegion(Region.SEPARATOR
-          + CacheServerImpl.generateNameForClientMsgsRegion(port.intValue()));
+      haContainer = cache.getRegion(
+          Region.SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port.intValue()));
       if (haContainer == null) {
         Object[] servers = cache.getCacheServers().toArray();
         for (int i = 0; i < servers.length; i++) {
-          if (port.intValue() == ((CacheServerImpl)servers[i]).getPort()) {
-            haContainer = ((CacheServerImpl)servers[i]).getAcceptor()
-                .getCacheClientNotifier().getHaContainer();
+          if (port.intValue() == ((CacheServerImpl) servers[i]).getPort()) {
+            haContainer = ((CacheServerImpl) servers[i]).getAcceptor().getCacheClientNotifier()
+                .getHaContainer();
             break;
           }
         }
@@ -725,19 +700,16 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
         }
         try {
           Thread.sleep(50);
-        }
-        catch (InterruptedException ie) {
+        } catch (InterruptedException ie) {
           fail("interrupted", ie);
         }
       }
-      logger.fine("Exiting sleep, time elapsed was: "
-          + (System.currentTimeMillis() - startTime));
+      logger.fine("Exiting sleep, time elapsed was: " + (System.currentTimeMillis() - startTime));
       if (!dispatched) {
         throw new Exception(
             "Test tuning issue: The HARegionQueue is not fully drained, so cannot continue the test.");
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       fail("failed in waitTillMessagesAreDispatched()", e);
     }
   }

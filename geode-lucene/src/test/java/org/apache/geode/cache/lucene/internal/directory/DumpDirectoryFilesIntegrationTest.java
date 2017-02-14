@@ -1,20 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.lucene.internal.directory;
 
@@ -22,6 +18,7 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
@@ -56,16 +53,17 @@ public class DumpDirectoryFilesIntegrationTest extends LuceneIntegrationTest {
     region.put(2 * 113, new TestObject("title 3", "hello world"));
     region.put(3 * 113, new TestObject("hello world", "hello world"));
 
-    InternalLuceneIndex index = (InternalLuceneIndex) luceneService.getIndex(INDEX_NAME, REGION_NAME);
+    InternalLuceneIndex index =
+        (InternalLuceneIndex) luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
-    index.waitUntilFlushed(60000);
+    index.waitUntilFlushed(60000, TimeUnit.MILLISECONDS);
 
     index.dumpFiles(diskDirRule.get().getAbsolutePath());
 
-    //Find the directory for the first bucket
+    // Find the directory for the first bucket
     File bucket0 = diskDirRule.get().listFiles(file -> file.getName().endsWith("_0"))[0];
 
-    //Test that we can read the lucene index from the dump
+    // Test that we can read the lucene index from the dump
     final FSDirectory directory = FSDirectory.open(bucket0.toPath());
     IndexReader reader = DirectoryReader.open(directory);
     IndexSearcher searcher = new IndexSearcher(reader);

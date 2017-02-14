@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache;
 
@@ -44,6 +42,7 @@ import static org.junit.Assert.*;
 
 /**
  * Unit test for the RegionFactory class
+ * 
  * @since GemFire 5.0
  */
 @Category(IntegrationTest.class)
@@ -51,7 +50,7 @@ public class RegionFactoryJUnitTest {
 
   @Rule
   public TestName testName = new TestName();
-  
+
   private final String key = "key";
   private final Integer val = new Integer(1);
   private final String r1Name = "r1";
@@ -61,7 +60,7 @@ public class RegionFactoryJUnitTest {
   private Cache cache = null;
 
   private DistributedSystem distSys = null;
-  
+
   private Region r1;
   private Region r2;
   private Region r3;
@@ -115,24 +114,22 @@ public class RegionFactoryJUnitTest {
     try {
       factory.create(r1Name);
       fail("Expected RegionExistsException");
+    } catch (RegionExistsException expected) {
     }
-    catch (RegionExistsException expected) {
-    }
-    
+
     r1sr1 = factory.createSubregion(r1, r1sr1Name);
     assertBasicRegionFunctionality(r1sr1, r1sr1Name);
     try {
       factory.createSubregion(r1, r1sr1Name);
       fail("Expected RegionExistsException");
-    }
-    catch (RegionExistsException expected) {
+    } catch (RegionExistsException expected) {
     }
     r1sr1.destroyRegion();
 
     r2 = factory.create(r2Name);
     assertBasicRegionFunctionality(r2, r2Name);
     r2.destroyRegion();
-    
+
     try {
       factory.createSubregion(r2, "shouldNotBePossible");
       fail("Expected a RegionDestroyedException");
@@ -161,13 +158,12 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = new RegionFactory(createGemFireProperties());
     r1 = factory.create(r1Name);
     assertBasicRegionFunctionality(r1, r1Name);
-  
+
     // Assert duplicate creation failure
     try {
       factory.create(r1Name);
       fail("Expected RegionExistsException");
-    }
-    catch (RegionExistsException expected) {
+    } catch (RegionExistsException expected) {
     }
 
     r2 = factory.create(r2Name);
@@ -185,7 +181,7 @@ public class RegionFactoryJUnitTest {
     } catch (CancelException expected) {
       // passed
     }
-    
+
     factory = new RegionFactory(createGemFireProperties());
     r1 = factory.create(r1Name);
     assertBasicRegionFunctionality(r1, r1Name);
@@ -201,7 +197,7 @@ public class RegionFactoryJUnitTest {
     } catch (CancelException expected) {
       // passed
     }
-    
+
     factory = new RegionFactory(createGemFireProperties());
     r1 = factory.create(r1Name);
     assertBasicRegionFunctionality(r1, r1Name);
@@ -221,21 +217,21 @@ public class RegionFactoryJUnitTest {
   @Test
   public void testAfterConnect() throws Exception {
     // Assert basic region creation when a Distributed system exists
-    this.distSys = DistributedSystem.connect(createGemFireProperties()); // for teardown 
+    this.distSys = DistributedSystem.connect(createGemFireProperties()); // for teardown
 
     RegionFactory factory = new RegionFactory();
     r1 = factory.create(r1Name);
-    this.cache = r1.getCache(); // for teardown 
+    this.cache = r1.getCache(); // for teardown
     assertBasicRegionFunctionality(r1, r1Name);
   }
 
   @Test
   public void testAfterConnectWithDifferentProperties() throws Exception {
-    // Assert failure when a Distributed system exists but with different properties 
-    this.distSys = DistributedSystem.connect(createGemFireProperties()); // for teardown 
+    // Assert failure when a Distributed system exists but with different properties
+    this.distSys = DistributedSystem.connect(createGemFireProperties()); // for teardown
     final Properties failed = new Properties();
     failed.put(MCAST_TTL, "64");
-  
+
     try {
       new RegionFactory(failed);
       fail("Expected exception");
@@ -254,7 +250,7 @@ public class RegionFactoryJUnitTest {
     r1 = factory.create(r1Name);
     assertBasicRegionFunctionality(r1, r1Name);
   }
-    
+
   @Test
   public void testAfterCacheClosed() throws Exception {
     // Assert basic region creation when a Distributed and Cache exist but the cache is closed
@@ -269,18 +265,13 @@ public class RegionFactoryJUnitTest {
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.cache.RegionFactory.RegionFactory(RegionAttributes)'
+   * Test method for 'org.apache.geode.cache.RegionFactory.RegionFactory(RegionAttributes)'
    */
   @Test
   public void testRegionFactoryRegionAttributes() throws Exception {
     Properties gemfireProps = createGemFireProperties();
-    r1 = new RegionFactory(gemfireProps)
-        .setScope(Scope.LOCAL)
-        .setConcurrencyLevel(1)
-        .setLoadFactor(0.8F)
-        .setKeyConstraint(String.class)
-        .setStatisticsEnabled(true)
+    r1 = new RegionFactory(gemfireProps).setScope(Scope.LOCAL).setConcurrencyLevel(1)
+        .setLoadFactor(0.8F).setKeyConstraint(String.class).setStatisticsEnabled(true)
         .create(r1Name);
     assertBasicRegionFunctionality(r1, r1Name);
 
@@ -292,33 +283,27 @@ public class RegionFactoryJUnitTest {
     r3 = factory.create(r3Name);
     assertRegionAttributes(r2.getAttributes(), r3.getAttributes());
   }
-  
+
   /**
-   * Test method for
-   * 'org.apache.geode.cache.RegionFactory.RegionFactory(String)'
+   * Test method for 'org.apache.geode.cache.RegionFactory.RegionFactory(String)'
    */
   @Test
   public void testRegionFactoryString() throws Exception {
-    // TODO: create subdir using getName() and create cache.xml there instead of using DEFAULT_CACHE_XML_FILE
+    // TODO: create subdir using getName() and create cache.xml there instead of using
+    // DEFAULT_CACHE_XML_FILE
     DistributionConfig.DEFAULT_CACHE_XML_FILE.delete();
     try {
       DistributionConfig.DEFAULT_CACHE_XML_FILE.createNewFile();
       FileWriter f = new FileWriter(DistributionConfig.DEFAULT_CACHE_XML_FILE);
       f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"
-            + "<!DOCTYPE cache PUBLIC\n  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN\"\n"
-            + "  \"http://www.gemstone.com/dtd/cache6_5.dtd\">\n"
-            + "<cache>\n"
-            + " <region-attributes id=\""
-            + getName()
-            + "\" statistics-enabled=\"true\" scope=\"distributed-ack\">\n"
-            + "  <key-constraint>"
-            + String.class.getName()
-            + "</key-constraint>\n"
-            + "  <value-constraint>"
-            + Integer.class.getName()
-            + "</value-constraint>\n"
-            + "    <entry-idle-time><expiration-attributes timeout=\"60\"/></entry-idle-time>\n"
-            + " </region-attributes>\n" + "</cache>");
+          + "<!DOCTYPE cache PUBLIC\n  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN\"\n"
+          + "  \"http://www.gemstone.com/dtd/cache7_0.dtd\">\n" + "<cache>\n"
+          + " <region-attributes id=\"" + getName()
+          + "\" statistics-enabled=\"true\" scope=\"distributed-ack\">\n" + "  <key-constraint>"
+          + String.class.getName() + "</key-constraint>\n" + "  <value-constraint>"
+          + Integer.class.getName() + "</value-constraint>\n"
+          + "    <entry-idle-time><expiration-attributes timeout=\"60\"/></entry-idle-time>\n"
+          + " </region-attributes>\n" + "</cache>");
       f.close();
 
       RegionFactory factory = new RegionFactory(createGemFireProperties(), getName());
@@ -330,15 +315,13 @@ public class RegionFactoryJUnitTest {
       assertEquals(ra.getValueConstraint(), Integer.class);
       assertEquals(ra.getKeyConstraint(), String.class);
       assertEquals(ra.getEntryIdleTimeout().getTimeout(), 60);
-    }
-    finally {
+    } finally {
       DistributionConfig.DEFAULT_CACHE_XML_FILE.delete();
     }
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.cache.RegionFactory.RegionFactory(Properties)'
+   * Test method for 'org.apache.geode.cache.RegionFactory.RegionFactory(Properties)'
    */
   @Test
   public void testRegionFactoryProperties() throws Exception {
@@ -347,12 +330,12 @@ public class RegionFactoryJUnitTest {
     RegionFactory factory = new RegionFactory(gemfireProperties);
     r1 = factory.create(this.r1Name);
     assertBasicRegionFunctionality(r1, r1Name);
-    assertEquals(gemfireProperties.get(MCAST_TTL), r1.getCache().getDistributedSystem().getProperties().get(MCAST_TTL));
+    assertEquals(gemfireProperties.get(MCAST_TTL),
+        r1.getCache().getDistributedSystem().getProperties().get(MCAST_TTL));
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.cache.RegionFactory.RegionFactory(Properties,
+   * Test method for 'org.apache.geode.cache.RegionFactory.RegionFactory(Properties,
    * RegionAttributes)'
    */
   @Ignore
@@ -362,9 +345,7 @@ public class RegionFactoryJUnitTest {
   }
 
   /**
-   * Test method for
-   * 'org.apache.geode.cache.RegionFactory.RegionFactory(Properties,
-   * String)'
+   * Test method for 'org.apache.geode.cache.RegionFactory.RegionFactory(Properties, String)'
    */
   @Test
   public void testRegionFactoryPropertiesString() throws Exception {
@@ -378,28 +359,23 @@ public class RegionFactoryJUnitTest {
       xmlFile.delete();
       xmlFile.createNewFile();
       FileWriter f = new FileWriter(xmlFile);
-      final String attrsId = getName() + "-attrsId"; 
+      final String attrsId = getName() + "-attrsId";
       f.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"
-              + "<!DOCTYPE cache PUBLIC\n  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN\"\n"
-              + "  \"http://www.gemstone.com/dtd/cache6_5.dtd\">\n"
-              + "<cache>\n"
-              + " <region-attributes id=\""
-              + attrsId
-              + "\" statistics-enabled=\"true\" scope=\"distributed-ack\">\n"
-              + "  <key-constraint>"
-              + String.class.getName()
-              + "</key-constraint>\n"
-              + "  <value-constraint>"
-              + Integer.class.getName()
-              + "</value-constraint>\n"
-              + "    <entry-idle-time><expiration-attributes timeout=\"60\"/></entry-idle-time>\n"
-              + " </region-attributes>\n" + "</cache>");
+          + "<!DOCTYPE cache PUBLIC\n  \"-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN\"\n"
+          + "  \"http://www.gemstone.com/dtd/cache7_0.dtd\">\n" + "<cache>\n"
+          + " <region-attributes id=\"" + attrsId
+          + "\" statistics-enabled=\"true\" scope=\"distributed-ack\">\n" + "  <key-constraint>"
+          + String.class.getName() + "</key-constraint>\n" + "  <value-constraint>"
+          + Integer.class.getName() + "</value-constraint>\n"
+          + "    <entry-idle-time><expiration-attributes timeout=\"60\"/></entry-idle-time>\n"
+          + " </region-attributes>\n" + "</cache>");
       f.close();
 
       RegionFactory factory = new RegionFactory(gemfireProperties, attrsId);
       r1 = factory.create(this.r1Name);
       assertBasicRegionFunctionality(r1, r1Name);
-      assertEquals(gemfireProperties.get(MCAST_TTL), r1.getCache().getDistributedSystem().getProperties().get(MCAST_TTL));
+      assertEquals(gemfireProperties.get(MCAST_TTL),
+          r1.getCache().getDistributedSystem().getProperties().get(MCAST_TTL));
       assertEquals(gemfireProperties.get(CACHE_XML_FILE),
           r1.getCache().getDistributedSystem().getProperties().get(CACHE_XML_FILE));
       RegionAttributes ra = r1.getAttributes();
@@ -414,8 +390,8 @@ public class RegionFactoryJUnitTest {
       }
     }
   }
- 
-  
+
+
   /**
    * Ensure that the RegionFactory set methods mirrors those found in RegionAttributes
    * 
@@ -426,15 +402,15 @@ public class RegionFactoryJUnitTest {
     Method[] af = AttributesFactory.class.getDeclaredMethods();
     Method[] rf = RegionFactory.class.getDeclaredMethods();
     Method am, rm;
-    
+
     ArrayList afDeprected = new ArrayList(); // hack to ignore deprecated methods
     afDeprected.add("setCacheListener");
     afDeprected.add("setMirrorType");
     afDeprected.add("setPersistBackup");
-    afDeprected.add("setBucketRegion");    
-    afDeprected.add("setEnableWAN");    
-    afDeprected.add("setEnableBridgeConflation");    
-    afDeprected.add("setEnableConflation");    
+    afDeprected.add("setBucketRegion");
+    afDeprected.add("setEnableWAN");
+    afDeprected.add("setEnableBridgeConflation");
+    afDeprected.add("setEnableConflation");
     ArrayList methodsToImplement = new ArrayList();
 
     // Since the RegionFactory has an AttributesFactory member,
@@ -445,12 +421,11 @@ public class RegionFactoryJUnitTest {
     String amName;
     boolean hasMethod = false;
     assertTrue(af.length != 0);
-    for (int i=0; i<af.length; i++) {
+    for (int i = 0; i < af.length; i++) {
       am = af[i];
       amName = am.getName();
-      if (!afDeprected.contains(amName) && 
-          (amName.startsWith("set") || amName.startsWith("add"))) {
-        for (int j=0; j<rf.length; j++) {
+      if (!afDeprected.contains(amName) && (amName.startsWith("set") || amName.startsWith("add"))) {
+        for (int j = 0; j < rf.length; j++) {
           rm = rf[j];
           if (rm.getName().equals(am.getName())) {
             Class[] rparams = rm.getParameterTypes();
@@ -466,8 +441,8 @@ public class RegionFactoryJUnitTest {
               if (hasAllParams) {
                 hasMethod = true;
               }
-            } 
-          } 
+            }
+          }
         } // region factory methods
         if (!hasMethod) {
           methodsToImplement.add(am);
@@ -476,9 +451,10 @@ public class RegionFactoryJUnitTest {
         }
       }
     } // attributes methods
-    
+
     if (methodsToImplement.size() > 0) {
-      fail("RegionFactory does not conform to AttributesFactory, its should proxy these methods " + methodsToImplement);                
+      fail("RegionFactory does not conform to AttributesFactory, its should proxy these methods "
+          + methodsToImplement);
     }
   }
 
@@ -503,7 +479,7 @@ public class RegionFactoryJUnitTest {
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
   }
-  
+
   @Test
   public void testPARTITION_PERSISTENT() throws Exception {
     Cache c = createCache();
@@ -514,7 +490,7 @@ public class RegionFactoryJUnitTest {
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
   }
-  
+
   @Test
   public void testPARTITION_REDUNDANT_PERSISTENT() throws Exception {
     Cache c = createCache();
@@ -525,7 +501,7 @@ public class RegionFactoryJUnitTest {
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
   }
-  
+
   @Test
   public void testPARTITION_OVERFLOW() throws Exception {
     Cache c = createCache();
@@ -535,12 +511,12 @@ public class RegionFactoryJUnitTest {
     assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK), ra.getEvictionAttributes());
+    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
+        ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testPARTITION_REDUNDANT_OVERFLOW() throws Exception {
     Cache c = createCache();
@@ -550,12 +526,12 @@ public class RegionFactoryJUnitTest {
     assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK), ra.getEvictionAttributes());
+    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
+        ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testPARTITION_PERSISTENT_OVERFLOW() throws Exception {
     Cache c = createCache();
@@ -565,12 +541,12 @@ public class RegionFactoryJUnitTest {
     assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicy());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK), ra.getEvictionAttributes());
+    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
+        ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testPARTITION_REDUNDANT_PERSISTENT_OVERFLOW() throws Exception {
     Cache c = createCache();
@@ -580,12 +556,12 @@ public class RegionFactoryJUnitTest {
     assertEquals(DataPolicy.PERSISTENT_PARTITION, ra.getDataPolicy());
     assertNotNull(ra.getPartitionAttributes());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK), ra.getEvictionAttributes());
+    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
+        ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testPARTITION_HEAP_LRU() throws Exception {
     Cache c = createCache();
@@ -597,10 +573,9 @@ public class RegionFactoryJUnitTest {
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testPARTITION_REDUNDANT_HEAP_LRU() throws Exception {
     Cache c = createCache();
@@ -612,10 +587,9 @@ public class RegionFactoryJUnitTest {
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testREPLICATE() throws Exception {
     Cache c = createCache();
@@ -625,7 +599,7 @@ public class RegionFactoryJUnitTest {
     assertEquals(DataPolicy.REPLICATE, ra.getDataPolicy());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
   }
-  
+
   @Test
   public void testREPLICATE_PERSISTENT() throws Exception {
     Cache c = createCache();
@@ -635,7 +609,7 @@ public class RegionFactoryJUnitTest {
     assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
   }
-  
+
   @Test
   public void testREPLICATE_OVERFLOW() throws Exception {
     Cache c = createCache();
@@ -644,12 +618,12 @@ public class RegionFactoryJUnitTest {
     RegionAttributes ra = r1.getAttributes();
     assertEquals(DataPolicy.REPLICATE, ra.getDataPolicy());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK), ra.getEvictionAttributes());
+    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
+        ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testREPLICATE_PERSISTENT_OVERFLOW() throws Exception {
     Cache c = createCache();
@@ -658,12 +632,12 @@ public class RegionFactoryJUnitTest {
     RegionAttributes ra = r1.getAttributes();
     assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK), ra.getEvictionAttributes());
+    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
+        ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testREPLICATE_HEAP_LRU() throws Exception {
     Cache c = createCache();
@@ -671,15 +645,13 @@ public class RegionFactoryJUnitTest {
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertEquals(DataPolicy.PRELOADED, ra.getDataPolicy());
-    assertEquals(new SubscriptionAttributes(InterestPolicy.ALL),
-                 ra.getSubscriptionAttributes());
+    assertEquals(new SubscriptionAttributes(InterestPolicy.ALL), ra.getSubscriptionAttributes());
     assertEquals(Scope.DISTRIBUTED_ACK, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testLOCAL() throws Exception {
     Cache c = createCache();
@@ -689,7 +661,7 @@ public class RegionFactoryJUnitTest {
     assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
     assertEquals(Scope.LOCAL, ra.getScope());
   }
-  
+
   @Test
   public void testLOCAL_PERSISTENT() throws Exception {
     Cache c = createCache();
@@ -699,7 +671,7 @@ public class RegionFactoryJUnitTest {
     assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
     assertEquals(Scope.LOCAL, ra.getScope());
   }
-  
+
   @Test
   public void testLOCAL_HEAP_LRU() throws Exception {
     Cache c = new CacheFactory(createGemFireProperties()).create();
@@ -710,10 +682,9 @@ public class RegionFactoryJUnitTest {
     assertEquals(Scope.LOCAL, ra.getScope());
     assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testLOCAL_OVERFLOW() throws Exception {
     Cache c = new CacheFactory(createGemFireProperties()).create();
@@ -722,12 +693,12 @@ public class RegionFactoryJUnitTest {
     RegionAttributes ra = r1.getAttributes();
     assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
     assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK), ra.getEvictionAttributes());
+    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
+        ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testLOCAL_PERSISTENT_OVERFLOW() throws Exception {
     Cache c = new CacheFactory(createGemFireProperties()).create();
@@ -736,12 +707,12 @@ public class RegionFactoryJUnitTest {
     RegionAttributes ra = r1.getAttributes();
     assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
     assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK), ra.getEvictionAttributes());
+    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
+        ra.getEvictionAttributes());
     assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-                 c.getResourceManager().getEvictionHeapPercentage(),
-                 0);
+        c.getResourceManager().getEvictionHeapPercentage(), 0);
   }
-  
+
   @Test
   public void testPARTITION_PROXY() throws Exception {
     Cache c = createCache();
@@ -753,7 +724,7 @@ public class RegionFactoryJUnitTest {
     assertEquals(0, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(0, ra.getPartitionAttributes().getLocalMaxMemory());
   }
-  
+
   @Test
   public void testPARTITION_PROXY_REDUNDANT() throws Exception {
     Cache c = createCache();
@@ -765,7 +736,7 @@ public class RegionFactoryJUnitTest {
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
     assertEquals(0, ra.getPartitionAttributes().getLocalMaxMemory());
   }
-  
+
   @Test
   public void testREPLICATE_PROXY() throws Exception {
     Cache c = createCache();
@@ -821,7 +792,8 @@ public class RegionFactoryJUnitTest {
   public void testSetEvictionAttributes() throws Exception {
     Cache c = createCache();
     RegionFactory factory = c.createRegionFactory(LOCAL);
-    r1 = factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(77)).create(this.r1Name);
+    r1 = factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(77))
+        .create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertEquals(EvictionAttributes.createLRUEntryAttributes(77), ra.getEvictionAttributes());
   }
@@ -903,7 +875,7 @@ public class RegionFactoryJUnitTest {
     RegionAttributes ra = r1.getAttributes();
     assertEquals(DataPolicy.REPLICATE, ra.getDataPolicy());
   }
-  
+
   @Test
   public void testSetEarlyAck() throws Exception {
     Cache c = createCache();
@@ -912,7 +884,7 @@ public class RegionFactoryJUnitTest {
     RegionAttributes ra = r1.getAttributes();
     assertEquals(true, ra.getEarlyAck());
   }
-  
+
   @Test
   public void testSetMulticastEnabled() throws Exception {
     Cache c = createCache();
@@ -921,7 +893,7 @@ public class RegionFactoryJUnitTest {
     RegionAttributes ra = r1.getAttributes();
     assertEquals(true, ra.getMulticastEnabled());
   }
-  
+
   @Test
   public void testSetEnableSubscriptionConflation() throws Exception {
     Cache c = createCache();
@@ -994,7 +966,7 @@ public class RegionFactoryJUnitTest {
     RegionAttributes ra = r1.getAttributes();
     assertEquals(true, ra.isDiskSynchronous());
   }
-  
+
   @Test
   public void testSetPartitionAttributes() throws Exception {
     Cache c = createCache();
@@ -1009,7 +981,7 @@ public class RegionFactoryJUnitTest {
   public void testSetMembershipAttributes() throws Exception {
     Cache c = createCache();
     RegionFactory factory = c.createRegionFactory();
-    MembershipAttributes ma = new MembershipAttributes(new String[]{"role1", "role2"});
+    MembershipAttributes ma = new MembershipAttributes(new String[] {"role1", "role2"});
     r1 = factory.setMembershipAttributes(ma).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertEquals(ma, ra.getMembershipAttributes());
@@ -1041,7 +1013,7 @@ public class RegionFactoryJUnitTest {
     RegionAttributes ra = r1.getAttributes();
     assertEquals(true, ra.getIgnoreJTA());
   }
-  
+
   @Test
   public void testSetLockGrantor() throws Exception {
     Cache c = createCache();
@@ -1092,12 +1064,13 @@ public class RegionFactoryJUnitTest {
     assertEquals(5, ra.getPartitionAttributes().getTotalNumBuckets());
     assertEquals(1, ra.getPartitionAttributes().getRedundantCopies());
   }
-  
+
   @Test
   public void testBug45749part2() throws Exception {
     Cache c = createCache();
     RegionFactory factory = c.createRegionFactory(PARTITION_REDUNDANT);
-    factory.setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(5).setRedundantCopies(2).create());
+    factory.setPartitionAttributes(
+        new PartitionAttributesFactory().setTotalNumBuckets(5).setRedundantCopies(2).create());
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
     assertEquals(DataPolicy.PARTITION, ra.getDataPolicy());
@@ -1126,20 +1099,21 @@ public class RegionFactoryJUnitTest {
   private String getName() {
     return getClass().getSimpleName() + "_" + testName.getMethodName();
   }
-  
+
   private Properties createGemFireProperties() {
     Properties props = new Properties();
     props.put(MCAST_PORT, "0");
     props.put(LOCATORS, "");
     return props;
   }
-  
+
   private Cache createCache() {
     return new CacheFactory(createGemFireProperties()).create();
   }
-  
+
   private void cleanUpRegion(Region r) {
-    if (r != null && !r.getCache().isClosed() && !r.isDestroyed() && r.getCache().getDistributedSystem().isConnected()) {
+    if (r != null && !r.getCache().isClosed() && !r.isDestroyed()
+        && r.getCache().getDistributedSystem().isConnected()) {
       this.cache = r.getCache();
       this.distSys = this.cache.getDistributedSystem();
       r.localDestroyRegion();
@@ -1170,15 +1144,15 @@ public class RegionFactoryJUnitTest {
 
   private static class MyCacheListener extends CacheListenerAdapter {
   }
-  
+
   private static class MyCacheLoader implements CacheLoader {
     public Object load(LoaderHelper helper) throws CacheLoaderException {
       return null;
     }
-    public void close() {
-    }
+
+    public void close() {}
   }
-  
+
   private static class MyCacheWriter extends CacheWriterAdapter {
   }
 
@@ -1186,7 +1160,7 @@ public class RegionFactoryJUnitTest {
     public ExpirationAttributes getExpiry(Region.Entry entry) {
       return null;
     }
-    public void close() {
-    }
+
+    public void close() {}
   }
 }

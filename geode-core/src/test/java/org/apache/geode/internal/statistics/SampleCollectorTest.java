@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.statistics;
 
@@ -22,6 +20,7 @@ import static org.mockito.Mockito.*;
 import java.io.File;
 import java.util.List;
 
+import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +38,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SampleCollector}.
- *   
+ * 
  * @since GemFire 7.0
  */
 @Category(UnitTest.class)
@@ -47,24 +46,28 @@ public class SampleCollectorTest {
 
   private TestStatisticsManager manager;
   private SampleCollector sampleCollector;
-  
+
   @Before
   public void setUp() throws Exception {
     final long startTime = System.currentTimeMillis();
     this.manager = new TestStatisticsManager(1, getClass().getSimpleName(), startTime);
 
-    final StatArchiveHandlerConfig mockStatArchiveHandlerConfig = mock(StatArchiveHandlerConfig.class, getClass().getSimpleName() + "$" + StatArchiveHandlerConfig.class.getSimpleName());
+    final StatArchiveHandlerConfig mockStatArchiveHandlerConfig =
+        mock(StatArchiveHandlerConfig.class,
+            getClass().getSimpleName() + "$" + StatArchiveHandlerConfig.class.getSimpleName());
     when(mockStatArchiveHandlerConfig.getArchiveFileName()).thenReturn(new File(""));
     when(mockStatArchiveHandlerConfig.getArchiveFileSizeLimit()).thenReturn(0L);
     when(mockStatArchiveHandlerConfig.getArchiveDiskSpaceLimit()).thenReturn(0L);
     when(mockStatArchiveHandlerConfig.getSystemId()).thenReturn(0L);
     when(mockStatArchiveHandlerConfig.getSystemStartTime()).thenReturn(startTime);
     when(mockStatArchiveHandlerConfig.getSystemDirectoryPath()).thenReturn("");
-    when(mockStatArchiveHandlerConfig.getProductDescription()).thenReturn(getClass().getSimpleName());
+    when(mockStatArchiveHandlerConfig.getProductDescription())
+        .thenReturn(getClass().getSimpleName());
 
     final StatisticsSampler sampler = new TestStatisticsSampler(manager);
     this.sampleCollector = new SampleCollector(sampler);
-    this.sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime());
+    this.sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
+        new MainWithChildrenRollingFileHandler());
   }
 
   @After
@@ -75,23 +78,22 @@ public class SampleCollectorTest {
     }
     this.manager = null;
   }
-  
+
   @Test
   public void testAddHandlerBeforeSample() {
     TestSampleHandler handler = new TestSampleHandler();
     this.sampleCollector.addSampleHandler(handler);
 
     StatisticDescriptor[] statsST1 = new StatisticDescriptor[] {
-        manager.createIntCounter("ST1_1_name", "ST1_1_desc", "ST1_1_units")
-    };
+        manager.createIntCounter("ST1_1_name", "ST1_1_desc", "ST1_1_units")};
     StatisticsType ST1 = manager.createType("ST1_name", "ST1_desc", statsST1);
     Statistics st1_1 = manager.createAtomicStatistics(ST1, "st1_1_text", 1);
-    
+
     this.sampleCollector.sample(NanoTimer.getTime());
-    
+
     assertEquals(3, handler.getNotificationCount());
-    List<Info> notifications = handler.getNotifications(); 
-    
+    List<Info> notifications = handler.getNotifications();
+
     // validate the allocatedResourceType notification
     assertTrue(notifications.get(0) instanceof ResourceTypeInfo);
     ResourceTypeInfo allocatedResourceTypeInfo = (ResourceTypeInfo) notifications.get(0);
@@ -107,10 +109,11 @@ public class SampleCollectorTest {
     assertEquals("ST1_name", statisticsType.getName());
     assertEquals("ST1_desc", statisticsType.getDescription());
     assertEquals(1, statisticsType.getStatistics().length);
-    
+
     // validate the allocatedResourceInstance notification
     assertTrue(notifications.get(1) instanceof ResourceInstanceInfo);
-    ResourceInstanceInfo allocatedResourceInstanceInfo = (ResourceInstanceInfo) notifications.get(1);
+    ResourceInstanceInfo allocatedResourceInstanceInfo =
+        (ResourceInstanceInfo) notifications.get(1);
     assertNotNull(allocatedResourceInstanceInfo);
     assertEquals("allocatedResourceInstance", allocatedResourceInstanceInfo.getName());
     ResourceInstance resourceInstance = allocatedResourceInstanceInfo.getResourceInstance();
@@ -126,7 +129,7 @@ public class SampleCollectorTest {
     assertEquals("st1_1_text", statistics.getTextId());
     assertEquals("ST1_name", statistics.getType().getName());
     assertTrue(resourceType == resourceInstance.getResourceType());
-    
+
     // validate the sampled notification
     assertTrue(notifications.get(2) instanceof SampledInfo);
     SampledInfo sampledInfo = (SampledInfo) notifications.get(2);
@@ -134,22 +137,20 @@ public class SampleCollectorTest {
     assertEquals("sampled", sampledInfo.getName());
     assertEquals(1, sampledInfo.getResourceCount());
   }
-  
+
   @Test
   public void testAddHandlerAfterSamples() {
     StatisticDescriptor[] statsST1 = new StatisticDescriptor[] {
-        manager.createIntCounter("ST1_1_name", "ST1_1_desc", "ST1_1_units")
-    };
+        manager.createIntCounter("ST1_1_name", "ST1_1_desc", "ST1_1_units")};
     StatisticsType ST1 = manager.createType("ST1_name", "ST1_desc", statsST1);
     Statistics st1_1 = manager.createAtomicStatistics(ST1, "st1_1_text", 1);
     Statistics st1_2 = manager.createAtomicStatistics(ST1, "st1_2_text", 1);
 
     StatisticDescriptor[] statsST2 = new StatisticDescriptor[] {
-        manager.createIntCounter("ST2_1_name", "ST2_1_desc", "ST2_1_units")
-    };
+        manager.createIntCounter("ST2_1_name", "ST2_1_desc", "ST2_1_units")};
     StatisticsType ST2 = manager.createType("ST2_name", "ST2_desc", statsST2);
     Statistics st2_1 = manager.createAtomicStatistics(ST2, "st2_1_text", 1);
-    
+
     st1_1.incInt("ST1_1_name", 1);
     st1_2.incInt("ST1_1_name", 1);
     st2_1.incInt("ST2_1_name", 1);
@@ -168,7 +169,7 @@ public class SampleCollectorTest {
 
     TestSampleHandler handler = new TestSampleHandler();
     this.sampleCollector.addSampleHandler(handler);
-    
+
     assertEquals("TestSampleHandler = " + handler, 0, handler.getNotificationCount());
 
     st1_2.incInt("ST1_1_name", 1);
@@ -182,7 +183,8 @@ public class SampleCollectorTest {
     // validate the allocatedResourceType notification for ST1
     int notificationIdx = 0;
     assertTrue(notifications.get(notificationIdx) instanceof ResourceTypeInfo);
-    ResourceTypeInfo allocatedResourceTypeInfo = (ResourceTypeInfo) notifications.get(notificationIdx);
+    ResourceTypeInfo allocatedResourceTypeInfo =
+        (ResourceTypeInfo) notifications.get(notificationIdx);
     assertNotNull(allocatedResourceTypeInfo);
     assertEquals("allocatedResourceType", allocatedResourceTypeInfo.getName());
     ResourceType resourceType = allocatedResourceTypeInfo.getResourceType();
@@ -199,7 +201,8 @@ public class SampleCollectorTest {
     // validate the allocatedResourceInstance notification for st1_1
     notificationIdx++;
     assertTrue(notifications.get(notificationIdx) instanceof ResourceInstanceInfo);
-    ResourceInstanceInfo allocatedResourceInstanceInfo = (ResourceInstanceInfo) notifications.get(notificationIdx);
+    ResourceInstanceInfo allocatedResourceInstanceInfo =
+        (ResourceInstanceInfo) notifications.get(notificationIdx);
     assertNotNull(allocatedResourceInstanceInfo);
     assertEquals("allocatedResourceInstance", allocatedResourceInstanceInfo.getName());
     ResourceInstance resourceInstance = allocatedResourceInstanceInfo.getResourceInstance();
@@ -215,7 +218,7 @@ public class SampleCollectorTest {
     assertEquals("st1_1_text", statistics.getTextId());
     assertEquals("ST1_name", statistics.getType().getName());
     assertTrue(resourceType == resourceInstance.getResourceType());
-    
+
     // validate the allocatedResourceInstance notification for st1_2
     notificationIdx++;
     assertTrue(notifications.get(notificationIdx) instanceof ResourceInstanceInfo);
@@ -235,7 +238,7 @@ public class SampleCollectorTest {
     assertEquals("st1_2_text", statistics.getTextId());
     assertEquals("ST1_name", statistics.getType().getName());
     assertTrue(resourceType == resourceInstance.getResourceType());
-    
+
     // validate the allocatedResourceType notification for ST2
     notificationIdx++;
     assertTrue(notifications.get(notificationIdx) instanceof ResourceTypeInfo);
@@ -272,7 +275,7 @@ public class SampleCollectorTest {
     assertEquals("st2_1_text", statistics.getTextId());
     assertEquals("ST2_name", statistics.getType().getName());
     assertTrue(resourceType == resourceInstance.getResourceType());
-    
+
     // validate the sampled notification
     notificationIdx++;
     assertTrue(notifications.get(notificationIdx) instanceof SampledInfo);
@@ -281,7 +284,7 @@ public class SampleCollectorTest {
     assertEquals("sampled", sampledInfo.getName());
     assertEquals(3, sampledInfo.getResourceCount());
   }
-  
+
   @Test
   public void testGetStatMonitorHandler() {
     StatMonitorHandler handler = SampleCollector.getStatMonitorHandler();
@@ -294,8 +297,9 @@ public class SampleCollectorTest {
   public void testGetStatMonitorHandlerAfterClose() {
     this.sampleCollector.close();
     try {
-      /*StatMonitorHandler handler =*/ SampleCollector.getStatMonitorHandler();
-      fail("getStatMonitorHandler should throw IllegalStateException when SampleCollector is closed");
+      /* StatMonitorHandler handler = */ SampleCollector.getStatMonitorHandler();
+      fail(
+          "getStatMonitorHandler should throw IllegalStateException when SampleCollector is closed");
     } catch (IllegalStateException expected) {
       // passed
     }
@@ -308,12 +312,13 @@ public class SampleCollectorTest {
     this.sampleCollector.close();
     try {
       handler = SampleCollector.getStatMonitorHandler();
-      fail("getStatMonitorHandler should throw IllegalStateException when SampleCollector is closed");
+      fail(
+          "getStatMonitorHandler should throw IllegalStateException when SampleCollector is closed");
     } catch (IllegalStateException expected) {
       // passed
     }
   }
-  
+
   @Test
   public void testGetStatArchiveHandler() {
     StatArchiveHandler handler = this.sampleCollector.getStatArchiveHandler();

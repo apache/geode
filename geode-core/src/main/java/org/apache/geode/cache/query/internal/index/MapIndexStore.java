@@ -1,25 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache.query.internal.index;
 
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
@@ -27,9 +24,6 @@ import org.apache.geode.cache.query.internal.types.TypeUtils;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.cache.persistence.query.IndexMap;
 
@@ -44,17 +38,17 @@ public class MapIndexStore implements IndexStore {
   private boolean indexOnValues = false;
   private boolean indexOnRegionKeys = false;
   private static boolean needToCallHasNext = true;
-  
+
   public MapIndexStore(IndexMap indexMap, Region region) {
     this.indexMap = indexMap;
     this.region = region;
   }
-  
+
   // @todo replace with null when backing structure supports null values
   public void addMapping(Object indexKey, RegionEntry re) {
     indexMap.put(indexKey, re.getKey(), "STUB");
   }
-  
+
   public void updateMapping(Object indexKey, Object oldKey, RegionEntry re, Object oldValue) {
     addMapping(indexKey, re);
   }
@@ -72,35 +66,34 @@ public class MapIndexStore implements IndexStore {
   }
 
 
-  public CloseableIterator<IndexStoreEntry> iterator(Object start,
-      boolean startInclusive, Object end, boolean endInclusive) {
+  public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
+      Object end, boolean endInclusive) {
     return iterator(start, startInclusive, end, endInclusive, null);
   }
-  
-  public CloseableIterator<IndexStoreEntry> iterator(Object start,
-      boolean startInclusive, Object end, boolean endInclusive,
-      Collection keysToRemove) {
-    //REMOVE THESE CHECKS ONCE nulls are supported
-    //These checks will help us get past a certain number of tests but not all of them
-    //order by and what not will still probably fail
+
+  public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
+      Object end, boolean endInclusive, Collection keysToRemove) {
+    // REMOVE THESE CHECKS ONCE nulls are supported
+    // These checks will help us get past a certain number of tests but not all of them
+    // order by and what not will still probably fail
     if (start == null) {
       return this.descendingIterator(end, endInclusive, keysToRemove);
-    }
-    else if (end == null) {
+    } else if (end == null) {
       return this.iterator(start, startInclusive, keysToRemove);
     }
-    return new MapIndexStoreIterator(indexMap.iterator(start, startInclusive, end, endInclusive), keysToRemove, indexOnValues, indexOnRegionKeys);
+    return new MapIndexStoreIterator(indexMap.iterator(start, startInclusive, end, endInclusive),
+        keysToRemove, indexOnValues, indexOnRegionKeys);
   }
 
 
-  public CloseableIterator<IndexStoreEntry> iterator(Object start,
-      boolean startInclusive) {
-    return iterator(start, startInclusive, null); 
+  public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive) {
+    return iterator(start, startInclusive, null);
   }
-  
-  public CloseableIterator<IndexStoreEntry> iterator(Object start,
-      boolean startInclusive, Collection keysToRemove) {
-    return new MapIndexStoreIterator(indexMap.iterator(start, startInclusive), keysToRemove, indexOnValues, indexOnRegionKeys);
+
+  public CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
+      Collection keysToRemove) {
+    return new MapIndexStoreIterator(indexMap.iterator(start, startInclusive), keysToRemove,
+        indexOnValues, indexOnRegionKeys);
   }
 
   public CloseableIterator<IndexStoreEntry> iterator() {
@@ -108,44 +101,45 @@ public class MapIndexStore implements IndexStore {
   }
 
   public CloseableIterator<IndexStoreEntry> iterator(Collection keysToRemove) {
-    return new MapIndexStoreIterator(indexMap.iterator(), keysToRemove, indexOnValues, indexOnRegionKeys);
+    return new MapIndexStoreIterator(indexMap.iterator(), keysToRemove, indexOnValues,
+        indexOnRegionKeys);
   }
 
-  public CloseableIterator<IndexStoreEntry> descendingIterator(Object end,
-      boolean endInclusive) {
+  public CloseableIterator<IndexStoreEntry> descendingIterator(Object end, boolean endInclusive) {
     return descendingIterator(end, endInclusive, null);
   }
 
-  public CloseableIterator<IndexStoreEntry> descendingIterator(Object end,
-      boolean endInclusive, Collection keysToRemove) {
-    return new MapIndexStoreIterator(indexMap.descendingIterator(end, endInclusive), keysToRemove, indexOnValues, indexOnRegionKeys);
+  public CloseableIterator<IndexStoreEntry> descendingIterator(Object end, boolean endInclusive,
+      Collection keysToRemove) {
+    return new MapIndexStoreIterator(indexMap.descendingIterator(end, endInclusive), keysToRemove,
+        indexOnValues, indexOnRegionKeys);
   }
 
   public CloseableIterator<IndexStoreEntry> descendingIterator() {
     return descendingIterator(null);
   }
 
-  public CloseableIterator<IndexStoreEntry> descendingIterator(
-      Collection keysToRemove) {
-   return new MapIndexStoreIterator(indexMap.descendingIterator(), keysToRemove, indexOnValues, indexOnRegionKeys);
+  public CloseableIterator<IndexStoreEntry> descendingIterator(Collection keysToRemove) {
+    return new MapIndexStoreIterator(indexMap.descendingIterator(), keysToRemove, indexOnValues,
+        indexOnRegionKeys);
   }
 
-  public CloseableIterator<IndexStoreEntry> descendingIterator(Object start,
-      boolean startInclusive, Object end, boolean endInclusive,
-      Collection keysToRemove) {
-    //@todo change to descending once it is supported
-    return new MapIndexStoreIterator(indexMap.iterator(start, startInclusive, end, endInclusive), keysToRemove, indexOnValues, indexOnRegionKeys);
+  public CloseableIterator<IndexStoreEntry> descendingIterator(Object start, boolean startInclusive,
+      Object end, boolean endInclusive, Collection keysToRemove) {
+    // @todo change to descending once it is supported
+    return new MapIndexStoreIterator(indexMap.iterator(start, startInclusive, end, endInclusive),
+        keysToRemove, indexOnValues, indexOnRegionKeys);
   }
 
   public int size() {
-    return 1;//(int)this.indexMap.size();
+    return 1;// (int)this.indexMap.size();
   }
-  
+
   public int size(Object key) {
-    //return Long.valueOf(indexMap.size(key, key)).intValue();
+    // return Long.valueOf(indexMap.size(key, key)).intValue();
     return 1;
   }
-  
+
   @Override
   public boolean clear() {
     indexMap.destroy();
@@ -177,8 +171,7 @@ public class MapIndexStore implements IndexStore {
     if (indexOnValues) {
       Object o = entry.getValue((LocalRegion) region);
       if (o instanceof CachedDeserializable) {
-          return ((CachedDeserializable) o).getDeserializedValue(
-              region, entry);
+        return ((CachedDeserializable) o).getDeserializedValue(region, entry);
       }
       return o;
     } else if (indexOnRegionKeys) {
@@ -192,8 +185,7 @@ public class MapIndexStore implements IndexStore {
     if (indexOnValues) {
       Object o = entry.getValueInVM((LocalRegion) region);
       if (o instanceof CachedDeserializable) {
-          return ((CachedDeserializable) o).getDeserializedValue(
-              region, entry);
+        return ((CachedDeserializable) o).getDeserializedValue(region, entry);
       }
       return o;
     } else if (indexOnRegionKeys) {
@@ -203,7 +195,8 @@ public class MapIndexStore implements IndexStore {
   }
 
   /**
-   * Wraps a CloseableIterator<IndexMap.IndexEntry> and returns a IndexStorageEntry when iterating over
+   * Wraps a CloseableIterator<IndexMap.IndexEntry> and returns a IndexStorageEntry when iterating
+   * over
    */
   private class MapIndexStoreIterator implements CloseableIterator<IndexStoreEntry> {
     final CloseableIterator<IndexMap.IndexEntry> iterator;
@@ -211,18 +204,20 @@ public class MapIndexStore implements IndexStore {
     final Collection keysToRemove;
     final boolean indexOnRegionKeys;
     final boolean indexOnValues;
-    
-    private MapIndexStoreIterator(CloseableIterator<IndexMap.IndexEntry> iterator, Collection keysToRemove, boolean indexOnValues, boolean indexOnRegionKeys) {
+
+    private MapIndexStoreIterator(CloseableIterator<IndexMap.IndexEntry> iterator,
+        Collection keysToRemove, boolean indexOnValues, boolean indexOnRegionKeys) {
       this.iterator = iterator;
       this.keysToRemove = keysToRemove;
       this.indexOnRegionKeys = indexOnRegionKeys;
       this.indexOnValues = indexOnValues;
     }
-    
-    private MapIndexStoreIterator(CloseableIterator<IndexMap.IndexEntry> iterator, boolean indexOnValues, boolean indexOnRegionKeys) {
+
+    private MapIndexStoreIterator(CloseableIterator<IndexMap.IndexEntry> iterator,
+        boolean indexOnValues, boolean indexOnRegionKeys) {
       this(iterator, null, indexOnValues, indexOnRegionKeys);
     }
-    
+
     public boolean hasNext() {
       if (iterator.hasNext()) {
         IndexMap.IndexEntry indexEntry = iterator.next();
@@ -232,9 +227,8 @@ public class MapIndexStore implements IndexStore {
           Iterator keysToRemoveIterator = keysToRemove.iterator();
           while (keysToRemoveIterator.hasNext()) {
             try {
-              if (TypeUtils
-                  .compare(nextEntry.getDeserializedValue(), keysToRemoveIterator.next(), OQLLexerTokenTypes.TOK_EQ).equals(
-                      Boolean.TRUE)) {
+              if (TypeUtils.compare(nextEntry.getDeserializedValue(), keysToRemoveIterator.next(),
+                  OQLLexerTokenTypes.TOK_EQ).equals(Boolean.TRUE)) {
                 return hasNext();
               }
             } catch (TypeMismatchException e) {
@@ -247,16 +241,16 @@ public class MapIndexStore implements IndexStore {
       return false;
     }
 
-    /** 
+    /**
      * do not retain a reference to the returned object.
      */
     public IndexStoreEntry next() {
       if (needToCallHasNext) {
         hasNext();
       }
-      //we set this again so that we know that has next needs to be called before the next call
-      //hasNext will unset it.  This forces us to call hasNext automatically if the user does not
-      needToCallHasNext = true;       
+      // we set this again so that we know that has next needs to be called before the next call
+      // hasNext will unset it. This forces us to call hasNext automatically if the user does not
+      needToCallHasNext = true;
       return nextEntry;
     }
 
@@ -269,8 +263,8 @@ public class MapIndexStore implements IndexStore {
       nextEntry.setIndexEntry(null);
     }
   }
-  
-  
+
+
   /**
    * A helper class that wraps and deserializes IndexEntry values for indexes
    *
@@ -278,54 +272,54 @@ public class MapIndexStore implements IndexStore {
   private class MapIndexStoreEntry implements IndexStoreEntry {
 
     IndexMap.IndexEntry entry;
-    
+
     /**
-     * sets the IndexEntry 
+     * sets the IndexEntry
      */
     void setIndexEntry(IndexMap.IndexEntry entry) {
       this.entry = entry;
     }
-    
+
     public Object getDeserializedKey() {
       return entry.getKey().getDeserializedForReading();
     }
 
-    //Since we are not storing the actual value in the index, we need to 
-    //retreive the value from the region
+    // Since we are not storing the actual value in the index, we need to
+    // retreive the value from the region
     public Object getDeserializedValue() {
       if (indexOnValues) {
         return region.get(entry.getRegionKey().getDeserializedForReading());
-      }
-      else if (indexOnRegionKeys){
+      } else if (indexOnRegionKeys) {
         return getDeserializedRegionKey();
-      }
-      else {
-        return new EntrySet(getDeserializedRegionKey(), region.get(entry.getRegionKey().getDeserializedForReading()));
+      } else {
+        return new EntrySet(getDeserializedRegionKey(),
+            region.get(entry.getRegionKey().getDeserializedForReading()));
       }
     }
 
     public Object getDeserializedRegionKey() {
-        return entry.getRegionKey().getDeserializedForReading();
+      return entry.getRegionKey().getDeserializedForReading();
     }
-    
+
     public boolean isUpdateInProgress() {
       return false;
     }
   }
-  
-  //wrapper class for when the index is being queried with a map query
+
+  // wrapper class for when the index is being queried with a map query
   private static class EntrySet {
     public Object key;
     public Object value;
+
     private EntrySet(Object key, Object value) {
       this.key = key;
       this.value = value;
     }
-    
+
     public Object getKey() {
       return key;
     }
-    
+
     public Object getValue() {
       return value;
     }

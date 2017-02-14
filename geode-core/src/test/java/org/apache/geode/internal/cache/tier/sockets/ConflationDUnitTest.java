@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
@@ -23,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -59,26 +58,23 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * This test verifies the conflation functionality of the
- * dispatcher.
+ * This test verifies the conflation functionality of the dispatcher.
  *
- * A sequence of create, put, put, put, destroy is sent
- * and a total of three operations should be sent to the client from the
- * server and not all the five.
+ * A sequence of create, put, put, put, destroy is sent and a total of three operations should be
+ * sent to the client from the server and not all the five.
  *
- * The test has two regions. In one scenario
- * they share a common bridgewriter and in the second
+ * The test has two regions. In one scenario they share a common bridgewriter and in the second
  * scenario, each has a unique bridgewriter.
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   VM vm0 = null;
   VM vm2 = null;
   private static Cache cache = null;
-  private int PORT ;
-  private static final String REGION_NAME1 = "ConflationDUnitTest_region1" ;
-  private static final String REGION_NAME2 = "ConflationDUnitTest_region2" ;
+  private int PORT;
+  private static final String REGION_NAME1 = "ConflationDUnitTest_region1";
+  private static final String REGION_NAME2 = "ConflationDUnitTest_region2";
   static final String MARKER = "markerKey";
 
   private static HashMap statMap = new HashMap();
@@ -90,11 +86,10 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm2 = host.getVM(2);
-    PORT =  ((Integer)vm0.invoke(() -> ConflationDUnitTest.createServerCache())).intValue();
+    PORT = ((Integer) vm0.invoke(() -> ConflationDUnitTest.createServerCache())).intValue();
   }
 
-  private Cache createCache(Properties props) throws Exception
-  {
+  private Cache createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     Cache cache = CacheFactory.create(ds);
     if (cache == null) {
@@ -107,19 +102,16 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * set the boolean for starting the dispatcher thread a bit later.
    *
    */
-  public static void setIsSlowStart()
-  {
+  public static void setIsSlowStart() {
     setIsSlowStart("5000");
   }
 
 
   /**
-   * Set the boolean to make the dispatcher thread pause <code>milis</code>
-   * miliseconds.
+   * Set the boolean to make the dispatcher thread pause <code>milis</code> miliseconds.
    * 
    */
-  public static void setIsSlowStart(String milis)
-  {
+  public static void setIsSlowStart(String milis) {
     CacheClientProxy.isSlowStartForTesting = true;
     System.setProperty("slowStartTimeForTesting", milis);
   }
@@ -128,8 +120,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * Unset the boolean to start the dispatcher thread.
    *
    */
-  public static void unsetIsSlowStart()
-  {
+  public static void unsetIsSlowStart() {
     CacheClientProxy.isSlowStartForTesting = false;
   }
 
@@ -138,13 +129,14 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    *
    */
   @Test
-  public void testTwoRegionsTwoWriters()
-  {
+  public void testTwoRegionsTwoWriters() {
     try {
       vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
-      createClientCache1UniqueWriter ( NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT));
+      createClientCache1UniqueWriter(NetworkUtils.getServerHostName(Host.getHost(0)),
+          new Integer(PORT));
       Host host = Host.getHost(0);
-      vm2.invoke(() -> ConflationDUnitTest.createClientCache2UniqueWriter( NetworkUtils.getServerHostName(host), new Integer(PORT)));
+      vm2.invoke(() -> ConflationDUnitTest
+          .createClientCache2UniqueWriter(NetworkUtils.getServerHostName(host), new Integer(PORT)));
       vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
       vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
       vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
@@ -159,8 +151,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
       createMarker();
       vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
       vm2.invoke(() -> ConflationDUnitTest.assertCounterSizes());
-    }
-    catch( Exception e ) {
+    } catch (Exception e) {
       Assert.fail("Test failed due to exception", e);
     }
   }
@@ -170,26 +161,26 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    *
    */
   @Test
-  public void testTwoRegionsOneWriter() throws Exception
-  {
-      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
-      Host host = Host.getHost(0);
-      createClientCache1CommonWriter( NetworkUtils.getServerHostName(host), new Integer(PORT));
-      vm2.invoke(() -> ConflationDUnitTest.createClientCache2CommonWriter( NetworkUtils.getServerHostName(host), new Integer(PORT)));
-      vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
-      vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
-      vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
-      vm2.invoke(() -> ConflationDUnitTest.registerInterest());
-      create();
-      put();
-      createMarker();
-      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-      vm2.invoke(() -> ConflationDUnitTest.assertValue());
-      vm2.invoke(() -> ConflationDUnitTest.destroyMarker());
-      destroy();
-      createMarker();
-      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-      vm2.invoke(() -> ConflationDUnitTest.assertCounterSizes());
+  public void testTwoRegionsOneWriter() throws Exception {
+    vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
+    Host host = Host.getHost(0);
+    createClientCache1CommonWriter(NetworkUtils.getServerHostName(host), new Integer(PORT));
+    vm2.invoke(() -> ConflationDUnitTest
+        .createClientCache2CommonWriter(NetworkUtils.getServerHostName(host), new Integer(PORT)));
+    vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
+    vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
+    vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
+    vm2.invoke(() -> ConflationDUnitTest.registerInterest());
+    create();
+    put();
+    createMarker();
+    vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
+    vm2.invoke(() -> ConflationDUnitTest.assertValue());
+    vm2.invoke(() -> ConflationDUnitTest.destroyMarker());
+    destroy();
+    createMarker();
+    vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
+    vm2.invoke(() -> ConflationDUnitTest.assertCounterSizes());
   }
 
 
@@ -198,34 +189,34 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    *
    */
   @Test
-  public void testNotMoreMessagesSent() throws Exception
-  {
-      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
-      Host host = Host.getHost(0);
-      createClientCache1CommonWriterTest3(NetworkUtils.getServerHostName(host), new Integer(PORT));
-      vm2.invoke(() -> ConflationDUnitTest.createClientCache2CommonWriterTest3(
-        NetworkUtils.getServerHostName(host), new Integer(PORT) ));
-      vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
-      vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
-      vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
-      vm2.invoke(() -> ConflationDUnitTest.registerInterest());
-      create();
-      put200();
-      createMarker();
-      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-      vm2.invoke(() -> ConflationDUnitTest.assertValue());
-      vm2.invoke(() -> ConflationDUnitTest.destroyMarker());
-      destroy();
-      createMarker();
-      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-      vm2.invoke(() -> ConflationDUnitTest.assertCounterSizesLessThan200());
-      vm0.invoke(() -> ConflationDUnitTest.getStatsOnServer());
-      vm0.invoke(() -> ConflationDUnitTest.assertConflationStatus());
+  public void testNotMoreMessagesSent() throws Exception {
+    vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
+    Host host = Host.getHost(0);
+    createClientCache1CommonWriterTest3(NetworkUtils.getServerHostName(host), new Integer(PORT));
+    vm2.invoke(() -> ConflationDUnitTest.createClientCache2CommonWriterTest3(
+        NetworkUtils.getServerHostName(host), new Integer(PORT)));
+    vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
+    vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
+    vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
+    vm2.invoke(() -> ConflationDUnitTest.registerInterest());
+    create();
+    put200();
+    createMarker();
+    vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
+    vm2.invoke(() -> ConflationDUnitTest.assertValue());
+    vm2.invoke(() -> ConflationDUnitTest.destroyMarker());
+    destroy();
+    createMarker();
+    vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
+    vm2.invoke(() -> ConflationDUnitTest.assertCounterSizesLessThan200());
+    vm0.invoke(() -> ConflationDUnitTest.getStatsOnServer());
+    vm0.invoke(() -> ConflationDUnitTest.assertConflationStatus());
   }
+
   /**
    * create properties for a loner VM
    */
-  private static Properties createProperties1(){
+  private static Properties createProperties1() {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -234,34 +225,30 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * create pool for a client
+   * 
    * @return created pool
    */
-  private static Pool createPool(String host,String name, Integer port, boolean enableQueue) {
-    return PoolManager.createFactory()
-      .addServer(host, port.intValue())
-      .setSubscriptionEnabled(enableQueue)
-      .setSubscriptionRedundancy(-1)
-      .setReadTimeout(10000)
-      .setSocketBufferSize(32768)
-      .setMinConnections(3)
-      .setThreadLocalConnections(true)
-      // .setRetryInterval(10000)
-      // .setRetryAttempts(5)
-      .create("ConflationUnitTestPool" + name);
+  private static Pool createPool(String host, String name, Integer port, boolean enableQueue) {
+    return PoolManager.createFactory().addServer(host, port.intValue())
+        .setSubscriptionEnabled(enableQueue).setSubscriptionRedundancy(-1).setReadTimeout(10000)
+        .setSocketBufferSize(32768).setMinConnections(3).setThreadLocalConnections(true)
+        // .setRetryInterval(10000)
+        // .setRetryAttempts(5)
+        .create("ConflationUnitTestPool" + name);
   }
 
   /**
    * create a client with 2 regions sharing a common writer
+   * 
    * @throws Exception
    */
 
-  public static void createClientCache1CommonWriter(String host, Integer port) throws Exception
-  {
+  public static void createClientCache1CommonWriter(String host, Integer port) throws Exception {
     ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
-    factory.setPoolName(createPool(host,"p1", port, true).getName());
+    factory.setPoolName(createPool(host, "p1", port, true).getName());
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME1, attrs);
     cache.createRegion(REGION_NAME2, attrs);
@@ -269,34 +256,34 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * create a client with 2 regions sharing a common writer
+   * 
    * @throws Exception
    */
 
 
-  public static void createClientCache1CommonWriterTest3(String host, Integer port) throws Exception
-  {
+  public static void createClientCache1CommonWriterTest3(String host, Integer port)
+      throws Exception {
     ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
-    factory.setPoolName(createPool(host,"p1", port, false).getName());
+    factory.setPoolName(createPool(host, "p1", port, false).getName());
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME1, attrs);
     cache.createRegion(REGION_NAME2, attrs);
   }
 
   /**
-   * create client 2 with 2 regions with sharing a common writer
-   * and having a common listener
+   * create client 2 with 2 regions with sharing a common writer and having a common listener
+   * 
    * @throws Exception
    */
-  public static void createClientCache2CommonWriter(String host, Integer port) throws Exception
-  {
+  public static void createClientCache2CommonWriter(String host, Integer port) throws Exception {
     ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
-    factory.setPoolName(createPool(host,"p1", port, true).getName());
+    factory.setPoolName(createPool(host, "p1", port, true).getName());
     factory.addCacheListener(new CacheListenerAdapter() {
       public void afterCreate(EntryEvent event) {
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
@@ -304,8 +291,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         synchronized (ConflationDUnitTest.class) {
           if (val.equals(MARKER)) {
             count++;
-          }
-          else {
+          } else {
             counterCreate++;
           }
           if (2 == count) {
@@ -321,11 +307,10 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         }
       }
 
-      public void afterDestroy(EntryEvent event)
-      {
+      public void afterDestroy(EntryEvent event) {
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
         synchronized (this) {
-          if(!event.getKey().equals(MARKER)) {
+          if (!event.getKey().equals(MARKER)) {
             counterDestroy++;
           }
         }
@@ -334,25 +319,23 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME1, attrs);
     cache.createRegion(REGION_NAME2, attrs);
-   }
+  }
 
   public static void createClientCache2CommonWriterTest3(String host, Integer port)
-      throws Exception
-  {
+      throws Exception {
     ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
-    factory.setPoolName(createPool(host,"p1", port, true).getName());
+    factory.setPoolName(createPool(host, "p1", port, true).getName());
     factory.addCacheListener(new CacheListenerAdapter() {
       public void afterCreate(EntryEvent event) {
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
-        String val = (String)event.getNewValue();
+        String val = (String) event.getNewValue();
         synchronized (ConflationDUnitTest.class) {
           if (val.equals(MARKER)) {
             count++;
-          }
-          else {
+          } else {
             counterCreate++;
           }
           if (2 == count) {
@@ -389,42 +372,38 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * @throws Exception
    */
 
-  public static void createClientCache1UniqueWriter(String host, Integer port) throws Exception
-  {
+  public static void createClientCache1UniqueWriter(String host, Integer port) throws Exception {
     ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
-    factory.setPoolName(createPool(host,"p1", port, true).getName());
+    factory.setPoolName(createPool(host, "p1", port, true).getName());
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME1, attrs);
-    factory.setPoolName(createPool(host,"p2", port, true).getName());
+    factory.setPoolName(createPool(host, "p2", port, true).getName());
     attrs = factory.create();
     cache.createRegion(REGION_NAME2, attrs);
   }
 
   /**
-   * create client 2 with 2 regions each with a unique writer
-   * but both having a common listener
+   * create client 2 with 2 regions each with a unique writer but both having a common listener
+   * 
    * @throws Exception
    */
-  public static void createClientCache2UniqueWriter(String host, Integer port) throws Exception
-  {
+  public static void createClientCache2UniqueWriter(String host, Integer port) throws Exception {
     ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(createProperties1());
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
-    factory.setPoolName(createPool(host,"p1", port, true).getName());
+    factory.setPoolName(createPool(host, "p1", port, true).getName());
     factory.addCacheListener(new CacheListenerAdapter() {
-      public void afterCreate(EntryEvent event)
-      {
+      public void afterCreate(EntryEvent event) {
         String val = (String) event.getNewValue();
         LogWriterUtils.getLogWriter().info("Listener received event " + event);
         synchronized (ConflationDUnitTest.class) {
           if (val.equals(MARKER)) {
             count++;
-          }
-          else  {
+          } else {
             counterCreate++;
           }
           if (2 == count) {
@@ -449,7 +428,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     });
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME1, attrs);
-    factory.setPoolName(createPool(host,"p2", port, true).getName());
+    factory.setPoolName(createPool(host, "p2", port, true).getName());
     attrs = factory.create();
     cache.createRegion(REGION_NAME2, attrs);
   }
@@ -458,7 +437,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * variables to count operations (messages received on client from server)
    */
   volatile static int count = 0;
-  volatile  static int counterCreate = 0;
+  volatile static int counterCreate = 0;
   volatile static int counterUpdate = 0;
   volatile static int counterDestroy = 0;
 
@@ -466,8 +445,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * assert all the counters are zero
    *
    */
-  public static void assertAllCountersZero()
-  {
+  public static void assertAllCountersZero() {
     assertEquals(count, 0);
     assertEquals(counterCreate, 0);
     assertEquals(counterUpdate, 0);
@@ -478,8 +456,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * set all the counters to zero
    *
    */
-  public static void setAllCountersZero()
-  {
+  public static void setAllCountersZero() {
     count = 0;
     counterCreate = 0;
     counterUpdate = 0;
@@ -490,12 +467,10 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * reset all counters to zero before interest recovery
    *
    */
-  public static void setClientServerObserverForBeforeInterestRecovery()
-  {
+  public static void setClientServerObserverForBeforeInterestRecovery() {
     PoolImpl.BEFORE_RECOVER_INTEREST_CALLBACK_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
-      public void beforeInterestRecovery()
-      {
+      public void beforeInterestRecovery() {
         setAllCountersZero();
       }
     });
@@ -505,13 +480,13 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * assert the counters size are as expected (2)
    *
    */
-  public static void assertCounterSizes()
-  {
+  public static void assertCounterSizes() {
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         Thread.yield(); // TODO is this necessary?
         return counterCreate == 2;
       }
+
       public String description() {
         return null;
       }
@@ -523,17 +498,19 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         Thread.yield(); // TODO is this necessary?
         return counterUpdate == 2;
       }
+
       public String description() {
         return null;
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-    
+
     ev = new WaitCriterion() {
       public boolean done() {
         Thread.yield(); // TODO is this necessary?
         return counterDestroy == 2;
       }
+
       public String description() {
         return null;
       }
@@ -546,31 +523,32 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * assert the counters size less than 20000
    *
    */
-  public static void assertCounterSizesLessThan200()
-  {
+  public static void assertCounterSizesLessThan200() {
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
         Thread.yield(); // TODO is this necessary?
         return counterCreate == 2;
       }
+
       public String description() {
         return null;
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
     // assertIndexDetailsEquals("creates", 2, counterCreate);
-    
+
     ev = new WaitCriterion() {
       public boolean done() {
         Thread.yield(); // TODO is this necessary?
         return counterDestroy == 2;
       }
+
       public String description() {
         return null;
       }
     };
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
-    
+
     // assertIndexDetailsEquals("destroys", 2, counterDestroy);
     // assertTrue("updates", 20000 >= counterUpdate);
     ev = new WaitCriterion() {
@@ -578,6 +556,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         Thread.yield(); // TODO is this necessary?
         return counterUpdate <= 200;
       }
+
       public String description() {
         return null;
       }
@@ -585,8 +564,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     Wait.waitForCriterion(ev, 60 * 1000, 200, true);
   }
 
-  public static void waitForMarker()
-  {
+  public static void waitForMarker() {
     cache.getRegion(Region.SEPARATOR + REGION_NAME1);
     cache.getRegion(Region.SEPARATOR + REGION_NAME2);
     long giveUpTime = System.currentTimeMillis() + 30000;
@@ -597,8 +575,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         }
         try {
           ConflationDUnitTest.class.wait(1000);
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
           fail("interrupted");
         }
       }
@@ -609,17 +586,15 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * assert that the final value is 33
    *
    */
-  public static void assertValue()
-  {
+  public static void assertValue() {
     try {
       Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
       Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
-      assertTrue( r1.containsKey("key-1"));
-      assertTrue( r1.get("key-1").equals("33"));
-      assertTrue( r2.containsKey("key-1"));
-      assertTrue( r2.get("key-1").equals("33"));
-    }
-    catch (Exception e) {
+      assertTrue(r1.containsKey("key-1"));
+      assertTrue(r1.get("key-1").equals("33"));
+      assertTrue(r2.containsKey("key-1"));
+      assertTrue(r2.get("key-1").equals("33"));
+    } catch (Exception e) {
       fail("Exception in trying to get due to " + e);
     }
   }
@@ -628,14 +603,13 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * assert Conflation Status
    *
    */
-  public static void assertConflationStatus()
-  {
+  public static void assertConflationStatus() {
     assertNotNull(statMap);
-    Long confCount = (Long)statMap.get("eventsConflated");
-    assertTrue("No Conflation found: eventsConflated value is "
-        + confCount.longValue(), confCount.longValue() > (0));
-    assertTrue("Error in Conflation found: eventsConflated value is "
-        + confCount.longValue(), confCount.longValue() <= (200));
+    Long confCount = (Long) statMap.get("eventsConflated");
+    assertTrue("No Conflation found: eventsConflated value is " + confCount.longValue(),
+        confCount.longValue() > (0));
+    assertTrue("Error in Conflation found: eventsConflated value is " + confCount.longValue(),
+        confCount.longValue() <= (200));
   }
 
 
@@ -644,8 +618,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    *
    * @throws Exception
    */
-  public static Integer createServerCache() throws Exception
-  {
+  public static Integer createServerCache() throws Exception {
     ConflationDUnitTest test = new ConflationDUnitTest();
     cache = test.createCache(new Properties());
     AttributesFactory factory = new AttributesFactory();
@@ -655,7 +628,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     cache.createRegion(REGION_NAME1, attrs);
     cache.createRegion(REGION_NAME2, attrs);
     CacheServer server = cache.addCacheServer();
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET) ;
+    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.setSocketBufferSize(32768);
@@ -667,8 +640,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * close the cache
    *
    */
-  public static void closeCache()
-  {
+  public static void closeCache() {
     if (cache != null && !cache.isClosed()) {
       cache.close();
       cache.getDistributedSystem().disconnect();
@@ -679,17 +651,15 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * register interest with the server on ALL_KEYS
    *
    */
-  public static void registerInterest()
-  {
+  public static void registerInterest() {
     try {
-      Region region1 = cache.getRegion(Region.SEPARATOR +REGION_NAME1);
-      Region region2 = cache.getRegion(Region.SEPARATOR +REGION_NAME2);
+      Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
+      Region region2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       assertTrue(region1 != null);
       assertTrue(region2 != null);
       region1.registerInterest("ALL_KEYS");
       region2.registerInterest("ALL_KEYS");
-    }
-    catch (CacheWriterException e) {
+    } catch (CacheWriterException e) {
       fail("test failed due to " + e);
     }
   }
@@ -700,15 +670,13 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    *
    */
 
-  public static void unregisterInterest()
-  {
+  public static void unregisterInterest() {
     try {
-      Region region1 = cache.getRegion(Region.SEPARATOR +REGION_NAME1);
-      Region region2 = cache.getRegion(Region.SEPARATOR +REGION_NAME2);
+      Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
+      Region region2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       region1.unregisterInterest("ALL_KEYS");
       region2.unregisterInterest("ALL_KEYS");
-    }
-    catch (CacheWriterException e) {
+    } catch (CacheWriterException e) {
       fail("test failed due to " + e);
     }
   }
@@ -717,15 +685,13 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * Create an entry on two region with key : key-1 and value
    *
    */
-  public static void create()
-  {
+  public static void create() {
     try {
-      Region r1 = cache.getRegion(Region.SEPARATOR +REGION_NAME1);
-      Region r2 = cache.getRegion(Region.SEPARATOR +REGION_NAME2);
+      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
+      Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       r1.create("key-1", "value");
       r2.create("key-1", "value");
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       ex.printStackTrace();
       Assert.fail("failed while region.create()", ex);
     }
@@ -735,47 +701,42 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * do three puts on key-1
    *
    */
-  public static void put()
-  {
+  public static void put() {
     try {
-      Region r1 = cache.getRegion(Region.SEPARATOR +REGION_NAME1);
-      Region r2 = cache.getRegion(Region.SEPARATOR +REGION_NAME2);
+      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
+      Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       r1.put("key-1", "11");
       r1.put("key-1", "22");
       r1.put("key-1", "33");
       r2.put("key-1", "11");
       r2.put("key-1", "22");
       r2.put("key-1", "33");
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       ex.printStackTrace();
       Assert.fail("failed while region.put()", ex);
     }
   }
 
- public static void createMarker()
- {
-   try {
-     Region r1 = cache.getRegion(Region.SEPARATOR +REGION_NAME1);
-     Region r2 = cache.getRegion(Region.SEPARATOR +REGION_NAME2);
-     r1.put(MARKER, MARKER);
-     r2.put(MARKER, MARKER);
-   }
-   catch (Exception ex) {
-     ex.printStackTrace();
-     Assert.fail("failed while region.create() marker", ex);
-   }
- }
+  public static void createMarker() {
+    try {
+      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
+      Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
+      r1.put(MARKER, MARKER);
+      r2.put(MARKER, MARKER);
+    } catch (Exception ex) {
+      ex.printStackTrace();
+      Assert.fail("failed while region.create() marker", ex);
+    }
+  }
 
   /**
    * do 200 puts on key-1
    *
    */
-  public static void put200()
-  {
+  public static void put200() {
     try {
-      Region r1 = cache.getRegion(Region.SEPARATOR +REGION_NAME1);
-      Region r2 = cache.getRegion(Region.SEPARATOR +REGION_NAME2);
+      Region r1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
+      Region r2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       for (int i = 1; i < 100; i++) {
         r1.put("key-1", "11");
         r2.put("key-1", "11");
@@ -783,8 +744,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
       }
       r1.put("key-1", "33");
       r2.put("key-1", "33");
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       ex.printStackTrace();
       Assert.fail("failed while region.put()", ex);
     }
@@ -796,42 +756,39 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    *
    */
 
-  public static void getStatsOnServer()
-  {
+  public static void getStatsOnServer() {
     Cache cache = GemFireCacheImpl.getInstance();
     Iterator itr = cache.getCacheServers().iterator();
-    CacheServerImpl server = (CacheServerImpl)itr.next();
-    Iterator iter_prox = server.getAcceptor().getCacheClientNotifier()
-        .getClientProxies().iterator();
-    int ccpCount=0;
+    CacheServerImpl server = (CacheServerImpl) itr.next();
+    Iterator iter_prox =
+        server.getAcceptor().getCacheClientNotifier().getClientProxies().iterator();
+    int ccpCount = 0;
     while (iter_prox.hasNext()) {
       ccpCount++;
-      CacheClientProxy proxy = (CacheClientProxy)iter_prox.next();
+      CacheClientProxy proxy = (CacheClientProxy) iter_prox.next();
       if (HaHelper.checkPrimary(proxy)) {
         HARegion region = (HARegion) proxy.getHARegion();
         assertNotNull(region);
         HARegionQueue haRegionQueue = HAHelper.getRegionQueue(region);
-        statMap.put("eventsConflated", new Long(HAHelper.getRegionQueueStats(
-            haRegionQueue).getEventsConflated()));
+        statMap.put("eventsConflated",
+            new Long(HAHelper.getRegionQueueStats(haRegionQueue).getEventsConflated()));
         LogWriterUtils.getLogWriter().info("new Stats Map  : " + statMap.toString());
 
       }
     }
-    assertTrue("CCP Count is not 1 ", ccpCount==1);
-    //}
+    assertTrue("CCP Count is not 1 ", ccpCount == 1);
+    // }
   }
 
   /**
    * do a get on region1
    *
    */
-  public static void get()
-  {
+  public static void get() {
     try {
-      Region r = cache.getRegion(Region.SEPARATOR +REGION_NAME1);
+      Region r = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
       r.get("key-1");
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       ex.printStackTrace();
       Assert.fail("failed while region.get()", ex);
     }
@@ -841,8 +798,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * destroy the regions
    *
    */
-  public static void destroyRegion()
-  {
+  public static void destroyRegion() {
     try {
       Region region1 = cache.getRegion("/region1");
       if (region1 != null) {
@@ -852,8 +808,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
       if (region2 != null) {
         region2.destroyRegion();
       }
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
       fail("test failed due to exception in destroy region" + e);
     }
@@ -863,16 +818,14 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * destroy key-1
    *
    */
-  public static void destroy()
-  {
+  public static void destroy() {
     try {
-      Region region1 = cache.getRegion(Region.SEPARATOR +REGION_NAME1);
-      Region region2 = cache.getRegion(Region.SEPARATOR +REGION_NAME2);
+      Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
+      Region region2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       region1.destroy("key-1");
       region2.destroy("key-1");
 
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
       fail("test failed due to exception in destroy ");
     }
@@ -882,17 +835,15 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * destroy marker
    *
    */
-  public static void destroyMarker()
-  {
+  public static void destroyMarker() {
     try {
-      Region region1 = cache.getRegion(Region.SEPARATOR +REGION_NAME1);
-      Region region2 = cache.getRegion(Region.SEPARATOR +REGION_NAME2);
+      Region region1 = cache.getRegion(Region.SEPARATOR + REGION_NAME1);
+      Region region2 = cache.getRegion(Region.SEPARATOR + REGION_NAME2);
       region1.destroy(MARKER);
       region2.destroy(MARKER);
-      count =0;
+      count = 0;
 
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       e.printStackTrace();
       fail("test failed due to exception in destroy ");
     }

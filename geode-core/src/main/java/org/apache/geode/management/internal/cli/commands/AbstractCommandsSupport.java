@@ -1,26 +1,19 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.management.internal.cli.commands;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -28,18 +21,27 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.MemberNotFoundException;
-
 import org.springframework.shell.core.CommandMarker;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
- * The AbstractCommandsSupport class is an abstract base class encapsulating common functionality for implementing
- * command classes with command for the GemFire shell (gfsh).
+ * The AbstractCommandsSupport class is an abstract base class encapsulating common functionality
+ * for implementing command classes with command for the GemFire shell (gfsh).
  * <p>
+ * 
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.execute.FunctionService
  * @see org.apache.geode.distributed.DistributedMember
@@ -49,20 +51,24 @@ import org.springframework.shell.core.CommandMarker;
  */
 @SuppressWarnings("unused")
 public abstract class AbstractCommandsSupport implements CommandMarker {
+  protected static SecurityService securityService = SecurityService.getSecurityService();
 
-  protected static void assertArgument(final boolean valid, final String message, final Object... args) {
+  protected static void assertArgument(final boolean valid, final String message,
+      final Object... args) {
     if (!valid) {
       throw new IllegalArgumentException(String.format(message, args));
     }
   }
 
-  protected static void assertNotNull(final Object obj, final String message, final Object... args) {
+  protected static void assertNotNull(final Object obj, final String message,
+      final Object... args) {
     if (obj == null) {
       throw new NullPointerException(String.format(message, args));
     }
   }
 
-  protected static void assertState(final boolean valid, final String message, final Object... args) {
+  protected static void assertState(final boolean valid, final String message,
+      final Object... args) {
     if (!valid) {
       throw new IllegalStateException(String.format(message, args));
     }
@@ -72,9 +78,10 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
     return (CliMetaData.ANNOTATION_DEFAULT_VALUE.equals(from) ? to : from);
   }
 
-  protected static String toString(final Boolean condition, final String trueValue, final String falseValue) {
+  protected static String toString(final Boolean condition, final String trueValue,
+      final String falseValue) {
     return (Boolean.TRUE.equals(condition) ? StringUtils.defaultIfBlank(trueValue, "true")
-      : StringUtils.defaultIfBlank(falseValue, "false"));
+        : StringUtils.defaultIfBlank(falseValue, "false"));
   }
 
   protected static String toString(final Throwable t, final boolean printStackTrace) {
@@ -93,6 +100,24 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
     return (getGfsh() != null && getGfsh().isConnectedAndReady());
   }
 
+  protected ClusterConfigurationService getSharedConfiguration() {
+    InternalLocator locator = InternalLocator.getLocator();
+    return (locator == null) ? null : locator.getSharedConfiguration();
+  }
+
+  protected void persistClusterConfiguration(Result result, Runnable runnable) {
+    if (result == null) {
+      throw new IllegalArgumentException("Result should not be null");
+    }
+    ClusterConfigurationService sc = getSharedConfiguration();
+    if (sc == null) {
+      result.setCommandPersisted(false);
+    } else {
+      runnable.run();
+      result.setCommandPersisted(true);
+    }
+  }
+
   protected boolean isDebugging() {
     return (getGfsh() != null && getGfsh().getDebug());
   }
@@ -105,24 +130,27 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
     return CacheFactory.getAnyInstance();
   }
 
-  protected Gfsh getGfsh() {
+  protected static Gfsh getGfsh() {
     return Gfsh.getCurrentInstance();
   }
 
   @SuppressWarnings("deprecated")
   protected DistributedMember getMember(final Cache cache, final String memberName) {
     for (final DistributedMember member : getMembers(cache)) {
-      if (memberName.equalsIgnoreCase(member.getName()) || memberName.equalsIgnoreCase(member.getId())) {
+      if (memberName.equalsIgnoreCase(member.getName())
+          || memberName.equalsIgnoreCase(member.getId())) {
         return member;
       }
     }
 
-    throw new MemberNotFoundException(CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberName));
+    throw new MemberNotFoundException(
+        CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberName));
   }
 
   /**
    * Gets all members in the GemFire distributed system/cache.
    * </p>
+   * 
    * @param cache the GemFire cache.
    * @return all members in the GemFire distributed system/cache.
    * @see org.apache.geode.management.internal.cli.CliUtil#getAllMembers(org.apache.geode.cache.Cache)
@@ -185,8 +213,7 @@ public abstract class AbstractCommandsSupport implements CommandMarker {
   protected <T extends Function> T register(T function) {
     if (FunctionService.isRegistered(function.getId())) {
       function = (T) FunctionService.getFunction(function.getId());
-    }
-    else {
+    } else {
       FunctionService.registerFunction(function);
     }
 

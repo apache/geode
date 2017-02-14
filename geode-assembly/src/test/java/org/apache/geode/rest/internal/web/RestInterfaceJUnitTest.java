@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.rest.internal.web;
 
@@ -52,6 +50,7 @@ import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,10 +68,11 @@ import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * The GemFireRestInterfaceTest class is a test suite of test cases testing the contract and functionality of the
- * GemFire Developer REST API, mixing Java clients, this test GemFire's Cache Region API, along with
- * a REST-based client, also this test using Spring's RestTemplate, testing the proper interaction, especially
- * in the case of an application domain object type having a java.util.Date property.
+ * The GemFireRestInterfaceTest class is a test suite of test cases testing the contract and
+ * functionality of the GemFire Developer REST API, mixing Java clients, this test GemFire's Cache
+ * Region API, along with a REST-based client, also this test using Spring's RestTemplate, testing
+ * the proper interaction, especially in the case of an application domain object type having a
+ * java.util.Date property.
  *
  * @see org.junit.Test
  * @see org.junit.runner.RunWith
@@ -83,15 +83,16 @@ import org.springframework.web.client.RestTemplate;
  * @see org.apache.geode.pdx.ReflectionBasedAutoSerializer
  * @since Geode 1.0.0
  */
-//@RunWith(SpringJUnit4ClassRunner.class)
-//@ContextConfiguration
+// @RunWith(SpringJUnit4ClassRunner.class)
+// @ContextConfiguration
 @SuppressWarnings("unused")
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, RestAPITest.class})
 public class RestInterfaceJUnitTest {
 
   protected static int DEFAULT_HTTP_SERVICE_PORT = 8189;
 
-  protected static final String REST_API_SERVICE_ENDPOINT = "http://localhost:%1$d/gemfire-api/v1/%2$s/%3$s";
+  protected static final String REST_API_SERVICE_ENDPOINT =
+      "http://localhost:%1$d/gemfire-api/v1/%2$s/%3$s";
   protected static final String UTF_8 = "UTF-8";
 
   @Autowired
@@ -117,17 +118,15 @@ public class RestInterfaceJUnitTest {
       gemfireProperties = (gemfireProperties != null ? gemfireProperties : new Properties());
 
       gemfireCache = new CacheFactory()
-        //.setPdxSerializer(new ReflectionBasedAutoSerializer(Person.class.getPackage().getName().concat(".*")))
-        .setPdxSerializer(new ReflectionBasedAutoSerializer(Person.class.getName().replaceAll("\\$", ".")))
-        .setPdxReadSerialized(true)
-        .setPdxIgnoreUnreadFields(false)
-        .set("name", getClass().getSimpleName())
-          .set(MCAST_PORT, "0")
-          .set(LOG_LEVEL, "config")
+          // .setPdxSerializer(new
+          // ReflectionBasedAutoSerializer(Person.class.getPackage().getName().concat(".*")))
+          .setPdxSerializer(
+              new ReflectionBasedAutoSerializer(Person.class.getName().replaceAll("\\$", ".")))
+          .setPdxReadSerialized(true).setPdxIgnoreUnreadFields(false)
+          .set("name", getClass().getSimpleName()).set(MCAST_PORT, "0").set(LOG_LEVEL, "config")
           .set(HTTP_SERVICE_BIND_ADDRESS, "localhost")
           .set(HTTP_SERVICE_PORT, String.valueOf(getHttpServicePort()))
-          .set(START_DEV_REST_API, "true")
-        .create();
+          .set(START_DEV_REST_API, "true").create();
 
       RegionFactory<String, Object> peopleRegionFactory = gemfireCache.createRegionFactory();
 
@@ -146,9 +145,9 @@ public class RestInterfaceJUnitTest {
 
   protected synchronized int getHttpServicePort() {
     try {
-      return Integer.parseInt(StringUtils.trimWhitespace(gemfireProperties.getProperty(HTTP_SERVICE_PORT)));
-    }
-    catch (NumberFormatException ignore) {
+      return Integer
+          .parseInt(StringUtils.trimWhitespace(gemfireProperties.getProperty(HTTP_SERVICE_PORT)));
+    } catch (NumberFormatException ignore) {
       int httpServicePort = getHttpServicePort(DEFAULT_HTTP_SERVICE_PORT);
       gemfireProperties.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpServicePort));
       return httpServicePort;
@@ -157,18 +156,22 @@ public class RestInterfaceJUnitTest {
 
   private int getHttpServicePort(final int defaultHttpServicePort) {
     int httpServicePort = AvailablePortHelper.getRandomAvailableTCPPort();
-    return (httpServicePort > 1024 && httpServicePort < 65536 ? httpServicePort : defaultHttpServicePort);
+    return (httpServicePort > 1024 && httpServicePort < 65536 ? httpServicePort
+        : defaultHttpServicePort);
   }
 
   protected ObjectMapper getObjectMapper() {
     if (objectMapper == null) {
-      Jackson2ObjectMapperFactoryBean objectMapperFactoryBean = new Jackson2ObjectMapperFactoryBean();
+      Jackson2ObjectMapperFactoryBean objectMapperFactoryBean =
+          new Jackson2ObjectMapperFactoryBean();
 
       objectMapperFactoryBean.setFailOnEmptyBeans(true);
       objectMapperFactoryBean.setFeaturesToEnable(Feature.ALLOW_COMMENTS);
       objectMapperFactoryBean.setFeaturesToEnable(Feature.ALLOW_SINGLE_QUOTES);
-      objectMapperFactoryBean.setFeaturesToEnable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
-      objectMapperFactoryBean.setFeaturesToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+      objectMapperFactoryBean
+          .setFeaturesToEnable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+      objectMapperFactoryBean
+          .setFeaturesToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
       objectMapperFactoryBean.setIndentOutput(true);
       objectMapperFactoryBean.setSimpleDateFormat("MM/dd/yyyy");
       objectMapperFactoryBean.afterPropertiesSet();
@@ -189,14 +192,16 @@ public class RestInterfaceJUnitTest {
   }
 
   protected String getAdhocQueryRestApiEndpoint(final int httpServicePort, final String query) {
-    return String.format(REST_API_SERVICE_ENDPOINT, httpServicePort, "queries", String.format("adhoc?q=%1$s", query));
+    return String.format(REST_API_SERVICE_ENDPOINT, httpServicePort, "queries",
+        String.format("adhoc?q=%1$s", query));
   }
 
   protected String getRegionGetRestApiEndpoint(final Region<?, ?> region, final String key) {
     return getRegionGetRestApiEndpoint(getHttpServicePort(), region, key);
   }
 
-  protected String getRegionGetRestApiEndpoint(final int httpServicePort, final Region<?, ?> region, final String key) {
+  protected String getRegionGetRestApiEndpoint(final int httpServicePort, final Region<?, ?> region,
+      final String key) {
     return String.format(REST_API_SERVICE_ENDPOINT, httpServicePort, region.getName(), key);
   }
 
@@ -213,17 +218,19 @@ public class RestInterfaceJUnitTest {
     return createPerson(firstName, lastName, null);
   }
 
-  protected Person createPerson(final String firstName, final String lastName, final Date birthDate) {
+  protected Person createPerson(final String firstName, final String lastName,
+      final Date birthDate) {
     return new Person(firstName, lastName, birthDate);
   }
 
   protected RestTemplate createRestTemplate() {
-    MappingJackson2HttpMessageConverter httpMessageConverter = new MappingJackson2HttpMessageConverter();
+    MappingJackson2HttpMessageConverter httpMessageConverter =
+        new MappingJackson2HttpMessageConverter();
 
     httpMessageConverter.setObjectMapper(getObjectMapper());
 
-    return setErrorHandler(new RestTemplate(Collections.<HttpMessageConverter<?>>singletonList(
-      httpMessageConverter)));
+    return setErrorHandler(
+        new RestTemplate(Collections.<HttpMessageConverter<?>>singletonList(httpMessageConverter)));
   }
 
   private RestTemplate setErrorHandler(final RestTemplate restTemplate) {
@@ -256,8 +263,7 @@ public class RestInterfaceJUnitTest {
 
       @Override
       public void handleError(final ClientHttpResponse response) throws IOException {
-        System.err.printf("%1$d - %2$s%n", response.getRawStatusCode(),
-          response.getStatusText());
+        System.err.printf("%1$d - %2$s%n", response.getRawStatusCode(), response.getStatusText());
         System.err.println(readBody(response));
       }
 
@@ -275,8 +281,7 @@ public class RestInterfaceJUnitTest {
           }
 
           return buffer.toString().trim();
-        }
-        finally {
+        } finally {
           IOUtils.close(responseBodyReader);
         }
       }
@@ -308,20 +313,22 @@ public class RestInterfaceJUnitTest {
 
     RestTemplate restTemplate = createRestTemplate();
 
-    Person jonDoeResource = restTemplate.getForObject(getRegionGetRestApiEndpoint(getPeopleRegion(), key), Person.class);
+    Person jonDoeResource = restTemplate
+        .getForObject(getRegionGetRestApiEndpoint(getPeopleRegion(), key), Person.class);
 
     assertNotNull(jonDoeResource);
     assertNotSame(jonDoe, jonDoeResource);
     assertEquals(jonDoe, jonDoeResource);
 
     /*
-    Object result = runQueryUsingApi(getPeopleRegion().getRegionService(), String.format("SELECT * FROM %1$s",
-      getPeopleRegion().getFullPath()));
+     * Object result = runQueryUsingApi(getPeopleRegion().getRegionService(),
+     * String.format("SELECT * FROM %1$s", getPeopleRegion().getFullPath()));
+     * 
+     * System.out.printf("(OQL Query using API) Person is (%1$s)%n", result);
+     */
 
-    System.out.printf("(OQL Query using API) Person is (%1$s)%n", result);
-    */
-
-    String url = getAdhocQueryRestApiEndpoint(String.format("SELECT * FROM %1$s", getPeopleRegion().getFullPath()));
+    String url = getAdhocQueryRestApiEndpoint(
+        String.format("SELECT * FROM %1$s", getPeopleRegion().getFullPath()));
 
     System.out.printf("URL (%1$s)%n", url);
 
@@ -338,13 +345,15 @@ public class RestInterfaceJUnitTest {
     assertEquals(jonDoe, jonDoeResource);
   }
 
-  private Object runQueryUsingApi(final RegionService regionService, final String queryString) throws Exception {
+  private Object runQueryUsingApi(final RegionService regionService, final String queryString)
+      throws Exception {
     return regionService.getQueryService().newQuery(queryString).execute();
   }
 
-  //@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE)
-  //@JsonIgnoreProperties(ignoreUnknown = true)
-  //@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "@type")
+  // @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE)
+  // @JsonIgnoreProperties(ignoreUnknown = true)
+  // @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property =
+  // "@type")
   public static class Person implements PdxSerializable {
 
     protected static final String DEFAULT_BIRTH_DATE_FORMAT_PATTERN = "MM/dd/yyyy";
@@ -354,8 +363,7 @@ public class RestInterfaceJUnitTest {
     private String firstName;
     private String lastName;
 
-    public Person() {
-    }
+    public Person() {}
 
     public Person(final String firstName, final String lastName) {
       this(firstName, lastName, null);
@@ -373,7 +381,7 @@ public class RestInterfaceJUnitTest {
 
     public void setBirthDate(final Date birthDate) {
       Assert.isTrue(birthDate == null || birthDate.compareTo(Calendar.getInstance().getTime()) <= 0,
-        "A Person's date of birth cannot be after today!");
+          "A Person's date of birth cannot be after today!");
       this.birthDate = birthDate;
     }
 
@@ -400,8 +408,9 @@ public class RestInterfaceJUnitTest {
     }
 
     protected String format(final Date dateTime, final String dateFormatPattern) {
-      return (dateTime == null ? null : new SimpleDateFormat(StringUtils.hasText(dateFormatPattern) ? dateFormatPattern
-        : DEFAULT_BIRTH_DATE_FORMAT_PATTERN).format(dateTime));
+      return (dateTime == null ? null
+          : new SimpleDateFormat(StringUtils.hasText(dateFormatPattern) ? dateFormatPattern
+              : DEFAULT_BIRTH_DATE_FORMAT_PATTERN).format(dateTime));
     }
 
     @Override
@@ -431,8 +440,8 @@ public class RestInterfaceJUnitTest {
       Person that = (Person) obj;
 
       return ObjectUtils.nullSafeEquals(this.getFirstName(), that.getFirstName())
-        && ObjectUtils.nullSafeEquals(this.getLastName(), that.getLastName())
-        && ObjectUtils.nullSafeEquals(this.getBirthDate(), that.getBirthDate());
+          && ObjectUtils.nullSafeEquals(this.getLastName(), that.getLastName())
+          && ObjectUtils.nullSafeEquals(this.getBirthDate(), that.getBirthDate());
     }
 
     @Override
@@ -447,7 +456,7 @@ public class RestInterfaceJUnitTest {
     @Override
     public String toString() {
       return String.format("{ @type = %1$s, firstName = %2$s, lastName = %3$s, birthDate = %4$s }",
-        getClass().getName(), getFirstName(), getLastName(), format(getBirthDate()));
+          getClass().getName(), getFirstName(), getLastName(), format(getBirthDate()));
     }
   }
 

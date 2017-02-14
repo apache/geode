@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -21,6 +19,7 @@ import static org.apache.geode.test.dunit.Assert.*;
 
 import java.util.Properties;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -47,14 +46,13 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * Test for bug 41957.
- * Basic idea is to have a client with a region with a low eviction limit
- * do a register interest with key&values and see if we end up with more entries
- * in the client than the eviction limit.
+ * Test for bug 41957. Basic idea is to have a client with a region with a low eviction limit do a
+ * register interest with key&values and see if we end up with more entries in the client than the
+ * eviction limit.
  *
  * @since GemFire 6.5
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class Bug41957DUnitTest extends ClientServerTestCase {
 
   @Override
@@ -79,8 +77,8 @@ public class Bug41957DUnitTest extends ClientServerTestCase {
       public void run2() throws CacheException {
         Region region = getRootRegion(regionName);
         int ENTRIES_ON_SERVER = 10;
-        for (int i=1; i <= ENTRIES_ON_SERVER; i++) {
-          region.registerInterest("k"+i, InterestResultPolicy.KEYS_VALUES);
+        for (int i = 1; i <= ENTRIES_ON_SERVER; i++) {
+          region.registerInterest("k" + i, InterestResultPolicy.KEYS_VALUES);
         }
         assertEquals(2, region.size());
       }
@@ -89,12 +87,14 @@ public class Bug41957DUnitTest extends ClientServerTestCase {
     stopBridgeServer(server);
   }
 
-  private void createBridgeServer(VM server, final String regionName, final int serverPort, final boolean createPR) {
+  private void createBridgeServer(VM server, final String regionName, final int serverPort,
+      final boolean createPR) {
     server.invoke(new CacheSerializableRunnable("Create server") {
       public void run2() throws CacheException {
         // Create DS
         Properties config = new Properties();
-        config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+        config.setProperty(LOCATORS,
+            "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
         getSystem(config);
 
         // Create Region
@@ -112,8 +112,8 @@ public class Bug41957DUnitTest extends ClientServerTestCase {
           assertTrue(region instanceof PartitionedRegion);
         }
         int ENTRIES_ON_SERVER = 10;
-        for (int i=1; i <= ENTRIES_ON_SERVER; i++) {
-          region.create("k"+i, "v"+i);
+        for (int i = 1; i <= ENTRIES_ON_SERVER; i++) {
+          region.create("k" + i, "v" + i);
         }
         try {
           startBridgeServer(serverPort);
@@ -124,7 +124,8 @@ public class Bug41957DUnitTest extends ClientServerTestCase {
     });
   }
 
-  private void createBridgeClient(VM client, final String regionName, final String serverHost, final int[] serverPorts) {
+  private void createBridgeClient(VM client, final String regionName, final String serverHost,
+      final int[] serverPorts) {
     client.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
         // Create DS
@@ -139,7 +140,7 @@ public class Bug41957DUnitTest extends ClientServerTestCase {
         {
           PoolFactory pf = PoolManager.createFactory();
           pf.setSubscriptionEnabled(true);
-          for (int i=0; i < serverPorts.length; i++) {
+          for (int i = 0; i < serverPorts.length; i++) {
             pf.addServer(serverHost, serverPorts[i]);
           }
           pf.create("myPool");
@@ -147,7 +148,8 @@ public class Bug41957DUnitTest extends ClientServerTestCase {
         int ENTRIES_ON_CLIENT = 2;
         factory.setPoolName("myPool");
         factory.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.ALL));
-        factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(ENTRIES_ON_CLIENT));
+        factory
+            .setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(ENTRIES_ON_CLIENT));
         createRootRegion(regionName, factory.create());
       }
     });

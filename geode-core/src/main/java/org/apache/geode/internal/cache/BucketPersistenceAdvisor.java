@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -51,26 +49,27 @@ import org.apache.geode.internal.util.TransformUtils;
 public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
 
   private static final Logger logger = LogService.getLogger();
-  
-  public CountDownLatch someMemberRecoveredLatch = new CountDownLatch(1); 
+
+  public CountDownLatch someMemberRecoveredLatch = new CountDownLatch(1);
   public boolean recovering = true;
   private boolean atomicCreation;
   private final BucketLock bucketLock;
-  /** A listener to watch for removes during the recovery process.
-   *  After recovery is done, we know longer need to worry about removes.
+  /**
+   * A listener to watch for removes during the recovery process. After recovery is done, we know
+   * longer need to worry about removes.
    */
   private final RecoveryListener recoveryListener;
   private final ProxyBucketRegion proxyBucket;
   private short version;
   private RuntimeException recoveryException;
-  
-  public BucketPersistenceAdvisor(CacheDistributionAdvisor advisor,
-      DistributedLockService dl, PersistentMemberView storage, String regionPath,
-      DiskRegionStats diskStats, PersistentMemberManager memberManager,
-      BucketLock bucketLock, ProxyBucketRegion proxyBucketRegion) {
+
+  public BucketPersistenceAdvisor(CacheDistributionAdvisor advisor, DistributedLockService dl,
+      PersistentMemberView storage, String regionPath, DiskRegionStats diskStats,
+      PersistentMemberManager memberManager, BucketLock bucketLock,
+      ProxyBucketRegion proxyBucketRegion) {
     super(advisor, dl, storage, regionPath, diskStats, memberManager);
     this.bucketLock = bucketLock;
-    
+
     recoveryListener = new RecoveryListener();
     this.proxyBucket = proxyBucketRegion;
     addListener(recoveryListener);
@@ -78,21 +77,23 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
 
   public void recoveryDone(RuntimeException e) {
     this.recovering = false;
-    if(!getPersistedMembers().isEmpty()) {
+    if (!getPersistedMembers().isEmpty()) {
       ((BucketAdvisor) advisor).setHadPrimary();
     }
-    //Make sure any removes that we saw during recovery are
-    //applied.
+    // Make sure any removes that we saw during recovery are
+    // applied.
     removeListener(recoveryListener);
-    for(PersistentMemberID id : recoveryListener.getRemovedMembers()) {
+    for (PersistentMemberID id : recoveryListener.getRemovedMembers()) {
       removeMember(id);
     }
-    if(someMemberRecoveredLatch.getCount() > 0) {
-      this.recoveryException =e;
+    if (someMemberRecoveredLatch.getCount() > 0) {
+      this.recoveryException = e;
       this.someMemberRecoveredLatch.countDown();
-    } else if(recoveryException != null){
-      logger.fatal(LocalizedMessage.create(LocalizedStrings.BucketPersistenceAdvisor_ERROR_RECOVERYING_SECONDARY_BUCKET_0, 
-          new Object[] {proxyBucket.getPartitionedRegion().getFullPath(), proxyBucket.getBucketId()}), 
+    } else if (recoveryException != null) {
+      logger.fatal(LocalizedMessage.create(
+          LocalizedStrings.BucketPersistenceAdvisor_ERROR_RECOVERYING_SECONDARY_BUCKET_0,
+          new Object[] {proxyBucket.getPartitionedRegion().getFullPath(),
+              proxyBucket.getBucketId()}),
           e);
     }
   }
@@ -108,38 +109,49 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
   public boolean isRecovering() {
     return this.recovering;
   }
-  
+
   @Override
-  protected void beginWaitingForMembershipChange(
-      Set<PersistentMemberID> membersToWaitFor) {
-    if(recovering) {
+  protected void beginWaitingForMembershipChange(Set<PersistentMemberID> membersToWaitFor) {
+    if (recovering) {
       bucketLock.unlock();
     } else {
-      if(membersToWaitFor != null && !membersToWaitFor.isEmpty()) {
-        String message = LocalizedStrings.PartitionedRegionDataStore_DATA_OFFLINE_MESSAGE.toLocalizedString(proxyBucket.getPartitionedRegion().getFullPath(), proxyBucket.getBucketId(), membersToWaitFor);
-        throw new PartitionOfflineException((Set)membersToWaitFor, message);
+      if (membersToWaitFor != null && !membersToWaitFor.isEmpty()) {
+        String message = LocalizedStrings.PartitionedRegionDataStore_DATA_OFFLINE_MESSAGE
+            .toLocalizedString(proxyBucket.getPartitionedRegion().getFullPath(),
+                proxyBucket.getBucketId(), membersToWaitFor);
+        throw new PartitionOfflineException((Set) membersToWaitFor, message);
       }
     }
   }
-  
-  @Override
-  protected void logWaitingForMember(Set<PersistentMemberID> allMembersToWaitFor, Set<PersistentMemberID> offlineMembersToWaitFor) {
-    //We only log the bucket level information at fine level.
-    if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
-      Set<String> membersToWaitForPrettyFormat = new HashSet<String>(); 
 
-      if(offlineMembersToWaitFor != null && !offlineMembersToWaitFor.isEmpty()) {
-        TransformUtils.transform(offlineMembersToWaitFor, membersToWaitForPrettyFormat, TransformUtils.persistentMemberIdToLogEntryTransformer);
-        logger.info(LogMarker.PERSIST_ADVISOR, LocalizedMessage.create(LocalizedStrings.BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER,
-            new Object[] {proxyBucket.getPartitionedRegion().getFullPath(), proxyBucket.getBucketId(), TransformUtils.persistentMemberIdToLogEntryTransformer.transform(getPersistentID()),
+  @Override
+  protected void logWaitingForMember(Set<PersistentMemberID> allMembersToWaitFor,
+      Set<PersistentMemberID> offlineMembersToWaitFor) {
+    // We only log the bucket level information at fine level.
+    if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
+      Set<String> membersToWaitForPrettyFormat = new HashSet<String>();
+
+      if (offlineMembersToWaitFor != null && !offlineMembersToWaitFor.isEmpty()) {
+        TransformUtils.transform(offlineMembersToWaitFor, membersToWaitForPrettyFormat,
+            TransformUtils.persistentMemberIdToLogEntryTransformer);
+        logger.info(LogMarker.PERSIST_ADVISOR, LocalizedMessage.create(
+            LocalizedStrings.BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER,
+            new Object[] {proxyBucket.getPartitionedRegion().getFullPath(),
+                proxyBucket.getBucketId(),
+                TransformUtils.persistentMemberIdToLogEntryTransformer.transform(getPersistentID()),
                 membersToWaitForPrettyFormat}));
       } else {
-        TransformUtils.transform(allMembersToWaitFor, membersToWaitForPrettyFormat, TransformUtils.persistentMemberIdToLogEntryTransformer);
+        TransformUtils.transform(allMembersToWaitFor, membersToWaitForPrettyFormat,
+            TransformUtils.persistentMemberIdToLogEntryTransformer);
         if (logger.isDebugEnabled()) {
-          logger.debug(LogMarker.PERSIST_ADVISOR, "All persistent members being waited on are online, but they have not yet initialized");
+          logger.debug(LogMarker.PERSIST_ADVISOR,
+              "All persistent members being waited on are online, but they have not yet initialized");
         }
-        logger.info(LogMarker.PERSIST_ADVISOR, LocalizedMessage.create(LocalizedStrings.BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER, 
-            new Object[] {proxyBucket.getPartitionedRegion().getFullPath(), proxyBucket.getBucketId(), TransformUtils.persistentMemberIdToLogEntryTransformer.transform(getPersistentID()),
+        logger.info(LogMarker.PERSIST_ADVISOR, LocalizedMessage.create(
+            LocalizedStrings.BucketPersistenceAdvisor_WAITING_FOR_LATEST_MEMBER,
+            new Object[] {proxyBucket.getPartitionedRegion().getFullPath(),
+                proxyBucket.getBucketId(),
+                TransformUtils.persistentMemberIdToLogEntryTransformer.transform(getPersistentID()),
                 membersToWaitForPrettyFormat}));
       }
     }
@@ -147,40 +159,41 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
 
   @Override
   protected void endWaitingForMembershipChange() {
-    if(recovering) {
+    if (recovering) {
       bucketLock.lock();
-      //We allow regions with persistent colocated children to exceed redundancy
-      //so that we can create the child bucket. Otherwise, we need to check
-      //that redundancy has not already been met now that we've got the dlock
-      //the delock.
-      if(!proxyBucket.hasPersistentChildRegion() 
+      // We allow regions with persistent colocated children to exceed redundancy
+      // so that we can create the child bucket. Otherwise, we need to check
+      // that redundancy has not already been met now that we've got the dlock
+      // the delock.
+      if (!proxyBucket.hasPersistentChildRegion()
           && !proxyBucket.checkBucketRedundancyBeforeGrab(null, false)) {
         if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
-          logger.debug(LogMarker.PERSIST_ADVISOR, "{}-{}: After reacquiring dlock, we detected that redundancy is already satisfied",
+          logger.debug(LogMarker.PERSIST_ADVISOR,
+              "{}-{}: After reacquiring dlock, we detected that redundancy is already satisfied",
               shortDiskStoreId(), regionPath);
         }
-        //Remove the persistent data for this bucket, since
-        //redundancy is already satisfied.
+        // Remove the persistent data for this bucket, since
+        // redundancy is already satisfied.
         proxyBucket.destroyOfflineData();
         throw new RedundancyAlreadyMetException();
       }
     }
   }
-  
+
   @Override
   public void updateMembershipView(InternalDistributedMember replicate,
       boolean targetReinitializing) {
-    if(recovering) {
+    if (recovering) {
       super.updateMembershipView(replicate, targetReinitializing);
       someMemberRecoveredLatch.countDown();
     } else {
-      //don't update the membership view, we already updated it during recovery.
+      // don't update the membership view, we already updated it during recovery.
     }
   }
 
   /**
-   * Wait for there to be initialized copies of this bucket. Get
-   * the latest membership view from those copies.
+   * Wait for there to be initialized copies of this bucket. Get the latest membership view from
+   * those copies.
    * 
    */
   public void initializeMembershipView() {
@@ -188,28 +201,30 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
     addListener(listener);
     boolean interrupted = false;
     try {
-      while(!isClosed) {
+      while (!isClosed) {
         advisor.getAdvisee().getCancelCriterion().checkCancelInProgress(null);
 
-        //Look for any online copies of the bucket.
-        //If there are any, get a membership view from them.
-        Map<InternalDistributedMember, PersistentMemberID> onlineMembers = advisor.adviseInitializedPersistentMembers();
-        if(onlineMembers != null) {
-          if(updateMembershipView(onlineMembers.keySet())) {
+        // Look for any online copies of the bucket.
+        // If there are any, get a membership view from them.
+        Map<InternalDistributedMember, PersistentMemberID> onlineMembers =
+            advisor.adviseInitializedPersistentMembers();
+        if (onlineMembers != null) {
+          if (updateMembershipView(onlineMembers.keySet())) {
             break;
           }
         }
-        
-        Set<InternalDistributedMember> postRecoveryMembers = ((BucketAdvisor)advisor).adviseRecoveredFromDisk();
-        if(postRecoveryMembers != null) {
-          if(updateMembershipView(postRecoveryMembers)) {
+
+        Set<InternalDistributedMember> postRecoveryMembers =
+            ((BucketAdvisor) advisor).adviseRecoveredFromDisk();
+        if (postRecoveryMembers != null) {
+          if (updateMembershipView(postRecoveryMembers)) {
             break;
           }
         }
-        
+
         Set<PersistentMemberID> membersToWaitFor = getPersistedMembers();
-        
-        if(!membersToWaitFor.isEmpty()) {
+
+        if (!membersToWaitFor.isEmpty()) {
           try {
             listener.waitForChange(membersToWaitFor, membersToWaitFor);
           } catch (InterruptedException e) {
@@ -222,19 +237,19 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
       }
     } finally {
       removeListener(listener);
-      if(interrupted) {
+      if (interrupted) {
         Thread.currentThread().interrupt();
       }
     }
   }
-  
+
   private boolean updateMembershipView(Collection<InternalDistributedMember> targets) {
-    for(InternalDistributedMember target: targets) {
+    for (InternalDistributedMember target : targets) {
       try {
         updateMembershipView(target, false);
         return true;
       } catch (ReplyException e) {
-        //The member left?
+        // The member left?
         if (logger.isDebugEnabled()) {
           logger.debug("Received a reply exception trying to update membership view", e);
         }
@@ -242,23 +257,23 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
     }
     return false;
   }
-  
+
   public void bucketRemoved() {
     this.resetState();
   }
-  
+
   public boolean acquireTieLock() {
-    //We don't actually need to get a dlock here for PRs, we're already
-    //holding the bucket lock when we create a bucket region
+    // We don't actually need to get a dlock here for PRs, we're already
+    // holding the bucket lock when we create a bucket region
     return true;
   }
-  
+
   public void releaseTieLock() {
-    //We don't actually need to get a dlock here for PRs, we're already
-    //holding the bucket lock when we create a bucket region
+    // We don't actually need to get a dlock here for PRs, we're already
+    // holding the bucket lock when we create a bucket region
   }
-  
-  
+
+
   @Override
   protected String getRegionPathForOfflineMembers() {
     return proxyBucket.getPartitionedRegion().getFullPath();
@@ -266,7 +281,7 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
 
   @Override
   public Set<PersistentMemberID> getMissingMembers() {
-    if(recovering) {
+    if (recovering) {
       return super.getMissingMembers();
     } else {
       Set<PersistentMemberID> offlineMembers = getPersistedMembers();
@@ -274,15 +289,15 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
       return offlineMembers;
     }
   }
-  
+
   @Override
   public PersistentMemberID generatePersistentID() {
     PersistentMemberID id = storage.generatePersistentID();
-    if(id == null) {
+    if (id == null) {
       return id;
     } else {
-      id = new PersistentMemberID(id.diskStoreId, id.host, id.directory, this.proxyBucket
-          .getPartitionedRegion().getBirthTime(), version++);
+      id = new PersistentMemberID(id.diskStoreId, id.host, id.directory,
+          this.proxyBucket.getPartitionedRegion().getBirthTime(), version++);
       return id;
     }
   }
@@ -290,20 +305,21 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
 
 
   private static class RecoveryListener extends PersistentStateAdapter {
-    private Set<PersistentMemberID> removedMembers = Collections.synchronizedSet(new HashSet<PersistentMemberID>());
+    private Set<PersistentMemberID> removedMembers =
+        Collections.synchronizedSet(new HashSet<PersistentMemberID>());
 
     @Override
     public void memberRemoved(PersistentMemberID persistentID, boolean revoked) {
       this.removedMembers.add(persistentID);
     }
-    
+
     public HashSet<PersistentMemberID> getRemovedMembers() {
       synchronized (removedMembers) {
         return new HashSet<PersistentMemberID>(removedMembers);
       }
-    } 
+    }
   }
-  
+
   /**
    * Callers should have already verified that debug output is enabled.
    * 
@@ -324,21 +340,21 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
     buf.append(storage.getMyPersistentID());
     buf.append("\nMY INITIALIZING ID:\n");
     buf.append(storage.getMyInitializingID());
-    
+
     buf.append("\nONLINE MEMBERS:\n");
     for (PersistentMemberID id : storage.getOnlineMembers()) {
       buf.append("\t");
       buf.append(id);
       buf.append("\n");
     }
-    
+
     buf.append("\nOFFLINE MEMBERS:\n");
     for (PersistentMemberID id : storage.getOfflineMembers()) {
       buf.append("\t");
       buf.append(id);
       buf.append("\n");
     }
-    
+
     buf.append("\nOFFLINE AND EQUAL MEMBERS:\n");
     for (PersistentMemberID id : storage.getOfflineAndEqualMembers()) {
       buf.append("\t");
@@ -349,15 +365,14 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
   }
 
   /**
-   * Wait for this bucket to be recovered from disk, at least to the point
-   * where it starts doing a GII.
+   * Wait for this bucket to be recovered from disk, at least to the point where it starts doing a
+   * GII.
    * 
-   * This method will throw an exception if the recovery thread encountered
-   * an exception.
+   * This method will throw an exception if the recovery thread encountered an exception.
    */
   public void waitForPrimaryPersistentRecovery() {
     boolean interupted = false;
-    while(true) {
+    while (true) {
       try {
         someMemberRecoveredLatch.await();
         break;
@@ -365,34 +380,35 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
         interupted = true;
       }
     }
-    
-    if(interupted) {
+
+    if (interupted) {
       Thread.currentThread().interrupt();
     }
-    
-    if(recoveryException != null) {
+
+    if (recoveryException != null) {
       StackTraceElement[] oldStack = recoveryException.getStackTrace();
       recoveryException.fillInStackTrace();
       ArrayList<StackTraceElement> newStack = new ArrayList<StackTraceElement>();
       newStack.addAll(Arrays.asList(oldStack));
       newStack.addAll(Arrays.asList(recoveryException.getStackTrace()));
-     
+
       recoveryException.setStackTrace(newStack.toArray(new StackTraceElement[0]));
       throw recoveryException;
     }
   }
-  
-  
+
+
 
   /**
-   * Overridden to fix bug 41336. We defer initialization of
-   * this member until after the atomic bucket creation phase is over.
+   * Overridden to fix bug 41336. We defer initialization of this member until after the atomic
+   * bucket creation phase is over.
    */
   @Override
   public void setInitializing(PersistentMemberID newId) {
-    if(atomicCreation) {
+    if (atomicCreation) {
       if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
-        logger.debug(LogMarker.PERSIST_ADVISOR, "{}-{}: {} Deferring setInitializing until the EndBucketCreation phase for {}",
+        logger.debug(LogMarker.PERSIST_ADVISOR,
+            "{}-{}: {} Deferring setInitializing until the EndBucketCreation phase for {}",
             shortDiskStoreId(), regionPath, regionPath, newId);
       }
     } else {
@@ -401,19 +417,20 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
   }
 
   /**
-   * Overridden to fix bug 41336. We defer initialization of
-   * this member until after the atomic bucket creation phase is over.
+   * Overridden to fix bug 41336. We defer initialization of this member until after the atomic
+   * bucket creation phase is over.
    */
   @Override
   public void setOnline(boolean didGII, boolean wasAtomicCreation, PersistentMemberID newId)
       throws ReplyException {
-    //This is slightly confusing. If we're currently in the middle of an atomic
-    //creation, we will do nothing right now. Later, when endBucketCreation
-    //is called, we will pass the "wasAtomicCreation" flag down to the super
-    //class to ensure that it knows its coming online as part of an atomic creation.
-    if(this.atomicCreation) {
+    // This is slightly confusing. If we're currently in the middle of an atomic
+    // creation, we will do nothing right now. Later, when endBucketCreation
+    // is called, we will pass the "wasAtomicCreation" flag down to the super
+    // class to ensure that it knows its coming online as part of an atomic creation.
+    if (this.atomicCreation) {
       if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
-        logger.debug(LogMarker.PERSIST_ADVISOR, "{}-{}: {} Deferring setOnline until the EndBucketCreation phase for {}",
+        logger.debug(LogMarker.PERSIST_ADVISOR,
+            "{}-{}: {} Deferring setOnline until the EndBucketCreation phase for {}",
             shortDiskStoreId(), regionPath, regionPath, newId);
       }
     } else {
@@ -421,22 +438,25 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
     }
   }
 
-  /** Finish the atomic creation of this bucket on multiple members
-   * This method is called with the proxy bucket synchronized. 
+  /**
+   * Finish the atomic creation of this bucket on multiple members This method is called with the
+   * proxy bucket synchronized.
    */
   public void endBucketCreation(PersistentMemberID newId) {
-    synchronized(lock) {
-      if(!atomicCreation) {
+    synchronized (lock) {
+      if (!atomicCreation) {
         if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
-          logger.debug(LogMarker.PERSIST_ADVISOR, "{}-{}: {} In endBucketCreation - already online, skipping (possible concurrent endBucketCreation)",
+          logger.debug(LogMarker.PERSIST_ADVISOR,
+              "{}-{}: {} In endBucketCreation - already online, skipping (possible concurrent endBucketCreation)",
               shortDiskStoreId(), regionPath, regionPath);
         }
         return;
       }
 
       if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
-        logger.debug(LogMarker.PERSIST_ADVISOR, "{}-{}: {} In endBucketCreation - now persisting the id {}",
-            shortDiskStoreId(), regionPath, regionPath, newId);
+        logger.debug(LogMarker.PERSIST_ADVISOR,
+            "{}-{}: {} In endBucketCreation - now persisting the id {}", shortDiskStoreId(),
+            regionPath, regionPath, newId);
       }
       atomicCreation = false;
     }
@@ -444,19 +464,19 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
   }
 
   public void setAtomicCreation(boolean atomicCreation) {
-    synchronized(lock) {
+    synchronized (lock) {
       this.atomicCreation = atomicCreation;
     }
   }
-  
+
   private BucketPersistenceAdvisor getColocatedPersistenceAdvisor() {
-    PartitionedRegion colocatedRegion = ColocationHelper
-        .getColocatedRegion(proxyBucket.getPartitionedRegion());
-    if(colocatedRegion == null) {
+    PartitionedRegion colocatedRegion =
+        ColocationHelper.getColocatedRegion(proxyBucket.getPartitionedRegion());
+    if (colocatedRegion == null) {
       return null;
     }
-    ProxyBucketRegion colocatedProxyBucket = colocatedRegion.getRegionAdvisor()
-        .getProxyBucketArray()[proxyBucket.getBucketId()];
+    ProxyBucketRegion colocatedProxyBucket =
+        colocatedRegion.getRegionAdvisor().getProxyBucketArray()[proxyBucket.getBucketId()];
     return colocatedProxyBucket.getPersistenceAdvisor();
   }
 }

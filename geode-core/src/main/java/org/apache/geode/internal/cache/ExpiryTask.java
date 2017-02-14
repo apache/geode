@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.internal.cache;
@@ -42,40 +40,40 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
-  
+
   private static final Logger logger = LogService.getLogger();
-  
+
   private LocalRegion region; // no longer final so cancel can null it out see bug 37574
-  
+
   private static final ThreadPoolExecutor executor;
 
   static {
     // default to inline expiry to fix bug 37115
-    int nThreads = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0).intValue();
+    int nThreads =
+        Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "EXPIRY_THREADS", 0).intValue();
     if (nThreads > 0) {
       ThreadFactory tf = new ThreadFactory() {
-          private int nextId = 0;
+        private int nextId = 0;
 
-          public Thread newThread(final Runnable command) {
-            String name = "Expiration threads";
-            final ThreadGroup group =
-              LoggingThreadGroup.createThreadGroup(name);
-            final Runnable r = new Runnable() {
-                public void run() {
-                  ConnectionTable.threadWantsSharedResources();
-                  try {
-                    command.run();
-                  } finally {
-                    ConnectionTable.releaseThreadsSockets();
-                  }
-                }
-              };
-            Thread thread = new Thread(group, r, "Expiry " + nextId++);
-            thread.setDaemon(true);
-            return thread;
-          }
-        };
-      //LinkedBlockingQueue q = new LinkedBlockingQueue();
+        public Thread newThread(final Runnable command) {
+          String name = "Expiration threads";
+          final ThreadGroup group = LoggingThreadGroup.createThreadGroup(name);
+          final Runnable r = new Runnable() {
+            public void run() {
+              ConnectionTable.threadWantsSharedResources();
+              try {
+                command.run();
+              } finally {
+                ConnectionTable.releaseThreadsSockets();
+              }
+            }
+          };
+          Thread thread = new Thread(group, r, "Expiry " + nextId++);
+          thread.setDaemon(true);
+          return thread;
+        }
+      };
+      // LinkedBlockingQueue q = new LinkedBlockingQueue();
       SynchronousQueue q = new SynchronousQueue();
       executor = new PooledExecutorWithDMStats(q, nThreads, tf);
     } else {
@@ -88,12 +86,12 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   protected abstract ExpirationAttributes getIdleAttributes();
+
   protected abstract ExpirationAttributes getTTLAttributes();
-  
+
   /**
-   * @return the absolute time (ms since Jan 1, 1970) at which this
-   * region expires, due to either time-to-live or idle-timeout (whichever
-   * will occur first), or 0 if neither are used.
+   * @return the absolute time (ms since Jan 1, 1970) at which this region expires, due to either
+   *         time-to-live or idle-timeout (whichever will occur first), or 0 if neither are used.
    */
   public long getExpirationTime() throws EntryNotFoundException {
     long ttl = getTTLExpirationTime();
@@ -111,7 +109,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     long ttl = getTTLAttributes().getTimeout();
     long tilt = 0;
     if (ttl > 0) {
-      if (getLocalRegion()!=null && !getLocalRegion().EXPIRY_UNITS_MS) {
+      if (getLocalRegion() != null && !getLocalRegion().EXPIRY_UNITS_MS) {
         ttl *= 1000;
       }
       tilt = getLastModifiedTime() + ttl;
@@ -124,7 +122,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     long idle = getIdleAttributes().getTimeout();
     long tilt = 0;
     if (idle > 0) {
-      if (getLocalRegion()!=null && !getLocalRegion().EXPIRY_UNITS_MS) {
+      if (getLocalRegion() != null && !getLocalRegion().EXPIRY_UNITS_MS) {
         idle *= 1000;
       }
       tilt = getLastAccessedTime() + idle;
@@ -132,8 +130,10 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     return tilt;
   }
 
-  /** Returns the number of milliseconds until this task should expire.
-      The return value will never be negative. */
+  /**
+   * Returns the number of milliseconds until this task should expire. The return value will never
+   * be negative.
+   */
   final long getExpiryMillis() throws EntryNotFoundException {
     long extm = getExpirationTime() - getNow();
     if (extm < 0L)
@@ -144,8 +144,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
 
   /**
-   * Return true if current task could have expired.
-   * Return false if expiration is impossible.
+   * Return true if current task could have expired. Return false if expiration is impossible.
    */
   protected boolean isExpirationPossible() throws EntryNotFoundException {
     long expTime = getExpirationTime();
@@ -154,18 +153,18 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     }
     return false;
   }
-  
-  /** 
-   * Returns false if the region reliability state does not allow this expiry 
-   * task to fire.
+
+  /**
+   * Returns false if the region reliability state does not allow this expiry task to fire.
    */
   protected boolean isExpirationAllowed() {
     return getLocalRegion().isExpirationAllowed(this);
   }
-  
+
   protected void performTimeout() throws CacheException {
     if (logger.isDebugEnabled()) {
-      logger.debug("{}.performTimeout(): getExpirationTime() returns {}", this.toString(), getExpirationTime());
+      logger.debug("{}.performTimeout(): getExpirationTime() returns {}", this.toString(),
+          getExpirationTime());
     }
 
     getLocalRegion().performExpiryTimeout(this);
@@ -178,9 +177,10 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    */
   private static boolean expirationSuspended = false;
   private static final Object suspendLock = new Object();
+
   /**
-   * Test method that causes expiration to be suspended until
-   * permitExpiration is called.
+   * Test method that causes expiration to be suspended until permitExpiration is called.
+   * 
    * @since GemFire 5.0
    */
   public final static void suspendExpiration() {
@@ -188,59 +188,65 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
       expirationSuspended = true;
     }
   }
+
   public final static void permitExpiration() {
     synchronized (suspendLock) {
       expirationSuspended = false;
       suspendLock.notifyAll();
     }
   }
+
   /**
-   * Wait until permission is given for expiration to be done.
-   * Tests are allowed to suspend expiration.
+   * Wait until permission is given for expiration to be done. Tests are allowed to suspend
+   * expiration.
+   * 
    * @since GemFire 5.0
    */
   private final void waitOnExpirationSuspension() {
-      for (;;) {
-        getLocalRegion().getCancelCriterion().checkCancelInProgress(null);
-        synchronized (suspendLock) {
-          boolean interrupted = Thread.interrupted();
-          try {
-            while (expirationSuspended) {
-              suspendLock.wait();
-            }
-            break;
-          } catch (InterruptedException ex) {
-            interrupted = true;
-            getLocalRegion().getCancelCriterion().checkCancelInProgress(null);
-            // keep going, we can't cancel
+    for (;;) {
+      getLocalRegion().getCancelCriterion().checkCancelInProgress(null);
+      synchronized (suspendLock) {
+        boolean interrupted = Thread.interrupted();
+        try {
+          while (expirationSuspended) {
+            suspendLock.wait();
           }
-          finally {
-            if (interrupted) {
-              Thread.currentThread().interrupt();
-            }
+          break;
+        } catch (InterruptedException ex) {
+          interrupted = true;
+          getLocalRegion().getCancelCriterion().checkCancelInProgress(null);
+          // keep going, we can't cancel
+        } finally {
+          if (interrupted) {
+            Thread.currentThread().interrupt();
           }
-        } // synchronized
-      } // for
+        }
+      } // synchronized
+    } // for
   }
-  
-  protected final boolean expire(boolean isPending) throws CacheException 
-  {
+
+  protected final boolean expire(boolean isPending) throws CacheException {
     ExpirationAction action = getAction();
-    if (action == null) return false;
+    if (action == null)
+      return false;
     boolean result = expire(action, isPending);
     if (result && expiryTaskListener != null) {
       expiryTaskListener.afterExpire(this);
     }
     return result;
   }
-  
-  /** Why did this expire?
-    * @return the action to perform or null if NONE */
+
+  /**
+   * Why did this expire?
+   * 
+   * @return the action to perform or null if NONE
+   */
   protected ExpirationAction getAction() {
     long ttl = getTTLExpirationTime();
     long idle = getIdleExpirationTime();
     if (ttl == 0) {
-      if (idle == 0) return null;
+      if (idle == 0)
+        return null;
       return getIdleAttributes().getAction();
     }
     if (idle == 0) {
@@ -253,7 +259,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     }
     return getTTLAttributes().getAction();
   }
-  
+
   /** Returns true if the ExpirationAction is a distributed action. */
   protected boolean isDistributedAction() {
     ExpirationAction action = getAction();
@@ -266,14 +272,19 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
 
   protected final boolean expire(ExpirationAction action, boolean isPending) throws CacheException {
-    if (action.isInvalidate())      return invalidate();
-    if (action.isDestroy())         return destroy(isPending);
-    if (action.isLocalInvalidate()) return localInvalidate();
-    if (action.isLocalDestroy())    return localDestroy();
-    throw new InternalGemFireError(LocalizedStrings.ExpiryTask_UNRECOGNIZED_EXPIRATION_ACTION_0.toLocalizedString(action));
+    if (action.isInvalidate())
+      return invalidate();
+    if (action.isDestroy())
+      return destroy(isPending);
+    if (action.isLocalInvalidate())
+      return localInvalidate();
+    if (action.isLocalDestroy())
+      return localDestroy();
+    throw new InternalGemFireError(
+        LocalizedStrings.ExpiryTask_UNRECOGNIZED_EXPIRATION_ACTION_0.toLocalizedString(action));
   }
 
-  /** 
+  /**
    * Cancel this task
    */
   @Override
@@ -287,11 +298,10 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     }
     return superCancel;
   }
-  
-  /** 
-   * An ExpiryTask is sent run() to perform its task.  Note that
-   * this run() method should never throw an exception - otherwise,
-   * it takes out the java.util.Timer thread, causing an exception
+
+  /**
+   * An ExpiryTask is sent run() to perform its task. Note that this run() method should never throw
+   * an exception - otherwise, it takes out the java.util.Timer thread, causing an exception
    * whenever we try to schedule more expiration tasks.
    */
   @Override
@@ -299,10 +309,10 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     try {
       if (executor != null) {
         executor.execute(new Runnable() {
-            public void run() {
-              runInThreadPool();
-            }
-          });
+          public void run() {
+            runInThreadPool();
+          }
+        });
       } else {
         // inline
         runInThreadPool();
@@ -312,16 +322,14 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
         if (logger.isDebugEnabled()) {
           logger.debug("Rejected execution in expiration task", ex);
         }
-      } 
-      catch (VirtualMachineError err) {
+      } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
-        // If this ever returns, rethrow the error.  We're poisoned
+        // If this ever returns, rethrow the error. We're poisoned
         // now, so don't let this thread continue.
         throw err;
-      }
-      catch (Throwable t) {
+      } catch (Throwable t) {
         // Whenever you catch Error or Throwable, you must also
-        // catch VirtualMachineError (see above).  However, there is
+        // catch VirtualMachineError (see above). However, there is
         // _still_ a possibility that you are dealing with a cascading
         // error condition, so you also need to check to see if the JVM
         // is still usable:
@@ -329,32 +337,28 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
         // for surviving and debugging exceptions getting the logger
         t.printStackTrace();
       }
-    }
-    catch (CancelException e) {
+    } catch (CancelException e) {
       return; // just bail
-    }
-    catch (VirtualMachineError err) {
+    } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
+      // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
       throw err;
-    }
-    catch (Throwable ex) {
+    } catch (Throwable ex) {
       // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
+      // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      logger.fatal(LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
+      logger.fatal(
+          LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
     }
   }
 
   protected void runInThreadPool() {
     try {
-      if (isCacheClosing() || 
-          getLocalRegion().isClosed() || 
-          getLocalRegion().isDestroyed()) {
+      if (isCacheClosing() || getLocalRegion().isClosed() || getLocalRegion().isDestroyed()) {
         return;
       }
       waitOnExpirationSuspension();
@@ -368,24 +372,22 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
       // Ignore - our job is done
     } catch (EntryNotFoundException ex) {
       // Ignore
-    } 
-    catch (CancelException ex) {
+    } catch (CancelException ex) {
       // ignore
-    } 
-     catch (VirtualMachineError err) {
-       SystemFailure.initiateFailure(err);
-       // If this ever returns, rethrow the error.  We're poisoned
-       // now, so don't let this thread continue.
-       throw err;
-     }
-     catch (Throwable ex) {
-       // Whenever you catch Error or Throwable, you must also
-       // catch VirtualMachineError (see above).  However, there is
-       // _still_ a possibility that you are dealing with a cascading
-       // error condition, so you also need to check to see if the JVM
-       // is still usable:
-       SystemFailure.checkFailure();
-       logger.fatal(LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
+    } catch (VirtualMachineError err) {
+      SystemFailure.initiateFailure(err);
+      // If this ever returns, rethrow the error. We're poisoned
+      // now, so don't let this thread continue.
+      throw err;
+    } catch (Throwable ex) {
+      // Whenever you catch Error or Throwable, you must also
+      // catch VirtualMachineError (see above). However, there is
+      // _still_ a possibility that you are dealing with a cascading
+      // error condition, so you also need to check to see if the JVM
+      // is still usable:
+      SystemFailure.checkFailure();
+      logger.fatal(
+          LocalizedMessage.create(LocalizedStrings.ExpiryTask_EXCEPTION_IN_EXPIRATION_TASK), ex);
     } finally {
       if (expiryTaskListener != null) {
         expiryTaskListener.afterTaskRan(this);
@@ -398,7 +400,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   /**
-   *  Reschedule (or not) this task for later consideration
+   * Reschedule (or not) this task for later consideration
    */
   abstract protected void reschedule() throws CacheException;
 
@@ -413,25 +415,21 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
       if (getIdleAttributes() != null) {
         expIdle = String.valueOf(getIdleExpirationTime());
       }
-    } 
-    catch (VirtualMachineError err) {
+    } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error.  We're poisoned
+      // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
       throw err;
-    }
-    catch (Throwable t) {
+    } catch (Throwable t) {
       // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above).  However, there is
+      // catch VirtualMachineError (see above). However, there is
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
     }
-    return super.toString() + " for " + getLocalRegion()
-      + ", ttl expiration time: " + expTtl
-      + ", idle expiration time: " + expIdle +
-      ("[now:" + calculateNow() + "]");
+    return super.toString() + " for " + getLocalRegion() + ", ttl expiration time: " + expTtl
+        + ", idle expiration time: " + expIdle + ("[now:" + calculateNow() + "]");
   }
 
   ////// Abstract methods ///////
@@ -443,7 +441,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   protected abstract boolean invalidate() throws CacheException;
 
   protected abstract boolean destroy(boolean isPending) throws CacheException;
-  
+
   protected abstract boolean localInvalidate() throws EntryNotFoundException;
 
   protected abstract boolean localDestroy() throws CacheException;
@@ -451,20 +449,20 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   protected abstract void addExpiryTask() throws EntryNotFoundException;
 
   public abstract boolean isPending();
-  
+
   public abstract Object getKey();
 
   private static final ThreadLocal<Long> now = new ThreadLocal<Long>();
 
   /**
-   * To reduce the number of times we need to call System.currentTimeMillis you
-   * can call this method to set a thread local. Make sure and call
-   * {@link #clearNow()} in a finally block after calling this method.
+   * To reduce the number of times we need to call System.currentTimeMillis you can call this method
+   * to set a thread local. Make sure and call {@link #clearNow()} in a finally block after calling
+   * this method.
    */
   public static void setNow() {
     now.set(calculateNow());
   }
-  
+
   private static long calculateNow() {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
@@ -478,16 +476,16 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   /**
-   * Call this method after a thread has called {@link #setNow()} once you are
-   * done calling code that may call {@link #getNow()}.
+   * Call this method after a thread has called {@link #setNow()} once you are done calling code
+   * that may call {@link #getNow()}.
    */
   public static void clearNow() {
     now.remove();
   }
 
   /**
-   * Returns the current time in milliseconds. If the current thread has called
-   * {@link #setNow()} then that time is return.
+   * Returns the current time in milliseconds. If the current thread has called {@link #setNow()}
+   * then that time is return.
    * 
    * @return the current time in milliseconds
    */
@@ -504,41 +502,39 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
 
   // Should only be set by unit tests
   public static ExpiryTaskListener expiryTaskListener;
-  
+
   /**
-   * Used by tests to determine if events related
-   * to an ExpiryTask have happened.
+   * Used by tests to determine if events related to an ExpiryTask have happened.
    */
   public interface ExpiryTaskListener {
     /**
-     * Called after entry is schedule for expiration. 
+     * Called after entry is schedule for expiration.
      */
     public void afterSchedule(ExpiryTask et);
+
     /**
-     * Called after the given expiry task has run.
-     * This means that the time it was originally
-     * scheduled to run has elapsed and the scheduler
-     * has run the task. While running the task it
+     * Called after the given expiry task has run. This means that the time it was originally
+     * scheduled to run has elapsed and the scheduler has run the task. While running the task it
      * may decide to expire it or reschedule it.
      */
     public void afterTaskRan(ExpiryTask et);
+
     /**
-     * Called after the given expiry task has been
-     * rescheduled. afterTaskRan can still be called
-     * on the same task.
-     * In some cases a task is rescheduled without expiring it.
-     * In others it is expired and rescheduled.
+     * Called after the given expiry task has been rescheduled. afterTaskRan can still be called on
+     * the same task. In some cases a task is rescheduled without expiring it. In others it is
+     * expired and rescheduled.
      */
     public void afterReschedule(ExpiryTask et);
+
     /**
      * Called after the given expiry task has expired.
      */
     public void afterExpire(ExpiryTask et);
-    
+
     /**
      * Called when task has been canceled
      */
     public void afterCancel(ExpiryTask et);
-    
+
   }
 }

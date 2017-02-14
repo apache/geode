@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.util.concurrent;
 
@@ -23,8 +21,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
 /**
- * This ReadWriteLock is useful when different threads need to lock
- * and unlock the read lock. This is <b>NOT</b> a reentrant lock.
+ * This ReadWriteLock is useful when different threads need to lock and unlock the read lock. This
+ * is <b>NOT</b> a reentrant lock.
  * 
  */
 public class SemaphoreReadWriteLock implements ReadWriteLock {
@@ -38,7 +36,7 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
     readLock = new SemaphoreReadLock(readerSemaphore, writerSemaphore);
     writeLock = new SemaphoreWriteLock(writerSemaphore);
   }
-  
+
   @Override
   public Lock readLock() {
     return readLock;
@@ -54,8 +52,7 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
     private final Semaphore readerSemaphore;
     private final Semaphore writerSemaphore;
 
-    public SemaphoreReadLock(Semaphore readerSemaphore,
-        Semaphore writerSemaphore) {
+    public SemaphoreReadLock(Semaphore readerSemaphore, Semaphore writerSemaphore) {
       this.readerSemaphore = readerSemaphore;
       this.writerSemaphore = writerSemaphore;
     }
@@ -73,7 +70,8 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
           }
         }
       } finally {
-        if (interrupted) Thread.currentThread().interrupt();
+        if (interrupted)
+          Thread.currentThread().interrupt();
       }
     }
 
@@ -103,13 +101,13 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
           }
         }
       } finally {
-        if (interrupted) Thread.currentThread().interrupt();
+        if (interrupted)
+          Thread.currentThread().interrupt();
       }
     }
 
     @Override
-    public boolean tryLock(long time, TimeUnit unit)
-        throws InterruptedException {
+    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
       if (readerSemaphore.tryAcquire(time, unit)) {
         int oldNumReaders = numReaders;
         numReaders++;
@@ -140,7 +138,8 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
           interrupted = true;
           continue;
         } finally {
-          if (interrupted) Thread.currentThread().interrupt();
+          if (interrupted)
+            Thread.currentThread().interrupt();
         }
         numReaders--;
         // The unlock method is forgiving
@@ -160,7 +159,7 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
       throw new UnsupportedOperationException();
     }
   }
-  
+
   public static class SemaphoreWriteLock implements Lock {
 
     private final Semaphore writerSemaphore;
@@ -173,7 +172,7 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
     public void lock() {
       boolean interrupted = false;
       try {
-        for(;;) {
+        for (;;) {
           try {
             lockInterruptibly();
             break;
@@ -182,7 +181,8 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
           }
         }
       } finally {
-        if (interrupted) Thread.currentThread().interrupt();
+        if (interrupted)
+          Thread.currentThread().interrupt();
       }
     }
 
@@ -197,8 +197,7 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
     }
 
     @Override
-    public boolean tryLock(long time, TimeUnit unit)
-        throws InterruptedException {
+    public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
       return writerSemaphore.tryAcquire(time, unit);
     }
 
@@ -211,6 +210,6 @@ public class SemaphoreReadWriteLock implements ReadWriteLock {
     public Condition newCondition() {
       throw new UnsupportedOperationException();
     }
-    
+
   }
 }

@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.util;
 
 import java.io.File;
@@ -54,9 +52,11 @@ public class CreateRegionFunction implements Function, Declarable {
 
   public static final String ID = "create-region-function";
 
-  private static final boolean DUMP_SESSION_CACHE_XML = Boolean.getBoolean("gemfiremodules.dumpSessionCacheXml");
+  private static final boolean DUMP_SESSION_CACHE_XML =
+      Boolean.getBoolean("gemfiremodules.dumpSessionCacheXml");
 
-  private static final String REGION_CONFIGURATION_METADATA_REGION = "__regionConfigurationMetadata";
+  private static final String REGION_CONFIGURATION_METADATA_REGION =
+      "__regionConfigurationMetadata";
 
   public CreateRegionFunction() {
     this(CacheFactory.getAnyInstance());
@@ -106,7 +106,8 @@ public class CreateRegionFunction implements Function, Declarable {
         RegionHelper.validateRegion(this.cache, configuration, region);
       } catch (Exception e) {
         if (!e.getMessage()
-            .equals(LocalizedStrings.RegionAttributesCreation_CACHELISTENERS_ARE_NOT_THE_SAME.toLocalizedString())) {
+            .equals(LocalizedStrings.RegionAttributesCreation_CACHELISTENERS_ARE_NOT_THE_SAME
+                .toLocalizedString())) {
           this.cache.getLogger().warning(e);
         }
         status = RegionStatus.INVALID;
@@ -131,8 +132,7 @@ public class CreateRegionFunction implements Function, Declarable {
     return true;
   }
 
-  public void init(Properties properties) {
-  }
+  public void init(Properties properties) {}
 
   private RegionStatus createRegion(RegionConfiguration configuration) {
     // Get a distributed lock
@@ -150,7 +150,8 @@ public class CreateRegionFunction implements Function, Declarable {
       dml.lockInterruptibly();
       if (this.cache.getLogger().fineEnabled()) {
         end = System.currentTimeMillis();
-        this.cache.getLogger().fine(this + ": Obtained lock on " + dml + " in " + (end - start) + " ms");
+        this.cache.getLogger()
+            .fine(this + ": Obtained lock on " + dml + " in " + (end - start) + " ms");
       }
 
       // Attempt to get the region again after the lock has been obtained
@@ -183,7 +184,8 @@ public class CreateRegionFunction implements Function, Declarable {
           RegionHelper.validateRegion(this.cache, configuration, region);
         } catch (Exception e) {
           if (!e.getMessage()
-              .equals(LocalizedStrings.RegionAttributesCreation_CACHELISTENERS_ARE_NOT_THE_SAME.toLocalizedString())) {
+              .equals(LocalizedStrings.RegionAttributesCreation_CACHELISTENERS_ARE_NOT_THE_SAME
+                  .toLocalizedString())) {
             this.cache.getLogger().warning(e);
           }
           status = RegionStatus.INVALID;
@@ -191,10 +193,8 @@ public class CreateRegionFunction implements Function, Declarable {
       }
     } catch (Exception e) {
       StringBuilder builder = new StringBuilder();
-      builder.append(this)
-          .append(": Caught Exception attempting to create region named ")
-          .append(configuration.getRegionName())
-          .append(":");
+      builder.append(this).append(": Caught Exception attempting to create region named ")
+          .append(configuration.getRegionName()).append(":");
       this.cache.getLogger().warning(builder.toString(), e);
       status = RegionStatus.INVALID;
     } finally {
@@ -214,7 +214,8 @@ public class CreateRegionFunction implements Function, Declarable {
   private Region<String, RegionConfiguration> createRegionConfigurationMetadataRegion() {
     // a sessionFactory in hibernate could have been re-started
     // so, it is possible that this region exists already
-    Region<String, RegionConfiguration> r = this.cache.getRegion(REGION_CONFIGURATION_METADATA_REGION);
+    Region<String, RegionConfiguration> r =
+        this.cache.getRegion(REGION_CONFIGURATION_METADATA_REGION);
     if (r != null) {
       return r;
     }
@@ -227,7 +228,8 @@ public class CreateRegionFunction implements Function, Declarable {
     try {
       return gemFireCache.createVMRegion(REGION_CONFIGURATION_METADATA_REGION, ra, ira);
     } catch (IOException | ClassNotFoundException e) {
-      InternalGemFireError assErr = new InternalGemFireError(LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
+      InternalGemFireError assErr = new InternalGemFireError(
+          LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
       assErr.initCause(e);
       throw assErr;
     }

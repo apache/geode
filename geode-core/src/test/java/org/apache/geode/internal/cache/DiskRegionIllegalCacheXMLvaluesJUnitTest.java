@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache;
 
@@ -33,9 +31,8 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
- * This test tests Illegal arguements being passed to 
- * create disk regions. The creation of the DWA object should
- * throw a relevant exception if the arguements specified are incorrect.
+ * This test tests Illegal arguements being passed to create disk regions. The creation of the DWA
+ * object should throw a relevant exception if the arguements specified are incorrect.
  */
 @Category(IntegrationTest.class)
 public class DiskRegionIllegalCacheXMLvaluesJUnitTest {
@@ -52,18 +49,17 @@ public class DiskRegionIllegalCacheXMLvaluesJUnitTest {
       props.setProperty(CACHE_XML_FILE, TestUtil.getResourcePath(getClass(), path));
       ds = DistributedSystem.connect(props);
       try {
-       
+
         CacheFactory.create(ds);
-      }
-      catch (IllegalArgumentException ex) {
+      } catch (IllegalArgumentException ex) {
         exceptionOccured = true;
-        System.out.println("ExpectedStrings: Received expected IllegalArgumentException:"+ex.getMessage());
-      }
-      catch (CacheXmlException ex) {
-         exceptionOccured = true;
-         System.out.println("ExpectedStrings: Received expected CacheXmlException:"+ex.getMessage());
-      }
-      catch (Exception e) {
+        System.out.println(
+            "ExpectedStrings: Received expected IllegalArgumentException:" + ex.getMessage());
+      } catch (CacheXmlException ex) {
+        exceptionOccured = true;
+        System.out
+            .println("ExpectedStrings: Received expected CacheXmlException:" + ex.getMessage());
+      } catch (Exception e) {
         e.printStackTrace();
         fail("test failed due to " + e);
       }
@@ -71,15 +67,14 @@ public class DiskRegionIllegalCacheXMLvaluesJUnitTest {
       if (!exceptionOccured) {
         fail(" exception did not occur although was expected");
       }
-    }
-    finally {
+    } finally {
       if (ds != null && ds.isConnected()) {
         ds.disconnect();
         ds = null;
       }
     }
   }
- 
+
   /**
    * test Illegal max oplog size
    */
@@ -90,8 +85,7 @@ public class DiskRegionIllegalCacheXMLvaluesJUnitTest {
 
   @Ignore("TODO: test is empty")
   @Test
-  public void testSynchronous() {
-  }
+  public void testSynchronous() {}
 
   @Test
   public void testIsRolling() {

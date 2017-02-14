@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 /**
  * 
@@ -29,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -66,7 +65,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientServerTest.class})
 public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4CacheTestCase {
 
   protected static final String PR_NAME = "single_hop_pr";
@@ -97,7 +96,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
   protected static Region shipmentRegion2 = null;
   protected static Cache cache = null;
   protected static Locator locator = null;
-  
+
   @Override
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
@@ -107,17 +106,21 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     member3 = host.getVM(3);
     IgnoredException.addIgnoredException("java.net.SocketException");
   }
-  
+
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     // close the clients first
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
+    member0
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
+    member1
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
+    member2
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.closeCacheAndDisconnect());
     closeCacheAndDisconnect();
   }
-  
+
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     try {
@@ -125,21 +128,22 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       member1 = null;
       member2 = null;
       member3 = null;
-      Invoke.invokeInEveryVM(new SerializableRunnable() { public void run() {
-        cache = null;
-        orderRegion = null;
-        orderRegion2 = null;
-        customerRegion = null;
-        customerRegion2 = null;
-        shipmentRegion = null;
-        shipmentRegion2 = null;
-        region = null;
-        region2 = null;
-        locator = null;
-      } });
+      Invoke.invokeInEveryVM(new SerializableRunnable() {
+        public void run() {
+          cache = null;
+          orderRegion = null;
+          orderRegion2 = null;
+          customerRegion = null;
+          customerRegion2 = null;
+          shipmentRegion = null;
+          shipmentRegion2 = null;
+          region = null;
+          region2 = null;
+          locator = null;
+        }
+      });
 
-    }
-    finally {
+    } finally {
       DistributedTestUtils.unregisterAllDataSerializersFromAllVms();
     }
   }
@@ -163,27 +167,30 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1"));
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
 
-    setHonourServerGroupsInPRSingleHop();
-    createClientWithLocator(host0, port3, "group1");
+      setHonourServerGroupsInPRSingleHop();
+      createClientWithLocator(host0, port3, "group1");
 
-    // put
-    putIntoPartitionedRegions();
+      // put
+      putIntoPartitionedRegions();
 
-    getFromPartitionedRegions();
+      getFromPartitionedRegions();
 
-    try{
-      verifyMetadata(4,1);
-    }
-    finally{
-      resetHonourServerGroupsInPRSingleHop();
-    }
+      try {
+        verifyMetadata(4, 1);
+      } finally {
+        resetHonourServerGroupsInPRSingleHop();
+      }
     } finally {
       member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
@@ -194,55 +201,61 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1"));
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1"));
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
 
-    setHonourServerGroupsInPRSingleHop();
-    createClientWithLocator(host0, port3, "group1");
+      setHonourServerGroupsInPRSingleHop();
+      createClientWithLocator(host0, port3, "group1");
 
-    // put
-    putIntoPartitionedRegions();
+      // put
+      putIntoPartitionedRegions();
 
-    getFromPartitionedRegions();
+      getFromPartitionedRegions();
 
-    try{
-      verifyMetadata(4,2);  
-    }
-    finally{
-      resetHonourServerGroupsInPRSingleHop();
-    }
+      try {
+        verifyMetadata(4, 2);
+      } finally {
+        resetHonourServerGroupsInPRSingleHop();
+      }
     } finally {
-      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());  
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
-  
+
   @Test
   public void test_SingleHopWith2ServerGroup2WithoutSystemProperty() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1"));
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1"));
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
 
-    createClientWithLocator(host0, port3, "group1");
+      createClientWithLocator(host0, port3, "group1");
 
-    // put
-    putIntoPartitionedRegions();
+      // put
+      putIntoPartitionedRegions();
 
-    getFromPartitionedRegions();
+      getFromPartitionedRegions();
 
-      verifyMetadata(4,3);
-    }
-    finally{
-      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());      
+      verifyMetadata(4, 3);
+    } finally {
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
 
@@ -251,258 +264,302 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 0,2, 8, "group1" ));
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 0, 2, 8, "group1"));
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
 
-    setHonourServerGroupsInPRSingleHop();
-    createClientWithLocator(host0, port3, "group1");
+      setHonourServerGroupsInPRSingleHop();
+      createClientWithLocator(host0, port3, "group1");
 
-    putIntoPartitionedRegions();
+      putIntoPartitionedRegions();
 
-    getFromPartitionedRegions();
+      getFromPartitionedRegions();
 
-    try{
-      verifyMetadata(0,0);  
-    }
-    finally{
-      resetHonourServerGroupsInPRSingleHop();
-    }
+      try {
+        verifyMetadata(0, 0);
+      } finally {
+        resetHonourServerGroupsInPRSingleHop();
+      }
     } finally {
-      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());  
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
-  
+
   @Test
   public void test_SingleHopWithServerGroupOneServerInTwoGroups() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,
-            2, 8, "group1" ));
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,
-            2, 8, "group1" ));
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,
-            2, 8, "group1,group2" ));
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1"));
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1"));
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1,group2"));
 
-    setHonourServerGroupsInPRSingleHop();
-    createClientWithLocator(host0, port3, "group1");
+      setHonourServerGroupsInPRSingleHop();
+      createClientWithLocator(host0, port3, "group1");
 
-    putIntoPartitionedRegions();
+      putIntoPartitionedRegions();
 
-    getFromPartitionedRegions();
+      getFromPartitionedRegions();
 
-    try{
-      verifyMetadata(4, 3);  
-    }
-    finally{
-      resetHonourServerGroupsInPRSingleHop();
-    }
+      try {
+        verifyMetadata(4, 3);
+      } finally {
+        resetHonourServerGroupsInPRSingleHop();
+      }
     } finally {
-      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());  
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
-  
+
   @Test
   public void test_SingleHopWithServerGroupWithOneDefaultServer() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "" ));
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1"));
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, ""));
 
-    setHonourServerGroupsInPRSingleHop();
-    createClientWithLocator(host0, port3, "group1");
+      setHonourServerGroupsInPRSingleHop();
+      createClientWithLocator(host0, port3, "group1");
 
-    putIntoPartitionedRegions();
+      putIntoPartitionedRegions();
 
-    getFromPartitionedRegions();
+      getFromPartitionedRegions();
 
-    try{
-      verifyMetadata(4,2);
-    }
-    finally{
-      resetHonourServerGroupsInPRSingleHop();
-    }
+      try {
+        verifyMetadata(4, 2);
+      } finally {
+        resetHonourServerGroupsInPRSingleHop();
+      }
     } finally {
-      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());  
+      member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
-  
+
   @Test
   public void test_SingleHopWithServerGroupClientServerGroupNull() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group3" ));
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1"));
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group3"));
 
-    setHonourServerGroupsInPRSingleHop();
-    createClientWithLocator(host0, port3, "");
+      setHonourServerGroupsInPRSingleHop();
+      createClientWithLocator(host0, port3, "");
 
-    putIntoPartitionedRegions();
+      putIntoPartitionedRegions();
 
-    getFromPartitionedRegions();
+      getFromPartitionedRegions();
 
-    try {
-      verifyMetadata(4, 3);
-    } finally {
-      resetHonourServerGroupsInPRSingleHop();
-    }
+      try {
+        verifyMetadata(4, 3);
+      } finally {
+        resetHonourServerGroupsInPRSingleHop();
+      }
     } finally {
       member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
-  
+
   @Test
   public void test_SingleHopWithServerGroupTwoClientServerGroup() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1" ));
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
-    
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.setHonourServerGroupsInPRSingleHop());
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1"));
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
 
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createClientWithLocator(host0,port3,"group1"));
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .setHonourServerGroupsInPRSingleHop());
 
-    setHonourServerGroupsInPRSingleHop();
-    createClientWithLocator(host0, port3, "");
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createClientWithLocator(host0, port3, "group1"));
 
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.putIntoPartitionedRegions());
-    
-    putIntoPartitionedRegions();
+      setHonourServerGroupsInPRSingleHop();
+      createClientWithLocator(host0, port3, "");
 
-    getFromPartitionedRegions();
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.getFromPartitionedRegions());
-    
-    try {
-      verifyMetadata(4, 2);
-      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.verifyMetadata(4, 1));
-      
-    } finally {
-      resetHonourServerGroupsInPRSingleHop();
-      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.resetHonourServerGroupsInPRSingleHop());
-    }
+      member2.invoke(
+          () -> PartitionedRegionSingleHopWithServerGroupDUnitTest.putIntoPartitionedRegions());
+
+      putIntoPartitionedRegions();
+
+      getFromPartitionedRegions();
+      member2.invoke(
+          () -> PartitionedRegionSingleHopWithServerGroupDUnitTest.getFromPartitionedRegions());
+
+      try {
+        verifyMetadata(4, 2);
+        member2
+            .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.verifyMetadata(4, 1));
+
+      } finally {
+        resetHonourServerGroupsInPRSingleHop();
+        member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+            .resetHonourServerGroupsInPRSingleHop());
+      }
     } finally {
       member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
-  
+
   @Test
   public void test_SingleHopWithServerGroupTwoClientServerGroup2() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1,group2" ));
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
-    
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.setHonourServerGroupsInPRSingleHop());
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1,group2"));
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
 
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createClientWithLocator(host0,port3,"group1"));
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .setHonourServerGroupsInPRSingleHop());
 
-    setHonourServerGroupsInPRSingleHop();
-    createClientWithLocator(host0, port3, "group2");
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.putIntoPartitionedRegions());
-    putIntoPartitionedRegions();
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.getFromPartitionedRegions());
-    getFromPartitionedRegions();
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createClientWithLocator(host0, port3, "group1"));
 
-    try {
-      verifyMetadata(4, 2);
-      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.verifyMetadata(new Integer(4),new Integer(1)));
+      setHonourServerGroupsInPRSingleHop();
+      createClientWithLocator(host0, port3, "group2");
+      member2.invoke(
+          () -> PartitionedRegionSingleHopWithServerGroupDUnitTest.putIntoPartitionedRegions());
+      putIntoPartitionedRegions();
+      member2.invoke(
+          () -> PartitionedRegionSingleHopWithServerGroupDUnitTest.getFromPartitionedRegions());
+      getFromPartitionedRegions();
 
-    } finally {
-      resetHonourServerGroupsInPRSingleHop();
-      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.resetHonourServerGroupsInPRSingleHop());
-    }
+      try {
+        verifyMetadata(4, 2);
+        member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+            .verifyMetadata(new Integer(4), new Integer(1)));
+
+      } finally {
+        resetHonourServerGroupsInPRSingleHop();
+        member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+            .resetHonourServerGroupsInPRSingleHop());
+      }
     } finally {
       member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
-  
+
   @Test
   public void test_SingleHopWithServerGroupTwoClientOneWithOneWithoutServerGroup() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1,group2" ));
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
-    
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createClientWithLocator(host0,port3,"group1"));
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1,group2"));
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
 
-    setHonourServerGroupsInPRSingleHop();
-    createClientWithLocator(host0, port3, "group2");
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.putIntoPartitionedRegions());
-    putIntoPartitionedRegions();
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.getFromPartitionedRegions());
-    getFromPartitionedRegions();
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createClientWithLocator(host0, port3, "group1"));
 
-    try {
-      verifyMetadata(4, 2);
-      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.verifyMetadata(new Integer(4),new Integer(2)));
+      setHonourServerGroupsInPRSingleHop();
+      createClientWithLocator(host0, port3, "group2");
+      member2.invoke(
+          () -> PartitionedRegionSingleHopWithServerGroupDUnitTest.putIntoPartitionedRegions());
+      putIntoPartitionedRegions();
+      member2.invoke(
+          () -> PartitionedRegionSingleHopWithServerGroupDUnitTest.getFromPartitionedRegions());
+      getFromPartitionedRegions();
 
-    } finally {
-      resetHonourServerGroupsInPRSingleHop();
-    }
+      try {
+        verifyMetadata(4, 2);
+        member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+            .verifyMetadata(new Integer(4), new Integer(2)));
+
+      } finally {
+        resetHonourServerGroupsInPRSingleHop();
+      }
     } finally {
       member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
-  
+
   @Test
   public void test_SingleHopWithServerGroup2ClientInOneVMServerGroup() {
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup2Regions( locator, 100,2, 8, "group1,group2" ));
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup2Regions( locator, 100,2, 8, "group2" ));
-    
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.setHonourServerGroupsInPRSingleHop());
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup2Regions(locator, 100, 2, 8, "group1,group2"));
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup2Regions(locator, 100, 2, 8, "group2"));
 
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.create2ClientWithLocator(host0,port3,"group1",""));
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .setHonourServerGroupsInPRSingleHop());
 
-    setHonourServerGroupsInPRSingleHop();
-    create2ClientWithLocator(host0, port3, "group2","group1");
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.putIntoPartitionedRegions2Client());
-    putIntoPartitionedRegions2Client();
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.getFromPartitionedRegions2Client());
-    getFromPartitionedRegions2Client();
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .create2ClientWithLocator(host0, port3, "group1", ""));
 
-    try {
-      verifyMetadataFor2ClientsInOneVM(8, 2, 1);
-      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.verifyMetadataFor2ClientsInOneVM(new Integer(8),new Integer(1), new Integer(2)));
+      setHonourServerGroupsInPRSingleHop();
+      create2ClientWithLocator(host0, port3, "group2", "group1");
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .putIntoPartitionedRegions2Client());
+      putIntoPartitionedRegions2Client();
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .getFromPartitionedRegions2Client());
+      getFromPartitionedRegions2Client();
 
-    } finally {
-      resetHonourServerGroupsInPRSingleHop();
-      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.resetHonourServerGroupsInPRSingleHop());
-    }
+      try {
+        verifyMetadataFor2ClientsInOneVM(8, 2, 1);
+        member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+            .verifyMetadataFor2ClientsInOneVM(new Integer(8), new Integer(1), new Integer(2)));
+
+      } finally {
+        resetHonourServerGroupsInPRSingleHop();
+        member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+            .resetHonourServerGroupsInPRSingleHop());
+      }
     } finally {
       member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
@@ -513,71 +570,37 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     int port3 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String host0 = NetworkUtils.getServerHostName(member3.getHost());
     final String locator = host0 + "[" + port3 + "]";
-    member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM( port3 ));
+    member3
+        .invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.startLocatorInVM(port3));
     try {
 
-    member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group1,group2" ));
-    
-    member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group2" ));
-    
-    member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.createServerWithLocatorAndServerGroup( locator, 100,2, 8, "group3" ));
-    
-    setHonourServerGroupsInPRSingleHop();
-    createClientWith3PoolLocator(host0, port3, "group2","group1","");
-    putIntoPartitionedRegions();
-    getFromPartitionedRegions();
+      member0.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group1,group2"));
 
-    try {
-      verifyMetadataForColocatedRegionWithDiffPool(4, 2,1,3);
-    } finally {
-      resetHonourServerGroupsInPRSingleHop();
-    }
+      member1.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group2"));
+
+      member2.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest
+          .createServerWithLocatorAndServerGroup(locator, 100, 2, 8, "group3"));
+
+      setHonourServerGroupsInPRSingleHop();
+      createClientWith3PoolLocator(host0, port3, "group2", "group1", "");
+      putIntoPartitionedRegions();
+      getFromPartitionedRegions();
+
+      try {
+        verifyMetadataForColocatedRegionWithDiffPool(4, 2, 1, 3);
+      } finally {
+        resetHonourServerGroupsInPRSingleHop();
+      }
     } finally {
       member3.invoke(() -> PartitionedRegionSingleHopWithServerGroupDUnitTest.stopLocator());
     }
   }
 
   public static void verifyMetadata(final int numRegions, final int numBucketLocations) {
-    ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
-    final Map<String, ClientPartitionAdvisor> regionMetaData = cms
-        .getClientPRMetadata_TEST_ONLY();
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        if (regionMetaData.size()  == numRegions) {
-          return true;
-        }
-        return false;
-      }
-      public String description() {
-        return "expected metadata for each region to be" + numRegions + " but it is "  + regionMetaData.size() + "Metadata is " + regionMetaData.keySet();
-      }
-    };
-    
-    Wait.waitForCriterion(wc, 60000, 1000, true);
-    
-    if (numRegions != 0) {
-      assertTrue(regionMetaData.containsKey(region.getFullPath()));
-      ClientPartitionAdvisor prMetaData = regionMetaData.get(region
-          .getFullPath());
-      if (cache.getLogger().fineEnabled()) {
-        for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
-          cache.getLogger().fine("For bucket id " + e.getKey() + " the locations are " + e.getValue());
-        }
-      }
-
-      for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-          .entrySet()) {
-        assertEquals(numBucketLocations, ((List)entry.getValue()).size());
-      }
-    }
-  }
-  
-  public static void verifyMetadataForColocatedRegionWithDiffPool(
-      final int numRegions, final int numBucketLocations,
-      final int numBucketLocations2, final int numBucketLocations3) {
-    ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
-    final Map<String, ClientPartitionAdvisor> regionMetaData = cms
-        .getClientPRMetadata_TEST_ONLY();
+    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
         if (regionMetaData.size() == numRegions) {
@@ -587,217 +610,218 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       }
 
       public String description() {
-        return "expected metadata for each region to be " + numRegions
-            + " but it is " + regionMetaData.size() + " they are "
-            + regionMetaData.keySet();
+        return "expected metadata for each region to be" + numRegions + " but it is "
+            + regionMetaData.size() + "Metadata is " + regionMetaData.keySet();
       }
     };
 
-    Wait.waitForCriterion(wc, 120000, 1000, true);
-    
-    assertTrue(regionMetaData.containsKey(region.getFullPath()));
-    ClientPartitionAdvisor prMetaData = regionMetaData.get(region
-        .getFullPath());
-    for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-        .entrySet()) {
-      cache.getLogger().fine(
-          "For bucket id " + e.getKey() + " the locations are "
-              + e.getValue());
-    }
+    Wait.waitForCriterion(wc, 60000, 1000, true);
 
-    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-        .entrySet()) {
-      assertEquals(numBucketLocations, ((List)entry.getValue()).size());
-    }
+    if (numRegions != 0) {
+      assertTrue(regionMetaData.containsKey(region.getFullPath()));
+      ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
+      if (cache.getLogger().fineEnabled()) {
+        for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+          cache.getLogger()
+              .fine("For bucket id " + e.getKey() + " the locations are " + e.getValue());
+        }
+      }
 
-    assertTrue(regionMetaData.containsKey(customerRegion.getFullPath()));
-    prMetaData = regionMetaData.get(customerRegion.getFullPath());
-    for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-        .entrySet()) {
-      cache.getLogger().fine(
-          "For bucket id " + e.getKey() + " the locations are "
-              + e.getValue());
+      for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+        assertEquals(numBucketLocations, ((List) entry.getValue()).size());
+      }
     }
-
-    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-        .entrySet()) {
-      assertEquals(numBucketLocations, ((List)entry.getValue()).size());
-    }
-    
-    assertTrue(regionMetaData.containsKey(orderRegion.getFullPath()));
-    prMetaData = regionMetaData.get(orderRegion.getFullPath());
-    for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-        .entrySet()) {
-      cache.getLogger().fine(
-          "For bucket id " + e.getKey() + " the locations are "
-              + e.getValue());
-    }
-
-    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-        .entrySet()) {
-      assertEquals(numBucketLocations2, ((List)entry.getValue()).size());
-    }
-    
-    assertTrue(regionMetaData.containsKey(shipmentRegion.getFullPath()));
-    prMetaData = regionMetaData.get(shipmentRegion.getFullPath());
-    for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-        .entrySet()) {
-      cache.getLogger().fine(
-          "For bucket id " + e.getKey() + " the locations are "
-              + e.getValue());
-    }
-
-    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-        .entrySet()) {
-      assertEquals(numBucketLocations3, ((List)entry.getValue()).size());
-    }    
-
   }
-  
-  public static void verifyMetadataFor2ClientsInOneVM(final int numRegions, final int numBucketLocations, final int numBucketLocations2) {
-    ClientMetadataService cms = ((GemFireCacheImpl)cache).getClientMetadataService();
-    final Map<String, ClientPartitionAdvisor> regionMetaData = cms
-        .getClientPRMetadata_TEST_ONLY();
+
+  public static void verifyMetadataForColocatedRegionWithDiffPool(final int numRegions,
+      final int numBucketLocations, final int numBucketLocations2, final int numBucketLocations3) {
+    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
-        if (regionMetaData.size()  == numRegions) {
+        if (regionMetaData.size() == numRegions) {
           return true;
         }
         return false;
       }
 
       public String description() {
-        return "expected metadata for each region to be " + numRegions
-            + " but it is " + regionMetaData.size() + " they are "
-            + regionMetaData.keySet();
+        return "expected metadata for each region to be " + numRegions + " but it is "
+            + regionMetaData.size() + " they are " + regionMetaData.keySet();
       }
     };
-    
+
     Wait.waitForCriterion(wc, 120000, 1000, true);
-    
-    if (numRegions != 0) {
-      assertTrue(regionMetaData.containsKey(region.getFullPath()));
-      ClientPartitionAdvisor prMetaData = regionMetaData.get(region
-          .getFullPath());
-      for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-          .entrySet()) {
-        cache.getLogger().fine(
-            "For bucket id " + e.getKey() + " the locations are "
-                + e.getValue());
+
+    assertTrue(regionMetaData.containsKey(region.getFullPath()));
+    ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
+    for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+      cache.getLogger().fine("For bucket id " + e.getKey() + " the locations are " + e.getValue());
+    }
+
+    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+      assertEquals(numBucketLocations, ((List) entry.getValue()).size());
+    }
+
+    assertTrue(regionMetaData.containsKey(customerRegion.getFullPath()));
+    prMetaData = regionMetaData.get(customerRegion.getFullPath());
+    for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+      cache.getLogger().fine("For bucket id " + e.getKey() + " the locations are " + e.getValue());
+    }
+
+    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+      assertEquals(numBucketLocations, ((List) entry.getValue()).size());
+    }
+
+    assertTrue(regionMetaData.containsKey(orderRegion.getFullPath()));
+    prMetaData = regionMetaData.get(orderRegion.getFullPath());
+    for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+      cache.getLogger().fine("For bucket id " + e.getKey() + " the locations are " + e.getValue());
+    }
+
+    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+      assertEquals(numBucketLocations2, ((List) entry.getValue()).size());
+    }
+
+    assertTrue(regionMetaData.containsKey(shipmentRegion.getFullPath()));
+    prMetaData = regionMetaData.get(shipmentRegion.getFullPath());
+    for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+      cache.getLogger().fine("For bucket id " + e.getKey() + " the locations are " + e.getValue());
+    }
+
+    for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+      assertEquals(numBucketLocations3, ((List) entry.getValue()).size());
+    }
+
+  }
+
+  public static void verifyMetadataFor2ClientsInOneVM(final int numRegions,
+      final int numBucketLocations, final int numBucketLocations2) {
+    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
+    final Map<String, ClientPartitionAdvisor> regionMetaData = cms.getClientPRMetadata_TEST_ONLY();
+    WaitCriterion wc = new WaitCriterion() {
+      public boolean done() {
+        if (regionMetaData.size() == numRegions) {
+          return true;
+        }
+        return false;
       }
 
-      for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-          .entrySet()) {
-        assertEquals(numBucketLocations, ((List)entry.getValue()).size());
+      public String description() {
+        return "expected metadata for each region to be " + numRegions + " but it is "
+            + regionMetaData.size() + " they are " + regionMetaData.keySet();
+      }
+    };
+
+    Wait.waitForCriterion(wc, 120000, 1000, true);
+
+    if (numRegions != 0) {
+      assertTrue(regionMetaData.containsKey(region.getFullPath()));
+      ClientPartitionAdvisor prMetaData = regionMetaData.get(region.getFullPath());
+      for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+        cache.getLogger()
+            .fine("For bucket id " + e.getKey() + " the locations are " + e.getValue());
+      }
+
+      for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+        assertEquals(numBucketLocations, ((List) entry.getValue()).size());
       }
 
       assertTrue(regionMetaData.containsKey(customerRegion.getFullPath()));
       prMetaData = regionMetaData.get(customerRegion.getFullPath());
-      for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-          .entrySet()) {
-        cache.getLogger().fine(
-            "For bucket id " + e.getKey() + " the locations are "
-                + e.getValue());
+      for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+        cache.getLogger()
+            .fine("For bucket id " + e.getKey() + " the locations are " + e.getValue());
       }
 
-      for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-          .entrySet()) {
-        assertEquals(numBucketLocations, ((List)entry.getValue()).size());
+      for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+        assertEquals(numBucketLocations, ((List) entry.getValue()).size());
       }
-      
+
       assertTrue(regionMetaData.containsKey(customerRegion2.getFullPath()));
       prMetaData = regionMetaData.get(customerRegion2.getFullPath());
-      for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-          .entrySet()) {
-        cache.getLogger().fine(
-            "For bucket id " + e.getKey() + " the locations are "
-                + e.getValue());
+      for (Entry e : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+        cache.getLogger()
+            .fine("For bucket id " + e.getKey() + " the locations are " + e.getValue());
       }
 
-      for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY()
-          .entrySet()) {
-        assertEquals(numBucketLocations2, ((List)entry.getValue()).size());
+      for (Entry entry : prMetaData.getBucketServerLocationsMap_TEST_ONLY().entrySet()) {
+        assertEquals(numBucketLocations2, ((List) entry.getValue()).size());
       }
     }
   }
-  
+
   public static int createServer(int redundantCopies, int totalNoofBuckets, String group) {
-    PartitionedRegionSingleHopWithServerGroupDUnitTest test = new PartitionedRegionSingleHopWithServerGroupDUnitTest();
+    PartitionedRegionSingleHopWithServerGroupDUnitTest test =
+        new PartitionedRegionSingleHopWithServerGroupDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
     server.setHostnameForClients("localhost");
-    if(group.length() != 0)
-      server.setGroups(new String[]{group});
+    if (group.length() != 0)
+      server.setGroups(new String[] {group});
     try {
       server.start();
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       Assert.fail("Failed to start server ", e);
     }
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies)
-        .setTotalNumBuckets(totalNoofBuckets);
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets);
     AttributesFactory attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     region = cache.createRegion(PR_NAME, attr.create());
     assertNotNull(region);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region " + PR_NAME + " created Successfully :"
-            + region.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
 
     // creating colocated Regions
     paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies)
-        .setTotalNumBuckets(totalNoofBuckets).setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     customerRegion = cache.createRegion("CUSTOMER", attr.create());
     assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region CUSTOMER created Successfully :"
-            + customerRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
 
     paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies)
-        .setTotalNumBuckets(totalNoofBuckets).setColocatedWith("CUSTOMER")
-        .setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
+        .setColocatedWith("CUSTOMER")
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     orderRegion = cache.createRegion("ORDER", attr.create());
     assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region ORDER created Successfully :"
-            + orderRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
 
     paf = new PartitionAttributesFactory();
-    paf.setRedundantCopies(redundantCopies)
-        .setTotalNumBuckets(totalNoofBuckets).setColocatedWith("ORDER")
-        .setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+    paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
+        .setColocatedWith("ORDER")
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
     assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region SHIPMENT created Successfully :"
-            + shipmentRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
     return port;
   }
-  
-  public static int createServerWithLocatorAndServerGroup(String locator,
-      int localMaxMemory,int redundantCopies, int totalNoofBuckets, String group) {
+
+  public static int createServerWithLocatorAndServerGroup(String locator, int localMaxMemory,
+      int redundantCopies, int totalNoofBuckets, String group) {
 
     Properties props = new Properties();
     props = new Properties();
     props.setProperty(LOCATORS, locator);
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "true");
-    PartitionedRegionSingleHopWithServerGroupDUnitTest test = new PartitionedRegionSingleHopWithServerGroupDUnitTest();
+    System.setProperty(
+        DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "true");
+    PartitionedRegionSingleHopWithServerGroupDUnitTest test =
+        new PartitionedRegionSingleHopWithServerGroupDUnitTest();
 
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
@@ -818,8 +842,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     server.setHostnameForClients("localhost");
     try {
       server.start();
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       Assert.fail("Failed to start server ", e);
     }
 
@@ -830,60 +853,56 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     attr.setPartitionAttributes(paf.create());
     region = cache.createRegion(PR_NAME, attr.create());
     assertNotNull(region);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region " + PR_NAME + " created Successfully :"
-            + region.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
 
     // creating colocated Regions
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setLocalMaxMemory(localMaxMemory)
-        .setTotalNumBuckets(totalNoofBuckets).setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setTotalNumBuckets(totalNoofBuckets)
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     customerRegion = cache.createRegion("CUSTOMER", attr.create());
     assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region CUSTOMER created Successfully :"
-            + customerRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
 
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setLocalMaxMemory(localMaxMemory)
         .setTotalNumBuckets(totalNoofBuckets).setColocatedWith("CUSTOMER")
-        .setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     orderRegion = cache.createRegion("ORDER", attr.create());
     assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region ORDER created Successfully :"
-            + orderRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
 
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setLocalMaxMemory(localMaxMemory)
         .setTotalNumBuckets(totalNoofBuckets).setColocatedWith("ORDER")
-        .setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
     assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region SHIPMENT created Successfully :"
-            + shipmentRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
     return port;
   }
-  
+
   public static int createServerWithLocatorAndServerGroup2Regions(String locator,
-      int localMaxMemory,int redundantCopies, int totalNoofBuckets, String group) {
+      int localMaxMemory, int redundantCopies, int totalNoofBuckets, String group) {
 
     Properties props = new Properties();
     props = new Properties();
     props.setProperty(LOCATORS, locator);
 
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "true");
-    PartitionedRegionSingleHopWithServerGroupDUnitTest test = new PartitionedRegionSingleHopWithServerGroupDUnitTest();
+    System.setProperty(
+        DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "true");
+    PartitionedRegionSingleHopWithServerGroupDUnitTest test =
+        new PartitionedRegionSingleHopWithServerGroupDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
 
@@ -903,8 +922,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     server.setHostnameForClients("localhost");
     try {
       server.start();
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       Assert.fail("Failed to start server ", e);
     }
 
@@ -915,48 +933,42 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     attr.setPartitionAttributes(paf.create());
     region = cache.createRegion(PR_NAME, attr.create());
     assertNotNull(region);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region " + PR_NAME + " created Successfully :"
-            + region.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
 
     // creating colocated Regions
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setLocalMaxMemory(localMaxMemory)
-        .setTotalNumBuckets(totalNoofBuckets).setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setTotalNumBuckets(totalNoofBuckets)
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     customerRegion = cache.createRegion("CUSTOMER", attr.create());
     assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region CUSTOMER created Successfully :"
-            + customerRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
 
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setLocalMaxMemory(localMaxMemory)
         .setTotalNumBuckets(totalNoofBuckets)
-        .setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     orderRegion = cache.createRegion("ORDER", attr.create());
     assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region ORDER created Successfully :"
-            + orderRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
 
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setLocalMaxMemory(localMaxMemory)
         .setTotalNumBuckets(totalNoofBuckets)
-        .setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
     assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region SHIPMENT created Successfully :"
-            + shipmentRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
 
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setLocalMaxMemory(localMaxMemory)
@@ -965,132 +977,128 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     attr.setPartitionAttributes(paf.create());
     region2 = cache.createRegion(PR_NAME2, attr.create());
     assertNotNull(region2);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region " + PR_NAME2 + " created Successfully :"
-            + region2.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region " + PR_NAME2 + " created Successfully :" + region2.toString());
 
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setLocalMaxMemory(localMaxMemory)
-        .setTotalNumBuckets(totalNoofBuckets).setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setTotalNumBuckets(totalNoofBuckets)
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     customerRegion2 = cache.createRegion(CUSTOMER2, attr.create());
     assertNotNull(customerRegion2);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region CUSTOMER2 created Successfully :"
-            + customerRegion2.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region CUSTOMER2 created Successfully :" + customerRegion2.toString());
 
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setLocalMaxMemory(localMaxMemory)
         .setTotalNumBuckets(totalNoofBuckets)
-        .setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     orderRegion2 = cache.createRegion(ORDER2, attr.create());
     assertNotNull(orderRegion2);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region ORDER2 created Successfully :"
-            + orderRegion2.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region ORDER2 created Successfully :" + orderRegion2.toString());
 
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setLocalMaxMemory(localMaxMemory)
         .setTotalNumBuckets(totalNoofBuckets)
-        .setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     shipmentRegion2 = cache.createRegion(SHIPMENT2, attr.create());
     assertNotNull(shipmentRegion2);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region SHIPMENT2 created Successfully :"
-            + shipmentRegion2.toString());
-    
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region SHIPMENT2 created Successfully :" + shipmentRegion2.toString());
+
     return port;
   }
-  
+
   public static void createClientWithLocator(String host, int port0, String group) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     props.setProperty(LOG_FILE, "");
-    PartitionedRegionSingleHopWithServerGroupDUnitTest test = new PartitionedRegionSingleHopWithServerGroupDUnitTest();
+    PartitionedRegionSingleHopWithServerGroupDUnitTest test =
+        new PartitionedRegionSingleHopWithServerGroupDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
-      p = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group).setPingInterval(
-          250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
-          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6)
-          .setMaxConnections(10).setRetryAttempts(3).create(PR_NAME);
-    }
-    finally {
+      p = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group)
+          .setPingInterval(250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
+          .setRetryAttempts(3).create(PR_NAME);
+    } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
     createRegionsInClientCache(p.getName());
   }
-  
-  public static void create2ClientWithLocator(String host, int port0, String group1, String group2) {
+
+  public static void create2ClientWithLocator(String host, int port0, String group1,
+      String group2) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    PartitionedRegionSingleHopWithServerGroupDUnitTest test = new PartitionedRegionSingleHopWithServerGroupDUnitTest();
+    PartitionedRegionSingleHopWithServerGroupDUnitTest test =
+        new PartitionedRegionSingleHopWithServerGroupDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
     CacheServerTestUtil.disableShufflingOfEndpoints();
-    Pool p1,p2,p3;
+    Pool p1, p2, p3;
     try {
-      p1 = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group1).setPingInterval(
-          250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
-          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6)
-          .setMaxConnections(10).setRetryAttempts(3).create(PR_NAME);
-      p2 = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group2).setPingInterval(
-          250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
-          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6)
-          .setMaxConnections(10).setRetryAttempts(3).create(PR_NAME2);
-    }
-    finally {
+      p1 = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group1)
+          .setPingInterval(250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
+          .setRetryAttempts(3).create(PR_NAME);
+      p2 = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group2)
+          .setPingInterval(250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
+          .setRetryAttempts(3).create(PR_NAME2);
+    } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
-    create2RegionsInClientCache(p1.getName(),p2.getName());
+    create2RegionsInClientCache(p1.getName(), p2.getName());
   }
-  
-  public static void createClientWith3PoolLocator(String host, int port0, String group1, String group2,String group3) {
+
+  public static void createClientWith3PoolLocator(String host, int port0, String group1,
+      String group2, String group3) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    PartitionedRegionSingleHopWithServerGroupDUnitTest test = new PartitionedRegionSingleHopWithServerGroupDUnitTest();
+    PartitionedRegionSingleHopWithServerGroupDUnitTest test =
+        new PartitionedRegionSingleHopWithServerGroupDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
     CacheServerTestUtil.disableShufflingOfEndpoints();
-    Pool p1,p2,p3;
+    Pool p1, p2, p3;
     try {
-      p1 = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group1).setPingInterval(
-          250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
-          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6)
-          .setMaxConnections(10).setRetryAttempts(3).create(PR_NAME);
-      p2 = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group2).setPingInterval(
-          250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
-          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6)
-          .setMaxConnections(10).setRetryAttempts(3).create(PR_NAME2);
-      p3 = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group3).setPingInterval(
-          250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
-          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6)
-          .setMaxConnections(10).setRetryAttempts(3).create(PR_NAME3);
-    }
-    finally {
+      p1 = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group1)
+          .setPingInterval(250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
+          .setRetryAttempts(3).create(PR_NAME);
+      p2 = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group2)
+          .setPingInterval(250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
+          .setRetryAttempts(3).create(PR_NAME2);
+      p3 = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group3)
+          .setPingInterval(250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
+          .setRetryAttempts(3).create(PR_NAME3);
+    } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
-    createColocatedRegionsInClientCacheWithDiffPool(p1.getName(),p2.getName(),p3.getName());
+    createColocatedRegionsInClientCacheWithDiffPool(p1.getName(), p2.getName(), p3.getName());
   }
-  
+
   private static void createRegionsInClientCache(String poolName) {
     AttributesFactory factory = new AttributesFactory();
     factory.setPoolName(poolName);
@@ -1098,38 +1106,34 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     RegionAttributes attrs = factory.create();
     region = cache.createRegion(PR_NAME, attrs);
     assertNotNull(region);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region " + PR_NAME + " created Successfully :"
-            + region.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region " + PR_NAME + " created Successfully :" + region.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName);
     attrs = factory.create();
     customerRegion = cache.createRegion("CUSTOMER", attrs);
     assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region CUSTOMER created Successfully :"
-            + customerRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region CUSTOMER created Successfully :" + customerRegion.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName);
     attrs = factory.create();
     orderRegion = cache.createRegion("ORDER", attrs);
     assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region ORDER created Successfully :"
-            + orderRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region ORDER created Successfully :" + orderRegion.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName);
     attrs = factory.create();
     shipmentRegion = cache.createRegion("SHIPMENT", attrs);
     assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region SHIPMENT created Successfully :"
-            + shipmentRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region SHIPMENT created Successfully :" + shipmentRegion.toString());
   }
-  
+
   private static void create2RegionsInClientCache(String poolName1, String poolName2) {
     AttributesFactory factory = new AttributesFactory();
     factory.setPoolName(poolName1);
@@ -1137,129 +1141,118 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     RegionAttributes attrs = factory.create();
     region = cache.createRegion(PR_NAME, attrs);
     assertNotNull(region);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region " + PR_NAME + " created Successfully :"
-            + region.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region " + PR_NAME + " created Successfully :" + region.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName1);
     attrs = factory.create();
     customerRegion = cache.createRegion("CUSTOMER", attrs);
     assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region CUSTOMER created Successfully :"
-            + customerRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region CUSTOMER created Successfully :" + customerRegion.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName1);
     attrs = factory.create();
     orderRegion = cache.createRegion("ORDER", attrs);
     assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region ORDER created Successfully :"
-            + orderRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region ORDER created Successfully :" + orderRegion.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName1);
     attrs = factory.create();
     shipmentRegion = cache.createRegion("SHIPMENT", attrs);
     assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region SHIPMENT created Successfully :"
-            + shipmentRegion.toString());
-    
-    
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region SHIPMENT created Successfully :" + shipmentRegion.toString());
+
+
     factory = new AttributesFactory();
     factory.setPoolName(poolName2);
     factory.setDataPolicy(DataPolicy.EMPTY);
     attrs = factory.create();
     region2 = cache.createRegion(PR_NAME2, attrs);
     assertNotNull(region2);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region " + PR_NAME2 + " created Successfully :"
-            + region2.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region " + PR_NAME2 + " created Successfully :" + region2.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName2);
     attrs = factory.create();
     customerRegion2 = cache.createRegion(CUSTOMER2, attrs);
     assertNotNull(customerRegion2);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region CUSTOMER2 created Successfully :"
-            + customerRegion2.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region CUSTOMER2 created Successfully :" + customerRegion2.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName2);
     attrs = factory.create();
     orderRegion2 = cache.createRegion(ORDER2, attrs);
     assertNotNull(orderRegion2);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region ORDER2 created Successfully :"
-            + orderRegion2.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region ORDER2 created Successfully :" + orderRegion2.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName2);
     attrs = factory.create();
     shipmentRegion2 = cache.createRegion(SHIPMENT2, attrs);
     assertNotNull(shipmentRegion2);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region SHIPMENT2 created Successfully :"
-            + shipmentRegion2.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region SHIPMENT2 created Successfully :" + shipmentRegion2.toString());
   }
 
-  private static void createColocatedRegionsInClientCacheWithDiffPool(String poolName1, String poolName2,String poolName3) {
+  private static void createColocatedRegionsInClientCacheWithDiffPool(String poolName1,
+      String poolName2, String poolName3) {
     AttributesFactory factory = new AttributesFactory();
     factory.setPoolName(poolName1);
     factory.setDataPolicy(DataPolicy.EMPTY);
     RegionAttributes attrs = factory.create();
     region = cache.createRegion(PR_NAME, attrs);
     assertNotNull(region);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region " + PR_NAME + " created Successfully :"
-            + region.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region " + PR_NAME + " created Successfully :" + region.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName1);
     attrs = factory.create();
     customerRegion = cache.createRegion("CUSTOMER", attrs);
     assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region CUSTOMER created Successfully :"
-            + customerRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region CUSTOMER created Successfully :" + customerRegion.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName2);
     attrs = factory.create();
     orderRegion = cache.createRegion("ORDER", attrs);
     assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region ORDER created Successfully :"
-            + orderRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region ORDER created Successfully :" + orderRegion.toString());
 
     factory = new AttributesFactory();
     factory.setPoolName(poolName3);
     attrs = factory.create();
     shipmentRegion = cache.createRegion("SHIPMENT", attrs);
     assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Distributed Region SHIPMENT created Successfully :"
-            + shipmentRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Distributed Region SHIPMENT created Successfully :" + shipmentRegion.toString());
   }
 
   public static int createAccessorServer(int redundantCopies, int numBuckets, String group) {
-    PartitionedRegionSingleHopWithServerGroupDUnitTest test = new PartitionedRegionSingleHopWithServerGroupDUnitTest();
+    PartitionedRegionSingleHopWithServerGroupDUnitTest test =
+        new PartitionedRegionSingleHopWithServerGroupDUnitTest();
     cache = test.getCache();
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server.setPort(port);
     server.setHostnameForClients("localhost");
-    if(group.length() != 0) {
-      server.setGroups(new String[]{group});
+    if (group.length() != 0) {
+      server.setGroups(new String[] {group});
     }
     try {
       server.start();
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       Assert.fail("Failed to start server ", e);
     }
 
@@ -1270,66 +1263,62 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     region = cache.createRegion(PR_NAME, attr.create());
 
     assertNotNull(region);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region " + PR_NAME + " created Successfully :"
-            + region.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region " + PR_NAME + " created Successfully :" + region.toString());
 
     // creating colocated Regions
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(numBuckets).setLocalMaxMemory(0)
-        .setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     customerRegion = cache.createRegion("CUSTOMER", attr.create());
     assertNotNull(customerRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region CUSTOMER created Successfully :"
-            + customerRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region CUSTOMER created Successfully :" + customerRegion.toString());
 
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(numBuckets).setLocalMaxMemory(0)
-        .setColocatedWith("CUSTOMER").setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setColocatedWith("CUSTOMER")
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     orderRegion = cache.createRegion("ORDER", attr.create());
     assertNotNull(orderRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region ORDER created Successfully :"
-            + orderRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region ORDER created Successfully :" + orderRegion.toString());
 
     paf = new PartitionAttributesFactory();
     paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(numBuckets).setLocalMaxMemory(0)
-        .setColocatedWith("ORDER").setPartitionResolver(
-            new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
+        .setColocatedWith("ORDER")
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     attr = new AttributesFactory();
     attr.setPartitionAttributes(paf.create());
     shipmentRegion = cache.createRegion("SHIPMENT", attr.create());
     assertNotNull(shipmentRegion);
-    LogWriterUtils.getLogWriter().info(
-        "Partitioned Region SHIPMENT created Successfully :"
-            + shipmentRegion.toString());
+    LogWriterUtils.getLogWriter()
+        .info("Partitioned Region SHIPMENT created Successfully :" + shipmentRegion.toString());
     return port;
   }
-  
-  public static void createClientWithLocatorWithoutSystemProperty(String host, int port0, String group) {
+
+  public static void createClientWithLocatorWithoutSystemProperty(String host, int port0,
+      String group) {
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    PartitionedRegionSingleHopWithServerGroupDUnitTest test = new PartitionedRegionSingleHopWithServerGroupDUnitTest();
+    PartitionedRegionSingleHopWithServerGroupDUnitTest test =
+        new PartitionedRegionSingleHopWithServerGroupDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
-      p = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group).setPingInterval(
-          250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
-          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6)
-          .setMaxConnections(10).setRetryAttempts(3).create(PR_NAME);
-    }
-    finally {
+      p = PoolManager.createFactory().addLocator(host, port0).setServerGroup(group)
+          .setPingInterval(250).setSubscriptionEnabled(true).setSubscriptionRedundancy(-1)
+          .setReadTimeout(2000).setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10)
+          .setRetryAttempts(3).create(PR_NAME);
+    } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
@@ -1364,7 +1353,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     region.put(new Integer(5), "create1");
     region.put(new Integer(6), "create2");
     region.put(new Integer(7), "create3");
-    
+
     region.put(new Integer(0), "update0");
     region.put(new Integer(1), "update1");
     region.put(new Integer(2), "update2");
@@ -1373,7 +1362,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     region.put(new Integer(5), "update1");
     region.put(new Integer(6), "update2");
     region.put(new Integer(7), "update3");
-    
+
     region.put(new Integer(0), "update00");
     region.put(new Integer(1), "update11");
     region.put(new Integer(2), "update22");
@@ -1383,7 +1372,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     region.put(new Integer(6), "update22");
     region.put(new Integer(7), "update33");
   }
-  
+
   public static void putIntoPartitionedRegions2Client() {
     for (int i = 0; i <= 800; i++) {
       CustId custid = new CustId(i);
@@ -1406,7 +1395,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       shipmentRegion.put(shipmentId, shipment);
       shipmentRegion2.put(shipmentId, shipment);
     }
-    
+
     region.put(new Integer(0), "create0");
     region.put(new Integer(1), "create1");
     region.put(new Integer(2), "create2");
@@ -1415,7 +1404,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     region.put(new Integer(5), "create1");
     region.put(new Integer(6), "create2");
     region.put(new Integer(7), "create3");
-    
+
     region.put(new Integer(0), "update0");
     region.put(new Integer(1), "update1");
     region.put(new Integer(2), "update2");
@@ -1424,7 +1413,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     region.put(new Integer(5), "update1");
     region.put(new Integer(6), "update2");
     region.put(new Integer(7), "update3");
-    
+
     region.put(new Integer(0), "update00");
     region.put(new Integer(1), "update11");
     region.put(new Integer(2), "update22");
@@ -1433,7 +1422,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     region.put(new Integer(5), "update11");
     region.put(new Integer(6), "update22");
     region.put(new Integer(7), "update33");
-    
+
     region2.put(new Integer(0), "create0");
     region2.put(new Integer(1), "create1");
     region2.put(new Integer(2), "create2");
@@ -1442,7 +1431,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     region2.put(new Integer(5), "create1");
     region2.put(new Integer(6), "create2");
     region2.put(new Integer(7), "create3");
-    
+
     region2.put(new Integer(0), "update0");
     region2.put(new Integer(1), "update1");
     region2.put(new Integer(2), "update2");
@@ -1451,7 +1440,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     region2.put(new Integer(5), "update1");
     region2.put(new Integer(6), "update2");
     region2.put(new Integer(7), "update3");
-    
+
     region2.put(new Integer(0), "update00");
     region2.put(new Integer(1), "update11");
     region2.put(new Integer(2), "update22");
@@ -1477,7 +1466,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       OrderId orderId = new OrderId(k, custid);
       ShipmentId shipmentId = new ShipmentId(k, orderId);
       shipmentRegion.get(shipmentId);
-     }
+    }
 
     region.get(new Integer(0));
     region.get(new Integer(1));
@@ -1488,9 +1477,9 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     region.get(new Integer(6));
     region.get(new Integer(7));
   }
-  
+
   public static void getFromPartitionedRegions2Client() {
-    
+
     for (int i = 0; i <= 800; i++) {
       CustId custid = new CustId(i);
       customerRegion.get(custid);
@@ -1508,7 +1497,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       ShipmentId shipmentId = new ShipmentId(k, orderId);
       shipmentRegion.get(shipmentId);
       shipmentRegion2.get(shipmentId);
-     }
+    }
 
     region.get(new Integer(0));
     region.get(new Integer(1));
@@ -1518,7 +1507,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     region.get(new Integer(5));
     region.get(new Integer(6));
     region.get(new Integer(7));
-    
+
     region2.get(new Integer(0));
     region2.get(new Integer(1));
     region2.get(new Integer(2));
@@ -1537,8 +1526,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
 
     try {
       locator = Locator.startLocatorAndDS(locatorPort, null, null, props);
-    }
-    catch (IOException e) {
+    } catch (IOException e) {
       throw new AssertionError(e);
     }
   }
@@ -1546,12 +1534,14 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
   public static void stopLocator() {
     locator.stop();
   }
-  
+
   public static void resetHonourServerGroupsInPRSingleHop() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "False");
+    System.setProperty(
+        DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "False");
   }
-  
+
   public static void setHonourServerGroupsInPRSingleHop() {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "True");
+    System.setProperty(
+        DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop", "True");
   }
 }

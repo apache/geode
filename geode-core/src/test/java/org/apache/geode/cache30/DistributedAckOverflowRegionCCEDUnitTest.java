@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.cache30;
 
@@ -36,8 +34,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 
 @Category(DistributedTest.class)
-public class DistributedAckOverflowRegionCCEDUnitTest extends
-    DistributedAckRegionCCEDUnitTest {
+public class DistributedAckOverflowRegionCCEDUnitTest extends DistributedAckRegionCCEDUnitTest {
 
   public DistributedAckOverflowRegionCCEDUnitTest() {
     super();
@@ -49,24 +46,23 @@ public class DistributedAckOverflowRegionCCEDUnitTest extends
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setConcurrencyChecksEnabled(true);
-    factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(
-        5, EvictionAction.OVERFLOW_TO_DISK));
+    factory.setEvictionAttributes(
+        EvictionAttributes.createLRUEntryAttributes(5, EvictionAction.OVERFLOW_TO_DISK));
     return factory.create();
   }
-  
+
   @Override
   protected RegionAttributes getRegionAttributes(String type) {
     RegionAttributes ra = getCache().getRegionAttributes(type);
     if (ra == null) {
-      throw new IllegalStateException("The region shortcut " + type
-                                      + " has been removed.");
+      throw new IllegalStateException("The region shortcut " + type + " has been removed.");
     }
     AttributesFactory factory = new AttributesFactory(ra);
     factory.setConcurrencyChecksEnabled(true);
-    if(!ra.getDataPolicy().isEmpty()) {
-      factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(
-          5, EvictionAction.OVERFLOW_TO_DISK));
+    if (!ra.getDataPolicy().isEmpty()) {
+      factory.setEvictionAttributes(
+          EvictionAttributes.createLRUEntryAttributes(5, EvictionAction.OVERFLOW_TO_DISK));
     }
     return factory.create();
-  }  
+  }
 }

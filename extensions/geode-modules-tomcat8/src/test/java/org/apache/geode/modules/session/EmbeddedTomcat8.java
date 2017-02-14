@@ -1,19 +1,17 @@
 /*
-* Licensed to the Apache Software Foundation (ASF) under one or more
-* contributor license agreements.  See the NOTICE file distributed with
-* this work for additional information regarding copyright ownership.
-* The ASF licenses this file to You under the Apache License, Version 2.0
-* (the "License"); you may not use this file except in compliance with
-* the License.  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.modules.session;
 
 import java.io.File;
@@ -71,7 +69,8 @@ public class EmbeddedTomcat8 {
    */
   private String webappDir = "";
 
-  public EmbeddedTomcat8(String contextPath, int port, String jvmRoute) throws MalformedURLException {
+  public EmbeddedTomcat8(String contextPath, int port, String jvmRoute)
+      throws MalformedURLException {
     this.contextPath = contextPath;
     this.port = port;
 
@@ -79,7 +78,7 @@ public class EmbeddedTomcat8 {
     container = new Tomcat();
     container.setBaseDir(System.getProperty("user.dir") + "/tomcat");
 
-    Host localHost = container.getHost();//("127.0.0.1", new File("").getAbsolutePath());
+    Host localHost = container.getHost();// ("127.0.0.1", new File("").getAbsolutePath());
     localHost.setDeployOnStartup(true);
     localHost.getCreateDirs();
 
@@ -87,8 +86,7 @@ public class EmbeddedTomcat8 {
       new File(localHost.getAppBaseFile().getAbsolutePath()).mkdir();
       new File(localHost.getCatalinaBase().getAbsolutePath(), "logs").mkdir();
       rootContext = container.addContext("", localHost.getAppBaseFile().getAbsolutePath());
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       throw new Error(e);
     }
     // Otherwise we get NPE when instantiating servlets
@@ -106,7 +104,7 @@ public class EmbeddedTomcat8 {
 
     // create http connector
     container.setPort(port);
-    Connector httpConnector = container.getConnector();//((InetAddress) null, port, false);
+    Connector httpConnector = container.getConnector();// ((InetAddress) null, port, false);
 
     // Create the JVMRoute valve for session failover
     ValveBase valve = new JvmRouteBinderValve();
@@ -143,7 +141,8 @@ public class EmbeddedTomcat8 {
     }
   }
 
-  public StandardWrapper addServlet(String path, String name, String clazz) throws ServletException {
+  public StandardWrapper addServlet(String path, String name, String clazz)
+      throws ServletException {
     StandardWrapper servlet = (StandardWrapper) rootContext.createWrapper();
     servlet.setName(name);
     servlet.setServletClass(clazz);
@@ -153,7 +152,7 @@ public class EmbeddedTomcat8 {
     rootContext.addServletMapping(path, name);
 
     servlet.setParent(rootContext);
-//        servlet.load();
+    // servlet.load();
 
     return servlet;
   }

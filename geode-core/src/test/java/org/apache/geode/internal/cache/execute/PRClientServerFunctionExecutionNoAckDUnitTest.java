@@ -1,21 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.internal.cache.execute;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -42,8 +41,8 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.test.dunit.LogWriterUtils;
 
-@Category(DistributedTest.class)
-public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServerTestBase{
+@Category({DistributedTest.class, ClientServerTest.class})
+public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServerTestBase {
   /**
    * 
    */
@@ -54,9 +53,9 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
   Function functionNoAck = null;
   Function functionAck = null;
   Boolean toRegister = null;
-  
-  private static final int NUM_ITERATION=1;
-  
+
+  private static final int NUM_ITERATION = 1;
+
   public PRClientServerFunctionExecutionNoAckDUnitTest() {
     super();
   }
@@ -68,51 +67,52 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
   public void testServerFunctionExecution_NoAck() {
     createScenario();
 
-    functionNoAck = new TestFunction(false,TEST_FUNCTION1, true);
-    functionAck = new TestFunction(true,TEST_FUNCTION1, true);
+    functionNoAck = new TestFunction(false, TEST_FUNCTION1, true);
+    functionAck = new TestFunction(true, TEST_FUNCTION1, true);
     registerFunctionAtServer(functionNoAck);
     registerFunctionAtServer(functionAck);
-    
+
     isByName = new Boolean(true);
     toRegister = new Boolean(true);
-    LogWriterUtils.getLogWriter()
-        .info(
-            "PRClientServerFunctionExecutionNoAckDUnitTest#testServerFunctionExecution_NoAck : Starting test");
-    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.serverExecution( isByName, functionNoAck, functionAck , toRegister));
-    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.allServerExecution( isByName, functionNoAck , toRegister));
+    LogWriterUtils.getLogWriter().info(
+        "PRClientServerFunctionExecutionNoAckDUnitTest#testServerFunctionExecution_NoAck : Starting test");
+    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.serverExecution(isByName,
+        functionNoAck, functionAck, toRegister));
+    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.allServerExecution(isByName,
+        functionNoAck, toRegister));
   }
 
   @Test
   public void testServerFunctionExecution_NoAck_WithoutRegister() {
     createScenario();
 
-    functionNoAck = new TestFunction(false,TEST_FUNCTION1, true);
-    functionAck = new TestFunction(true,TEST_FUNCTION1, true);
+    functionNoAck = new TestFunction(false, TEST_FUNCTION1, true);
+    functionAck = new TestFunction(true, TEST_FUNCTION1, true);
     registerFunctionAtServer(functionNoAck);
     registerFunctionAtServer(functionAck);
     toRegister = new Boolean(false);
     isByName = new Boolean(true);
-    LogWriterUtils.getLogWriter()
-        .info(
-            "PRClientServerFunctionExecutionNoAckDUnitTest#testServerFunctionExecution_NoAck : Starting test");
-    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.serverExecution( isByName, functionNoAck, functionAck, toRegister ));
-    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.allServerExecution( isByName, functionNoAck, toRegister ));
+    LogWriterUtils.getLogWriter().info(
+        "PRClientServerFunctionExecutionNoAckDUnitTest#testServerFunctionExecution_NoAck : Starting test");
+    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.serverExecution(isByName,
+        functionNoAck, functionAck, toRegister));
+    client.invoke(() -> PRClientServerFunctionExecutionNoAckDUnitTest.allServerExecution(isByName,
+        functionNoAck, toRegister));
   }
-  
+
   private void createScenario() {
     LogWriterUtils.getLogWriter()
-        .info(
-            "PRClientServerFFunctionExecutionDUnitTest#createScenario : creating scenario");
+        .info("PRClientServerFFunctionExecutionDUnitTest#createScenario : creating scenario");
     createClientServerScenarionWithoutRegion();
   }
 
-  public static void serverExecution(Boolean isByName, Function functionNoAck, Function functionAck, Boolean toRegister) {
+  public static void serverExecution(Boolean isByName, Function functionNoAck, Function functionAck,
+      Boolean toRegister) {
 
     DistributedSystem.setThreadsSocketPolicy(false);
-    if(toRegister.booleanValue()){
+    if (toRegister.booleanValue()) {
       FunctionService.registerFunction(functionNoAck);
-    }
-    else {
+    } else {
       assertNull(FunctionService.getFunction(functionNoAck.getId()));
     }
     Execution member = FunctionService.onServer(pool);
@@ -120,17 +120,17 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
     try {
       TimeKeeper t = new TimeKeeper();
       t.start();
-      for(int i=0;i< NUM_ITERATION;i++)
+      for (int i = 0; i < NUM_ITERATION; i++)
         execute(member, Boolean.TRUE, functionNoAck, isByName, toRegister);
       t.stop();
-      LogWriterUtils.getLogWriter().info("Time taken to execute boolean based" + NUM_ITERATION + "NoAck functions :" + t.getTimeInMs());      
-    }
-    catch (Exception ex) {
+      LogWriterUtils.getLogWriter().info("Time taken to execute boolean based" + NUM_ITERATION
+          + "NoAck functions :" + t.getTimeInMs());
+    } catch (Exception ex) {
       ex.printStackTrace();
       LogWriterUtils.getLogWriter().info("Exception : ", ex);
       fail("Test failed after the execute operation");
     }
-        
+
     try {
       final HashSet testKeysSet = new HashSet();
       for (int i = 0; i < 2; i++) {
@@ -138,41 +138,40 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
       }
       TimeKeeper t = new TimeKeeper();
       t.start();
-      for(int i=0;i< NUM_ITERATION;i++)
+      for (int i = 0; i < NUM_ITERATION; i++)
         execute(member, testKeysSet, functionNoAck, isByName, toRegister);
       t.stop();
-      LogWriterUtils.getLogWriter().info("Time taken to execute setbased" + NUM_ITERATION + "NoAck functions :" + t.getTimeInMs());     
-    }
-    catch (Exception ex) {
+      LogWriterUtils.getLogWriter().info(
+          "Time taken to execute setbased" + NUM_ITERATION + "NoAck functions :" + t.getTimeInMs());
+    } catch (Exception ex) {
       ex.printStackTrace();
       LogWriterUtils.getLogWriter().info("Exception : ", ex);
       fail("Test failed after the execute operationssssss");
     }
-    if(toRegister.booleanValue()){
+    if (toRegister.booleanValue()) {
       FunctionService.registerFunction(functionAck);
-    }
-    else {
+    } else {
       assertNull(FunctionService.getFunction(functionAck.getId()));
     }
     try {
       TimeKeeper t = new TimeKeeper();
       long timeinms = 0;
       t.start();
-      for(int i=0;i< NUM_ITERATION;i++) {
+      for (int i = 0; i < NUM_ITERATION; i++) {
         ResultCollector rc = execute(member, Boolean.TRUE, functionAck, isByName, toRegister);
         t.stop();
         timeinms += t.getTimeInMs();
-        assertEquals(Boolean.TRUE, ((List)rc.getResult()).get(0));
+        assertEquals(Boolean.TRUE, ((List) rc.getResult()).get(0));
       }
-      LogWriterUtils.getLogWriter().info("Time taken to execute boolean based" + NUM_ITERATION + "haveResults functions :" + timeinms);      
-    }
-    catch (Exception ex) {
+      LogWriterUtils.getLogWriter().info("Time taken to execute boolean based" + NUM_ITERATION
+          + "haveResults functions :" + timeinms);
+    } catch (Exception ex) {
       ex.printStackTrace();
       LogWriterUtils.getLogWriter().info("Exception : ", ex);
       fail("Test failed after the execute operation");
     }
-        
-    try {      
+
+    try {
       final HashSet testKeysSet = new HashSet();
       for (int i = 0; i < 20; i++) {
         testKeysSet.add("execKey-" + i);
@@ -180,42 +179,39 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
       TimeKeeper t = new TimeKeeper();
       long timeinms = 0;
       t.start();
-      for(int i=0;i< NUM_ITERATION;i++){
+      for (int i = 0; i < NUM_ITERATION; i++) {
         ResultCollector rc = execute(member, testKeysSet, functionAck, isByName, toRegister);
         t.stop();
         timeinms += t.getTimeInMs();
-        List resultList = (List)rc.getResult();
-        for(int j=0; j<20; j++) {
-          assertEquals(true, ((List)(resultList).get(0)).contains("execKey-" + j));
+        List resultList = (List) rc.getResult();
+        for (int j = 0; j < 20; j++) {
+          assertEquals(true, ((List) (resultList).get(0)).contains("execKey-" + j));
         }
-        
+
       }
-      LogWriterUtils.getLogWriter().info("Time taken to execute setbased" + NUM_ITERATION + "haveResults functions :" + timeinms);     
-    }
-    catch (Exception ex) {
+      LogWriterUtils.getLogWriter().info(
+          "Time taken to execute setbased" + NUM_ITERATION + "haveResults functions :" + timeinms);
+    } catch (Exception ex) {
       ex.printStackTrace();
       LogWriterUtils.getLogWriter().info("Exception : ", ex);
       fail("Test failed after the execute operationssssss");
-    }    
+    }
   }
 
-  public static void allServerExecution(Boolean isByName,
-      Function function, Boolean toRegister) {
+  public static void allServerExecution(Boolean isByName, Function function, Boolean toRegister) {
 
     DistributedSystem.setThreadsSocketPolicy(false);
-    if(toRegister.booleanValue()){
+    if (toRegister.booleanValue()) {
       FunctionService.registerFunction(function);
-    }
-    else {
+    } else {
       FunctionService.unregisterFunction(function.getId());
       assertNull(FunctionService.getFunction(function.getId()));
     }
     Execution member = FunctionService.onServers(pool);
 
-    try {      
+    try {
       execute(member, Boolean.TRUE, function, isByName, toRegister);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       ex.printStackTrace();
       LogWriterUtils.getLogWriter().info("Exception : ", ex);
       fail("Test failed after the execute operation allserver   ");
@@ -227,32 +223,30 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
         testKeysSet.add("execKey-" + i);
       }
       execute(member, testKeysSet, function, isByName, toRegister);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       ex.printStackTrace();
       LogWriterUtils.getLogWriter().info("Exception : ", ex);
       fail("Test failed after the execute operation");
     }
   }
 
-  private static ResultCollector execute(Execution member,
-      Serializable args, Function function, Boolean isByName, Boolean toRegister)
-      throws Exception {
+  private static ResultCollector execute(Execution member, Serializable args, Function function,
+      Boolean isByName, Boolean toRegister) throws Exception {
     if (isByName.booleanValue()) {// by name
-      if(toRegister.booleanValue()){
+      if (toRegister.booleanValue()) {
         LogWriterUtils.getLogWriter().info("The function name to execute : " + function.getId());
         Execution me = member.withArgs(args);
         LogWriterUtils.getLogWriter().info("The args passed  : " + args);
         return me.execute(function.getId());
-      }
-      else {
-        LogWriterUtils.getLogWriter().info("The function name to execute : (without Register) " + function.getId());
+      } else {
+        LogWriterUtils.getLogWriter()
+            .info("The function name to execute : (without Register) " + function.getId());
         Execution me = member.withArgs(args);
         LogWriterUtils.getLogWriter().info("The args passed  : " + args);
-        return me.execute(function.getId(), function.hasResult(),function.isHA(),function.optimizeForWrite());
+        return me.execute(function.getId(), function.hasResult(), function.isHA(),
+            function.optimizeForWrite());
       }
-    }
-    else { // By Instance
+    } else { // By Instance
       return member.withArgs(args).execute(function);
     }
   }

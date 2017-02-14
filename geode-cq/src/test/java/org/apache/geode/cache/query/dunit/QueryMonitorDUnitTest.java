@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 package org.apache.geode.cache.query.dunit;
@@ -61,6 +59,7 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
@@ -73,9 +72,10 @@ import static org.junit.Assert.*;
 
 /**
  * Tests for QueryMonitoring service.
+ * 
  * @since GemFire 6.0
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
   private final String exampleRegionName = "exampleRegion";
@@ -84,64 +84,60 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
 
   /* Some of the queries are commented out as they were taking less time */
-  String[] queryStr = {
-    "SELECT ID FROM /root/exampleRegion p WHERE  p.ID > 100",
-    "SELECT DISTINCT * FROM /root/exampleRegion x, x.positions.values WHERE  x.pk != '1000'",
-    "SELECT DISTINCT * FROM /root/exampleRegion x, x.positions.values WHERE  x.pkid != '1'",
-    "SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values WHERE  p.pk > '1'",
-    "SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values WHERE  p.pkid != '53'",
-    "SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.Id > 100",
-    "SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.Id > 100 and pos.secId IN SET('YHOO', 'IBM', 'AMZN')",
-    "SELECT * FROM /root/exampleRegion p WHERE  p.ID > 100 and p.status = 'active' and p.ID < 100000",
-    "SELECT * FROM /root/exampleRegion WHERE  ID > 100 and status = 'active'",
-    "SELECT DISTINCT * FROM /root/exampleRegion p WHERE  p.ID > 100 and p.status = 'active' and p.ID < 100000",
-    "SELECT DISTINCT ID FROM /root/exampleRegion WHERE  status = 'active'",
-    "SELECT DISTINCT ID FROM /root/exampleRegion p WHERE  p.status = 'active'",
-    "SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.secId IN SET('YHOO', 'IBM', 'AMZN')",
-    "SELECT DISTINCT proj1:p, proj2:itrX FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos"
-      + " WHERE  pos.secId = 'YHOO') as itrX",
-    "SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos"
-      + " WHERE  pos.secId = 'YHOO') as itrX",
-    "SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT p.ID FROM /root/exampleRegion x"
-      + " WHERE  x.ID = p.ID) as itrX",
-    "SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion x, x.positions.values pos"
-      + " WHERE  x.ID = p.ID) as itrX",
-    "SELECT DISTINCT x.ID FROM /root/exampleRegion x, x.positions.values v WHERE  "
-      + "v.secId = element(SELECT DISTINCT vals.secId FROM /root/exampleRegion p, p.positions.values vals WHERE  vals.secId = 'YHOO')",
-    "SELECT DISTINCT * FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.status = 'active'",
-    "SELECT DISTINCT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID",
-    "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.status = 'active' and p2.status = 'active'",
-    "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.status = 'active' and p.status = p2.status",
-    "SELECT DISTINCT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.ID > 100 and p2.ID < 100000",
-    "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.ID > 100 and p2.ID < 100000 or p.status = p2.status",
-    "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.ID > 100 and p2.ID < 100000 or p.status = 'active'",
-    "SELECT DISTINCT * FROM /root/exampleRegion p, positions.values pos WHERE   (p.ID > 1 or p.status = 'active') or (true AND pos.secId ='IBM')",
-    "SELECT DISTINCT * FROM /root/exampleRegion p, positions.values pos WHERE   (p.ID > 1 or p.status = 'active') or (true AND pos.secId !='IBM')",
-    "SELECT DISTINCT structset.sos, structset.key "
-      + "FROM /root/exampleRegion p, p.positions.values outerPos, "
-      + "(SELECT DISTINCT key: key, sos: pos.sharesOutstanding "
-      + "FROM /root/exampleRegion.entries pf, pf.value.positions.values pos "
-      + "where outerPos.secId != 'IBM' AND "
-      + "pf.key IN (SELECT DISTINCT * FROM pf.value.collectionHolderMap['0'].arr)) structset "
-      + "where structset.sos > 2000",
-    "SELECT DISTINCT * "
-      + "FROM /root/exampleRegion p, p.positions.values outerPos, "
-      + "(SELECT DISTINCT key: key, sos: pos.sharesOutstanding "
-      + "FROM /root/exampleRegion.entries pf, pf.value.positions.values pos "
-      + "where outerPos.secId != 'IBM' AND "
-      + "pf.key IN (SELECT DISTINCT * FROM pf.value.collectionHolderMap['0'].arr)) structset "
-      + "where structset.sos > 2000",
-    "SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values position "
-      + "WHERE (true = null OR position.secId = 'SUN') AND true",
-  };
+  String[] queryStr = {"SELECT ID FROM /root/exampleRegion p WHERE  p.ID > 100",
+      "SELECT DISTINCT * FROM /root/exampleRegion x, x.positions.values WHERE  x.pk != '1000'",
+      "SELECT DISTINCT * FROM /root/exampleRegion x, x.positions.values WHERE  x.pkid != '1'",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values WHERE  p.pk > '1'",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values WHERE  p.pkid != '53'",
+      "SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.Id > 100",
+      "SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.Id > 100 and pos.secId IN SET('YHOO', 'IBM', 'AMZN')",
+      "SELECT * FROM /root/exampleRegion p WHERE  p.ID > 100 and p.status = 'active' and p.ID < 100000",
+      "SELECT * FROM /root/exampleRegion WHERE  ID > 100 and status = 'active'",
+      "SELECT DISTINCT * FROM /root/exampleRegion p WHERE  p.ID > 100 and p.status = 'active' and p.ID < 100000",
+      "SELECT DISTINCT ID FROM /root/exampleRegion WHERE  status = 'active'",
+      "SELECT DISTINCT ID FROM /root/exampleRegion p WHERE  p.status = 'active'",
+      "SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos WHERE  pos.secId IN SET('YHOO', 'IBM', 'AMZN')",
+      "SELECT DISTINCT proj1:p, proj2:itrX FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos"
+          + " WHERE  pos.secId = 'YHOO') as itrX",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion p, p.positions.values pos"
+          + " WHERE  pos.secId = 'YHOO') as itrX",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT p.ID FROM /root/exampleRegion x"
+          + " WHERE  x.ID = p.ID) as itrX",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion x, x.positions.values pos"
+          + " WHERE  x.ID = p.ID) as itrX",
+      "SELECT DISTINCT x.ID FROM /root/exampleRegion x, x.positions.values v WHERE  "
+          + "v.secId = element(SELECT DISTINCT vals.secId FROM /root/exampleRegion p, p.positions.values vals WHERE  vals.secId = 'YHOO')",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.status = 'active'",
+      "SELECT DISTINCT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID",
+      "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.status = 'active' and p2.status = 'active'",
+      "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.status = 'active' and p.status = p2.status",
+      "SELECT DISTINCT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.ID > 100 and p2.ID < 100000",
+      "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.ID > 100 and p2.ID < 100000 or p.status = p2.status",
+      "SELECT p.ID FROM /root/exampleRegion p, /root/exampleRegion2 p2 WHERE  p.ID = p2.ID and p.ID > 100 and p2.ID < 100000 or p.status = 'active'",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, positions.values pos WHERE   (p.ID > 1 or p.status = 'active') or (true AND pos.secId ='IBM')",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, positions.values pos WHERE   (p.ID > 1 or p.status = 'active') or (true AND pos.secId !='IBM')",
+      "SELECT DISTINCT structset.sos, structset.key "
+          + "FROM /root/exampleRegion p, p.positions.values outerPos, "
+          + "(SELECT DISTINCT key: key, sos: pos.sharesOutstanding "
+          + "FROM /root/exampleRegion.entries pf, pf.value.positions.values pos "
+          + "where outerPos.secId != 'IBM' AND "
+          + "pf.key IN (SELECT DISTINCT * FROM pf.value.collectionHolderMap['0'].arr)) structset "
+          + "where structset.sos > 2000",
+      "SELECT DISTINCT * " + "FROM /root/exampleRegion p, p.positions.values outerPos, "
+          + "(SELECT DISTINCT key: key, sos: pos.sharesOutstanding "
+          + "FROM /root/exampleRegion.entries pf, pf.value.positions.values pos "
+          + "where outerPos.secId != 'IBM' AND "
+          + "pf.key IN (SELECT DISTINCT * FROM pf.value.collectionHolderMap['0'].arr)) structset "
+          + "where structset.sos > 2000",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values position "
+          + "WHERE (true = null OR position.secId = 'SUN') AND true",};
 
   String[] prQueryStr = {
-    "SELECT ID FROM /root/exampleRegion p WHERE  p.ID > 100 and p.status = 'active'",
-    "SELECT * FROM /root/exampleRegion WHERE  ID > 100 and status = 'active'",
-    "SELECT DISTINCT * FROM /root/exampleRegion p WHERE   p.ID > 100 and p.status = 'active' and p.ID < 100000",
-    "SELECT DISTINCT p.ID FROM /root/exampleRegion p WHERE p.ID > 100 and p.ID < 100000 and p.status = 'active'",
-    "SELECT DISTINCT * FROM /root/exampleRegion p, positions.values pos WHERE (p.ID > 1 or p.status = 'active') or (pos.secId != 'IBM')",
-  };
+      "SELECT ID FROM /root/exampleRegion p WHERE  p.ID > 100 and p.status = 'active'",
+      "SELECT * FROM /root/exampleRegion WHERE  ID > 100 and status = 'active'",
+      "SELECT DISTINCT * FROM /root/exampleRegion p WHERE   p.ID > 100 and p.status = 'active' and p.ID < 100000",
+      "SELECT DISTINCT p.ID FROM /root/exampleRegion p WHERE p.ID > 100 and p.ID < 100000 and p.status = 'active'",
+      "SELECT DISTINCT * FROM /root/exampleRegion p, positions.values pos WHERE (p.ID > 1 or p.status = 'active') or (pos.secId != 'IBM')",};
 
   private int numServers;
 
@@ -195,8 +191,8 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
       DiskStoreFactory dsf = GemFireCacheImpl.getInstance().createDiskStoreFactory();
       DiskStore ds1 = dsf.setDiskDirs(f).create("ds1");
       factory.setDiskStoreName("ds1");
-      EvictionAttributes evictAttrs = EvictionAttributes
-        .createLRUEntryAttributes(100, EvictionAction.OVERFLOW_TO_DISK);
+      EvictionAttributes evictAttrs =
+          EvictionAttributes.createLRUEntryAttributes(100, EvictionAction.OVERFLOW_TO_DISK);
       factory.setEvictionAttributes(evictAttrs);
     }
     // Create region
@@ -206,8 +202,9 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
   private void createPRRegion() {
     AttributesFactory factory = new AttributesFactory();
-    //factory.setDataPolicy(DataPolicy.PARTITION);
-    factory.setPartitionAttributes((new PartitionAttributesFactory()).setTotalNumBuckets(8).create());
+    // factory.setDataPolicy(DataPolicy.PARTITION);
+    factory
+        .setPartitionAttributes((new PartitionAttributesFactory()).setTotalNumBuckets(8).create());
 
     createRegion(exampleRegionName, factory.create());
     createRegion(exampleRegionName2, factory.create());
@@ -219,16 +216,16 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     int port = 0;
     try {
       port = startBridgeServer(0, false);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       Assert.fail("While starting CacheServer", ex);
     }
     Cache cache = getCache();
     GemFireCacheImpl.getInstance().TEST_MAX_QUERY_EXECUTION_TIME = queryMonitorTime;
     cache.getLogger().fine("#### RUNNING TEST : " + testName);
     DefaultQuery.testHook = new QueryTimeoutHook(queryMonitorTime);
-    //((GemFireCache)cache).TEST_MAX_QUERY_EXECUTION_TIME = queryMonitorTime;
-    System.out.println("MAX_QUERY_EXECUTION_TIME is set to: " + ((GemFireCacheImpl) cache).TEST_MAX_QUERY_EXECUTION_TIME);
+    // ((GemFireCache)cache).TEST_MAX_QUERY_EXECUTION_TIME = queryMonitorTime;
+    System.out.println("MAX_QUERY_EXECUTION_TIME is set to: "
+        + ((GemFireCacheImpl) cache).TEST_MAX_QUERY_EXECUTION_TIME);
     return port;
   }
 
@@ -241,7 +238,8 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
         DefaultQuery.testHook = null;
         GemFireCacheImpl.getInstance().TEST_MAX_QUERY_EXECUTION_TIME = -1;
         stopBridgeServer(getCache());
-        System.out.println("MAX_QUERY_EXECUTION_TIME is set to: " + ((GemFireCacheImpl) cache).TEST_MAX_QUERY_EXECUTION_TIME);
+        System.out.println("MAX_QUERY_EXECUTION_TIME is set to: "
+            + ((GemFireCacheImpl) cache).TEST_MAX_QUERY_EXECUTION_TIME);
       }
     };
     server.invoke(stopServer);
@@ -252,7 +250,8 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     factory.setScope(Scope.LOCAL);
     PoolFactory poolFactory = PoolManager.createFactory();
     poolFactory.setReadTimeout(10 * 60 * 1000); // 10 mins.
-    ClientServerTestCase.configureConnectionPoolWithNameAndFactory(factory, host, ports, true, -1, -1, null, poolName, poolFactory);
+    ClientServerTestCase.configureConnectionPoolWithNameAndFactory(factory, host, ports, true, -1,
+        -1, null, poolName, poolFactory);
   }
 
   private void verifyException(Exception e) {
@@ -262,10 +261,11 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
       error = e.getCause().getMessage();
     }
 
-    if (error.contains("Query execution cancelled after exceeding max execution time") ||
-      error.contains("The Query completed sucessfully before it got canceled") ||
-      error.contains("The QueryMonitor thread may be sleeping longer than the set sleep time") ||
-      error.contains("The query task could not be found but the query is marked as having been canceled")) {
+    if (error.contains("Query execution cancelled after exceeding max execution time")
+        || error.contains("The Query completed sucessfully before it got canceled")
+        || error.contains("The QueryMonitor thread may be sleeping longer than the set sleep time")
+        || error.contains(
+            "The query task could not be found but the query is marked as having been canceled")) {
       // Expected exception.
       return;
     }
@@ -273,14 +273,12 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     System.out.println("Unexpected exception:");
     if (e.getCause() != null) {
       e.getCause().printStackTrace();
-    }
-    else {
+    } else {
       e.printStackTrace();
     }
 
-    fail("Expected exception Not found. Expected exception with message: \n" +
-      "\"Query execution taking more than the max execution time\"" + "\n Found \n" +
-      error);
+    fail("Expected exception Not found. Expected exception with message: \n"
+        + "\"Query execution taking more than the max execution time\"" + "\n Found \n" + error);
   }
 
   /**
@@ -303,7 +301,9 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
     // Start server
     int serverPort = server.invoke("Create BridgeServer",
-      () -> configServer(20, "testQueryMonitorClientServer")); // All the queries taking more than 20ms should be canceled by Query monitor.
+        () -> configServer(20, "testQueryMonitorClientServer")); // All the queries taking more than
+                                                                 // 20ms should be canceled by Query
+                                                                 // monitor.
     server.invoke("createRegion", () -> createRegion());
 
     // Initialize server regions.
@@ -337,8 +337,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
       Pool pool = PoolManager.find(poolName);
       QueryService queryService = pool.getQueryService();
       executeQueriesAgainstQueryService(queryService);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       GemFireCacheImpl.getInstance().getLogger().fine("Exception creating the query service", ex);
     }
   }
@@ -347,8 +346,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     try {
       QueryService queryService = GemFireCacheImpl.getInstance().getQueryService();
       executeQueriesAgainstQueryService(queryService);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       GemFireCacheImpl.getInstance().getLogger().fine("Exception creating the query service", ex);
     }
   }
@@ -366,8 +364,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
       Query query = queryService.newQuery(qStr);
       query.execute();
       fail("The query should have been canceled by the QueryMonitor. Query: " + qStr);
-    }
-    catch (Exception e) {
+    } catch (Exception e) {
       System.out.println("queryStr = " + qStr);
       verifyException(e);
     }
@@ -394,11 +391,17 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
     // Start server
     int serverPort1 = server1.invoke("Create BridgeServer",
-      () -> configServer(20, "testQueryMonitorMultiClientMultiServer"));// All the queries taking more than 20ms should be canceled by Query monitor.
+        () -> configServer(20, "testQueryMonitorMultiClientMultiServer"));// All the queries taking
+                                                                          // more than 20ms should
+                                                                          // be canceled by Query
+                                                                          // monitor.
     server1.invoke("createRegion", () -> createRegion());
 
     int serverPort2 = server2.invoke("Create BridgeServer",
-      () -> configServer(20, "testQueryMonitorMultiClientMultiServer"));// All the queries taking more than 20ms should be canceled by Query monitor.
+        () -> configServer(20, "testQueryMonitorMultiClientMultiServer"));// All the queries taking
+                                                                          // more than 20ms should
+                                                                          // be canceled by Query
+                                                                          // monitor.
     server2.invoke("createRegion", () -> createRegion());
 
     // Initialize server regions.
@@ -441,12 +444,34 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     final int numberOfEntries = 100;
 
     // Start server
-    server1.invoke("Create BridgeServer",
-      () -> configServer(20, "testQueryExecutionLocally"));// All the queries taking more than 20ms should be canceled by Query monitor.
+    server1.invoke("Create BridgeServer", () -> configServer(20, "testQueryExecutionLocally"));// All
+                                                                                               // the
+                                                                                               // queries
+                                                                                               // taking
+                                                                                               // more
+                                                                                               // than
+                                                                                               // 20ms
+                                                                                               // should
+                                                                                               // be
+                                                                                               // canceled
+                                                                                               // by
+                                                                                               // Query
+                                                                                               // monitor.
     server1.invoke("createRegion", () -> createRegion());
 
-    server2.invoke("Create BridgeServer",
-      () -> configServer(20, "testQueryExecutionLocally"));// All the queries taking more than 20ms should be canceled by Query monitor.
+    server2.invoke("Create BridgeServer", () -> configServer(20, "testQueryExecutionLocally"));// All
+                                                                                               // the
+                                                                                               // queries
+                                                                                               // taking
+                                                                                               // more
+                                                                                               // than
+                                                                                               // 20ms
+                                                                                               // should
+                                                                                               // be
+                                                                                               // canceled
+                                                                                               // by
+                                                                                               // Query
+                                                                                               // monitor.
     server2.invoke("createRegion", () -> createRegion());
 
     // Initialize server regions.
@@ -480,12 +505,34 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     final int numberOfEntries = 1000;
 
     // Start server
-    server1.invoke("Create BridgeServer",
-      () -> configServer(20, "testQueryExecutionLocally"));// All the queries taking more than 20ms should be canceled by Query monitor.
+    server1.invoke("Create BridgeServer", () -> configServer(20, "testQueryExecutionLocally"));// All
+                                                                                               // the
+                                                                                               // queries
+                                                                                               // taking
+                                                                                               // more
+                                                                                               // than
+                                                                                               // 20ms
+                                                                                               // should
+                                                                                               // be
+                                                                                               // canceled
+                                                                                               // by
+                                                                                               // Query
+                                                                                               // monitor.
     server1.invoke("createRegion", () -> createRegion());
 
-    server2.invoke("Create BridgeServer",
-      () -> configServer(20, "testQueryExecutionLocally"));// All the queries taking more than 20ms should be canceled by Query monitor.
+    server2.invoke("Create BridgeServer", () -> configServer(20, "testQueryExecutionLocally"));// All
+                                                                                               // the
+                                                                                               // queries
+                                                                                               // taking
+                                                                                               // more
+                                                                                               // than
+                                                                                               // 20ms
+                                                                                               // should
+                                                                                               // be
+                                                                                               // canceled
+                                                                                               // by
+                                                                                               // Query
+                                                                                               // monitor.
     server2.invoke("createRegion", () -> createRegion());
 
     // Initialize server regions.
@@ -499,20 +546,21 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         try {
           QueryService queryService = GemFireCacheImpl.getInstance().getQueryService();
-          String qStr = "SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion x, x.positions.values pos"
-            + " WHERE  x.ID = p.ID) as itrX";
+          String qStr =
+              "SELECT DISTINCT * FROM /root/exampleRegion p, (SELECT DISTINCT pos FROM /root/exampleRegion x, x.positions.values pos"
+                  + " WHERE  x.ID = p.ID) as itrX";
           executeQuery(queryService, qStr);
 
           // Create index and Perform cache op. Bug#44307
           queryService.createIndex("idIndex", IndexType.FUNCTIONAL, "ID", "/root/exampleRegion");
-          queryService.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/root/exampleRegion");
+          queryService.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
+              "/root/exampleRegion");
           Region exampleRegion = getRootRegion().getSubregion(exampleRegionName);
           for (int i = (1 + 100); i <= (numberOfEntries + 200); i++) {
             exampleRegion.put("" + i, new Portfolio(i));
           }
 
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
           Assert.fail("Exception creating the query service", ex);
         }
       }
@@ -557,19 +605,27 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
     // Start server
     int serverPort1 = server1.invoke("configServer",
-      () -> configServer(20, "testQueryMonitorMultiClientMultiServerOnPR"));// All the queries taking more than 100ms should be canceled by Query monitor.
+        () -> configServer(20, "testQueryMonitorMultiClientMultiServerOnPR"));// All the queries
+                                                                              // taking more than
+                                                                              // 100ms should be
+                                                                              // canceled by Query
+                                                                              // monitor.
     server1.invoke("createPRRegion", () -> createPRRegion());
 
     int serverPort2 = server2.invoke("configServer",
-      () -> configServer(20, "testQueryMonitorMultiClientMultiServerOnPR"));// All the queries taking more than 100ms should be canceled by Query monitor.
+        () -> configServer(20, "testQueryMonitorMultiClientMultiServerOnPR"));// All the queries
+                                                                              // taking more than
+                                                                              // 100ms should be
+                                                                              // canceled by Query
+                                                                              // monitor.
     server2.invoke("createPRRegion", () -> createPRRegion());
 
     // Initialize server regions.
     server1.invoke("bulkInsertPorfolio", () -> bulkInsertPorfolio(101, numberOfEntries));
 
     // Initialize server regions.
-    server2.invoke("bulkInsertPorfolio", () ->
-      bulkInsertPorfolio((numberOfEntries + 100), (numberOfEntries + numberOfEntries + 100)));
+    server2.invoke("bulkInsertPorfolio", () -> bulkInsertPorfolio((numberOfEntries + 100),
+        (numberOfEntries + numberOfEntries + 100)));
 
     // Initialize Client1 and create client regions.
     client1.invoke("Init client", () -> configClient(serverHostName, serverPort1));
@@ -613,11 +669,19 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
     // Start server
     server1.invoke("configServer",
-      () -> configServer(20, "testQueryMonitorMultiClientMultiServerOnPR"));// All the queries taking more than 100ms should be canceled by Query monitor.
+        () -> configServer(20, "testQueryMonitorMultiClientMultiServerOnPR"));// All the queries
+                                                                              // taking more than
+                                                                              // 100ms should be
+                                                                              // canceled by Query
+                                                                              // monitor.
     server1.invoke("Create Partition Regions", () -> createPRRegion());
 
     server2.invoke("configServer",
-      () -> configServer(20, "testQueryMonitorMultiClientMultiServerOnPR"));// All the queries taking more than 100ms should be canceled by Query monitor.
+        () -> configServer(20, "testQueryMonitorMultiClientMultiServerOnPR"));// All the queries
+                                                                              // taking more than
+                                                                              // 100ms should be
+                                                                              // canceled by Query
+                                                                              // monitor.
     server2.invoke("Create Partition Regions", () -> createPRRegion());
 
     // Initialize server regions.
@@ -662,12 +726,18 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
     // Start server
     int serverPort1 = server1.invoke("Create BridgeServer",
-      () -> configServer(20, "testQueryMonitorRegionWithEviction"));// All the queries taking more than 20ms should be canceled by Query monitor.
-    server1.invoke("createRegion", () -> createRegion(true, "server1_testQueryMonitorRegionWithEviction"));
+        () -> configServer(20, "testQueryMonitorRegionWithEviction"));// All the queries taking more
+                                                                      // than 20ms should be
+                                                                      // canceled by Query monitor.
+    server1.invoke("createRegion",
+        () -> createRegion(true, "server1_testQueryMonitorRegionWithEviction"));
 
     int serverPort2 = server2.invoke("Create BridgeServer",
-      () -> configServer(20, "testQueryMonitorRegionWithEviction"));// All the queries taking more than 20ms should be canceled by Query monitor.
-    server2.invoke("createRegion", () -> createRegion(true, "server2_testQueryMonitorRegionWithEviction"));
+        () -> configServer(20, "testQueryMonitorRegionWithEviction"));// All the queries taking more
+                                                                      // than 20ms should be
+                                                                      // canceled by Query monitor.
+    server2.invoke("createRegion",
+        () -> createRegion(true, "server2_testQueryMonitorRegionWithEviction"));
 
     // Initialize server regions.
     server1.invoke(new CacheSerializableRunnable("Create Bridge Server") {
@@ -719,15 +789,39 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     String serverHostName = NetworkUtils.getServerHostName(host);
 
     // Start server
-    int serverPort1 = server1.invoke("configServer",
-      () -> configServer(20, "testQueryMonitorRegionWithIndex"));// All the queries taking more than 20ms should be canceled by Query monitor.
+    int serverPort1 =
+        server1.invoke("configServer", () -> configServer(20, "testQueryMonitorRegionWithIndex"));// All
+                                                                                                  // the
+                                                                                                  // queries
+                                                                                                  // taking
+                                                                                                  // more
+                                                                                                  // than
+                                                                                                  // 20ms
+                                                                                                  // should
+                                                                                                  // be
+                                                                                                  // canceled
+                                                                                                  // by
+                                                                                                  // Query
+                                                                                                  // monitor.
     server1.invoke("createRegion", () -> createRegion());
 
-    int serverPort2 = server2.invoke("configServer",
-      () -> configServer(20, "testQueryMonitorRegionWithIndex"));// All the queries taking more than 20ms should be canceled by Query monitor.
+    int serverPort2 =
+        server2.invoke("configServer", () -> configServer(20, "testQueryMonitorRegionWithIndex"));// All
+                                                                                                  // the
+                                                                                                  // queries
+                                                                                                  // taking
+                                                                                                  // more
+                                                                                                  // than
+                                                                                                  // 20ms
+                                                                                                  // should
+                                                                                                  // be
+                                                                                                  // canceled
+                                                                                                  // by
+                                                                                                  // Query
+                                                                                                  // monitor.
     server2.invoke("createRegion", () -> createRegion());
 
-    //    pause(1000);
+    // pause(1000);
 
     // Initialize server regions.
     server1.invoke("Create Indexes", () -> createIndexes(numberOfEntries));
@@ -760,18 +854,22 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
       QueryService cacheQS = GemFireCacheImpl.getInstance().getQueryService();
       cacheQS.createIndex("idIndex", IndexType.FUNCTIONAL, "p.ID", "/root/exampleRegion p");
       cacheQS.createIndex("statusIndex", IndexType.FUNCTIONAL, "p.status", "/root/exampleRegion p");
-      cacheQS.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId", "/root/exampleRegion p, p.positions.values pos");
-      cacheQS.createIndex("posIdIndex", IndexType.FUNCTIONAL, "pos.Id", "/root/exampleRegion p, p.positions.values pos");
+      cacheQS.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
+          "/root/exampleRegion p, p.positions.values pos");
+      cacheQS.createIndex("posIdIndex", IndexType.FUNCTIONAL, "pos.Id",
+          "/root/exampleRegion p, p.positions.values pos");
       cacheQS.createIndex("pkIndex", IndexType.PRIMARY_KEY, "pk", "/root/exampleRegion");
       cacheQS.createIndex("pkidIndex", IndexType.PRIMARY_KEY, "pkid", "/root/exampleRegion");
       cacheQS.createIndex("idIndex2", IndexType.FUNCTIONAL, "p2.ID", "/root/exampleRegion2 p2");
-      cacheQS.createIndex("statusIndex2", IndexType.FUNCTIONAL, "p2.status", "/root/exampleRegion2 p2");
-      cacheQS.createIndex("secIdIndex2", IndexType.FUNCTIONAL, "pos.secId", "/root/exampleRegion2 p2, p2.positions.values pos");
-      cacheQS.createIndex("posIdIndex2", IndexType.FUNCTIONAL, "pos.Id", "/root/exampleRegion2 p2, p2.positions.values pos");
+      cacheQS.createIndex("statusIndex2", IndexType.FUNCTIONAL, "p2.status",
+          "/root/exampleRegion2 p2");
+      cacheQS.createIndex("secIdIndex2", IndexType.FUNCTIONAL, "pos.secId",
+          "/root/exampleRegion2 p2, p2.positions.values pos");
+      cacheQS.createIndex("posIdIndex2", IndexType.FUNCTIONAL, "pos.Id",
+          "/root/exampleRegion2 p2, p2.positions.values pos");
       cacheQS.createIndex("pkIndex2", IndexType.PRIMARY_KEY, "pk", "/root/exampleRegion2");
       cacheQS.createIndex("pkidIndex2", IndexType.PRIMARY_KEY, "pkid", "/root/exampleRegion2");
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
     }
     for (int i = (1 + 100); i <= (numberOfEntries + 100); i++) {
       exampleRegion.put("" + i, new Portfolio(i));
@@ -784,13 +882,13 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
   protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
   /**
-   * The following CQ test is added to make sure TEST_MAX_QUERY_EXECUTION_TIME is reset
-   * and is not affecting other query related tests.
+   * The following CQ test is added to make sure TEST_MAX_QUERY_EXECUTION_TIME is reset and is not
+   * affecting other query related tests.
+   * 
    * @throws Exception
    */
   @Test
-  public void testCQWithDestroysAndInvalidates() throws Exception
-  {
+  public void testCQWithDestroysAndInvalidates() throws Exception {
     setup(1);
 
     final Host host = Host.getHost(0);
@@ -818,7 +916,8 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     server.invoke(new CacheSerializableRunnable("Create values") {
       public void run2() throws CacheException {
         Cache cache = getCache();
-        System.out.println("TEST CQ MAX_QUERY_EXECUTION_TIME is set to: " + ((GemFireCacheImpl) cache).TEST_MAX_QUERY_EXECUTION_TIME);
+        System.out.println("TEST CQ MAX_QUERY_EXECUTION_TIME is set to: "
+            + ((GemFireCacheImpl) cache).TEST_MAX_QUERY_EXECUTION_TIME);
 
         Region region1 = getRootRegion().getSubregion(cqDUnitTest.regions[0]);
         for (int i = 1; i <= 5; i++) {
@@ -842,7 +941,8 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     server.invoke(new CacheSerializableRunnable("Create values") {
       public void run2() throws CacheException {
         Cache cache = getCache();
-        System.out.println("TEST CQ MAX_QUERY_EXECUTION_TIME is set to: " + ((GemFireCacheImpl) cache).TEST_MAX_QUERY_EXECUTION_TIME);
+        System.out.println("TEST CQ MAX_QUERY_EXECUTION_TIME is set to: "
+            + ((GemFireCacheImpl) cache).TEST_MAX_QUERY_EXECUTION_TIME);
 
         Region region1 = getRootRegion().getSubregion(cqDUnitTest.regions[0]);
         for (int i = 1; i <= 5; i++) {
@@ -895,10 +995,11 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         try {
           QueryService queryService = GemFireCacheImpl.getInstance().getQueryService();
-          queryService.createIndex("statusIndex", IndexType.FUNCTIONAL, "status", "/root/exampleRegion");
-          queryService.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId", "/root/exampleRegion p, p.positions.values pos");
-        }
-        catch (Exception ex) {
+          queryService.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
+              "/root/exampleRegion");
+          queryService.createIndex("secIdIndex", IndexType.FUNCTIONAL, "pos.secId",
+              "/root/exampleRegion p, p.positions.values pos");
+        } catch (Exception ex) {
           fail("Failed to create index.");
         }
         Region exampleRegion = getRootRegion().getSubregion(exampleRegionName);
@@ -909,29 +1010,33 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Initialize server regions.
-    AsyncInvocation ai1 = server1.invokeAsync(new CacheSerializableRunnable("Create Bridge Server") {
-      public void run2() throws CacheException {
-        Region exampleRegion = getRootRegion().getSubregion(exampleRegionName);
-        for (int j = 0; j < 5; j++) {
-          for (int i = 1; i <= (numberOfEntries + 1000); i++) {
-            exampleRegion.put("" + i, new Portfolio(i));
+    AsyncInvocation ai1 =
+        server1.invokeAsync(new CacheSerializableRunnable("Create Bridge Server") {
+          public void run2() throws CacheException {
+            Region exampleRegion = getRootRegion().getSubregion(exampleRegionName);
+            for (int j = 0; j < 5; j++) {
+              for (int i = 1; i <= (numberOfEntries + 1000); i++) {
+                exampleRegion.put("" + i, new Portfolio(i));
+              }
+            }
+            LogWriterUtils.getLogWriter()
+                .info("### Completed updates in server1 in testCacheOpAfterQueryCancel");
           }
-        }
-        LogWriterUtils.getLogWriter().info("### Completed updates in server1 in testCacheOpAfterQueryCancel");
-      }
-    });
+        });
 
-    AsyncInvocation ai2 = server2.invokeAsync(new CacheSerializableRunnable("Create Bridge Server") {
-      public void run2() throws CacheException {
-        Region exampleRegion = getRootRegion().getSubregion(exampleRegionName);
-        for (int j = 0; j < 5; j++) {
-          for (int i = (1 + 1000); i <= (numberOfEntries + 2000); i++) {
-            exampleRegion.put("" + i, new Portfolio(i));
+    AsyncInvocation ai2 =
+        server2.invokeAsync(new CacheSerializableRunnable("Create Bridge Server") {
+          public void run2() throws CacheException {
+            Region exampleRegion = getRootRegion().getSubregion(exampleRegionName);
+            for (int j = 0; j < 5; j++) {
+              for (int i = (1 + 1000); i <= (numberOfEntries + 2000); i++) {
+                exampleRegion.put("" + i, new Portfolio(i));
+              }
+            }
+            LogWriterUtils.getLogWriter()
+                .info("### Completed updates in server2 in testCacheOpAfterQueryCancel");
           }
-        }
-        LogWriterUtils.getLogWriter().info("### Completed updates in server2 in testCacheOpAfterQueryCancel");
-      }
-    });
+        });
 
     // Execute server queries
     SerializableRunnable executeQuery = new CacheSerializableRunnable("Execute queries") {
@@ -939,32 +1044,31 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
         try {
           Region exampleRegion = getRootRegion().getSubregion(exampleRegionName);
           QueryService queryService = GemFireCacheImpl.getInstance().getQueryService();
-          String qStr = "SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values pos1, p.positions.values pos" +
-            " where p.ID < pos.sharesOutstanding OR p.ID > 0 OR p.position1.mktValue > 0 " +
-            " OR pos.secId in SET ('SUN', 'IBM', 'YHOO', 'GOOG', 'MSFT', " +
-            " 'AOL', 'APPL', 'ORCL', 'SAP', 'DELL', 'RHAT', 'NOVL', 'HP')" +
-            " order by p.status, p.ID desc";
+          String qStr =
+              "SELECT DISTINCT * FROM /root/exampleRegion p, p.positions.values pos1, p.positions.values pos"
+                  + " where p.ID < pos.sharesOutstanding OR p.ID > 0 OR p.position1.mktValue > 0 "
+                  + " OR pos.secId in SET ('SUN', 'IBM', 'YHOO', 'GOOG', 'MSFT', "
+                  + " 'AOL', 'APPL', 'ORCL', 'SAP', 'DELL', 'RHAT', 'NOVL', 'HP')"
+                  + " order by p.status, p.ID desc";
           for (int i = 0; i < 500; i++) {
             try {
               GemFireCacheImpl.getInstance().getLogger().info("Executing query :" + qStr);
               Query query = queryService.newQuery(qStr);
               query.execute();
-            }
-            catch (QueryExecutionTimeoutException qet) {
-              LogWriterUtils.getLogWriter().info("### Got Expected QueryExecutionTimeout exception. " +
-                qet.getMessage());
+            } catch (QueryExecutionTimeoutException qet) {
+              LogWriterUtils.getLogWriter()
+                  .info("### Got Expected QueryExecutionTimeout exception. " + qet.getMessage());
               if (qet.getMessage().contains("cancelled after exceeding max execution")) {
                 LogWriterUtils.getLogWriter().info("### Doing a put operation");
                 exampleRegion.put("" + i, new Portfolio(i));
               }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
               fail("Exception executing query." + e.getMessage());
             }
           }
-          LogWriterUtils.getLogWriter().info("### Completed Executing queries in testCacheOpAfterQueryCancel");
-        }
-        catch (Exception ex) {
+          LogWriterUtils.getLogWriter()
+              .info("### Completed Executing queries in testCacheOpAfterQueryCancel");
+        } catch (Exception ex) {
           Assert.fail("Exception creating the query service", ex);
         }
       }
@@ -973,24 +1077,26 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
     AsyncInvocation ai3 = server3.invokeAsync(executeQuery);
     AsyncInvocation ai4 = server4.invokeAsync(executeQuery);
 
-    LogWriterUtils.getLogWriter().info("### Waiting for async threads to join in testCacheOpAfterQueryCancel");
+    LogWriterUtils.getLogWriter()
+        .info("### Waiting for async threads to join in testCacheOpAfterQueryCancel");
     try {
       ThreadUtils.join(ai1, 5 * 60 * 1000);
       ThreadUtils.join(ai2, 5 * 60 * 1000);
       ThreadUtils.join(ai3, 5 * 60 * 1000);
       ThreadUtils.join(ai4, 5 * 60 * 1000);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       fail("Async thread join failure");
     }
-    LogWriterUtils.getLogWriter().info("### DONE Waiting for async threads to join in testCacheOpAfterQueryCancel");
+    LogWriterUtils.getLogWriter()
+        .info("### DONE Waiting for async threads to join in testCacheOpAfterQueryCancel");
 
     validateQueryMonitorThreadCnt(server1, 0, 1000);
     validateQueryMonitorThreadCnt(server2, 0, 1000);
     validateQueryMonitorThreadCnt(server3, 0, 1000);
     validateQueryMonitorThreadCnt(server4, 0, 1000);
 
-    LogWriterUtils.getLogWriter().info("### DONE validating query monitor threads testCacheOpAfterQueryCancel");
+    LogWriterUtils.getLogWriter()
+        .info("### DONE validating query monitor threads testCacheOpAfterQueryCancel");
 
     stopServer(server1);
     stopServer(server2);
@@ -999,42 +1105,39 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void validateQueryMonitorThreadCnt(VM vm, final int threadCount, final int waitTime) {
-    SerializableRunnable validateThreadCnt = new CacheSerializableRunnable("validateQueryMonitorThreadCnt") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        QueryMonitor qm = ((GemFireCacheImpl) cache).getQueryMonitor();
-        if (qm == null) {
-          fail("Didn't found query monitor.");
-        }
-        int waited = 0;
-        while (true) {
-          if (qm.getQueryMonitorThreadCount() != threadCount) {
-            if (waited <= waitTime) {
-              Wait.pause(10);
-              waited += 10;
-              continue;
+    SerializableRunnable validateThreadCnt =
+        new CacheSerializableRunnable("validateQueryMonitorThreadCnt") {
+          public void run2() throws CacheException {
+            Cache cache = getCache();
+            QueryMonitor qm = ((GemFireCacheImpl) cache).getQueryMonitor();
+            if (qm == null) {
+              fail("Didn't found query monitor.");
             }
-            else {
-              fail("Didn't found expected monitoring thread. Expected: " + threadCount +
-                " found :" + qm.getQueryMonitorThreadCount());
+            int waited = 0;
+            while (true) {
+              if (qm.getQueryMonitorThreadCount() != threadCount) {
+                if (waited <= waitTime) {
+                  Wait.pause(10);
+                  waited += 10;
+                  continue;
+                } else {
+                  fail("Didn't found expected monitoring thread. Expected: " + threadCount
+                      + " found :" + qm.getQueryMonitorThreadCount());
+                }
+              }
+              break;
             }
+            // ((GemFireCache)cache).TEST_MAX_QUERY_EXECUTION_TIME = queryMonitorTime;
           }
-          break;
-        }
-        //((GemFireCache)cache).TEST_MAX_QUERY_EXECUTION_TIME = queryMonitorTime;
-      }
-    };
+        };
     vm.invoke(validateThreadCnt);
   }
 
   /**
-   * Starts a bridge server on the given port, using the given
-   * deserializeValues and notifyBySubscription to serve up the
-   * given region.
+   * Starts a bridge server on the given port, using the given deserializeValues and
+   * notifyBySubscription to serve up the given region.
    */
-  protected int startBridgeServer(int port, boolean notifyBySubscription)
-    throws IOException
-  {
+  protected int startBridgeServer(int port, boolean notifyBySubscription) throws IOException {
 
     Cache cache = getCache();
     CacheServer bridge = cache.addCacheServer();
@@ -1048,8 +1151,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
    * Stops the bridge server that serves up the given cache.
    */
   private void stopBridgeServer(Cache cache) {
-    CacheServer bridge =
-      (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer bridge = (CacheServer) cache.getCacheServers().iterator().next();
     bridge.stop();
     assertFalse(bridge.isRunning());
   }
@@ -1066,8 +1168,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
       if (description.equals("6")) {
         try {
           Thread.sleep(timeout * 2);
-        }
-        catch (InterruptedException ie) {
+        } catch (InterruptedException ie) {
           Thread.currentThread().interrupt();
         }
       }

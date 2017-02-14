@@ -1,18 +1,16 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management.internal.cli.remote;
 
@@ -29,11 +27,12 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
  */
 public class CommandExecutionContext {
   // ThreadLocal variables that can be uses by commands
-  private static final ThreadLocal<Map<String, String>> ENV = new ThreadLocal<Map<String, String>>();
-  private static final ThreadLocal<Boolean>             FROM_SHELL = new ThreadLocal<Boolean>();
-  private static final ThreadLocal<byte[][]>            SHELL_BYTES_DATA = new ThreadLocal<byte[][]>();
+  private static final ThreadLocal<Map<String, String>> ENV =
+      new ThreadLocal<Map<String, String>>();
+  private static final ThreadLocal<Boolean> FROM_SHELL = new ThreadLocal<Boolean>();
+  private static final ThreadLocal<byte[][]> SHELL_BYTES_DATA = new ThreadLocal<byte[][]>();
 
-  private static final WrapperThreadLocal<CommandResponseWriter> WRITER_WRAPPER = 
+  private static final WrapperThreadLocal<CommandResponseWriter> WRITER_WRAPPER =
       new WrapperThreadLocal<CommandResponseWriter>() {
         @Override
         protected CommandResponseWriter createWrapped() {
@@ -49,10 +48,10 @@ public class CommandExecutionContext {
     }
     return propertyValue != null ? propertyValue : defaultValue;
   }
-// Enable when "use region" command is required. See #46110
-//  public static String getShellContextPath() {
-//    return getShellEnvProperty(CliConstants.ENV_APP_CONTEXT_PATH, null);
-//  }
+  // Enable when "use region" command is required. See #46110
+  // public static String getShellContextPath() {
+  // return getShellEnvProperty(CliConstants.ENV_APP_CONTEXT_PATH, null);
+  // }
 
   public static int getShellFetchSize() {
     int fetchSize = Gfsh.DEFAULT_APP_FETCH_SIZE;
@@ -76,7 +75,7 @@ public class CommandExecutionContext {
     }
   }
 
-  // TODO - Abhishek make this protected & move caller code of this method 
+  // TODO - Abhishek make this protected & move caller code of this method
   // from MemberMBeanBridge to MemberCommandService
   public static void setShellEnv(Map<String, String> env) {
     ENV.set(env);
@@ -94,7 +93,7 @@ public class CommandExecutionContext {
     return FROM_SHELL.get() != null && FROM_SHELL.get();
   }
 
-  // TODO - Abhishek make this protected & move caller code of this method 
+  // TODO - Abhishek make this protected & move caller code of this method
   // from MemberMBeanBridge to MemberCommandService
   public static void setShellRequest() {
     FROM_SHELL.set(true);
@@ -118,7 +117,7 @@ public class CommandExecutionContext {
       map.clear();
     }
     ENV.set(null);
-    
+
     FROM_SHELL.set(false);
     SHELL_BYTES_DATA.set(null);
     WRITER_WRAPPER.set(null);

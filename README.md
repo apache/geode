@@ -3,13 +3,13 @@
 **[Location of Directions for Building from Source](#building)**  
 **[Geode in 5 minutes](#started)**  
 **[Application Development](#development)**  
-**[Documentation](http://geode.docs.pivotal.io/)**  
+**[Documentation](http://geode.apache.org/docs/)**
 **[wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)**  
-**Continuous Integration** [![Build Status](https://travis-ci.org/apache/incubator-geode.svg?branch=develop)](https://travis-ci.org/apache/incubator-geode)  
+**Continuous Integration** [![Build Status](https://travis-ci.org/apache/geode.svg?branch=develop)](https://travis-ci.org/apache/geode)  
 
 ## <a name="overview"></a>Overview
 
-[Apache Geode] (http://geode.incubator.apache.org/) is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
+[Apache Geode] (http://geode.apache.org/) is a data management platform that provides real-time, consistent access to data-intensive applications throughout widely distributed cloud architectures.
 
 Apache Geode pools memory, CPU, network resources, and optionally local disk across multiple processes to manage application objects and behavior. It uses dynamic replication and data partitioning techniques to implement high availability, improved performance, scalability, and fault tolerance. In addition to being a distributed data container, Apache Geode is an in-memory data management system that provides reliable asynchronous event notifications and guaranteed message delivery.
 
@@ -41,7 +41,7 @@ Apache Geode includes the following features:
 
 ## <a name="building"></a>Building this Release from Source
 
-Directions to build Apache Geode (incubating) from source are in the source distribution, file `BUILDING.md`.
+Directions to build Apache Geode from source are in the source distribution, file `BUILDING.md`.
 
 ## <a name="started"></a>Geode in 5 minutes
 
@@ -63,7 +63,7 @@ _HelloWorld.java_
     import java.util.Map;
     import org.apache.geode.cache.Region;
     import org.apache.geode.cache.client.*;
-
+    
     public class HelloWorld {
       public static void main(String[] args) throws Exception {
         ClientCache cache = new ClientCacheFactory()
@@ -72,10 +72,10 @@ _HelloWorld.java_
         Region<String, String> region = cache
           .<String, String>createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
           .create("region");
-
+    
         region.put("1", "Hello");
         region.put("2", "World");
-
+    
         for (Map.Entry<String, String>  entry : region.entrySet()) {
           System.out.format("key = %s, value = %s\n", entry.getKey(), entry.getValue());
         }
@@ -92,9 +92,14 @@ Compile and run `HelloWorld.java`.  The classpath should include `geode-dependen
 
 Apache Geode applications can be written in these client technologies:
 
-* Java using the Geode client API or embedded using the Geode peer API
-* [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/) or [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
+* Java [client](http://geode.apache.org/docs/guide/topologies_and_comm/cs_configuration/chapter_overview.html) or [peer](http://geode.apache.org/docs/guide/topologies_and_comm/p2p_configuration/chapter_overview.html)
+* [REST](http://geode.apache.org/docs/guide/rest_apps/chapter_overview.html)
+* [Memcached](https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached)
+* [Redis](https://cwiki.apache.org/confluence/display/GEODE/Geode+Redis+Adapter)
+
+The following libraries are available external to the Apache Geode project:
+
+* [Spring Data GemFire](http://projects.spring.io/spring-data-gemfire/)
+* [Spring Cache](http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html)
 * [Python](https://github.com/gemfire/py-gemfire-rest)
-* [REST](http://geode.docs.pivotal.io/docs/rest_apps/book_intro.html)
-* [memcached](https://cwiki.apache.org/confluence/display/GEODE/Moving+from+memcached+to+gemcached)
 
