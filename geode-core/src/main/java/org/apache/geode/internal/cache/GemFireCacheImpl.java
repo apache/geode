@@ -1311,7 +1311,7 @@ public class GemFireCacheImpl
   private void initializeServices() {
     ServiceLoader<CacheService> loader = ServiceLoader.load(CacheService.class);
     for (CacheService service : loader) {
-      logger.error("loading service class " + service.getClass().toString());
+      logger.debug("loading service class ", () -> service.getClass().toString());
       service.init(this);
       this.services.put(service.getInterface(), service);
       system.handleResourceEvent(ResourceEvent.CACHE_SERVICE_CREATE, service);
