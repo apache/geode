@@ -16,16 +16,12 @@ package org.apache.geode.cache.lucene.internal.cli;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionAdapter;
-import org.apache.geode.cache.execute.FunctionInvocationTargetException;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
-import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
-import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
-import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.*;
+import org.apache.geode.cache.lucene.internal.cli.functions.*;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -70,6 +66,8 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       new LuceneDescribeIndexFunction();
   private static final LuceneSearchIndexFunction searchIndexFunction =
       new LuceneSearchIndexFunction();
+  private static final LuceneDestroyIndexFunction destroyIndexFunction =
+      new LuceneDestroyIndexFunction();
   private List<LuceneSearchResults> searchResults = null;
 
   private SecurityService securityService = IntegratedSecurityService.getSecurityService();
@@ -316,6 +314,74 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     }
   }
 
+  @CliCommand(value = LuceneCliStrings.LUCENE_DESTROY_INDEX,
+      help = LuceneCliStrings.LUCENE_DESTROY_INDEX__HELP)
+  @CliMetaData(shellOnly = false,
+      relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
+  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
+  public Result destroyIndex(
+      @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = false,
+          help = LuceneCliStrings.LUCENE_DESTROY_INDEX__NAME__HELP) final String indexName,
+
+      @CliOption(key = LuceneCliStrings.LUCENE__REGION_PATH, mandatory = true,
+          optionContext = ConverterHint.REGIONPATH,
+          help = LuceneCliStrings.LUCENE_DESTROY_INDEX__REGION_HELP) final String regionPath) {
+    if (StringUtils.isBlank(regionPath) || regionPath.equals(Region.SEPARATOR)) {
+      return ResultBuilder.createInfoResult(
+          CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__REGION_CANNOT_BE_EMPTY));
+    }
+
+    if (StringUtils.isEmpty(indexName)) {
+      return ResultBuilder.createInfoResult(
+          CliStrings.format(LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__INDEX_CANNOT_BE_EMPTY));
+    }
+
+    this.securityService.authorizeRegionManage(regionPath);
+
+    Result result = null;
+    try {
+      LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath);
+      ResultCollector<?, ?> rc = executeFunction(destroyIndexFunction, indexInfo, false);
+      List<CliFunctionResult> functionResults = (List<CliFunctionResult>) rc.getResult();
+      CliFunctionResult cliFunctionResult = functionResults.get(0);
+
+      final TabularResultData tabularResult = ResultBuilder.createTabularResultData();
+      tabularResult.accumulate("Member", cliFunctionResult.getMemberIdOrName());
+      if (cliFunctionResult.isSuccessful()) {
+        tabularResult.accumulate("Status",
+            indexName == null
+                ? CliStrings.format(
+                    LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FOR_REGION_0,
+                    new Object[] {regionPath})
+                : CliStrings.format(
+                    LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FOR_REGION_1,
+                    new Object[] {indexName, regionPath}));
+      } else {
+        tabularResult.accumulate("Status", "Failed: " + cliFunctionResult.getMessage());
+      }
+      result = ResultBuilder.buildResult(tabularResult);
+      if (cliFunctionResult.isSuccessful()) {
+        persistClusterConfiguration(result, () -> {
+          // Update the xml entity (region entity) to remove the async event id(s) and index(es)
+          getSharedConfiguration().addXmlEntity((XmlEntity) cliFunctionResult.getXmlEntity(), null);
+        });
+      }
+    } catch (FunctionInvocationTargetException ignore) {
+      result = ResultBuilder.createGemFireErrorResult(CliStrings.format(
+          CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, LuceneCliStrings.LUCENE_DESTROY_INDEX));
+    } catch (VirtualMachineError e) {
+      SystemFailure.initiateFailure(e);
+      throw e;
+    } catch (IllegalArgumentException e) {
+      result = ResultBuilder.createInfoResult(e.getMessage());
+    } catch (Throwable t) {
+      SystemFailure.checkFailure();
+      getCache().getLogger().warning(LuceneCliStrings.LUCENE_DESTROY_INDEX__EXCEPTION_MESSAGE, t);
+      result = ResultBuilder.createGemFireErrorResult(t.getMessage());
+    }
+    return result;
+  }
+
   private Result displayResults(int pageSize, boolean keysOnly) throws Exception {
     if (searchResults.size() == 0) {
       return ResultBuilder
@@ -428,25 +494,30 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   protected ResultCollector<?, ?> executeFunctionOnGroups(FunctionAdapter function, String[] groups,
       final LuceneIndexInfo indexInfo) throws IllegalArgumentException, CommandResultException {
-    final Set<DistributedMember> targetMembers;
+    ResultCollector<?, ?> results = null;
     if (function != createIndexFunction) {
-      targetMembers =
-          CliUtil.getMembersForeRegionViaFunction(getCache(), indexInfo.getRegionPath(), true);
-      if (targetMembers.isEmpty()) {
-        throw new IllegalArgumentException("Region not found.");
-      }
+      results = executeFunction(function, indexInfo, true);
     } else {
-      targetMembers = CliUtil.findMembersOrThrow(groups, null);
+      Set<DistributedMember> targetMembers = CliUtil.findMembersOrThrow(groups, null);
+      results = CliUtil.executeFunction(function, indexInfo, targetMembers);
     }
-    return CliUtil.executeFunction(function, indexInfo, targetMembers);
+    return results;
   }
 
   protected ResultCollector<?, ?> executeSearch(final LuceneQueryInfo queryInfo) throws Exception {
-    final Set<DistributedMember> targetMembers =
-        CliUtil.getMembersForeRegionViaFunction(getCache(), queryInfo.getRegionPath(), false);
-    if (targetMembers.isEmpty())
-      throw new IllegalArgumentException("Region not found.");
-    return CliUtil.executeFunction(searchIndexFunction, queryInfo, targetMembers);
+    return executeFunction(searchIndexFunction, queryInfo, false);
+  }
+
+  protected ResultCollector<?, ?> executeFunction(Function function,
+      LuceneFunctionSerializable functionArguments, boolean returnAllMembers) {
+    Set<DistributedMember> targetMembers = CliUtil.getMembersForeRegionViaFunction(getCache(),
+        functionArguments.getRegionPath(), returnAllMembers);
+    if (targetMembers.isEmpty()) {
+      throw new IllegalArgumentException(CliStrings.format(
+          LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULDNOT_FIND_MEMBERS_FOR_REGION_0,
+          new Object[] {functionArguments.getRegionPath()}));
+    }
+    return CliUtil.executeFunction(function, functionArguments, targetMembers);
   }
 
   @CliAvailabilityIndicator({LuceneCliStrings.LUCENE_SEARCH_INDEX,

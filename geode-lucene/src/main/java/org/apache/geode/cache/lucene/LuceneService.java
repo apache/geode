@@ -101,10 +101,18 @@ public interface LuceneService {
 
   /**
    * Destroy the lucene index
-   * 
-   * @param index index object
+   *
+   * @param indexName the name of the index to destroy
+   * @param regionPath the path of the region whose index to destroy
    */
-  public void destroyIndex(LuceneIndex index);
+  public void destroyIndex(String indexName, String regionPath);
+
+  /**
+   * Destroy all the lucene indexes for the region
+   *
+   * @param regionPath The path of the region on which to destroy the indexes
+   */
+  public void destroyIndexes(String regionPath);
 
   /**
    * Get the lucene index object specified by region name and index name

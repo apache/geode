@@ -19,10 +19,8 @@ import java.io.Serializable;
 
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 
-public class LuceneQueryInfo implements Serializable {
+public class LuceneQueryInfo extends LuceneFunctionSerializable {
   private static final long serialVersionUID = 1L;
-  private String indexName;
-  private String regionPath;
   private String queryString;
   private String defaultField;
   private int limit;
@@ -30,20 +28,11 @@ public class LuceneQueryInfo implements Serializable {
 
   public LuceneQueryInfo(final String indexName, final String regionPath, final String queryString,
       final String defaultField, final int limit, final boolean keysOnly) {
-    this.indexName = indexName;
-    this.regionPath = regionPath;
+    super(indexName, regionPath);
     this.queryString = queryString;
     this.defaultField = defaultField;
     this.limit = limit;
     this.keysOnly = keysOnly;
-  }
-
-  public String getIndexName() {
-    return indexName;
-  }
-
-  public String getRegionPath() {
-    return regionPath;
   }
 
   public String getQueryString() {

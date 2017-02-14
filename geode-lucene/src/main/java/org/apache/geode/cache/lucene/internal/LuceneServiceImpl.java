@@ -114,6 +114,11 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return name;
   }
 
+  public static String getUniqueIndexRegionName(String indexName, String regionPath,
+      String regionSuffix) {
+    return getUniqueIndexName(indexName, regionPath) + regionSuffix;
+  }
+
   @Override
   public void createIndex(String indexName, String regionPath, String... fields) {
     if (fields == null || fields.length == 0) {
@@ -256,10 +261,53 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   @Override
-  public void destroyIndex(LuceneIndex index) {
-    LuceneIndexImpl indexImpl = (LuceneIndexImpl) index;
+  public void destroyIndex(String indexName, String regionPath) {
+    destroyIndex(indexName, regionPath, true);
+  }
+
+  protected void destroyIndex(String indexName, String regionPath, boolean initiator) {
+    if (!regionPath.startsWith("/")) {
+      regionPath = "/" + regionPath;
+    }
+    LuceneIndexImpl indexImpl = (LuceneIndexImpl) getIndex(indexName, regionPath);
+    if (indexImpl == null) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1.toLocalizedString(indexName,
+              regionPath));
+    } else {
+      indexImpl.destroy(initiator);
+      removeFromIndexMap(indexImpl);
+      logger.info(LocalizedStrings.LuceneService_DESTROYED_INDEX_0_FROM_REGION_1
+          .toLocalizedString(indexName, regionPath));
+    }
+  }
+
+  @Override
+  public void destroyIndexes(String regionPath) {
+    destroyIndexes(regionPath, true);
+  }
+
+  protected void destroyIndexes(String regionPath, boolean initiator) {
+    if (!regionPath.startsWith("/")) {
+      regionPath = "/" + regionPath;
+    }
+    List<LuceneIndexImpl> indexesToDestroy = new ArrayList<>();
+    for (LuceneIndex index : getAllIndexes()) {
+      if (index.getRegionPath().equals(regionPath)) {
+        LuceneIndexImpl indexImpl = (LuceneIndexImpl) index;
+        indexImpl.destroy(initiator);
+        indexesToDestroy.add(indexImpl);
+      }
+    }
+    for (LuceneIndex index : indexesToDestroy) {
+      removeFromIndexMap(index);
+      logger.info(LocalizedStrings.LuceneService_DESTROYED_INDEX_0_FROM_REGION_1
+          .toLocalizedString(index.getName(), regionPath));
+    }
+  }
+
+  private void removeFromIndexMap(LuceneIndex index) {
     indexMap.remove(getUniqueIndexName(index.getName(), index.getRegionPath()));
-    // indexImpl.close();
   }
 
   @Override
@@ -320,6 +368,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
     DSFIDFactory.registerDSFID(DataSerializableFixedID.WAIT_UNTIL_FLUSHED_FUNCTION_CONTEXT,
         WaitUntilFlushedFunctionContext.class);
+
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.DESTROY_LUCENE_INDEX_MESSAGE,
+        DestroyLuceneIndexMessage.class);
   }
 
   public Collection<LuceneIndexCreationProfile> getAllDefinedIndexes() {

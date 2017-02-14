@@ -7674,6 +7674,10 @@ public class LocalizedStrings {
       new StringId(6650,
           "Caught the following exception attempting waitUntilFlushed and will return:");
 
+  public static final StringId LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1 =
+      new StringId(6651, "Lucene index {0} was not found in region {1}.");
+  public static final StringId LuceneService_DESTROYED_INDEX_0_FROM_REGION_1 =
+      new StringId(6652, "Destroyed Lucene index {0} from region {1}.");
   /** Testing strings, messageId 90000-99999 **/
 
   /**

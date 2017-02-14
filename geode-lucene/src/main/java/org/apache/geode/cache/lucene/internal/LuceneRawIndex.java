@@ -36,4 +36,6 @@ public class LuceneRawIndex extends LuceneIndexImpl {
     return;
   }
 
+  @Override
+  public void destroy(boolean initiator) {}
 }

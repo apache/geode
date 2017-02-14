@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -201,6 +202,21 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     creation.setRegion(dataRegion);
     creation.setFieldAnalyzers(this.getFieldAnalyzers());
     dataRegion.getExtensionPoint().addExtension(creation);
+  }
+
+  public void destroy(boolean initiator) {
+    // Find and delete the appropriate extension
+    Extension extensionToDelete = null;
+    for (Extension extension : getDataRegion().getExtensionPoint().getExtensions()) {
+      LuceneIndexCreation index = (LuceneIndexCreation) extension;
+      if (index.getName().equals(indexName)) {
+        extensionToDelete = extension;
+        break;
+      }
+    }
+    if (extensionToDelete != null) {
+      getDataRegion().getExtensionPoint().removeExtension(extensionToDelete);
+    }
   }
 
   protected <K, V> Region<K, V> createRegion(final String regionName,

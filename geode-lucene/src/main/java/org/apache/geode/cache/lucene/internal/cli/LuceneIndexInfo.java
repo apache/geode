@@ -24,32 +24,21 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 
 import org.apache.lucene.analysis.Analyzer;
 
-public class LuceneIndexInfo implements Serializable {
+public class LuceneIndexInfo extends LuceneFunctionSerializable {
   private static final long serialVersionUID = 1L;
 
-  private final String indexName;
-  private final String regionPath;
   private final String[] searchableFieldNames;
   private final String[] fieldAnalyzers;
 
   public LuceneIndexInfo(final String indexName, final String regionPath,
       final String[] searchableFieldNames, String[] fieldAnalyzers) {
-    this.indexName = indexName;
-    this.regionPath = regionPath;
+    super(indexName, regionPath);
     this.searchableFieldNames = searchableFieldNames;
     this.fieldAnalyzers = fieldAnalyzers;
   }
 
   public LuceneIndexInfo(final String indexName, final String regionPath) {
     this(indexName, regionPath, null, null);
-  }
-
-  public String getIndexName() {
-    return indexName;
-  }
-
-  public String getRegionPath() {
-    return regionPath;
   }
 
   public String[] getSearchableFieldNames() {

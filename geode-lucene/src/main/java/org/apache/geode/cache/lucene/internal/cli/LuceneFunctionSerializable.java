@@ -1,35 +1,36 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.cache.lucene.internal.cli;
 
-package org.apache.geode.cache.lucene.internal;
+import java.io.Serializable;
 
-import org.apache.geode.cache.lucene.LuceneIndex;
-import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
+public class LuceneFunctionSerializable implements Serializable {
 
-public interface InternalLuceneIndex extends LuceneIndex {
+  protected final String indexName;
+  protected final String regionPath;
 
-  public RepositoryManager getRepositoryManager();
+  public LuceneFunctionSerializable(final String indexName, final String regionPath) {
+    this.indexName = indexName;
+    this.regionPath = regionPath;
+  }
 
-  /**
-   * Dump the files for this index to the given directory.
-   */
-  public void dumpFiles(String directory);
+  public String getIndexName() {
+    return indexName;
+  }
 
-  /**
-   * Destroy the index
-   */
-  public void destroy(boolean initiator);
-
+  public String getRegionPath() {
+    return regionPath;
+  }
 }
