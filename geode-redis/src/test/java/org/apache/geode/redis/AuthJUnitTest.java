@@ -74,7 +74,7 @@ public class AuthJUnitTest extends RedisTestBase {
     try (Jedis jedis = defaultJedisInstance()) {
       jedis.auth(PASSWORD);
       fail(
-          "We expecting either a JedisConnectionException or JedisDataException to be thrown here");
+          "Jedis auth to our server should fail when we have no password set.");
     } catch (JedisConnectionException | JedisDataException exception) {
     }
   }
