@@ -101,7 +101,7 @@ tasks.withType(Test){
 
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
   outputs.file file("$buildDir/gemfire.properties")
-  main 'org.apache.geode.distributed.internal.DistributionConfigImpl'
+  main 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
   classpath project(':geode-core').sourceSets.main.runtimeClasspath
   workingDir buildDir
   
