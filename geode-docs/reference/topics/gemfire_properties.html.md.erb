@@ -34,12 +34,14 @@ Unless otherwise indicated, these settings only affect activities within this di
 <colgroup>
 <col width="35%" />
 <col width="45%" />
-<col width="20%" />
+<col width="10%" />
+<col width="10%" />
 </colgroup>
 <thead>
 <tr class="header">
 <th>Setting</th>
 <th>Definition</th>
+<th>Applies to (Server Locator, Client)</th>
 <th>Default</th>
 </tr>
 </thead>
@@ -47,6 +49,7 @@ Unless otherwise indicated, these settings only affect activities within this di
 <tr class="odd">
 <td>ack-severe-alert-threshold</td>
 <td>Number of seconds the distributed system will wait after the <code class="ph codeph">ack-wait-threshold</code> for a message to be acknowledged before it issues an alert at severe level. A value of zero disables this feature.</td>
+<td>S, L</td>
 <td>0</td>
 </tr>
 <tr class="even">
@@ -54,16 +57,19 @@ Unless otherwise indicated, these settings only affect activities within this di
 <td>Number of seconds a distributed message can wait for acknowledgment before it sends an alert to signal that something might be wrong with the system member that is unresponsive.
 <p>The waiter continues to wait. The alerts are logged in the system member’s log as warnings.</p>
 Valid values are in the range 0...2147483647</td>
+<td>S, L</td>
 <td>15</td>
 </tr>
 <tr class="odd">
 <td>archive-disk-space-limit</td>
 <td>Maximum size (in megabytes) of all inactive statistic archive files combined. If this limit is exceeded, inactive archive files are deleted, oldest first, until the total size is within the limit. If set to zero, disk space use is unlimited.</td>
+<td>S, L</td>
 <td>0</td>
 </tr>
 <tr class="even">
 <td>archive-file-size-limit</td>
 <td>The maximum size (in megabytes) of a single statistic archive file. Once this limit is exceeded, a new statistic archive file is created, and the current archive file becomes inactive. If set to zero, file size is unlimited.</td>
+<td>S, L</td>
 <td>0</td>
 </tr>
 <tr class="odd">
@@ -74,6 +80,7 @@ Valid values are in the range 0...2147483647</td>
 **Note:**
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
+<td>S</td>
 <td>0</td>
 </tr>
 <tr class="even">
@@ -84,6 +91,7 @@ Valid values are in the range 0...2147483647</td>
 **Note:**
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
+<td>S</td>
 <td>8</td>
 </tr>
 <tr class="odd">
@@ -93,54 +101,64 @@ Valid values are in the range 0...2147483647</td>
 **Note:**
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
+<td>S, L</td>
 <td>60000</td>
 </tr>
 <tr class="even">
 <td>bind-address</td>
 <td>Relevant only for multi-homed hosts - machines with multiple network interface cards. Specifies the adapter card the cache binds to for peer-to-peer communication. Also specifies the default location for Geode servers to listen on, which is used unless overridden by the <code class="ph codeph">server-bind-address</code>. An empty string causes the member to listen on the default card for the machine. This is a machine-wide attribute used for system member and client/server communication. It has no effect on locator location, unless the locator is embedded in a member process.
 <p>Specify the IP address, not the hostname, because each network card may not have a unique hostname. An empty string (the default) causes the member to listen on the default card for the machine.</p></td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>cache-xml-file</td>
 <td>Declarative initialization file for the member's cache.</td>
+<td>S</td>
 <td>cache.xml</td>
 </tr>
 <tr class="even">
 <td>cluster-configuration-dir</td>
 <td>This property specifies the directory in which the cluster configuration related disk-store and artifacts are stored. This property is only applicable to dedicated locators that have &quot;enable-cluster-configuration&quot; set to true.</td>
+<td>L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>conflate-events</td>
 <td>Used only by clients in a client/server installation. This is a client-side property that is passed to the server. Affects subscription queue conflation in this client's servers. Specifies whether to conflate (true setting), not conflate (false), or to use the server's conflation setting (server).</td>
+<td>S</td>
 <td>server</td>
 </tr>
 <tr class="odd">
 <td>conserve-sockets</td>
 <td>Specifies whether sockets are shared by the system member’s threads. If true, threads share, and a minimum number of sockets are used to connect to the distributed system. If false, every application thread has its own sockets for distribution purposes. You can override this setting for individual threads inside your application. Where possible, it is better to set conserve-sockets to true and enable the use of specific extra sockets in the application code if needed. WAN deployments increase the messaging demands on a Geode system. To avoid hangs related to WAN messaging, always set <code class="ph codeph">conserve-sockets=false</code> for Geode members that participate in a WAN deployment.</td>
+<td>S, L</td>
 <td>true</td>
 </tr>
 <tr class="even">
 <td>delta-propagation</td>
 <td>Specifies whether to distribute the deltas for entry updates, instead of the full values, between clients and servers and between peers.</td>
+<td>S</td>
 <td>true</td>
 </tr>
 <tr class="odd">
 <td>deploy-working-dir</td>
 <td>Working directory used when deploying JAR application files to distributed system members. This directory can be local and unique to the member or a shared resource. 
 See <a href="../../configuring/cluster_config/deploying_application_jars.html">Deploying Application JARs to Apache Geode Members</a> for more information.</td>
+<td></td>
 <td>. (current directory)</td>
 </tr>
 <tr class="even">
 <td>disable-auto-reconnect</td>
 <td>By default, a Geode member (both locators and servers) will attempt to reconnect and reinitialize the cache after it has been forced out of the distributed system by a network partition event or has otherwise been shunned by other members. Use this property to turn off the autoreconnect behavior. 
 See <a href="../../managing/autoreconnect/member-reconnect.html">Handling Forced Cache Disconnection Using Autoreconnect</a> for more details.</td>
+<td>S, L</td>
 <td>false</td>
 </tr>
 <tr class="odd">
 <td>disable-tcp</td>
 <td>Boolean indicating whether to disable the use of TCP/IP sockets for inter-cache point-to-point messaging. If disabled, the cache uses datagram (UDP) sockets.</td>
+<td>S, L</td>
 <td>false</td>
 </tr>
 <tr class="even">
@@ -152,97 +170,116 @@ This setting must be the same for every member of a given distributed system and
 <br/>Valid values are integers in the range -1...255.
 -1 means no setting. 
 </td>
+<td>S, L</td>
 <td>-1</td>
 </tr>
 <tr class="odd">
 <td>durable-client-id</td>
 <td>Used only for clients in a client/server installation. If set, this indicates that the client is durable and identifies the client. The ID is used by servers to reestablish any messaging that was interrupted by client downtime.</td>
+<td>C</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>durable-client-timeout</td>
 <td>Used only for clients in a client/server installation. Number of seconds this client can remain disconnected from its server and have the server continue to accumulate durable events for it.</td>
+<td>C</td>
 <td>300</td>
 </tr>
 <tr class="odd">
 <td>enable-network-partition-detection</td>
 <td>Boolean instructing the system to detect and handle splits in the distributed system, typically caused by a partitioning of the network (split brain) where the distributed system is running. You must set this property to the same value across all your distributed system members. In addition, this property must be set to <code class="ph codeph">true</code> if you are using persistent regions and configure your regions to use DISTRIBUTED_ACK or GLOBAL scope to avoid potential data conflicts.</td>
+<td>S, L</td>
 <td>true</td>
 </tr>
 <tr class="even">
 <td>enable-cluster-configuration</td>
 <td>A value of &quot;true&quot; causes the creation of cluster configuration on dedicated locators. The cluster configuration service on dedicated locator(s) with this property set to &quot;true&quot; would serve the configuration to new members joining the distributed system and also save the configuration changes caused by the <code class="ph codeph">gfsh</code> commands. This property is only applicable to dedicated locators..</td>
+<td>L</td>
 <td>true</td>
 </tr>
 <tr class="odd">
 <td>enable-time-statistics</td>
 <td>Boolean instructing the system to track time-based statistics for the distributed system and caching. Disabled by default for performance reasons and not recommended for production environments. You must also configure <code class="ph codeph">statistics-sampling-enabled</code> to true and specify a <code class="ph codeph">statistics-archive-file</code>.</td>
+<td>S, L</td>
 <td>false</td>
 </tr>
 <tr class="even">
 <td>enforce-unique-host</td>
 <td>Whether partitioned regions will put redundant copies of the same data in different members running on the same physical machine. By default, Geode tries to put redundant copies on different machines, but it will put them on the same machine if no other machines are available. Setting this property to true prevents this and requires different machines for redundant copies.</td>
+<td>S</td>
 <td>false</td>
 </tr>
 <tr class="odd">
 <td>groups</td>
 <td>Defines the list of groups that this member belongs to. Use commas to separate group names. Note that anything defined by the roles gemfire property will also be considered a group. 
 See <a href="../../configuring/cluster_config/using_member_groups.html">Using Member Groups</a> for more information.</td>
+<td>S</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>http-service-bind-address</td>
 <td>If set, then the Geode member binds the embedded HTTP service to the specified address. If this property is not set but the HTTP service is enabled using <code class="ph codeph">http-service-port</code>, then Geode binds the HTTP service to the member's local address. Used by the Geode Pulse Web application and the developer REST API service.</td>
+<td>S</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>http-service-port</td>
 <td>If non-zero, then Geode starts an embedded HTTP service that listens on this port. The HTTP service is used to host the Geode Pulse Web application and the development REST API service. If you are hosting the Pulse web app on your own Web server and are not using the development REST API service, then disable this embedded HTTP service by setting this property to zero. Ignored if <code class="ph codeph">jmx-manager</code> and <code class="ph codeph">start-dev-rest-api</code> are both set to false.</td>
+<td>S</td>
 <td>7070</td>
 </tr>
 <tr class="even">
 <td>jmx-manager</td>
 <td>If true then this member is willing to be a JMX Manager. All the other JMX Manager properties will be used when it does become a manager. If this property is false then all other <code class="ph codeph">jmx-manager-*</code> properties are ignored.</td>
+<td>S, L</td>
 <td>false (except on locators)</td>
 </tr>
 <tr class="even">
 <td>jmx-manager-bind-address</td>
 <td>By default the jmx-manager (when configured with a port) will listen on all the local host's addresses. You can use this property to configure what IP address or host name the JMX Manager will listen on for non-HTTP connections. Ignored if JMX Manager is false or <code class="ph codeph">jmx-manager-port</code> is zero.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>jmx-manager-hostname-for-clients</td>
 <td>Lets you control what hostname will be given to clients that ask the locator for the location of a JMX Manager. By default the IP address that the jmx-manager reports is used. But for clients on a different network this property allows you to configure a different hostname that will be given to clients. Ignored if <code class="ph codeph">jmx-manager</code> is false or <code class="ph codeph">jmx-manager-port</code> is zero.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>jmx-manager-http-port</td>
 <td><em>Deprecated.</em> Use <code class="ph codeph">http-service-port</code> instead.</td>
+<td>S, L</td>
 <td>7070</td>
 </tr>
 <tr class="even">
 <td>jmx-manager-port</td>
 <td>The port this JMX Manager will listen to for client connections. If this property is set to zero then Geode will not allow remote client connections but you can alternatively use the standard system properties supported by the JVM for configuring access from remote JMX clients. Ignored if <code class="ph codeph">jmx-manager</code> is false.</td>
+<td>S, L</td>
 <td>1099</td>
 </tr>
 <tr class="odd">
 <td>jmx-manager-start</td>
 <td>If true then this member will start a jmx manager when it creates a cache. Management tools like gfsh can be configured to connect to the jmx-manager. In most cases you should not set this because a jmx manager will automatically be started when needed on a member that sets &quot;jmx-manager&quot; to true. Ignored if jmx-manager is false.</td>
+<td>S, L</td>
 <td>false</td>
 </tr>
 <tr class="even">
 <td>jmx-manager-update-rate</td>
 <td>The rate, in milliseconds, at which this member will push updates to any JMX Managers. Currently this value should be greater than or equal to the statistic-sample-rate. Setting this value too high will cause stale values to be seen by gfsh and Geode Pulse.</td>
+<td>S, L</td>
 <td>2000</td>
 </tr>
 <tr class="odd">
 <td>load-cluster-configuration-from-dir</td>
 <td>Setting this property to &quot;true&quot; causes loading of cluster configuration from &quot;cluster_config&quot; directory in the locator. This property is only applicable to dedicated locators that have &quot;enable-cluster-configuration&quot; set to true.</td>
+<td>L</td>
 <td>false</td>
 </tr>
 <tr class="even">
 <td>locator-wait-time</td>
 <td>The number of seconds that a member should wait for a locator to start if a locator is not available when attempting to join the distributed system. Use this setting when you are starting locators and peers all at once. This timeout allows peers to wait for the locators to finish starting up before attempting to join the distributed system.</td>
+<td>S</td>
 <td>0</td>
 </tr>
 <tr class="odd">
@@ -261,16 +298,19 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 **Note:**
 <p>If you specify invalid DNS hostnames in this property, any locators or servers started with <code class="ph codeph">gfsh</code> will not produce log files. Make sure you provide valid DNS hostnames before starting the locator or server with <code class="ph codeph">gfsh</code>.</p>
 </div></td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>lock-memory</td>
 <td>When <code class="ph codeph">true</code>, locks heap and off-heap memory into RAM to prevent the operating system from paging the memory out to disk.</td>
+<td>S, L</td>
 <td>false</td>
 </tr>
 <tr class="odd">
 <td>log-disk-space-limit</td>
 <td>Maximum size in megabytes of all inactive log files combined. If this limit is exceeded, inactive log files are deleted, oldest first, until the total size is within the limit. If set to zero, disk space use is unlimited.</td>
+<td>S, L</td>
 <td>0</td>
 </tr>
 <tr class="even">
@@ -282,22 +322,26 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <li>locator: <code class="ph codeph">&lt;locator_name&gt;.log</code></li>
 <li>server: <code class="ph codeph">&lt;server_name&gt;.log</code></li>
 </ul></td>
+<td>S, L</td>
 <td>null</td>
 </tr>
 <tr class="odd">
 <td>log-file-size-limit</td>
 <td>Maximum size in megabytes of a log file before it is closed and logging rolls on to a new (child) log file. If set to 0, log rolling is disabled.</td>
+<td>S, L</td>
 <td>0</td>
 </tr>
 <tr class="even">
 <td>log-level</td>
 <td>Level of detail of the messages written to the system member’s log. Setting log-level to one of the ordered levels causes all messages of that level and greater severity to be printed.
 <p>Valid values from lowest to highest are fine, config, info, warning, error, severe, and none.</p></td>
+<td>S, L</td>
 <td>config</td>
 </tr>
 <tr class="odd">
 <td>max-wait-time-reconnect</td>
 <td>Maximum number of milliseconds to wait for the distributed system to reconnect on each reconnect attempt.</td>
+<td>S, L</td>
 <td>60000</td>
 </tr>
 <tr class="even">
@@ -309,6 +353,7 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 **Note:**
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication. If multicast is enabled, distributed regions use it for most communication. Partitioned regions only use multicast for a few purposes, and mainly use either TCP or UDP unicast.</p>
 </div></td>
+<td>S, L</td>
 <td><p>239.192.81.1 for IPv4 (the default IP version)</p>
 <p>FF38::1234 for IPv6</p></td>
 </tr>
@@ -320,6 +365,7 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 **Note:**
 <p>This setting controls only peer-to-peer communication, generally between distributed regions.</p>
 </div></td>
+<td>S, L</td>
 <td>1048576,0.25, 5000</td>
 </tr>
 <tr class="even">
@@ -335,6 +381,7 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div>
 <p>If you have values specified for the <code class="ph codeph">locators</code> property, the <code class="ph codeph">mcast-port</code> property defaults to 0.</p></td>
+<td>S, L</td>
 <td>10334</td>
 </tr>
 <tr class="odd">
@@ -349,6 +396,7 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 **Note:**
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
+<td>S, L</td>
 <td>1048576</td>
 </tr>
 <tr class="even">
@@ -359,6 +407,7 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 **Note:**
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
+<td>S, L</td>
 <td>65535</td>
 </tr>
 <tr class="odd">
@@ -368,12 +417,14 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 **Note:**
 <p>This setting controls only peer-to-peer communication and does not apply to client/server or multi-site communication.</p>
 </div></td>
+<td>S, L</td>
 <td>32</td>
 </tr>
 <tr class="even">
 <td>member-timeout</td>
 <td>Geode uses the <code class="ph codeph">member-timeout</code> server configuration, specified in milliseconds, to detect the abnormal termination of members. The configuration setting is used in two ways: 1) First it is used during the UDP heartbeat detection process. When a member detects that a heartbeat datagram is missing from the member that it is monitoring after the time interval of 2 * the value of <code class="ph codeph">member-timeout</code>, the detecting member attempts to form a TCP/IP stream-socket connection with the monitored member as described in the next case. 2) The property is then used again during the TCP/IP stream-socket connection. If the suspected process does not respond to the <em>are you alive</em> datagram within the time period specified in <code class="ph codeph">member-timeout</code>, the membership coordinator sends out a new membership view that notes the member's failure.
 <p>Valid values are in the range 1000..600000.</p></td>
+<td>S, L</td>
 <td>5000</td>
 </tr>
 <tr class="odd">
@@ -383,21 +434,25 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <p>Therefore, the specified range must include at least three available port numbers (UDP, FD_SOCK, and TCP DirectChannel).</p>
 <p>The system uniquely identifies the member using the combined host IP address and UDP port number.</p>
 <p>You may want to restrict the range of ports that Geode uses so the product can run in an environment where routers only allow traffic on certain ports.</p></td>
+<td>S, L</td>
 <td>1024-65535</td>
 </tr>
 <tr class="even">
 <td>memcached-port</td>
 <td>If specified and is non-zero, sets the port number for an embedded Gemcached server and starts the Gemcached server.</td>
+<td>S</td>
 <td>0</td>
 </tr>
 <tr class="odd">
 <td>memcached-protocol</td>
 <td>Sets the protocol used by an embedded Gemcached server. Valid values are <code class="ph codeph">BINARY</code> and <code class="ph codeph">ASCII.</code> If you omit this property, the ASCII protocol is used.</td>
+<td>S</td>
 <td>ASCII</td>
 </tr>
 <tr class="even">
 <td>name</td>
 <td>Symbolic name used to identify this system member.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
@@ -405,12 +460,14 @@ See <a href="../../configuring/cluster_config/using_member_groups.html">Using Me
 <td>Specifies the size of off-heap memory in megabytes (m) or gigabytes (g). For example:
 <pre class="pre codeblock"><code>off-heap-memory-size=4096m
 off-heap-memory-size=120g</code></pre></td>
+<td>S</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>redundancy-zone</td>
 <td>Defines this member's redundancy zone. Used to separate member's into different groups for satisfying partitioned region redundancy. If this property is set, Geode will not put redundant copies of data in members with the same redundancy zone setting. 
 See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Configure High Availability for a Partitioned Region</a> for more details.</td>
+<td>S</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
@@ -420,11 +477,13 @@ See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Co
 <pre class="pre codeblock"><code>remote-locators=address1[port1],address2[port2] </code></pre>
 <pre class="pre codeblock"><code>remote-locators=hostName1@address1[port1],hostName2@address2[port2] </code></pre>
 <pre class="pre codeblock"><code>remote-locators=hostName1[port1],hostName2[port2]</code></pre></td>
+<td>L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>remove-unresponsive-client</td>
 <td>When this property is set to true, the primary server drops unresponsive clients from all secondaries and itself. Clients are deemed unresponsive when their messaging queues become full on the server. While a client's queue is full, puts that would add to the queue block on the server.</td>
+<td>S</td>
 <td>false</td>
 </tr>
 <tr class="odd">
@@ -432,67 +491,80 @@ See <a href="../../developing/partitioned_regions/configuring_ha_for_pr.html">Co
 <td>
 Any security-related (properties that begin with <code class="ph codeph">security-</code>) configuration properties that are normally configured in <code class="ph codeph">gemfire.properties</code> can be moved to a separate <code class="ph codeph">gfsecurity.properties</code> file. Placing these configuration settings in a separate file allows you to restrict access to security configuration data. This way, you can still allow read or write access for your <code class="ph codeph">gemfire.properties</code> file.
 </td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>security-client-accessor</td>
 <td><b>Deprecated.</b> Used for authorization. Static creation method returning an <code class="ph codeph">AccessControl</code> object, which determines authorization of client-server cache operations. This specifies the callback that should be invoked in the pre-operation phase, which is when the request for the operation is received from the client.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>security-client-accessor-pp</td>
 <td><b>Deprecated.</b> Used for authorization. The callback that should be invoked in the post-operation phase, which is when the operation has completed on the server but before the result is sent to the client. The post-operation callback is also invoked for the updates that are sent from server to client through the notification channel.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>security-client-auth-init</td>
 <td>Used for authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a distributed system. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>security-client-authenticator</td>
 <td><b>Deprecated.</b> Used for authentication. Static creation method returning an <code class="ph codeph">Authenticator</code> object, which is used by a peer to verify the credentials of the connecting peer.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>security-client-dhalgo</td>
 <td>Used for authentication. For secure transmission of sensitive credentials like passwords, you can encrypt the credentials using the Diffie-Hellman key exchange algorithm. Do this by setting the security-client-dhalgo system property on the clients to the name of a valid symmetric key cipher supported by the JDK.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>security-log-file</td>
 <td>Used with authentication. The log file for security log messages. If not specified, the member's regular log file is used.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>security-log-level</td>
 <td>Used with authentication. Logging level detail for security log messages.
 <p>Valid values from lowest to highest are fine, config, info, warning, error, severe, and none.</p></td>
+<td>S, L</td>
 <td>config</td>
 </tr>
 <tr class="even">
 <td>security-manager</td>
 <td>Specifies the implementation of the <code>SecurityManager</code> interface that implements the callbacks that do authentication and authorization.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>security-peer-auth-init</td>
 <td><b>Deprecated.</b> Used with authentication. Static creation method returning an <code class="ph codeph">AuthInitialize</code> object, which obtains credentials for peers in a distributed system. The obtained credentials should be acceptable to the <code class="ph codeph">Authenticator</code> specified through the security-peer-authenticator property on the peers.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>security-peer-authenticator</td>
 <td><b>Deprecated.</b> Used with authentication. Static creation method returning an <code class="ph codeph">Authenticator</code> object, which is used by a peer to verify the credentials of the connecting peer.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>security-peer-verifymember-timeout</td>
 <td>Used with authentication. Timeout in milliseconds used by a peer to verify membership of an unknown authenticated peer requesting a secure connection.</td>
+<td>S, L</td>
 <td>1000</td>
 </tr>
 <tr class="even">
 <td>security-post-processor</td>
 <td>Specifies the implementation of the <code>PostProcessor</code> interface that implements user-defined callbacks that can change the returned results of region get operations.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
@@ -501,77 +573,90 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 <p>This is a machine-wide attribute used for communication with clients in client/server and multi-site installations. This setting has no effect on locator configuration.</p>
 <p>Specify the IP address, not the hostname, because each network card may not have a unique hostname.</p>
 <p>An empty string causes the servers to listen on the same card used for peer-to-peer communication. This is either the <code class="ph codeph">bind-address</code> or, if that is not set, the machine’s default card.</p></td>
+<td>S</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>socket-buffer-size</td>
 <td>Receive buffer sizes in bytes of the TCP/IP connections used for data transmission. To minimize the buffer size allocation needed for distributing large, serializable messages, the messages are sent in chunks. This setting determines the size of the chunks. Larger buffers can handle large messages more quickly, but take up more memory.</td>
+<td>S, L</td>
 <td>32768</td>
 </tr>
 <tr class="even">
 <td>socket-lease-time</td>
 <td>Time, in milliseconds, a thread can have exclusive access to a socket it is not actively using. A value of zero causes socket leases to never expire. This property is ignored if conserve-sockets is true.
 <p>Valid values are in the range 0..600000.</p></td>
+<td>S, L</td>
 <td>60000</td>
 </tr>
 
 <tr>
 <td>ssl-enabled-components</td>
 <td>Components for which to enable SSL. Comma-separated list of one or more of (cluster, gateway, http, jmx, locator, server) or "all".</td>
+<td>S, L</td>
 <td>all</td>
 </tr>
 
 <tr>
 <td>ssl-require-authentication</td>
 <td>Boolean. Require two-way authentication for SSL-enabled components. Applies to all components except http.</td>
+<td>S, L</td>
 <td>true</td>
 </tr>
 
 <tr>
 <td>ssl-http-require-authentication</td>
 <td>Boolean. Require two-way authentication for http component.</td>
+<td>S, L</td>
 <td>false</td>
 </tr>
 
 <tr>
 <td>ssl-default-alias</td>
 <td>String. Default certificate name. If empty, use first certificate in key store.</td>
+<td>S, L</td>
 <td></td>
 </tr>
 
 <tr>
 <td>ssl-<em>component</em>-alias</td>
 <td>String. Certificate name for specified <em>component</em>, which is one of: cluster, gateway, http, jmx, locator, or server.</td>
+<td>S, L</td>
 <td></td>
 </tr>
 
 <tr>
 <td>ssl-ciphers</td>
 <td>Comma-separated list of SSL ciphers or "any"</td>
+<td>S, L</td>
 <td>any</td>
 </tr>
 
 <tr>
 <td>ssl-protocols</td>
 <td>Comma-separated list of SSL protocols or "any"</td>
+<td>S, L</td>
 <td>any</td>
 </tr>
 
 <tr>
 <td>ssl-keystore, ssl-keystore-password</td>
 <td>Strings. Path to key store, key store password.</td>
+<td>S, L</td>
 <td></td>
 </tr>
 
 <tr>
 <td>ssl-truststore, ssl-truststore-password</td>
 <td>Strings. Path to trust store, trust store password.</td>
+<td>S, L</td>
 <td></td>
 </tr>
 
 <tr class="even">
 <td>start-dev-rest-api</td>
 <td>If set to true, then the developer REST API service will be started when cache is created. REST service can be configured using <code class="ph codeph">http-service-port</code> and <code class="ph codeph">http-service-bind-address</code> properties.</td>
+<td>S</td>
 <td>false</td>
 </tr>
 <tr class="odd">
@@ -582,17 +667,20 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 <pre class="pre codeblock"><code>start-locator=port1</code></pre>
 If you only specify the port, the address assigned to the member is used for the locator.
 <p>If not already there, this locator is automatically added to the list of locators in this set of <code class="ph codeph">gemfire properties</code>.</p></td>
+<td>S</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
 <td>statistic-archive-file</td>
 <td>The file to which the running system member writes statistic samples. For example: &quot;StatisticsArchiveFile.gfs&quot;. An empty string disables archiving. Adding .gz suffix to the file name causes it to be compressed.</td>
+<td>S, L</td>
 <td><em>not set</em></td>
 </tr>
 <tr class="odd">
 <td>statistic-sample-rate</td>
 <td>How often to sample statistics, in milliseconds.
 <p>Valid values are in the range 100..60000.</p></td>
+<td>S, L</td>
 <td>1000</td>
 </tr>
 <tr class="even">
@@ -603,24 +691,28 @@ If you only specify the port, the address assigned to the member is used for the
 **Note:**
 <p>This setting does not apply to partitioned regions, where statistics are always enabled.</p>
 </div></td>
+<td>S, L</td>
 <td>false</td>
 </tr>
 <tr class="odd">
 <td>tcp-port</td>
 <td>The TCP port to listen on for cache communications. If set to zero, the operating system selects an available port. Each process on a machine must have its own TCP port. Note that some operating systems restrict the range of ports usable by non-privileged users, and using restricted port numbers can cause runtime errors in Geode startup.
 <p>Valid values are in the range 0..65535.</p></td>
+<td>S, L</td>
 <td>0</td>
 </tr>
 <tr class="even">
 <td>tombstone-gc-threshold</td>
 <td>The number of tombstones that can accumulate before the Geode member triggers garbage collection for tombstones. 
 See <a href="../../developing/distributed_regions/how_region_versioning_works.html#topic_321B05044B6641FCAEFABBF5066BD399">How Destroy and Clear Operations Are Resolved</a>.</td>
+<td>S</td>
 <td>100000</td>
 </tr>
 <tr class="odd">
 <td>udp-fragment-size</td>
 <td>Maximum fragment size, in bytes, for transmission over UDP unicast or multicast sockets. Smaller messages are combined, if possible, for transmission up to the fragment size setting.
 <p>Valid values are in the range 1000..60000.</p></td>
+<td>S, L</td>
 <td>60000</td>
 </tr>
 <tr class="even">
@@ -628,22 +720,26 @@ See <a href="../../developing/distributed_regions/how_region_versioning_works.ht
 <td>The size of the socket buffer used for incoming UDP point-to-point transmissions. If disable-tcp is false, a reduced buffer size of 65535 is used by default.
 <p>The default setting of 1048576 is higher than the default OS maximum buffer size on Unix, which should be increased to at least 1 megabyte to provide high-volume messaging on Unix systems.</p>
 <p>Valid values are in the range 2048.. OS_maximum.</p></td>
+<td>S, L</td>
 <td>1048576</td>
 </tr>
 <tr class="odd">
 <td>udp-send-buffer-size</td>
 <td>The size of the socket buffer used for outgoing UDP point-to-point transmissions.
 <p>Valid values are in the range 2048..OS_maximum.</p></td>
+<td>S, L</td>
 <td>65535</td>
 </tr>
 <tr class="even">
 <td>use-cluster-configuration</td>
-<td>This property is only applicable for data members (non-client and non -ocator). A value of &quot;true&quot; causes a member to request and use the configuration from cluster configuration services running on dedicated locators. Setting this property to &quot;false&quot; causes a member to not request the configuration from the configuration services running on the locator(s).</td>
+<td>This property is only applicable for data members (non-client and non-locator). A value of &quot;true&quot; causes a member to request and use the configuration from cluster configuration services running on dedicated locators. Setting this property to &quot;false&quot; causes a member to not request the configuration from the configuration services running on the locator(s).</td>
+<td>L</td>
 <td>true</td>
 </tr>
 <tr class="odd">
 <td>user-command-packages</td>
 <td>A comma separated list of Java packages that contain classes implementing the <code class="ph codeph">CommandMarker</code> interface. Matching classes will be loaded when the VM starts and will be available in the GFSH command-line utility.</td>
+<td>S</td>
 <td><em>not set</em></td>
 </tr>
 </tbody>
