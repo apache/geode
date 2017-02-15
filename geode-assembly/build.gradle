@@ -341,6 +341,9 @@ distributions {
         from project(":geode-rebalancer").configurations.runtime
         from project(":geode-rebalancer").configurations.archives.allArtifacts.files
 
+        from project(":geode-redis").configurations.runtime
+        from project(":geode-redis").configurations.archives.allArtifacts.files
+
         from configurations.bundled
         from configurations.gfshDependencies
 
