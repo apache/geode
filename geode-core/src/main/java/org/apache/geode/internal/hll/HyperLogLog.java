@@ -13,8 +13,6 @@
  */
 package org.apache.geode.internal.hll;
 
-import org.apache.geode.redis.internal.executor.hll.HllExecutor;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -72,6 +70,9 @@ public class HyperLogLog implements ICardinality, Serializable {
   private final int log2m;
   private final double alphaMM;
 
+  public static final Double DEFAULT_HLL_STD_DEV = 0.081;
+  public static final Integer DEFAULT_HLL_DENSE = 18;
+  public static final Integer DEFAULT_HLL_SPARSE = 32;
 
   /**
    * Create a new HyperLogLog instance using the specified standard deviation.
@@ -208,9 +209,9 @@ public class HyperLogLog implements ICardinality, Serializable {
 
   @Override
   public ICardinality merge(ICardinality... estimators) throws CardinalityMergeException {
-    HyperLogLog merged = new HyperLogLog(HllExecutor.DEFAULT_HLL_STD_DEV);// new HyperLogLog(log2m,
-                                                                          // new
-                                                                          // RegisterSet(this.registerSet.count));
+    HyperLogLog merged = new HyperLogLog(DEFAULT_HLL_STD_DEV);// new HyperLogLog(log2m,
+                                                              // new
+                                                              // RegisterSet(this.registerSet.count));
     merged.addAll(this);
 
     if (estimators == null) {

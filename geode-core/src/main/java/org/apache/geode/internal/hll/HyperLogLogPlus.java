@@ -13,8 +13,6 @@
  */
 package org.apache.geode.internal.hll;
 
-import org.apache.geode.redis.internal.executor.hll.Varint;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
