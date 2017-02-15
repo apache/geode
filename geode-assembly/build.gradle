@@ -62,6 +62,7 @@ dependencies {
   archives project(':geode-wan')
   archives project(':geode-cq')
   archives project(':geode-rebalancer')
+  archives project(':geode-redis')
 
   testCompile project(':geode-junit')
   testCompile files(project(':geode-core').sourceSets.test.output)
