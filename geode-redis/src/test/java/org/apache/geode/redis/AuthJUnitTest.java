@@ -73,8 +73,7 @@ public class AuthJUnitTest extends RedisTestBase {
   public void testAuthNoPwd() {
     try (Jedis jedis = defaultJedisInstance()) {
       jedis.auth(PASSWORD);
-      fail(
-          "We expecting either a JedisConnectionException or JedisDataException to be thrown here");
+      fail("Jedis auth to our Redis server should fail when we have no password set.");
     } catch (JedisConnectionException | JedisDataException exception) {
     }
   }
