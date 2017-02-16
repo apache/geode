@@ -20,6 +20,7 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
@@ -27,7 +28,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-@Category({IntegrationTest.class, SecurityTest.class})
+/**
+ * GEODE-2496: Flaky -- possibly due to use of AvailablePort
+ */
+@Category({IntegrationTest.class, SecurityTest.class, FlakyTest.class})
 public class MemberMBeanSecurityJUnitTest {
 
   private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
