@@ -35,13 +35,16 @@ import java.util.Properties;
 /**
  * This is a rule to start up a server in your current VM. It's useful for your Integration Tests.
  *
+ * You can create this rule either with a property or without a property. If created with a
+ * property, The rule will automatically start the server for you with the properties given.
+ *
+ * If created without a property, the rule won't start the server until you specicially call one of
+ * the startServer function.
+ *
+ * Either way, the rule will handle properly stopping the server for you.
+ *
  * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
  * use {@link LocatorServerStartupRule}.
- * <p>
- * You may choose to use this class not as a rule or use it in your own rule (see
- * {@link LocatorServerStartupRule}), in which case you will need to call startLocator() and after()
- * manually.
- * </p>
  */
 public class ServerStarterRule extends ExternalResource implements Serializable {
 
@@ -49,6 +52,12 @@ public class ServerStarterRule extends ExternalResource implements Serializable 
   public CacheServer server;
 
   private Properties properties;
+
+  /**
+   * Default constructor, if used, the rule won't start the server for you, you will need to
+   * manually start it. The rule will handle stop the server for you.
+   */
+  public ServerStarterRule() {}
 
   public ServerStarterRule(Properties properties) {
     this.properties = properties;
@@ -63,6 +72,25 @@ public class ServerStarterRule extends ExternalResource implements Serializable 
   }
 
   public void startServer(int locatorPort, boolean pdxPersistent) throws Exception {
+    startServer(properties, locatorPort, pdxPersistent);
+  }
+
+  public void startServer(Properties properties) throws Exception {
+    startServer(properties, 0, false);
+  }
+
+  public void startServer(Properties properties, int locatorPort) throws Exception {
+    startServer(properties, locatorPort, false);
+  }
+
+  public void startServer(Properties properties, int locatorPort, boolean pdxPersistent)
+      throws Exception {
+    if (properties == null) {
+      properties = new Properties();
+    }
+    if (locatorPort > 0) {
+      properties.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
+    }
     if (!properties.containsKey(MCAST_PORT)) {
       properties.setProperty(MCAST_PORT, "0");
     }
@@ -70,11 +98,7 @@ public class ServerStarterRule extends ExternalResource implements Serializable 
       properties.setProperty(NAME, this.getClass().getName());
     }
     if (!properties.containsKey(LOCATORS)) {
-      if (locatorPort > 0) {
-        properties.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
-      } else {
-        properties.setProperty(LOCATORS, "");
-      }
+      properties.setProperty(LOCATORS, "");
     }
     if (properties.containsKey(JMX_MANAGER_PORT)) {
       int jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
@@ -85,7 +109,6 @@ public class ServerStarterRule extends ExternalResource implements Serializable 
           properties.put(JMX_MANAGER_START, "true");
       }
     }
-
     CacheFactory cf = new CacheFactory(properties);
     cf.setPdxReadSerialized(pdxPersistent);
     cf.setPdxPersistent(pdxPersistent);
@@ -101,7 +124,8 @@ public class ServerStarterRule extends ExternalResource implements Serializable 
    * connect to, otherwise, this server won't connect to any locator
    */
   protected void before() throws Throwable {
-    startServer();
+    if (properties != null)
+      startServer();
   }
 
   @Override

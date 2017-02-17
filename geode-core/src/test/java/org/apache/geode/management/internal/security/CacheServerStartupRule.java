@@ -15,25 +15,25 @@
 
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import java.io.Serializable;
-import java.util.Properties;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.rules.ExternalResource;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.rules.ExternalResource;
+
+import java.io.Serializable;
+import java.util.Properties;
 
 /**
  * this rule would help you start up a cache server with the given properties in the current VM
  */
 public class CacheServerStartupRule extends ExternalResource implements Serializable {
 
-  private ServerStarterRule serverStarter;
+  private ServerStarterRule serverStarter = null;
 
   public static CacheServerStartupRule withDefaultSecurityJson(int jmxManagerPort) {
     return new CacheServerStartupRule(jmxManagerPort,

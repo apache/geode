@@ -14,290 +14,178 @@
  */
 package org.apache.geode.management;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_JMX_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import javax.management.JMX;
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
+import com.google.common.collect.Maps;
 
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.util.test.TestUtil;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.LocatorLauncher;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.dunit.DistributedTestCase;
-import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.apache.geode.util.test.TestUtil;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import javax.management.MBeanServerConnection;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 
-public class JMXMBeanDUnitTest extends DistributedTestCase {
+/**
+ * All the non-ssl enabled locators need to be in a different VM than the ssl enabled locators in
+ * these tests, otherwise, some tests would fail. Seems like dunit vm tear down did not clean up the
+ * ssl settings cleanly.
+ */
+@Category(DistributedTest.class)
+public class JMXMBeanDUnitTest {
+  @Rule
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
-  private Host host;
-  private VM locator;
-  private VM jmxClient;
-  private String serverHostName;
-  private int locatorPort;
+  @Rule
+  public MBeanServerConnectionRule jmxConnector = new MBeanServerConnectionRule();
+
   private int jmxPort;
+  private Properties locatorProperties = null;
+  private Map<String, Object> clientEnv = null;
+  private static Properties legacySSLProperties, sslProperties, sslPropertiesWithMultiKey;
+  private static String singleKeystore, multiKeystore, multiKeyTruststore;
 
-  private static LocatorLauncher locatorLauncher;
 
-  @Rule
-  public DistributedRestoreSystemProperties distributedRestoreSystemProperties =
-      new DistributedRestoreSystemProperties();
+  @BeforeClass
+  public static void beforeClass() {
+    singleKeystore = TestUtil.getResourcePath(JMXMBeanDUnitTest.class, "/ssl/trusted.keystore");
+    multiKeystore = TestUtil.getResourcePath(JMXMBeanDUnitTest.class,
+        "/org/apache/geode/internal/net/multiKey.jks");
+    multiKeyTruststore = TestUtil.getResourcePath(JMXMBeanDUnitTest.class,
+        "/org/apache/geode/internal/net/multiKeyTrust.jks");
 
-  @Rule
-  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
+    // setting up properties used to set the ssl properties used by the locators
+    legacySSLProperties = new Properties();
+    legacySSLProperties.setProperty(JMX_MANAGER_SSL_CIPHERS, "any");
+    legacySSLProperties.setProperty(JMX_MANAGER_SSL_PROTOCOLS, "any");
+    legacySSLProperties.setProperty(JMX_MANAGER_SSL_ENABLED, "true");
+    legacySSLProperties.setProperty(JMX_MANAGER_SSL_KEYSTORE, singleKeystore);
+    legacySSLProperties.setProperty(JMX_MANAGER_SSL_KEYSTORE_PASSWORD, "password");
+    legacySSLProperties.setProperty(JMX_MANAGER_SSL_KEYSTORE_TYPE, "JKS");
+    legacySSLProperties.setProperty(JMX_MANAGER_SSL_TRUSTSTORE, singleKeystore);
+    legacySSLProperties.setProperty(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD, "password");
+
+    sslProperties = new Properties();
+    sslProperties.setProperty(SSL_CIPHERS, "any");
+    sslProperties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+    sslProperties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
+    sslProperties.setProperty(SSL_KEYSTORE, singleKeystore);
+    sslProperties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    sslProperties.setProperty(SSL_TRUSTSTORE, singleKeystore);
+    sslProperties.setProperty(SSL_ENABLED_COMPONENTS,
+        SecurableCommunicationChannel.JMX.getConstant());
+    sslProperties.setProperty(SSL_PROTOCOLS, "TLSv1.2,TLSv1.1");
+
+    sslPropertiesWithMultiKey = new Properties();
+    sslPropertiesWithMultiKey.putAll(Maps.fromProperties(sslProperties));
+    sslPropertiesWithMultiKey.setProperty(SSL_KEYSTORE, multiKeystore);
+    sslPropertiesWithMultiKey.setProperty(SSL_TRUSTSTORE, multiKeyTruststore);
+    sslPropertiesWithMultiKey.setProperty(SSL_JMX_ALIAS, "jmxkey");
+  }
 
   @Before
   public void before() {
-    host = Host.getHost(0);
-    locator = host.getVM(0);
-    jmxClient = host.getVM(1);
-
-    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    locatorPort = randomAvailableTCPPorts[0];
-    jmxPort = randomAvailableTCPPorts[1];
-    serverHostName = NetworkUtils.getServerHostName(host);
-  }
-
-  @Test
-  public void testJMXOverSSLWithoutJMXAlias() throws Exception {
-    Properties properties =
-        configureLocatorProperties(new Properties(), jmxPort, serverHostName, true, false, true);
-    locator.invoke("Configure and start Locator", () -> {
-      System.setProperty("javax.ssl.debug", "true");
-      configureAndStartLocator(locatorPort, jmxPort, serverHostName, properties);
-    });
-
-    jmxClient.invoke("Configure and start JMX Client", () -> {
-      System.setProperty("javax.ssl.debug", "true");
-      connectAndValidateAsJmxClient(jmxPort, serverHostName, true, true);
-    });
-  }
-
-  @Test
-  public void testJMXOverSSLWithJMXAlias() throws Exception {
-    Properties properties =
-        configureLocatorProperties(new Properties(), jmxPort, serverHostName, true, false, true);
-    locator.invoke("Configure and start Locator", () -> {
-      System.setProperty("javax.ssl.debug", "true");
-      configureAndStartLocator(locatorPort, jmxPort, serverHostName, properties);
-    });
-
-    jmxClient.invoke("Configure and start JMX Client", () -> {
-      System.setProperty("javax.ssl.debug", "true");
-      connectAndValidateAsJmxClient(jmxPort, serverHostName, true, true);
-    });
-  }
-
-  @Test
-  public void testJMXOverSSL() throws Exception {
-    Properties properties =
-        configureLocatorProperties(new Properties(), jmxPort, serverHostName, true, false, true);
-
-    locator.invoke("Configure and start Locator", () -> {
-      System.setProperty("javax.ssl.debug", "true");
-      configureAndStartLocator(locatorPort, jmxPort, serverHostName, properties);
-    });
-
-    jmxClient.invoke("Configure and start JMX Client", () -> {
-      System.setProperty("javax.ssl.debug", "true");
-      connectAndValidateAsJmxClient(jmxPort, serverHostName, true);
-    });
-  }
-
-  @Test
-  @Category(FlakyTest.class)
-  // To be fixed in GEODE-1716
-  public void testJMXOverLegacySSL() throws Exception {
-    Properties properties =
-        configureLocatorProperties(new Properties(), jmxPort, serverHostName, true, true, false);
-    locator.invoke("Configure and start Locator", () -> {
-      System.setProperty("javax.ssl.debug", "true");
-      configureAndStartLocator(locatorPort, jmxPort, serverHostName, properties);
-    });
-
-    jmxClient.invoke("Configure and start JMX Client", () -> {
-      System.setProperty("javax.ssl.debug", "true");
-      connectAndValidateAsJmxClient(jmxPort, serverHostName, true);
-    });
+    jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    locatorProperties = new Properties();
+    locatorProperties.put(JMX_MANAGER_PORT, jmxPort + "");
+    locatorProperties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    clientEnv = new HashMap<>();
   }
 
   @Test
   public void testJMXOverNonSSL() throws Exception {
-    Properties properties =
-        configureLocatorProperties(new Properties(), jmxPort, serverHostName, false, false, false);
-    locator.invoke("Configure and start Locator",
-        () -> configureAndStartLocator(locatorPort, jmxPort, serverHostName, properties));
-    jmxClient.invoke("Configure and start JMX Client",
-        () -> connectAndValidateAsJmxClient(jmxPort, serverHostName, false));
+    lsRule.startLocatorVM(1, locatorProperties);
+    jmxConnector.connect(jmxPort);
+    validateJmxConnection();
   }
 
   @Test
   public void testJMXOverNonSSLWithClientUsingIncorrectPort() throws Exception {
-    Properties properties =
-        configureLocatorProperties(new Properties(), jmxPort, serverHostName, false, false, false);
-    locator.invoke("Configure and start Locator",
-        () -> configureAndStartLocator(locatorPort, jmxPort, serverHostName, properties));
+    lsRule.startLocatorVM(1, locatorProperties);
 
-    assertThatThrownBy(() -> jmxClient.invoke("Configure and start JMX Client",
-        () -> connectAndValidateAsJmxClient(9999, serverHostName, false)))
-            .hasCauseExactlyInstanceOf(IOException.class)
-            .hasRootCauseExactlyInstanceOf(java.net.ConnectException.class);
+    assertThatThrownBy(() -> jmxConnector.connect(9999))
+        .hasRootCauseExactlyInstanceOf(java.net.ConnectException.class);
+  }
+
+  @Test
+  public void testJMXOverSSL() throws Exception {
+    locatorProperties.putAll(Maps.fromProperties(sslProperties));
+    lsRule.startLocatorVM(0, locatorProperties);
+    clientEnv = getClientEnvironment(false);
+    jmxConnector.connect(jmxPort, clientEnv);
+
+    validateJmxConnection();
   }
 
 
-  private void connectAndValidateAsJmxClient(final int jmxPort, final String serverHostName,
-      final boolean useSSL) throws Exception {
-    connectAndValidateAsJmxClient(jmxPort, serverHostName, useSSL, false);
+  @Test
+  public void testJMXOverSSLWithMultiKey() throws Exception {
+    locatorProperties.putAll(Maps.fromProperties(sslPropertiesWithMultiKey));
+    lsRule.startLocatorVM(0, locatorProperties);
+    clientEnv = getClientEnvironment(true);
+    jmxConnector.connect(jmxPort, clientEnv);
+    validateJmxConnection();
   }
 
-  private void connectAndValidateAsJmxClient(final int jmxPort, final String serverHostName,
-      final boolean useSSL, final boolean useMulti) throws Exception {
-    // JMX RMI
+  @Test
+  public void testJMXOverLegacySSL() throws Exception {
+    locatorProperties.putAll(Maps.fromProperties(legacySSLProperties));
+    lsRule.startLocatorVM(0, locatorProperties);
+    clientEnv = getClientEnvironment(false);
+    jmxConnector.connect(jmxPort, clientEnv);
+    validateJmxConnection();
+  }
 
+
+  private Map<String, Object> getClientEnvironment(boolean withAlias) {
+    System.setProperty("javax.net.ssl.keyStore", withAlias ? multiKeystore : singleKeystore);
+    System.setProperty("javax.net.ssl.keyStoreType", "JKS");
+    System.setProperty("javax.net.ssl.keyStorePassword", "password");
+    System.setProperty("javax.net.ssl.trustStore", withAlias ? multiKeyTruststore : singleKeystore);
+    System.setProperty("javax.net.ssl.trustStoreType", "JKS");
+    System.setProperty("javax.net.ssl.trustStorePassword", "password");
     Map<String, Object> environment = new HashMap();
-
-    if (useSSL) {
-      System.setProperty("javax.net.ssl.keyStore",
-          useMulti ? getMultiKeyKeystore() : getSimpleSingleKeyKeystore());
-      System.setProperty("javax.net.ssl.keyStoreType", "JKS");
-      System.setProperty("javax.net.ssl.keyStorePassword", "password");
-      System.setProperty("javax.net.ssl.trustStore",
-          useMulti ? getMultiKeyTruststore() : getSimpleSingleKeyKeystore());
-      System.setProperty("javax.net.ssl.trustStoreType", "JKS");
-      System.setProperty("javax.net.ssl.trustStorePassword", "password");
-      environment.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
-    }
-
-    JMXServiceURL url = new JMXServiceURL("service:jmx:rmi://" + serverHostName + ":" + jmxPort
-        + "/jndi/rmi://" + serverHostName + ":" + jmxPort + "/jmxrmi");
-    JMXConnector jmxConnector = JMXConnectorFactory.connect(url, environment);
-
-
-    try {
-      MBeanServerConnection mbeanServerConnection = jmxConnector.getMBeanServerConnection();
-
-      ObjectName mbeanName = new ObjectName("GemFire:service=System,type=Distributed");
-
-      // Get MBean proxy instance that will be used to make calls to registered MBean
-      DistributedSystemMXBean distributedSystemMXBean =
-          JMX.newMBeanProxy(mbeanServerConnection, mbeanName, DistributedSystemMXBean.class, true);
-
-      assertEquals(1, distributedSystemMXBean.getMemberCount());
-      assertEquals(1, distributedSystemMXBean.getLocatorCount());
-
-    } finally {
-      jmxConnector.close();
-    }
+    environment.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
+    return environment;
   }
 
-  private void configureAndStartLocator(final int locatorPort, final int jmxPort,
-      final String serverHostName, final Properties properties) throws IOException {
-    configureAndStartLocator(locatorPort, serverHostName, properties);
-  }
 
-  private void configureAndStartLocator(final int locatorPort, final String serverHostName,
-      final Properties properties) throws IOException {
-    DistributedTestUtils.deleteLocatorStateFile();
-
-    final String memberName = getUniqueName() + "-locator";
-    final File workingDirectory = temporaryFolder.newFolder(memberName);
-
-    LocatorLauncher.Builder builder = new LocatorLauncher.Builder();
-
-    for (String propertyName : properties.stringPropertyNames()) {
-      builder.set(propertyName, properties.getProperty(propertyName));
-    }
-    locatorLauncher = builder.setBindAddress(serverHostName).setHostnameForClients(serverHostName)
-        .setMemberName(memberName).setPort(locatorPort)
-        .setWorkingDirectory(workingDirectory.getCanonicalPath()).build();
-    locatorLauncher.start();
-
-  }
-
-  private Properties configureJMXSSLProperties(final Properties properties, final boolean isLegacy,
-      final boolean useMultiKey) {
-    if (isLegacy) {
-      properties.setProperty(JMX_MANAGER_SSL_CIPHERS, "any");
-      properties.setProperty(JMX_MANAGER_SSL_PROTOCOLS, "any");
-      properties.setProperty(JMX_MANAGER_SSL_ENABLED, "true");
-      properties.setProperty(JMX_MANAGER_SSL_KEYSTORE, getSimpleSingleKeyKeystore());
-      properties.setProperty(JMX_MANAGER_SSL_KEYSTORE_PASSWORD, "password");
-      properties.setProperty(JMX_MANAGER_SSL_TRUSTSTORE, getSimpleSingleKeyKeystore());
-      properties.setProperty(JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD, "password");
-    } else {
-      {
-        properties.setProperty(SSL_CIPHERS, "any");
-        properties.setProperty(SSL_PROTOCOLS, "any");
-        properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-        properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-        properties.setProperty(SSL_KEYSTORE, getSimpleSingleKeyKeystore());
-        properties.setProperty(SSL_TRUSTSTORE, getSimpleSingleKeyKeystore());
-        properties.setProperty(SSL_ENABLED_COMPONENTS,
-            SecurableCommunicationChannel.JMX.getConstant());
-
-        if (useMultiKey) {
-          properties.setProperty(SSL_KEYSTORE, getMultiKeyKeystore());
-          properties.setProperty(SSL_TRUSTSTORE, getMultiKeyTruststore());
-          properties.setProperty(SSL_JMX_ALIAS, "jmxkey");
-        }
-      }
-    }
-    return properties;
-  }
-
-  private String getSimpleSingleKeyKeystore() {
-    return TestUtil.getResourcePath(getClass(), "/ssl/trusted.keystore");
-  }
-
-  private String getMultiKeyKeystore() {
-    return TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks");
-  }
-
-  private String getMultiKeyTruststore() {
-    return TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKeyTrust.jks");
-  }
-
-  private Properties configureLocatorProperties(final Properties properties, final int jmxPort,
-      final String serverHostName, final boolean useSSL, final boolean useLegacySSL,
-      final boolean useMultiKeyKeystore) {
-    configureCommonProperties(properties);
-    properties.setProperty(JMX_MANAGER, "true");
-    properties.setProperty(JMX_MANAGER_START, "true");
-    properties.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
-    properties.setProperty(JMX_MANAGER_BIND_ADDRESS, serverHostName);
-    properties.setProperty(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, serverHostName);
-
-    if (useSSL) {
-      configureJMXSSLProperties(properties, useLegacySSL, useMultiKeyKeystore);
-    }
-    return properties;
-  }
-
-  private Properties configureCommonProperties(final Properties properties) {
-    properties.setProperty(MCAST_PORT, "0");
-    properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
-    return properties;
+  private void validateJmxConnection() throws Exception {
+    MBeanServerConnection mbeanServerConnection = jmxConnector.getMBeanServerConnection();
+    // Get MBean proxy instance that will be used to make calls to registered MBean
+    DistributedSystemMXBean distributedSystemMXBean =
+        jmxConnector.getProxyMBean(DistributedSystemMXBean.class);
+    assertEquals(1, distributedSystemMXBean.getMemberCount());
+    assertEquals(1, distributedSystemMXBean.getLocatorCount());
   }
 }

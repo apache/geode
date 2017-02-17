@@ -29,8 +29,6 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 
@@ -56,7 +54,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       new DistributedRestoreSystemProperties();
 
   private TemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
-  private List<Member> members;
+  private Member[] members;
 
   public LocatorServerStartupRule() {
     DUnitLauncher.launchIfNeeded();
@@ -67,7 +65,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     restoreSystemProperties.before();
     temporaryFolder.create();
     Invoke.invokeInEveryVM("Stop each VM", this::cleanupVm);
-    members = new ArrayList<>(4);
+    members = new Member[4];
   }
 
   @Override
@@ -97,7 +95,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       return locatorStarter.locator.getPort();
     });
     Locator locator = new Locator(locatorVM, locatorPort, workingDir, name);
-    members.add(index, locator);
+    members[index] = locator;
     return locator;
   }
 
@@ -124,7 +122,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       return locatorStarter.locator.getPort();
     });
     Locator locator = new Locator(locatorVM, locatorPort, workingDir, name);
-    members.add(index, locator);
+    members[index] = locator;
     return locator;
   }
 
@@ -163,7 +161,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       return serverStarter.server.getPort();
     });
     Server server = new Server(serverVM, port, workingDir, name);
-    members.add(index, server);
+    members[index] = server;
     return server;
   }
 
@@ -171,7 +169,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    * Returns the {@link Member} running inside the VM with the specified {@code index}
    */
   public Member getMember(int index) {
-    return members.get(index);
+    return members[index];
   }
 
   public TemporaryFolder getTempFolder() {

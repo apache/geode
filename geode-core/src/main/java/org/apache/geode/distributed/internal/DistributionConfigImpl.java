@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -976,6 +977,13 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       }
     }
 
+  }
+
+  /**
+   * Used by tests to create a default instance without reading in properties.
+   */
+  static DistributionConfig createDefaultInstance() {
+    return new DistributionConfigImpl();
   }
 
   private boolean isAliasCorrectlyConfiguredForComponents(
@@ -3020,21 +3028,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(userCommandPackages).append(offHeapMemorySize).append(lockMemory).append(shiroInit)
         .append(modifiable).toHashCode();
   }
-
-  /**
-   * Used by gemfire build.xml to generate a default gemfire.properties for use by applications. See
-   * bug 30995 for the feature request.
-   */
-  public static void main(String args[]) throws IOException {
-    DistributionConfigImpl cfg = new DistributionConfigImpl();
-    String fileName = DistributionConfig.GEMFIRE_PREFIX + "properties";
-    if (args != null && args.length > 0) {
-      String temp = args[0].trim();
-      fileName = "".equals(temp) ? fileName : temp;
-    }
-    cfg.toFile(new File(fileName));
-  }
-
 
   /**
    * For dunit tests we do not allow use of the default multicast address/port. Please use

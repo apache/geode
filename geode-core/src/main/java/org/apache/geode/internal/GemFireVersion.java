@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.internal.lang.SystemUtils.*;
+
 import java.io.File;
 import java.io.InputStream;
 import java.io.PrintStream;
@@ -120,8 +122,7 @@ public class GemFireVersion {
     }
     // fix for bug 33274 - null CodeSource from protection domain in Sybase
     URL csLoc = null;
-    StringTokenizer tokenizer =
-        new StringTokenizer(System.getProperty("java.class.path"), File.pathSeparator);
+    StringTokenizer tokenizer = new StringTokenizer(getClassPath(), File.pathSeparator);
     while (tokenizer.hasMoreTokens()) {
       String jar = tokenizer.nextToken();
       if (jar.indexOf(getGemFireJarFileName()) != -1) {
@@ -137,7 +138,7 @@ public class GemFireVersion {
       return csLoc;
     }
     // try the boot class path to fix bug 37394
-    tokenizer = new StringTokenizer(System.getProperty("sun.boot.class.path"), File.pathSeparator);
+    tokenizer = new StringTokenizer(getBootClassPath(), File.pathSeparator);
     while (tokenizer.hasMoreTokens()) {
       String jar = tokenizer.nextToken();
       if (jar.indexOf(getGemFireJarFileName()) != -1) {
@@ -234,10 +235,10 @@ public class GemFireVersion {
     private void printHostInfo(PrintWriter pw)
         throws InternalGemFireError, Error, VirtualMachineError {
       try {
-        StringBuffer sb = new StringBuffer(SocketCreator.getLocalHost().toString()).append(", ")
+        StringBuilder sb = new StringBuilder(SocketCreator.getLocalHost().toString()).append(", ")
             .append(Runtime.getRuntime().availableProcessors()).append(" cpu(s), ")
-            .append(System.getProperty("os.arch")).append(' ').append(System.getProperty("os.name"))
-            .append(' ').append(System.getProperty("os.version")).append(' ');
+            .append(getOsArchitecture()).append(' ').append(getOsName()).append(' ')
+            .append(getOsVersion()).append(' ');
         pw.println(LocalizedStrings.GemFireVersion_RUNNING_ON_0.toLocalizedString(sb.toString()));
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);

@@ -119,7 +119,7 @@ public class LuceneFunction implements Function, InternalEntity {
       stats.incNumberOfQueryExecuted();
       resultSender.lastResult(mergedResult);
     } catch (IOException | BucketNotFoundException e) {
-      logger.warn("", e);
+      logger.debug("Exception during lucene query function", e);
       throw new FunctionException(e);
     }
   }

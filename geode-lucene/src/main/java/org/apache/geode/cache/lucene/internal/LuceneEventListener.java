@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy.TestHook;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.lucene.store.AlreadyClosedException;
 
 /**
  * An Async event queue listener that writes all of the events in batches to Lucene
@@ -89,10 +90,16 @@ public class LuceneEventListener implements AsyncEventListener {
       }
       return true;
     } catch (BucketNotFoundException | RegionDestroyedException | PrimaryBucketException e) {
-      logger.debug("Bucket not found while saving to lucene index: " + e.getMessage());
+      logger.debug("Bucket not found while saving to lucene index: " + e.getMessage(), e);
       return false;
-    } catch (IOException | CacheClosedException e) {
-      logger.error("Unable to save to lucene index", e);
+    } catch (IOException e) {
+      logger.debug("Unable to save to lucene index", e);
+      return false;
+    } catch (CacheClosedException e) {
+      logger.debug("Unable to save to lucene index, cache has been closed", e);
+      return false;
+    } catch (AlreadyClosedException e) {
+      logger.debug("Unable to commit, the lucene index is already closed", e);
       return false;
     } finally {
       DefaultQuery.setPdxReadSerialized(false);

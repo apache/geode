@@ -20,6 +20,7 @@ import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -28,7 +29,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, FlakyTest.class})
 public class NetstatDUnitTest {
   @ClassRule
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();

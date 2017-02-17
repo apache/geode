@@ -23,9 +23,9 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -37,19 +37,15 @@ public class StartServerAuthorizationTest {
   @ClassRule
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
   private static Locator locator = null;
-  private ServerStarterRule serverStarter = null;
+
+  @Rule
+  public ServerStarterRule serverStarter = new ServerStarterRule();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     locator = lsRule.startLocatorVM(0, props);
-  }
-
-  @After
-  public void after() throws Exception {
-    if (serverStarter != null)
-      serverStarter.after();
   }
 
   @Test
@@ -59,8 +55,7 @@ public class StartServerAuthorizationTest {
     props.setProperty("security-username", "user");
     props.setProperty("security-password", "wrongPswd");
 
-    serverStarter = new ServerStarterRule(props);
-    assertThatThrownBy(() -> serverStarter.startServer(locator.getPort()))
+    assertThatThrownBy(() -> serverStarter.startServer(props, locator.getPort()))
         .isInstanceOf(GemFireSecurityException.class).hasMessageContaining(
             "Security check failed. Authentication error. Please check your credentials");
   }
@@ -73,8 +68,7 @@ public class StartServerAuthorizationTest {
     props.setProperty("security-username", "user");
     props.setProperty("security-password", "user");
 
-    serverStarter = new ServerStarterRule(props);
-    assertThatThrownBy(() -> serverStarter.startServer(locator.getPort()))
+    assertThatThrownBy(() -> serverStarter.startServer(props, locator.getPort()))
         .isInstanceOf(GemFireSecurityException.class)
         .hasMessageContaining("user not authorized for CLUSTER:MANAGE");
   }

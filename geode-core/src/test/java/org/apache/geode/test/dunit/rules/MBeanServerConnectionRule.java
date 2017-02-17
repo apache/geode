@@ -15,13 +15,18 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
+import org.apache.geode.management.internal.security.AccessControlMXBean;
+import org.apache.geode.test.junit.rules.DescribedExternalResource;
+import org.awaitility.Awaitility;
+import org.junit.runner.Description;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.concurrent.TimeUnit;
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
@@ -33,21 +38,21 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import org.junit.runner.Description;
-
-import org.apache.geode.management.internal.security.AccessControlMXBean;
-import org.apache.geode.test.junit.rules.DescribedExternalResource;
-
 /**
- * Class which eases the creation of MBeans for security testing. When combined with
- * {@link ConnectionConfiguration} it allows for the creation of per-test connections with different
- * user/password combinations.
+ * This rules handles connection to the MBean Server. If used with {@link ConnectionConfiguration},
+ * you will need to construct the rule with a port number, then the rule will call connect for you
+ * before running your test.
+ *
+ * If constructed with no port number, you can connect to any port in your test at anytime, and the
+ * rule will handle the closing of the connection for you.
  */
 public class MBeanServerConnectionRule extends DescribedExternalResource {
 
-  private final int jmxServerPort;
+  private int jmxServerPort = -1;
   private JMXConnector jmxConnector;
   private MBeanServerConnection con;
+
+  public MBeanServerConnectionRule() {}
 
   /**
    * Rule constructor
@@ -107,31 +112,83 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     return con;
   }
 
+  @Override
   protected void before(Description description) throws Throwable {
-    ConnectionConfiguration config = description.getAnnotation(ConnectionConfiguration.class);
-    Map<String, String[]> env = new HashMap<>();
-    if (config != null) {
-      String user = config.user();
-      String password = config.password();
-      env.put(JMXConnector.CREDENTIALS, new String[] {user, password});
+    // do not auto connect if port is not set
+    if (jmxServerPort < 0)
+      return;
 
-      JMXServiceURL url =
-          new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:" + jmxServerPort + "/jmxrmi");
-      jmxConnector = JMXConnectorFactory.connect(url, env);
-      con = jmxConnector.getMBeanServerConnection();
+    // do not auto connect if no ConnectionConfiguration is defined.
+    ConnectionConfiguration config = description.getAnnotation(ConnectionConfiguration.class);
+    if (config == null)
+      return;
+
+    Map<String, String[]> env = new HashMap<>();
+    String user = config.user();
+    String password = config.password();
+    env.put(JMXConnector.CREDENTIALS, new String[] {user, password});
+    connect(null, jmxServerPort, env);
+  }
+
+  public void connect(int jmxPort) throws Exception {
+    connect(null, jmxPort, null);
+  }
+
+  public void connect(int jmxPort, Map<String, ?> environment) throws Exception {
+    connect(null, jmxPort, environment);
+  }
+
+  public void connect(String jmxServer, int jmxPort) throws Exception {
+    connect(jmxServer, jmxPort, null);
+  }
+
+  public void connect(String jmxServer, int jmxPort, final Map<String, ?> environment)
+      throws Exception {
+    if (jmxServer == null) {
+      jmxServer = "";
     }
+
+    // ServiceUrl: service:jmx:rmi:///jndi/rmi://<TARGET_MACHINE>:<RMI_REGISTRY_PORT>/jmxrmi
+    JMXServiceURL url =
+        new JMXServiceURL("service:jmx:rmi:///jndi/rmi://" + jmxServer + ":" + jmxPort + "/jmxrmi");
+
+    // same as GfshShellConnectorRule: if we connect before the RMI server is ready, we get "Failed
+    // to retrieve RMIServer stub: javax.naming.CommunicationException [Root exception is
+    // java.rmi.NoSuchObjectException: no such object in table]" Exception
+    // Have to implement a wait mechanism here. We can use Awaitility here
+    Awaitility.await().atMost(2, TimeUnit.MINUTES).pollDelay(2, TimeUnit.SECONDS).until(() -> {
+      Map<String, ?> env = new HashMap<>();
+      if (environment != null) {
+        env = new HashMap<>(environment);
+      }
+      try {
+        jmxConnector = JMXConnectorFactory.connect(url, env);
+      } catch (Exception e) {
+        if (e.getMessage().contains("no such object in table")) {
+          // keep waiting
+          return false;
+        }
+        throw e;
+      }
+      return true;
+    });
+    con = jmxConnector.getMBeanServerConnection();
   }
 
   /**
    * Override to tear down your specific external resource.
    */
+  @Override
   protected void after(Description description) throws Throwable {
+    disconnect();
+  }
+
+  public void disconnect() throws Exception {
     if (jmxConnector != null) {
       jmxConnector.close();
+      con = null;
       jmxConnector = null;
     }
-
-    con = null;
   }
 
 }

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -52,6 +53,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
+import org.awaitility.Awaitility;
 
 @Category(DistributedTest.class)
 public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
@@ -1672,7 +1674,7 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
     assertEquals(expectedKeys, allKeys);
 
     assertTrue(getBucketMoved(vm1, "ln"));
-    assertTrue(getBucketMoved(vm2, "ln"));
+    Awaitility.waitAtMost(10000, TimeUnit.MILLISECONDS).until(() -> getBucketMoved(vm2, "ln"));
   }
 
   private static Set<Object> getKeysSeen(VM vm, String asyncEventQueueId) {
