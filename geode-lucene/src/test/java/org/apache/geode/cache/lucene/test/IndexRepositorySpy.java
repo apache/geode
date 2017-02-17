@@ -58,6 +58,10 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
     if (indexRepo == null) {
       return null;
     }
+    if (mockingDetails(indexRepo).isSpy()) {
+      return indexRepo;
+    }
+
     final IndexRepository spy = Mockito.spy(indexRepo);
 
     Answer invokeBeforeWrite = invocation -> {
