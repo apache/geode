@@ -16,7 +16,4 @@
  */
 
 dependencies {
-    compile project(':geode-core')
-    compile project(':geode-common')
-    testCompile files(project(':geode-core').sourceSets.test.output)
 }
