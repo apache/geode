@@ -365,7 +365,7 @@ public abstract class CliCommandTestBase extends JUnit4CacheTestCase {
         System.err.println("result1 = " + result1);
       }
       result = (CommandResult) result1; // TODO: this can result in ClassCastException if
-                                        // command resulted in error
+                                                  // command resulted in error
     } catch (InterruptedException ex) {
       error("shell received InterruptedException");
     }
