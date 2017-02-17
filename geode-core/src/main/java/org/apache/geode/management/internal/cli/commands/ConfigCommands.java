@@ -234,8 +234,7 @@ public class ConfigCommands extends AbstractCommandsSupport {
               false);
         }
       }
-      Result result = ResultBuilder.buildResult(infoData);
-      return result;
+      return ResultBuilder.buildResult(infoData);
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;

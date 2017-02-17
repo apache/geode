@@ -301,6 +301,12 @@ public class ResultBuilder {
         }
 
         @Override
+        public ResultData addByteDataFromFileFile(String filePath, int fileType, String message,
+            boolean addTimeStampToName) throws FileNotFoundException, IOException {
+          throw new UnsupportedOperationException("This is read only result data");
+        }
+
+        @Override
         public TabularResultData accumulate(String accumulateFor, Object value) {
           throw new UnsupportedOperationException("This is read only result data");
         }
@@ -320,6 +326,12 @@ public class ResultBuilder {
         }
 
         @Override
+        public ResultData addByteDataFromFileFile(String filePath, int fileType, String message,
+            boolean addTimeStampToName) throws FileNotFoundException, IOException {
+          throw new UnsupportedOperationException("This is read only result data");
+        }
+
+        @Override
         public ErrorResultData addLine(String line) {
           throw new UnsupportedOperationException("This is read only result data");
         }
@@ -335,6 +347,12 @@ public class ResultBuilder {
         @Override
         public ResultData addAsFile(String fileName, String fileContents, String message,
             boolean addTimeStampToName) {
+          throw new UnsupportedOperationException("This is read only result data");
+        }
+
+        @Override
+        public ResultData addByteDataFromFileFile(String filePath, int fileType, String message,
+            boolean addTimeStampToName) throws FileNotFoundException, IOException {
           throw new UnsupportedOperationException("This is read only result data");
         }
 
@@ -359,6 +377,12 @@ public class ResultBuilder {
         @Override
         public ResultData addAsFile(String fileName, String fileContents, String message,
             boolean addTimeStampToName) {
+          throw new UnsupportedOperationException("This is read only result data");
+        }
+
+        @Override
+        public ResultData addByteDataFromFileFile(String filePath, int fileType, String message,
+            boolean addTimeStampToName) throws FileNotFoundException, IOException {
           throw new UnsupportedOperationException("This is read only result data");
         }
 
@@ -388,6 +412,12 @@ public class ResultBuilder {
         @Override
         public ResultData addAsFile(String fileName, String fileContents, String message,
             boolean addTimeStampToName) {
+          throw new UnsupportedOperationException("This is read only result data");
+        }
+
+        @Override
+        public ResultData addByteDataFromFileFile(String filePath, int fileType, String message,
+            boolean addTimeStampToName) throws FileNotFoundException, IOException {
           throw new UnsupportedOperationException("This is read only result data");
         }
 
