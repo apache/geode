@@ -608,12 +608,15 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       }
       try {
         listener.viewInstalled(latestView);
-        startCleanupTimer();
       } catch (DistributedSystemDisconnectedException se) {
       }
     } finally {
       latestViewWriteLock.unlock();
     }
+  }
+
+  public boolean isCleanupTimerStarted() {
+    return this.cleanupTimer != null;
   }
 
   /**
@@ -767,7 +770,9 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   }
 
   @Override
-  public void started() {}
+  public void started() {
+    startCleanupTimer();
+  }
 
 
   /** this is invoked by JoinLeave when there is a loss of quorum in the membership system */
@@ -942,12 +947,6 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         surpriseMembers.remove(member);
       } else {
 
-        // Now that we're sure the member is new, add them.
-        // make sure the surprise-member cleanup task is running
-        if (this.cleanupTimer == null) {
-          startCleanupTimer();
-        } // cleanupTimer == null
-
         // Ensure that the member is accounted for in the view
         // Conjure up a new view including the new member. This is necessary
         // because we are about to tell the listener about a new member, so
@@ -978,43 +977,33 @@ public class GMSMembershipManager implements MembershipManager, Manager {
 
   /** starts periodic task to perform cleanup chores such as expire surprise members */
   private void startCleanupTimer() {
-    latestViewWriteLock.lock();
-    try {
-      if (this.cleanupTimer != null) {
-        return;
-      }
-      DistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-      if (ds != null && ds.isConnected()) {
-        this.cleanupTimer = new SystemTimer(ds, true);
-        SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {
-          @Override
-          public void run2() {
-            latestViewWriteLock.lock();
-            try {
-              long oldestAllowed = System.currentTimeMillis() - surpriseMemberTimeout;
-              for (Iterator it = surpriseMembers.entrySet().iterator(); it.hasNext();) {
-                Map.Entry entry = (Map.Entry) it.next();
-                Long birthtime = (Long) entry.getValue();
-                if (birthtime.longValue() < oldestAllowed) {
-                  it.remove();
-                  InternalDistributedMember m = (InternalDistributedMember) entry.getKey();
-                  logger.info(LocalizedMessage.create(
-                      LocalizedStrings.GroupMembershipService_MEMBERSHIP_EXPIRING_MEMBERSHIP_OF_SURPRISE_MEMBER_0,
-                      m));
-                  removeWithViewLock(m, true,
-                      "not seen in membership view in " + surpriseMemberTimeout + "ms");
-                }
-              }
-            } finally {
-              latestViewWriteLock.unlock();
+    DistributedSystem ds = this.dcReceiver.getDM().getSystem();
+    this.cleanupTimer = new SystemTimer(ds, true);
+    SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {
+      @Override
+      public void run2() {
+        latestViewWriteLock.lock();
+        try {
+          long oldestAllowed = System.currentTimeMillis() - surpriseMemberTimeout;
+          for (Iterator it = surpriseMembers.entrySet().iterator(); it.hasNext();) {
+            Map.Entry entry = (Map.Entry) it.next();
+            Long birthtime = (Long) entry.getValue();
+            if (birthtime.longValue() < oldestAllowed) {
+              it.remove();
+              InternalDistributedMember m = (InternalDistributedMember) entry.getKey();
+              logger.info(LocalizedMessage.create(
+                  LocalizedStrings.GroupMembershipService_MEMBERSHIP_EXPIRING_MEMBERSHIP_OF_SURPRISE_MEMBER_0,
+                  m));
+              removeWithViewLock(m, true,
+                  "not seen in membership view in " + surpriseMemberTimeout + "ms");
             }
           }
-        };
-        this.cleanupTimer.scheduleAtFixedRate(st, surpriseMemberTimeout, surpriseMemberTimeout / 3);
-      } // ds != null && ds.isConnected()
-    } finally {
-      latestViewWriteLock.unlock();
-    }
+        } finally {
+          latestViewWriteLock.unlock();
+        }
+      }
+    };
+    this.cleanupTimer.scheduleAtFixedRate(st, surpriseMemberTimeout, surpriseMemberTimeout / 3);
   }
 
   /**

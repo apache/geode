@@ -159,77 +159,74 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
    **/
   @Test
   public void testSurpriseMemberHandling() {
-    VM vm0 = Host.getHost(0).getVM(0);
 
-    InternalDistributedSystem sys = getSystem();
-    MembershipManager mgr = MembershipManagerHelper.getMembershipManager(sys);
-
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "surprise-member-timeout", "3000");
     try {
-      InternalDistributedMember mbr =
-          new InternalDistributedMember(NetworkUtils.getIPLiteral(), 12345);
+      InternalDistributedSystem sys = getSystem();
+      MembershipManager mgr = MembershipManagerHelper.getMembershipManager(sys);
+      assertTrue(((GMSMembershipManager) mgr).isCleanupTimerStarted());
 
-      // first make sure we can't add this as a surprise member (bug #44566)
-
-      // if the view number isn't being recorded correctly the test will pass but the
-      // functionality is broken
-      Assert.assertTrue("expected view ID to be greater than zero", mgr.getView().getViewId() > 0);
-
-      int oldViewId = mbr.getVmViewId();
-      mbr.setVmViewId((int) mgr.getView().getViewId() - 1);
-      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-          .info("current membership view is " + mgr.getView());
-      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-          .info("created ID " + mbr + " with view ID " + mbr.getVmViewId());
-      sys.getLogWriter()
-          .info("<ExpectedException action=add>attempt to add old member</ExpectedException>");
-      sys.getLogWriter()
-          .info("<ExpectedException action=add>Removing shunned GemFire node</ExpectedException>");
       try {
-        boolean accepted = mgr.addSurpriseMember(mbr);
-        Assert.assertTrue("member with old ID was not rejected (bug #44566)", !accepted);
-      } finally {
+        InternalDistributedMember mbr =
+            new InternalDistributedMember(NetworkUtils.getIPLiteral(), 12345);
+
+        // first make sure we can't add this as a surprise member (bug #44566)
+
+        // if the view number isn't being recorded correctly the test will pass but the
+        // functionality is broken
+        Assert.assertTrue("expected view ID to be greater than zero",
+            mgr.getView().getViewId() > 0);
+
+        int oldViewId = mbr.getVmViewId();
+        mbr.setVmViewId((int) mgr.getView().getViewId() - 1);
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+            .info("current membership view is " + mgr.getView());
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+            .info("created ID " + mbr + " with view ID " + mbr.getVmViewId());
         sys.getLogWriter()
-            .info("<ExpectedException action=remove>attempt to add old member</ExpectedException>");
+            .info("<ExpectedException action=add>attempt to add old member</ExpectedException>");
         sys.getLogWriter().info(
-            "<ExpectedException action=remove>Removing shunned GemFire node</ExpectedException>");
-      }
-      mbr.setVmViewId(oldViewId);
-
-      // now forcibly add it as a surprise member and show that it is reaped
-      long gracePeriod = 5000;
-      long startTime = System.currentTimeMillis();
-      long timeout = ((GMSMembershipManager) mgr).getSurpriseMemberTimeout();
-      long birthTime = startTime - timeout + gracePeriod;
-      MembershipManagerHelper.addSurpriseMember(sys, mbr, birthTime);
-      assertTrue("Member was not a surprise member", mgr.isSurpriseMember(mbr));
-
-      // force a real view change
-      SerializableRunnable connectDisconnect = new SerializableRunnable() {
-        public void run() {
-          getSystem().disconnect();
+            "<ExpectedException action=add>Removing shunned GemFire node</ExpectedException>");
+        try {
+          boolean accepted = mgr.addSurpriseMember(mbr);
+          Assert.assertTrue("member with old ID was not rejected (bug #44566)", !accepted);
+        } finally {
+          sys.getLogWriter().info(
+              "<ExpectedException action=remove>attempt to add old member</ExpectedException>");
+          sys.getLogWriter().info(
+              "<ExpectedException action=remove>Removing shunned GemFire node</ExpectedException>");
         }
-      };
-      vm0.invoke(connectDisconnect);
+        mbr.setVmViewId(oldViewId);
 
-      if (birthTime < (System.currentTimeMillis() - timeout)) {
-        return; // machine is too busy and we didn't get enough CPU to perform more assertions
+        // now forcibly add it as a surprise member and show that it is reaped
+        long gracePeriod = 5000;
+        long startTime = System.currentTimeMillis();
+        long timeout = ((GMSMembershipManager) mgr).getSurpriseMemberTimeout();
+        long birthTime = startTime - timeout + gracePeriod;
+        MembershipManagerHelper.addSurpriseMember(sys, mbr, birthTime);
+        assertTrue("Member was not a surprise member", mgr.isSurpriseMember(mbr));
+
+        if (birthTime < (System.currentTimeMillis() - timeout)) {
+          return; // machine is too busy and we didn't get enough CPU to perform more assertions
+        }
+        assertTrue("Member was incorrectly removed from surprise member set",
+            mgr.isSurpriseMember(mbr));
+
+        try {
+          Thread.sleep((timeout / 3) + gracePeriod);
+        } catch (InterruptedException e) {
+          fail("test was interrupted", e);
+        }
+
+        assertTrue("Member was not removed from surprise member set", !mgr.isSurpriseMember(mbr));
+
+      } finally {
+        if (sys != null && sys.isConnected()) {
+          sys.disconnect();
+        }
       }
-      assertTrue("Member was incorrectly removed from surprise member set",
-          mgr.isSurpriseMember(mbr));
-
-      try {
-        Thread.sleep(gracePeriod);
-      } catch (InterruptedException e) {
-        fail("test was interrupted", e);
-      }
-
-      vm0.invoke(connectDisconnect);
-      assertTrue("Member was not removed from surprise member set", !mgr.isSurpriseMember(mbr));
-
     } finally {
-      if (sys != null && sys.isConnected()) {
-        sys.disconnect();
-      }
+      System.getProperties().remove(DistributionConfig.GEMFIRE_PREFIX + "surprise-member-timeout");
     }
   }
 
