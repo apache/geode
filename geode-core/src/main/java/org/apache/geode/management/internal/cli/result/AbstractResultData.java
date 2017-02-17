@@ -175,8 +175,9 @@ public abstract class AbstractResultData implements ResultData {
       sectionData.put(FILE_TYPE_FIELD, fileType);
       sectionData.put(FILE_MESSAGE, message);
       DeflaterInflaterData deflaterInflaterData = CliUtil.compressBytes(data);
-      sectionData.put(FILE_DATA_FIELD, Base64.getEncoder().encodeToString(deflaterInflaterData.getData()));
-      sectionData.put(DATA_LENGTH_FIELD,deflaterInflaterData.getDataLength());
+      sectionData.put(FILE_DATA_FIELD,
+          Base64.getEncoder().encodeToString(deflaterInflaterData.getData()));
+      sectionData.put(DATA_LENGTH_FIELD, deflaterInflaterData.getDataLength());
     } catch (GfJsonException e) {
       throw new ResultDataException(e.getMessage());
     }
@@ -231,7 +232,7 @@ public abstract class AbstractResultData implements ResultData {
       String fileDataString = (String) object.get(FILE_DATA_FIELD);
       int fileDataLength = (int) object.get(DATA_LENGTH_FIELD);
       byte[] byteArray = Base64.getDecoder().decode(fileDataString);
-      byte[] uncompressBytes = CliUtil.uncompressBytes(byteArray,fileDataLength).getData();
+      byte[] uncompressBytes = CliUtil.uncompressBytes(byteArray, fileDataLength).getData();
 
       boolean isGfshVM = CliUtil.isGfshVM();
       File fileToDumpData = new File(fileName);
