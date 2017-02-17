@@ -37,6 +37,7 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.redis.internal.executor.hash.HashExecutor;
 import org.apache.geode.redis.internal.executor.transactions.TransactionExecutor;
 import org.apache.geode.redis.GeodeRedisServer;
 
@@ -135,17 +136,14 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    try
-	{
-		Command command = (Command) msg;
-		executeCommand(ctx, command);
-	}
-	catch (Exception e)
-    {
-		logger.error(e);
-		throw e;
-	}
-    
+    try {
+      Command command = (Command) msg;
+      executeCommand(ctx, command);
+    } catch (Exception e) {
+      logger.error(e);
+      throw e;
+    }
+
   }
 
   /**
@@ -207,6 +205,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       else
         executeWithoutTransaction(exec, command);
 
+
       if (hasTransaction() && command.getCommandType() != RedisCommandType.MULTI) {
         writeToChannel(
             Coder.getSimpleStringResponse(this.byteBufAllocator, RedisConstants.COMMAND_QUEUED));
@@ -244,8 +243,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         exec.executeCommand(command, this);
         return;
       } catch (Exception e) {
-    	  logger.error(e);
-    	  
+        logger.error(e);
+
         cause = e;
         if (e instanceof RegionDestroyedException || e instanceof RegionNotFoundException
             || e.getCause() instanceof QueryInvocationTargetException)

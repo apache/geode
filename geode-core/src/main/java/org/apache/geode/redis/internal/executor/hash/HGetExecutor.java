@@ -36,7 +36,7 @@ public class HGetExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper regioName = HashUtil.toEntryKey(command.getKey());
+    ByteArrayWrapper regioName = HashInterpreter.toEntryKey(command.getKey());
 
     checkDataType(regioName, RedisDataType.REDIS_HASH, context);
     Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
@@ -50,7 +50,7 @@ public class HGetExecutor extends HashExecutor {
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
-    ByteArrayWrapper key = HashUtil.toEntryKey(command.getKey());
+    ByteArrayWrapper key = HashInterpreter.toEntryKey(command.getKey());
 
     Map<ByteArrayWrapper, ByteArrayWrapper> entry = keyRegion.get(key);
     if (entry == null) {

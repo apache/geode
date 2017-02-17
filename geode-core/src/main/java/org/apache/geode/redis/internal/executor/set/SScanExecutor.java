@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.executor.set;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -43,10 +44,11 @@ public class SScanExecutor extends AbstractScanExecutor {
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> keyRegion =
-        (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(key);
-    if (keyRegion == null) {
+
+    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
+    Set<ByteArrayWrapper> set = region.get(key);
+
+    if (set == null) {
       command.setResponse(
           Coder.getScanResponse(context.getByteBufAllocator(), new ArrayList<String>()));
       return;
@@ -114,10 +116,17 @@ public class SScanExecutor extends AbstractScanExecutor {
 
     @SuppressWarnings("unchecked")
     List<ByteArrayWrapper> returnList =
-        (List<ByteArrayWrapper>) getIteration(new ArrayList(keyRegion.keySet()), matchPattern,
+        (List<ByteArrayWrapper>) getIteration(new ArrayList<ByteArrayWrapper>(set), matchPattern,
             count, cursor);
 
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
+  }
+
+  @SuppressWarnings({"unchecked"})
+  private Region<ByteArrayWrapper, Set<ByteArrayWrapper>> getRegion(
+      ExecutionHandlerContext context) {
+    return (Region<ByteArrayWrapper, Set<ByteArrayWrapper>>) context.getRegionProvider()
+        .getRegion(SetInterpreter.SET_REGION_KEY);
   }
 
   @SuppressWarnings("unchecked")

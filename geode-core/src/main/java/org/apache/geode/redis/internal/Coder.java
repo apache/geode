@@ -35,11 +35,6 @@ import org.apache.geode.cache.query.Struct;
  */
 public class Coder {
 
-  /**
-   * REGION_KEY_SEPERATOR = ":"
-   * 
-   */
-  public static final String REGION_KEY_SEPERATOR = ":";
 
   /*
    * Take no chances on char to byte conversions with default charsets on jvms, so we'll hard code

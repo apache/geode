@@ -42,9 +42,8 @@ public class SRandMemberExecutor extends SetExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> keyRegion =
-        (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(key);
+
+    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
 
     int count = 1;
 
@@ -58,22 +57,24 @@ public class SRandMemberExecutor extends SetExecutor {
       }
     }
 
-    if (keyRegion == null || count == 0) {
+    Set<ByteArrayWrapper> set = region.get(key);
+
+    if (set == null || count == 0) {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
       return;
     }
 
-    int members = keyRegion.size();
+    int members = set.size();
 
     if (members <= count && count != 1) {
       command.setResponse(Coder.getBulkStringArrayResponse(context.getByteBufAllocator(),
-          new HashSet<ByteArrayWrapper>(keyRegion.keySet())));
+          new HashSet<ByteArrayWrapper>(set)));
       return;
     }
 
     Random rand = new Random();
 
-    ByteArrayWrapper[] entries = keyRegion.keySet().toArray(new ByteArrayWrapper[members]);
+    ByteArrayWrapper[] entries = set.toArray(new ByteArrayWrapper[members]);
 
     if (count == 1) {
       ByteArrayWrapper randEntry = entries[rand.nextInt(entries.length)];

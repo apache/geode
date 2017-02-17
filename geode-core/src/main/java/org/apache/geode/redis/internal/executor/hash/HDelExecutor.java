@@ -40,8 +40,8 @@ public class HDelExecutor extends HashExecutor {
 
     int numDeleted = 0;
 
-    ByteArrayWrapper regionName = HashUtil.toRegionNameByteArray(command.getKey());
-    ByteArrayWrapper entryKey = HashUtil.toEntryKey(command.getKey());
+    ByteArrayWrapper regionName = HashInterpreter.toRegionNameByteArray(command.getKey());
+    ByteArrayWrapper entryKey = HashInterpreter.toEntryKey(command.getKey());
 
     checkDataType(regionName, RedisDataType.REDIS_HASH, context);
     Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =

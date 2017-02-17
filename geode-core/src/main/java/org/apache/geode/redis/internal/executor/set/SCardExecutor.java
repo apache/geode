@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.executor.set;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -28,7 +29,7 @@ public class SCardExecutor extends SetExecutor {
 
   private final int NOT_EXISTS = 0;
 
-  @SuppressWarnings("unchecked")
+
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
@@ -40,15 +41,15 @@ public class SCardExecutor extends SetExecutor {
 
     ByteArrayWrapper key = command.getKey();
     checkDataType(key, RedisDataType.REDIS_SET, context);
-    Region<ByteArrayWrapper, Boolean> keyRegion =
-        (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(key);
+    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> keyRegion = getRegion(context);
 
-    if (keyRegion == null) {
+    Set<ByteArrayWrapper> set = keyRegion.get(key);
+    if (set == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
       return;
     }
 
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), keyRegion.size()));
+    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), set.size()));
   }
 
 }

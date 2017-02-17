@@ -14,7 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.set;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -23,6 +25,7 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RegionProvider;
 
 public class SMoveExecutor extends SetExecutor {
 
@@ -45,30 +48,44 @@ public class SMoveExecutor extends SetExecutor {
 
     checkDataType(source, RedisDataType.REDIS_SET, context);
     checkDataType(destination, RedisDataType.REDIS_SET, context);
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> sourceRegion =
-        (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(source);
 
-    if (sourceRegion == null) {
+    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
+
+    Set<ByteArrayWrapper> sourceSet = region.get(source);
+
+    if (sourceSet == null) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
       return;
     }
 
-    Object oldVal = sourceRegion.get(mem);
-    sourceRegion.remove(mem);
+    sourceSet = new HashSet<ByteArrayWrapper>(sourceSet); // copy to support transactions;
+    boolean removed = sourceSet.remove(mem);
 
-    if (oldVal == null) {
+
+    Set<ByteArrayWrapper> destinationSet = region.get(destination);
+
+    if (destinationSet == null)
+      destinationSet = new HashSet<ByteArrayWrapper>();
+    else
+      destinationSet = new HashSet<ByteArrayWrapper>(destinationSet); // copy to support
+                                                                      // transactions
+
+    destinationSet.add(mem);
+
+    RegionProvider rc = context.getRegionProvider();
+
+    region.put(destination, destinationSet);
+    rc.metaPut(destination, RedisDataType.REDIS_SET);
+
+    region.put(source, sourceSet);
+    rc.metaPut(source, RedisDataType.REDIS_SET);
+
+    if (!removed) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_MOVED));
-      return;
+    } else {
+      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), MOVED));
     }
 
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> destinationRegion =
-        (Region<ByteArrayWrapper, Boolean>) getOrCreateRegion(context, destination,
-            RedisDataType.REDIS_SET);
-    destinationRegion.put(mem, true);
-
-    command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), MOVED));
   }
 
 }

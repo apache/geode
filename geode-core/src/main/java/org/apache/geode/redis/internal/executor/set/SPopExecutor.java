@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.executor.set;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -36,24 +37,26 @@ public class SPopExecutor extends SetExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
-    @SuppressWarnings("unchecked")
-    Region<ByteArrayWrapper, Boolean> keyRegion =
-        (Region<ByteArrayWrapper, Boolean>) context.getRegionProvider().getRegion(key);
-    if (keyRegion == null || keyRegion.isEmpty()) {
+    // getRegion(key);
+    Region<ByteArrayWrapper, Set<ByteArrayWrapper>> region = getRegion(context);
+
+    Set<ByteArrayWrapper> set = region.get(key);
+
+    if (set == null || set.isEmpty()) {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
       return;
     }
 
     Random rand = new Random();
 
-    ByteArrayWrapper[] entries = keyRegion.keySet().toArray(new ByteArrayWrapper[keyRegion.size()]);
+    ByteArrayWrapper[] entries = set.toArray(new ByteArrayWrapper[set.size()]);
 
     ByteArrayWrapper pop = entries[rand.nextInt(entries.length)];
 
-    keyRegion.remove(pop);
-    if (keyRegion.isEmpty()) {
-      context.getRegionProvider().removeKey(key);
-    }
+    set.remove(pop);
+    // save the updated set
+    region.put(key, set);
+
     command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), pop.toBytes()));
   }
 

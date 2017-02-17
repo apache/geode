@@ -44,6 +44,8 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
+import org.apache.geode.redis.internal.executor.hash.HashInterpreter;
+import org.apache.geode.redis.internal.executor.set.SetInterpreter;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
@@ -155,7 +157,8 @@ public class RegionProvider implements Closeable {
     Lock lock = this.locks.get(key.toString());
     boolean locked = false;
     try {
-      locked = lock.tryLock();
+      if (lock != null)
+        locked = lock.tryLock();
       // If we cannot get the lock we ignore this remote event, this key has local event
       // that started independently, ignore this event to prevent deadlock
       if (locked) {
@@ -179,7 +182,7 @@ public class RegionProvider implements Closeable {
   }
 
   public boolean removeKey(ByteArrayWrapper key, RedisDataType type, boolean cancelExpiration) {
-    if (type == null || type == RedisDataType.REDIS_PROTECTED)
+    if (type == RedisDataType.REDIS_PROTECTED)
       return false;
     Lock lock = this.locks.get(key.toString());
     try {
@@ -192,8 +195,24 @@ public class RegionProvider implements Closeable {
           return this.stringsRegion.remove(key) != null;
         } else if (type == RedisDataType.REDIS_HLL) {
           return this.hLLRegion.remove(key) != null;
+        } else if (type == RedisDataType.REDIS_LIST) {
+          return this.destroyRegion(key, type);
         } else {
-          return destroyRegion(key, type);
+          // Check hash
+          ByteArrayWrapper regionName = HashInterpreter.toRegionNameByteArray(key);
+          Region<?, ?> region = this.getRegion(regionName);
+          if (region != null) {
+            region.remove(HashInterpreter.toEntryKey(key));
+          }
+
+          // remove the set
+          region = this.getRegion(SetInterpreter.SET_REGION_KEY);
+          if (region != null) {
+            region.remove(key);
+          }
+
+
+          return true;
         }
       } catch (Exception exc) {
         return false;
@@ -267,7 +286,7 @@ public class RegionProvider implements Closeable {
 
     String regionName = key.toString();
 
-    // check if type is hash
+    // check if type is hash TODO: remove
     int indexOfColonForHashObject = regionName.indexOf(":");
     if (indexOfColonForHashObject > 0) {
       // Set HSET region:<key>
@@ -460,10 +479,10 @@ public class RegionProvider implements Closeable {
       return;
     if (currentType == RedisDataType.REDIS_PROTECTED)
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-   /* if (currentType != type)
-      throw new RedisDataTypeMismatchException(
-          "The key name \"" + key + "\" is already used by a " + currentType.toString());
-    */       
+    /*
+     * if (currentType != type) throw new RedisDataTypeMismatchException( "The key name \"" + key +
+     * "\" is already used by a " + currentType.toString());
+     */
   }
 
   public boolean regionExists(ByteArrayWrapper key) {

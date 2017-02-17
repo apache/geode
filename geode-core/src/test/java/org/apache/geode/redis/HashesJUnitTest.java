@@ -147,7 +147,7 @@ public class HashesJUnitTest {
     assertTrue(response2 == incr);
 
     long response3 = jedis.hincrBy(key, field, incr);
-    assertTrue(response3 == 2 * incr);
+    assertTrue(response3 + "=" + 2 * incr, response3 == 2 * incr);
 
 
     String field1 = randString();

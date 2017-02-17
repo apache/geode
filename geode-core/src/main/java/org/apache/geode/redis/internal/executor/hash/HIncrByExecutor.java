@@ -74,6 +74,7 @@ public class HIncrByExecutor extends HashExecutor {
       this.saveMap(map, context, key);
 
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), increment));
+
       return;
     }
 

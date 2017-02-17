@@ -38,13 +38,13 @@ public class HKeysExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper regionName = HashUtil.toRegionNameByteArray(command.getKey());
+    ByteArrayWrapper regionName = HashInterpreter.toRegionNameByteArray(command.getKey());
 
     checkDataType(regionName, RedisDataType.REDIS_HASH, context);
     Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
         getRegion(context, regionName);
 
-    ByteArrayWrapper entryKey = HashUtil.toEntryKey(command.getKey());
+    ByteArrayWrapper entryKey = HashInterpreter.toEntryKey(command.getKey());
 
     Map<ByteArrayWrapper, ByteArrayWrapper> keyMap = keyRegion.get(entryKey);
     if (keyMap == null || keyMap.isEmpty()) {

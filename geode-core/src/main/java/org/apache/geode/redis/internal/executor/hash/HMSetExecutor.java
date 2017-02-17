@@ -49,7 +49,7 @@ public class HMSetExecutor extends HashExecutor {
     }
 
     this.saveMap(map, context, key);
-
+    context.getRegionProvider().metaPut(command.getKey(), RedisDataType.REDIS_HASH);
     command.setResponse(Coder.getSimpleStringResponse(context.getByteBufAllocator(), SUCCESS));
 
   }
