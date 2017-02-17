@@ -20,9 +20,13 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactorySpy;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -30,6 +34,11 @@ import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InitialImageOperation.GIITestHook;
 import org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactorySpy;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
+import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
 import org.junit.After;
 import org.junit.Test;
 
@@ -37,10 +46,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.test.IndexRepositorySpy;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -74,6 +81,15 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     final DistributedMember member2 =
         dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     addCallbackToMoveBucket(dataStore1, member2);
+
+    putEntriesAndValidateQueryResults();
+  }
+
+  @Test
+  public void returnCorrectResultsWhenMoveBucketHappensOnQuery() throws InterruptedException {
+    final DistributedMember member2 =
+        dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
+    addCallbackToMovePrimaryOnQuery(dataStore1, member2);
 
     putEntriesAndValidateQueryResults();
   }
@@ -186,9 +202,18 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     });
   }
 
+  protected void addCallbackToMovePrimaryOnQuery(VM vm, final DistributedMember destination) {
+    vm.invoke(() -> {
+      LuceneIndexFactorySpy factorySpy = LuceneIndexFactorySpy.injectSpy();
+
+      factorySpy.setGetRespositoryConsumer(doOnce(key -> moveBucket(destination, key)));
+    });
+  }
+
   private void moveBucket(final DistributedMember destination, final Object key) {
     Region<Object, Object> region = getCache().getRegion(REGION_NAME);
     DistributedMember source = getCache().getDistributedSystem().getDistributedMember();
+    System.out.println("WHAT");
     PartitionRegionHelper.moveBucketByKey(region, source, destination, key);
   }
 
@@ -196,6 +221,7 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     vm.invoke(() -> {
       IndexRepositorySpy.remove();
       InitialImageOperation.resetAllGIITestHooks();
+      LuceneIndexFactorySpy.remove();
     });
   }
 

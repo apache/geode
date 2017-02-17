@@ -22,6 +22,7 @@ import java.util.Collection;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.search.Query;
 
