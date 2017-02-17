@@ -20,7 +20,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import java.util.Base64;
 import java.util.zip.DataFormatException;
 
 import org.apache.geode.management.cli.Result.Status;
@@ -151,26 +154,10 @@ public abstract class AbstractResultData implements ResultData {
     if (addTimeStampToName) {
       fileName = addTimeStampBeforeLastDot(fileName);
     }
-    return addAsFile(fileName.getBytes(), bytes, fileType, message);
+    return addAsFile(fileName, bytes, fileType, message);
   }
 
-  public ResultData addByteDataFromFileFile(String filePath, int fileType, String message,
-      boolean addTimeStampToName) throws FileNotFoundException, IOException {
-    byte[][] filesToBytes = CliUtil.filesToBytes(new String[] {filePath});
-
-    byte[] bytes = filesToBytes[0];
-    if (addTimeStampToName) {
-      String fileName = new String(filesToBytes[0]);
-      fileName = addTimeStampBeforeLastDot(fileName);
-      bytes = fileName.getBytes();
-    }
-    return addAsFile(bytes, filesToBytes[1], fileType, message);
-  }
-
-  private ResultData addAsFile(byte[] fileName, byte[] data, int fileType, String message) {
-    // System.out.println("fileType :: "+fileType);
-    // System.out.println("FILE_TYPE_BINARY :: "+FILE_TYPE_BINARY);
-    // System.out.println("FILE_TYPE_TEXT :: "+FILE_TYPE_TEXT);
+  private ResultData addAsFile(String fileName, byte[] data, int fileType, String message) {
     if (fileType != FILE_TYPE_BINARY && fileType != FILE_TYPE_TEXT) {
       throw new IllegalArgumentException("Unsupported file type is specified.");
     }
@@ -186,14 +173,12 @@ public abstract class AbstractResultData implements ResultData {
 
       sectionData.put(FILE_NAME_FIELD, fileName);
       sectionData.put(FILE_TYPE_FIELD, fileType);
-      sectionData.put(FILE_MESSAGE, message.getBytes());
-      sectionData.putAsJSONObject(FILE_DATA_FIELD, CliUtil.compressBytes(data));
-      // System.out.println(data);
-      // sectionData.put(FILE_DATA_FIELD, Base64.encodeBytes(data, Base64.GZIP));
+      sectionData.put(FILE_MESSAGE, message);
+      DeflaterInflaterData deflaterInflaterData = CliUtil.compressBytes(data);
+      sectionData.put(FILE_DATA_FIELD, Base64.getEncoder().encodeToString(deflaterInflaterData.getData()));
+      sectionData.put(DATA_LENGTH_FIELD,deflaterInflaterData.getDataLength());
     } catch (GfJsonException e) {
       throw new ResultDataException(e.getMessage());
-      // } catch (IOException e) {
-      // e.printStackTrace();
     }
     return this;
   }
@@ -223,29 +208,30 @@ public abstract class AbstractResultData implements ResultData {
 
       // build file name
       byte[] fileNameBytes = null;
+      String fileName = null;
       GfJsonArray fileNameJsonBytes = object.getJSONArray(FILE_NAME_FIELD);
       if (fileNameJsonBytes != null) { // if in gfsh
         fileNameBytes = GfJsonArray.toByteArray(fileNameJsonBytes);
+        fileName = new String(fileNameBytes);
       } else { // if on member
-        fileNameBytes = (byte[]) object.get(FILE_NAME_FIELD);
+        fileName = (String) object.get(FILE_NAME_FIELD);
       }
-      String fileName = new String(fileNameBytes);
 
       // build file message
       byte[] fileMessageBytes = null;
+      String fileMessage = null;
       GfJsonArray fileMessageJsonBytes = object.getJSONArray(FILE_MESSAGE);
       if (fileMessageJsonBytes != null) { // if in gfsh
         fileMessageBytes = GfJsonArray.toByteArray(fileMessageJsonBytes);
+        fileMessage = new String(fileMessageBytes);
       } else { // if on member
-        fileMessageBytes = (byte[]) object.get(FILE_MESSAGE);
+        fileMessage = (String) object.get(FILE_MESSAGE);
       }
-      String fileMessage = new String(fileMessageBytes);
 
-      GfJsonObject fileDataBytes = object.getJSONObject(FILE_DATA_FIELD);
-      byte[] byteArray = GfJsonArray.toByteArray(fileDataBytes.getJSONArray(DATA_FIELD));
-      int dataLength = fileDataBytes.getInt(DATA_LENGTH_FIELD);
-      DeflaterInflaterData uncompressBytes = CliUtil.uncompressBytes(byteArray, dataLength);
-      byte[] uncompressed = uncompressBytes.getData();
+      String fileDataString = (String) object.get(FILE_DATA_FIELD);
+      int fileDataLength = (int) object.get(DATA_LENGTH_FIELD);
+      byte[] byteArray = Base64.getDecoder().decode(fileDataString);
+      byte[] uncompressBytes = CliUtil.uncompressBytes(byteArray,fileDataLength).getData();
 
       boolean isGfshVM = CliUtil.isGfshVM();
       File fileToDumpData = new File(fileName);
@@ -299,13 +285,13 @@ public abstract class AbstractResultData implements ResultData {
       if (fileType == FILE_TYPE_TEXT) {
         FileWriter fw = new FileWriter(fileToDumpData);
         BufferedWriter bw = new BufferedWriter(fw);
-        bw.write(new String(uncompressed));
+        bw.write(new String(uncompressBytes));
         bw.flush();
         fw.flush();
         fw.close();
       } else if (fileType == FILE_TYPE_BINARY) {
         FileOutputStream fos = new FileOutputStream(fileToDumpData);
-        fos.write(uncompressed);
+        fos.write(uncompressBytes);
         fos.flush();
         fos.close();
       }

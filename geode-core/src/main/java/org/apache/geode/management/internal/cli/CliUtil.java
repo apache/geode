@@ -440,11 +440,6 @@ public class CliUtil {
 
       compressedDataLength = compresser.deflate(buffer);
       totalCompressedDataLength += compressedDataLength;
-      // System.out.println(compressedDataLength);
-      // System.out.println("uc: b "+buffer.length);
-      // System.out.println("uc: r "+result.length);
-      // System.out.println("uc: nr "+newResult.length);
-      // System.out.println();
       System.arraycopy(buffer, 0, newResult, result.length, buffer.length);
       result = newResult;
     } while (compressedDataLength != 0);
