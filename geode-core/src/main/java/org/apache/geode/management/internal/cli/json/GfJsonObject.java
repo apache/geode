@@ -49,22 +49,6 @@ public class GfJsonObject {
       this.jsonObject = (JSONObject) bean;
     } else {
       this.jsonObject = new JSONObject(bean);
-      // If we want to print out the values of the primitive arrays and report back
-      // Class klass = bean.getClass();
-      // if(klass.isArray() && klass.getComponentType().isPrimitive()){
-      // String str = "";
-      // int length = Array.getLength(bean);
-      // for (int i = 0; i < length; i++) {
-      // if(i==0)
-      // str += (Array.get(bean, i));
-      // else
-      // str +=(","+Array.get(bean, i));
-      // }
-      // try {
-      // this.jsonObject.put("Value", str);
-      // } catch (JSONException ignore) {
-      // }
-      // }
     }
     if (checkCyclicDep) {
       JSONObject.cyclicDepChkEnabled.set(false);
@@ -86,10 +70,6 @@ public class GfJsonObject {
     } else {
       this.jsonObject = new JSONObject(bean);
     }
-  }
-
-  public GfJsonObject(Object bean, String[] paramNames) {
-    this.jsonObject = new JSONObject(bean, paramNames);
   }
 
   /**
@@ -247,22 +227,6 @@ public class GfJsonObject {
         internalJsonObj = jsonObj.getInternalJsonObject();
       }
       jsonObject.put(key, internalJsonObj);
-    } catch (JSONException e) {
-      throw new GfJsonException(e.getMessage());
-    }
-    return this;
-  }
-
-  /**
-   * 
-   * @param key
-   * @param value
-   * @return this GfJsonObject
-   * @throws GfJsonException if the key is a duplicate
-   */
-  public GfJsonObject putOnce(String key, Object value) throws GfJsonException {
-    try {
-      jsonObject.putOnce(key, value);
     } catch (JSONException e) {
       throw new GfJsonException(e.getMessage());
     }
