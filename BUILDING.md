@@ -29,7 +29,7 @@ or the `gfsh` script can be found in
    
     ```
     $ gfsh version
-    v1.0.0-incubating
+    v1.1.0
     ```
 
 ## Build from Source on Windows
@@ -58,7 +58,7 @@ or the `gfsh.bat` script can be found in
    
     ```
     $ gfsh.bat version
-    v1.0.0-incubating
+    v1.1.0
     ```
 
 
