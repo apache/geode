@@ -14,7 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+// Ensure that if we have *explicitly* set a version, we use that version
+// instead of a using the version from a transitive dependency.
+def overrides = [
+  "commons-beanutils:commons-beanutils": project.'commons-beanutils.version'
+]
+
 subprojects {
+  configurations.all {
+    resolutionStrategy.eachDependency { dep ->
+      def override = overrides["${dep.requested.group}:${dep.requested.name}"]
+      if (override != null && dep.requested.version != override) {
+        logger.info "Overriding dependency ${dep.requested.group}:${dep.requested.name}:${dep.requested.version} --> $override"
+        dep.useVersion override
+      }
+    }
+  }
+
   //Task to dump all depencies of all projects, in a way
   //that can be diffed before and after dependency changes
   task dumpDependencies() << {
