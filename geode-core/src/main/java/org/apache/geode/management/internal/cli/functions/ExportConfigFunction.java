@@ -93,12 +93,10 @@ public class ExportConfigFunction implements Function, InternalEntity {
               .append(lineSeparator);
         }
       }
-
       CliFunctionResult result = new CliFunctionResult(memberId,
           new String[] {xmlWriter.toString(), propStringBuf.toString()});
-
+      System.err.println("ExportConfigFunction.execute CLI function result: "+result);
       context.getResultSender().lastResult(result);
-
     } catch (CacheClosedException cce) {
       CliFunctionResult result = new CliFunctionResult(memberId, false, null);
       context.getResultSender().lastResult(result);

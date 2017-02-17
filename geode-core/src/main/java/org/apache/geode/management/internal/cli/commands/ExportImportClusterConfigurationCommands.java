@@ -75,6 +75,7 @@ public class ExportImportClusterConfigurationCommands extends AbstractCommandsSu
   public Result exportSharedConfig(@CliOption(key = {CliStrings.EXPORT_SHARED_CONFIG__FILE},
       mandatory = true, help = CliStrings.EXPORT_SHARED_CONFIG__FILE__HELP) String zipFileName) {
 
+    System.err.println("Out 1");
     InternalLocator locator = InternalLocator.getLocator();
     if (!locator.isSharedConfigurationRunning()) {
       return ResultBuilder.createGemFireErrorResult(CliStrings.SHARED_CONFIGURATION_NOT_STARTED);
@@ -99,7 +100,6 @@ public class ExportImportClusterConfigurationCommands extends AbstractCommandsSu
         sc.writeConfigToFile(config);
       }
       ZipUtils.zipDirectory(sc.getSharedConfigurationDirPath(), zipFile.getCanonicalPath());
-
       InfoResultData infoData = ResultBuilder.createInfoResultData();
       byte[] byteData = FileUtils.readFileToByteArray(zipFile);
       infoData.addAsFile(zipFileName, byteData, InfoResultData.FILE_TYPE_BINARY,

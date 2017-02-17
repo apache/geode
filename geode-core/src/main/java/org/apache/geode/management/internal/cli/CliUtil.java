@@ -440,11 +440,6 @@ public class CliUtil {
 
       compressedDataLength = compresser.deflate(buffer);
       totalCompressedDataLength += compressedDataLength;
-      // System.out.println(compressedDataLength);
-      // System.out.println("uc: b "+buffer.length);
-      // System.out.println("uc: r "+result.length);
-      // System.out.println("uc: nr "+newResult.length);
-      // System.out.println();
       System.arraycopy(buffer, 0, newResult, result.length, buffer.length);
       result = newResult;
     } while (compressedDataLength != 0);
@@ -497,43 +492,6 @@ public class CliUtil {
     @Override
     public String toString() {
       return String.valueOf(dataLength);
-    }
-  }
-
-  public static void main(String[] args) {
-    try {
-      byte[][] filesToBytes =
-          filesToBytes(new String[] {"/export/abhishek1/work/aspenmm/GFTryouts/test.json"});
-
-      System.out.println(filesToBytes[1].length);
-
-      DeflaterInflaterData compressBytes = compressBytes(filesToBytes[1]);
-      System.out.println(compressBytes);
-
-      DeflaterInflaterData uncompressBytes =
-          uncompressBytes(compressBytes.data, compressBytes.dataLength);
-      System.out.println(uncompressBytes);
-
-      System.out.println(new String(uncompressBytes.getData()));
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (DataFormatException e) {
-      e.printStackTrace();
-    }
-  }
-
-  public static void main1(String[] args) {
-    try {
-      byte[][] fileToBytes = filesToBytes(new String[] {"../dumped/source/lib"});
-
-      bytesToFiles(fileToBytes, "../dumped/dest/lib/", true);
-
-    } catch (FileNotFoundException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
     }
   }
 
