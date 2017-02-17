@@ -72,9 +72,9 @@ public class GfJsonObject {
     }
   }
 
-//  public GfJsonObject(Object bean, String[] paramNames) {
-//    this.jsonObject = new JSONObject(bean, paramNames);
-//  }
+  // public GfJsonObject(Object bean, String[] paramNames) {
+  // this.jsonObject = new JSONObject(bean, paramNames);
+  // }
 
   /**
    * 
@@ -237,21 +237,21 @@ public class GfJsonObject {
     return this;
   }
 
-//  /**
-//   *
-//   * @param key
-//   * @param value
-//   * @return this GfJsonObject
-//   * @throws GfJsonException if the key is a duplicate
-//   */
-//  public GfJsonObject putOnce(String key, Object value) throws GfJsonException {
-//    try {
-//      jsonObject.putOnce(key, value);
-//    } catch (JSONException e) {
-//      throw new GfJsonException(e.getMessage());
-//    }
-//    return this;
-//  }
+  // /**
+  // *
+  // * @param key
+  // * @param value
+  // * @return this GfJsonObject
+  // * @throws GfJsonException if the key is a duplicate
+  // */
+  // public GfJsonObject putOnce(String key, Object value) throws GfJsonException {
+  // try {
+  // jsonObject.putOnce(key, value);
+  // } catch (JSONException e) {
+  // throw new GfJsonException(e.getMessage());
+  // }
+  // return this;
+  // }
 
   /**
    * 
