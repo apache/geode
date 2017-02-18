@@ -16,12 +16,9 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
 import java.util.Map;
-
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
@@ -40,28 +37,26 @@ public class HDelExecutor extends HashExecutor {
 
     int numDeleted = 0;
 
-    ByteArrayWrapper regionName = HashInterpreter.toRegionNameByteArray(command.getKey());
-    ByteArrayWrapper entryKey = HashInterpreter.toEntryKey(command.getKey());
+    ByteArrayWrapper key = command.getKey();
+     Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
-    checkDataType(regionName, RedisDataType.REDIS_HASH, context);
-    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
-        getRegion(context, regionName);
-
-    if (keyRegion == null) {
+    if (map == null || map.isEmpty()) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
       return;
     }
 
-
     for (int i = START_FIELDS_INDEX; i < commandElems.size(); i++) {
-      // ByteArrayWrapper field = new ByteArrayWrapper(commandElems.get(i));
-      Object oldValue = keyRegion.remove(entryKey);
+       ByteArrayWrapper field = new ByteArrayWrapper(commandElems.get(i));
+      Object oldValue = map.remove(field);
       if (oldValue != null)
         numDeleted++;
     }
-    if (keyRegion.isEmpty()) {
-      context.getRegionProvider().removeKey(regionName, RedisDataType.REDIS_HASH);
-    }
+    //save map
+    saveMap(map, context, key);
+    
+//    if (map.isEmpty()) {
+//      context.getRegionProvider().removeKey(key, RedisDataType.REDIS_HASH);
+//    }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
   }
 

@@ -38,12 +38,9 @@ public class HKeysExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper regionName = HashInterpreter.toRegionNameByteArray(command.getKey());
-
-    checkDataType(regionName, RedisDataType.REDIS_HASH, context);
-    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
-        getRegion(context, regionName);
-
+    
+    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion = this.getRegion(context, command.getKey());
+ 
     ByteArrayWrapper entryKey = HashInterpreter.toEntryKey(command.getKey());
 
     Map<ByteArrayWrapper, ByteArrayWrapper> keyMap = keyRegion.get(entryKey);

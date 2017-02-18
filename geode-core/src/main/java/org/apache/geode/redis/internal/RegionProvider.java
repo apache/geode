@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal;
 
 import java.io.Closeable;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -83,6 +82,9 @@ public class RegionProvider implements Closeable {
    */
   private final Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
 
+  private final Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion;
+  private final Region<ByteArrayWrapper, Set<ByteArrayWrapper>> setRegion;
+
   private final Cache cache;
   private final QueryService queryService;
   private final ConcurrentMap<ByteArrayWrapper, Map<Enum<?>, Query>> preparedQueries =
@@ -95,21 +97,40 @@ public class RegionProvider implements Closeable {
   private final ConcurrentHashMap<String, Lock> locks;
 
   public RegionProvider(Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion,
+	      Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion,
+	      Region<String, RedisDataType> redisMetaRegion,
+	      ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
+	      ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut,
+	      Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion,
+	      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> setRegion) {
+	  
+	  this(stringsRegion, hLLRegion,redisMetaRegion, expirationsMap,expirationExecutor, 
+			  defaultShortcut, hashRegion,setRegion,GemFireCacheImpl.getInstance());
+  }
+  public RegionProvider(Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion,
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion,
       Region<String, RedisDataType> redisMetaRegion,
       ConcurrentMap<ByteArrayWrapper, ScheduledFuture<?>> expirationsMap,
-      ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut) {
+      ScheduledExecutorService expirationExecutor, RegionShortcut defaultShortcut,
+      Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> hashRegion,
+      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> setRegion, Cache cache) {
     if (stringsRegion == null || hLLRegion == null || redisMetaRegion == null)
       throw new NullPointerException();
+    
+    this.hashRegion = hashRegion;
+    this.setRegion = setRegion;
+    
     this.regions = new ConcurrentHashMap<ByteArrayWrapper, Region<?, ?>>();
     this.stringsRegion = stringsRegion;
     this.hLLRegion = hLLRegion;
     this.redisMetaRegion = redisMetaRegion;
-    this.cache = GemFireCacheImpl.getInstance();
+    this.cache = cache;
+    
     this.queryService = cache.getQueryService();
     this.expirationsMap = expirationsMap;
     this.expirationExecutor = expirationExecutor;
     this.defaultRegionType = defaultShortcut;
+  
     this.locks = new ConcurrentHashMap<String, Lock>();
   }
 
@@ -198,6 +219,8 @@ public class RegionProvider implements Closeable {
         } else if (type == RedisDataType.REDIS_LIST) {
           return this.destroyRegion(key, type);
         } else {
+        	
+        	
           // Check hash
           ByteArrayWrapper regionName = HashInterpreter.toRegionNameByteArray(key);
           Region<?, ?> region = this.getRegion(regionName);
@@ -287,12 +310,12 @@ public class RegionProvider implements Closeable {
     String regionName = key.toString();
 
     // check if type is hash TODO: remove
-    int indexOfColonForHashObject = regionName.indexOf(":");
+    /*int indexOfColonForHashObject = regionName.indexOf(":");
     if (indexOfColonForHashObject > 0) {
       // Set HSET region:<key>
       regionName = regionName.substring(0, indexOfColonForHashObject);
       key = new ByteArrayWrapper(regionName.getBytes(StandardCharsets.UTF_8));
-    }
+    }*/
 
     checkDataType(key, type);
     Region<?, ?> r = this.regions.get(key);
@@ -492,8 +515,22 @@ public class RegionProvider implements Closeable {
   public Region<ByteArrayWrapper, ByteArrayWrapper> getStringsRegion() {
     return this.stringsRegion;
   }
-
-  public Region<ByteArrayWrapper, HyperLogLogPlus> gethLLRegion() {
+  
+  /**
+	 * @return the hashRegion
+	 */
+	public Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> getHashRegion()
+	{
+		return hashRegion;
+	}
+/**
+ * @return the setRegion
+ */
+public Region<ByteArrayWrapper, Set<ByteArrayWrapper>> getSetRegion()
+{
+	return setRegion;
+}
+public Region<ByteArrayWrapper, HyperLogLogPlus> gethLLRegion() {
     return this.hLLRegion;
   }
 

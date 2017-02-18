@@ -37,7 +37,6 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.RegionNotFoundException;
-import org.apache.geode.redis.internal.executor.hash.HashExecutor;
 import org.apache.geode.redis.internal.executor.transactions.TransactionExecutor;
 import org.apache.geode.redis.GeodeRedisServer;
 

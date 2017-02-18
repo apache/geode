@@ -42,7 +42,7 @@ public class HSetExecutor extends HashExecutor implements Extendable {
       return;
     }
 
-    ByteArrayWrapper key = command.getKey(); // GG: companies:1
+    ByteArrayWrapper key = command.getKey();
 
     Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key, RedisDataType.REDIS_HASH);
 

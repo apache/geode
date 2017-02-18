@@ -21,7 +21,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -214,6 +216,19 @@ public class GeodeRedisServer {
    * current value of this field is {@value #STRING_REGION}.
    */
   public static final String STRING_REGION = "ReDiS_StRiNgS";
+
+  /**
+   * TThe field that defines the name of the {@link Region} which holds non-named hash. The current
+   * value of this field is {@value #HASH_REGION}.
+   */
+  public static final String HASH_REGION = "ReDiS_HASH";
+
+  /**
+   * TThe field that defines the name of the {@link Region} which holds sets. The current
+   * value of this field is {@value #SET_REGION}.
+   */
+  public static final String SET_REGION = "ReDiS_SET";
+  
 
   /**
    * The field that defines the name of the {@link Region} which holds all of the HyperLogLogs. The
@@ -409,7 +424,10 @@ public class GeodeRedisServer {
       Region<ByteArrayWrapper, ByteArrayWrapper> stringsRegion;
 
       Region<ByteArrayWrapper, HyperLogLogPlus> hLLRegion;
+      Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> redisHash;
       Region<String, RedisDataType> redisMetaData;
+      Region<ByteArrayWrapper, Set<ByteArrayWrapper>> redisSet;
+      
       GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
       try {
         if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
@@ -422,6 +440,19 @@ public class GeodeRedisServer {
               gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
           hLLRegion = regionFactory.create(HLL_REGION);
         }
+
+        if ((redisHash = cache.getRegion(HASH_REGION)) == null) {
+          RegionFactory<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> regionFactory =
+              gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
+          redisHash = regionFactory.create(HASH_REGION);
+        }
+        
+        if ((redisSet = cache.getRegion(SET_REGION)) == null) {
+            RegionFactory<ByteArrayWrapper, Set<ByteArrayWrapper>> regionFactory =
+                gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
+            redisSet = regionFactory.create(SET_REGION);
+          }
+
         if ((redisMetaData = cache.getRegion(REDIS_META_DATA_REGION)) == null) {
           AttributesFactory af = new AttributesFactory();
           af.addCacheListener(metaListener);
@@ -438,10 +469,13 @@ public class GeodeRedisServer {
         throw assErr;
       }
       this.regionCache = new RegionProvider(stringsRegion, hLLRegion, redisMetaData,
-          expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE);
+          expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE, redisHash,redisSet);
       redisMetaData.put(REDIS_META_DATA_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HLL_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(STRING_REGION, RedisDataType.REDIS_PROTECTED);
+      redisMetaData.put(SET_REGION, RedisDataType.REDIS_PROTECTED);
+      redisMetaData.put(HASH_REGION, RedisDataType.REDIS_PROTECTED);
+      
     }
     checkForRegions();
   }
