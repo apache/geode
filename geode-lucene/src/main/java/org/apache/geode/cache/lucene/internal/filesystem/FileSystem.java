@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -38,8 +39,8 @@ import java.util.concurrent.ConcurrentMap;
 public class FileSystem {
   private static final Logger logger = LogService.getLogger();
 
-  private final ConcurrentMap<String, File> fileRegion;
-  private final ConcurrentMap<ChunkKey, byte[]> chunkRegion;
+  private final Map<String, File> fileRegion;
+  private final Map<ChunkKey, byte[]> chunkRegion;
 
   static final int CHUNK_SIZE = 1024 * 1024; // 1 MB
   private final FileSystemStats stats;
@@ -54,8 +55,8 @@ public class FileSystem {
    * @param fileRegion the region to store metadata about the files
    * @param chunkRegion the region to store actual file data.
    */
-  public FileSystem(ConcurrentMap<String, File> fileRegion,
-      ConcurrentMap<ChunkKey, byte[]> chunkRegion, FileSystemStats stats) {
+  public FileSystem(Map<String, File> fileRegion, Map<ChunkKey, byte[]> chunkRegion,
+      FileSystemStats stats) {
     this.fileRegion = fileRegion;
     this.chunkRegion = chunkRegion;
     this.stats = stats;
@@ -188,11 +189,11 @@ public class FileSystem {
     fileRegion.put(file.getName(), file);
   }
 
-  public ConcurrentMap<String, File> getFileRegion() {
+  public Map<String, File> getFileRegion() {
     return fileRegion;
   }
 
-  public ConcurrentMap<ChunkKey, byte[]> getChunkRegion() {
+  public Map<ChunkKey, byte[]> getChunkRegion() {
     return chunkRegion;
   }
 

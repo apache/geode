@@ -28,6 +28,9 @@ import org.apache.geode.cache.lucene.test.IndexRepositorySpy;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.cache.InitialImageOperation.GIITestHook;
+import org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
@@ -99,6 +102,45 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
     // Wait until the cache is closed in datastore1
     dataStore1.invoke(
         () -> Awaitility.await().atMost(60, TimeUnit.SECONDS).until(basicGetCache()::isClosed));
+  }
+
+  @Test
+  public void returnCorrectResultsWhenIndexUpdateHappensIntheMiddleofGII()
+      throws InterruptedException {
+    SerializableRunnableIF createIndex = () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+    };
+    dataStore1.invoke(() -> initDataStore(createIndex));
+    accessor.invoke(() -> initAccessor(createIndex));
+    dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
+    putEntryInEachBucket();
+
+    dataStore2.invoke(() -> {
+      InitialImageOperation.setGIITestHook(
+          new GIITestHook(GIITestHookType.AfterSentRequestImage, "Do puts during request") {
+            @Override
+            public void reset() {
+
+          }
+
+            @Override
+            public String getRegionName() {
+              return "_B__index#__region.files_0";
+            }
+
+            @Override
+            public void run() {
+              dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
+              waitForFlushBeforeExecuteTextSearch(dataStore1, 30000);
+            }
+          });
+    });
+
+    dataStore2.invoke(() -> initDataStore(createIndex));
+
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 30000));
+    executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }
 
   private void putEntriesAndValidateResultsWithRedundancy() {

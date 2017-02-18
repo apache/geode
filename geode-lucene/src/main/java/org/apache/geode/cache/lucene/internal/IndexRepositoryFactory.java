@@ -15,8 +15,10 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
+import org.apache.geode.cache.lucene.internal.partition.BucketTargetingMap;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
 import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
@@ -41,8 +43,11 @@ public class IndexRepositoryFactory {
       LuceneIndexImpl index, PartitionedRegion userRegion, final IndexRepository oldRepository)
       throws IOException {
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
-    BucketRegion fileBucket = getMatchingBucket(indexForPR.getFileRegion(), bucketId);
-    BucketRegion chunkBucket = getMatchingBucket(indexForPR.getChunkRegion(), bucketId);
+    final PartitionedRegion fileRegion = indexForPR.getFileRegion();
+    final PartitionedRegion chunkRegion = indexForPR.getChunkRegion();
+
+    BucketRegion fileBucket = getMatchingBucket(fileRegion, bucketId);
+    BucketRegion chunkBucket = getMatchingBucket(chunkRegion, bucketId);
     BucketRegion dataBucket = getMatchingBucket(userRegion, bucketId);
     boolean success = false;
     if (fileBucket == null || chunkBucket == null) {
@@ -51,7 +56,7 @@ public class IndexRepositoryFactory {
       }
       return null;
     }
-    if (!fileBucket.getBucketAdvisor().isPrimary()) {
+    if (!chunkBucket.getBucketAdvisor().isPrimary()) {
       if (oldRepository != null) {
         oldRepository.cleanup();
       }
@@ -68,15 +73,15 @@ public class IndexRepositoryFactory {
     DistributedLockService lockService = getLockService();
     String lockName = getLockName(bucketId, fileBucket);
     while (!lockService.lock(lockName, 100, -1)) {
-      if (!fileBucket.getBucketAdvisor().isPrimary()) {
+      if (!chunkBucket.getBucketAdvisor().isPrimary()) {
         return null;
       }
     }
 
     final IndexRepository repo;
     try {
-      RegionDirectory dir =
-          new RegionDirectory(fileBucket, chunkBucket, indexForPR.getFileSystemStats());
+      RegionDirectory dir = new RegionDirectory(getBucketTargetingMap(fileBucket, bucketId),
+          getBucketTargetingMap(chunkBucket, bucketId), indexForPR.getFileSystemStats());
       IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
       IndexWriter writer = new IndexWriter(dir, config);
       repo = new IndexRepositoryImpl(fileBucket, writer, serializer, indexForPR.getIndexStats(),
@@ -95,8 +100,12 @@ public class IndexRepositoryFactory {
 
   }
 
+  private Map getBucketTargetingMap(BucketRegion region, int bucketId) {
+    return new BucketTargetingMap(region, bucketId);
+  }
+
   private String getLockName(final Integer bucketId, final BucketRegion fileBucket) {
-    return FILE_REGION_LOCK_FOR_BUCKET_ID + fileBucket.getFullPath() + bucketId;
+    return FILE_REGION_LOCK_FOR_BUCKET_ID + fileBucket.getFullPath();
   }
 
   private DistributedLockService getLockService() {

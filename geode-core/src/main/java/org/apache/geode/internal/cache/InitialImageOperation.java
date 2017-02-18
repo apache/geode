@@ -3947,7 +3947,7 @@ public class InitialImageOperation {
     }
   }
 
-  public static abstract class GIITestHook implements Runnable {
+  public static abstract class GIITestHook implements Runnable, Serializable {
     final private GIITestHookType type;
     final private String region_name;
     volatile public boolean isRunning;

@@ -115,6 +115,12 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
     return this.regionGCVersions;
   }
 
+  @Override
+  public boolean supportsDirectAck() {
+    // Set to false to force TombstoneMessage to use shared connection w/o in-line processing
+    return false;
+  }
+
   public static class TombstoneMessage extends CacheOperationMessage
       implements SerializationVersions {
     // protected long regionVersion;
@@ -128,6 +134,12 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
      * for deserialization
      */
     public TombstoneMessage() {}
+
+    @Override
+    public int getProcessorType() {
+      // Set to STANDARD to keep it from being processed in-line
+      return DistributionManager.STANDARD_EXECUTOR;
+    }
 
     @Override
     protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {

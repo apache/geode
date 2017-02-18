@@ -92,7 +92,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   public Set<Region.Entry> entries(boolean recursive) {
-    return this.proxy.new PREntriesSet(getBucketSet());
+    return this.proxy.entries(getBucketSet());
   }
 
   public Collection values() {
@@ -101,7 +101,7 @@ public class LocalDataSet implements Region, QueryExecutor {
   }
 
   public Set keys() {
-    return this.proxy.new KeysSet(getBucketSet());
+    return this.proxy.keySet(getBucketSet());
   }
 
   public Set keySet() {

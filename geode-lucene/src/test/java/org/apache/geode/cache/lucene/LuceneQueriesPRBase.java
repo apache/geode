@@ -23,6 +23,13 @@ import static org.mockito.Matchers.any;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.cache.InitialImageOperation.GIITestHook;
+import org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType;
+import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.junit.After;
 import org.junit.Test;
 
@@ -186,7 +193,10 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
   }
 
   private void removeCallback(VM vm) {
-    vm.invoke(IndexRepositorySpy::remove);
+    vm.invoke(() -> {
+      IndexRepositorySpy.remove();
+      InitialImageOperation.resetAllGIITestHooks();
+    });
   }
 
   private void rebalanceRegion(VM vm) {

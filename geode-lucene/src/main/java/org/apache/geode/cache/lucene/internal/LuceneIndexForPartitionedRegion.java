@@ -17,8 +17,10 @@ package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.FixedPartitionResolver;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
@@ -28,6 +30,8 @@ import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
 import org.apache.geode.cache.lucene.internal.filesystem.ChunkKey;
 import org.apache.geode.cache.lucene.internal.filesystem.File;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
+import org.apache.geode.cache.lucene.internal.partition.BucketTargetingFixedResolver;
+import org.apache.geode.cache.lucene.internal.partition.BucketTargetingResolver;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
 import org.apache.geode.cache.partition.PartitionListener;
@@ -143,7 +147,16 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       PartitionAttributes<?, ?> dataRegionAttributes) {
     attributesFactory.setTotalNumBuckets(dataRegionAttributes.getTotalNumBuckets());
     attributesFactory.setRedundantCopies(dataRegionAttributes.getRedundantCopies());
+    attributesFactory.setPartitionResolver(getPartitionResolver(dataRegionAttributes));
     return attributesFactory;
+  }
+
+  private PartitionResolver getPartitionResolver(PartitionAttributes dataRegionAttributes) {
+    if (dataRegionAttributes.getPartitionResolver() instanceof FixedPartitionResolver) {
+      return new BucketTargetingFixedResolver();
+    } else {
+      return new BucketTargetingResolver();
+    }
   }
 
   protected <K, V> Region<K, V> createRegion(final String regionName,

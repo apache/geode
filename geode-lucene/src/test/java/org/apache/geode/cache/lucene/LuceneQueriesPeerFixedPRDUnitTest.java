@@ -22,7 +22,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
-public class LuceneQueriesPeerFixedPRDUnitTest extends LuceneQueriesPRBase {
+public class LuceneQueriesPeerFixedPRDUnitTest extends LuceneQueriesPeerPRRedundancyDUnitTest {
 
   @Override
   protected void initAccessor(SerializableRunnableIF createIndex) throws Exception {

@@ -37,7 +37,6 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
@@ -51,12 +50,18 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.AbstractRegionEntry;
+import org.apache.geode.internal.cache.DistributedTombstoneOperation.TombstoneMessage;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.partitioned.PRTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -217,6 +222,61 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     }
     checkClientReceivedGC(vm2);
     checkClientDoesNotReceiveGC(vm3);
+  }
+
+  @Test
+  public void testTombstoneMessageSentToReplicatesAreNotProcessedInLine() {
+    Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    final String name = "Region";
+
+    createServerRegion(vm0, name, true);
+    createEntries(vm0);
+    createServerRegion(vm1, name, true);
+
+    try {
+      vm1.invoke(() -> {
+        DistributionMessageObserver.setInstance(new PRTombstoneMessageObserver());
+      });
+      destroyEntries(vm0);
+      forceGC(vm0);
+
+      vm1.invoke(() -> {
+        PRTombstoneMessageObserver mo =
+            (PRTombstoneMessageObserver) DistributionMessageObserver.getInstance();
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+          return mo.tsMessageProcessed >= 1;
+        });
+        assertTrue("Tombstone GC message is not expected.", mo.thName.contains(
+            LocalizedStrings.DistributionManager_POOLED_MESSAGE_PROCESSOR.toLocalizedString()));
+      });
+
+    } finally {
+      vm1.invoke(() -> {
+        DistributionMessageObserver.setInstance(null);
+      });
+    }
+  }
+
+  private class PRTombstoneMessageObserver extends DistributionMessageObserver {
+    public int tsMessageProcessed = 0;
+    public int prTsMessageProcessed = 0;
+    public String thName;
+
+    @Override
+    public void afterProcessMessage(DistributionManager dm, DistributionMessage message) {
+      thName = Thread.currentThread().getName();
+
+      if (message instanceof TombstoneMessage) {
+        tsMessageProcessed++;
+      }
+
+      if (message instanceof PRTombstoneMessage) {
+        prTsMessageProcessed++;
+      }
+    }
   }
 
   /**
