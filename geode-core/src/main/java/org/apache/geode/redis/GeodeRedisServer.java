@@ -224,11 +224,11 @@ public class GeodeRedisServer {
   public static final String HASH_REGION = "ReDiS_HASH";
 
   /**
-   * TThe field that defines the name of the {@link Region} which holds sets. The current
-   * value of this field is {@value #SET_REGION}.
+   * TThe field that defines the name of the {@link Region} which holds sets. The current value of
+   * this field is {@value #SET_REGION}.
    */
   public static final String SET_REGION = "ReDiS_SET";
-  
+
 
   /**
    * The field that defines the name of the {@link Region} which holds all of the HyperLogLogs. The
@@ -427,7 +427,7 @@ public class GeodeRedisServer {
       Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> redisHash;
       Region<String, RedisDataType> redisMetaData;
       Region<ByteArrayWrapper, Set<ByteArrayWrapper>> redisSet;
-      
+
       GemFireCacheImpl gemFireCache = (GemFireCacheImpl) cache;
       try {
         if ((stringsRegion = cache.getRegion(STRING_REGION)) == null) {
@@ -446,12 +446,12 @@ public class GeodeRedisServer {
               gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
           redisHash = regionFactory.create(HASH_REGION);
         }
-        
+
         if ((redisSet = cache.getRegion(SET_REGION)) == null) {
-            RegionFactory<ByteArrayWrapper, Set<ByteArrayWrapper>> regionFactory =
-                gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
-            redisSet = regionFactory.create(SET_REGION);
-          }
+          RegionFactory<ByteArrayWrapper, Set<ByteArrayWrapper>> regionFactory =
+              gemFireCache.createRegionFactory(this.DEFAULT_REGION_TYPE);
+          redisSet = regionFactory.create(SET_REGION);
+        }
 
         if ((redisMetaData = cache.getRegion(REDIS_META_DATA_REGION)) == null) {
           AttributesFactory af = new AttributesFactory();
@@ -469,13 +469,13 @@ public class GeodeRedisServer {
         throw assErr;
       }
       this.regionCache = new RegionProvider(stringsRegion, hLLRegion, redisMetaData,
-          expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE, redisHash,redisSet);
+          expirationFutures, expirationExecutor, this.DEFAULT_REGION_TYPE, redisHash, redisSet);
       redisMetaData.put(REDIS_META_DATA_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HLL_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(STRING_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(SET_REGION, RedisDataType.REDIS_PROTECTED);
       redisMetaData.put(HASH_REGION, RedisDataType.REDIS_PROTECTED);
-      
+
     }
     checkForRegions();
   }

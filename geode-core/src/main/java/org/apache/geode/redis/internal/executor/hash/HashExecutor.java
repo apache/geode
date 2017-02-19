@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
@@ -31,7 +30,7 @@ public abstract class HashExecutor extends AbstractExecutor {
   protected Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> getOrCreateRegion(
       ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
 
-	  return HashInterpreter.getRegion(key, context);
+    return HashInterpreter.getRegion(key, context);
   }
 
   /**
@@ -46,6 +45,7 @@ public abstract class HashExecutor extends AbstractExecutor {
   }
 
   /**
+   * Get the save map
    * 
    * @param context the context
    * @param key the region hash key region:<key>
@@ -74,17 +74,23 @@ public abstract class HashExecutor extends AbstractExecutor {
 
   }
 
+  /**
+   * 
+   * @param context the execution handler context
+   * @param key the raw command key
+   * @return region determine based on the raw command key
+   */
   protected Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> getRegion(
       ExecutionHandlerContext context, ByteArrayWrapper key) {
     return HashInterpreter.getRegion(key, context);
   }
 
   /**
+   * Save the map to the region
    * 
    * @param map the map to save
    * @param context the execution handler context
    * @param key the raw HASH key
-   * @param type the redis data type
    */
   protected void saveMap(Map<ByteArrayWrapper, ByteArrayWrapper> map,
       ExecutionHandlerContext context, ByteArrayWrapper key) {

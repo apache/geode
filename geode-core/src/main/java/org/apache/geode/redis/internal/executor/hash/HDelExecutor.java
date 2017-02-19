@@ -38,7 +38,7 @@ public class HDelExecutor extends HashExecutor {
     int numDeleted = 0;
 
     ByteArrayWrapper key = command.getKey();
-     Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
     if (map == null || map.isEmpty()) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
@@ -46,17 +46,17 @@ public class HDelExecutor extends HashExecutor {
     }
 
     for (int i = START_FIELDS_INDEX; i < commandElems.size(); i++) {
-       ByteArrayWrapper field = new ByteArrayWrapper(commandElems.get(i));
+      ByteArrayWrapper field = new ByteArrayWrapper(commandElems.get(i));
       Object oldValue = map.remove(field);
       if (oldValue != null)
         numDeleted++;
     }
-    //save map
+    // save map
     saveMap(map, context, key);
-    
-//    if (map.isEmpty()) {
-//      context.getRegionProvider().removeKey(key, RedisDataType.REDIS_HASH);
-//    }
+
+    // if (map.isEmpty()) {
+    // context.getRegionProvider().removeKey(key, RedisDataType.REDIS_HASH);
+    // }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
   }
 

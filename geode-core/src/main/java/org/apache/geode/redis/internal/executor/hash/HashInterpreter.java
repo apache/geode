@@ -1,3 +1,17 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.Map;
@@ -11,6 +25,7 @@ import org.apache.geode.redis.internal.RedisDataType;
 
 /**
  * Utility class for interpreting and processing Redis Hash data structure
+ * 
  * @author Gregory Green
  *
  */
@@ -22,7 +37,8 @@ public class HashInterpreter {
    * 
    *  REGION_KEY_SEPERATOR = ":"
    * 
-   * See Hash section of <a href="https://redis.io/topics/data-types">https://redis.io/topics/data-types#Hashes</a>
+   * See Hash section of <a href=
+  "https://redis.io/topics/data-types">https://redis.io/topics/data-types#Hashes</a>
    * </pre>
    */
   public static final String REGION_KEY_SEPERATOR = ":";
@@ -35,6 +51,7 @@ public class HashInterpreter {
 
   /**
    * Return the region presenting the hash
+   * 
    * @param key the raw Redis command key that may contain the region:key formation
    * @param context the exception handler context
    * @return the region were the command's data will be processed
@@ -42,17 +59,17 @@ public class HashInterpreter {
   @SuppressWarnings("unchecked")
   public static Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> getRegion(
       ByteArrayWrapper key, ExecutionHandlerContext context) {
-	  
-	  if(key == null)
-		  return null;
-	  
-	  if(key.toString().contains(REGION_KEY_SEPERATOR)) {
-			  return  (Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>>) context
-					  .getRegionProvider().getOrCreateRegion(toRegionNameByteArray(key),
-							  RedisDataType.REDIS_HASH,context);
-		}
-	  
-	  //default region
+
+    if (key == null)
+      return null;
+
+    if (key.toString().contains(REGION_KEY_SEPERATOR)) {
+      return (Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>>) context
+          .getRegionProvider()
+          .getOrCreateRegion(toRegionNameByteArray(key), RedisDataType.REDIS_HASH, context);
+    }
+
+    // default region
     return context.getRegionProvider().getHashRegion();
   }// ------------------------------------------------
 
@@ -67,20 +84,20 @@ public class HashInterpreter {
       return null;
 
     String keyString = key.toString();
-   
+
     int nameSeparatorIndex = keyString.indexOf(REGION_KEY_SEPERATOR);
     if (nameSeparatorIndex > -1) {
       keyString = keyString.substring(0, nameSeparatorIndex);
-      if(keyString == null)
-    	  return REGION_HASH_REGION;
-      
+      if (keyString == null)
+        return REGION_HASH_REGION;
+
       keyString = keyString.trim();
-      
-      if(keyString.length() == 0)
-    	  return REGION_HASH_REGION;
-    			  
+
+      if (keyString.length() == 0)
+        return REGION_HASH_REGION;
+
       key = new ByteArrayWrapper(Coder.stringToBytes(keyString.trim()));
-      
+
       return key;
     }
 

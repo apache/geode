@@ -38,9 +38,10 @@ public class HKeysExecutor extends HashExecutor {
       return;
     }
 
-    
-    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion = this.getRegion(context, command.getKey());
- 
+
+    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
+        this.getRegion(context, command.getKey());
+
     ByteArrayWrapper entryKey = HashInterpreter.toEntryKey(command.getKey());
 
     Map<ByteArrayWrapper, ByteArrayWrapper> keyMap = keyRegion.get(entryKey);
