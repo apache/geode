@@ -89,6 +89,7 @@ public class CacheXmlParserJUnitTest {
    * 
    * @since Geode 1.2
    */
+
   @Test
   public void testCacheXmlParserWithSimplePool() {
     assertNotNull("Did not find simple config.xml file", this.getClass()
@@ -105,7 +106,7 @@ public class CacheXmlParserJUnitTest {
     InternalDistributedSystem.connect(nonDefault);
 
     CacheXmlParser.parse(this.getClass()
-        .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
+	.getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
   }
 
 
