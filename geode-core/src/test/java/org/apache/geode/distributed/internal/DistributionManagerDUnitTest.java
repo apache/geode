@@ -77,9 +77,8 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
   public static DistributedSystem ds;
 
   @Rule
-  public DistributedRestoreSystemProperties restoreSystemProperties =
-      new DistributedRestoreSystemProperties();
-
+  public DistributedRestoreSystemProperties restoreSystemProperties = new DistributedRestoreSystemProperties();
+  
   /**
    * Clears the exceptionInThread flag in the given distribution manager.
    */
@@ -175,7 +174,8 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
 
       // if the view number isn't being recorded correctly the test will pass but the
       // functionality is broken
-      Assert.assertTrue("expected view ID to be greater than zero", mgr.getView().getViewId() > 0);
+      Assert.assertTrue("expected view ID to be greater than zero",
+          mgr.getView().getViewId() > 0);
 
       int oldViewId = mbr.getVmViewId();
       mbr.setVmViewId((int) mgr.getView().getViewId() - 1);
