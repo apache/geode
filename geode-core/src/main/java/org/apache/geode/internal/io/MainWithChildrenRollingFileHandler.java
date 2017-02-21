@@ -206,7 +206,11 @@ public class MainWithChildrenRollingFileHandler implements RollingFileHandler {
     return tmp;
   }
 
-  private Pattern getFilePattern(String name) {
+  Pattern getFilePattern(String name) {
+    if (name == null || "".equals(name.trim())) {
+      throw new IllegalArgumentException("Name must not be empty");
+    }
+
     int extIdx = name.lastIndexOf('.');
     String ext = "";
     if (extIdx != -1) {
