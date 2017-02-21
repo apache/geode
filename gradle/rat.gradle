@@ -118,27 +118,6 @@ rat {
     'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/domain/CacheElementJUnitTest.xml',
     'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/utils/*.xml',
 
-    // geode-site: Adding exceptions to MIT/BSD licensed files
-    'geode-site/website/content/js/head.js',
-    'geode-site/website/content/js/html5shiv.js',
-    'geode-site/website/content/js/jquery-1.10.1.min.js',
-    'geode-site/website/content/js/jquery.icheck.js',
-    'geode-site/website/content/js/respond.min.js',
-    'geode-site/website/content/css/bootflat-extensions.css',
-    'geode-site/website/content/css/bootflat-square.css',
-    'geode-site/website/content/css/bootflat.css',
-    'geode-site/website/content/css/font-awesome.min.css',
-    'geode-site/website/lib/pandoc.template',
-    'geode-site/website/content/font/**',
-    'geode-site/website/content/fonts/**',
-    'geode-site/website/content/stylesheets/**',
-    'geode-site/content/**',
-    // compiled logs and locks
-    'geode-site/website/tmp/**',
-    'geode-site/website/layouts/**',
-
-
-    // Service META-INF
     '**/META-INF/services/org.xml.sax.ext.EntityResolver2',
     '**/META-INF/services/org.apache.geode.internal.cache.CacheService',
     '**/META-INF/services/org.apache.geode.internal.cache.xmlcache.XmlParser',
@@ -171,7 +150,6 @@ rat {
     'geode-json/src/main/java/org/json/XMLTokener.java',
 
     // MIT License
-    'geode-site/src/jbake/**',
     'geode-pulse/src/main/webapp/scripts/lib/jquery.jqGrid.src.js',
     'geode-pulse/src/main/webapp/scripts/lib/grid.locale-en.js',
     'geode-pulse/src/main/webapp/scripts/lib/html5.js',
