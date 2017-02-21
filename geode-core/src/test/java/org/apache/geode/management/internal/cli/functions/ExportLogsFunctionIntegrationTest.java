@@ -56,7 +56,8 @@ public class ExportLogsFunctionIntegrationTest {
   public void setup() throws Exception {
     serverWorkingDir = temporaryFolder.newFolder("serverWorkingDir");
     System.setProperty("user.dir", serverWorkingDir.getCanonicalPath());
-
+    // fix a ci pipeline glitch
+    System.clearProperty("user.home");
     serverStarterRule.startServer();
   }
 
@@ -87,7 +88,7 @@ public class ExportLogsFunctionIntegrationTest {
     }
 
     Cache cache = GemFireCacheImpl.getInstance();
-    assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNull();
+    assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isEmpty();
   }
 
   @Test
@@ -99,7 +100,8 @@ public class ExportLogsFunctionIntegrationTest {
   }
 
   @Test
-  public void destroyExportLogsRegionWorksAsExpectedForInitiatingMember() throws IOException, ClassNotFoundException {
+  public void destroyExportLogsRegionWorksAsExpectedForInitiatingMember()
+      throws IOException, ClassNotFoundException {
     ExportLogsFunction.createOrGetExistingExportLogsRegion(true);
     Cache cache = GemFireCacheImpl.getInstance();
     assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNotNull();

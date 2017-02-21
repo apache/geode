@@ -15,17 +15,17 @@
 package org.apache.geode.management.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.apache.geode.management.internal.cli.commands.DataCommands;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.geode.test.junit.categories.UnitTest;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Categories.ExcludeCategory;
-import org.junit.experimental.categories.Category;
 
 @Category(UnitTest.class)
 public class CommandRequestTest {
@@ -36,12 +36,14 @@ public class CommandRequestTest {
   private CommandRequest commandRequest;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     this.paramValues = new HashMap<>();
 
     this.mockParseResult = mock(GfshParseResult.class);
     when(this.mockParseResult.getUserInput()).thenReturn("rebalance --simulate=true --time-out=-1");
     when(this.mockParseResult.getParamValueStrings()).thenReturn(this.paramValues);
+    when(this.mockParseResult.getMethod()).thenReturn(DataCommands.class.getMethod("rebalance",
+        String[].class, String[].class, long.class, boolean.class));
 
     this.mockEnvironment = new HashMap<>();
     this.commandRequest = new CommandRequest(this.mockParseResult, this.mockEnvironment, null);

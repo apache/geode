@@ -22,15 +22,11 @@ import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Map;
 
 public class ExportLogsCacheWriter extends CacheWriterAdapter implements Serializable {
   private Path currentFile;
@@ -38,11 +34,9 @@ public class ExportLogsCacheWriter extends CacheWriterAdapter implements Seriali
 
   @Override
   public void beforeCreate(EntryEvent event) throws CacheWriterException {
-    if (currentFile.getFileName().endsWith("server-2.zip")) {
-      System.out.println("We got data from server 2");
-    }
     if (currentOutputStream == null) {
-      throw new IllegalStateException("No outputStream is open.  You must call startFile before sending data.");
+      throw new IllegalStateException(
+          "No outputStream is open.  You must call startFile before sending data.");
     }
 
     try {

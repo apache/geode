@@ -17,7 +17,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static java.util.stream.Collectors.toSet;
-import static org.apache.geode.distributed.internal.DistributionManager.LOCATOR_DM_TYPE;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -99,10 +98,6 @@ public class ExportLogsFunction implements Function, InternalEntity {
     }
   }
 
-  protected static boolean isLocator(GemFireCacheImpl cache) {
-    return cache.getMyId().getVmKind() == LOCATOR_DM_TYPE;
-  }
-
   public static Region createOrGetExistingExportLogsRegion(boolean isInitiatingMember)
       throws IOException, ClassNotFoundException {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
@@ -134,7 +129,7 @@ public class ExportLogsFunction implements Function, InternalEntity {
       return;
     }
 
-      exportLogsRegion.destroyRegion();
+    exportLogsRegion.destroyRegion();
 
   }
 

@@ -111,7 +111,7 @@ public class ExportLogsDUnit {
     ZonedDateTime yesterday = now.minusDays(1);
     ZonedDateTime twoDaysAgo = now.minusDays(2);
 
-    DateTimeFormatter dateTimeFormatter =  DateTimeFormatter.ofPattern(ONLY_DATE_FORMAT);
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(ONLY_DATE_FORMAT);
 
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder("export logs");
     commandStringBuilder.addOption("start-time", dateTimeFormatter.format(twoDaysAgo));
@@ -131,7 +131,7 @@ public class ExportLogsDUnit {
     ZonedDateTime yesterday = now.minusDays(1);
     ZonedDateTime tomorrow = now.plusDays(1);
 
-    DateTimeFormatter dateTimeFormatter =  DateTimeFormatter.ofPattern(ONLY_DATE_FORMAT);
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(ONLY_DATE_FORMAT);
 
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder("export logs");
     commandStringBuilder.addOption("start-time", dateTimeFormatter.format(yesterday));
@@ -149,18 +149,20 @@ public class ExportLogsDUnit {
   public void testExportWithStartAndEndDateTimeFiltering() throws Exception {
     ZonedDateTime cutoffTime = LocalDateTime.now().atZone(ZoneId.systemDefault());
 
-    String messageAfterCutoffTime = "[this message should not show up since it is after cutoffTime]";
-    LogLine logLineAfterCutoffTime = new LogLine(messageAfterCutoffTime, "info",  true);
+    String messageAfterCutoffTime =
+        "[this message should not show up since it is after cutoffTime]";
+    LogLine logLineAfterCutoffTime = new LogLine(messageAfterCutoffTime, "info", true);
     server1.invoke(() -> {
       Logger logger = LogService.getLogger();
       logLineAfterCutoffTime.writeLog(logger);
     });
 
-    DateTimeFormatter dateTimeFormatter =  DateTimeFormatter.ofPattern(FORMAT);
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(FORMAT);
     String cutoffTimeString = dateTimeFormatter.format(cutoffTime);
 
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder("export logs");
-    commandStringBuilder.addOption("start-time", dateTimeFormatter.format(cutoffTime.minusHours(1)));
+    commandStringBuilder.addOption("start-time",
+        dateTimeFormatter.format(cutoffTime.minusHours(1)));
     commandStringBuilder.addOption("end-time", cutoffTimeString);
     commandStringBuilder.addOption("log-level", "debug");
     commandStringBuilder.addOption("dir", "someDir");
@@ -175,9 +177,9 @@ public class ExportLogsDUnit {
   @Test
   public void testExportWithThresholdLogLevelFilter() throws Exception {
 
-    CommandResult result = gfshConnector.executeAndVerifyCommand(
-        "export logs --log-level=info --only-log-level=false --dir=" + lsRule.getTempFolder()
-            .getRoot().getCanonicalPath());
+    CommandResult result = gfshConnector
+        .executeAndVerifyCommand("export logs --log-level=info --only-log-level=false --dir="
+            + lsRule.getTempFolder().getRoot().getCanonicalPath());
 
     Set<String> acceptedLogLevels = Stream.of("info", "error").collect(toSet());
     verifyZipFileContents(acceptedLogLevels);
@@ -186,9 +188,9 @@ public class ExportLogsDUnit {
 
   @Test
   public void testExportWithExactLogLevelFilter() throws Exception {
-    CommandResult result = gfshConnector.executeAndVerifyCommand(
-        "export logs --log-level=info --only-log-level=true --dir=" + lsRule.getTempFolder()
-            .getRoot().getCanonicalPath());
+    CommandResult result = gfshConnector
+        .executeAndVerifyCommand("export logs --log-level=info --only-log-level=true --dir="
+            + lsRule.getTempFolder().getRoot().getCanonicalPath());
 
 
     Set<String> acceptedLogLevels = Stream.of("info").collect(toSet());
@@ -197,8 +199,8 @@ public class ExportLogsDUnit {
 
   @Test
   public void testExportWithNoFilters() throws Exception {
-    CommandResult result = gfshConnector.executeAndVerifyCommand(
-        "export logs  --dir=" + "someDir" /*  lsRule.getTempFolder().getRoot().getCanonicalPath() */);
+    CommandResult result = gfshConnector.executeAndVerifyCommand("export logs  --dir="
+        + "someDir" /* lsRule.getTempFolder().getRoot().getCanonicalPath() */);
 
     Set<String> acceptedLogLevels = Stream.of("info", "error", "debug").collect(toSet());
     verifyZipFileContents(acceptedLogLevels);
@@ -209,8 +211,8 @@ public class ExportLogsDUnit {
     locator.invoke(ExportLogsDUnit::verifyExportLogsRegionWasDestroyed);
   }
 
-@Test
-public void exportLogsRegionIsCleanedUpProperly() throws IOException, ClassNotFoundException {
+  @Test
+  public void exportLogsRegionIsCleanedUpProperly() throws IOException, ClassNotFoundException {
     locator.invoke(() -> {
       ExportLogsFunction.createOrGetExistingExportLogsRegion(true);
       Cache cache = GemFireCacheImpl.getInstance();
@@ -234,11 +236,10 @@ public void exportLogsRegionIsCleanedUpProperly() throws IOException, ClassNotFo
       Cache cache = GemFireCacheImpl.getInstance();
       assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNull();
     });
-}
+  }
 
 
-  public void verifyZipFileContents(Set<String> acceptedLogLevels)
-      throws IOException {
+  public void verifyZipFileContents(Set<String> acceptedLogLevels) throws IOException {
     File unzippedLogFileDir = unzipExportedLogs();
 
     Set<File> dirsFromZipFile =
@@ -261,9 +262,7 @@ public void exportLogsRegionIsCleanedUpProperly() throws IOException, ClassNotFo
 
     String memberName = dirForMember.getName();
     Member member = expectedMessages.keySet().stream()
-        .filter((Member aMember) -> aMember.getName().equals(memberName))
-        .findFirst()
-        .get();
+        .filter((Member aMember) -> aMember.getName().equals(memberName)).findFirst().get();
 
     assertThat(member).isNotNull();
 
@@ -276,12 +275,12 @@ public void exportLogsRegionIsCleanedUpProperly() throws IOException, ClassNotFo
     assertThat(logFileForMember).exists();
     assertThat(fileNamesInDir).hasSize(1);
 
-    String logFileContents =
-        FileUtils.readLines(logFileForMember, Charset.defaultCharset()).stream()
-            .collect(joining("\n"));
+    String logFileContents = FileUtils.readLines(logFileForMember, Charset.defaultCharset())
+        .stream().collect(joining("\n"));
 
     for (LogLine logLine : expectedMessages.get(member)) {
-      boolean shouldExpectLogLine = acceptedLogLevels.contains(logLine.level) && !logLine.shouldBeIgnoredDueToTimestamp;
+      boolean shouldExpectLogLine =
+          acceptedLogLevels.contains(logLine.level) && !logLine.shouldBeIgnoredDueToTimestamp;
 
       if (shouldExpectLogLine) {
         assertThat(logFileContents).contains(logLine.getMessage());
@@ -300,7 +299,9 @@ public void exportLogsRegionIsCleanedUpProperly() throws IOException, ClassNotFo
 
     List<File> zipFilesInDir = Stream.of(locatorWorkingDir.listFiles())
         .filter(f -> f.getName().endsWith(".zip")).collect(toList());
-    assertThat(zipFilesInDir).describedAs(filesInDir.stream().map(File::getAbsolutePath).collect(joining(","))).hasSize(1);
+    assertThat(zipFilesInDir)
+        .describedAs(filesInDir.stream().map(File::getAbsolutePath).collect(joining(",")))
+        .hasSize(1);
 
     File unzippedLogFileDir = lsRule.getTempFolder().newFolder("unzippedLogs");
     ZipUtils.unzip(zipFilesInDir.get(0).getCanonicalPath(), unzippedLogFileDir.getCanonicalPath());

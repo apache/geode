@@ -32,7 +32,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.Comparator;
@@ -94,11 +93,6 @@ public class LogExporterTest {
 
     assertThat(logExporter.findLogFiles(workingDir.toPath())).contains(logFile.toPath());
     assertThat(logExporter.findLogFiles(workingDir.toPath())).doesNotContain(notALogFile.toPath());
-  }
-
-  @Test
-  public void findStatFiles() throws Exception {
-
   }
 
 }

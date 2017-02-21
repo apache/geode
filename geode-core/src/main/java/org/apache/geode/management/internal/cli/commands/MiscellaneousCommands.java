@@ -14,42 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.zip.DataFormatException;
-import java.util.zip.GZIPInputStream;
-import javax.management.ObjectName;
-
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -108,18 +74,48 @@ import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.cli.util.MergeLogs;
 import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.zip.DataFormatException;
+import java.util.zip.GZIPInputStream;
+import javax.management.ObjectName;
 
 /**
  * @since GemFire 7.0
@@ -129,6 +125,7 @@ public class MiscellaneousCommands implements CommandMarker {
   public final static String FORMAT = "yyyy/MM/dd/HH/mm/ss/SSS/z";
   public final static String ONLY_DATE_FORMAT = "yyyy/MM/dd";
   public final static String DEFAULT_TIME_OUT = "10";
+  private final static Logger logger = LogService.getLogger();
 
   private final GetStackTracesFunction getStackTracesFunction = new GetStackTracesFunction();
 
@@ -139,8 +136,6 @@ public class MiscellaneousCommands implements CommandMarker {
 
   public void shutdownNode(final long timeout, final Set<DistributedMember> includeMembers)
       throws TimeoutException, InterruptedException, ExecutionException {
-    Cache cache = CacheFactory.getAnyInstance();
-    LogWriter logger = cache.getLogger();
     ExecutorService exec = Executors.newSingleThreadExecutor();
     try {
       final Function shutDownFunction = new ShutDownFunction();
@@ -690,12 +685,13 @@ public class MiscellaneousCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.EXPORT_LOGS, help = CliStrings.EXPORT_LOGS__HELP)
-  @CliMetaData(shellOnly = false,
+  @CliMetaData(shellOnly = false, isFileDownloadOverHttp = true,
+      interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$ExportLogsInterceptor",
       relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result exportLogs(
       @CliOption(key = CliStrings.EXPORT_LOGS__DIR, help = CliStrings.EXPORT_LOGS__DIR__HELP,
-          mandatory = true) String dirName,
+          mandatory = false) String dirName,
       @CliOption(key = CliStrings.EXPORT_LOGS__GROUP,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
@@ -719,12 +715,9 @@ public class MiscellaneousCommands implements CommandMarker {
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.EXPORT_LOGS__ENDTIME__HELP) String end) {
     Result result = null;
-    Logger logger = LogService.getLogger();
-
     try {
-      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-
-      Set<DistributedMember> targetMembers = CliUtil.findMembersIncludingLocators(groups, memberIds);
+      Set<DistributedMember> targetMembers =
+          CliUtil.findMembersIncludingLocators(groups, memberIds);
 
 
       Map<String, Path> zipFilesFromMembers = new HashMap<>();
@@ -736,7 +729,8 @@ public class MiscellaneousCommands implements CommandMarker {
 
         cacheWriter.startFile(server.getName());
 
-        CliUtil.executeFunction(new ExportLogsFunction(),
+        CliUtil
+            .executeFunction(new ExportLogsFunction(),
                 new ExportLogsFunction.Args(start, end, logLevel, onlyLogLevel), server)
             .getResult();
         Path zipFile = cacheWriter.endFile();
@@ -756,25 +750,57 @@ public class MiscellaneousCommands implements CommandMarker {
       }
 
       Path workingDir = Paths.get(System.getProperty("user.dir"));
-      Path exportedLogsZipFile = workingDir.resolve("exportedLogs[" + System.currentTimeMillis() + "].zip").toAbsolutePath();
+      Path exportedLogsZipFile = workingDir
+          .resolve("exportedLogs_" + System.currentTimeMillis() + ".zip").toAbsolutePath();
 
       logger.info("Zipping into: " + exportedLogsZipFile.toString());
       ZipUtils.zipDirectory(exportedLogsDir, exportedLogsZipFile);
       FileUtils.deleteDirectory(tempDir.toFile());
-      result = ResultBuilder.createInfoResult("File exported to: " + exportedLogsZipFile.toString());
+      result = ResultBuilder.createInfoResult(exportedLogsZipFile.toString());
     } catch (Exception ex) {
-      ex.printStackTrace();
       logger.error(ex, ex);
       result = ResultBuilder.createUserErrorResult(ex.getMessage());
     } finally {
       ExportLogsFunction.destroyExportLogsRegion();
     }
-
-    LogWrapper.getInstance().fine("Exporting logs returning =" + result);
+    logger.debug("Exporting logs returning = {}", result);
     return result;
   }
 
-
+  /**
+   * after the export logs, will need to copy the tempFile to the desired location and delete the
+   * temp file.
+   */
+  public static class ExportLogsInterceptor extends AbstractCliAroundInterceptor {
+    @Override
+    public Result postExecution(GfshParseResult parseResult, Result commandResult, Path tempFile) {
+      // in the command over http case, the command result is in the downloaded temp file
+      if (tempFile != null) {
+        Path dirPath;
+        String dirName = parseResult.getParamValueStrings().get("dir");
+        if (StringUtils.isBlank(dirName)) {
+          dirPath = Paths.get(System.getProperty("user.dir"));
+        } else {
+          dirPath = Paths.get(dirName);
+        }
+        String fileName = "exportedLogs_" + System.currentTimeMillis() + ".zip";
+        File exportedLogFile = dirPath.resolve(fileName).toFile();
+        try {
+          FileUtils.copyFile(tempFile.toFile(), exportedLogFile);
+          FileUtils.deleteQuietly(tempFile.toFile());
+          commandResult = ResultBuilder
+              .createInfoResult("Logs exported to: " + exportedLogFile.getAbsolutePath());
+        } catch (IOException e) {
+          logger.error(e.getMessage(), e);
+          commandResult = ResultBuilder.createGemFireErrorResult(e.getMessage());
+        }
+      } else {
+        commandResult = ResultBuilder.createInfoResult(
+            "Logs exported to the connected member's file system: " + commandResult.nextLine());
+      }
+      return commandResult;
+    }
+  }
 
   /****
    * Current implementation supports writing it to a file and returning the location of the file
@@ -996,16 +1022,15 @@ public class MiscellaneousCommands implements CommandMarker {
           result = ResultBuilder.buildResult(erd);
         }
       } else {
-
         if (!org.apache.geode.internal.lang.StringUtils.isBlank(cacheServerPortString)) {
           return ResultBuilder
               .createUserErrorResult(CliStrings.SHOW_METRICS__CANNOT__USE__CACHESERVERPORT);
         }
-
         result = ResultBuilder.buildResult(getSystemWideMetrics(export_to_report_to, categories));
       }
     } catch (Exception e) {
-      return ResultBuilder.createGemFireErrorResult("#SB" + CliUtil.stackTraceAsString(e));
+      logger.error(e.getMessage(), e);
+      return ResultBuilder.createGemFireErrorResult(CliUtil.stackTraceAsString(e));
     }
     return result;
   }

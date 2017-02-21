@@ -14,11 +14,13 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import java.util.concurrent.Callable;
-
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +28,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.io.File;
+import java.io.FileInputStream;
 
 /**
  * The MiscellaneousCommandsController class implements GemFire Management REST API web service
@@ -48,8 +53,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class MiscellaneousCommandsController extends AbstractCommandsController {
 
   @RequestMapping(method = RequestMethod.GET, value = "/logs")
-  public Callable<ResponseEntity<String>> exportLogs(
-      @RequestParam(CliStrings.EXPORT_LOGS__DIR) final String directory,
+  public ResponseEntity<InputStreamResource> exportLogs(
+      @RequestParam(value = CliStrings.EXPORT_LOGS__DIR, required = false) final String directory,
       @RequestParam(value = CliStrings.EXPORT_LOGS__GROUP, required = false) final String[] groups,
       @RequestParam(value = CliStrings.EXPORT_LOGS__MEMBER,
           required = false) final String memberNameId,
@@ -93,7 +98,19 @@ public class MiscellaneousCommandsController extends AbstractCommandsController 
       command.addOption(CliStrings.EXPORT_LOGS__ENDTIME, endTime);
     }
 
-    return getProcessCommandCallable(command.toString());
+    // the result is json string from CommandResult
+    String result = processCommand(command.toString());
+
+    // parse the result to get the file path
+    String filePath = ResultBuilder.fromJson(result).nextLine().trim();
+
+    HttpHeaders respHeaders = new HttpHeaders();
+    try {
+      InputStreamResource isr = new InputStreamResource(new FileInputStream(new File(filePath)));
+      return new ResponseEntity<InputStreamResource>(isr, respHeaders, HttpStatus.OK);
+    } catch (Exception ex) {
+      throw new RuntimeException("IOError writing file to output stream", ex);
+    }
   }
 
   // TODO determine whether Async functionality is required

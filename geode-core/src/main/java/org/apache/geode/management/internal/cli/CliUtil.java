@@ -302,9 +302,11 @@ public class CliUtil {
   }
 
   /**
-   * Finds all Members (including both servers and locators) which belong to the given arrays of groups or members.
+   * Finds all Members (including both servers and locators) which belong to the given arrays of
+   * groups or members.
    */
-  public static Set<DistributedMember> findMembersIncludingLocators(String[] groups, String[] members) {
+  public static Set<DistributedMember> findMembersIncludingLocators(String[] groups,
+      String[] members) {
     Cache cache = CacheFactory.getAnyInstance();
     Set<DistributedMember> allMembers = getAllMembers(cache);
 
@@ -312,7 +314,8 @@ public class CliUtil {
   }
 
   /**
-   * Finds all Servers which belong to the given arrays of groups or members.  Does not include locators.
+   * Finds all Servers which belong to the given arrays of groups or members. Does not include
+   * locators.
    */
   public static Set<DistributedMember> findMembers(String[] groups, String[] members) {
     Cache cache = CacheFactory.getAnyInstance();
@@ -321,7 +324,8 @@ public class CliUtil {
     return findMembers(allNormalMembers, groups, members);
   }
 
-  private static Set<DistributedMember> findMembers(Set<DistributedMember> membersToConsider, String[] groups, String[] members) {
+  private static Set<DistributedMember> findMembers(Set<DistributedMember> membersToConsider,
+      String[] groups, String[] members) {
     if (groups == null) {
       groups = new String[] {};
     }

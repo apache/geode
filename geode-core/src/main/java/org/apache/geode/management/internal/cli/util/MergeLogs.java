@@ -50,14 +50,13 @@ public class MergeLogs {
     // create a new process for merging
     LogWrapper.getInstance().fine("Exporting logs merging logs" + logDirectory);
     List<String> commandList = new ArrayList<String>();
-    commandList.add(System.getProperty("java.home") + File.separatorChar + "bin"
-        + File.separatorChar + "java");
+    commandList.add(
+        System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java");
     commandList.add("-classpath");
     commandList.add(System.getProperty("java.class.path", "."));
     commandList.add(MergeLogs.class.getName());
 
-    commandList
-        .add(logDirectory.toAbsolutePath().toString());
+    commandList.add(logDirectory.toAbsolutePath().toString());
 
     ProcessBuilder procBuilder = new ProcessBuilder(commandList);
     StringBuilder output = new StringBuilder();
@@ -100,8 +99,8 @@ public class MergeLogs {
 
   }
 
-  protected static List<File> findLogFilesToMerge (File dir) {
-    return FileUtils.listFiles(dir, new String[]{"log"}, true).stream().collect(toList());
+  protected static List<File> findLogFilesToMerge(File dir) {
+    return FileUtils.listFiles(dir, new String[] {"log"}, true).stream().collect(toList());
   }
 
   static File mergeLogFile(String dirName) throws Exception {
@@ -122,8 +121,8 @@ public class MergeLogs {
     PrintWriter mergedLog = null;
     File mergedLogFile = null;
     try {
-      String mergeLog =
-          dirName + File.separator + "merge_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new java.util.Date()) + ".log";
+      String mergeLog = dirName + File.separator + "merge_"
+          + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new java.util.Date()) + ".log";
       mergedLogFile = new File(mergeLog);
       mergedLog = new PrintWriter(mergedLogFile);
       boolean flag = MergeLogFiles.mergeLogFiles(logFiles, logFileNames, mergedLog);

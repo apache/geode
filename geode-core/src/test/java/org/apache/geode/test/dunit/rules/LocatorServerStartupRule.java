@@ -16,6 +16,7 @@
 
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.test.dunit.Host.getHost;
 
@@ -106,7 +107,8 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   }
 
   /**
-   * starts a cache server that does not connect to a locator
+   * starts a cache server that does not connect to a locator, unless the properties it passes in
+   * has "locators" property.
    * 
    * @return VM node vm
    */
@@ -114,8 +116,32 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     return startServerVM(index, properties, -1);
   }
 
+  /**
+   * start a server that connects to this locatorPort
+   *
+   * @param index
+   * @param locatorPort
+   * @return
+   * @throws IOException
+   */
   public Server startServerVM(int index, int locatorPort) throws IOException {
     return startServerVM(index, new Properties(), locatorPort);
+  }
+
+  public Server startServerAsJmxManager(int index, int jmxManagerPort) throws IOException {
+    Properties properties = new Properties();
+    properties.setProperty(JMX_MANAGER_PORT, jmxManagerPort + "");
+    return startServerVM(index, properties);
+  }
+
+  public Server startServerAsEmbededLocator(int index, int locatorPort, int jmxManagerPort)
+      throws IOException {
+    Properties properties = new Properties();
+    properties.setProperty("start-locator", "localhost[" + locatorPort + "]");
+    if (jmxManagerPort > 0) {
+      properties.setProperty(JMX_MANAGER_PORT, jmxManagerPort + "");
+    }
+    return startServerVM(index, properties);
   }
 
   /**
@@ -123,7 +149,6 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    */
   public Server startServerVM(int index, Properties properties, int locatorPort)
       throws IOException {
-
     String name = "server-" + index;
     properties.setProperty(NAME, name);
 
