@@ -27,9 +27,13 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.runner.RunWith;
+
+import junitparams.JUnitParamsRunner;
 
 @Category(DistributedTest.class)
-public class LuceneQueriesClientDUnitTest extends LuceneQueriesBase {
+@RunWith(JUnitParamsRunner.class)
+public class LuceneQueriesClientDUnitTest extends LuceneQueriesDUnitTest {
 
   @Override
   public void postSetUp() throws Exception {
@@ -53,13 +57,14 @@ public class LuceneQueriesClientDUnitTest extends LuceneQueriesBase {
     });
   }
 
-  @Override
-  protected void initAccessor(SerializableRunnableIF createIndex) throws Exception {}
+  protected void initAccessor(SerializableRunnableIF createIndex, RegionTestableType regionTestType)
+      throws Exception {}
 
-  @Override
-  protected void initDataStore(SerializableRunnableIF createIndex) throws Exception {
-    createIndex.run();
-    getCache().createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
+  protected Object[] getListOfClientServerTypes() {
+    return new Object[] {new RegionTestableType[] {RegionTestableType.CLIENT_PARTITION,
+        RegionTestableType.PARTITION}};
   }
+
+
 
 }

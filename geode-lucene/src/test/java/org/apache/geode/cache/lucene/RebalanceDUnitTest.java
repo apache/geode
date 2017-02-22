@@ -24,27 +24,16 @@ import java.util.stream.IntStream;
 
 import org.apache.geode.cache.lucene.internal.LuceneIndexFactorySpy;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
-import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.InitialImageOperation;
-import org.apache.geode.internal.cache.InitialImageOperation.GIITestHook;
-import org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType;
-import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
-import org.apache.geode.cache.lucene.internal.LuceneIndexFactorySpy;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.After;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.PartitionAttributes;
-import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
@@ -54,14 +43,23 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 /**
  * This test class adds more basic tests of lucene functionality for partitioned regions. These
  * tests should work across all types of PRs and topologies.
  *
  */
-public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
-  protected static final int NUM_BUCKETS = 10;
+@Category(DistributedTest.class)
+@RunWith(JUnitParamsRunner.class)
+public class RebalanceDUnitTest extends LuceneQueriesAccessorBase {
+
+  protected static int NUM_BUCKETS = 10;
+
 
   @After
   public void cleanupRebalanceCallback() {
@@ -69,34 +67,50 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     removeCallback(dataStore2);
   }
 
+  protected Object[] getListOfClientServerTypes() {
+    return new Object[] {
+        new RegionTestableType[] {RegionTestableType.PARTITION_PROXY, RegionTestableType.PARTITION},
+        new RegionTestableType[] {RegionTestableType.PARTITION_PROXY_WITH_OVERFLOW,
+            RegionTestableType.PARTITION_OVERFLOW_TO_DISK}};
+  }
+
+
   @Test
-  public void returnCorrectResultsWhenRebalanceHappensOnIndexUpdate() throws InterruptedException {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void returnCorrectResultsWhenRebalanceHappensOnIndexUpdate(RegionTestableType clientType,
+      RegionTestableType regionType) throws InterruptedException {
     addCallbackToTriggerRebalance(dataStore1);
 
-    putEntriesAndValidateQueryResults();
+    putEntriesAndValidateQueryResults(clientType, regionType);
   }
 
   @Test
-  public void returnCorrectResultsWhenMoveBucketHappensOnIndexUpdate() throws InterruptedException {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void returnCorrectResultsWhenMoveBucketHappensOnIndexUpdate(RegionTestableType clientType,
+      RegionTestableType regionType) throws InterruptedException {
     final DistributedMember member2 =
         dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     addCallbackToMoveBucket(dataStore1, member2);
 
-    putEntriesAndValidateQueryResults();
+    putEntriesAndValidateQueryResults(clientType, regionType);
   }
 
   @Test
-  public void returnCorrectResultsWhenMoveBucketHappensOnQuery() throws InterruptedException {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void returnCorrectResultsWhenMoveBucketHappensOnQuery(RegionTestableType clientType,
+      RegionTestableType regionType) throws InterruptedException {
     final DistributedMember member2 =
         dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     addCallbackToMovePrimaryOnQuery(dataStore1, member2);
 
-    putEntriesAndValidateQueryResults();
+    putEntriesAndValidateQueryResults(clientType, regionType);
   }
 
+
   @Test
-  public void returnCorrectResultsWhenBucketIsMovedAndMovedBackOnIndexUpdate()
-      throws InterruptedException {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void returnCorrectResultsWhenBucketIsMovedAndMovedBackOnIndexUpdate(
+      RegionTestableType clientType, RegionTestableType regionType) throws InterruptedException {
     final DistributedMember member1 =
         dataStore1.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     final DistributedMember member2 =
@@ -104,21 +118,23 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     addCallbackToMoveBucket(dataStore1, member2);
     addCallbackToMoveBucket(dataStore2, member1);
 
-    putEntriesAndValidateQueryResults();
+    putEntriesAndValidateQueryResults(clientType, regionType);
   }
 
   @Test
-  public void returnCorrectResultsWhenRebalanceHappensAfterUpdates() throws InterruptedException {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void returnCorrectResultsWhenRebalanceHappensAfterUpdates(RegionTestableType clientType,
+      RegionTestableType regionType) throws InterruptedException {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex));
-    accessor.invoke(() -> initAccessor(createIndex));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
+    accessor.invoke(() -> initAccessor(createIndex, clientType));
 
     putEntryInEachBucket();
 
-    dataStore2.invoke(() -> initDataStore(createIndex));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
 
@@ -128,19 +144,20 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
   }
 
   @Test
-  public void returnCorrectResultsWhenRebalanceHappensWhileSenderIsPaused()
-      throws InterruptedException {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void returnCorrectResultsWhenRebalanceHappensWhileSenderIsPaused(
+      RegionTestableType clientType, RegionTestableType regionType) throws InterruptedException {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex));
-    accessor.invoke(() -> initAccessor(createIndex));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
+    accessor.invoke(() -> initAccessor(createIndex, clientType));
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
 
     putEntryInEachBucket();
 
-    dataStore2.invoke(() -> initDataStore(createIndex));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
     rebalanceRegion(dataStore2);
     dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
 
@@ -150,86 +167,33 @@ public abstract class LuceneQueriesPRBase extends LuceneQueriesBase {
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }
 
-  protected PartitionAttributes getPartitionAttributes(final boolean isAccessor) {
-    PartitionAttributesFactory factory = new PartitionAttributesFactory();
-    if (!isAccessor) {
-      factory.setLocalMaxMemory(100);
-    }
-    factory.setTotalNumBuckets(NUM_BUCKETS);
-    return factory.create();
-  }
-
-  protected void putEntriesAndValidateQueryResults() {
+  protected void putEntriesAndValidateQueryResults(RegionTestableType clientType,
+      RegionTestableType regionType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex));
-    accessor.invoke(() -> initAccessor(createIndex));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
+    accessor.invoke(() -> initAccessor(createIndex, clientType));
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
 
     putEntryInEachBucket();
 
-    dataStore2.invoke(() -> initDataStore(createIndex));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
     dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
 
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
 
+    // dataStore3.invoke(() -> initDataStore(createIndex, regionType));
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }
 
+  // Duplicated for now, try to abstract this out...
   protected void putEntryInEachBucket() {
     accessor.invoke(() -> {
       final Cache cache = getCache();
       Region<Object, Object> region = cache.getRegion(REGION_NAME);
       IntStream.range(0, NUM_BUCKETS).forEach(i -> region.put(i, new TestObject("hello world")));
-    });
-  }
-
-  private void addCallbackToTriggerRebalance(VM vm) {
-    vm.invoke(() -> {
-      IndexRepositorySpy spy = IndexRepositorySpy.injectSpy();
-
-      spy.beforeWriteIndexRepository(doOnce(key -> rebalanceRegion(vm)));
-    });
-  }
-
-  protected void addCallbackToMoveBucket(VM vm, final DistributedMember destination) {
-    vm.invoke(() -> {
-      IndexRepositorySpy spy = IndexRepositorySpy.injectSpy();
-
-      spy.beforeWriteIndexRepository(doOnce(key -> moveBucket(destination, key)));
-    });
-  }
-
-  protected void addCallbackToMovePrimaryOnQuery(VM vm, final DistributedMember destination) {
-    vm.invoke(() -> {
-      LuceneIndexFactorySpy factorySpy = LuceneIndexFactorySpy.injectSpy();
-
-      factorySpy.setGetRespositoryConsumer(doOnce(key -> moveBucket(destination, key)));
-    });
-  }
-
-  private void moveBucket(final DistributedMember destination, final Object key) {
-    Region<Object, Object> region = getCache().getRegion(REGION_NAME);
-    DistributedMember source = getCache().getDistributedSystem().getDistributedMember();
-    System.out.println("WHAT");
-    PartitionRegionHelper.moveBucketByKey(region, source, destination, key);
-  }
-
-  private void removeCallback(VM vm) {
-    vm.invoke(() -> {
-      IndexRepositorySpy.remove();
-      InitialImageOperation.resetAllGIITestHooks();
-      LuceneIndexFactorySpy.remove();
-    });
-  }
-
-  private void rebalanceRegion(VM vm) {
-    // Do a rebalance
-    vm.invoke(() -> {
-      RebalanceOperation op = getCache().getResourceManager().createRebalanceFactory().start();
-      RebalanceResults results = op.getResults();
     });
   }
 

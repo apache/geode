@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene;
 
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -27,16 +28,17 @@ import junitparams.JUnitParamsRunner;
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCreationOnFixedPRDUnitTest extends LuceneIndexCreationDUnitTest {
+
   @Override
-  protected void initDataStore(SerializableRunnableIF createIndex) throws Exception {
-    createIndex.run();
-    LuceneTestUtilities.initDataStoreForFixedPR(getCache());
+  protected RegionTestableType[] getListOfServerRegionTestTypes() {
+    return new RegionTestableType[] {RegionTestableType.FIXED_PARTITION};
   }
 
-  protected void initDataStore(SerializableRunnableIF createIndex, String message)
-      throws Exception {
+  @Override
+  protected void initDataStore(SerializableRunnableIF createIndex, RegionTestableType regionType,
+      String message) throws Exception {
     try {
-      initDataStore(createIndex);
+      initDataStore(createIndex, regionType);
       fail("Should not have been able to create index");
     } catch (IllegalStateException e) {
       assertEquals(message, e.getMessage());

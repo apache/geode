@@ -17,53 +17,44 @@ package org.apache.geode.cache.lucene;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.TermQuery;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 /**
  * This test class is intended to contain basic integration tests of the lucene query class that
  * should be executed against a number of different regions types and topologies.
  *
  */
-public abstract class LuceneQueriesBase extends LuceneDUnitTest {
+@Category(DistributedTest.class)
+@RunWith(JUnitParamsRunner.class)
+public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
 
   private static final long serialVersionUID = 1L;
-  protected VM accessor;
-
-  @Override
-  public void postSetUp() throws Exception {
-    super.postSetUp();
-    accessor = Host.getHost(0).getVM(3);
-  }
-
-  protected abstract void initAccessor(SerializableRunnableIF createIndex) throws Exception;
 
   @Test
-  public void returnCorrectResultsFromStringQueryWithDefaultAnalyzer() {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void returnCorrectResultsFromStringQueryWithDefaultAnalyzer(RegionTestableType clientType,
+      RegionTestableType regionType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex));
-    dataStore2.invoke(() -> initDataStore(createIndex));
-    accessor.invoke(() -> initAccessor(createIndex));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
+    accessor.invoke(() -> initAccessor(createIndex, clientType));
 
     putDataInRegion(accessor);
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
@@ -72,14 +63,16 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
   }
 
   @Test
-  public void defaultFieldShouldPropogateCorrectlyThroughFunction() {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void defaultFieldShouldPropogateCorrectlyThroughFunction(RegionTestableType clientType,
+      RegionTestableType regionType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex));
-    dataStore2.invoke(() -> initDataStore(createIndex));
-    accessor.invoke(() -> initAccessor(createIndex));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
+    accessor.invoke(() -> initAccessor(createIndex, clientType));
     putDataInRegion(accessor);
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
@@ -88,14 +81,16 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
   }
 
   @Test
-  public void canQueryWithCustomLuceneQueryObject() {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void canQueryWithCustomLuceneQueryObject(RegionTestableType clientType,
+      RegionTestableType regionType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex));
-    dataStore2.invoke(() -> initDataStore(createIndex));
-    accessor.invoke(() -> initAccessor(createIndex));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
+    accessor.invoke(() -> initAccessor(createIndex, clientType));
     putDataInRegion(accessor);
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
@@ -114,14 +109,16 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
   }
 
   @Test
-  public void verifyWaitForFlushedFunctionOnAccessor() throws InterruptedException {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void verifyWaitForFlushedFunctionOnAccessor(RegionTestableType clientType,
+      RegionTestableType regionType) throws InterruptedException {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex));
-    dataStore2.invoke(() -> initDataStore(createIndex));
-    accessor.invoke(() -> initAccessor(createIndex));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
+    accessor.invoke(() -> initAccessor(createIndex, clientType));
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     putDataInRegion(accessor);
@@ -131,55 +128,6 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     executeTextSearch(accessor, "world", "text", 3);
     executeTextSearch(accessor, "world", "noEntriesMapped", 0);
-  }
-
-  protected boolean waitForFlushBeforeExecuteTextSearch(VM vm, int ms) {
-    return vm.invoke(() -> {
-      Cache cache = getCache();
-
-      LuceneService service = LuceneServiceProvider.get(cache);
-      LuceneIndexImpl index = (LuceneIndexImpl) service.getIndex(INDEX_NAME, REGION_NAME);
-
-      return service.waitUntilFlushed(INDEX_NAME, REGION_NAME, ms, TimeUnit.MILLISECONDS);
-    });
-  }
-
-  protected void executeTextSearch(VM vm) {
-    vm.invoke(() -> {
-      Cache cache = getCache();
-      Region<Object, Object> region = cache.getRegion(REGION_NAME);
-
-      LuceneService service = LuceneServiceProvider.get(cache);
-      LuceneQuery<Integer, TestObject> query;
-      query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world",
-          DEFAULT_FIELD);
-      PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
-      assertEquals(3, results.size());
-      List<LuceneResultStruct<Integer, TestObject>> page = results.next();
-
-      Map<Integer, TestObject> data = new HashMap<Integer, TestObject>();
-      for (LuceneResultStruct<Integer, TestObject> row : page) {
-        data.put(row.getKey(), row.getValue());
-      }
-
-      assertEquals(new HashMap(region), data);
-      return null;
-    });
-  }
-
-  protected void executeTextSearch(VM vm, String queryString, String defaultField,
-      int expectedResultsSize) {
-    vm.invoke(() -> {
-      Cache cache = getCache();
-
-      LuceneService service = LuceneServiceProvider.get(cache);
-      LuceneQuery<Integer, TestObject> query;
-      query = service.createLuceneQueryFactory().setResultLimit(1000).setPageSize(1000)
-          .create(INDEX_NAME, REGION_NAME, queryString, defaultField);
-      Collection<?> results = query.findKeys();
-
-      assertEquals(expectedResultsSize, results.size());
-    });
   }
 
   protected void putDataInRegion(VM vm) {
@@ -192,42 +140,4 @@ public abstract class LuceneQueriesBase extends LuceneDUnitTest {
     });
   }
 
-  protected static class TestObject implements Serializable {
-    private static final long serialVersionUID = 1L;
-    private String text;
-
-    public TestObject(String text) {
-      this.text = text;
-    }
-
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((text == null) ? 0 : text.hashCode());
-      return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
-      TestObject other = (TestObject) obj;
-      if (text == null) {
-        if (other.text != null)
-          return false;
-      } else if (!text.equals(other.text))
-        return false;
-      return true;
-    }
-
-    @Override
-    public String toString() {
-      return "TestObject[" + text + "]";
-    }
-  }
 }

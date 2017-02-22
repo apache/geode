@@ -19,10 +19,11 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.test.IndexRegionSpy;
 import org.apache.geode.cache.lucene.test.IndexRepositorySpy;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
@@ -42,36 +43,44 @@ import org.awaitility.Awaitility;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 @Category(DistributedTest.class)
-public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase {
+@RunWith(JUnitParamsRunner.class)
+public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase {
 
   @Override
-  protected void initDataStore(final SerializableRunnableIF createIndex) throws Exception {
-    createIndex.run();
-    Region region = getCache().createRegionFactory(RegionShortcut.PARTITION_REDUNDANT)
-        .setPartitionAttributes(getPartitionAttributes(false)).create(REGION_NAME);
+  protected Object[] getListOfClientServerTypes() {
+    return new Object[] {new RegionTestableType[] {RegionTestableType.PARTITION_PROXY_REDUNDANT,
+        RegionTestableType.PARTITION_REDUNDANT}};
   }
 
-  @Override
-  protected void initAccessor(final SerializableRunnableIF createIndex) throws Exception {
-    createIndex.run();
-    Region region = getCache().createRegionFactory(RegionShortcut.PARTITION_PROXY_REDUNDANT)
-        .setPartitionAttributes(getPartitionAttributes(true)).create(REGION_NAME);
+  protected void putEntryInEachBucket() {
+    accessor.invoke(() -> {
+      final Cache cache = getCache();
+      Region<Object, Object> region = cache.getRegion(REGION_NAME);
+      IntStream.range(0, NUM_BUCKETS).forEach(i -> region.put(i, new TestObject("hello world")));
+    });
   }
 
   @Test
-  public void returnCorrectResultsWhenMovePrimaryHappensOnIndexUpdate()
-      throws InterruptedException {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void returnCorrectResultsWhenMovePrimaryHappensOnIndexUpdate(RegionTestableType clientType,
+      RegionTestableType regionType) throws InterruptedException {
     final DistributedMember member2 =
         dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     addCallbackToMovePrimary(dataStore1, member2);
 
-    putEntriesAndValidateResultsWithRedundancy();
+    putEntriesAndValidateResultsWithRedundancy(clientType, regionType);
   }
 
   @Test
-  public void returnCorrectResultsWhenCloseCacheHappensOnIndexUpdate() throws InterruptedException {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void returnCorrectResultsWhenCloseCacheHappensOnIndexUpdate(RegionTestableType clientType,
+      RegionTestableType regionType) throws InterruptedException {
     dataStore1.invoke(() -> {
       IndexRepositorySpy spy = IndexRepositorySpy.injectSpy();
 
@@ -81,7 +90,7 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
     final String expectedExceptions = CacheClosedException.class.getName();
     dataStore1.invoke(addExceptionTag1(expectedExceptions));
 
-    putEntriesAndValidateResultsWithRedundancy();
+    putEntriesAndValidateResultsWithRedundancy(clientType, regionType);
 
     // Wait until the cache is closed in datastore1
     dataStore1.invoke(
@@ -89,15 +98,16 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
   }
 
   @Test
-  public void returnCorrectResultsWhenCloseCacheHappensOnPartialIndexWrite()
-      throws InterruptedException {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void returnCorrectResultsWhenCloseCacheHappensOnPartialIndexWrite(
+      RegionTestableType clientType, RegionTestableType regionType) throws InterruptedException {
     final DistributedMember member2 =
         dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     dataStore1.invoke(() -> {
       IndexRegionSpy.beforeWrite(getCache(), doAfterN(key -> getCache().close(), 100));
     });
 
-    putEntriesAndValidateResultsWithRedundancy();
+    putEntriesAndValidateResultsWithRedundancy(clientType, regionType);
 
     // Wait until the cache is closed in datastore1
     dataStore1.invoke(
@@ -105,14 +115,15 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
   }
 
   @Test
-  public void returnCorrectResultsWhenIndexUpdateHappensIntheMiddleofGII()
-      throws InterruptedException {
+  @Parameters(method = "getListOfClientServerTypes")
+  public void returnCorrectResultsWhenIndexUpdateHappensIntheMiddleofGII(
+      RegionTestableType clientType, RegionTestableType regionType) throws InterruptedException {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex));
-    accessor.invoke(() -> initAccessor(createIndex));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
+    accessor.invoke(() -> initAccessor(createIndex, clientType));
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     putEntryInEachBucket();
 
@@ -137,20 +148,21 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
           });
     });
 
-    dataStore2.invoke(() -> initDataStore(createIndex));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
 
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 30000));
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }
 
-  private void putEntriesAndValidateResultsWithRedundancy() {
+  private void putEntriesAndValidateResultsWithRedundancy(RegionTestableType clientType,
+      RegionTestableType regionType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex));
-    dataStore2.invoke(() -> initDataStore(createIndex));
-    accessor.invoke(() -> initAccessor(createIndex));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
+    accessor.invoke(() -> initAccessor(createIndex, clientType));
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     accessor.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
@@ -166,21 +178,4 @@ public class LuceneQueriesPeerPRRedundancyDUnitTest extends LuceneQueriesPRBase 
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }
 
-  protected void addCallbackToMovePrimary(VM vm, final DistributedMember destination) {
-    vm.invoke(() -> {
-      IndexRepositorySpy spy = IndexRepositorySpy.injectSpy();
-
-      spy.beforeWriteIndexRepository(doOnce(key -> moveBucket(destination, key)));
-    });
-  }
-
-  private void moveBucket(final DistributedMember destination, final Object key) {
-    PartitionedRegion region = (PartitionedRegion) getCache().getRegion(REGION_NAME);
-
-    BecomePrimaryBucketResponse response =
-        BecomePrimaryBucketMessage.send((InternalDistributedMember) destination, region,
-            region.getKeyInfo(key).getBucketId(), true);
-    assertNotNull(response);
-    assertTrue(response.waitForResponse());
-  }
 }
