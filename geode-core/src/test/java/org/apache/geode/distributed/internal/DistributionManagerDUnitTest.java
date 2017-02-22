@@ -200,9 +200,9 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
       MembershipManagerHelper.addSurpriseMember(sys, mbr, birthTime);
       assertTrue("Member was not a surprise member", mgr.isSurpriseMember(mbr));
 
-//      if (birthTime < (System.currentTimeMillis() - timeout)) {
-//        return; // machine is too busy and we didn't get enough CPU to perform more assertions
-//      }
+      // if (birthTime < (System.currentTimeMillis() - timeout)) {
+      // return; // machine is too busy and we didn't get enough CPU to perform more assertions
+      // }
 
       Awaitility.await("waiting for member to be removed")
           .atMost((timeout / 3) + gracePeriod, TimeUnit.MILLISECONDS)
