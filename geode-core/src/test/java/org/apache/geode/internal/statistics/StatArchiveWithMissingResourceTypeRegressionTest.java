@@ -59,7 +59,8 @@ public class StatArchiveWithMissingResourceTypeRegressionTest {
   public void throwsIllegalStateExceptionWithMessage() throws Exception {
     assertThatThrownBy(() -> new StatArchiveReader(new File[] {this.archiveFile}, null, true))
         .isExactlyInstanceOf(IllegalStateException.class) // was NullPointerException
-        .hasMessage("ResourceType is missing for resourceTypeId 0"); // was null
+        .hasMessageStartingWith("ResourceType is missing for resourceTypeId 0")
+        .hasMessageContaining("resourceName statistics1");
   }
 
 }
