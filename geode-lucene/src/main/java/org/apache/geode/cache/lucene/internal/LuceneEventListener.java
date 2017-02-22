@@ -92,15 +92,14 @@ public class LuceneEventListener implements AsyncEventListener {
     } catch (BucketNotFoundException | RegionDestroyedException | PrimaryBucketException e) {
       logger.debug("Bucket not found while saving to lucene index: " + e.getMessage(), e);
       return false;
-    } catch (IOException e) {
-      logger.debug("Unable to save to lucene index", e);
-      return false;
     } catch (CacheClosedException e) {
       logger.debug("Unable to save to lucene index, cache has been closed", e);
       return false;
     } catch (AlreadyClosedException e) {
       logger.debug("Unable to commit, the lucene index is already closed", e);
       return false;
+    } catch (IOException e) {
+      throw new InternalGemFireError("Unable to save to lucene index", e);
     } finally {
       DefaultQuery.setPdxReadSerialized(false);
     }
