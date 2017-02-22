@@ -27,6 +27,7 @@ include 'geode-pulse'
 include 'geode-assembly'
 include 'geode-rebalancer'
 include 'geode-lucene'
+include 'geode-redis'
 include 'geode-old-client-support'
 include 'geode-wan'
 include 'geode-cq'
@@ -42,3 +43,4 @@ include 'extensions/geode-modules-assembly'
 if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
   throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)
 }
+

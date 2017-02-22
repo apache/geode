@@ -36,7 +36,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.geode.redis.GeodeRedisServer;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
