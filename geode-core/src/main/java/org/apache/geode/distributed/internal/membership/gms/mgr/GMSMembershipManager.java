@@ -576,7 +576,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       // expire surprise members, add others to view
       long oldestAllowed = System.currentTimeMillis() - this.surpriseMemberTimeout;
       for (Iterator<Map.Entry<InternalDistributedMember, Long>> it =
-           surpriseMembers.entrySet().iterator(); it.hasNext();) {
+          surpriseMembers.entrySet().iterator(); it.hasNext();) {
         Map.Entry<InternalDistributedMember, Long> entry = it.next();
         Long birthtime = entry.getValue();
         if (birthtime.longValue() < oldestAllowed) {
@@ -1150,7 +1150,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
 
   @Override
   public void memberSuspected(InternalDistributedMember initiator,
-                              InternalDistributedMember suspect, String reason) {
+      InternalDistributedMember suspect, String reason) {
     SuspectMember s = new SuspectMember(initiator, suspect, reason);
     handleOrDeferSuspect(s);
   }
@@ -1803,7 +1803,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   }
 
   public Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
-                                             DistributionMessage msg, DMStats theStats) throws NotSerializableException {
+      DistributionMessage msg, DMStats theStats) throws NotSerializableException {
     Set<InternalDistributedMember> result;
     boolean allDestinations = msg.forAll();
 
