@@ -101,7 +101,6 @@ public class LuceneQueriesAccessorBase extends LuceneDUnitTest {
       query = service.createLuceneQueryFactory().setResultLimit(1000).setPageSize(1000)
           .create(INDEX_NAME, REGION_NAME, queryString, defaultField);
       Collection<?> results = query.findKeys();
-      System.out.println("JASON Lucene Query returned:" + results.size());
 
       assertEquals(expectedResultsSize, results.size());
     });
