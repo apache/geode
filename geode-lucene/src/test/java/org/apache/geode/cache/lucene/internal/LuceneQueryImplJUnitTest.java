@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -41,6 +40,7 @@ import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
 import org.apache.geode.cache.lucene.LuceneResultStruct;
 import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
+import org.apache.geode.cache.lucene.internal.distributed.LuceneFunction;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntries;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
@@ -127,7 +127,7 @@ public class LuceneQueryImplJUnitTest {
     addValueToResults();
     PageableLuceneQueryResults<Object, Object> results = query.findPages();
 
-    verify(execution).execute(eq(LuceneQueryFunction.ID));
+    verify(execution).execute(eq(LuceneFunction.ID));
     ArgumentCaptor<LuceneFunctionContext> captor =
         ArgumentCaptor.forClass(LuceneFunctionContext.class);
     verify(execution).withArgs(captor.capture());

@@ -23,7 +23,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
-import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
+import org.apache.geode.cache.lucene.internal.distributed.LuceneFunction;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Rule;
@@ -55,13 +55,13 @@ public class LuceneServiceImplIntegrationTest {
   // lucene service will register query execution function on initialization
   @Test
   public void shouldRegisterQueryFunction() {
-    Function function = FunctionService.getFunction(LuceneQueryFunction.ID);
+    Function function = FunctionService.getFunction(LuceneFunction.ID);
     assertNull(function);
 
     cache = getCache();
     new LuceneServiceImpl().init(cache);
 
-    function = FunctionService.getFunction(LuceneQueryFunction.ID);
+    function = FunctionService.getFunction(LuceneFunction.ID);
     assertNotNull(function);
   }
 

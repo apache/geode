@@ -32,12 +32,13 @@ import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.LuceneResultStruct;
 import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
 import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
-import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
+import org.apache.geode.cache.lucene.internal.distributed.LuceneFunction;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntries;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollectorManager;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesFunctionCollector;
+import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
@@ -106,20 +107,23 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
     // TODO provide a timeout to the user?
     TopEntries<K> entries = null;
-    try {
-      TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
-      ResultCollector<TopEntriesCollector, TopEntries<K>> rc =
-          (ResultCollector<TopEntriesCollector, TopEntries<K>>) onRegion().withArgs(context)
-              .withCollector(collector).execute(LuceneQueryFunction.ID);
-      entries = rc.getResult();
-    } catch (FunctionException e) {
-      if (e.getCause() instanceof LuceneQueryException) {
-        throw new LuceneQueryException(e);
-      } else {
-        e.printStackTrace();
-        throw e;
+    while (entries == null) {
+      try {
+        TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
+        ResultCollector<TopEntriesCollector, TopEntries<K>> rc =
+            (ResultCollector<TopEntriesCollector, TopEntries<K>>) onRegion().withArgs(context)
+                .withCollector(collector).execute(LuceneFunction.ID);
+        entries = rc.getResult();
+      } catch (FunctionException e) {
+        if (e.getCause() instanceof BucketNotFoundException) {
+          entries = null;
+        } else if (e.getCause() instanceof LuceneQueryException) {
+          throw new LuceneQueryException(e);
+        } else {
+          e.printStackTrace();
+          throw e;
+        }
       }
-
     }
     return entries;
   }
