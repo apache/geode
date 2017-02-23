@@ -75,6 +75,8 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
 
   public enum RegionTestableType {
     PARTITION(RegionShortcut.PARTITION_PROXY, RegionShortcut.PARTITION),
+    PARTITION_REDUNDANT_PERSISTENT(RegionShortcut.PARTITION_PROXY_REDUNDANT,
+        RegionShortcut.PARTITION_REDUNDANT_PERSISTENT),
     PARTITION_PERSISTENT(RegionShortcut.PARTITION_PROXY, RegionShortcut.PARTITION_PERSISTENT),
     PARTITION_REDUNDANT(RegionShortcut.PARTITION_PROXY_REDUNDANT,
         RegionShortcut.PARTITION_REDUNDANT),
