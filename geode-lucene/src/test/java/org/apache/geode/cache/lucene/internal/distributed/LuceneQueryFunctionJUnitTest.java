@@ -37,7 +37,6 @@ import org.apache.geode.cache.lucene.internal.StringQueryProvider;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
-import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -52,7 +51,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 @Category(UnitTest.class)
-public class LuceneFunctionJUnitTest {
+public class LuceneQueryFunctionJUnitTest {
 
   String regionPath = "/region";
   String indexName = "index";
@@ -104,7 +103,7 @@ public class LuceneFunctionJUnitTest {
     }).when(mockRepository2).query(eq(query), eq(LuceneQueryFactory.DEFAULT_LIMIT),
         any(IndexResultCollector.class));
 
-    LuceneFunction function = new LuceneFunction();
+    LuceneQueryFunction function = new LuceneQueryFunction();
 
     function.execute(mockContext);
 
@@ -146,7 +145,7 @@ public class LuceneFunctionJUnitTest {
     }).when(mockRepository2).query(eq(query), eq(3), any(IndexResultCollector.class));
 
 
-    LuceneFunction function = new LuceneFunction();
+    LuceneQueryFunction function = new LuceneQueryFunction();
 
     function.execute(mockContext);
 
@@ -187,7 +186,7 @@ public class LuceneFunctionJUnitTest {
         any(IndexResultCollector.class));
 
 
-    LuceneFunction function = new LuceneFunction();
+    LuceneQueryFunction function = new LuceneQueryFunction();
 
     function.execute(mockContext);
 
@@ -204,7 +203,7 @@ public class LuceneFunctionJUnitTest {
     doThrow(IOException.class).when(mockRepository1).query(eq(query),
         eq(LuceneQueryFactory.DEFAULT_LIMIT), any(IndexResultCollector.class));
 
-    LuceneFunction function = new LuceneFunction();
+    LuceneQueryFunction function = new LuceneQueryFunction();
 
     function.execute(mockContext);
   }
@@ -217,7 +216,7 @@ public class LuceneFunctionJUnitTest {
   // when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
   // when(mockRepoManager.getRepositories(eq(mockContext)))
   // .thenThrow(new BucketNotFoundException(""));
-  // LuceneFunction function = new LuceneFunction();
+  // LuceneQueryFunction function = new LuceneQueryFunction();
   //
   // function.execute(mockContext);
   //
@@ -238,7 +237,7 @@ public class LuceneFunctionJUnitTest {
     when(mockManager.newCollector(eq("repo1"))).thenReturn(mockCollector);
     when(mockManager.reduce(any(Collection.class))).thenThrow(IOException.class);
 
-    LuceneFunction function = new LuceneFunction();
+    LuceneQueryFunction function = new LuceneQueryFunction();
 
     function.execute(mockContext);
   }
@@ -251,15 +250,15 @@ public class LuceneFunctionJUnitTest {
     when(mockContext.getArguments()).thenReturn(searchArgs);
     when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
     when(queryProvider.getQuery(eq(mockIndex))).thenThrow(LuceneQueryException.class);
-    LuceneFunction function = new LuceneFunction();
+    LuceneQueryFunction function = new LuceneQueryFunction();
 
     function.execute(mockContext);
   }
 
   @Test
   public void testQueryFunctionId() {
-    String id = new LuceneFunction().getId();
-    assertEquals(LuceneFunction.class.getName(), id);
+    String id = new LuceneQueryFunction().getId();
+    assertEquals(LuceneQueryFunction.class.getName(), id);
   }
 
   @Before

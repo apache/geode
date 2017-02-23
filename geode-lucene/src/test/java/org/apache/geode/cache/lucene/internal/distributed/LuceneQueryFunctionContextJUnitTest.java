@@ -30,7 +30,7 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class LuceneFunctionContextJUnitTest {
+public class LuceneQueryFunctionContextJUnitTest {
 
   @Test
   public void testLuceneFunctionArgsDefaults() {

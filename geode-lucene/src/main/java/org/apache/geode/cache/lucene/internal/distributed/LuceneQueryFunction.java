@@ -27,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.search.Query;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.RegionFunctionContext;
@@ -44,13 +43,14 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * {@link LuceneFunction} coordinates text search on a member. It receives text search query from
- * the coordinator and arguments like region and buckets. It invokes search on the local index and
- * provides a result collector. The locally collected results are sent to the search coordinator.
+ * {@link LuceneQueryFunction} coordinates text search on a member. It receives text search query
+ * from the coordinator and arguments like region and buckets. It invokes search on the local index
+ * and provides a result collector. The locally collected results are sent to the search
+ * coordinator.
  */
-public class LuceneFunction implements Function, InternalEntity {
+public class LuceneQueryFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
-  public static final String ID = LuceneFunction.class.getName();
+  public static final String ID = LuceneQueryFunction.class.getName();
 
   private static final Logger logger = LogService.getLogger();
 
@@ -121,7 +121,7 @@ public class LuceneFunction implements Function, InternalEntity {
       resultSender.lastResult(mergedResult);
     } catch (IOException | BucketNotFoundException e) {
       logger.debug("Exception during lucene query function", e);
-      throw new FunctionException(e);
+      throw new InternalFunctionInvocationTargetException(e);
     }
   }
 

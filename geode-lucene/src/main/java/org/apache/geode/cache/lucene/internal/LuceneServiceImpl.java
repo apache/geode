@@ -18,6 +18,7 @@ package org.apache.geode.cache.lucene.internal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
 import org.apache.geode.cache.lucene.internal.management.LuceneServiceMBean;
 import org.apache.geode.cache.lucene.internal.management.ManagementIndexListener;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
@@ -39,7 +40,6 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
 import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
-import org.apache.geode.cache.lucene.internal.distributed.LuceneFunction;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntries;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
@@ -55,7 +55,6 @@ import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -89,7 +88,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
     this.cache = gfc;
 
-    FunctionService.registerFunction(new LuceneFunction());
+    FunctionService.registerFunction(new LuceneQueryFunction());
     FunctionService.registerFunction(new WaitUntilFlushedFunction());
     FunctionService.registerFunction(new DumpDirectoryFiles());
     registerDataSerializables();
