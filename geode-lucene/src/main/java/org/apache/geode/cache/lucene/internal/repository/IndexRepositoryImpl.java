@@ -172,8 +172,8 @@ public class IndexRepositoryImpl implements IndexRepository {
       stats.removeDocumentsSupplier(documentCountSupplier);
       try {
         writer.close();
-      } catch (IOException e) {
-        logger.warn("Unable to clean up index repository", e);
+      } catch (Exception e) {
+        logger.debug("Unable to clean up index repository", e);
       }
     } finally {
       try {
