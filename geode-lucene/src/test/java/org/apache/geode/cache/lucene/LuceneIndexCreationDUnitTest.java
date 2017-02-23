@@ -43,7 +43,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
 
   private final Object[] parametersForMultipleIndexCreates() {
     Integer[] numIndexes = {1, 2, 10};
-    RegionTestableType[] regionTestTypes = getListOfServerRegionTestTypes();
+    RegionTestableType[] regionTestTypes = getListOfRegionTestTypes();
     return parameterCombiner(numIndexes, regionTestTypes);
   }
 
@@ -51,7 +51,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     Object[] indexCreations = new Object[] {getFieldsIndexWithOneField(),
         getFieldsIndexWithTwoFields(), get2FieldsIndexes(), getAnalyzersIndexWithOneField(),
         getAnalyzersIndexWithTwoFields(), getAnalyzersIndexWithNullField1()};
-    RegionTestableType[] regionTestTypes = getListOfServerRegionTestTypes();
+    RegionTestableType[] regionTestTypes = getListOfRegionTestTypes();
     return parameterCombiner(indexCreations, regionTestTypes);
   }
 
@@ -339,7 +339,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       String message) throws Exception {
     createIndex.run();
     try {
-      regionType.createRegion(getCache(), REGION_NAME);
+      regionType.createDataStore(getCache(), REGION_NAME);
       fail("Should not have been able to create index");
     } catch (IllegalStateException e) {
       assertEquals(message, e.getMessage());

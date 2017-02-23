@@ -45,16 +45,16 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
   private static final long serialVersionUID = 1L;
 
   @Test
-  @Parameters(method = "getListOfClientServerTypes")
-  public void returnCorrectResultsFromStringQueryWithDefaultAnalyzer(RegionTestableType clientType,
-      RegionTestableType regionType) {
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void returnCorrectResultsFromStringQueryWithDefaultAnalyzer(
+      RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
-    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
-    accessor.invoke(() -> initAccessor(createIndex, clientType));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
 
     putDataInRegion(accessor);
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
@@ -63,16 +63,16 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
   }
 
   @Test
-  @Parameters(method = "getListOfClientServerTypes")
-  public void defaultFieldShouldPropogateCorrectlyThroughFunction(RegionTestableType clientType,
-      RegionTestableType regionType) {
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void defaultFieldShouldPropogateCorrectlyThroughFunction(
+      RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
-    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
-    accessor.invoke(() -> initAccessor(createIndex, clientType));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
     putDataInRegion(accessor);
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
@@ -81,16 +81,15 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
   }
 
   @Test
-  @Parameters(method = "getListOfClientServerTypes")
-  public void canQueryWithCustomLuceneQueryObject(RegionTestableType clientType,
-      RegionTestableType regionType) {
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void canQueryWithCustomLuceneQueryObject(RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
-    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
-    accessor.invoke(() -> initAccessor(createIndex, clientType));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
     putDataInRegion(accessor);
     assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
@@ -109,16 +108,16 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
   }
 
   @Test
-  @Parameters(method = "getListOfClientServerTypes")
-  public void verifyWaitForFlushedFunctionOnAccessor(RegionTestableType clientType,
-      RegionTestableType regionType) throws InterruptedException {
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void verifyWaitForFlushedFunctionOnAccessor(RegionTestableType regionTestType)
+      throws InterruptedException {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
-    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
-    accessor.invoke(() -> initAccessor(createIndex, clientType));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     putDataInRegion(accessor);

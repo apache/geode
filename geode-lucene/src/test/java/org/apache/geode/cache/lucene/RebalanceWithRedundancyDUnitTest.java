@@ -53,9 +53,9 @@ import junitparams.Parameters;
 public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase {
 
   @Override
-  protected Object[] getListOfClientServerTypes() {
-    return new Object[] {new RegionTestableType[] {RegionTestableType.PARTITION_PROXY_REDUNDANT,
-        RegionTestableType.PARTITION_REDUNDANT}};
+  protected RegionTestableType[] getListOfRegionTestTypes() {
+    return new RegionTestableType[] {RegionTestableType.PARTITION_REDUNDANT,
+        RegionTestableType.FIXED_PARTITION};
   }
 
   protected void putEntryInEachBucket() {
@@ -67,20 +67,20 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
   }
 
   @Test
-  @Parameters(method = "getListOfClientServerTypes")
-  public void returnCorrectResultsWhenMovePrimaryHappensOnIndexUpdate(RegionTestableType clientType,
-      RegionTestableType regionType) throws InterruptedException {
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void returnCorrectResultsWhenMovePrimaryHappensOnIndexUpdate(
+      RegionTestableType regionTestType) throws InterruptedException {
     final DistributedMember member2 =
         dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     addCallbackToMovePrimary(dataStore1, member2);
 
-    putEntriesAndValidateResultsWithRedundancy(clientType, regionType);
+    putEntriesAndValidateResultsWithRedundancy(regionTestType);
   }
 
   @Test
-  @Parameters(method = "getListOfClientServerTypes")
-  public void returnCorrectResultsWhenCloseCacheHappensOnIndexUpdate(RegionTestableType clientType,
-      RegionTestableType regionType) throws InterruptedException {
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void returnCorrectResultsWhenCloseCacheHappensOnIndexUpdate(
+      RegionTestableType regionTestType) throws InterruptedException {
     dataStore1.invoke(() -> {
       IndexRepositorySpy spy = IndexRepositorySpy.injectSpy();
 
@@ -90,7 +90,7 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
     final String expectedExceptions = CacheClosedException.class.getName();
     dataStore1.invoke(addExceptionTag1(expectedExceptions));
 
-    putEntriesAndValidateResultsWithRedundancy(clientType, regionType);
+    putEntriesAndValidateResultsWithRedundancy(regionTestType);
 
     // Wait until the cache is closed in datastore1
     dataStore1.invoke(
@@ -98,16 +98,16 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
   }
 
   @Test
-  @Parameters(method = "getListOfClientServerTypes")
+  @Parameters(method = "getListOfRegionTestTypes")
   public void returnCorrectResultsWhenCloseCacheHappensOnPartialIndexWrite(
-      RegionTestableType clientType, RegionTestableType regionType) throws InterruptedException {
+      RegionTestableType regionTestType) throws InterruptedException {
     final DistributedMember member2 =
         dataStore2.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
     dataStore1.invoke(() -> {
       IndexRegionSpy.beforeWrite(getCache(), doAfterN(key -> getCache().close(), 100));
     });
 
-    putEntriesAndValidateResultsWithRedundancy(clientType, regionType);
+    putEntriesAndValidateResultsWithRedundancy(regionTestType);
 
     // Wait until the cache is closed in datastore1
     dataStore1.invoke(
@@ -115,15 +115,15 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
   }
 
   @Test
-  @Parameters(method = "getListOfClientServerTypes")
+  @Parameters(method = "getListOfRegionTestTypes")
   public void returnCorrectResultsWhenIndexUpdateHappensIntheMiddleofGII(
-      RegionTestableType clientType, RegionTestableType regionType) throws InterruptedException {
+      RegionTestableType regionTestType) throws InterruptedException {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
-    accessor.invoke(() -> initAccessor(createIndex, clientType));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     putEntryInEachBucket();
 
@@ -148,21 +148,20 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
           });
     });
 
-    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
 
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 30000));
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }
 
-  private void putEntriesAndValidateResultsWithRedundancy(RegionTestableType clientType,
-      RegionTestableType regionType) {
+  private void putEntriesAndValidateResultsWithRedundancy(RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
     };
-    dataStore1.invoke(() -> initDataStore(createIndex, regionType));
-    dataStore2.invoke(() -> initDataStore(createIndex, regionType));
-    accessor.invoke(() -> initAccessor(createIndex, clientType));
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     accessor.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));

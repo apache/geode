@@ -60,9 +60,8 @@ public class LuceneQueriesClientDUnitTest extends LuceneQueriesDUnitTest {
   protected void initAccessor(SerializableRunnableIF createIndex, RegionTestableType regionTestType)
       throws Exception {}
 
-  protected Object[] getListOfClientServerTypes() {
-    return new Object[] {new RegionTestableType[] {RegionTestableType.CLIENT_PARTITION,
-        RegionTestableType.PARTITION}};
+  protected RegionTestableType[] getListOfRegionTestTypes() {
+    return new RegionTestableType[] {RegionTestableType.PARTITION_WITH_CLIENT};
   }
 
 

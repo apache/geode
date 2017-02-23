@@ -30,7 +30,7 @@ import junitparams.JUnitParamsRunner;
 public class LuceneIndexCreationOnFixedPRDUnitTest extends LuceneIndexCreationDUnitTest {
 
   @Override
-  protected RegionTestableType[] getListOfServerRegionTestTypes() {
+  protected RegionTestableType[] getListOfRegionTestTypes() {
     return new RegionTestableType[] {RegionTestableType.FIXED_PARTITION};
   }
 
