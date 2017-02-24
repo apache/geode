@@ -122,6 +122,7 @@ dependencies {
 
   // Test Dependencies
   // External
+  testCompile 'com.google.guava:guava:' + project.'guava.version'
   testCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
   testRuntime 'org.apache.derby:derby:' + project.'derby.version'

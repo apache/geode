@@ -23,12 +23,10 @@ dependencies {
   compile('commons-fileupload:commons-fileupload:' + project.'commons-fileupload.version') {
     exclude module: 'commons-io'
   }
-  compile 'com.fasterxml:classmate:' + project.'classmate.version'
   compile 'com.fasterxml.jackson.core:jackson-annotations:' + project.'jackson.version'
   compile 'com.fasterxml.jackson.core:jackson-core:' + project.'jackson.version'
   compile 'com.fasterxml.jackson.core:jackson-databind:' + project.'jackson.version'
   compile 'com.fasterxml.jackson.module:jackson-module-scala_2.10:' + project.'jackson-module-scala_2.10.version'
-  compile 'com.google.guava:guava:' + project.'guava.version'
   compile('io.springfox:springfox-swagger2:' + project.'springfox.version') {
     exclude module: 'slf4j-api'
   }
@@ -36,8 +34,6 @@ dependencies {
     exclude module: 'slf4j-api'
   }
   compile 'org.json4s:json4s-ast_2.10:' + project.'json4s.version'
-  compile 'org.scala-lang:scala-library:' + project.'scala.version'
-  compile 'org.scala-lang:scala-reflect:' + project.'scala.version'
   compile 'org.springframework:spring-beans:' + project.'springframework.version'
   compile 'org.springframework.security:spring-security-core:' + project.'spring-security.version'
   compile 'org.springframework.security:spring-security-web:' + project.'spring-security.version'
