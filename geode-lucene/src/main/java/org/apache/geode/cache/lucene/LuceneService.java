@@ -103,9 +103,7 @@ public interface LuceneService {
    * Destroy the lucene index
    * 
    * @param index index object
-   * @deprecated TODO This feature is not yet implemented
    */
-  @Deprecated
   public void destroyIndex(LuceneIndex index);
 
   /**
@@ -131,17 +129,13 @@ public interface LuceneService {
    */
   public LuceneQueryFactory createLuceneQueryFactory();
 
-  /*
+  /**
    * wait until the current entries in cache are indexed
    * 
    * @param indexName index name
-   * 
    * @param regionPath region name
-   * 
    * @param timeout max wait time
-   * 
    * @param unit granularity of the timeout
-   *
    * @return if entries are flushed within timeout
    */
   public boolean waitUntilFlushed(String indexName, String regionPath, long timeout, TimeUnit unit)

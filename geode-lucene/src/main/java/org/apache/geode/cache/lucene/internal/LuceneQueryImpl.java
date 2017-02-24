@@ -47,20 +47,17 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
   private int limit = LuceneQueryFactory.DEFAULT_LIMIT;
   private int pageSize = LuceneQueryFactory.DEFAULT_PAGESIZE;
   private String indexName;
-  // The projected fields are local to a specific index per Query object.
-  private String[] projectedFieldNames;
   /* the lucene Query object to be wrapped here */
   private LuceneQueryProvider query;
   private Region<K, V> region;
   private String defaultField;
 
   public LuceneQueryImpl(String indexName, Region<K, V> region, LuceneQueryProvider provider,
-      String[] projectionFields, int limit, int pageSize) {
+      int limit, int pageSize) {
     this.indexName = indexName;
     this.region = region;
     this.limit = limit;
     this.pageSize = pageSize;
-    this.projectedFieldNames = projectionFields;
     this.query = provider;
   }
 
@@ -138,8 +135,4 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     return this.limit;
   }
 
-  @Override
-  public String[] getProjectedFieldNames() {
-    return this.projectedFieldNames;
-  }
 }

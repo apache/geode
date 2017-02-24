@@ -66,7 +66,7 @@ public class LuceneQueryImplJUnitTest {
     when(execution.withCollector(any())).thenReturn(execution);
     when(execution.execute(anyString())).thenReturn((ResultCollector) collector);
 
-    query = new LuceneQueryImpl<Object, Object>("index", region, provider, null, LIMIT, 20) {
+    query = new LuceneQueryImpl<Object, Object>("index", region, provider, LIMIT, 20) {
       @Override
       protected Execution onRegion() {
         return execution;
