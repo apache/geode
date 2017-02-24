@@ -977,11 +977,10 @@ public class GMSMembershipManager implements MembershipManager, Manager {
 
   /** starts periodic task to perform cleanup chores such as expire surprise members */
   private void startCleanupTimer() {
-    if (this.dcReceiver == null) {
-      // junit tests don't provide a direct-channel receiver
+    if (this.listener == null || listener.getDM() == null) {
       return;
     }
-    DistributedSystem ds = this.dcReceiver.getDM().getSystem();
+    DistributedSystem ds = this.listener.getDM().getSystem();
     this.cleanupTimer = new SystemTimer(ds, true);
     SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {
       @Override
