@@ -260,6 +260,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
+  @Test
   public void testTombstoneGcMessagesAreOnlySentToPRNodesWithInterestRegistration() {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);

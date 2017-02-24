@@ -1008,7 +1008,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     return adviseFilter(new Filter() {
       public boolean include(Profile profile) {
         CacheProfile prof = (CacheProfile) profile;
-        return prof.hasCacheServer && prof.filterProfile.hasInterest();
+        return prof.hasCacheServer && prof.filterProfile != null
+            && prof.filterProfile.hasInterest();
       }
     });
   }
@@ -1016,7 +1017,8 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   private static final Filter prServerWithInterestFilter = new Filter() {
     public boolean include(Profile profile) {
       CacheProfile prof = (CacheProfile) profile;
-      return prof.isPartitioned && prof.hasCacheServer && prof.filterProfile.hasInterest();
+      return prof.isPartitioned && prof.hasCacheServer && prof.filterProfile != null
+          && prof.filterProfile.hasInterest();
     }
   };
 
