@@ -383,7 +383,7 @@ public class StatArchiveHandler implements SampleHandler {
       }
       try {
         StatArchiveDescriptor archiveDescriptor = new StatArchiveDescriptor.Builder()
-            .setArchiveName(newFile.getPath()).setSystemId(this.config.getSystemId())
+            .setArchiveName(newFile.getAbsolutePath()).setSystemId(this.config.getSystemId())
             .setSystemStartTime(this.config.getSystemStartTime())
             .setSystemDirectoryPath(this.config.getSystemDirectoryPath())
             .setProductDescription(this.config.getProductDescription()).build();

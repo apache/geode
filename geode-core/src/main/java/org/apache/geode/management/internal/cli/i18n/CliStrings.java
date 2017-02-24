@@ -1401,7 +1401,7 @@ public class CliStrings {
   public static final String EXPORT_LOGS__MSG__CANNOT_EXECUTE = "Cannot execute";
   public static final String EXPORT_LOGS__LOGLEVEL = LOG_LEVEL;
   public static final String EXPORT_LOGS__LOGLEVEL__HELP =
-      "Minimum level of log entries to export. Valid values are: none, error, info, config , fine, finer and finest.  The default is \"info\".";
+      "Minimum level of log entries to export. Valid values are: fatal, error, warn, info, debug, trace and all.  The default is \"INFO\".";
   public static final String EXPORT_LOGS__UPTO_LOGLEVEL = "only-log-level";
   public static final String EXPORT_LOGS__UPTO_LOGLEVEL__HELP =
       "Whether to only include those entries that exactly match the --log-level specified.";
@@ -1430,6 +1430,10 @@ public class CliStrings {
       "Groups specified have no members";
   public static final String EXPORT_LOGS__MSG__FAILED_TO_EXPORT_LOG_FILES_FOR_MEMBER_0 =
       "Could not export log files for member {0}";
+  public static final String EXPORT_LOGS__LOGSONLY = "logs-only";
+  public static final String EXPORT_LOGS__STATSONLY = "stats-only";
+  public static final String EXPORT_LOGS__LOGSONLY__HELP = "Whether to only export logs";
+  public static final String EXPORT_LOGS__STATSONLY__HELP = "Whether to only export statistics";
 
   /* export stack-trace command */
   public static final String EXPORT_STACKTRACE = "export stack-traces";

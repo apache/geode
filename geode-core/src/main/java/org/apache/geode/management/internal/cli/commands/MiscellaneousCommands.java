@@ -14,12 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -55,7 +52,6 @@ import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
 import org.apache.geode.management.internal.cli.functions.ChangeLogLevelFunction;
-import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
 import org.apache.geode.management.internal.cli.functions.GarbageCollectionFunction;
 import org.apache.geode.management.internal.cli.functions.GetStackTracesFunction;
 import org.apache.geode.management.internal.cli.functions.NetstatFunction;
@@ -74,8 +70,6 @@ import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
-import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -92,9 +86,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -122,8 +113,6 @@ import javax.management.ObjectName;
  */
 public class MiscellaneousCommands implements CommandMarker {
   public static final String NETSTAT_FILE_REQUIRED_EXTENSION = ".txt";
-  public final static String FORMAT = "yyyy/MM/dd/HH/mm/ss/SSS/z";
-  public final static String ONLY_DATE_FORMAT = "yyyy/MM/dd";
   public final static String DEFAULT_TIME_OUT = "10";
   private final static Logger logger = LogService.getLogger();
 
@@ -307,11 +296,6 @@ public class MiscellaneousCommands implements CommandMarker {
       } else {
         return ResultBuilder.createInfoResult(CliStrings.SHUTDOWN__MSG__SHUTDOWN_ENTIRE_DS);
       }
-    }
-
-    @Override
-    public Result postExecution(GfshParseResult parseResult, Result commandResult) {
-      return commandResult;
     }
   }
 
@@ -684,124 +668,6 @@ public class MiscellaneousCommands implements CommandMarker {
     return result;
   }
 
-  @CliCommand(value = CliStrings.EXPORT_LOGS, help = CliStrings.EXPORT_LOGS__HELP)
-  @CliMetaData(shellOnly = false, isFileDownloadOverHttp = true,
-      interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$ExportLogsInterceptor",
-      relatedTopic = {CliStrings.TOPIC_GEODE_SERVER, CliStrings.TOPIC_GEODE_DEBUG_UTIL})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
-  public Result exportLogs(
-      @CliOption(key = CliStrings.EXPORT_LOGS__DIR, help = CliStrings.EXPORT_LOGS__DIR__HELP,
-          mandatory = false) String dirName,
-      @CliOption(key = CliStrings.EXPORT_LOGS__GROUP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.EXPORT_LOGS__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.EXPORT_LOGS__MEMBER,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.EXPORT_LOGS__MEMBER__HELP) String[] memberIds,
-      @CliOption(key = CliStrings.EXPORT_LOGS__LOGLEVEL,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          optionContext = ConverterHint.LOG_LEVEL,
-          help = CliStrings.EXPORT_LOGS__LOGLEVEL__HELP) String logLevel,
-      @CliOption(key = CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL, unspecifiedDefaultValue = "false",
-          help = CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL__HELP) boolean onlyLogLevel,
-      @CliOption(key = CliStrings.EXPORT_LOGS__MERGELOG, unspecifiedDefaultValue = "false",
-          help = CliStrings.EXPORT_LOGS__MERGELOG__HELP) boolean mergeLog,
-      @CliOption(key = CliStrings.EXPORT_LOGS__STARTTIME,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.EXPORT_LOGS__STARTTIME__HELP) String start,
-      @CliOption(key = CliStrings.EXPORT_LOGS__ENDTIME,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.EXPORT_LOGS__ENDTIME__HELP) String end) {
-    Result result = null;
-    try {
-      Set<DistributedMember> targetMembers =
-          CliUtil.findMembersIncludingLocators(groups, memberIds);
-
-
-      Map<String, Path> zipFilesFromMembers = new HashMap<>();
-      for (DistributedMember server : targetMembers) {
-        Region region = ExportLogsFunction.createOrGetExistingExportLogsRegion(true);
-
-        ExportLogsCacheWriter cacheWriter =
-            (ExportLogsCacheWriter) region.getAttributes().getCacheWriter();
-
-        cacheWriter.startFile(server.getName());
-
-        CliUtil
-            .executeFunction(new ExportLogsFunction(),
-                new ExportLogsFunction.Args(start, end, logLevel, onlyLogLevel), server)
-            .getResult();
-        Path zipFile = cacheWriter.endFile();
-        ExportLogsFunction.destroyExportLogsRegion();
-        logger.info("Recieved zip file from member " + server.getId() + ": " + zipFile.toString());
-        zipFilesFromMembers.put(server.getId(), zipFile);
-      }
-
-      Path tempDir = Files.createTempDirectory("exportedLogs");
-      Path exportedLogsDir = tempDir.resolve("exportedLogs");
-
-      for (Path zipFile : zipFilesFromMembers.values()) {
-        Path unzippedMemberDir =
-            exportedLogsDir.resolve(zipFile.getFileName().toString().replace(".zip", ""));
-        ZipUtils.unzip(zipFile.toAbsolutePath().toString(), unzippedMemberDir.toString());
-        FileUtils.deleteQuietly(zipFile.toFile());
-      }
-
-      Path workingDir = Paths.get(System.getProperty("user.dir"));
-      Path exportedLogsZipFile = workingDir
-          .resolve("exportedLogs_" + System.currentTimeMillis() + ".zip").toAbsolutePath();
-
-      logger.info("Zipping into: " + exportedLogsZipFile.toString());
-      ZipUtils.zipDirectory(exportedLogsDir, exportedLogsZipFile);
-      FileUtils.deleteDirectory(tempDir.toFile());
-      result = ResultBuilder.createInfoResult(exportedLogsZipFile.toString());
-    } catch (Exception ex) {
-      logger.error(ex, ex);
-      result = ResultBuilder.createUserErrorResult(ex.getMessage());
-    } finally {
-      ExportLogsFunction.destroyExportLogsRegion();
-    }
-    logger.debug("Exporting logs returning = {}", result);
-    return result;
-  }
-
-  /**
-   * after the export logs, will need to copy the tempFile to the desired location and delete the
-   * temp file.
-   */
-  public static class ExportLogsInterceptor extends AbstractCliAroundInterceptor {
-    @Override
-    public Result postExecution(GfshParseResult parseResult, Result commandResult, Path tempFile) {
-      // in the command over http case, the command result is in the downloaded temp file
-      if (tempFile != null) {
-        Path dirPath;
-        String dirName = parseResult.getParamValueStrings().get("dir");
-        if (StringUtils.isBlank(dirName)) {
-          dirPath = Paths.get(System.getProperty("user.dir"));
-        } else {
-          dirPath = Paths.get(dirName);
-        }
-        String fileName = "exportedLogs_" + System.currentTimeMillis() + ".zip";
-        File exportedLogFile = dirPath.resolve(fileName).toFile();
-        try {
-          FileUtils.copyFile(tempFile.toFile(), exportedLogFile);
-          FileUtils.deleteQuietly(tempFile.toFile());
-          commandResult = ResultBuilder
-              .createInfoResult("Logs exported to: " + exportedLogFile.getAbsolutePath());
-        } catch (IOException e) {
-          logger.error(e.getMessage(), e);
-          commandResult = ResultBuilder.createGemFireErrorResult(e.getMessage());
-        }
-      } else {
-        commandResult = ResultBuilder.createInfoResult(
-            "Logs exported to the connected member's file system: " + commandResult.nextLine());
-      }
-      return commandResult;
-    }
-  }
-
   /****
    * Current implementation supports writing it to a file and returning the location of the file
    *
@@ -898,11 +764,6 @@ public class MiscellaneousCommands implements CommandMarker {
         // we dont to show any info result
         return ResultBuilder.createInfoResult("");
       }
-    }
-
-    @Override
-    public Result postExecution(GfshParseResult parseResult, Result commandResult) {
-      return commandResult;
     }
   }
 

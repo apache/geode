@@ -30,6 +30,7 @@ import java.nio.file.Path;
 
 public class ExportLogsCacheWriter extends CacheWriterAdapter implements Serializable {
   private Path currentFile;
+  private boolean isEmpty = true;
   private BufferedOutputStream currentOutputStream;
 
   @Override
@@ -46,6 +47,7 @@ public class ExportLogsCacheWriter extends CacheWriterAdapter implements Seriali
             "Value must be a byte[].  Recieved " + newValue.getClass().getCanonicalName());
       }
       currentOutputStream.write((byte[]) newValue);
+      isEmpty = false;
     } catch (IOException e) {
       throw new CacheWriterException(e);
     }
@@ -58,6 +60,7 @@ public class ExportLogsCacheWriter extends CacheWriterAdapter implements Seriali
 
     currentFile = Files.createTempDirectory(memberId).resolve(memberId + ".zip");
     currentOutputStream = new BufferedOutputStream(new FileOutputStream(currentFile.toFile()));
+    isEmpty = true;
   }
 
   public Path endFile() {
@@ -66,7 +69,8 @@ public class ExportLogsCacheWriter extends CacheWriterAdapter implements Seriali
     IOUtils.closeQuietly(currentOutputStream);
     currentOutputStream = null;
     currentFile = null;
-
+    if (isEmpty)
+      return null;
     return completedFile;
   }
 }

@@ -31,12 +31,18 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.text.ParseException;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 @Category(IntegrationTest.class)
 public class LogExporterTest {
@@ -44,31 +50,56 @@ public class LogExporterTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private LogExporter logExporter;
+  LogFilter logFilter;
+  private File workingDir;
 
   @Before
-  public void setup() throws ParseException {
-    LogFilter logFilter = mock(LogFilter.class);
+  public void setup() throws Exception {
+    logFilter = mock(LogFilter.class);
 
     when(logFilter.acceptsFile(any())).thenReturn(true);
     when(logFilter.acceptsLine(any())).thenReturn(LogFilter.LineFilterResult.LINE_ACCEPTED);
 
-    logExporter = new LogExporter(logFilter);
+    workingDir = temporaryFolder.newFolder("workingDir");
+    logExporter = new LogExporter(logFilter, new File(workingDir, "server.log"),
+        new File(workingDir, "stats.gfs"));
   }
 
+  @Test
+  public void exporterShouldReturnNullIfNoFile() throws Exception {
+    assertThat(logExporter.export()).isNull();
+  }
+
+  @Test
+  public void exporterShouldStillReturnFilefNoAcceptableLogs() throws Exception {
+    File logFile1 = new File(workingDir, "server1.log");
+    FileUtils.writeStringToFile(logFile1, "some log for server1 \n some other log line");
+    when(logFilter.acceptsLine(any())).thenReturn(LogFilter.LineFilterResult.LINE_REJECTED);
+    Path exportedZip = logExporter.export();
+    assertThat(exportedZip).isNotNull();
+
+    File unzippedExportDir = temporaryFolder.newFolder("unzippedExport");
+    ZipUtils.unzip(exportedZip.toString(), unzippedExportDir.getCanonicalPath());
+    assertThat(unzippedExportDir.listFiles()).hasSize(1);
+
+    // check the exported file has no content
+    BufferedReader br =
+        new BufferedReader(new FileReader(new File(unzippedExportDir, "server1.log")));
+    assertThat(br.readLine()).isNull();
+  }
 
   @Test
   public void exportBuildsZipCorrectlyWithTwoLogFiles() throws Exception {
-    File serverWorkingDir = temporaryFolder.newFolder("serverWorkingDir");
-    File logFile1 = new File(serverWorkingDir, "server1.log");
+    File logFile1 = new File(workingDir, "server1.log");
     FileUtils.writeStringToFile(logFile1, "some log for server1 \n some other log line");
-    File logFile2 = new File(serverWorkingDir, "server2.log");
+    File logFile2 = new File(workingDir, "server2.log");
     FileUtils.writeStringToFile(logFile2, "some log for server2 \n some other log line");
 
-    File notALogFile = new File(serverWorkingDir, "foo.txt");
+    File notALogFile = new File(workingDir, "foo.txt");
     FileUtils.writeStringToFile(notALogFile, "some text");
 
 
-    Path zippedExport = logExporter.export(serverWorkingDir.toPath());
+    Path zippedExport = logExporter.export();
 
     File unzippedExportDir = temporaryFolder.newFolder("unzippedExport");
     ZipUtils.unzip(zippedExport.toString(), unzippedExportDir.getCanonicalPath());
@@ -83,7 +114,6 @@ public class LogExporterTest {
 
   @Test
   public void findLogFilesExcludesFilesWithIncorrectExtension() throws Exception {
-    File workingDir = temporaryFolder.newFolder("workingDir");
     File logFile = new File(workingDir, "server.log");
 
     FileUtils.writeStringToFile(logFile, "some log line");
@@ -93,6 +123,23 @@ public class LogExporterTest {
 
     assertThat(logExporter.findLogFiles(workingDir.toPath())).contains(logFile.toPath());
     assertThat(logExporter.findLogFiles(workingDir.toPath())).doesNotContain(notALogFile.toPath());
+  }
+
+  @Test
+  public void findStatFiles() throws Exception {
+    File statFile = new File(workingDir, "server.gfs");
+
+    FileUtils.writeStringToFile(statFile, "some stat line");
+
+    File notALogFile = new File(workingDir, "foo.txt");
+    FileUtils.writeStringToFile(notALogFile, "some text");
+
+    assertThat(logExporter.findStatFiles(workingDir.toPath())).contains(statFile.toPath());
+    assertThat(logExporter.findStatFiles(workingDir.toPath())).doesNotContain(notALogFile.toPath());
+  }
+
+  public static Set<String> getZipEntries(String zipFilePath) throws IOException {
+    return new ZipFile(zipFilePath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
   }
 
 }

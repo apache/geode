@@ -26,10 +26,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_KEYSTORE_TYPE;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
@@ -100,10 +100,11 @@ public class ConnectToLocatorSSLDUnitTest {
     securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.JMX);
     securityProps.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
     securityProps.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-    securityProps.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    // securityProps.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     securityProps.setProperty(SSL_TRUSTSTORE, jks.getCanonicalPath());
     securityProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-    securityProps.setProperty(SSL_PROTOCOLS, "TLSv1.2,TLSv1.1");
+    securityProps.setProperty(SSL_PROTOCOLS, "TLSv1.2");
+    securityProps.setProperty(SSL_CIPHERS, "any");
 
     setUpLocatorAndConnect(securityProps);
   }

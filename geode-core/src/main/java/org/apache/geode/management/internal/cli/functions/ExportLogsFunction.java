@@ -16,41 +16,44 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
-import static java.util.stream.Collectors.toSet;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.management.internal.cli.commands.MiscellaneousCommands;
+import org.apache.geode.management.internal.cli.commands.ExportLogCommand;
 import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
 import org.apache.geode.management.internal.cli.util.LogExporter;
 import org.apache.geode.management.internal.cli.util.LogFilter;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Stream;
 
+/**
+ * this function extracts the logs using a LogExporter which creates a zip file, and then writes the
+ * zip file bytes into a replicated region, this in effect, "stream" the zip file bytes to the
+ * locator
+ *
+ * The function only extracts .log and .gfs files under server's working directory
+ */
 public class ExportLogsFunction implements Function, InternalEntity {
   public static final String EXPORT_LOGS_REGION = "__exportLogsRegion";
   private static final Logger LOGGER = LogService.getLogger();
@@ -61,20 +64,34 @@ public class ExportLogsFunction implements Function, InternalEntity {
   @Override
   public void execute(final FunctionContext context) {
     try {
-      // TODO: change this to get cache from FunctionContext when it becomes available
       GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      DistributionConfig config = cache.getDistributedSystem().getConfig();
 
       String memberId = cache.getDistributedSystem().getMemberId();
       LOGGER.info("ExportLogsFunction started for member {}", memberId);
 
-      Region exportLogsRegion = createOrGetExistingExportLogsRegion(false);
+      Region exportLogsRegion = createOrGetExistingExportLogsRegion(false, cache);
 
       Args args = (Args) context.getArguments();
-      LogFilter logFilter =
-          new LogFilter(args.getPermittedLogLevels(), args.getStartTime(), args.getEndTime());
-      Path workingDir = Paths.get(System.getProperty("user.dir"));
+      File baseLogFile = null;
+      File baseStatsFile = null;
+      if (args.isIncludeLogs() && !config.getLogFile().toString().isEmpty()) {
+        baseLogFile = config.getLogFile().getAbsoluteFile();
+      }
+      if (args.isIncludeStats() && !config.getStatisticArchiveFile().toString().isEmpty()) {
+        baseStatsFile = config.getStatisticArchiveFile().getAbsoluteFile();
+      }
 
-      Path exportedZipFile = new LogExporter(logFilter).export(workingDir);
+      LogFilter logFilter = new LogFilter(args.getLogLevel(), args.isThisLogLevelOnly(),
+          args.getStartTime(), args.getEndTime());
+
+      Path exportedZipFile = new LogExporter(logFilter, baseLogFile, baseStatsFile).export();
+
+      // nothing to return back
+      if (exportedZipFile == null) {
+        context.getResultSender().lastResult(null);
+        return;
+      }
 
       LOGGER.info("Streaming zipped file: " + exportedZipFile.toString());
       try (FileInputStream inputStream = new FileInputStream(exportedZipFile.toFile())) {
@@ -93,14 +110,14 @@ public class ExportLogsFunction implements Function, InternalEntity {
       context.getResultSender().lastResult(null);
 
     } catch (Exception e) {
+      e.printStackTrace();
       LOGGER.error(e);
       context.getResultSender().sendException(e);
     }
   }
 
-  public static Region createOrGetExistingExportLogsRegion(boolean isInitiatingMember)
-      throws IOException, ClassNotFoundException {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+  public static Region createOrGetExistingExportLogsRegion(boolean isInitiatingMember,
+      GemFireCacheImpl cache) throws IOException, ClassNotFoundException {
 
     Region exportLogsRegion = cache.getRegion(EXPORT_LOGS_REGION);
     if (exportLogsRegion == null) {
@@ -121,16 +138,13 @@ public class ExportLogsFunction implements Function, InternalEntity {
     return exportLogsRegion;
   }
 
-  public static void destroyExportLogsRegion() {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+  public static void destroyExportLogsRegion(GemFireCacheImpl cache) {
 
     Region exportLogsRegion = cache.getRegion(EXPORT_LOGS_REGION);
     if (exportLogsRegion == null) {
       return;
     }
-
     exportLogsRegion.destroyRegion();
-
   }
 
   @Override
@@ -139,59 +153,68 @@ public class ExportLogsFunction implements Function, InternalEntity {
   }
 
   public static class Args implements Serializable {
-    private String startTime;
-    private String endTime;
-    private String logLevel;
-    private boolean logLevelOnly;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+    private Level logLevel;
+    private boolean thisLogLevelOnly;
+    private boolean includeLogs;
+    private boolean includeStats;
 
-    public Args(String startTime, String endTime, String logLevel, boolean logLevelOnly) {
-      this.startTime = startTime;
-      this.endTime = endTime;
-      this.logLevel = logLevel;
-      this.logLevelOnly = logLevelOnly;
+    public Args(String startTime, String endTime, String logLevel, boolean logLevelOnly,
+        boolean logsOnly, boolean statsOnly) {
+      this.startTime = parseTime(startTime);
+      this.endTime = parseTime(endTime);
+
+      if (StringUtils.isBlank(logLevel)) {
+        this.logLevel = Level.INFO;
+      } else {
+        this.logLevel = Level.getLevel(logLevel.toUpperCase());
+      }
+      this.thisLogLevelOnly = logLevelOnly;
+
+      this.includeLogs = !statsOnly;
+      this.includeStats = !logsOnly;
     }
 
     public LocalDateTime getStartTime() {
-      return parseTime(startTime);
+      return startTime;
     }
 
     public LocalDateTime getEndTime() {
-      return parseTime(endTime);
+      return endTime;
     }
 
-    public Set<String> getPermittedLogLevels() {
-      if (logLevel == null || StringUtils.isBlank(logLevel)) {
-        return LogFilter.allLogLevels();
-      }
-
-      if (logLevelOnly) {
-        return Stream.of(logLevel).collect(toSet());
-      }
-
-      // Return all log levels lower than or equal to the specified logLevel
-      return Arrays.stream(InternalLogWriter.levelNames).filter((String level) -> {
-        int logLevelCode = LogWriterImpl.levelNameToCode(level);
-        int logLevelCodeThreshold = LogWriterImpl.levelNameToCode(logLevel);
-
-        return logLevelCode >= logLevelCodeThreshold;
-      }).collect(toSet());
+    public Level getLogLevel() {
+      return logLevel;
     }
 
-    private static LocalDateTime parseTime(String dateString) {
-      if (dateString == null) {
-        return null;
-      }
+    public boolean isThisLogLevelOnly() {
+      return thisLogLevelOnly;
+    }
 
+    public boolean isIncludeLogs() {
+      return includeLogs;
+    }
+
+    public boolean isIncludeStats() {
+      return includeStats;
+    }
+  }
+
+  public static LocalDateTime parseTime(String dateString) {
+    if (dateString == null) {
+      return null;
+    }
+
+    try {
+      SimpleDateFormat df = new SimpleDateFormat(ExportLogCommand.FORMAT);
+      return df.parse(dateString).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    } catch (ParseException e) {
       try {
-        SimpleDateFormat df = new SimpleDateFormat(MiscellaneousCommands.FORMAT);
+        SimpleDateFormat df = new SimpleDateFormat(ExportLogCommand.ONLY_DATE_FORMAT);
         return df.parse(dateString).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-      } catch (ParseException e) {
-        try {
-          SimpleDateFormat df = new SimpleDateFormat(MiscellaneousCommands.ONLY_DATE_FORMAT);
-          return df.parse(dateString).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-        } catch (ParseException e1) {
-          return null;
-        }
+      } catch (ParseException e1) {
+        return null;
       }
     }
   }

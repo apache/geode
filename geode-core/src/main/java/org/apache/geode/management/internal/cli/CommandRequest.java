@@ -40,7 +40,7 @@ public class CommandRequest {
 
   private final Map<String, String> customParameters = new HashMap<String, String>();
   private final Map<String, String> env;
-  private boolean downloadFile = false;
+  private final boolean downloadFile;
 
   private String customInput;
 
@@ -48,12 +48,14 @@ public class CommandRequest {
     this.env = env;
     this.fileData = null;
     this.parseResult = null;
+    downloadFile = false;
   }
 
   public CommandRequest(final Map<String, String> env, final byte[][] fileData) {
     this.env = env;
     this.fileData = fileData;
     this.parseResult = null;
+    downloadFile = false;
   }
 
   public CommandRequest(final GfshParseResult parseResult, final Map<String, String> env) {
@@ -69,9 +71,7 @@ public class CommandRequest {
     this.parseResult = parseResult;
 
     CliMetaData metaData = parseResult.getMethod().getDeclaredAnnotation(CliMetaData.class);
-    if (metaData != null && metaData.isFileDownloadOverHttp()) {
-      downloadFile = true;
-    }
+    this.downloadFile = (metaData != null && metaData.isFileDownloadOverHttp());
   }
 
   public String getName() {

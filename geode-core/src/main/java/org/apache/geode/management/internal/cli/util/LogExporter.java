@@ -19,62 +19,76 @@ package org.apache.geode.management.internal.cli.util;
 import static java.util.stream.Collectors.toList;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.Scope;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+/**
+ * this LogExporter only finds the .log and .gfs files under in the same directory of the base files
+ * it doesn't use the base file's filename patterns to find the related logs/stats yet.
+ */
 public class LogExporter {
   private static final Logger LOGGER = LogService.getLogger();
 
   private final LogFilter logFilter;
+  private final File baseLogFile;
+  private final File baseStatsFile;
 
-  public LogExporter(LogFilter logFilter) throws ParseException {
+  /**
+   * @param logFilter: the filter that's used to check if we need to accept the file or the logLine
+   * @param baseLogFile: if not null, we will export the logs in that directory
+   * @param baseStatsFile: if not null, we will export stats in that directory
+   * @throws ParseException
+   */
+  public LogExporter(LogFilter logFilter, File baseLogFile, File baseStatsFile)
+      throws ParseException {
+    assert logFilter != null;
     this.logFilter = logFilter;
+    this.baseLogFile = baseLogFile;
+    this.baseStatsFile = baseStatsFile;
   }
 
-  public Path export(Path workingDir) throws IOException {
-    LOGGER.debug("Working directory is {}", workingDir);
-
+  /**
+   *
+   * @return Path to the zip file that has all the filtered files, null if no files are selected to
+   *         export.
+   * @throws IOException
+   */
+  public Path export() throws IOException {
     Path tempDirectory = Files.createTempDirectory("exportLogs");
 
-    for (Path logFile : findLogFiles(workingDir)) {
-      Path filteredLogFile = tempDirectory.resolve(logFile.getFileName());
-
-      if (this.logFilter == null) {
-        Files.copy(logFile, filteredLogFile);
-      } else {
+    if (baseLogFile != null) {
+      for (Path logFile : findLogFiles(baseLogFile.toPath().getParent())) {
+        Path filteredLogFile = tempDirectory.resolve(logFile.getFileName());
         writeFilteredLogFile(logFile, filteredLogFile);
       }
     }
 
-    for (Path statFile : findStatFiles(workingDir)) {
-      Files.copy(statFile, tempDirectory);
+    if (baseStatsFile != null) {
+      for (Path statFile : findStatFiles(baseStatsFile.toPath().getParent())) {
+        Files.copy(statFile, tempDirectory.resolve(statFile.getFileName()));
+      }
     }
 
-    Path zipFile = Files.createTempFile("logExport", ".zip");
-    ZipUtils.zipDirectory(tempDirectory, zipFile);
-    LOGGER.info("Zipped files to: " + zipFile);
-
+    Path zipFile = null;
+    if (tempDirectory.toFile().listFiles().length > 0) {
+      zipFile = Files.createTempFile("logExport", ".zip");
+      ZipUtils.zipDirectory(tempDirectory, zipFile);
+      LOGGER.info("Zipped files to: " + zipFile);
+    }
 
     FileUtils.deleteDirectory(tempDirectory.toFile());
 

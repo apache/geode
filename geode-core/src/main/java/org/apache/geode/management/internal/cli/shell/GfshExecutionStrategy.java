@@ -115,11 +115,6 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       } else {
         logWrapper.warning(e.getMessage());
       }
-    } catch (RuntimeException e) {
-      Gfsh.getCurrentInstance().logWarning("Exception occurred. " + e.getMessage(), e);
-      // Log other runtime exception in gfsh log
-      logWrapper.warning("Error occurred while executing command : "
-          + ((GfshParseResult) parseResult).getUserInput(), e);
     } catch (Exception e) {
       Gfsh.getCurrentInstance().logWarning("Unexpected exception occurred. " + e.getMessage(), e);
       // Log other exceptions in gfsh log

@@ -32,13 +32,8 @@ public interface CliAroundInterceptor {
   /**
    * called by the OperationInvoker before the command is executed
    */
-  default public Result preExecution(GfshParseResult parseResult) {
+  default Result preExecution(GfshParseResult parseResult) {
     return ResultBuilder.createInfoResult("");
-  }
-
-  @Deprecated
-  default public Result postExecution(GfshParseResult parseResult, Result commandResult) {
-    return commandResult;
   }
 
   /**
@@ -47,9 +42,8 @@ public interface CliAroundInterceptor {
    * @param tempFile: if the command's isFileDownloadOverHttp is true, the is the File downloaded
    *        after the http response is processed.
    */
-  default public Result postExecution(GfshParseResult parseResult, Result commandResult,
-      Path tempFile) {
-    return postExecution(parseResult, commandResult);
+  default Result postExecution(GfshParseResult parseResult, Result commandResult, Path tempFile) {
+    return commandResult;
   }
 
 }

@@ -19,8 +19,8 @@ package org.apache.geode.management.internal.cli.commands;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.geode.management.internal.cli.commands.MiscellaneousCommands.FORMAT;
-import static org.apache.geode.management.internal.cli.commands.MiscellaneousCommands.ONLY_DATE_FORMAT;
+import static org.apache.geode.management.internal.cli.commands.ExportLogCommand.FORMAT;
+import static org.apache.geode.management.internal.cli.commands.ExportLogCommand.ONLY_DATE_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.io.FileUtils;
@@ -38,10 +38,12 @@ import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.Member;
 import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +54,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -60,8 +61,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
-
-public class ExportLogsDUnit {
+@Category(DistributedTest.class)
+public class ExportLogsDUnitTest {
   private static final String ERROR_LOG_PREFIX = "[IGNORE]";
 
   @Rule
@@ -103,26 +104,6 @@ public class ExportLogsDUnit {
     }
 
     gfshConnector.connectAndVerify(locator);
-  }
-
-  @Test
-  public void startAndEndDateCanExcludeLogs() throws Exception {
-    ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.systemDefault());
-    ZonedDateTime yesterday = now.minusDays(1);
-    ZonedDateTime twoDaysAgo = now.minusDays(2);
-
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(ONLY_DATE_FORMAT);
-
-    CommandStringBuilder commandStringBuilder = new CommandStringBuilder("export logs");
-    commandStringBuilder.addOption("start-time", dateTimeFormatter.format(twoDaysAgo));
-    commandStringBuilder.addOption("end-time", dateTimeFormatter.format(yesterday));
-    commandStringBuilder.addOption("log-level", "debug");
-    commandStringBuilder.addOption("dir", "someDir");
-
-    gfshConnector.executeAndVerifyCommand(commandStringBuilder.toString());
-
-    Set<String> acceptedLogLevels = new HashSet<>();
-    verifyZipFileContents(acceptedLogLevels);
   }
 
   @Test
@@ -178,8 +159,7 @@ public class ExportLogsDUnit {
   public void testExportWithThresholdLogLevelFilter() throws Exception {
 
     CommandResult result = gfshConnector
-        .executeAndVerifyCommand("export logs --log-level=info --only-log-level=false --dir="
-            + lsRule.getTempFolder().getRoot().getCanonicalPath());
+        .executeAndVerifyCommand("export logs --log-level=info --only-log-level=false");
 
     Set<String> acceptedLogLevels = Stream.of("info", "error").collect(toSet());
     verifyZipFileContents(acceptedLogLevels);
@@ -188,9 +168,8 @@ public class ExportLogsDUnit {
 
   @Test
   public void testExportWithExactLogLevelFilter() throws Exception {
-    CommandResult result = gfshConnector
-        .executeAndVerifyCommand("export logs --log-level=info --only-log-level=true --dir="
-            + lsRule.getTempFolder().getRoot().getCanonicalPath());
+    CommandResult result =
+        gfshConnector.executeAndVerifyCommand("export logs --log-level=info --only-log-level=true");
 
 
     Set<String> acceptedLogLevels = Stream.of("info").collect(toSet());
@@ -199,36 +178,35 @@ public class ExportLogsDUnit {
 
   @Test
   public void testExportWithNoFilters() throws Exception {
-    CommandResult result = gfshConnector.executeAndVerifyCommand("export logs  --dir="
-        + "someDir" /* lsRule.getTempFolder().getRoot().getCanonicalPath() */);
+    gfshConnector.executeAndVerifyCommand("export logs --log-level=all");
 
     Set<String> acceptedLogLevels = Stream.of("info", "error", "debug").collect(toSet());
     verifyZipFileContents(acceptedLogLevels);
 
     // Ensure export logs region gets cleaned up
-    server1.invoke(ExportLogsDUnit::verifyExportLogsRegionWasDestroyed);
-    server2.invoke(ExportLogsDUnit::verifyExportLogsRegionWasDestroyed);
-    locator.invoke(ExportLogsDUnit::verifyExportLogsRegionWasDestroyed);
+    server1.invoke(ExportLogsDUnitTest::verifyExportLogsRegionWasDestroyed);
+    server2.invoke(ExportLogsDUnitTest::verifyExportLogsRegionWasDestroyed);
+    locator.invoke(ExportLogsDUnitTest::verifyExportLogsRegionWasDestroyed);
   }
 
   @Test
   public void exportLogsRegionIsCleanedUpProperly() throws IOException, ClassNotFoundException {
     locator.invoke(() -> {
-      ExportLogsFunction.createOrGetExistingExportLogsRegion(true);
-      Cache cache = GemFireCacheImpl.getInstance();
+      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      ExportLogsFunction.createOrGetExistingExportLogsRegion(true, cache);
       assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNotNull();
     });
 
     server1.invoke(() -> {
-      ExportLogsFunction.createOrGetExistingExportLogsRegion(false);
-      Cache cache = GemFireCacheImpl.getInstance();
+      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      ExportLogsFunction.createOrGetExistingExportLogsRegion(false, cache);
       assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNotNull();
     });
 
     locator.invoke(() -> {
-      ExportLogsFunction.destroyExportLogsRegion();
+      GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+      ExportLogsFunction.destroyExportLogsRegion(cache);
 
-      Cache cache = GemFireCacheImpl.getInstance();
       assertThat(cache.getRegion(ExportLogsFunction.EXPORT_LOGS_REGION)).isNull();
     });
 
@@ -340,9 +318,9 @@ public class ExportLogsDUnit {
     private String buildMessage(String memberName) {
       StringBuilder stringBuilder = new StringBuilder();
       if (Objects.equals(level, "error")) {
-        stringBuilder.append(ERROR_LOG_PREFIX);
+        stringBuilder.append(ERROR_LOG_PREFIX + "-");
       }
-      stringBuilder.append(level);
+      stringBuilder.append(level + "-");
 
       return stringBuilder.append(memberName).toString();
     }

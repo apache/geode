@@ -14,10 +14,12 @@
  */
 package org.apache.geode.internal.logging;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-
+import org.apache.geode.internal.logging.log4j.AppenderContext;
+import org.apache.geode.internal.logging.log4j.ConfigLocator;
+import org.apache.geode.internal.logging.log4j.Configurator;
+import org.apache.geode.internal.logging.log4j.FastLogger;
+import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,12 +31,9 @@ import org.apache.logging.log4j.core.lookup.StrLookup;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 import org.apache.logging.log4j.status.StatusLogger;
 
-import org.apache.geode.internal.logging.log4j.AppenderContext;
-import org.apache.geode.internal.logging.log4j.ConfigLocator;
-import org.apache.geode.internal.logging.log4j.Configurator;
-import org.apache.geode.internal.logging.log4j.FastLogger;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
-import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
 
 /**
  * Centralizes log configuration and initialization.
@@ -47,6 +46,7 @@ public class LogService extends LogManager {
   public static final String BASE_LOGGER_NAME = "org.apache.geode";
   public static final String MAIN_LOGGER_NAME = "org.apache.geode";
   public static final String SECURITY_LOGGER_NAME = "org.apache.geode.security";
+  public static final String DEFAULT_LOG_LEVEL = "INFO";
 
   public static final String GEODE_VERBOSE_FILTER = "{GEODE_VERBOSE}";
   public static final String GEMFIRE_VERBOSE_FILTER = "{GEMFIRE_VERBOSE}";

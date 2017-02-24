@@ -16,19 +16,16 @@
 
 package org.apache.geode.management.internal.cli.util;
 
-import static java.util.stream.Collectors.toSet;
-
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
-import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Arrays;
-import java.util.Set;
 
 public class LogFilter {
   public enum LineFilterResult {
@@ -37,15 +34,22 @@ public class LogFilter {
 
   private static final Logger LOGGER = LogService.getLogger();
 
-  private final Set<String> permittedLogLevels;
+  private final Level thisLogLevel;
+  private final boolean thisLevelOnly;
   private final LocalDateTime startDate;
   private final LocalDateTime endDate;
 
   private LineFilterResult resultOfPreviousLine = LineFilterResult.LINE_ACCEPTED;
 
-  public LogFilter(Set<String> permittedLogLevels, LocalDateTime startDate, LocalDateTime endDate) {
-    this.permittedLogLevels = (permittedLogLevels == null || permittedLogLevels.isEmpty())
-        ? allLogLevels() : permittedLogLevels;
+  public LogFilter(Level logLevel, LocalDateTime startDate, LocalDateTime endDate) {
+    this(logLevel, false, startDate, endDate);
+  }
+
+  public LogFilter(Level logLevel, boolean thisLevelOnly, LocalDateTime startDate,
+      LocalDateTime endDate) {
+    assert logLevel != null;
+    this.thisLogLevel = logLevel;
+    this.thisLevelOnly = thisLevelOnly;
     this.startDate = startDate;
     this.endDate = endDate;
   }
@@ -68,7 +72,7 @@ public class LogFilter {
     return acceptsLogEntry(result.getLogLevel(), result.getLogTimestamp());
   }
 
-  protected LineFilterResult acceptsLogEntry(String logLevel, LocalDateTime logTimestamp) {
+  protected LineFilterResult acceptsLogEntry(Level logLevel, LocalDateTime logTimestamp) {
     if (logTimestamp == null || logLevel == null) {
       throw new IllegalArgumentException();
     }
@@ -80,8 +84,13 @@ public class LogFilter {
     } else if (startDate != null && logTimestamp.isBefore(startDate)) {
       result = LineFilterResult.LINE_REJECTED;
     } else {
-      result = permittedLogLevels.contains(logLevel) ? LineFilterResult.LINE_ACCEPTED
-          : LineFilterResult.LINE_REJECTED;
+      if (thisLevelOnly) {
+        result = logLevel.intLevel() == thisLogLevel.intLevel() ? LineFilterResult.LINE_ACCEPTED
+            : LineFilterResult.LINE_REJECTED;
+      } else {
+        result = logLevel.isMoreSpecificThan(thisLogLevel) ? LineFilterResult.LINE_ACCEPTED
+            : LineFilterResult.LINE_REJECTED;
+      }
     }
 
     resultOfPreviousLine = result;
@@ -90,24 +99,42 @@ public class LogFilter {
   }
 
   public boolean acceptsFile(Path file) {
+    if (startDate == null && endDate == null) {
+      return true;
+    }
+
+    if (endDate == null) {
+      return getEndTimeOf(file).isAfter(startDate);
+    }
+
     if (startDate == null) {
-      return true;
+      return getStartTimeOf(file).isBefore(endDate);
     }
+
+    return (getEndTimeOf(file).isAfter(startDate) && getStartTimeOf(file).isBefore(endDate));
+
+  }
+
+  private static LocalDateTime getEndTimeOf(Path file) {
     try {
-      return (getEndTimeOf(file).isAfter(startDate));
-    } catch (IOException e) {
+      long lastModifiedMillis = file.toFile().lastModified();
+      return Instant.ofEpochMilli(lastModifiedMillis).atZone(ZoneId.systemDefault())
+          .toLocalDateTime();
+    } catch (Exception e) {
       LOGGER.error("Unable to determine lastModified time", e);
-      return true;
+      return LocalDateTime.MAX;
     }
   }
 
-  private static LocalDateTime getEndTimeOf(Path file) throws IOException {
-    long lastModifiedMillis = file.toFile().lastModified();
-    return Instant.ofEpochMilli(lastModifiedMillis).atZone(ZoneId.systemDefault())
-        .toLocalDateTime();
-  }
-
-  public static Set<String> allLogLevels() {
-    return Arrays.stream(InternalLogWriter.levelNames).collect(toSet());
+  private static LocalDateTime getStartTimeOf(Path file) {
+    try {
+      BasicFileAttributes attributes = Files.readAttributes(file, BasicFileAttributes.class);
+      long lastModifiedMillis = attributes.creationTime().toMillis();
+      return Instant.ofEpochMilli(lastModifiedMillis).atZone(ZoneId.systemDefault())
+          .toLocalDateTime();
+    } catch (Exception e) {
+      LOGGER.error("Unable to determine creation time", e);
+      return LocalDateTime.MIN;
+    }
   }
 }

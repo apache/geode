@@ -107,8 +107,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   }
 
   /**
-   * starts a cache server that does not connect to a locator, unless the properties it passes in
-   * has "locators" property.
+   * starts a cache server that does not connect to a locator
    * 
    * @return VM node vm
    */
@@ -118,11 +117,6 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   /**
    * start a server that connects to this locatorPort
-   *
-   * @param index
-   * @param locatorPort
-   * @return
-   * @throws IOException
    */
   public Server startServerVM(int index, int locatorPort) throws IOException {
     return startServerVM(index, new Properties(), locatorPort);
@@ -149,6 +143,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    */
   public Server startServerVM(int index, Properties properties, int locatorPort)
       throws IOException {
+
     String name = "server-" + index;
     properties.setProperty(NAME, name);
 

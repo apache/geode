@@ -16,21 +16,13 @@ package org.apache.geode.management.internal.web.controllers;
 
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.io.File;
-import java.io.FileInputStream;
 
 /**
  * The MiscellaneousCommandsController class implements GemFire Management REST API web service
@@ -51,68 +43,6 @@ import java.io.FileInputStream;
 @RequestMapping(AbstractCommandsController.REST_API_VERSION)
 @SuppressWarnings("unused")
 public class MiscellaneousCommandsController extends AbstractCommandsController {
-
-  @RequestMapping(method = RequestMethod.GET, value = "/logs")
-  public ResponseEntity<InputStreamResource> exportLogs(
-      @RequestParam(value = CliStrings.EXPORT_LOGS__DIR, required = false) final String directory,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__GROUP, required = false) final String[] groups,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__MEMBER,
-          required = false) final String memberNameId,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__LOGLEVEL,
-          required = false) final String logLevel,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL,
-          defaultValue = "false") final Boolean onlyLogLevel,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__MERGELOG,
-          defaultValue = "false") final Boolean mergeLog,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__STARTTIME,
-          required = false) final String startTime,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__ENDTIME,
-          required = false) final String endTime) {
-    final CommandStringBuilder command = new CommandStringBuilder(CliStrings.EXPORT_LOGS);
-
-    command.addOption(CliStrings.EXPORT_LOGS__DIR, decode(directory));
-
-    if (hasValue(groups)) {
-      command.addOption(CliStrings.EXPORT_LOGS__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
-    }
-
-    if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.EXPORT_LOGS__MEMBER, memberNameId);
-    }
-
-    if (hasValue(logLevel)) {
-      command.addOption(CliStrings.EXPORT_LOGS__LOGLEVEL, logLevel);
-    }
-
-    command.addOption(CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL,
-        String.valueOf(Boolean.TRUE.equals(onlyLogLevel)));
-    command.addOption(CliStrings.EXPORT_LOGS__MERGELOG,
-        String.valueOf(Boolean.TRUE.equals(mergeLog)));
-
-    if (hasValue(startTime)) {
-      command.addOption(CliStrings.EXPORT_LOGS__STARTTIME, startTime);
-    }
-
-    if (hasValue(endTime)) {
-      command.addOption(CliStrings.EXPORT_LOGS__ENDTIME, endTime);
-    }
-
-    // the result is json string from CommandResult
-    String result = processCommand(command.toString());
-
-    // parse the result to get the file path
-    String filePath = ResultBuilder.fromJson(result).nextLine().trim();
-
-    HttpHeaders respHeaders = new HttpHeaders();
-    try {
-      InputStreamResource isr = new InputStreamResource(new FileInputStream(new File(filePath)));
-      return new ResponseEntity<InputStreamResource>(isr, respHeaders, HttpStatus.OK);
-    } catch (Exception ex) {
-      throw new RuntimeException("IOError writing file to output stream", ex);
-    }
-  }
-
   // TODO determine whether Async functionality is required
   @RequestMapping(method = RequestMethod.GET, value = "/stacktraces")
   @ResponseBody
