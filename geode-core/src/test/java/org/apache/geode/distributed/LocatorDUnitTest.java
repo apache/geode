@@ -103,7 +103,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * @since GemFire 4.0
  */
-@Category({DistributedTest.class, MembershipTest.class})
+@Category({DistributedTest.class, MembershipTest.class, FlakyTest.class}) // Flaky: GEODE-2542
 public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   static volatile InternalDistributedSystem system = null;
