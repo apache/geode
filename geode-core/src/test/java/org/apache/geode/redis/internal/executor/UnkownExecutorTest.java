@@ -25,7 +25,6 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 /**
  * Test for the UnkownExecutor
  * 
- * @author Gregory Green
  *
  */
 @Category(UnitTest.class)

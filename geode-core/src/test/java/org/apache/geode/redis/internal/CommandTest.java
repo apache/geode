@@ -28,7 +28,6 @@ import org.junit.experimental.categories.Category;
 /**
  * Test case for the command
  * 
- * @author Gregory Green
  *
  */
 @Category(UnitTest.class)

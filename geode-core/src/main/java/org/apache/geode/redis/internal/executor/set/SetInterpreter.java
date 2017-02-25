@@ -26,7 +26,6 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 /**
  * Utility class for interpreting and processing Redis Set data structure
  * 
- * @author Gregory Green
  *
  */
 public class SetInterpreter {

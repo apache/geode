@@ -26,7 +26,6 @@ import org.apache.geode.redis.internal.RedisDataType;
 /**
  * Utility class for interpreting and processing Redis Hash data structure
  * 
- * @author Gregory Green
  *
  */
 public class HashInterpreter {

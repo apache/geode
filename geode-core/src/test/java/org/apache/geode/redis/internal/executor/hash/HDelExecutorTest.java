@@ -26,7 +26,6 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 /**
  * Test for the HDelExecutor class
  * 
- * @author Gregory Green
  *
  */
 @Category(UnitTest.class)

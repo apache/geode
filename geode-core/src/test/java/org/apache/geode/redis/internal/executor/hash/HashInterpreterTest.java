@@ -36,7 +36,6 @@ import io.netty.buffer.UnpooledByteBufAllocator;
 /**
  * Test case for HashInterpreter
  * 
- * @author Gregory Green
  *
  */
 @Category(UnitTest.class)

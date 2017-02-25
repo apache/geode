@@ -29,7 +29,6 @@ import org.mockito.Mockito;
 /**
  * Test for AbstractExecutor
  * 
- * @author Gregory Green
  *
  */
 @Category(UnitTest.class)

@@ -39,7 +39,6 @@ import io.codearte.catchexception.shade.mockito.Mockito;
 /**
  * Test cases for the RegionProvider object
  * 
- * @author Gregory Green
  *
  */
 @Category(UnitTest.class)
@@ -112,9 +111,6 @@ public class RegionProviderTest {
     assertNotNull(region);
 
     assertTrue(sameregion == region);
-
-    assertTrue(hashRegion == regionProvider.getOrCreateRegion(HashInterpreter.REGION_HASH_REGION,
-        RedisDataType.REDIS_HASH, context));
 
   }
 

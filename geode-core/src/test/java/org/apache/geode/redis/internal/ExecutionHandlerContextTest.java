@@ -30,7 +30,6 @@ import io.netty.util.concurrent.EventExecutor;
 /**
  * Test cases for ExecutionHandlerContext
  * 
- * @author Gregory Green
  *
  */
 @Category(UnitTest.class)

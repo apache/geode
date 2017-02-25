@@ -31,7 +31,6 @@ import org.mockito.Mockito;
 /**
  * Test case for the Set interpreter test
  * 
- * @author Gregory Green
  *
  */
 @Category(UnitTest.class)
