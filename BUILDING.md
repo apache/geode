@@ -1,64 +1,30 @@
 # Building this Release from Source
 
-Build instructions differ slightly for Unix and Windows platforms.
 All platforms require a Java installation, with JDK 1.8 or more recent version.
 
-## Build from Source on Unix
+Set the JAVA\_HOME environment variable.  For example:
 
-1. Set the JAVA\_HOME environment variable.  For example:
+| Platform | Command |
+| :---: | --- |
+|  Unix    | ``export JAVA_HOME=/usr/java/jdk1.8.0_121``            |
+|  OSX     | ``export JAVA_HOME=`/usr/libexec/java_home -v 1.8``    |
+|  Windows | ``set JAVA_HOME="C:\Program Files\Java\jdk1.8.0_121"`` |
 
-    ```     
-    JAVA_HOME=/usr/java/jdk1.8.0_60
-    export JAVA_HOME
-    ```
-2. Download the project source from the Releases page at [Apache Geode] (http://geode.apache.org), and unpack the source code.
-3. Within the directory containing the unpacked source code, build without the tests:
-    
-    ```
-    $ ./gradlew build -Dskip.tests=true
-    ```
-Or, build with the tests:
-   
-    ```
+Download the project source from the Releases page at [Apache Geode]
+(http://geode.apache.org/releases/), and unpack the source code.
+
+Within the directory containing the unpacked source code, run the gradle build:
+
     $ ./gradlew build
-    ```
-The built binaries will be in `geode-assembly/build/distributions/`,
-or the `gfsh` script can be found in 
-`geode-assembly/build/install/apache-geode/bin/`.
-4. Verify the installation by invoking `gfsh` to print version information and exit:
-   
-    ```
-    $ gfsh version
+
+Once the build completes, the project files will be installed at
+`geode-assembly/build/install/apache-geode`. The distribution archives will be
+created in `geode-assembly/build/distributions/`.
+
+Verify the installation by invoking the `gfsh` shell command to print version
+information:
+
+    $ ./geode-assembly/build/install/apache-geode/bin/gfsh version
     v1.1.0
-    ```
 
-## Build from Source on Windows
-
-1. Set the JAVA\_HOME environment variable.  For example:
-
-    ```
-    $ set JAVA_HOME="C:\Program Files\Java\jdk1.8.0_60"
-    ```
-2. Install Gradle, version 2.12 or a more recent version.
-3. Download the project source from the Releases page at [Apache Geode] (http://geode.apache.org), and unpack the source code.
-4. Within the folder containing the unpacked source code, build without the tests:
-
-    ```
-    $ gradle build -Dskip.test=true
-    ```
-Or, build with the tests:
-
-    ```
-    $ gradle build
-    ```
-The built binaries will be in `geode-assembly\build\distributions\`,
-or the `gfsh.bat` script can be found in 
-`geode-assembly\build\install\apache-geode\bin\`.
-4. Verify the installation by invoking `gfsh` to print version information and exit:
-   
-    ```
-    $ gfsh.bat version
-    v1.1.0
-    ```
-
-
+Note: on Windows invoke the `gfsh.bat` script to print the version string.
