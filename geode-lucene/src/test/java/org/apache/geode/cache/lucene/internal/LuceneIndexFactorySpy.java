@@ -65,7 +65,7 @@ public class LuceneIndexFactorySpy extends LuceneIndexFactory {
     public RepositoryManager createRepositoryManager() {
       RepositoryManager repositoryManagerSpy = Mockito.spy(super.createRepositoryManager());
       Answer getRepositoryAnswer = invocation -> {
-        getRepositoryConsumer.accept(invocation.getArgumentAt(0, Object.class));
+        getRepositoryConsumer.accept(invocation.getArgument(0));
         return invocation.callRealMethod();
       };
       try {

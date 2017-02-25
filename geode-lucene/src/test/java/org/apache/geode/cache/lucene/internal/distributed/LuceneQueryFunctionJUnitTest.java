@@ -89,7 +89,7 @@ public class LuceneQueryFunctionJUnitTest {
     when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
     when(mockRepoManager.getRepositories(eq(mockContext))).thenReturn(repos);
     doAnswer(invocation -> {
-      IndexResultCollector collector = invocation.getArgumentAt(2, IndexResultCollector.class);
+      IndexResultCollector collector = invocation.getArgument(2);
       collector.collect(r1_1.getKey(), r1_1.getScore());
       collector.collect(r1_2.getKey(), r1_2.getScore());
       collector.collect(r1_3.getKey(), r1_3.getScore());
@@ -98,7 +98,7 @@ public class LuceneQueryFunctionJUnitTest {
         any(IndexResultCollector.class));
 
     doAnswer(invocation -> {
-      IndexResultCollector collector = invocation.getArgumentAt(2, IndexResultCollector.class);
+      IndexResultCollector collector = invocation.getArgument(2);
       collector.collect(r2_1.getKey(), r2_1.getScore());
       collector.collect(r2_2.getKey(), r2_2.getScore());
       return null;
@@ -132,7 +132,7 @@ public class LuceneQueryFunctionJUnitTest {
     when(mockRepoManager.getRepositories(eq(mockContext))).thenReturn(repos);
 
     doAnswer(invocation -> {
-      IndexResultCollector collector = invocation.getArgumentAt(2, IndexResultCollector.class);
+      IndexResultCollector collector = invocation.getArgument(2);
       collector.collect(r1_1.getKey(), r1_1.getScore());
       collector.collect(r1_2.getKey(), r1_2.getScore());
       collector.collect(r1_3.getKey(), r1_3.getScore());
@@ -140,7 +140,7 @@ public class LuceneQueryFunctionJUnitTest {
     }).when(mockRepository1).query(eq(query), eq(3), any(IndexResultCollector.class));
 
     doAnswer(invocation -> {
-      IndexResultCollector collector = invocation.getArgumentAt(2, IndexResultCollector.class);
+      IndexResultCollector collector = invocation.getArgument(2);
       collector.collect(r2_1.getKey(), r2_1.getScore());
       collector.collect(r2_2.getKey(), r2_2.getScore());
       return null;
@@ -173,7 +173,7 @@ public class LuceneQueryFunctionJUnitTest {
     when(mockRepoManager.getRepositories(eq(mockContext))).thenReturn(repos);
     when(mockManager.newCollector(eq("repo2"))).thenReturn(mockCollector);
     when(mockManager.reduce(any(Collection.class))).thenAnswer(invocation -> {
-      Collection<IndexResultCollector> collectors = invocation.getArgumentAt(0, Collection.class);
+      Collection<IndexResultCollector> collectors = invocation.getArgument(0);
       assertEquals(1, collectors.size());
       assertEquals(mockCollector, collectors.iterator().next());
       return new TopEntriesCollector(null);
@@ -181,7 +181,7 @@ public class LuceneQueryFunctionJUnitTest {
     });
 
     doAnswer(invocation -> {
-      IndexResultCollector collector = invocation.getArgumentAt(2, IndexResultCollector.class);
+      IndexResultCollector collector = invocation.getArgument(2);
       collector.collect(r2_1.getKey(), r2_1.getScore());
       return null;
     }).when(mockRepository2).query(eq(query), eq(LuceneQueryFactory.DEFAULT_LIMIT),
