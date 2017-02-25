@@ -766,9 +766,9 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     PORT1 = initServerCache(false);
     // Create regions on servers.
     server1.invoke(() -> {
-        Cache cache = CacheFactory.getAnyInstance();
-        Region<Object, Object> region = cache.createRegionFactory(shortcut).create(REGION_NAME);
-        assertNotNull(region);
+      Cache cache = CacheFactory.getAnyInstance();
+      Region<Object, Object> region = cache.createRegionFactory(shortcut).create(REGION_NAME);
+      assertNotNull(region);
     });
 
     String host = NetworkUtils.getServerHostName(server1.getHost());
@@ -796,12 +796,12 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     assertFalse(clientRegion.isEmpty());
     // delete all the entries from the server
     server1.invoke(() -> {
-        Cache cache = CacheFactory.getAnyInstance();
-        Region<Object, Object> region = cache.getRegion(REGION_NAME);
-        assertNotNull(region);
-        for (int i = 0; i < 10; i++) {
-          region.remove(i);
-        }
+      Cache cache = CacheFactory.getAnyInstance();
+      Region<Object, Object> region = cache.getRegion(REGION_NAME);
+      assertNotNull(region);
+      for (int i = 0; i < 10; i++) {
+        region.remove(i);
+      }
     });
     assertEquals(0, clientRegion.size());
     assertTrue(clientRegion.isEmpty());
@@ -811,7 +811,7 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   }
 
   private RegionShortcut[] regionShortcut() {
-    return new RegionShortcut[] { RegionShortcut.PARTITION, RegionShortcut.REPLICATE };
+    return new RegionShortcut[] {RegionShortcut.PARTITION, RegionShortcut.REPLICATE};
   }
 
 
