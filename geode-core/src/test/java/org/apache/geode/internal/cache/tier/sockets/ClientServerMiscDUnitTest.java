@@ -23,6 +23,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.*;
@@ -59,6 +61,7 @@ import java.util.Set;
  * Tests client server corner cases between Region and Pool
  */
 @Category({DistributedTest.class, ClientServerTest.class})
+@RunWith(JUnitParamsRunner.class)
 public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
 
   protected static PoolImpl pool = null;
@@ -755,20 +758,17 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   }
 
 
-  private void proxyRegionClientServerOp(RegionShortcut shortcut) throws Exception {
+  @Test
+  @Parameters(method = "regionShortcut")
+  public void testProxyRegionClientServerOp(RegionShortcut shortcut) throws Exception {
     // start server first
     final String REGION_NAME = "proxyRegionClientServerOp";
     PORT1 = initServerCache(false);
     // Create regions on servers.
-    server1.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Cache c = CacheFactory.getAnyInstance();
-        assertNotNull(c);
-        Region<Object, Object> r = c.createRegionFactory(shortcut).create(REGION_NAME);
-        assertNotNull(r);
-        return null;
-      }
+    server1.invoke(() -> {
+        Cache cache = CacheFactory.getAnyInstance();
+        Region<Object, Object> region = cache.createRegionFactory(shortcut).create(REGION_NAME);
+        assertNotNull(region);
     });
 
     String host = NetworkUtils.getServerHostName(server1.getHost());
@@ -795,18 +795,13 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     assertEquals(10, clientRegion.size());
     assertFalse(clientRegion.isEmpty());
     // delete all the entries from the server
-    server1.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Cache c = CacheFactory.getAnyInstance();
-        assertNotNull(c);
-        Region<Object, Object> r = c.getRegion(REGION_NAME);
-        assertNotNull(r);
+    server1.invoke(() -> {
+        Cache cache = CacheFactory.getAnyInstance();
+        Region<Object, Object> region = cache.getRegion(REGION_NAME);
+        assertNotNull(region);
         for (int i = 0; i < 10; i++) {
-          r.remove(i);
+          region.remove(i);
         }
-        return null;
-      }
     });
     assertEquals(0, clientRegion.size());
     assertTrue(clientRegion.isEmpty());
@@ -815,10 +810,8 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     clientCache.close();
   }
 
-  @Test
-  public void testProxyRegionClientServerOp() throws Exception {
-    proxyRegionClientServerOp(RegionShortcut.PARTITION);
-    proxyRegionClientServerOp(RegionShortcut.REPLICATE);
+  private RegionShortcut[] regionShortcut() {
+    return new RegionShortcut[] { RegionShortcut.PARTITION, RegionShortcut.REPLICATE };
   }
 
 
