@@ -15,28 +15,31 @@
 
 package org.apache.geode.cache.lucene;
 
+import java.io.DataOutput;
 import java.io.Serializable;
 
+import org.apache.geode.DataSerializer;
 import org.apache.lucene.search.Query;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.query.QueryException;
 
 /**
- * The instances of this class will be used for distributing Lucene Query objects and
- * re-constructing the Query object. If necessary the implementation needs to take care of
- * serializing and de-serializing Lucene Query object. Geode respects the DataSerializable contract
- * to provide optimal object serialization. For instance, {@link LuceneQueryProvider}'s toData
- * method will be used to serialize it when it is sent to another member of the distributed system.
- * Implementation of DataSerializable can provide a zero-argument constructor that will be invoked
- * when they are read with DataSerializer.readObject.
+ * <p>
+ * A factory for {@link Query} objects. An implementation of this interface is required
+ * by {@link LuceneQueryFactory#create(String, String, LuceneQueryProvider)} so that a query
+ * can be serialized and distributed to multiple nodes.
+ * </p>
+ * Instances of this interface are serialized using the standard {@link DataSerializer#writeObject(Object, DataOutput)},
  */
 @Experimental
+@FunctionalInterface
 public interface LuceneQueryProvider extends Serializable {
   /**
-   * @return A Lucene Query object which could be used for executing Lucene Search on indexed data
-   * @param index local lucene index the query is being constructed against.
-   * @throws LuceneQueryException if the provider fails to construct the query object
+   * @return A {@link Query} which will be executed against a lucene index.
+   * @param index The {@link LuceneIndex} the query is being executed against.
+   * @throws LuceneQueryException if the provider fails to construct the query object. This
+   * will be propagated to callers of the {@link LuceneQuery} find methods.
    */
 
   public Query getQuery(LuceneIndex index) throws LuceneQueryException;

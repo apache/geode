@@ -17,34 +17,29 @@ package org.apache.geode.cache.lucene;
 import org.apache.geode.annotations.Experimental;
 
 /**
- * <p>
- * Abstract data structure for one item in query result.
+ * A single result of a lucene query.
  * 
  */
 @Experimental
 public interface LuceneResultStruct<K, V> {
 
   /**
-   * Return key of the entry
+   * @return The region key of the entry matching the query
    *
-   * @return key
-   * @throws IllegalArgumentException If this struct does not contain key
    */
   public K getKey();
 
   /**
-   * Return value of the entry
+   * @return the region value of the entry matching the query.
    *
-   * @return value the whole domain object
-   * @throws IllegalArgumentException If this struct does not contain value
    */
   public V getValue();
 
   /**
-   * Return score of the query
+   * Return score of the score of the entry matching the query. Scores
+   * are computed by lucene based on how closely documents match the query.
+   * See {@link org.apache.lucene.search} for details on how scores are computed.
    *
-   * @return score
-   * @throws IllegalArgumentException If this struct does not contain score
    */
   public float getScore();
 }

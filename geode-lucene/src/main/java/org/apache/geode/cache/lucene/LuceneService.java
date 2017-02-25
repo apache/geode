@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.lucene.analysis.Analyzer;
 
 import org.apache.geode.annotations.Experimental;
@@ -25,46 +26,69 @@ import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 
 /**
- * LuceneService instance is a singleton for each cache.
- * 
- * It provides handle for managing the {@link LuceneIndex} and create the {@link LuceneQuery} via
- * {@link LuceneQueryFactory}
- * 
- * </p>
- * Example: <br>
- * 
- * <pre>
- * At client and server JVM, initializing cache will create the LuceneServiceImpl object, 
- * which is a singleton at each JVM. 
- * 
- * At each server JVM, for data region to create index, create the index on fields with default analyzer:
- * LuceneIndex index = luceneService.createIndex(indexName, regionName, "field1", "field2", "field3"); 
- * or create index on fields with specified analyzer:
- * LuceneIndex index = luceneService.createIndex(indexName, regionName, analyzerPerField);
- * 
- * We can also create index via cache.xml or gfsh.
- * 
- * At client side, create query and run the search:
- * 
- * LuceneQuery query = luceneService.createLuceneQueryFactory().setLimit(200).setPageSize(20)
- * .setResultTypes(SCORE, VALUE, KEY).setFieldProjection("field1", "field2")
- * .create(indexName, regionName, querystring, analyzer);
- * 
- * The querystring is using lucene's queryparser syntax, such as "field1:zhou* AND field2:gzhou@pivotal.io"
- *  
- * PageableLuceneQueryResults results = query.search();
- * 
- * If pagination is not specified:
- * List list = results.getNextPage(); // return all results in one getNextPage() call
- * or if paging is specified:
- * if (results.hasNextPage()) {
- *   List page = results.nextPage(); // return resules page by page
- * }
- * 
- * The item of the list is either the domain object or instance of {@link LuceneResultStruct}
- * </pre>
- * 
  *
+ * The LuceneService provides the capability to create lucene indexes and execute lucene
+ * queries on data stored in geode regions. The lucene indexes are automatically maintained
+ * by geode whenever entries are updated in the associated regions.
+ *
+ * <p>
+ * To obtain an instance of LuceneService, use {@link LuceneServiceProvider#get(GemFireCache)}.
+ * </p>
+ * <p>
+ * Lucene indexes can be created using gfsh, xml, or the java API. Below is an example of
+ * creating a lucene index with the java API. The lucene index created on each member that
+ * will host data for the region.
+ * </p>
+ * <pre>
+ * {@code
+ * LuceneIndex index = luceneService.createIndex(indexName, regionName, "field1", "field2", "field3");
+ * }
+ * </pre>
+ * <p>
+ * You can also specify what {@link Analyzer} to use for each field.
+ * </p>
+ * <pre>
+ * {@code
+ * LuceneIndex index = luceneService.createIndex(indexName, regionName, analyzerPerField);
+ * }
+ * </pre>
+ *
+ * Indexes should be created on all peers that host the region being indexed. Clients do not need
+ * to define the index, they can directly execute queries using this service.
+ *
+ * <p>
+ * Queries on this service can return either the region keys, values, or both that match
+ * a lucene query expression. To execute a query, start with the {@link #createLuceneQueryFactory()} method.
+ * </p>
+ *
+ * <pre>
+ * {@code
+ * LuceneQuery query = luceneService.createLuceneQueryFactory()
+ *    .setLimit(200)
+ *    .create(indexName, regionName, "name:John AND zipcode:97006", defaultField);
+ * Collection<Object> results = query.findValues();
+ * }
+ * </pre>
+ *
+ * <p>
+ * The lucene index data is colocated with the region that is indexed. This means
+ * that the index data will partitioned, copied, or persisted using the same configuration
+ * options you provide for the region that is indexed. Queries will automatically be distributed
+ * in parallel to cover all partitions of a partitioned region.
+ * </p>
+ * <p>
+ * Indexes are maintained asynchronously, so changes to regions may not be immediately reflected
+ * in the index. This means that queries executed using this service may return stale results. Use
+ * the {@link #waitUntilFlushed(String, String, long, TimeUnit)} method if you need to guarantee that
+ * your query will see the latest changes, however this method should be used sparingly because it
+ * is an expensive operation.
+ * </p>
+ *
+ * <p>
+ * Currently, only partitioned regions are supported. Creating an index on a region with {@link DataPolicy#REPLICATE}
+ * will fail.
+ * </p>
+ * 
  */
 @Experimental
 public interface LuceneService {
@@ -74,7 +98,7 @@ public interface LuceneService {
    * only work if the region value is a String or Number, in which case a lucene document will be
    * created with a single field with this name.
    */
-  String REGION_VALUE_FIELD = "__REGION_VALUE_FIELD";
+  public String REGION_VALUE_FIELD = "__REGION_VALUE_FIELD";
 
   /**
    * Create a lucene index using default analyzer.
@@ -82,18 +106,19 @@ public interface LuceneService {
    * @param fields The fields of the object to index. Only fields listed here will be stored in the
    *        index. Fields should map to PDX fieldNames if the object is serialized with PDX, or to
    *        java fields on the object otherwise. The special field name
-   *        {{@link #REGION_VALUE_FIELD}} indicates that the entire value should be stored as a
+   *        {@link #REGION_VALUE_FIELD} indicates that the entire value should be stored as a
    *        single field in the index.
    */
   public void createIndex(String indexName, String regionPath, String... fields);
 
   /**
-   * Create a lucene index using specified analyzer per field
+   * Create a lucene index using specified {@link Analyzer} per field. Analyzers are used by
+   * lucene to tokenize your field into individual words.
    * 
    * @param indexName index name
    * @param regionPath region name
    * @param analyzerPerField A map of fields to analyzers. See
-   *        {{@link #createIndex(String, String, String...)}} for details on valid values for
+   *        {@link #createIndex(String, String, String...)} for details on valid values for
    *        fields. Each field will be tokenized using the provided Analyzer.
    */
   public void createIndex(String indexName, String regionPath,
@@ -131,20 +156,25 @@ public interface LuceneService {
   public Collection<LuceneIndex> getAllIndexes();
 
   /**
-   * create LuceneQueryFactory
-   * 
-   * @return LuceneQueryFactory object
+   * Create a factory for building a lucene query.
    */
   public LuceneQueryFactory createLuceneQueryFactory();
 
   /**
-   * wait until the current entries in cache are indexed
-   * 
+   * Wait until the current entries in cache are indexed.
+   *
+   * Lucene indexes are maintained asynchronously. This means that updates to the region
+   * will not be immediately reflected in the lucene index. This method will either timeout
+   * or wait until any data put into the region before this method call is flushed to the lucene
+   * index.
+   *
+   * This method is an expensive operation, so using it before every query is highly discouraged.
+   *
    * @param indexName index name
    * @param regionPath region name
    * @param timeout max wait time
-   * @param unit granularity of the timeout
-   * @return if entries are flushed within timeout
+   * @param unit Time unit associated with the max wait time
+   * @return true if entries are flushed within timeout, false if the timeout has elapsed
    */
   public boolean waitUntilFlushed(String indexName, String regionPath, long timeout, TimeUnit unit)
       throws InterruptedException;
