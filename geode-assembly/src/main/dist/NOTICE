@@ -26,7 +26,7 @@ Java ClassMate library was originally written by Tatu Saloranta (tatu.saloranta@
   
   * Brian Langel
 
-Jackson Core 2.8.2
+Jackson Core 2.8.6
 
   # Jackson JSON processor
 
@@ -131,8 +131,8 @@ Copyright (c) 2002-2017 Pivotal, Inc.
   these subcomponents is subject to the terms and conditions of the
   subcomponent's license, as noted in the license.txt file.
 
-Spring Hateoas 0.21.0
-Copyright (c) [2012-2014] Pivotal Software, Inc.
+Spring Hateoas 0.23.0.RELEASE
+Copyright (c) [2012-2017] Pivotal Software, Inc.
 
   This product is licensed to you under the Apache License, Version 2.0 (the "License").  
   You may not use this product except in compliance with the License.  
@@ -142,12 +142,12 @@ Copyright (c) [2012-2014] Pivotal Software, Inc.
   code for the these subcomponents is subject to the terms and
   conditions of the subcomponent's license, as noted in the LICENSE file.
 
-Spring LDAP Core 2.1.0
+Spring LDAP Core 2.3.1.RELEASE
 
    This product includes software developed by the Spring LDAP
    Project (http://www.springframework.org/ldap).
 
-Spring Shell 1.2.0
+Spring Shell 1.2.0.RELEASE
 
    This product includes software developed by the Spring Framework
    Project (http://www.springframework.org).
