@@ -15,30 +15,34 @@
 
 package org.apache.geode.cache.lucene;
 
+import org.apache.geode.annotations.Experimental;
+
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.geode.annotations.Experimental;
-
 /**
  * <p>
- * Defines the interface for a container of lucene query result collected from function
- * execution.<br>
- * 
- * 
+ * This interface allows you to retrieve a page of query results at a time, using the
+ * {@link #hasNext()} and {@link #next()} methods.
+ * </p>
+ *
+ * Each page is fetched individually from the server, so {@link PageableLuceneQueryResults} cannot
+ * be serialized and sent to other members.
+ *
+ * @see LuceneQuery#findPages()
+ *
  * @param <K> The type of the key
  * @param <V> The type of the value
  */
 @Experimental
 public interface PageableLuceneQueryResults<K, V> extends Iterator<List<LuceneResultStruct<K, V>>> {
   /**
-   * @return total number of hits for this query
+   * @return total number of hits for this query across all pages.
    */
   public int size();
 
   /**
-   * Returns the maximum score value encountered. Note that in case scores are not tracked, this
-   * returns {@link Float#NaN}.
+   * Returns the maximum score value across all pages.
    */
   public float getMaxScore();
 

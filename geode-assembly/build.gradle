@@ -214,6 +214,8 @@ task gfshDepsJar (type: Jar, dependsOn: ':geode-core:classes') {
 def docsDir = file("$buildDir/javadocs")
 task docs(type: Javadoc) {
     options.addStringOption('Xdoclint:none', '-quiet')
+    options.links("https://lucene.apache.org/core/6_4_1/core/")
+    options.links("https://lucene.apache.org/core/6_4_1/queryparser/")
     options.encoding='UTF-8'
     source parent.subprojects*.javadoc*.source
     classpath = files(parent.subprojects*.javadoc*.classpath)
