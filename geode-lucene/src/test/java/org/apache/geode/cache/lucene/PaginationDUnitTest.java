@@ -25,6 +25,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -137,6 +138,7 @@ public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
   }
 
   @Test
+  @Ignore
   @Parameters(method = "getListOfRegionTestTypes")
   public void alternativelyCloseDataStoresAfterGettingAPageAndThenValidateTheContentsOfTheResults(
       RegionTestableType regionTestType) {
