@@ -385,7 +385,7 @@ public class JsonUtil {
       return value;
     } else if (klass.isAssignableFrom(Long.class) || klass.isAssignableFrom(long.class)) {
       return value;
-    } else if (klass.isAssignableFrom(Float.class) || klass.isAssignableFrom(Float.class)) {
+    } else if (klass.isAssignableFrom(Float.class) || klass.isAssignableFrom(float.class)) {
       return value;
     } else if (klass.isAssignableFrom(Double.class) || klass.isAssignableFrom(double.class)) {
       return value;
