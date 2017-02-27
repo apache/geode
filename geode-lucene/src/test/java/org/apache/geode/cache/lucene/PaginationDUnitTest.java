@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -59,7 +60,7 @@ public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
 
   @Test
   @Parameters(method = "getListOfRegionTestTypes")
-  public void noSuchElementExceptionWhenAllDataStoreAreClosedWhilePagination(
+  public void partitionedRegionStorageExceptionWhenAllDataStoreAreClosedWhilePagination(
       RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
@@ -90,8 +91,8 @@ public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
         fail();
       } catch (Exception e) {
         Assert.assertEquals(
-            "Expected Exception = java.util.NoSuchElementException but hit " + e.toString(), true,
-            e instanceof java.util.NoSuchElementException);
+            "Expected Exception = PartitionedRegionStorageException but hit " + e.toString(), true,
+            e instanceof PartitionedRegionStorageException);
       }
     });
   }

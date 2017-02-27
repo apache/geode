@@ -16,9 +16,31 @@
 package org.apache.geode.cache.lucene.internal;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.lucene.LuceneQueryException;
+import org.apache.geode.cache.lucene.LuceneQueryProvider;
+import org.apache.geode.cache.lucene.LuceneResultStruct;
+import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
+import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
+import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
+import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
+import org.apache.geode.cache.lucene.internal.distributed.TopEntries;
+import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,25 +48,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.cache.lucene.LuceneQueryException;
-import org.apache.geode.cache.lucene.LuceneQueryProvider;
-import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
-import org.apache.geode.cache.lucene.LuceneResultStruct;
-import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
-import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
-import org.apache.geode.cache.lucene.internal.distributed.TopEntries;
-import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
-import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LuceneQueryImplJUnitTest {
@@ -54,6 +57,7 @@ public class LuceneQueryImplJUnitTest {
   private LuceneQueryProvider provider;
   private ResultCollector<TopEntriesCollector, TopEntries> collector;
   private Region region;
+  private PageableLuceneQueryResults<Object, Object> results;
 
   @Before
   public void createMocks() {
@@ -65,11 +69,19 @@ public class LuceneQueryImplJUnitTest {
     when(execution.withArgs(any())).thenReturn(execution);
     when(execution.withCollector(any())).thenReturn(execution);
     when(execution.execute(anyString())).thenReturn((ResultCollector) collector);
+    results = mock(PageableLuceneQueryResults.class);
 
     query = new LuceneQueryImpl<Object, Object>("index", region, provider, LIMIT, 20) {
+
       @Override
       protected Execution onRegion() {
         return execution;
+      }
+
+      @Override
+      protected PageableLuceneQueryResults<Object, Object> newPageableResults(final int pageSize,
+          final TopEntries<Object> entries) {
+        return results;
       }
     };
   }
@@ -79,9 +91,12 @@ public class LuceneQueryImplJUnitTest {
     entries.addHit(new EntryScore("hi", 5));
     when(collector.getResult()).thenReturn(entries);
 
-    Map<String, String> getAllResult = new HashMap<String, String>();
-    getAllResult.put("hi", "value");
-    when(region.getAll(eq(Collections.singletonList("hi")))).thenReturn(getAllResult);
+    when(results.getMaxScore()).thenReturn(5f);
+    when(results.size()).thenReturn(1);
+    List<LuceneResultStruct<Object, Object>> page =
+        Collections.singletonList(new LuceneResultStructImpl<>("hi", "value", 5f));
+    when(results.next()).thenReturn(page);
+    when(results.hasNext()).thenReturn(true);
   }
 
   @Test
@@ -137,6 +152,7 @@ public class LuceneQueryImplJUnitTest {
     assertEquals("index", context.getIndexName());
 
     assertEquals(5, results.getMaxScore(), 0.01);
+    assertEquals(1, results.size());
     final List<LuceneResultStruct<Object, Object>> page = results.next();
     assertEquals(1, page.size());
     LuceneResultStruct element = page.iterator().next();

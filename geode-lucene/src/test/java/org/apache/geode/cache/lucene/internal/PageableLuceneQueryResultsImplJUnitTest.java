@@ -15,6 +15,12 @@
 package org.apache.geode.cache.lucene.internal;
 
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,12 +29,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -48,6 +58,7 @@ public class PageableLuceneQueryResultsImplJUnitTest {
   private List<EntryScore<String>> hits;
   private List<LuceneResultStruct> expected = new ArrayList<LuceneResultStruct>();
   private Region<String, String> userRegion;
+  private Execution execution;
 
   @Before
   public void setUp() {
@@ -58,13 +69,21 @@ public class PageableLuceneQueryResultsImplJUnitTest {
       expected.add(new LuceneResultStructImpl<String, String>("key_" + i, "value_" + i, i));
     }
 
-    userRegion = Mockito.mock(Region.class);
+    userRegion = mock(Region.class);
 
-    Mockito.when(userRegion.getAll(Mockito.anyCollection())).thenAnswer(new Answer() {
+    final ResultCollector collector = mock(ResultCollector.class);
+    execution = mock(Execution.class);
+    when(execution.withFilter(any())).thenReturn(execution);
+    when(execution.withCollector(any())).thenReturn(execution);
+    when(execution.execute(anyString())).thenReturn(collector);
+
+    when(collector.getResult()).then(new Answer() {
 
       @Override
       public Map answer(InvocationOnMock invocation) throws Throwable {
-        Collection<String> keys = invocation.getArgumentAt(0, Collection.class);
+        ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
+        verify(execution, atLeast(1)).withFilter(captor.capture());
+        Collection<String> keys = captor.getValue();
         Map<String, String> results = new HashMap<String, String>();
         for (String key : keys) {
           results.put(key, key.replace("key_", "value_"));
@@ -88,7 +107,12 @@ public class PageableLuceneQueryResultsImplJUnitTest {
   @Test
   public void testPagination() {
     PageableLuceneQueryResultsImpl<String, String> results =
-        new PageableLuceneQueryResultsImpl<String, String>(hits, userRegion, 10);
+        new PageableLuceneQueryResultsImpl<String, String>(hits, userRegion, 10) {
+          @Override
+          protected Execution onRegion() {
+            return execution;
+          }
+        };
 
     assertEquals(23, results.size());
 
@@ -114,7 +138,12 @@ public class PageableLuceneQueryResultsImplJUnitTest {
   @Test
   public void testNoPagination() {
     PageableLuceneQueryResultsImpl<String, String> results =
-        new PageableLuceneQueryResultsImpl<String, String>(hits, userRegion, 0);
+        new PageableLuceneQueryResultsImpl<String, String>(hits, userRegion, 0) {
+          @Override
+          protected Execution onRegion() {
+            return execution;
+          }
+        };
 
     assertEquals(23, results.size());
 

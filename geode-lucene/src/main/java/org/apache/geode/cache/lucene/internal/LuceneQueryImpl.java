@@ -93,6 +93,11 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
   private PageableLuceneQueryResults<K, V> findPages(int pageSize) throws LuceneQueryException {
     TopEntries<K> entries = findTopEntries();
+    return newPageableResults(pageSize, entries);
+  }
+
+  protected PageableLuceneQueryResults<K, V> newPageableResults(final int pageSize,
+      final TopEntries<K> entries) {
     return new PageableLuceneQueryResultsImpl<K, V>(entries.getHits(), region, pageSize);
   }
 
