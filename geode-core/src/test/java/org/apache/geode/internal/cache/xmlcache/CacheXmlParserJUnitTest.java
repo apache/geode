@@ -31,9 +31,10 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.distributed.internal.membership.gms.mgr.*;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+
 
 /**
  * Test cases for {@link CacheXmlParser}.
@@ -106,7 +107,7 @@ public class CacheXmlParserJUnitTest {
     InternalDistributedSystem.connect(nonDefault);
 
     CacheXmlParser.parse(this.getClass()
-	.getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
+        .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
   }
 
 
