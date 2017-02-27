@@ -33,7 +33,6 @@ dependencies {
   compile('io.springfox:springfox-swagger-ui:' + project.'springfox.version') {
     exclude module: 'slf4j-api'
   }
-  compile 'org.json4s:json4s-ast_2.10:' + project.'json4s.version'
   compile 'org.springframework:spring-beans:' + project.'springframework.version'
   compile 'org.springframework.security:spring-security-core:' + project.'spring-security.version'
   compile 'org.springframework.security:spring-security-web:' + project.'spring-security.version'
