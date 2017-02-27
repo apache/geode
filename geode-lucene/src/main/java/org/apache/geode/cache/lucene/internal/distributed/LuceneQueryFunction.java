@@ -75,6 +75,10 @@ public class LuceneQueryFunction implements Function, InternalEntity {
     LuceneService service = LuceneServiceProvider.get(region.getCache());
     LuceneIndexImpl index =
         (LuceneIndexImpl) service.getIndex(searchContext.getIndexName(), region.getFullPath());
+    if (index == null) {
+      throw new InternalFunctionInvocationTargetException(
+          "Index for Region:" + region.getFullPath() + " was not found");
+    }
     RepositoryManager repoManager = index.getRepositoryManager();
     LuceneIndexStats stats = index.getIndexStats();
 

@@ -208,20 +208,17 @@ public class LuceneQueryFunctionJUnitTest {
     function.execute(mockContext);
   }
 
-  // Disabled currently as we are retrying the function if a bucket is not found
-  // @Test(expected = FunctionException.class)
-  // public void testBucketNotFound() throws Exception {
-  // when(mockContext.getDataSet()).thenReturn(mockRegion);
-  // when(mockContext.getArguments()).thenReturn(searchArgs);
-  // when(mockContext.<TopEntriesCollector>getResultSender()).thenReturn(mockResultSender);
-  // when(mockRepoManager.getRepositories(eq(mockContext)))
-  // .thenThrow(new BucketNotFoundException(""));
-  // LuceneQueryFunction function = new LuceneQueryFunction();
-  //
-  // function.execute(mockContext);
-  //
-  // verify(mockResultSender).sendException(any(BucketNotFoundException.class));
-  // }
+  @Test(expected = FunctionException.class)
+  public void whenServiceReturnsNullIndexDuringQueryExecutionFunctionExceptionShouldBeThrown()
+      throws Exception {
+    when(mockContext.getDataSet()).thenReturn(mockRegion);
+    when(mockContext.getArguments()).thenReturn(searchArgs);
+    LuceneQueryFunction function = new LuceneQueryFunction();
+
+    when(mockService.getIndex(eq("indexName"), eq(regionPath))).thenReturn(null);
+
+    function.execute(mockContext);
+  }
 
   @Test(expected = FunctionException.class)
   public void testReduceError() throws Exception {
