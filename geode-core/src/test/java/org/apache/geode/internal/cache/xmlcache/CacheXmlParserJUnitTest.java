@@ -35,6 +35,8 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
 
 /**
  * Test cases for {@link CacheXmlParser}.
@@ -101,6 +103,7 @@ public class CacheXmlParserJUnitTest {
     Properties nonDefault = new Properties();
     nonDefault.setProperty(MCAST_PORT, "0"); // loner
 
+    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
     InternalDistributedSystem system =
         InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
     when(dm.getSystem()).thenReturn(system);
@@ -108,6 +111,9 @@ public class CacheXmlParserJUnitTest {
 
     CacheXmlParser.parse(this.getClass()
         .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
+	
+	
+	
   }
 
 
