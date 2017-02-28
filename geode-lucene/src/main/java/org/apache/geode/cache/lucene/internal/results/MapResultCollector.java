@@ -19,10 +19,11 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class MapResultCollector implements ResultCollector<Map<?, ?>, Map<Object, Object>> {
+public class MapResultCollector implements ResultCollector<List<PageEntry>, Map<Object, Object>> {
   private final Map<Object, Object> results = new HashMap<>();
 
   @Override
@@ -37,9 +38,11 @@ public class MapResultCollector implements ResultCollector<Map<?, ?>, Map<Object
   }
 
   @Override
-  public void addResult(final DistributedMember memberID, final Map<?, ?> resultOfSingleExecution) {
-    this.results.putAll(resultOfSingleExecution);
-
+  public void addResult(final DistributedMember memberID,
+      final List<PageEntry> resultOfSingleExecution) {
+    for (PageEntry entry : resultOfSingleExecution) {
+      results.put(entry.getKey(), entry.getValue());
+    }
   }
 
   @Override

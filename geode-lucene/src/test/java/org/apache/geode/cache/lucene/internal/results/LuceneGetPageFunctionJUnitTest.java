@@ -26,7 +26,9 @@ import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
@@ -47,13 +49,17 @@ public class LuceneGetPageFunctionJUnitTest {
     when(context.getResultSender()).thenReturn(resultSender);
     LuceneGetPageFunction function = new LuceneGetPageFunction();
     when(context.getLocalDataSet(any())).thenReturn(region);
-    final Entry entry = mock(Entry.class);
+    final EntrySnapshot entry = mock(EntrySnapshot.class);
     when(region.getEntry(any())).thenReturn(entry);
-    when(entry.getValue()).thenReturn("value");
+    final RegionEntry regionEntry = mock(RegionEntry.class);
+    when(entry.getRegionEntry()).thenReturn(regionEntry);
+    when(regionEntry.getValue(any())).thenReturn("value");
     when(context.getFilter()).thenReturn((Set) Collections.singleton("key"));
     function.execute(context);
 
-    verify(resultSender).lastResult(eq(Collections.singletonMap("key", "value")));
+    PageResults expectedResults = new PageResults();
+    expectedResults.add(new PageEntry("key", "value"));
+    verify(resultSender).lastResult(eq(expectedResults));
   }
 
 }

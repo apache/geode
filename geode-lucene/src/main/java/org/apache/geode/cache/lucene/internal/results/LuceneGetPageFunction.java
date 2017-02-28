@@ -15,40 +15,18 @@
 
 package org.apache.geode.cache.lucene.internal.results;
 
-import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.RegionFunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.cache.lucene.LuceneQueryException;
-import org.apache.geode.cache.lucene.LuceneQueryProvider;
-import org.apache.geode.cache.lucene.LuceneService;
-import org.apache.geode.cache.lucene.LuceneServiceProvider;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
-import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
-import org.apache.geode.cache.lucene.internal.distributed.CollectorManager;
-import org.apache.geode.cache.lucene.internal.distributed.LuceneFunctionContext;
-import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
-import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollectorManager;
-import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
-import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
-import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.BucketNotFoundException;
-import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
+import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
-import org.apache.lucene.search.Query;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -67,20 +45,29 @@ public class LuceneGetPageFunction implements Function, InternalEntity {
     Region region = PartitionRegionHelper.getLocalDataForContext(ctx);
     Set<?> keys = ctx.getFilter();
 
-    Map<Object, Object> results = new HashMap<>(keys.size());
+    List<PageEntry> results = new PageResults(keys.size());
 
     for (Object key : keys) {
-      final Entry entry = region.getEntry(key);
-      try {
-        Object value = entry == null ? null : entry.getValue();
-        if (value != null) {
-          results.put(key, value);
-        }
-      } catch (EntryDestroyedException e) {
-        // skip
+      PageEntry entry = getEntry(region, key);
+      if (entry != null) {
+        results.add(entry);
       }
     }
     ctx.getResultSender().lastResult(results);
+  }
+
+  protected PageEntry getEntry(final Region region, final Object key) {
+    final EntrySnapshot entry = (EntrySnapshot) region.getEntry(key);
+    if (entry == null) {
+      return null;
+    }
+
+    final Object value = entry.getRegionEntry().getValue(null);
+    if (value == null || Token.isInvalidOrRemoved(value)) {
+      return null;
+    }
+
+    return new PageEntry(key, value);
   }
 
 
