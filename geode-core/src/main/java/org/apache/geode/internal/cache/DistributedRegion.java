@@ -2302,17 +2302,27 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
         if (requestingClient != null) {
           event.setContext(requestingClient);
         }
-        SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
-        try {
-          processor.initialize(this, key, aCallbackArgument);
-          // processor fills in event
-          processor.doSearchAndLoad(event, txState, localValue);
-          if (clientEvent != null && clientEvent.getVersionTag() == null) {
-            clientEvent.setVersionTag(event.getVersionTag());
+        // If this event is because of a register interest call, don't invoke the CacheLoader
+        boolean getForRegisterInterest = clientEvent != null && clientEvent.getOperation() != null
+            && clientEvent.getOperation().isGetForRegisterInterest();
+        if (!getForRegisterInterest) {
+          SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+          try {
+            processor.initialize(this, key, aCallbackArgument);
+            // processor fills in event
+            processor.doSearchAndLoad(event, txState, localValue);
+            if (clientEvent != null && clientEvent.getVersionTag() == null) {
+              clientEvent.setVersionTag(event.getVersionTag());
+            }
+            lastModified = processor.getLastModified();
+          } finally {
+            processor.release();
           }
-          lastModified = processor.getLastModified();
-        } finally {
-          processor.release();
+        } else {
+          if (logger.isDebugEnabled()) {
+            logger.debug("DistributedRegion.findObjectInSystem skipping loader for region="
+                + getFullPath() + "; key=" + key);
+          }
         }
       }
       if (event.hasNewValue() && !isMemoryThresholdReachedForLoad()) {

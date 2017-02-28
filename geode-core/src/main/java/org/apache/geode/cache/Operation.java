@@ -49,6 +49,7 @@ public final class Operation implements java.io.Serializable {
   private static final byte OP_TYPE_CLEAR = OpType.CLEAR;
   private static final byte OP_TYPE_MARKER = OpType.MARKER;
   private static final byte OP_TYPE_UPDATE_VERSION = OpType.UPDATE_ENTRY_VERSION;
+  private static final byte OP_TYPE_GET_FOR_REGISTER_INTEREST = OpType.GET_FOR_REGISTER_INTEREST;
 
   private static final int OP_DETAILS_NONE = 0;
   private static final int OP_DETAILS_SEARCH = 1;
@@ -531,6 +532,14 @@ public final class Operation implements java.io.Serializable {
       false, // isRegion
       OP_TYPE_DESTROY, OP_DETAILS_REMOVEALL);
 
+  /**
+   * A 'get for register interest' operation.
+   */
+  public static final Operation GET_FOR_REGISTER_INTEREST =
+      new Operation("GET_FOR_REGISTER_INTEREST", false, // isLocal
+          false, // isRegion
+          OP_TYPE_GET_FOR_REGISTER_INTEREST, OP_DETAILS_NONE);
+
   /** The name of this mirror type. */
   private final transient String name;
 
@@ -633,6 +642,13 @@ public final class Operation implements java.io.Serializable {
    */
   public boolean isGetEntry() {
     return this.opType == OP_TYPE_GET_ENTRY;
+  }
+
+  /**
+   * Returns true if this operation is a get for register interest.
+   */
+  public boolean isGetForRegisterInterest() {
+    return this.opType == OP_TYPE_GET_FOR_REGISTER_INTEREST;
   }
 
   /**
