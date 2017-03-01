@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -41,6 +42,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
+import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDestroyIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
@@ -399,6 +401,57 @@ public class LuceneIndexCommandsJUnitTest {
     TabularResultData data = (TabularResultData) result.getResultData();
 
     assertEquals(queryResults.size(), data.retrieveAllValues("key").size());
+  }
+
+  @Test
+  public void testDestroySingleIndexOnRegion() throws Exception {
+    LuceneIndexCommands commands = createTestLuceneIndexCommandsForDestroyIndex();
+    String indexName = "index";
+    String regionPath = "regionPath";
+    CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
+    String expectedMember = "member";
+    String expectedStatus = CliStrings.format(
+        LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FOR_REGION_1,
+        new Object[] {indexName, regionPath});
+    verifyDestroyIndexCommandResult(result, expectedMember, expectedStatus);
+  }
+
+  @Test
+  public void testDestroyAllIndexesOnRegion() throws Exception {
+    LuceneIndexCommands commands = createTestLuceneIndexCommandsForDestroyIndex();
+    String indexName = null;
+    String regionPath = "regionPath";
+    CommandResult result = (CommandResult) commands.destroyIndex(indexName, regionPath);
+    String expectedMember = "member";
+    String expectedStatus = CliStrings.format(
+        LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FOR_REGION_0,
+        new Object[] {regionPath});
+    verifyDestroyIndexCommandResult(result, expectedMember, expectedStatus);
+  }
+
+  private LuceneIndexCommands createTestLuceneIndexCommandsForDestroyIndex() {
+    final Cache mockCache = mock(Cache.class);
+    final ResultCollector mockResultCollector = mock(ResultCollector.class);
+    final LuceneIndexCommands commands = spy(createIndexCommands(mockCache, null));
+
+    final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
+    cliFunctionResults.add(new CliFunctionResult("member", true, "Index Destroyed"));
+
+    doReturn(mockResultCollector).when(commands).executeFunction(
+        isA(LuceneDestroyIndexFunction.class), any(LuceneIndexInfo.class), eq(false));
+    doReturn(cliFunctionResults).when(mockResultCollector).getResult();
+    return commands;
+  }
+
+  private void verifyDestroyIndexCommandResult(CommandResult result, String expectedMember,
+      String expectedStatus) {
+    assertEquals(Status.OK, result.getStatus());
+    TabularResultData data = (TabularResultData) result.getResultData();
+    List<String> members = data.retrieveAllValues("Member");
+    List<String> status = data.retrieveAllValues("Status");
+    assertTrue(members.size() == 1);
+    assertEquals(expectedMember, members.get(0));
+    assertEquals(expectedStatus, status.get(0));
   }
 
   private String getPage(final LuceneSearchResults[] expectedResults, int[] indexList) {

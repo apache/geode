@@ -107,7 +107,7 @@ public class JarDeployerIntegrationTest {
   @Test
   public void testDeployToInvalidDirectory() throws IOException, ClassNotFoundException {
     final File alternateDir = new File(temporaryFolder.getRoot(), "JarDeployerDUnit");
-    FileUtil.delete(alternateDir);
+    alternateDir.delete();
 
     final JarDeployer jarDeployer = new JarDeployer(alternateDir);
     final CyclicBarrier barrier = new CyclicBarrier(2);

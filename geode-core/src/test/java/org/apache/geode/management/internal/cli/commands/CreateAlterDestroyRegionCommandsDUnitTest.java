@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.awaitility.Awaitility.waitAtMost;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
@@ -34,7 +33,9 @@ import static org.apache.geode.test.dunit.Assert.assertNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.awaitility.Awaitility.waitAtMost;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -54,7 +55,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ClassBuilder;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
@@ -1364,7 +1364,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     for (String path : this.filesToBeDeleted) {
       try {
         final File fileToDelete = new File(path);
-        FileUtil.delete(fileToDelete);
+        FileUtils.forceDelete(fileToDelete);
         if (path.endsWith(".jar")) {
           executeCommand("undeploy --jar=" + fileToDelete.getName());
         }

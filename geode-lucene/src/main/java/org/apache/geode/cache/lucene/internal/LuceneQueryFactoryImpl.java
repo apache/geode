@@ -24,7 +24,6 @@ import org.apache.geode.cache.lucene.LuceneQueryProvider;
 public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
   private int limit = DEFAULT_LIMIT;
   private int pageSize = DEFAULT_PAGESIZE;
-  private String[] projectionFields = null;
   private Cache cache;
 
   LuceneQueryFactoryImpl(Cache cache) {
@@ -57,14 +56,9 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
       throw new IllegalArgumentException("Region not found: " + regionName);
     }
     LuceneQueryImpl<K, V> luceneQuery =
-        new LuceneQueryImpl<K, V>(indexName, region, provider, projectionFields, limit, pageSize);
+        new LuceneQueryImpl<K, V>(indexName, region, provider, limit, pageSize);
     return luceneQuery;
   }
 
-  @Override
-  public LuceneQueryFactory setProjectionFields(String... fieldNames) {
-    projectionFields = fieldNames.clone();
-    return this;
-  }
 
 }

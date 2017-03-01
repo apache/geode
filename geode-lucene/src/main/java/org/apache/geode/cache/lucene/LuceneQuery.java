@@ -57,9 +57,4 @@ public interface LuceneQuery<K, V> {
    */
   public int getLimit();
 
-  /**
-   * Get projected fields setting of current query.
-   */
-  public String[] getProjectedFieldNames();
-
 }

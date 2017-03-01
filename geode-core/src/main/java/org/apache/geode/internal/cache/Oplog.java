@@ -14,14 +14,34 @@
  */
 package org.apache.geode.internal.cache;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SerializationException;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.OplogCancelledException;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.*;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.Sendable;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DiskEntry.Helper.Flushable;
 import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
@@ -30,8 +50,19 @@ import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
 import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.lru.NewLRUClockHand;
-import org.apache.geode.internal.cache.persistence.*;
-import org.apache.geode.internal.cache.versions.*;
+import org.apache.geode.internal.cache.persistence.BytesAndBits;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.persistence.UninterruptibleFileChannel;
+import org.apache.geode.internal.cache.persistence.UninterruptibleRandomAccessFile;
+import org.apache.geode.internal.cache.versions.CompactVersionHolder;
+import org.apache.geode.internal.cache.versions.RegionVersionHolder;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionHolder;
+import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.versions.VersionStamp;
+import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -47,20 +78,35 @@ import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.SyncFailedException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -1176,7 +1222,7 @@ public final class Oplog implements CompactableOplog, Flushable {
    * @return a map of baslineline oplog files to copy. May be empty if total current set for this
    *         oplog does not match the baseline.
    */
-  Map<File, File> mapBaseline(List<File> baselineOplogFiles) {
+  Map<File, File> mapBaseline(Collection<File> baselineOplogFiles) {
     // Map of baseline oplog file name to oplog file
     Map<String, File> baselineOplogMap =
         TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
@@ -5759,13 +5805,13 @@ public final class Oplog implements CompactableOplog, Flushable {
 
   public void copyTo(File targetDir) throws IOException {
     if (this.crf.f != null) { // fixes bug 43951
-      FileUtil.copy(this.crf.f, targetDir);
+      FileUtils.copyFileToDirectory(this.crf.f, targetDir);
     }
-    FileUtil.copy(this.drf.f, targetDir);
+    FileUtils.copyFileToDirectory(this.drf.f, targetDir);
 
     // this krf existence check fixes 45089
     if (getParent().getDiskInitFile().hasKrf(this.oplogId)) {
-      FileUtil.copy(this.getKrfFile(), targetDir);
+      FileUtils.copyFileToDirectory(this.getKrfFile(), targetDir);
     }
   }
 
@@ -5788,7 +5834,7 @@ public final class Oplog implements CompactableOplog, Flushable {
         return;
       if (!olf.f.exists())
         return;
-      assert olf.RAFClosed == true;
+      assert olf.RAFClosed;
       if (!olf.RAFClosed || olf.raf != null) {
         try {
           olf.raf.close();

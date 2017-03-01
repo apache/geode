@@ -58,17 +58,6 @@ public interface LuceneQueryFactory {
   LuceneQueryFactory setResultLimit(int limit);
 
   /**
-   * Set a list of fields for result projection.
-   * 
-   * @param fieldNames
-   * @return itself
-   * 
-   * @deprecated TODO This feature is not yet implemented
-   */
-  @Deprecated
-  LuceneQueryFactory setProjectionFields(String... fieldNames);
-
-  /**
    * Create wrapper object for lucene's QueryParser object using default standard analyzer. The
    * queryString is using lucene QueryParser's syntax. QueryParser is for easy-to-use with human
    * understandable syntax.

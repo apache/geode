@@ -23,14 +23,6 @@ import org.apache.geode.annotations.Experimental;
  */
 @Experimental
 public interface LuceneResultStruct<K, V> {
-  /**
-   * Return the value associated with the given field name
-   *
-   * @param fieldName the String name of the field
-   * @return the value associated with the specified field
-   * @throws IllegalArgumentException If this struct does not have a field named fieldName
-   */
-  public Object getProjectedField(String fieldName);
 
   /**
    * Return key of the entry

@@ -50,7 +50,6 @@ subprojects {
     testCompile 'pl.pragmatists:JUnitParams:' + project.'JUnitParams.version'
 
     testRuntime 'cglib:cglib:' + project.'cglib.version'
-    testRuntime 'org.ow2.asm:asm:' + project.'asm.version'
   }
   
   //This target does not run any tests. Rather, it validates that there are no

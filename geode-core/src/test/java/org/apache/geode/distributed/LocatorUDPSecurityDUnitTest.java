@@ -35,7 +35,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-@Category({DistributedTest.class, MembershipTest.class})
+@Category({DistributedTest.class, MembershipTest.class, FlakyTest.class}) // Flaky: GEODE-2542
 public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
 
   public LocatorUDPSecurityDUnitTest() {}

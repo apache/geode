@@ -43,6 +43,8 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.awaitility.Awaitility;
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireConfigException;
@@ -101,7 +103,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * @since GemFire 4.0
  */
-@Category({DistributedTest.class, MembershipTest.class})
+@Category({DistributedTest.class, MembershipTest.class, FlakyTest.class}) // Flaky: GEODE-2542
 public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   static volatile InternalDistributedSystem system = null;
@@ -408,10 +410,28 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void startVerifyAndStopLocator(VM loc1, VM loc2, int port1, int port2,
-      Properties properties) {
+      Properties properties) throws Exception {
     try {
-      loc2.invoke("startLocator2", () -> startLocatorWithPortAndProperties(port2, properties));
-      loc1.invoke("startLocator1", () -> startLocatorWithPortAndProperties(port1, properties));
+      getBlackboard().initBlackboard();
+      AsyncInvocation<Boolean> async1 = loc1.invokeAsync("startLocator1", () -> {
+        getBlackboard().signalGate("locator1");
+        getBlackboard().waitForGate("go", 10, TimeUnit.SECONDS);
+        return startLocatorWithPortAndProperties(port1, properties);
+      });
+
+      AsyncInvocation<Boolean> async2 = loc2.invokeAsync("startLocator2", () -> {
+        getBlackboard().signalGate("locator2");
+        getBlackboard().waitForGate("go", 10, TimeUnit.SECONDS);
+        return startLocatorWithPortAndProperties(port2, properties);
+      });
+
+      getBlackboard().waitForGate("locator1", 10, TimeUnit.SECONDS);
+      getBlackboard().waitForGate("locator2", 10, TimeUnit.SECONDS);
+      getBlackboard().signalGate("go");
+
+      async1.await();
+      async2.await();
+
     } finally {
       try {
         // verify that they found each other

@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.Version;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
@@ -28,7 +28,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -98,7 +97,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     File pwd = new File(".");
     for (File entry : pwd.listFiles()) {
       try {
-        FileUtil.delete(entry);
+        FileUtils.deleteDirectory(entry);
       } catch (Exception e) {
         System.out.println("Could not delete " + entry + ": " + e.getMessage());
       }
@@ -688,7 +687,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
 
   public void deleteDiskStores() throws Exception {
     try {
-      FileUtil.delete(new File(diskDir).getAbsoluteFile());
+      FileUtils.deleteDirectory(new File(diskDir).getAbsoluteFile());
     } catch (IOException e) {
       throw new Error("Error deleting files", e);
     }

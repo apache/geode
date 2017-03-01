@@ -29,11 +29,6 @@ public class LuceneResultStructImpl<K, V> implements LuceneResultStruct<K, V> {
   }
 
   @Override
-  public Object getProjectedField(String fieldName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public K getKey() {
     return key;
   }

@@ -14,13 +14,31 @@
  */
 package org.apache.geode.internal.net;
 
-import static org.awaitility.Awaitility.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.security.SecurableCommunicationChannel.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.security.SecurableCommunicationChannel.CLUSTER;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.awaitility.Awaitility;
-import com.sun.tools.hat.internal.model.StackTrace;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.ErrorCollector;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,23 +54,6 @@ import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.ErrorCollector;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
-
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.FileUtil;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests for SocketCreatorFactory with SSL.
@@ -226,7 +227,7 @@ public class SSLSocketIntegrationTest {
     assertThat(resource).isNotNull();
 
     File file = this.temporaryFolder.newFile(name.replaceFirst(".*/", ""));
-    FileUtil.copy(resource, file);
+    FileUtils.copyFile(new File(resource.getFile()), file);
     return file;
   }
 

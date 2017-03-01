@@ -14,16 +14,13 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URL;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.logging.LoggingPerformanceTestCase;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.PerformanceTest;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
@@ -31,11 +28,12 @@ import org.junit.After;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.FileUtil;
-import org.apache.geode.internal.logging.LoggingPerformanceTestCase;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.test.junit.categories.PerformanceTest;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
 
 @Category(PerformanceTest.class)
 @Ignore("Tests have no assertions")
@@ -100,7 +98,8 @@ public class LogWriterLoggerPerformanceTest extends LoggingPerformanceTestCase {
 
     this.logFile = new File(this.configDirectory, DistributionConfig.GEMFIRE_PREFIX + "log");
     final String logFilePath = IOUtils.tryGetCanonicalPathElseGetAbsolutePath(logFile);
-    final String logFileName = FileUtil.stripOffExtension(logFilePath);
+    final String logFileName =
+        logFilePath.substring(0, logFilePath.lastIndexOf(File.separatorChar));
     setPropertySubstitutionValues(logFileName, DEFAULT_LOG_FILE_SIZE_LIMIT,
         DEFAULT_LOG_FILE_COUNT_LIMIT);
 

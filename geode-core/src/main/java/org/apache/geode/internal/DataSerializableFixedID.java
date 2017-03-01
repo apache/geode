@@ -160,7 +160,6 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final byte PUT_ALL_MESSAGE = -84;
   public static final byte CLEAR_REGION_MESSAGE = -83;
   public static final byte INVALIDATE_REGION_MESSAGE = -82;
-  public static final byte SEND_QUEUE_MESSAGE = -81;
   public static final byte STATE_MARKER_MESSAGE = -80;
   public static final byte STATE_STABILIZATION_MESSAGE = -79;
   public static final byte STATE_STABILIZED_MESSAGE = -78;
@@ -809,8 +808,9 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short LUCENE_ENTRY_SCORE = 2174;
   public static final short LUCENE_TOP_ENTRIES = 2175;
   public static final short LUCENE_TOP_ENTRIES_COLLECTOR = 2176;
-
   public static final short WAIT_UNTIL_FLUSHED_FUNCTION_CONTEXT = 2177;
+  public static final short DESTROY_LUCENE_INDEX_MESSAGE = 2178;
+  public static final short LUCENE_PAGE_RESULTS = 2179;
 
   // NOTE, codes > 65535 will take 4 bytes to serialize
 

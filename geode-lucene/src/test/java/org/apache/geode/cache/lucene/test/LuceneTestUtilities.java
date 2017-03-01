@@ -83,7 +83,7 @@ public class LuceneTestUtilities {
   public static String Quarter3 = "Q3";
   public static String Quarter4 = "Q4";
 
-  public static void initDataStoreForFixedPR(final Cache cache) throws Exception {
+  public static Region initDataStoreForFixedPR(final Cache cache) throws Exception {
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
     int vmNum = VM.getCurrentVMNum();
     if (vmNum % 2 == 0) {
@@ -102,10 +102,10 @@ public class LuceneTestUtilities {
       fpaList.add(fpa2);
     }
 
-    createFixedPartitionedRegion(cache, REGION_NAME, fpaList, 40);
+    return createFixedPartitionedRegion(cache, REGION_NAME, fpaList, 40);
   }
 
-  public static void createFixedPartitionedRegion(final Cache cache, String regionName,
+  public static Region createFixedPartitionedRegion(final Cache cache, String regionName,
       List<FixedPartitionAttributes> fpaList, int localMaxMemory) {
     List<String> allPartitions = new ArrayList();
     if (fpaList != null) {
@@ -132,6 +132,7 @@ public class LuceneTestUtilities {
     fact.setPartitionAttributes(pfact.create());
     Region r = cache.createRegionFactory(fact.create()).create(regionName);
     assertNotNull(r);
+    return r;
   }
 
   static class MyFixedPartitionResolver implements FixedPartitionResolver {

@@ -36,7 +36,6 @@ jgroups
 jline
 jna
 jopt-simple
-json4s-ast
 log4j-api
 log4j-core
 log4j-jcl

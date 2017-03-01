@@ -1381,7 +1381,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                         + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx || rs instanceof PortfolioPdx) {
+              } else if (rs instanceof PortfolioPdx) {
               } else {
                 fail("Result objects for remote client query: " + queries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());
@@ -1441,7 +1441,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
                         + obj.getClass());
                   }
                 }
-              } else if (rs instanceof PortfolioPdx || rs instanceof PortfolioPdx) {
+              } else if (rs instanceof PortfolioPdx) {
               } else {
                 fail("Result objects for remote client query: " + queries[i]
                     + " should be instance of PortfolioPdx and not " + rs.getClass());

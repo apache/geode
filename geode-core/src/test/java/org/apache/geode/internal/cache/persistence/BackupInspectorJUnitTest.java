@@ -14,22 +14,22 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Set;
-
-import org.junit.After;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.internal.FileUtil;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Set;
 
 /**
  * TODO: fails when running integrationTest from gradle command-line on Windows 7

@@ -479,6 +479,80 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
     vm1.invoke(() -> InterestListDUnitTest.confirmNoCacheListenerInvalidates());
   }
 
+  @Test
+  public void testRegisterInterestSingleKeyWithDestroyOnReplicatedRegionWithCacheLoader() {
+    List keysToDestroy = new ArrayList();
+    keysToDestroy.add("0");
+    runRegisterInterestWithDestroyAndCacheLoaderTest(true, keysToDestroy, keysToDestroy);
+  }
+
+  @Test
+  public void testRegisterInterestSingleKeyWithDestroyOnPartitionedRegionWithCacheLoader() {
+    List keysToDestroy = new ArrayList();
+    keysToDestroy.add("0");
+    runRegisterInterestWithDestroyAndCacheLoaderTest(false, keysToDestroy, keysToDestroy);
+  }
+
+  @Test
+  public void testRegisterInterestListOfKeysWithDestroyOnReplicatedRegionWithCacheLoader() {
+    List keysToDestroy = new ArrayList();
+    for (int i = 0; i < 5; i++) {
+      keysToDestroy.add(String.valueOf(i));
+    }
+    runRegisterInterestWithDestroyAndCacheLoaderTest(true, keysToDestroy, keysToDestroy);
+  }
+
+  @Test
+  public void testRegisterInterestListOfKeysWithDestroyOnPartitionedRegionWithCacheLoader() {
+    List keysToDestroy = new ArrayList();
+    for (int i = 0; i < 5; i++) {
+      keysToDestroy.add(String.valueOf(i));
+    }
+    runRegisterInterestWithDestroyAndCacheLoaderTest(false, keysToDestroy, keysToDestroy);
+  }
+
+  @Test
+  public void testRegisterInterestAllKeysWithDestroyOnReplicatedRegionWithCacheLoader() {
+    List keysToDestroy = new ArrayList();
+    keysToDestroy.add("0");
+    runRegisterInterestWithDestroyAndCacheLoaderTest(true, keysToDestroy, "ALL_KEYS");
+  }
+
+  @Test
+  public void testRegisterInterestAllKeysWithDestroyOnPartitionedRegionWithCacheLoader() {
+    List keysToDestroy = new ArrayList();
+    keysToDestroy.add("0");
+    runRegisterInterestWithDestroyAndCacheLoaderTest(false, keysToDestroy, "ALL_KEYS");
+  }
+
+  private void runRegisterInterestWithDestroyAndCacheLoaderTest(boolean addReplicatedRegion,
+      List keysToDestroy, Object keyToRegister) {
+    // The server was already started with a replicated region. Bounce it if necessary
+    int port1 = PORT1;
+    if (!addReplicatedRegion) {
+      vm0.invoke(() -> closeCache());
+      port1 =
+          ((Integer) vm0.invoke(() -> InterestListDUnitTest.createServerCache(addReplicatedRegion)))
+              .intValue();
+    }
+    final int port = port1;
+
+    // Add a cache loader to the region
+    vm0.invoke(() -> addCacheLoader());
+
+    // Create client cache
+    vm1.invoke(() -> createClientCache(NetworkUtils.getServerHostName(vm0.getHost()), port));
+
+    // Destroy appropriate key(s)
+    vm1.invoke(() -> destroyKeys(keysToDestroy));
+
+    // Register interest in appropriate keys(s)
+    vm1.invoke(() -> registerKey(keyToRegister));
+
+    // Verify CacheLoader was not invoked
+    vm0.invoke(() -> verifyNoCacheLoaderLoads());
+  }
+
   private void createCache(Properties props) throws Exception {
     DistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
@@ -905,6 +979,20 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  private static void destroyKeys(List keys) {
+    Region r = cache.getRegion(REGION_NAME);
+    for (Object key : keys) {
+      r.destroy(key);
+    }
+  }
+
+  private static void verifyNoCacheLoaderLoads() throws Exception {
+    Region region = cache.getRegion(REGION_NAME);
+    ReturnKeyCacheLoader cacheLoader =
+        (ReturnKeyCacheLoader) region.getAttributes().getCacheLoader();
+    assertEquals(0/* expected */, cacheLoader.getLoads()/* actual */);
+  }
+
   private static void validateEntriesK1andK2(final String vm) {
     WaitCriterion ev = new WaitCriterion() {
       @Override
@@ -1076,6 +1164,8 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
 
   private static class ReturnKeyCacheLoader implements CacheLoader {
 
+    private AtomicInteger loads = new AtomicInteger();
+
     @Override
     public void close() {
       // Do nothing
@@ -1083,7 +1173,16 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
 
     @Override
     public Object load(LoaderHelper helper) throws CacheLoaderException {
+      incrementLoads();
       return helper.getKey();
+    }
+
+    private void incrementLoads() {
+      this.loads.incrementAndGet();
+    }
+
+    private int getLoads() {
+      return this.loads.get();
     }
   }
 }

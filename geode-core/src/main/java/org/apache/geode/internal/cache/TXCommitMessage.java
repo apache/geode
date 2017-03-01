@@ -526,19 +526,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       successfulRecipients.removeAll(regionDestroyedMembers);
 
       try {
-        ReliableDistributionData rdd = new ReliableDistributionData() {
-          // public Set getSuccessfulRecipients(ReliableReplyProcessor21 processor) {
-          // return successfulRecipients;
-          // }
-          public int getOperationCount() {
-            return rc.getOperationCount();
-          }
-
-          public List getOperations() {
-            return rc.getOperations();
-          }
-        };
-        rc.r.handleReliableDistribution(rdd, successfulRecipients);
+        rc.r.handleReliableDistribution(successfulRecipients);
       } catch (RegionDistributionException e) {
         if (regionDistributionExceptions == Collections.EMPTY_SET) {
           regionDistributionExceptions = new HashSet();
@@ -1408,19 +1396,6 @@ public class TXCommitMessage extends PooledDistributionMessage
       return this.opKeys == null;
     }
 
-    /**
-     * Returns the number of operations this region commit will do
-     * 
-     * @since GemFire 5.0
-     */
-    int getOperationCount() {
-      int result = 0;
-      if (!isEmpty()) {
-        result = this.opKeys.size();
-      }
-      return result;
-    }
-
     boolean needsAck() {
       return this.r.getScope().isDistributedAck();
     }
@@ -1479,20 +1454,6 @@ public class TXCommitMessage extends PooledDistributionMessage
         result.append(" refCount=").append(this.refCount);
       }
       return result.toString();
-    }
-
-    /**
-     * Returns a list of QueuedOperation instances for reliable distribution
-     * 
-     * @since GemFire 5.0
-     */
-    List getOperations() {
-      QueuedOperation[] ops = new QueuedOperation[getOperationCount()];
-      for (int i = 0; i < ops.length; i++) {
-        TXEntryState es = (TXEntryState) this.opEntries.get(i);
-        ops[i] = es.toFarSideQueuedOp(this.opKeys.get(i));
-      }
-      return Arrays.asList(ops);
     }
 
     private void basicToData(DataOutput out) throws IOException {

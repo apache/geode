@@ -14,13 +14,21 @@
  */
 package org.apache.geode.pdx;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.ToDataException;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -41,9 +49,6 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -66,7 +71,7 @@ public class PdxAttributesJUnitTest {
     if (instance != null) {
       instance.close();
     }
-    FileUtil.delete(diskDir);
+    FileUtils.deleteDirectory(diskDir);
     File[] defaultStoreFiles = new File(".").listFiles(new FilenameFilter() {
 
       public boolean accept(File dir, String name) {
@@ -75,7 +80,7 @@ public class PdxAttributesJUnitTest {
     });
 
     for (File file : defaultStoreFiles) {
-      FileUtil.delete(file);
+      FileUtils.forceDelete(file);
     }
   }
 

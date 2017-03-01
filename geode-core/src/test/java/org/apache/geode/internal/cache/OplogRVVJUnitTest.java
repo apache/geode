@@ -14,13 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.io.File;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
+import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -31,15 +35,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.StatisticsFactory;
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.FileUtil;
-import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
-import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
-import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
-import org.apache.geode.internal.cache.persistence.DiskStoreID;
-import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
 
 @Category(IntegrationTest.class)
 public class OplogRVVJUnitTest {
@@ -174,10 +176,12 @@ public class OplogRVVJUnitTest {
     });
 
     oplog = new Oplog(1, oplogSet);
-    File drfFile = FileUtil.find(testDirectory, ".*.drf");
-    File crfFile = FileUtil.find(testDirectory, ".*.crf");
-    oplog.addRecoveredFile(drfFile, dirHolder);
-    oplog.addRecoveredFile(crfFile, dirHolder);
+    Collection<File> drfFiles = FileUtils.listFiles(testDirectory, new String[] {"drf"}, true);
+    assertEquals(1, drfFiles.size());
+    Collection<File> crfFiles = FileUtils.listFiles(testDirectory, new String[] {"crf"}, true);
+    assertEquals(1, crfFiles.size());
+    oplog.addRecoveredFile(drfFiles.iterator().next(), dirHolder);
+    oplog.addRecoveredFile(crfFiles.iterator().next(), dirHolder);
     OplogEntryIdSet deletedIds = new OplogEntryIdSet();
     oplog.recoverDrf(deletedIds, false, true);
     oplog.recoverCrf(deletedIds, true, true, false, Collections.singleton(oplog), true);

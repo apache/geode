@@ -19,6 +19,7 @@ import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -48,7 +49,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -149,7 +149,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     File pwd = new File(".");
     for (File entry : pwd.listFiles()) {
       try {
-        FileUtil.delete(entry);
+        FileUtils.deleteDirectory(entry);
       } catch (Exception e) {
         System.out.println("Could not delete " + entry + ": " + e.getMessage());
       }
@@ -1527,7 +1527,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   public void deleteDiskStores() throws Exception {
     try {
-      FileUtil.delete(new File(diskDir).getAbsoluteFile());
+      FileUtils.deleteDirectory(new File(diskDir).getAbsoluteFile());
     } catch (IOException e) {
       throw new Error("Error deleting files", e);
     }
