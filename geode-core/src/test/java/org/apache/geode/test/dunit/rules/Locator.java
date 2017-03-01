@@ -16,13 +16,11 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import org.apache.geode.test.dunit.VM;
-
 import java.io.File;
 
 public class Locator extends Member {
 
-  public Locator(VM vm, int port, File workingDir, String name) {
-    super(vm, port, workingDir, name);
+  public Locator(int port, File workingDir, String name) {
+    super(port, workingDir, name);
   }
 }

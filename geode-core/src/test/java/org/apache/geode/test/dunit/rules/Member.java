@@ -31,7 +31,7 @@ public abstract class Member implements Serializable {
   private File workingDir;
   private String name;
 
-  public Member(VM vm, int port, File workingDir, String name) {
+  public Member(int port, File workingDir, String name) {
     this.vm = vm;
     this.port = port;
     this.workingDir = workingDir;
@@ -45,6 +45,10 @@ public abstract class Member implements Serializable {
    */
   public VM getVM() {
     return vm;
+  }
+
+  public void setVM(VM vm) {
+    this.vm = vm;
   }
 
   public int getPort() {

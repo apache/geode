@@ -96,7 +96,7 @@ test {
 }
 
 tasks.withType(Test){
-  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}/lib"
+  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
 }
 
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {

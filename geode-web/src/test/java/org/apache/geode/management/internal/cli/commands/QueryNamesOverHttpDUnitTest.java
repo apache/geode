@@ -29,6 +29,7 @@ import org.apache.geode.management.internal.web.http.HttpMethod;
 import org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker;
 import org.apache.geode.test.dunit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -43,22 +44,24 @@ import javax.management.QueryExp;
 
 @Category(IntegrationTest.class)
 public class QueryNamesOverHttpDUnitTest {
-
-
   protected static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
   protected static int jmxPort = ports[0];
   protected static int httpPort = ports[1];
 
-  private static Properties locatorProps = new Properties() {
-    {
-      setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
-      setProperty(HTTP_SERVICE_PORT, httpPort + "");
-      setProperty(JMX_MANAGER_PORT, jmxPort + "");
-    }
-  };
-
   @Rule
-  public LocatorStarterRule locatorRule = new LocatorStarterRule(locatorProps);
+  public LocatorStarterRule locatorRule = new LocatorStarterRule();
+
+  @Before
+  public void before() throws Exception {
+    Properties locatorProps = new Properties() {
+      {
+        setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
+        setProperty(HTTP_SERVICE_PORT, httpPort + "");
+        setProperty(JMX_MANAGER_PORT, jmxPort + "");
+      }
+    };
+    locatorRule.startLocator(locatorProps);
+  }
 
 
   @Test

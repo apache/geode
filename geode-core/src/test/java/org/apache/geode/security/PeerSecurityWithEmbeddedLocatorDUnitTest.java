@@ -61,7 +61,8 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest {
 
     VM server2 = getHost(0).getVM(2);
     server2.invoke(() -> {
-      ServerStarterRule serverStarter = new ServerStarterRule(server2Props);
+      ServerStarterRule serverStarter = new ServerStarterRule();
+      serverStarter.before();
       LocatorServerStartupRule.serverStarter = serverStarter;
       assertThatThrownBy(() -> serverStarter.startServer(locatorPort))
           .isInstanceOf(GemFireSecurityException.class)
@@ -92,9 +93,10 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest {
 
     VM server2 = getHost(0).getVM(2);
     server2.invoke(() -> {
-      ServerStarterRule serverStarter = new ServerStarterRule(server2Props);
+      ServerStarterRule serverStarter = new ServerStarterRule();
+      serverStarter.before();
       LocatorServerStartupRule.serverStarter = serverStarter;
-      assertThatThrownBy(() -> serverStarter.startServer(locatorPort))
+      assertThatThrownBy(() -> serverStarter.startServer(server2Props, locatorPort))
           .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Invalid user name");
     });
   }

@@ -76,6 +76,10 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     temporaryFolder.delete();
   }
 
+  public Locator startLocatorVM(int index) throws IOException {
+    return startLocatorVM(index, new Properties());
+  }
+
   /**
    * Starts a locator instance with the given configuration properties inside
    * {@code getHost(0).getVM(index)}.
@@ -86,49 +90,19 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     String name = "locator-" + index;
     locatorProperties.setProperty(NAME, name);
     File workingDir = createWorkingDirForMember(name);
-
     VM locatorVM = getHost(0).getVM(index);
-    int locatorPort = locatorVM.invoke(() -> {
-      System.setProperty("user.dir", workingDir.getCanonicalPath());
-      locatorStarter = new LocatorStarterRule(locatorProperties);
-      locatorStarter.startLocator();
-      return locatorStarter.locator.getPort();
+    Locator locator = locatorVM.invoke(() -> {
+      locatorStarter = new LocatorStarterRule(workingDir);
+      locatorStarter.before();
+      return locatorStarter.startLocator(locatorProperties);
     });
-    Locator locator = new Locator(locatorVM, locatorPort, workingDir, name);
+    locator.setVM(locatorVM);
     members[index] = locator;
     return locator;
   }
 
-  public Locator startLocatorVMWithPulse(int index, Properties locatorProperties)
-      throws IOException {
-    String name = "locator-" + index;
-    locatorProperties.setProperty(NAME, name);
-    File workingDir = createWorkingDirForMember(name);
-
-    // Setting gemfire.home to this value allows locators started by the rule to run Pulse
-    String geodeInstallDir = new File(".").getAbsoluteFile().getParentFile().getParentFile()
-        .toPath().resolve("geode-assembly").resolve("build").resolve("install")
-        .resolve("apache-geode").toString();
-
-    System.out.println("Current dir is " + new File(".").getCanonicalPath());
-    System.out.println("Setting gemfire.home to " + geodeInstallDir);
-
-    VM locatorVM = getHost(0).getVM(index);
-    int locatorPort = locatorVM.invoke(() -> {
-      System.setProperty("user.dir", workingDir.getCanonicalPath());
-      System.setProperty("gemfire.home", geodeInstallDir);
-      locatorStarter = new LocatorStarterRule(locatorProperties);
-      locatorStarter.startLocator();
-      return locatorStarter.locator.getPort();
-    });
-    Locator locator = new Locator(locatorVM, locatorPort, workingDir, name);
-    members[index] = locator;
-    return locator;
-  }
-
-
-  public Locator startLocatorVM(int index) throws IOException {
-    return startLocatorVM(index, new Properties());
+  public Server startServerVM(int index) throws IOException {
+    return startServerVM(index, new Properties(), -1);
   }
 
   /**
@@ -137,7 +111,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    * @return VM node vm
    */
   public Server startServerVM(int index, Properties properties) throws IOException {
-    return startServerVM(index, properties, 0);
+    return startServerVM(index, properties, -1);
   }
 
   public Server startServerVM(int index, int locatorPort) throws IOException {
@@ -149,18 +123,18 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    */
   public Server startServerVM(int index, Properties properties, int locatorPort)
       throws IOException {
+
     String name = "server-" + index;
     properties.setProperty(NAME, name);
-    File workingDir = createWorkingDirForMember(name);
 
+    File workingDir = createWorkingDirForMember(name);
     VM serverVM = getHost(0).getVM(index);
-    int port = serverVM.invoke(() -> {
-      System.setProperty("user.dir", workingDir.getCanonicalPath());
-      serverStarter = new ServerStarterRule(properties);
-      serverStarter.startServer(locatorPort);
-      return serverStarter.server.getPort();
+    Server server = serverVM.invoke(() -> {
+      serverStarter = new ServerStarterRule(workingDir);
+      serverStarter.before();
+      return serverStarter.startServer(properties, locatorPort);
     });
-    Server server = new Server(serverVM, port, workingDir, name);
+    server.setVM(serverVM);
     members[index] = server;
     return server;
   }
@@ -188,7 +162,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   }
 
   private File createWorkingDirForMember(String dirName) throws IOException {
-    File workingDir = new File(temporaryFolder.getRoot(), dirName);
+    File workingDir = new File(temporaryFolder.getRoot(), dirName).getAbsoluteFile();
     if (!workingDir.exists()) {
       temporaryFolder.newFolder(dirName);
     }

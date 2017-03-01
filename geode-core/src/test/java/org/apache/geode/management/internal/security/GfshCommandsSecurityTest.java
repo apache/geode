@@ -78,10 +78,11 @@ public class GfshCommandsSecurityTest {
       new GfshShellConnectionRule(jmxPort, GfshShellConnectionRule.PortType.jmxManger);
 
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule(properties);
+  public static ServerStarterRule serverStarter = new ServerStarterRule();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    serverStarter.startServer(properties);
     serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("region1");
   }
 
