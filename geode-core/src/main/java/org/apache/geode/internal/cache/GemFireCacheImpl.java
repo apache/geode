@@ -4131,6 +4131,7 @@ public class GemFireCacheImpl
       this.allAsyncEventQueues.remove(asyncQueue);
       this.allVisibleAsyncEventQueues.remove(asyncQueue);
     }
+    system.handleResourceEvent(ResourceEvent.ASYNCEVENTQUEUE_REMOVE, asyncQueue);
   }
 
   /* Cache API - get the conflict resolver for WAN */

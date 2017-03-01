@@ -167,6 +167,14 @@ public interface JMXNotificationType {
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.asycn.event.queue.created";
 
   /**
+   * Notification type which indicates that an async queue has been closed. <BR>
+   * The value of this type string is
+   * <CODE>gemfire.distributedsystem.async.event.queue.closed</CODE>.
+   */
+  public static final String ASYNC_EVENT_QUEUE_CLOSED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.async.event.queue.closed";
+
+  /**
    * Notification type which indicates a GemFire system generated alert <BR>
    * The value of this type string is <CODE>system.alert</CODE>.
    */

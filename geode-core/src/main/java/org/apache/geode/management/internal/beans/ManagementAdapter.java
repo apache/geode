@@ -592,6 +592,42 @@ public class ManagementAdapter {
   }
 
   /**
+   * Handles AsyncEventQueue Removal
+   *
+   * @param queue The AsyncEventQueue being removed
+   */
+  public void handleAsyncEventQueueRemoval(AsyncEventQueue queue) throws ManagementException {
+    if (!isServiceInitialised("handleAsyncEventQueueRemoval")) {
+      return;
+    }
+
+    ObjectName asycnEventQueueMBeanName = MBeanJMXAdapter.getAsycnEventQueueMBeanName(
+        cacheImpl.getDistributedSystem().getDistributedMember(), queue.getId());
+    AsyncEventQueueMBean bean = null;
+    try {
+      bean = (AsyncEventQueueMBean) service.getLocalAsyncEventQueueMXBean(queue.getId());
+      if (bean == null) {
+        return;
+      }
+    } catch (ManagementException e) {
+      // If no bean found its a NO-OP
+      if (logger.isDebugEnabled()) {
+        logger.debug(e.getMessage(), e);
+      }
+      return;
+    }
+
+    bean.stopMonitor();
+
+    service.unregisterMBean(asycnEventQueueMBeanName);
+
+    Notification notification = new Notification(JMXNotificationType.ASYNC_EVENT_QUEUE_CLOSED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
+        ManagementConstants.ASYNC_EVENT_QUEUE_CLOSED_PREFIX + queue.getId());
+    memberLevelNotifEmitter.sendNotification(notification);
+  }
+
+  /**
    * Sends the alert with the Object source as member. This notification will get filtered out for
    * particular alert level
    * 

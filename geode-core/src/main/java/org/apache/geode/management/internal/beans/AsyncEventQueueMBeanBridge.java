@@ -114,4 +114,7 @@ public class AsyncEventQueueMBeanBridge {
     }
   }
 
+  public void stopMonitor() {
+    monitor.stopListener();
+  }
 }

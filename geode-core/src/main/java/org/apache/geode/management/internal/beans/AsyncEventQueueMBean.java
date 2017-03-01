@@ -107,4 +107,7 @@ public class AsyncEventQueueMBean extends NotificationBroadcasterSupport
     return bridge.getEventQueueSize();
   }
 
+  public void stopMonitor() {
+    bridge.stopMonitor();
+  }
 }

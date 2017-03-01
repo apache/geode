@@ -3470,6 +3470,12 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     }
   }
 
+  public static void destroyAsyncEventQueue(String id) {
+    AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(id);
+    assertNotNull(aeq);
+    aeq.destroy();
+  }
+
   protected static void verifyListenerEvents(final long expectedNumEvents) {
     Awaitility.await().atMost(60, TimeUnit.SECONDS)
         .until(() -> listener1.getNumEvents() == expectedNumEvents);
