@@ -28,12 +28,6 @@ public class RawLuceneRepositoryManager extends AbstractPartitionedRepositoryMan
     super(index, serializer);
   }
 
-  public void close() {
-    for (IndexRepository repo : indexRepositories.values()) {
-      repo.cleanup();
-    }
-  }
-
   @Override
   protected IndexRepository getRepository(Integer bucketId) throws BucketNotFoundException {
     IndexRepository repo = indexRepositories.get(bucketId);

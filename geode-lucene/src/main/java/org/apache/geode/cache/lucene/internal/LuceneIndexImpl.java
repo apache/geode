@@ -16,9 +16,7 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.logging.log4j.Logger;
@@ -33,11 +31,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFunction;
-import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFunctionContext;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.xml.LuceneIndexCreation;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -217,6 +210,12 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     if (extensionToDelete != null) {
       getDataRegion().getExtensionPoint().removeExtension(extensionToDelete);
     }
+
+    // Destroy the async event queue
+    destroyAsyncEventQueue();
+
+    // Close the repository manager
+    repositoryManager.close();
   }
 
   protected <K, V> Region<K, V> createRegion(final String regionName,
@@ -235,6 +234,29 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
           LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());
       ige.initCause(e);
       throw ige;
+    }
+  }
+
+  private void destroyAsyncEventQueue() {
+    String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
+
+    // Get the AsyncEventQueue
+    AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
+
+    // Stop the AsyncEventQueue (this stops the AsyncEventQueue's underlying GatewaySender)
+    aeq.stop();
+
+    // Remove the id from the dataRegion's AsyncEventQueue ids
+    // Note: The region may already have been destroyed by a remote member
+    Region region = getDataRegion();
+    if (!region.isDestroyed()) {
+      region.getAttributesMutator().removeAsyncEventQueueId(aeqId);
+    }
+
+    // Destroy the aeq (this also removes it from the GemFireCacheImpl)
+    aeq.destroy();
+    if (logger.isDebugEnabled()) {
+      logger.debug("Destroyed aeqId=" + aeqId);
     }
   }
 }

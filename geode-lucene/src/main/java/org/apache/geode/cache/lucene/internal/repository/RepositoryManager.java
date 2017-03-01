@@ -39,4 +39,9 @@ public interface RepositoryManager {
    */
   Collection<IndexRepository> getRepositories(RegionFunctionContext context)
       throws BucketNotFoundException;
+
+  /**
+   * Closes this {@link RepositoryManager}
+   */
+  void close();
 }

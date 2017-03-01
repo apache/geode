@@ -217,10 +217,6 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     // Invoke super destroy to remove the extension
     super.destroy(initiator);
 
-    // Destroy the AsyncEventQueue
-    PartitionedRegion pr = (PartitionedRegion) getDataRegion();
-    destroyAsyncEventQueue(pr);
-
     // Destroy the chunk region (colocated with the file region)
     // localDestroyRegion can't be used because locally destroying regions is not supported on
     // colocated regions
@@ -243,7 +239,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
     // Destroy index on remote members if necessary
     if (initiator) {
-      destroyOnRemoteMembers(pr);
+      destroyOnRemoteMembers();
     }
 
     if (logger.isDebugEnabled()) {
@@ -252,29 +248,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     }
   }
 
-  private void destroyAsyncEventQueue(PartitionedRegion pr) {
-    String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
-
-    // Get the AsyncEventQueue
-    AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
-
-    // Stop the AsyncEventQueue (this stops the AsyncEventQueue's underlying GatewaySender)
-    aeq.stop();
-
-    // Remove the id from the dataRegion's AsyncEventQueue ids
-    // Note: The region may already have been destroyed by a remote member
-    if (!pr.isDestroyed()) {
-      pr.getAttributesMutator().removeAsyncEventQueueId(aeqId);
-    }
-
-    // Destroy the aeq (this also removes it from the GemFireCacheImpl)
-    aeq.destroy();
-    if (logger.isDebugEnabled()) {
-      logger.debug("Destroyed aeqId=" + aeqId);
-    }
-  }
-
-  private void destroyOnRemoteMembers(PartitionedRegion pr) {
+  private void destroyOnRemoteMembers() {
+    PartitionedRegion pr = (PartitionedRegion) getDataRegion();
     DM dm = pr.getDistributionManager();
     Set<InternalDistributedMember> recipients = pr.getRegionAdvisor().adviseDataStore();
     if (!recipients.isEmpty()) {

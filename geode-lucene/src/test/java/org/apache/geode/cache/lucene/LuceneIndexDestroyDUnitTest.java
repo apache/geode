@@ -23,6 +23,7 @@ import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.awaitility.Awaitility;
 import org.junit.Ignore;
@@ -30,6 +31,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import java.io.InterruptedIOException;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
@@ -38,6 +40,7 @@ import static org.apache.geode.internal.Assert.fail;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -124,7 +127,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> verifyIndexCreated());
 
     // Start puts
-    AsyncInvocation putter = dataStore1.invokeAsync(() -> doPuts());
+    AsyncInvocation putter = dataStore1.invokeAsync(() -> doPutsUntilStopped());
 
     // Wait until puts have started
     dataStore1.invoke(() -> waitUntilPutsHaveStarted());
@@ -141,6 +144,42 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     putter.join();
   }
 
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void verifyDestroyRecreateSingleIndex(RegionTestableType regionType) {
+    // Create index and region
+    dataStore1.invoke(() -> initDataStore(createIndex(), regionType));
+    dataStore2.invoke(() -> initDataStore(createIndex(), regionType));
+
+    // Verify index created
+    dataStore1.invoke(() -> verifyIndexCreated());
+    dataStore2.invoke(() -> verifyIndexCreated());
+
+    // Do puts to cause IndexRepositories to be created
+    dataStore1.invoke(() -> doPuts(10));
+
+    // Destroy indexes (only needs to be done on one member)
+    dataStore1.invoke(() -> destroyIndexes());
+
+    // Verify indexes destroyed
+    dataStore1.invoke(() -> verifyIndexesDestroyed());
+    dataStore2.invoke(() -> verifyIndexesDestroyed());
+
+    // Destroy data region
+    dataStore1.invoke(() -> destroyDataRegion(true));
+
+    // Recreate index and region
+    dataStore1.invoke(() -> initDataStore(createIndex(), regionType));
+    dataStore2.invoke(() -> initDataStore(createIndex(), regionType));
+
+    // Do puts to cause IndexRepositories to be recreated
+    dataStore1.invoke(() -> doPuts(10));
+
+    // Wait until queue is flushed
+    // This verifies there are no deadlocks
+    dataStore1.invoke(() -> waitUntilFlushed(INDEX_NAME));
+    dataStore2.invoke(() -> waitUntilFlushed(INDEX_NAME));
+  }
 
   private SerializableRunnableIF createIndex() {
     return () -> {
@@ -168,7 +207,20 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     assertNotNull(luceneService.getIndex(INDEX_NAME + "1", REGION_NAME));
   }
 
-  private void doPuts() throws Exception {
+  private void waitUntilFlushed(String indexName) throws Exception {
+    LuceneService luceneService = LuceneServiceProvider.get(getCache());
+    assertTrue(
+        luceneService.waitUntilFlushed(indexName, REGION_NAME, 30000, TimeUnit.MILLISECONDS));
+  }
+
+  private void doPuts(int numPuts) throws Exception {
+    Region region = getCache().getRegion(REGION_NAME);
+    for (int i = 0; i < numPuts; i++) {
+      region.put(i, new TestObject());
+    }
+  }
+
+  private void doPutsUntilStopped() throws Exception {
     Region region = getCache().getRegion(REGION_NAME);
     int i = 0;
     while (!STOP_PUTS) {
