@@ -23,12 +23,20 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.client.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.NoAvailableServersException;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.Op;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -41,7 +49,15 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -61,7 +77,6 @@ import java.util.Set;
  * Tests client server corner cases between Region and Pool
  */
 @Category({DistributedTest.class, ClientServerTest.class})
-@RunWith(JUnitParamsRunner.class)
 public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
 
   protected static PoolImpl pool = null;
@@ -755,63 +770,6 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     clientCacheFactory.addPoolServer("localhost", DistributedTestUtils.getDUnitLocatorPort());
     clientCacheFactory.setPoolSubscriptionEnabled(true);
     getClientCache(clientCacheFactory);
-  }
-
-
-  @Test
-  @Parameters(method = "regionShortcut")
-  public void testProxyRegionClientServerOp(RegionShortcut shortcut) throws Exception {
-    // start server first
-    final String REGION_NAME = "proxyRegionClientServerOp";
-    PORT1 = initServerCache(false);
-    // Create regions on servers.
-    server1.invoke(() -> {
-      Cache cache = CacheFactory.getAnyInstance();
-      Region<Object, Object> region = cache.createRegionFactory(shortcut).create(REGION_NAME);
-      assertNotNull(region);
-    });
-
-    String host = NetworkUtils.getServerHostName(server1.getHost());
-
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOCATORS, "");
-    ClientCacheFactory ccf = new ClientCacheFactory(props);
-    ccf.addPoolServer(host, PORT1);
-
-    ClientCache clientCache = ccf.create();
-    Region<Object, Object> clientRegion =
-        clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-    assertNotNull(clientRegion);
-
-    // let us populate this region from client.
-    for (int i = 0; i < 10; i++) {
-      clientRegion.put(i, i * 10);
-    }
-    // Verify using gets
-    for (int i = 0; i < 10; i++) {
-      assertEquals(i * 10, clientRegion.get(i));
-    }
-    assertEquals(10, clientRegion.size());
-    assertFalse(clientRegion.isEmpty());
-    // delete all the entries from the server
-    server1.invoke(() -> {
-      Cache cache = CacheFactory.getAnyInstance();
-      Region<Object, Object> region = cache.getRegion(REGION_NAME);
-      assertNotNull(region);
-      for (int i = 0; i < 10; i++) {
-        region.remove(i);
-      }
-    });
-    assertEquals(0, clientRegion.size());
-    assertTrue(clientRegion.isEmpty());
-
-    clientRegion.destroyRegion();
-    clientCache.close();
-  }
-
-  private RegionShortcut[] regionShortcut() {
-    return new RegionShortcut[] {RegionShortcut.PARTITION, RegionShortcut.REPLICATE};
   }
 
 
