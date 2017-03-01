@@ -5804,14 +5804,18 @@ public final class Oplog implements CompactableOplog, Flushable {
   }
 
   public void copyTo(File targetDir) throws IOException {
-    if (this.crf.f != null) { // fixes bug 43951
+    if (this.crf.f != null && this.crf.f.exists()) {
       FileUtils.copyFileToDirectory(this.crf.f, targetDir);
     }
-    FileUtils.copyFileToDirectory(this.drf.f, targetDir);
+    if (this.drf.f.exists()) {
+      FileUtils.copyFileToDirectory(this.drf.f, targetDir);
+    }
 
     // this krf existence check fixes 45089
     if (getParent().getDiskInitFile().hasKrf(this.oplogId)) {
-      FileUtils.copyFileToDirectory(this.getKrfFile(), targetDir);
+      if (this.getKrfFile().exists()) {
+        FileUtils.copyFileToDirectory(this.getKrfFile(), targetDir);
+      }
     }
   }
 
