@@ -14,10 +14,25 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -26,18 +41,17 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * TODO : Add more tests for error-catch, different type of results etc
  */
 @Category(IntegrationTest.class)
 public class HeadlessGfshIntegrationTest {
+  private int port;
+  private DistributedSystem ds;
+  private GemFireCacheImpl cache;
+  private HeadlessGfsh gfsh;
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -45,11 +59,9 @@ public class HeadlessGfshIntegrationTest {
   @Rule
   public TestName testName = new TestName();
 
-  @SuppressWarnings({"deprecation"})
-  @Test
-  public void testHeadlessGfshTest()
-      throws ClassNotFoundException, IOException, InterruptedException {
-    int port = getRandomAvailablePort(SOCKET);
+  @Before
+  public void setup() throws IOException, ClassNotFoundException {
+    port = getRandomAvailablePort(SOCKET);
 
     Properties properties = new Properties();
     properties.put(NAME, this.testName.getMethodName());
@@ -59,11 +71,24 @@ public class HeadlessGfshIntegrationTest {
     properties.put(HTTP_SERVICE_PORT, "0");
     properties.put(MCAST_PORT, "0");
 
-    DistributedSystem ds = DistributedSystem.connect(properties);
-    GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.create(ds);
+    ds = DistributedSystem.connect(properties);
+    cache = (GemFireCacheImpl) CacheFactory.create(ds);
 
-    HeadlessGfsh gfsh = new HeadlessGfsh("Test", 25,
+    gfsh = new HeadlessGfsh("Test", 25,
         this.temporaryFolder.newFolder("gfsh_files").getCanonicalPath());
+  }
+
+  @SuppressWarnings({"deprecation"})
+  @After
+  public void cleanup() {
+    gfsh.terminate();
+    cache.close();
+    ds.disconnect();
+  }
+
+  @Test
+  public void testHeadlessGfshTest() throws InterruptedException {
+
     for (int i = 0; i < 5; i++) {
       gfsh.executeCommand("connect --jmx-manager=localhost[" + port + "]");
       Object result = gfsh.getResult();
@@ -83,9 +108,19 @@ public class HeadlessGfshIntegrationTest {
     gfsh.getResult();
     long l3 = System.currentTimeMillis();
     System.out.println("L3-l2=" + (l3 - l2) + " Total time= " + (l3 - l1) / 1000);
-    gfsh.terminate();
-    cache.close();
-    ds.disconnect();
   }
 
+  @Test
+  public void testStringResultReturnedAsCommandResult() throws InterruptedException {
+    gfsh.clear();
+    gfsh.executeCommand("list members");
+
+    LinkedBlockingQueue headlessQueue = gfsh.getQueue();
+    headlessQueue.clear();
+    headlessQueue.put("ERROR RESULT");
+    Object result = gfsh.getResult();
+    assertNotNull(result);
+    assertTrue(((CommandResult) result).getStatus() == Result.Status.ERROR);
+    System.out.println(((CommandResult) result).toString());
+  }
 }
