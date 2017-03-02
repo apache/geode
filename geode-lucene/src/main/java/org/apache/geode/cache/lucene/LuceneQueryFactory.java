@@ -14,17 +14,22 @@
  */
 package org.apache.geode.cache.lucene;
 
+import org.apache.geode.cache.query.Query;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 
 /**
- * Factory for creating instances of {@link LuceneQuery}. To get an instance of this factory call
+ * Factory for configuring a Lucene query. Use this factory to set parameters of the query such as
+ * page size, result limit, and query expression. To get an instance of this factory call
  * {@link LuceneService#createLuceneQueryFactory}.
  * <P>
- * To use this factory configure it with the <code>set</code> methods and then call {@link #create}
- * to produce a {@link LuceneQuery} instance.
- * 
+ * To use this factory configure it with the <code>set</code> methods and then call one of the
+ * create methods on this class. {@link #create(String, String, String, String)} creates a query by
+ * parsing a query string. {@link #create(String, String, LuceneQueryProvider)} creates a query
+ * based on a custom Lucene {@link Query} object.
+ *
  */
 @Experimental
 public interface LuceneQueryFactory {
@@ -40,32 +45,34 @@ public interface LuceneQueryFactory {
   public static final int DEFAULT_PAGESIZE = 0;
 
   /**
-   * Set page size for a query result. The default page size is 0 which means no pagination. If
-   * specified negative value, throw IllegalArgumentException
-   * 
+   * Set page size for a query result. The default page size is 0 which means no pagination.
+   *
    * @param pageSize
    * @return itself
+   * @throws IllegalArgumentException if the value is less than 0
    */
   LuceneQueryFactory setPageSize(int pageSize);
 
   /**
-   * Set max limit of result for a query If specified limit is less or equal to zero, throw
-   * IllegalArgumentException
-   * 
+   * Set maximum number of results for a query. By default, the limit is set to
+   * {@link #DEFAULT_LIMIT} which is 100.
+   *
    * @param limit
    * @return itself
+   * @throws IllegalArgumentException if the value is less than or equal to zero.
    */
   LuceneQueryFactory setResultLimit(int limit);
 
   /**
-   * Create wrapper object for lucene's QueryParser object using default standard analyzer. The
-   * queryString is using lucene QueryParser's syntax. QueryParser is for easy-to-use with human
-   * understandable syntax.
-   * 
+   * Creates a query based on a query string which is parsed by Lucene's
+   * {@link StandardQueryParser}. See the javadocs for {@link StandardQueryParser} for details on
+   * the syntax of the query string. The query string and default field as passed as is to
+   * {@link StandardQueryParser#parse(String, String)}
+   *
    * @param regionName region name
    * @param indexName index name
-   * @param queryString query string in lucene QueryParser's syntax
-   * @param defaultField default field used by the Lucene Query Parser
+   * @param queryString Query string parsed by Lucene's StandardQueryParser
+   * @param defaultField default field used by the Lucene's StandardQueryParser
    * @param <K> the key type in the query results
    * @param <V> the value type in the query results
    * @return LuceneQuery object
@@ -74,13 +81,29 @@ public interface LuceneQueryFactory {
       String defaultField);
 
   /**
-   * Creates a wrapper object for Lucene's Query object. This {@link LuceneQuery} builder method
-   * could be used in advanced cases, such as cases where Lucene's Query object construction needs
-   * Lucene's API over query string.
+   * <p>
+   * Create a query based on a programatically constructed Lucene {@link Query}. This can be used
+   * for queries that are not covered by {@link StandardQueryParser}, such as range queries.
+   * </p>
+   * <p>
+   * Because Geode may execute the Lucene query on multiple nodes in parallel and {@link Query} is
+   * not serializable, this method requires a serializable {@link LuceneQueryProvider} that can
+   * create a {@link Query} on the nodes hosting the Lucene index.
+   * </p>
+   * <p>
+   * Here's an example of using this method to create a range query on an integer field called
+   * "age."
+   * </p>
    * 
+   * <pre>
+   * {@code
+   *   LuceneQuery query = factory.create("index", "region", index -> IntPoint.newRangeQuery("age", 20, 30))
+   * }
+   * </pre>
+   *
    * @param indexName index name
    * @param regionName region name
-   * @param provider constructs and provides a Lucene Query object
+   * @param provider constructs and provides a Lucene {@link Query}.
    * @param <K> the key type in the query results
    * @param <V> the value type in the query results
    * @return LuceneQuery object
