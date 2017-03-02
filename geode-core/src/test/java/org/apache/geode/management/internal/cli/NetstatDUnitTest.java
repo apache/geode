@@ -24,6 +24,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -40,6 +41,7 @@ public class NetstatDUnitTest {
   private static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
   private static String netStatCommand = null;
+  private static String netStatLsofCommand = null;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -67,7 +69,8 @@ public class NetstatDUnitTest {
     // start another server
     lsRule.startServerVM(3, properties);
 
-    netStatCommand = "netstat --with-lsof=true --member=" + server.getName();
+    netStatCommand = "netstat --with-lsof=false --member=" + server.getName();
+    netStatLsofCommand = "netstat --with-lsof=true --member=" + server.getName();
   }
 
   @Test
@@ -86,6 +89,27 @@ public class NetstatDUnitTest {
   public void testConnectToJmxManagerTwo() throws Exception {
     gfshConnector.connect(ports[2], GfshShellConnectionRule.PortType.jmxManger);
     gfshConnector.executeAndVerifyCommand(netStatCommand);
+  }
+
+  @Ignore
+  @Test
+  public void testConnectToLocatorWithLargeCommandResponse() throws Exception {
+    gfshConnector.connect(ports[0], GfshShellConnectionRule.PortType.locator);
+    gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
+  }
+
+  @Ignore
+  @Test
+  public void testConnectToJmxManagerOneWithLargeCommandResponse() throws Exception {
+    gfshConnector.connect(ports[1], GfshShellConnectionRule.PortType.jmxManger);
+    gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
+  }
+
+  @Ignore
+  @Test
+  public void testConnectToJmxManagerTwoWithLargeCommandResponse() throws Exception {
+    gfshConnector.connect(ports[2], GfshShellConnectionRule.PortType.jmxManger);
+    gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
   }
 
   @After
