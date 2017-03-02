@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
@@ -72,23 +73,11 @@ public class LuceneQueryFunction implements Function, InternalEntity {
       throw new IllegalArgumentException("Missing query provider");
     }
 
-    LuceneService service = LuceneServiceProvider.get(region.getCache());
-    LuceneIndexImpl index =
-        (LuceneIndexImpl) service.getIndex(searchContext.getIndexName(), region.getFullPath());
-    if (index == null) {
-      throw new InternalFunctionInvocationTargetException(
-          "Index for Region:" + region.getFullPath() + " was not found");
-    }
+    LuceneIndexImpl index = getLuceneIndex(region, searchContext);
     RepositoryManager repoManager = index.getRepositoryManager();
     LuceneIndexStats stats = index.getIndexStats();
 
-    Query query = null;
-    try {
-      query = queryProvider.getQuery(index);
-    } catch (LuceneQueryException e) {
-      logger.warn("", e);
-      throw new FunctionException(e);
-    }
+    Query query = getQuery(queryProvider, index);
 
     if (logger.isDebugEnabled()) {
       logger.debug("Executing lucene query: {}, on region {}", query, region.getFullPath());
@@ -123,10 +112,39 @@ public class LuceneQueryFunction implements Function, InternalEntity {
       }
       stats.incNumberOfQueryExecuted();
       resultSender.lastResult(mergedResult);
-    } catch (IOException | BucketNotFoundException e) {
+    } catch (IOException | BucketNotFoundException | CacheClosedException e) {
       logger.debug("Exception during lucene query function", e);
       throw new InternalFunctionInvocationTargetException(e);
     }
+  }
+
+  private LuceneIndexImpl getLuceneIndex(final Region region,
+      final LuceneFunctionContext<IndexResultCollector> searchContext) {
+    LuceneService service = LuceneServiceProvider.get(region.getCache());
+    LuceneIndexImpl index = null;
+    try {
+      index =
+          (LuceneIndexImpl) service.getIndex(searchContext.getIndexName(), region.getFullPath());
+    } catch (CacheClosedException e) {
+      throw new InternalFunctionInvocationTargetException(
+          "Cache is closed when attempting to retrieve index:" + region.getFullPath(), e);
+    }
+    if (index == null) {
+      throw new InternalFunctionInvocationTargetException(
+          "Index for Region:" + region.getFullPath() + " was not found");
+    }
+    return index;
+  }
+
+  private Query getQuery(final LuceneQueryProvider queryProvider, final LuceneIndexImpl index) {
+    Query query = null;
+    try {
+      query = queryProvider.getQuery(index);
+    } catch (LuceneQueryException e) {
+      logger.warn("", e);
+      throw new FunctionException(e);
+    }
+    return query;
   }
 
 

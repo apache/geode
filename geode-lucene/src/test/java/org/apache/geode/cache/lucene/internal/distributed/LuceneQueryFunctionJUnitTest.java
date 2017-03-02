@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultSender;
@@ -38,6 +39,7 @@ import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -208,15 +210,36 @@ public class LuceneQueryFunctionJUnitTest {
     function.execute(mockContext);
   }
 
-  @Test(expected = FunctionException.class)
+  @Test(expected = InternalFunctionInvocationTargetException.class)
   public void whenServiceReturnsNullIndexDuringQueryExecutionFunctionExceptionShouldBeThrown()
       throws Exception {
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
+
     LuceneQueryFunction function = new LuceneQueryFunction();
-
     when(mockService.getIndex(eq("indexName"), eq(regionPath))).thenReturn(null);
+    function.execute(mockContext);
+  }
 
+  @Test(expected = InternalFunctionInvocationTargetException.class)
+  public void whenServiceThrowsCacheClosedDuringQueryExecutionFunctionExceptionShouldBeThrown()
+      throws Exception {
+    when(mockContext.getDataSet()).thenReturn(mockRegion);
+    when(mockContext.getArguments()).thenReturn(searchArgs);
+
+    LuceneQueryFunction function = new LuceneQueryFunction();
+    when(mockService.getIndex(eq("indexName"), eq(regionPath)))
+        .thenThrow(new CacheClosedException());
+    function.execute(mockContext);
+  }
+
+  @Test(expected = InternalFunctionInvocationTargetException.class)
+  public void whenCacheIsClosedDuringLuceneQueryExecutionInternalFunctionShouldBeThrownToTriggerFunctionServiceRetry()
+      throws Exception {
+    when(mockContext.getDataSet()).thenReturn(mockRegion);
+    when(mockContext.getArguments()).thenReturn(searchArgs);
+    LuceneQueryFunction function = new LuceneQueryFunction();
+    when(mockRepoManager.getRepositories(eq(mockContext))).thenThrow(new CacheClosedException());
     function.execute(mockContext);
   }
 
