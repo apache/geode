@@ -20,8 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.Locator;
-import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Before;
 import org.junit.Rule;
@@ -47,7 +46,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
   public void testDeployToNoServer() throws Exception {
     String clusterJarPath = clusterJar;
     // set up the locator/servers
-    Locator locator = lsRule.startLocatorVM(0, locatorProps);
+    MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
 
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
@@ -59,18 +58,18 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
     expectedClusterConfig.verify(locator);
 
     // start a server and verify that the server gets the jar
-    Server server1 = lsRule.startServerVM(1, locator.getPort());
+    MemberVM server1 = lsRule.startServerVM(1, locator.getPort());
     expectedClusterConfig.verify(server1);
   }
 
   @Test
   public void testDeployToMultipleLocators() throws Exception {
-    Locator locator = lsRule.startLocatorVM(0, locatorProps);
+    MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
     locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
-    Locator locator2 = lsRule.startLocatorVM(1, locatorProps);
+    MemberVM locator2 = lsRule.startLocatorVM(1, locatorProps);
     locatorProps.setProperty(LOCATORS,
         "localhost[" + locator.getPort() + "],localhost[" + locator2.getPort() + "]");
-    Locator locator3 = lsRule.startLocatorVM(2, locatorProps);
+    MemberVM locator3 = lsRule.startLocatorVM(2, locatorProps);
 
     // has to start a server in order to run deploy command
     lsRule.startServerVM(3, serverProps, locator.getPort());
@@ -92,15 +91,15 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
   @Test
   public void testDeploy() throws Exception {
     // set up the locator/servers
-    Locator locator = lsRule.startLocatorVM(0, locatorProps);
+    MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
     // server1 in no group
-    Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+    MemberVM server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
     // server2 in group1
     serverProps.setProperty(GROUPS, "group1");
-    Server server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
+    MemberVM server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
     // server3 in group1 and group2
     serverProps.setProperty(GROUPS, "group1,group2");
-    Server server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
+    MemberVM server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
 
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
@@ -138,13 +137,13 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
   @Test
   public void testUndeploy() throws Exception {
     // set up the locator/servers
-    Locator locator = lsRule.startLocatorVM(0, locatorProps);
+    MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
     serverProps.setProperty(GROUPS, "group1");
-    Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+    MemberVM server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
     serverProps.setProperty(GROUPS, "group2");
-    Server server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
+    MemberVM server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
     serverProps.setProperty(GROUPS, "group1,group2");
-    Server server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
+    MemberVM server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
 
     ConfigGroup cluster = new ConfigGroup("cluster");
     ConfigGroup group1 = new ConfigGroup("group1");

@@ -53,7 +53,8 @@ public abstract class AbstractSecureServerDUnitTest extends JUnit4DistributedTes
   protected boolean pdxPersistent = false;
 
   @Rule
-  public transient ServerStarterRule serverStarter = new ServerStarterRule();
+  public transient ServerStarterRule serverStarter =
+      new ServerStarterRule().startServer(getProperties(), 0, pdxPersistent);
 
   // overwrite this in child classes
   public Properties getProperties() {
@@ -77,10 +78,9 @@ public abstract class AbstractSecureServerDUnitTest extends JUnit4DistributedTes
 
   @Before
   public void before() throws Exception {
-    serverStarter.startServer(getProperties(), 0, pdxPersistent);
-    serverPort = serverStarter.server.getPort();
+    serverPort = serverStarter.getServer().getPort();
     Region region =
-        serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+        serverStarter.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
     for (Entry entry : getData().entrySet()) {
       region.put(entry.getKey(), entry.getValue());
     }

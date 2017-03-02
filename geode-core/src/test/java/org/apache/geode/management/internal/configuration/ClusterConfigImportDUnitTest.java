@@ -25,9 +25,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,27 +48,27 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
 
   public static final ClusterConfig INITIAL_CONFIG = new ClusterConfig(new ConfigGroup("cluster"));
 
-  private Locator locator;
+  private MemberVM locatorVM;
 
   @Before
   public void before() throws Exception {
     super.before();
-    locator = lsRule.startLocatorVM(0, locatorProps);
-    INITIAL_CONFIG.verify(locator);
+    locatorVM = lsRule.startLocatorVM(0, locatorProps);
+    INITIAL_CONFIG.verify(locatorVM);
 
-    gfshConnector.connect(locator);
+    gfshConnector.connect(locatorVM);
     assertThat(gfshConnector.isConnected()).isTrue();
   }
 
   @Test
   public void testImportWithRunningServerWithRegion() throws Exception {
-    Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+    MemberVM server1 = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
     // create another server as well
-    Server server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
+    MemberVM server2 = lsRule.startServerVM(2, serverProps, locatorVM.getPort());
     String regionName = "regionA";
     server1.invoke(() -> {
       // this region will be created on both servers, but we should only be getting the name once.
-      Cache cache = LocatorServerStartupRule.serverStarter.cache;
+      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     });
 
@@ -82,10 +81,10 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
 
   @Test
   public void testImportWithRunningServer() throws Exception {
-    Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+    MemberVM server1 = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
 
     serverProps.setProperty("groups", "group2");
-    Server server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
+    MemberVM server2 = lsRule.startServerVM(2, serverProps, locatorVM.getPort());
 
     // even though we have a region recreated, we can still import since there is no data
     // in the region
@@ -105,39 +104,39 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
         "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
 
     // Make sure that a backup of the old clusterConfig was created
-    assertThat(locator.getWorkingDir().listFiles())
+    assertThat(locatorVM.getWorkingDir().listFiles())
         .filteredOn((File file) -> file.getName().contains("cluster_config")).hasSize(2);
 
-    CONFIG_FROM_ZIP.verify(locator);
+    CONFIG_FROM_ZIP.verify(locatorVM);
 
     // start server1 with no group
-    Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+    MemberVM server1 = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
     new ClusterConfig(CLUSTER).verify(server1);
 
     // start server2 in group1
     serverProps.setProperty(GROUPS, "group1");
-    Server server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
+    MemberVM server2 = lsRule.startServerVM(2, serverProps, locatorVM.getPort());
     new ClusterConfig(CLUSTER, GROUP1).verify(server2);
 
     // start server3 in group1 and group2
     serverProps.setProperty(GROUPS, "group1,group2");
-    Server server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
+    MemberVM server3 = lsRule.startServerVM(3, serverProps, locatorVM.getPort());
     new ClusterConfig(CLUSTER, GROUP1, GROUP2).verify(server3);
   }
 
   @Test
   public void testImportWithMultipleLocators() throws Exception {
-    locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
-    Locator locator1 = lsRule.startLocatorVM(1, locatorProps);
+    locatorProps.setProperty(LOCATORS, "localhost[" + locatorVM.getPort() + "]");
+    MemberVM locator1 = lsRule.startLocatorVM(1, locatorProps);
 
     locatorProps.setProperty(LOCATORS,
-        "localhost[" + locator.getPort() + "],localhost[" + locator1.getPort() + "]");
-    Locator locator2 = lsRule.startLocatorVM(2, locatorProps);
+        "localhost[" + locatorVM.getPort() + "],localhost[" + locator1.getPort() + "]");
+    MemberVM locator2 = lsRule.startLocatorVM(2, locatorProps);
 
     gfshConnector.executeAndVerifyCommand(
         "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
 
-    CONFIG_FROM_ZIP.verify(locator);
+    CONFIG_FROM_ZIP.verify(locatorVM);
     REPLICATED_CONFIG_FROM_ZIP.verify(locator1);
     REPLICATED_CONFIG_FROM_ZIP.verify(locator2);
   }
@@ -156,7 +155,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
   }
 
   public void testExportClusterConfig(String zipFilePath) throws Exception {
-    Server server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+    MemberVM server1 = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
 
 
     gfshConnector.executeAndVerifyCommand("create region --name=myRegion --type=REPLICATE");
@@ -164,7 +163,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
     ConfigGroup cluster = new ConfigGroup("cluster").regions("myRegion");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
     expectedClusterConfig.verify(server1);
-    expectedClusterConfig.verify(locator);
+    expectedClusterConfig.verify(locatorVM);
 
     gfshConnector
         .executeAndVerifyCommand("export cluster-configuration --zip-file-name=" + zipFilePath);

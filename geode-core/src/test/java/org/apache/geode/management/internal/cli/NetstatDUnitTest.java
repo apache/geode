@@ -18,7 +18,7 @@ package org.apache.geode.management.internal.cli;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.After;
@@ -58,7 +58,7 @@ public class NetstatDUnitTest {
     // start server with jmx Manager as well
     properties.remove("start-locator");
     properties.setProperty("jmx-manager-port", ports[2] + "");
-    Server server = lsRule.startServerVM(1, properties);
+    MemberVM server = lsRule.startServerVM(1, properties);
 
     // start server with no jmx Manager
     properties.setProperty("jmx-manager", "false");

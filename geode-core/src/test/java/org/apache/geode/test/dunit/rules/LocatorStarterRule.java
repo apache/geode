@@ -21,17 +21,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.Locator.startLocatorAndDS;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.awaitility.Awaitility;
-import org.junit.rules.ExternalResource;
 
 import java.io.File;
-import java.io.Serializable;
-import java.nio.file.Files;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -47,12 +44,9 @@ import java.util.concurrent.TimeUnit;
  * use {@link LocatorServerStartupRule}.
  */
 
-public class LocatorStarterRule extends ExternalResource implements Serializable {
+public class LocatorStarterRule extends MemberStarterRule implements Locator {
 
-  public InternalLocator locator;
-
-  private File workingDir;
-  private String oldUserDir;
+  private transient InternalLocator locator;
 
   public LocatorStarterRule() {}
 
@@ -60,42 +54,29 @@ public class LocatorStarterRule extends ExternalResource implements Serializable
     this.workingDir = workingDir.getAbsoluteFile();
   }
 
-  @Override
-  protected void before() throws Exception {
-    oldUserDir = System.getProperty("user.dir");
-    if (workingDir == null) {
-      workingDir = Files.createTempDirectory("locator").toAbsolutePath().toFile();
-    }
-    System.setProperty("user.dir", workingDir.toString());
+  public InternalLocator getLocator() {
+    return locator;
   }
 
   @Override
-  protected void after() {
+  protected void stopMember() {
     if (locator != null) {
       locator.stop();
     }
-    FileUtils.deleteQuietly(workingDir);
-    if (oldUserDir == null) {
-      System.clearProperty("user.dir");
-    } else {
-      System.setProperty("user.dir", oldUserDir);
-    }
   }
 
-
-  public org.apache.geode.test.dunit.rules.Locator startLocator() throws Exception {
+  public LocatorStarterRule startLocator() {
     return startLocator(new Properties());
   }
 
-  public org.apache.geode.test.dunit.rules.Locator startLocator(Properties properties)
-      throws Exception {
+  public LocatorStarterRule startLocator(Properties properties) {
     if (properties == null)
       properties = new Properties();
     if (!properties.containsKey(NAME)) {
       properties.setProperty(NAME, "locator");
     }
 
-    String name = properties.getProperty(NAME);
+    name = properties.getProperty(NAME);
     if (!properties.containsKey(LOG_FILE)) {
       properties.setProperty(LOG_FILE, new File(name + ".log").getAbsolutePath());
     }
@@ -104,7 +85,7 @@ public class LocatorStarterRule extends ExternalResource implements Serializable
       properties.setProperty(MCAST_PORT, "0");
     }
     if (properties.containsKey(JMX_MANAGER_PORT)) {
-      int jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
+      jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
       if (jmxPort > 0) {
         if (!properties.containsKey(JMX_MANAGER)) {
           properties.put(JMX_MANAGER, "true");
@@ -114,15 +95,18 @@ public class LocatorStarterRule extends ExternalResource implements Serializable
         }
       }
     }
-
-    locator = (InternalLocator) Locator.startLocatorAndDS(0, null, properties);
-    int locatorPort = locator.getPort();
-    locator.resetInternalLocatorFileNamesWithCorrectPortNumber(locatorPort);
+    try {
+      locator = (InternalLocator) startLocatorAndDS(0, null, properties);
+    } catch (IOException e) {
+      throw new RuntimeException("unable to start up locator.", e);
+    }
+    memberPort = locator.getPort();
+    locator.resetInternalLocatorFileNamesWithCorrectPortNumber(memberPort);
 
     if (locator.getConfig().getEnableClusterConfiguration()) {
       Awaitility.await().atMost(65, TimeUnit.SECONDS)
           .until(() -> assertTrue(locator.isSharedConfigurationRunning()));
     }
-    return new org.apache.geode.test.dunit.rules.Locator(locatorPort, workingDir, name);
+    return this;
   }
 }

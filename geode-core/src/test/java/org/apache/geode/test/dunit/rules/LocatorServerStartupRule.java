@@ -55,7 +55,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       new DistributedRestoreSystemProperties();
 
   private TemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
-  private Member[] members;
+  private MemberVM[] members;
 
   public LocatorServerStartupRule() {
     DUnitLauncher.launchIfNeeded();
@@ -66,7 +66,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     restoreSystemProperties.before();
     temporaryFolder.create();
     Invoke.invokeInEveryVM("Stop each VM", this::cleanupVm);
-    members = new Member[4];
+    members = new MemberVM[4];
   }
 
   @Override
@@ -77,7 +77,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     temporaryFolder.delete();
   }
 
-  public Locator startLocatorVM(int index) throws IOException {
+  public MemberVM startLocatorVM(int index) throws IOException {
     return startLocatorVM(index, new Properties());
   }
 
@@ -87,7 +87,8 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    *
    * @return VM locator vm
    */
-  public Locator startLocatorVM(int index, Properties locatorProperties) throws IOException {
+  public MemberVM<Locator> startLocatorVM(int index, Properties locatorProperties)
+      throws IOException {
     String name = "locator-" + index;
     locatorProperties.setProperty(NAME, name);
     File workingDir = createWorkingDirForMember(name);
@@ -97,12 +98,11 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       locatorStarter.before();
       return locatorStarter.startLocator(locatorProperties);
     });
-    locator.setVM(locatorVM);
-    members[index] = locator;
-    return locator;
+    members[index] = new MemberVM(locator, locatorVM);
+    return members[index];
   }
 
-  public Server startServerVM(int index) throws IOException {
+  public MemberVM startServerVM(int index) throws IOException {
     return startServerVM(index, new Properties(), -1);
   }
 
@@ -111,24 +111,21 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    * 
    * @return VM node vm
    */
-  public Server startServerVM(int index, Properties properties) throws IOException {
+  public MemberVM startServerVM(int index, Properties properties) throws IOException {
     return startServerVM(index, properties, -1);
   }
 
-  /**
-   * start a server that connects to this locatorPort
-   */
-  public Server startServerVM(int index, int locatorPort) throws IOException {
+  public MemberVM startServerVM(int index, int locatorPort) throws IOException {
     return startServerVM(index, new Properties(), locatorPort);
   }
 
-  public Server startServerAsJmxManager(int index, int jmxManagerPort) throws IOException {
+  public MemberVM startServerAsJmxManager(int index, int jmxManagerPort) throws IOException {
     Properties properties = new Properties();
     properties.setProperty(JMX_MANAGER_PORT, jmxManagerPort + "");
     return startServerVM(index, properties);
   }
 
-  public Server startServerAsEmbededLocator(int index, int locatorPort, int jmxManagerPort)
+  public MemberVM startServerAsEmbededLocator(int index, int locatorPort, int jmxManagerPort)
       throws IOException {
     Properties properties = new Properties();
     properties.setProperty("start-locator", "localhost[" + locatorPort + "]");
@@ -141,7 +138,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   /**
    * Starts a cache server that connect to the locator running at the given port.
    */
-  public Server startServerVM(int index, Properties properties, int locatorPort)
+  public MemberVM startServerVM(int index, Properties properties, int locatorPort)
       throws IOException {
 
     String name = "server-" + index;
@@ -154,9 +151,8 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       serverStarter.before();
       return serverStarter.startServer(properties, locatorPort);
     });
-    server.setVM(serverVM);
-    members[index] = server;
-    return server;
+    members[index] = new MemberVM(server, serverVM);
+    return members[index];
   }
 
   /**

@@ -22,9 +22,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,7 +40,7 @@ import java.util.Properties;
 public class MergeLogsDUnitTest {
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
-  private Locator locator;
+  private MemberVM locator;
 
   private static final String MESSAGE_1 = "MergeLogsMessage1";
   private static final String MESSAGE_2 = "MergeLogsMessage2";
@@ -59,8 +58,8 @@ public class MergeLogsDUnitTest {
     properties.setProperty(DistributionConfig.LOCATORS_NAME,
         "localhost[" + locator.getPort() + "]");
 
-    Server server = lsRule.startServerVM(1, properties);
-    Server server2 = lsRule.startServerVM(2, properties);
+    MemberVM server = lsRule.startServerVM(1, properties);
+    MemberVM server2 = lsRule.startServerVM(2, properties);
 
     locator.invoke(() -> LogService.getLogger().info(MESSAGE_1));
     server.invoke(() -> LogService.getLogger().info(MESSAGE_2));

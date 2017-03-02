@@ -23,16 +23,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.junit.rules.ExternalResource;
 
 import java.io.File;
-import java.io.Serializable;
-import java.nio.file.Files;
+import java.io.IOException;
 import java.util.Properties;
 
 
@@ -50,61 +47,79 @@ import java.util.Properties;
  * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
  * use {@link LocatorServerStartupRule}.
  */
-public class ServerStarterRule extends ExternalResource implements Serializable {
+public class ServerStarterRule extends MemberStarterRule implements Server {
 
-  public Cache cache;
-  public CacheServer server;
-
-  private File workingDir;
-  private String oldUserDir;
+  private transient Cache cache;
+  private transient CacheServer server;
 
   /**
-   * Default constructor, if used, the rule won't start the server for you, you will need to
-   * manually start it. The rule will handle stop the server for you.
+   * Default constructor, if used, the rule will create a temporary folder as the server's working
+   * dir, and will delete it when the test is done.
    */
   public ServerStarterRule() {}
 
+  /**
+   * if constructed this way, the rule won't be deleting the workingDir after the test is done. It's
+   * up to the caller's responsibility to delete it.
+   * 
+   * @param workingDir: the working dir this server should be writing the artifacts to.
+   */
   public ServerStarterRule(File workingDir) {
     this.workingDir = workingDir;
   }
 
-  public void before() throws Exception {
-    oldUserDir = System.getProperty("user.dir");
-    if (workingDir == null) {
-      workingDir = Files.createTempDirectory("server").toAbsolutePath().toFile();
-    }
-    System.setProperty("user.dir", workingDir.toString());
+  public Cache getCache() {
+    return cache;
   }
 
-  public Server startServer() throws Exception {
+  public CacheServer getServer() {
+    return server;
+  }
+
+  @Override
+  void stopMember() {
+    // make sure this cache is the one currently open. A server cache can be recreated due to
+    // importing a new set of cluster configuration.
+    cache = GemFireCacheImpl.getInstance();
+    if (cache != null) {
+      cache.close();
+      cache = null;
+    }
+    if (server != null) {
+      server.stop();
+      server = null;
+    }
+  }
+
+  public ServerStarterRule startServer() {
     return startServer(new Properties(), -1, false);
   }
 
-  public Server startServer(int locatorPort) throws Exception {
+  public ServerStarterRule startServer(int locatorPort) {
     return startServer(new Properties(), locatorPort, false);
   }
 
-  public Server startServer(int locatorPort, boolean pdxPersistent) throws Exception {
+  public ServerStarterRule startServer(int locatorPort, boolean pdxPersistent) {
     return startServer(new Properties(), locatorPort, pdxPersistent);
   }
 
-  public Server startServer(Properties properties) throws Exception {
+  public ServerStarterRule startServer(Properties properties) {
     return startServer(properties, -1, false);
   }
 
-  public Server startServer(Properties properties, int locatorPort) throws Exception {
+  public ServerStarterRule startServer(Properties properties, int locatorPort) {
     return startServer(properties, locatorPort, false);
   }
 
-  public Server startServer(Properties properties, int locatorPort, boolean pdxPersistent)
-      throws Exception {
+  public ServerStarterRule startServer(Properties properties, int locatorPort,
+      boolean pdxPersistent) {
     if (properties == null) {
       properties = new Properties();
     }
     if (!properties.containsKey(NAME)) {
       properties.setProperty(NAME, "server");
     }
-    String name = properties.getProperty(NAME);
+    name = properties.getProperty(NAME);
     if (!properties.containsKey(LOG_FILE)) {
       properties.setProperty(LOG_FILE, new File(name + ".log").getAbsolutePath().toString());
     }
@@ -120,7 +135,7 @@ public class ServerStarterRule extends ExternalResource implements Serializable 
       properties.setProperty(LOCATORS, "");
     }
     if (properties.containsKey(JMX_MANAGER_PORT)) {
-      int jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
+      jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
       if (jmxPort > 0) {
         if (!properties.containsKey(JMX_MANAGER))
           properties.put(JMX_MANAGER, "true");
@@ -134,28 +149,12 @@ public class ServerStarterRule extends ExternalResource implements Serializable 
     cache = cf.create();
     server = cache.addCacheServer();
     server.setPort(0);
-    server.start();
-    return new Server(server.getPort(), workingDir, name);
-  }
-
-  @Override
-  public void after() {
-    // make sure this cache is the one currently open. A server cache can be recreated due to
-    // importing a new set of cluster configuration.
-    cache = GemFireCacheImpl.getInstance();
-    if (cache != null) {
-      cache.close();
-      cache = null;
+    try {
+      server.start();
+    } catch (IOException e) {
+      throw new RuntimeException("unable to start server", e);
     }
-    if (server != null) {
-      server.stop();
-      server = null;
-    }
-    FileUtils.deleteQuietly(workingDir);
-    if (oldUserDir == null) {
-      System.clearProperty("user.dir");
-    } else {
-      System.setProperty("user.dir", oldUserDir);
-    }
+    memberPort = server.getPort();
+    return this;
   }
 }

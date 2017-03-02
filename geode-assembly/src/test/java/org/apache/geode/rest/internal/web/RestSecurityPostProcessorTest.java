@@ -65,14 +65,13 @@ public class RestSecurityPostProcessorTest {
   };
 
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule();
+  public static ServerStarterRule serverStarter = new ServerStarterRule().startServer(properties);
   private final GeodeRestClient restClient = new GeodeRestClient("localhost", restPort);
 
   @BeforeClass
   public static void before() throws Exception {
-    serverStarter.startServer(properties);
     Region region =
-        serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("customers");
+        serverStarter.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("customers");
     region.put("1", new Customer(1L, "John", "Doe", "555555555"));
     region.put("2", new Customer(2L, "Richard", "Roe", "222533554"));
     region.put("3", new Customer(3L, "Jane", "Doe", "555223333"));
