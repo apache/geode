@@ -81,6 +81,11 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   }
 
+  @Override
+  public Cache getCache() {
+    return this.cache;
+  }
+
   public void init(final Cache cache) {
     if (cache == null) {
       throw new IllegalStateException(LocalizedStrings.CqService_CACHE_IS_NULL.toLocalizedString());

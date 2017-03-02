@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.Cache;
 import org.apache.lucene.analysis.Analyzer;
 
 import org.apache.geode.annotations.Experimental;
@@ -136,6 +137,14 @@ public interface LuceneService {
    * @return LuceneQueryFactory object
    */
   public LuceneQueryFactory createLuceneQueryFactory();
+
+  /**
+   * returns the cache to which the LuceneService belongs
+   *
+   * @return Cache
+   */
+  public Cache getCache();
+
 
   /**
    * wait until the current entries in cache are indexed

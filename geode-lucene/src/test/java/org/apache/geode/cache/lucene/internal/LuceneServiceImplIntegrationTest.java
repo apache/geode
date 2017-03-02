@@ -34,6 +34,7 @@ import org.junit.rules.ExpectedException;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @Category(IntegrationTest.class)
 public class LuceneServiceImplIntegrationTest {
@@ -50,6 +51,14 @@ public class LuceneServiceImplIntegrationTest {
     clientCache = getClientCache();
     LuceneService luceneService = LuceneServiceProvider.get(clientCache);
     assertNotNull(luceneService);
+  }
+
+  @Test
+  public void getCacheShouldReturnTheCorrectCache() {
+    cache = getCache();
+    new LuceneServiceImpl().init(cache);
+    LuceneService service = LuceneServiceProvider.get(cache);
+    assertTrue(service.getCache().equals(cache));
   }
 
   // lucene service will register query execution function on initialization
