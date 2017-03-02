@@ -53,15 +53,15 @@ public class GfshCommandsPostProcessorTest {
 
 
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule();
+  public static ServerStarterRule serverStarter = new ServerStarterRule().startServer(properties);
+
   @Rule
   public GfshShellConnectionRule gfshConnection =
       new GfshShellConnectionRule(jmxPort, GfshShellConnectionRule.PortType.jmxManger);
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    serverStarter.startServer(properties);
-    serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("region1");
+    serverStarter.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("region1");
   }
 
   @Test

@@ -28,8 +28,8 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
@@ -51,7 +51,7 @@ public class ClusterConfigWithSecurityDUnitTest {
   @Rule
   public GfshShellConnectionRule connector = new GfshShellConnectionRule();
 
-  Locator locator0;
+  MemberVM locator0;
   Properties locatorProps;
 
   @Before
@@ -70,11 +70,11 @@ public class ClusterConfigWithSecurityDUnitTest {
     locatorProps.setProperty(LOCATORS, "localhost[" + locator0.getPort() + "]");
     locatorProps.setProperty("security-username", "cluster");
     locatorProps.setProperty("security-password", "cluster");
-    Locator locator1 = lsRule.startLocatorVM(1, locatorProps);
+    MemberVM locator1 = lsRule.startLocatorVM(1, locatorProps);
 
     // the second locator should inherit the first locator's security props
     locator1.invoke(() -> {
-      InternalLocator locator = LocatorServerStartupRule.locatorStarter.locator;
+      InternalLocator locator = LocatorServerStartupRule.locatorStarter.getLocator();
       ClusterConfigurationService sc = locator.getSharedConfiguration();
       Properties clusterConfigProps = sc.getConfiguration("cluster").getGemfireProperties();
       assertThat(clusterConfigProps.getProperty(SECURITY_MANAGER))
@@ -92,7 +92,7 @@ public class ClusterConfigWithSecurityDUnitTest {
         "import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
 
     locator0.invoke(() -> {
-      InternalLocator locator = LocatorServerStartupRule.locatorStarter.locator;
+      InternalLocator locator = LocatorServerStartupRule.locatorStarter.getLocator();
       ClusterConfigurationService sc = locator.getSharedConfiguration();
       Properties properties = sc.getConfiguration("cluster").getGemfireProperties();
       assertThat(properties.getProperty(MCAST_PORT)).isEqualTo("0");

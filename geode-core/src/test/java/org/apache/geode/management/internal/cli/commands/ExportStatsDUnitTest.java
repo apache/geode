@@ -28,8 +28,8 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -58,7 +58,7 @@ public class ExportStatsDUnitTest {
 
   protected static int jmxPort, httpPort;
   protected static Set<String> expectedZipEntries = new HashSet<>();
-  protected static Locator locator;
+  protected static MemberVM locator;
 
   @BeforeClass
   public static void beforeClass() throws Exception {

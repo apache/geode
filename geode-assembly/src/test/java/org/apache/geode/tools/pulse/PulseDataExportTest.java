@@ -23,8 +23,8 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.http.Consts;
@@ -64,8 +64,8 @@ public class PulseDataExportTest {
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
-  private Locator locator;
-  private org.apache.geode.test.dunit.rules.Server server;
+  private MemberVM locator;
+  private MemberVM server;
   @Rule
   public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
   private HttpClient httpClient;

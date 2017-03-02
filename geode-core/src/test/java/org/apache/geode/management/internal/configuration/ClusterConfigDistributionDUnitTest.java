@@ -30,9 +30,8 @@ import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,7 +50,7 @@ public class ClusterConfigDistributionDUnitTest {
   private static final String INDEX2 = "ID2";
   private static final String AsyncEventQueue1 = "Q1";
 
-  private Locator locator;
+  private MemberVM locator;
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
@@ -110,10 +109,10 @@ public class ClusterConfigDistributionDUnitTest {
     // Start a new member which receives the shared configuration
     // Verify the config creation on this member
 
-    Server server = lsRule.startServerVM(2, new Properties(), locator.getPort());
+    MemberVM server = lsRule.startServerVM(2, new Properties(), locator.getPort());
 
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.cache;
+      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
       assertNotNull(cache);
       assertTrue(cache.getCopyOnRead());
 

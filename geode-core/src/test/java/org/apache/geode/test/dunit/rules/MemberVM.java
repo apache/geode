@@ -15,15 +15,53 @@
 
 package org.apache.geode.test.dunit.rules;
 
+import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.dunit.VM;
+
 import java.io.File;
-import java.io.Serializable;
 
-public interface Member extends Serializable {
-  File getWorkingDir();
+public class MemberVM<T extends Member> implements Member {
+  private T member;
+  private VM vm;
 
-  int getPort();
+  public MemberVM(T member, VM vm) {
+    this.member = member;
+    this.vm = vm;
+  }
 
-  int getJmxPort();
+  public boolean isLocator() {
+    return (member instanceof Locator);
+  }
 
-  String getName();
+  public VM getVM() {
+    return vm;
+  }
+
+  public void invoke(final SerializableRunnableIF runnable) {
+    vm.invoke(runnable);
+  }
+
+  public T getMember() {
+    return member;
+  }
+
+  @Override
+  public File getWorkingDir() {
+    return member.getWorkingDir();
+  }
+
+  @Override
+  public int getPort() {
+    return member.getPort();
+  }
+
+  @Override
+  public int getJmxPort() {
+    return member.getJmxPort();
+  }
+
+  @Override
+  public String getName() {
+    return member.getName();
+  }
 }
