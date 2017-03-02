@@ -21,14 +21,14 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser;
 
 /**
- * Factory for configuring a lucene query. Use this factory to set parameters of the query such
- * as page size, result limit, and query expression. To get an instance of this factory call
+ * Factory for configuring a Lucene query. Use this factory to set parameters of the query such as
+ * page size, result limit, and query expression. To get an instance of this factory call
  * {@link LuceneService#createLuceneQueryFactory}.
  * <P>
  * To use this factory configure it with the <code>set</code> methods and then call one of the
- * create methods on this class. {@link #create(String, String, String, String)} creates a query
- * by parsing a query string. {@link #create(String, String, LuceneQueryProvider)} creates a query
- * based on a custom lucene {@link Query} object.
+ * create methods on this class. {@link #create(String, String, String, String)} creates a query by
+ * parsing a query string. {@link #create(String, String, LuceneQueryProvider)} creates a query
+ * based on a custom Lucene {@link Query} object.
  *
  */
 @Experimental
@@ -54,8 +54,8 @@ public interface LuceneQueryFactory {
   LuceneQueryFactory setPageSize(int pageSize);
 
   /**
-   * Set maximum number of results for a query. By default, the limit is set to {@link #DEFAULT_LIMIT}
-   * which is 100.
+   * Set maximum number of results for a query. By default, the limit is set to
+   * {@link #DEFAULT_LIMIT} which is 100.
    *
    * @param limit
    * @return itself
@@ -64,9 +64,10 @@ public interface LuceneQueryFactory {
   LuceneQueryFactory setResultLimit(int limit);
 
   /**
-   * Creates a query based on a query string which is parsed by Lucene's {@link StandardQueryParser}.
-   * See the javadocs for {@link StandardQueryParser} for details on the syntax of the query string.
-   * The query string and default field as passed as is to {@link StandardQueryParser#parse(String, String)}
+   * Creates a query based on a query string which is parsed by Lucene's
+   * {@link StandardQueryParser}. See the javadocs for {@link StandardQueryParser} for details on
+   * the syntax of the query string. The query string and default field as passed as is to
+   * {@link StandardQueryParser#parse(String, String)}
    *
    * @param regionName region name
    * @param indexName index name
@@ -85,13 +86,15 @@ public interface LuceneQueryFactory {
    * for queries that are not covered by {@link StandardQueryParser}, such as range queries.
    * </p>
    * <p>
-   * Because geode may execute the lucene query on multiple nodes in parallel and {@link Query} is not
-   * serializable, this method requires a serializable {@link LuceneQueryProvider} that can create a {@link Query}
-   * on the nodes hosting the Lucene index.
+   * Because Geode may execute the Lucene query on multiple nodes in parallel and {@link Query} is
+   * not serializable, this method requires a serializable {@link LuceneQueryProvider} that can
+   * create a {@link Query} on the nodes hosting the Lucene index.
    * </p>
    * <p>
-   * Here's an example of using this method to create a range query on an integer field called "age."
+   * Here's an example of using this method to create a range query on an integer field called
+   * "age."
    * </p>
+   * 
    * <pre>
    * {@code
    *   LuceneQuery query = factory.create("index", "region", index -> IntPoint.newRangeQuery("age", 20, 30))

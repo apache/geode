@@ -17,7 +17,7 @@ package org.apache.geode.cache.lucene;
 import org.apache.geode.annotations.Experimental;
 
 /**
- * A single result of a lucene query.
+ * A single result of a Lucene query.
  * 
  */
 @Experimental
@@ -36,9 +36,9 @@ public interface LuceneResultStruct<K, V> {
   public V getValue();
 
   /**
-   * Return score of the score of the entry matching the query. Scores
-   * are computed by lucene based on how closely documents match the query.
-   * See {@link org.apache.lucene.search} for details on how scores are computed.
+   * Return score the score of the entry matching the query. Scores are computed by Lucene based on
+   * how closely documents match the query. See {@link org.apache.lucene.search} for details on how
+   * scores are computed.
    *
    */
   public float getScore();

@@ -32,7 +32,7 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
 
   @Override
   public LuceneQueryFactory setPageSize(int pageSize) {
-    if(pageSize < 0) {
+    if (pageSize < 0) {
       throw new IllegalArgumentException("Page size is negative: " + pageSize);
     }
 
@@ -42,7 +42,7 @@ public class LuceneQueryFactoryImpl implements LuceneQueryFactory {
 
   @Override
   public LuceneQueryFactory setResultLimit(int limit) {
-    if(limit <= 0) {
+    if (limit <= 0) {
       throw new IllegalArgumentException("Limit is <= 0: " + limit);
     }
 

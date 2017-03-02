@@ -22,12 +22,12 @@ import java.util.List;
 
 /**
  * <p>
- * This interface allows you to retrieve a page of query results at time, using the {@link #hasNext()}
- * and {@link #next()} methods.
+ * This interface allows you to retrieve a page of query results at a time, using the
+ * {@link #hasNext()} and {@link #next()} methods.
  * </p>
  *
- * Each page is fetched individually from the server, so {@link PageableLuceneQueryResults}
- * cannot be serialized and sent to other members.
+ * Each page is fetched individually from the server, so {@link PageableLuceneQueryResults} cannot
+ * be serialized and sent to other members.
  *
  * @see LuceneQuery#findPages()
  *

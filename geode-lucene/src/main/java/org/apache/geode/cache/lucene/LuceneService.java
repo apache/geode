@@ -27,66 +27,71 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 
 /**
  *
- * The LuceneService provides the capability to create lucene indexes and execute lucene
- * queries on data stored in geode regions. The lucene indexes are automatically maintained
- * by geode whenever entries are updated in the associated regions.
+ * The LuceneService provides the capability to create Lucene indexes and execute lucene queries on
+ * data stored in Geode regions. The Lucene indexes are automatically maintained by Geode whenever
+ * entries are updated in the associated regions.
  *
  * <p>
  * To obtain an instance of LuceneService, use {@link LuceneServiceProvider#get(GemFireCache)}.
  * </p>
  * <p>
- * Lucene indexes can be created using gfsh, xml, or the java API. Below is an example of
- * creating a lucene index with the java API. The lucene index created on each member that
- * will host data for the region.
+ * Lucene indexes can be created using gfsh, xml, or the java API. Below is an example of creating a
+ * Lucene index with the java API. The Lucene index created on each member that will host data for
+ * the region.
  * </p>
+ * 
  * <pre>
- * {@code
- * LuceneIndex index = luceneService.createIndex(indexName, regionName, "field1", "field2", "field3");
+ * {
+ *   &#64;code
+ *   LuceneIndex index =
+ *       luceneService.createIndex(indexName, regionName, "field1", "field2", "field3");
  * }
  * </pre>
  * <p>
  * You can also specify what {@link Analyzer} to use for each field.
  * </p>
+ * 
  * <pre>
- * {@code
- * LuceneIndex index = luceneService.createIndex(indexName, regionName, analyzerPerField);
+ * {
+ *   &#64;code
+ *   LuceneIndex index = luceneService.createIndex(indexName, regionName, analyzerPerField);
  * }
  * </pre>
  *
- * Indexes should be created on all peers that host the region being indexed. Clients do not need
- * to define the index, they can directly execute queries using this service.
+ * Indexes should be created on all peers that host the region being indexed. Clients do not need to
+ * define the index, they can directly execute queries using this service.
  *
  * <p>
- * Queries on this service can return either the region keys, values, or both that match
- * a lucene query expression. To execute a query, start with the {@link #createLuceneQueryFactory()} method.
+ * Queries on this service can return either the region keys, values, or both that match a Lucene
+ * query expression. To execute a query, start with the {@link #createLuceneQueryFactory()} method.
  * </p>
  *
  * <pre>
- * {@code
- * LuceneQuery query = luceneService.createLuceneQueryFactory()
- *    .setLimit(200)
- *    .create(indexName, regionName, "name:John AND zipcode:97006", defaultField);
- * Collection<Object> results = query.findValues();
+ * {
+ *   &#64;code
+ *   LuceneQuery query = luceneService.createLuceneQueryFactory().setLimit(200).create(indexName,
+ *       regionName, "name:John AND zipcode:97006", defaultField);
+ *   Collection<Object> results = query.findValues();
  * }
  * </pre>
  *
  * <p>
- * The lucene index data is colocated with the region that is indexed. This means
- * that the index data will partitioned, copied, or persisted using the same configuration
- * options you provide for the region that is indexed. Queries will automatically be distributed
- * in parallel to cover all partitions of a partitioned region.
+ * The Lucene index data is colocated with the region that is indexed. This means that the index
+ * data will be partitioned, copied, or persisted using the same configuration options you provide
+ * for the region that is indexed. Queries will automatically be distributed in parallel to cover
+ * all partitions of a partitioned region.
  * </p>
  * <p>
- * Indexes are maintained asynchronously, so changes to regions may not be immediately reflected
- * in the index. This means that queries executed using this service may return stale results. Use
- * the {@link #waitUntilFlushed(String, String, long, TimeUnit)} method if you need to guarantee that
- * your query will see the latest changes, however this method should be used sparingly because it
- * is an expensive operation.
+ * Indexes are maintained asynchronously, so changes to regions may not be immediately reflected in
+ * the index. This means that queries executed using this service may return stale results. Use the
+ * {@link #waitUntilFlushed(String, String, long, TimeUnit)} method if you need to wait for your
+ * changes to be indexed before executing a query, however this method should be used sparingly
+ * because it is an expensive operation.
  * </p>
  *
  * <p>
- * Currently, only partitioned regions are supported. Creating an index on a region with {@link DataPolicy#REPLICATE}
- * will fail.
+ * Currently, only partitioned regions are supported. Creating an index on a region with
+ * {@link DataPolicy#REPLICATE} will fail.
  * </p>
  * 
  */
@@ -95,37 +100,36 @@ public interface LuceneService {
 
   /**
    * A special field name that indicates that the entire region value should be indexed. This will
-   * only work if the region value is a String or Number, in which case a lucene document will be
+   * only work if the region value is a String or Number, in which case a Lucene document will be
    * created with a single field with this name.
    */
   public String REGION_VALUE_FIELD = "__REGION_VALUE_FIELD";
 
   /**
-   * Create a lucene index using default analyzer.
+   * Create a Lucene index using default analyzer.
    * 
    * @param fields The fields of the object to index. Only fields listed here will be stored in the
    *        index. Fields should map to PDX fieldNames if the object is serialized with PDX, or to
-   *        java fields on the object otherwise. The special field name
-   *        {@link #REGION_VALUE_FIELD} indicates that the entire value should be stored as a
-   *        single field in the index.
+   *        java fields on the object otherwise. The special field name {@link #REGION_VALUE_FIELD}
+   *        indicates that the entire value should be stored as a single field in the index.
    */
   public void createIndex(String indexName, String regionPath, String... fields);
 
   /**
-   * Create a lucene index using specified {@link Analyzer} per field. Analyzers are used by
-   * lucene to tokenize your field into individual words.
+   * Create a Lucene index using specified {@link Analyzer} per field. Analyzers are used by Lucene
+   * to tokenize your field into individual words.
    * 
    * @param indexName index name
    * @param regionPath region name
    * @param analyzerPerField A map of fields to analyzers. See
-   *        {@link #createIndex(String, String, String...)} for details on valid values for
-   *        fields. Each field will be tokenized using the provided Analyzer.
+   *        {@link #createIndex(String, String, String...)} for details on valid values for fields.
+   *        Each field will be tokenized using the provided Analyzer.
    */
   public void createIndex(String indexName, String regionPath,
       Map<String, Analyzer> analyzerPerField);
 
   /**
-   * Destroy the lucene index
+   * Destroy the Lucene index
    *
    * @param indexName the name of the index to destroy
    * @param regionPath the path of the region whose index to destroy
@@ -133,14 +137,14 @@ public interface LuceneService {
   public void destroyIndex(String indexName, String regionPath);
 
   /**
-   * Destroy all the lucene indexes for the region
+   * Destroy all the Lucene indexes for the region
    *
    * @param regionPath The path of the region on which to destroy the indexes
    */
   public void destroyIndexes(String regionPath);
 
   /**
-   * Get the lucene index object specified by region name and index name
+   * Get the Lucene index object specified by region name and index name
    * 
    * @param indexName index name
    * @param regionPath region name
@@ -149,24 +153,23 @@ public interface LuceneService {
   public LuceneIndex getIndex(String indexName, String regionPath);
 
   /**
-   * get all the lucene indexes.
+   * get all the Lucene indexes.
    * 
    * @return all index objects in a Collection
    */
   public Collection<LuceneIndex> getAllIndexes();
 
   /**
-   * Create a factory for building a lucene query.
+   * Create a factory for building a Lucene query.
    */
   public LuceneQueryFactory createLuceneQueryFactory();
 
   /**
    * Wait until the current entries in cache are indexed.
    *
-   * Lucene indexes are maintained asynchronously. This means that updates to the region
-   * will not be immediately reflected in the lucene index. This method will either timeout
-   * or wait until any data put into the region before this method call is flushed to the lucene
-   * index.
+   * Lucene indexes are maintained asynchronously. This means that updates to the region will not be
+   * immediately reflected in the Lucene index. This method will either timeout or wait until any
+   * data put into the region before this method call is flushed to the lucene index.
    *
    * This method is an expensive operation, so using it before every query is highly discouraged.
    *

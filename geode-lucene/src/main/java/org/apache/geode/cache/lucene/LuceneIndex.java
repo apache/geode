@@ -24,12 +24,12 @@ import org.apache.geode.annotations.Experimental;
 
 /**
  * <p>
- * An lucene index is built over the data stored in a GemFire Region.
+ * An Lucene index is built over the data stored in a GemFire Region.
  * </p>
  * <p>
  * An index is specified using a index name, field names, region name.
  * </p>
- * The index name and region name together uniquely identifies the lucene index.
+ * The index name and region name together uniquely identifies the Lucene index.
  * 
  */
 @Experimental
