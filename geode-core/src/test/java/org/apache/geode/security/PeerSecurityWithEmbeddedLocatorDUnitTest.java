@@ -64,7 +64,7 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest {
       ServerStarterRule serverStarter = new ServerStarterRule();
       serverStarter.before();
       LocatorServerStartupRule.serverStarter = serverStarter;
-      assertThatThrownBy(() -> serverStarter.startServer(locatorPort))
+      assertThatThrownBy(() -> serverStarter.startServer(server2Props, locatorPort))
           .isInstanceOf(GemFireSecurityException.class)
           .hasMessageContaining("Security check failed. Authentication error");
     });
