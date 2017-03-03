@@ -26,6 +26,7 @@ package org.apache.geode.cache.query;
 import static org.junit.Assert.*;
 import static org.junit.runners.MethodSorters.*;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -34,6 +35,8 @@ import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -305,6 +308,55 @@ public class QueryJUnitTest {
           scopeIDTestHook.isOk());
     } finally {
       DefaultQuery.testHook = null;
+    }
+  }
+
+  @Test
+  public void creatingACompiledJunctionWithACompiledInClauseDoesNotThrowException()
+      throws Exception {
+    Cache cache = CacheUtils.getCache();
+    RegionFactory<Integer, Portfolio> rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    Region regionA = rf.create("regionA");
+    Region regionB = rf.create("regionB");
+
+    for (int i = 1; i <= 100; i++) {
+      regionA.put(Integer.toString(i), new TestUserObject("" + i, "" + i, "" + i, "" + i));
+      regionB.put(Integer.toString(i), new TestUserObject("" + i, "" + i, "" + i, "" + i));
+    }
+    QueryService qs = CacheUtils.getQueryService();
+
+    Index regionAUserCodeIndex = (IndexProtocol) qs.createIndex("regionAUserCodeIndex",
+        IndexType.FUNCTIONAL, "userId", "/regionA ");
+    Index regionBUserCodeIndex = (IndexProtocol) qs.createIndex("regionAUserCodeIndex",
+        IndexType.FUNCTIONAL, "userId", "/regionB ");
+
+    Index regionAUserNameIndex = (IndexProtocol) qs.createIndex("regionAUserNameIndex",
+        IndexType.FUNCTIONAL, "userName", "/regionA ");
+    Index regionBUserNameIndex = (IndexProtocol) qs.createIndex("regionBUserNameIndex",
+        IndexType.FUNCTIONAL, "userName", "/regionB ");
+
+    Query query = qs.newQuery(
+        "select regionB.userId,regionA.professionCode,regionB.postCode,regionB.userName from /regionA regionA,/regionB regionB where regionA.userId = regionB.userId and regionA.professionCode in Set('1','2','3') and regionB.postCode = '1' and regionB.userId='1'");
+    SelectResults results = (SelectResults) query.execute();
+    assertTrue(results.size() > 0);
+  }
+
+  public static class TestUserObject implements Serializable {
+    public String professionCode;
+    public String userId;
+    public String postCode;
+    public String userName;
+
+    public TestUserObject() {
+
+    }
+
+    public TestUserObject(final String professionCode, final String userId, final String postCode,
+        final String userName) {
+      this.professionCode = professionCode;
+      this.userId = userId;
+      this.postCode = postCode;
+      this.userName = userName;
     }
   }
 
