@@ -108,9 +108,6 @@ public class CacheXmlParserJUnitTest {
 
     CacheXmlParser.parse(this.getClass()
         .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
-	
-	
-	
   }
 
 
