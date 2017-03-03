@@ -158,6 +158,8 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     attributesFactory.setTotalNumBuckets(dataRegionAttributes.getTotalNumBuckets());
     attributesFactory.setRedundantCopies(dataRegionAttributes.getRedundantCopies());
     attributesFactory.setPartitionResolver(getPartitionResolver(dataRegionAttributes));
+    attributesFactory.setRecoveryDelay(dataRegionAttributes.getRecoveryDelay());
+    attributesFactory.setStartupRecoveryDelay(dataRegionAttributes.getStartupRecoveryDelay());
     return attributesFactory;
   }
 
@@ -185,7 +187,9 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     RegionAttributes baseAttributes = this.cache.getRegionAttributes(regionShortCut.toString());
     AttributesFactory factory = new AttributesFactory(baseAttributes);
     factory.setPartitionAttributes(partitionAttributesFactory.create());
-    factory.setDiskStoreName(regionAttributes.getDiskStoreName());
+    if (regionAttributes.getDataPolicy().withPersistence()) {
+      factory.setDiskStoreName(regionAttributes.getDiskStoreName());
+    }
     RegionAttributes<K, V> attributes = factory.create();
 
     return createRegion(regionName, attributes);
