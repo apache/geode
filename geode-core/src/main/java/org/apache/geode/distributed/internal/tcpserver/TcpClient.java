@@ -25,6 +25,7 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.logging.log4j.Logger;
@@ -264,8 +265,8 @@ public class TcpClient {
     try {
       sock = socketCreator.connect(ipAddr.getAddress(), ipAddr.getPort(), timeout, null, false);
       sock.setSoTimeout(timeout);
-    } catch (SSLHandshakeException e) {
-      throw new LocatorCancelException("Unrecognisable response received", e);
+    } catch (SSLException e) {
+      throw new LocatorCancelException("Unable to form SSL connection", e);
     }
 
     try {

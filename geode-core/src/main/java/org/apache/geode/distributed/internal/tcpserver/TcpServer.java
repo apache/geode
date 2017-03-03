@@ -77,9 +77,9 @@ public class TcpServer {
    * <p>
    * This should be incremented if the gossip message structures change
    * <p>
-   * 1000 - gemfire 5.5 - using java serialization 1001 - 5.7 - using DataSerializable and
-   * supporting server locator messages. 1002 - 7.1 - sending GemFire version along with
-   * GOSSIP_VERSION in each request.
+   * 1000 - gemfire 5.5 - using java serialization<br>
+   * 1001 - 5.7 - using DataSerializable and supporting server locator messages.<br>
+   * 1002 - 7.1 - sending GemFire version along with GOSSIP_VERSION in each request.
    * <p>
    * with the addition of support for all old versions of clients you can no longer change this
    * version number
@@ -89,7 +89,7 @@ public class TcpServer {
   // This GOSSIPVERSION is used in _getVersionForAddress request for getting GemFire version of a
   // GossipServer.
   public final static int OLDGOSSIPVERSION = 1001;
-
+  
   private static/* GemStoneAddition */ final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
 
   // For test purpose only
@@ -360,6 +360,13 @@ public class TcpServer {
           versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
         } else {
           // Close the socket. We can not accept requests from a newer version
+          try {
+            sock.getOutputStream().write("unknown protocol version".getBytes());
+            sock.getOutputStream().flush();
+          } catch (IOException e) {
+            log.debug("exception in sending reply to process using unknown protocol "
+                + gossipVersion, e);
+          }
           sock.close();
           return;
         }
