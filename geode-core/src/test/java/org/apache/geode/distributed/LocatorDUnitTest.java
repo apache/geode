@@ -308,14 +308,11 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   private Boolean startLocatorWithPortAndProperties(final int port, final Properties properties)
       throws IOException {
     try {
-//      System.setProperty("p2p.joinTimeout", "5000"); // set a short join timeout. default is 17000ms
       Locator.startLocatorAndDS(port, new File(""), properties);
     } catch (SystemConnectException e) {
       return Boolean.FALSE;
     } catch (GemFireConfigException e) {
       return Boolean.FALSE;
-    } finally {
-//      System.getProperties().remove("p2p.joinTimeout");
     }
     return Boolean.TRUE;
   }
@@ -635,12 +632,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
   private Locator startLocatorInternal(final int port, final Properties properties)
       throws IOException {
     Locator locator;
-    try {
-//      System.setProperty("p2p.joinTimeout", "5000"); // set a short join timeout. default is 17000ms
-      locator = Locator.startLocatorAndDS(port, new File(""), properties);
-    } finally {
-//      System.getProperties().remove("p2p.joinTimeout");
-    }
+    locator = Locator.startLocatorAndDS(port, new File(""), properties);
     return locator;
   }
 
@@ -1305,7 +1297,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     bgexecLogger.info(addExpected);
 
     boolean exceptionOccurred = true;
-//    String oldValue = (String) System.getProperties().put("p2p.joinTimeout", "15000");
     try {
       DistributedSystem.connect(props);
       exceptionOccurred = false;
@@ -1322,11 +1313,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       // if expected then add in a catch block for it above this catch
       org.apache.geode.test.dunit.Assert.fail("Failed with unexpected exception", ex);
     } finally {
-//      if (oldValue == null) {
-//        System.getProperties().remove("p2p.joinTimeout");
-//      } else {
-//        System.getProperties().put("p2p.joinTimeout", oldValue);
-//      }
       bgexecLogger.info(removeExpected);
     }
 
@@ -1360,7 +1346,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
         public void run() {
-          // System.setProperty("p2p.joinTimeout", "5000");
           Properties props = new Properties();
           props.setProperty(MCAST_PORT, "0");
           props.setProperty(LOCATORS, locators);
@@ -1962,7 +1947,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     File logFile = new File("");
     try {
       System.setProperty(InternalLocator.LOCATORS_PREFERRED_AS_COORDINATORS, "true");
-//      System.setProperty("p2p.joinTimeout", "1000");
       Properties locProps = new Properties();
       locProps.put(MCAST_PORT, "0");
       locProps.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
@@ -1972,7 +1956,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       org.apache.geode.test.dunit.Assert.fail("While starting locator on port " + port, ex);
     } finally {
       System.getProperties().remove(InternalLocator.LOCATORS_PREFERRED_AS_COORDINATORS);
-//      System.getProperties().remove("p2p.joinTimeout");
     }
   }
 

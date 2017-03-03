@@ -89,7 +89,7 @@ public class TcpServer {
   // This GOSSIPVERSION is used in _getVersionForAddress request for getting GemFire version of a
   // GossipServer.
   public final static int OLDGOSSIPVERSION = 1001;
-  
+
   private static/* GemStoneAddition */ final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
 
   // For test purpose only
@@ -364,8 +364,8 @@ public class TcpServer {
             sock.getOutputStream().write("unknown protocol version".getBytes());
             sock.getOutputStream().flush();
           } catch (IOException e) {
-            log.debug("exception in sending reply to process using unknown protocol "
-                + gossipVersion, e);
+            log.debug(
+                "exception in sending reply to process using unknown protocol " + gossipVersion, e);
           }
           sock.close();
           return;
