@@ -14,6 +14,10 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.internal.AvailablePort.*;
+import static org.junit.Assert.*;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
@@ -22,7 +26,12 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.SerialDistributionMessage;
+import org.apache.geode.distributed.internal.SizeableRunnable;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
@@ -30,12 +39,19 @@ import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipMan
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.RMIException;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.net.Inet4Address;
@@ -46,20 +62,19 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.junit.Assert.*;
-
 /**
  * Tests the functionality of the {@link DistributedSystem} class.
- *
- * @see InternalDistributedSystemJUnitTest
- *
  */
 @Category({DistributedTest.class, MembershipTest.class})
 public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
-  public void postSetUp() throws Exception {
+  @Before
+  public void before() throws Exception {
+    disconnectAllFromDS();
+  }
+
+  @After
+  public void after() throws Exception {
     disconnectAllFromDS();
   }
 
@@ -298,18 +313,21 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testUDPPortRange() throws Exception {
+    int[] unicastPort = AvailablePortHelper.getRandomAvailableTCPPortRange(3, true);
+
     Properties config = new Properties();
-    int unicastPort =
-        AvailablePort.getRandomAvailablePort(SOCKET, AvailablePort.getAddress(SOCKET), true);
     config.put(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     // Minimum 3 ports required in range for UDP, FD_SOCK and TcpConduit.
-    config.setProperty(MEMBERSHIP_PORT_RANGE, "" + unicastPort + "-" + (unicastPort + 2));
+    config.setProperty(MEMBERSHIP_PORT_RANGE, unicastPort[0] + "-" + unicastPort[2]);
+
     InternalDistributedSystem system = getSystem(config);
     DistributionManager dm = (DistributionManager) system.getDistributionManager();
     InternalDistributedMember idm = dm.getDistributionManagerId();
+
+    assertTrue(unicastPort[0] <= idm.getPort() && idm.getPort() <= unicastPort[2]);
+    assertTrue(unicastPort[0] <= idm.getPort() && idm.getDirectChannelPort() <= unicastPort[2]);
+
     system.disconnect();
-    assertTrue(unicastPort <= idm.getPort() && idm.getPort() <= unicastPort + 2);
-    assertTrue(unicastPort <= idm.getPort() && idm.getDirectChannelPort() <= unicastPort + 2);
   }
 
   /***

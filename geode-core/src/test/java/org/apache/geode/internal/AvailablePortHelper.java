@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal;
 
+import static org.apache.geode.distributed.internal.DistributionConfig.*;
+import static org.apache.geode.internal.AvailablePort.*;
+
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -66,9 +70,67 @@ public class AvailablePortHelper {
     List<Keeper> result = new ArrayList<Keeper>();
     while (result.size() < count) {
       result.add(AvailablePort.getRandomAvailablePortKeeper(AvailablePort.SOCKET,
-          AvailablePort.getAddress(AvailablePort.SOCKET), useMembershipPortRange));
+          getAddress(AvailablePort.SOCKET), useMembershipPortRange));
     }
     return result;
+  }
+
+  public static int[] getRandomAvailableTCPPortRange(final int count) {
+    return getRandomAvailableTCPPortRange(count, false);
+  }
+
+  public static int[] getRandomAvailableTCPPortRange(final int count,
+      final boolean useMembershipPortRange) {
+    List<Keeper> list = getRandomAvailableTCPPortRangeKeepers(count, useMembershipPortRange);
+    int[] ports = new int[list.size()];
+    int i = 0;
+    for (Keeper k : list) {
+      ports[i] = k.getPort();
+      k.release();
+      i++;
+    }
+    return ports;
+  }
+
+  public static List<Keeper> getRandomAvailableTCPPortRangeKeepers(final int count) {
+    return getRandomAvailableTCPPortRangeKeepers(count, false);
+  }
+
+  public static List<Keeper> getRandomAvailableTCPPortRangeKeepers(final int count,
+      final boolean useMembershipPortRange) {
+    List<Keeper> result = new ArrayList<>();
+
+    InetAddress addr = getAddress(AvailablePort.SOCKET);
+
+    int lowerBound =
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[0] : AVAILABLE_PORTS_LOWER_BOUND;
+
+    int upperBound =
+        useMembershipPortRange ? DEFAULT_MEMBERSHIP_PORT_RANGE[1] : AVAILABLE_PORTS_UPPER_BOUND;
+
+    for (int i = lowerBound; i <= upperBound; i++) {
+      for (int j = 0; j < count && ((i + j) <= upperBound); j++) {
+        int port = i + j;
+        Keeper keeper = isPortKeepable(port, SOCKET, addr);
+        if (keeper == null) {
+          releaseKeepers(result);
+          result.clear();
+          break;
+        }
+        result.add(keeper);
+        if (result.size() == count) {
+          return result;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private static void releaseKeepers(List<Keeper> keepers) {
+    for (Keeper keeper : keepers) {
+      keeper.release();
+    }
   }
 
   /**
