@@ -27,7 +27,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
-import org.apache.geode.redis.internal.executor.hash.HashInterpreter;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Assert;
 import org.junit.Before;

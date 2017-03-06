@@ -54,9 +54,6 @@ public class HDelExecutor extends HashExecutor {
     // save map
     saveMap(map, context, key);
 
-    // if (map.isEmpty()) {
-    // context.getRegionProvider().removeKey(key, RedisDataType.REDIS_HASH);
-    // }
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
   }
 

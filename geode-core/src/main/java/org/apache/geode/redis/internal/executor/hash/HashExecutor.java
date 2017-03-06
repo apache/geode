@@ -18,20 +18,41 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.GeodeRedisServer;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
 public abstract class HashExecutor extends AbstractExecutor {
+  /**
+   * <pre>
+   * The region:key separator.
+   * 
+   *  REGION_KEY_SEPERATOR = ":"
+   * 
+   * See Hash section of <a href=
+  "https://redis.io/topics/data-types">https://redis.io/topics/data-types#Hashes</a>
+   * </pre>
+   */
+  public static final String REGION_KEY_SEPERATOR = ":";
+
+  /**
+   * The default hash region name REGION_HASH_REGION = Coder.stringToByteArrayWrapper("ReDiS_HASH")
+   */
+  public static final ByteArrayWrapper REGION_HASH_REGION =
+      Coder.stringToByteArrayWrapper(GeodeRedisServer.HASH_REGION);
 
   protected final int FIELD_INDEX = 2;
 
   protected Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> getOrCreateRegion(
       ExecutionHandlerContext context, ByteArrayWrapper key, RedisDataType type) {
 
-    return HashInterpreter.getRegion(key, context);
+    return getRegion(context, key);
   }
+
+
 
   /**
    * 
@@ -55,7 +76,7 @@ public abstract class HashExecutor extends AbstractExecutor {
   protected Map<ByteArrayWrapper, ByteArrayWrapper> getMap(ExecutionHandlerContext context,
       ByteArrayWrapper key, RedisDataType type) {
 
-    ByteArrayWrapper regionName = HashInterpreter.toRegionNameByteArray(key);
+    ByteArrayWrapper regionName = toRegionNameByteArray(key);
 
     Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> region =
         getOrCreateRegion(context, regionName, type);
@@ -64,7 +85,7 @@ public abstract class HashExecutor extends AbstractExecutor {
       return null;
 
 
-    ByteArrayWrapper entryKey = HashInterpreter.toEntryKey(key);
+    ByteArrayWrapper entryKey = toEntryKey(key);
     Map<ByteArrayWrapper, ByteArrayWrapper> map = region.get(entryKey);
     if (map == null) {
       map = new HashMap<ByteArrayWrapper, ByteArrayWrapper>();
@@ -75,6 +96,27 @@ public abstract class HashExecutor extends AbstractExecutor {
   }
 
   /**
+   * Return key from format region:key
+   * 
+   * @param key the raw key
+   * @return the ByteArray for the key
+   */
+  public static ByteArrayWrapper toEntryKey(ByteArrayWrapper key) {
+    if (key == null)
+      return null;
+
+    String keyString = key.toString();
+    int nameSeparatorIndex = keyString.indexOf(REGION_KEY_SEPERATOR);
+    if (nameSeparatorIndex < 0) {
+      return key;
+    }
+
+    keyString = keyString.substring(nameSeparatorIndex + 1);
+    key = new ByteArrayWrapper(Coder.stringToBytes(keyString));
+    return key;
+  }
+
+  /**
    * 
    * @param context the execution handler context
    * @param key the raw command key
@@ -82,7 +124,48 @@ public abstract class HashExecutor extends AbstractExecutor {
    */
   protected Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> getRegion(
       ExecutionHandlerContext context, ByteArrayWrapper key) {
-    return HashInterpreter.getRegion(key, context);
+    if (key == null)
+      return null;
+
+    if (key.toString().contains(REGION_KEY_SEPERATOR)) {
+      return (Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>>) context
+          .getRegionProvider()
+          .getOrCreateRegion(toRegionNameByteArray(key), RedisDataType.REDIS_HASH, context);
+    }
+
+    // default region
+    return context.getRegionProvider().getHashRegion();
+  }
+
+  /**
+   * Supports conversation of keys with format region:key
+   * 
+   * @param key the byte array wrapper
+   * @return the byte array wrapper
+   */
+  public static ByteArrayWrapper toRegionNameByteArray(ByteArrayWrapper key) {
+    if (key == null)
+      return null;
+
+    String keyString = key.toString();
+
+    int nameSeparatorIndex = keyString.indexOf(REGION_KEY_SEPERATOR);
+    if (nameSeparatorIndex > -1) {
+      keyString = keyString.substring(0, nameSeparatorIndex);
+      if (keyString == null)
+        return REGION_HASH_REGION;
+
+      keyString = keyString.trim();
+
+      if (keyString.length() == 0)
+        return REGION_HASH_REGION;
+
+      key = new ByteArrayWrapper(Coder.stringToBytes(keyString.trim()));
+
+      return key;
+    }
+
+    return REGION_HASH_REGION;
   }
 
   /**
@@ -113,13 +196,13 @@ public abstract class HashExecutor extends AbstractExecutor {
       return;
     }
 
-    ByteArrayWrapper regionName = HashInterpreter.toRegionNameByteArray(key);
+    ByteArrayWrapper regionName = toRegionNameByteArray(key);
 
 
     Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> region =
         getOrCreateRegion(context, regionName, type);
 
-    ByteArrayWrapper entryKey = HashInterpreter.toEntryKey(key);
+    ByteArrayWrapper entryKey = toEntryKey(key);
 
     region.put(entryKey, map);
     context.getRegionProvider().metaPut(key, RedisDataType.REDIS_HASH);

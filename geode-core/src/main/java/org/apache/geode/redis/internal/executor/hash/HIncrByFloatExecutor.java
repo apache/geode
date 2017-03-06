@@ -99,6 +99,8 @@ public class HIncrByFloatExecutor extends HashExecutor {
 
     value += increment;
     map.put(field, new ByteArrayWrapper(Coder.doubleToBytes(value)));
+    this.saveMap(map, context, key);
+
     command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), value));
   }
 

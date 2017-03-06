@@ -40,7 +40,7 @@ public class HExistsExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper regionName = HashInterpreter.toRegionNameByteArray(command.getKey());
+    ByteArrayWrapper regionName = toRegionNameByteArray(command.getKey());
 
     checkDataType(regionName, RedisDataType.REDIS_HASH, context);
 

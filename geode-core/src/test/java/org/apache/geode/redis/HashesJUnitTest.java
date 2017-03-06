@@ -122,7 +122,7 @@ public class HashesJUnitTest {
     for (int i = 0; i < 10; i++) {
       hash.put(randString(), randString());
     }
-    String response = jedis.hmset(key, hash);
+    jedis.hmset(key, hash);
 
     Set<String> keys = hash.keySet();
     Set<String> retSet = jedis.hkeys(key);
@@ -160,6 +160,54 @@ public class HashesJUnitTest {
     }
 
     assertNotNull(ex);
+  }
+
+  @Category(FlakyTest.class) // GEODE-2469
+  @Test
+  public void testHIncrFloatBy() {
+    String key = randString();
+    String field = randString();
+
+    double incr = rand.nextDouble();
+    if (incr == 0)
+      incr = incr + 1;
+
+    Double response1 = jedis.hincrByFloat(key, field, incr);
+    assertTrue(response1 == incr);
+
+    assertEquals(response1, Double.valueOf(jedis.hget(key, field)));
+
+    double response2 = jedis.hincrByFloat(randString(), randString(), incr);
+
+    assertTrue(response2 == incr);
+
+    Double response3 = jedis.hincrByFloat(key, field, incr);
+    assertTrue(response3 + "=" + 2 * incr, response3 == 2 * incr);
+
+    assertEquals(response3, Double.valueOf(jedis.hget(key, field)));
+
+  }
+
+  @Category(FlakyTest.class) // GEODE-2469
+  @Test
+  public void testHIncrExists() {
+    double incr = rand.nextDouble();
+    if (incr == 0)
+      incr = incr + 1;
+
+    String key = Double.valueOf(rand.nextDouble()).toString();
+    String field = Double.valueOf(rand.nextInt(50)).toString() + ".field";
+    String value = Double.valueOf(rand.nextInt(50)).toString() + ".value";
+    jedis.hset(key, field, value);
+
+    assertEquals(value, jedis.hget(key, field));
+
+    key = "testObject:" + key;
+
+    value = Double.valueOf(rand.nextInt(50)).toString() + ".value";
+    jedis.hset(key, field, value);
+
+
   }
 
   private String randString() {

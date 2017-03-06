@@ -122,11 +122,10 @@ public class SScanExecutor extends AbstractScanExecutor {
     command.setResponse(Coder.getScanResponse(context.getByteBufAllocator(), returnList));
   }
 
-  @SuppressWarnings({"unchecked"})
   private Region<ByteArrayWrapper, Set<ByteArrayWrapper>> getRegion(
       ExecutionHandlerContext context) {
     return (Region<ByteArrayWrapper, Set<ByteArrayWrapper>>) context.getRegionProvider()
-        .getRegion(SetInterpreter.SET_REGION_KEY);
+        .getSetRegion();
   }
 
   @SuppressWarnings("unchecked")

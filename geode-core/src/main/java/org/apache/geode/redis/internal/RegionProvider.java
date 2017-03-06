@@ -43,8 +43,8 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
-import org.apache.geode.redis.internal.executor.hash.HashInterpreter;
-import org.apache.geode.redis.internal.executor.set.SetInterpreter;
+import org.apache.geode.redis.internal.executor.hash.HashExecutor;
+import org.apache.geode.redis.internal.executor.set.SetExecutor;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
@@ -223,14 +223,14 @@ public class RegionProvider implements Closeable {
 
 
           // Check hash
-          ByteArrayWrapper regionName = HashInterpreter.toRegionNameByteArray(key);
+          ByteArrayWrapper regionName = HashExecutor.toRegionNameByteArray(key);
           Region<?, ?> region = this.getRegion(regionName);
           if (region != null) {
-            region.remove(HashInterpreter.toEntryKey(key));
+            region.remove(HashExecutor.toEntryKey(key));
           }
 
           // remove the set
-          region = this.getRegion(SetInterpreter.SET_REGION_KEY);
+          region = this.getRegion(SetExecutor.SET_REGION_KEY);
           if (region != null) {
             region.remove(key);
           }
@@ -310,12 +310,6 @@ public class RegionProvider implements Closeable {
 
     String regionName = key.toString();
 
-    // check if type is hash TODO: remove
-    /*
-     * int indexOfColonForHashObject = regionName.indexOf(":"); if (indexOfColonForHashObject > 0) {
-     * // Set HSET region:<key> regionName = regionName.substring(0, indexOfColonForHashObject); key
-     * = new ByteArrayWrapper(regionName.getBytes(StandardCharsets.UTF_8)); }
-     */
 
     checkDataType(key, type);
     Region<?, ?> r = this.regions.get(key);
@@ -502,10 +496,9 @@ public class RegionProvider implements Closeable {
       return;
     if (currentType == RedisDataType.REDIS_PROTECTED)
       throw new RedisDataTypeMismatchException("The key name \"" + key + "\" is protected");
-    /*
-     * if (currentType != type) throw new RedisDataTypeMismatchException( "The key name \"" + key +
-     * "\" is already used by a " + currentType.toString());
-     */
+    if (currentType != type)
+      throw new RedisDataTypeMismatchException(
+          "The key name \"" + key + "\" is already used by a " + currentType.toString());
   }
 
   public boolean regionExists(ByteArrayWrapper key) {

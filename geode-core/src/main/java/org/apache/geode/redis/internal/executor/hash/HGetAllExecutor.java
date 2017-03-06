@@ -26,7 +26,6 @@ import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 
 public class HGetAllExecutor extends HashExecutor {
 
@@ -39,8 +38,8 @@ public class HGetAllExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper regionName = HashInterpreter.toRegionNameByteArray(command.getKey());
-    ByteArrayWrapper entryKey = HashInterpreter.toEntryKey(command.getKey());
+    ByteArrayWrapper regionName = toRegionNameByteArray(command.getKey());
+    ByteArrayWrapper entryKey = toEntryKey(command.getKey());
 
     // checkDataType(regionName, RedisDataType.REDIS_HASH, context);
     Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =

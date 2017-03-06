@@ -42,7 +42,7 @@ public class HKeysExecutor extends HashExecutor {
     Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
         this.getRegion(context, command.getKey());
 
-    ByteArrayWrapper entryKey = HashInterpreter.toEntryKey(command.getKey());
+    ByteArrayWrapper entryKey = toEntryKey(command.getKey());
 
     Map<ByteArrayWrapper, ByteArrayWrapper> keyMap = keyRegion.get(entryKey);
     if (keyMap == null || keyMap.isEmpty()) {
