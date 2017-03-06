@@ -16,6 +16,8 @@ package org.apache.geode.cache.lucene.internal.management;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.management.LuceneIndexMetrics;
+import org.apache.geode.cache.lucene.management.LuceneServiceMXBean;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 import javax.management.NotificationBroadcasterSupport;
