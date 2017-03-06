@@ -16,7 +16,7 @@ package org.apache.geode.cache.lucene.internal.management;
 
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
-import org.apache.geode.management.internal.ManagementStrings;
+import org.apache.geode.cache.lucene.management.LuceneIndexMetrics;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
 import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
