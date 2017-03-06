@@ -39,6 +39,7 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.Member;
 import org.apache.geode.test.dunit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
@@ -127,6 +128,7 @@ public class ExportLogsDUnitTest {
   }
 
   @Test
+  @Category(FlakyTest.class) // time sensitive
   public void testExportWithStartAndEndDateTimeFiltering() throws Exception {
     ZonedDateTime cutoffTime = LocalDateTime.now().atZone(ZoneId.systemDefault());
 
