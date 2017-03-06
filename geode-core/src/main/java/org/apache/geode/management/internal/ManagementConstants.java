@@ -187,6 +187,8 @@ public interface ManagementConstants {
 
   public static final String ASYNC_EVENT_QUEUE_CREATED_PREFIX =
       "Async Event Queue is Created  in the VM ";
+  public static final String ASYNC_EVENT_QUEUE_CLOSED_PREFIX =
+      "Async Event Queue is Closed in the VM ";
 
   public static final String CACHE_SERVICE_CREATED_PREFIX = "Cache Service Created With Name ";
 

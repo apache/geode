@@ -14,9 +14,11 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.PidUnavailableException;
@@ -31,15 +33,17 @@ import org.junit.Rule;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.TestName;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertTrue;
 
 /**
  * @since GemFire 8.0
@@ -105,7 +109,7 @@ public abstract class AbstractLauncherIntegrationTestCase {
           return true;
         }
         try {
-          FileUtil.delete(file);
+          Files.delete(file.toPath());
         } catch (IOException e) {
         }
         return !file.exists();

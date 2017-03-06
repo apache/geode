@@ -14,10 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -31,8 +33,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
-
-import static org.apache.geode.test.dunit.Assert.assertEquals;
 
 /**
  * Unit tests for configuring user commands.
@@ -58,9 +58,9 @@ public class UserCommandsDUnitTest extends CliCommandTestBase {
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
     if (this.deleteJarDirectory) {
-      FileUtil.delete(this.jarDirectory);
+      FileUtils.deleteDirectory(this.jarDirectory);
     } else {
-      FileUtil.delete(this.jarFile);
+      FileUtils.forceDelete(this.jarFile);
     }
 
     System.clearProperty(CommandManager.USER_CMD_PACKAGES_PROPERTY);

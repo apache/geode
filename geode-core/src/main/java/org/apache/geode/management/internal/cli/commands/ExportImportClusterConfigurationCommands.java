@@ -245,7 +245,7 @@ public class ExportImportClusterConfigurationCommands extends AbstractCommandsSu
     }
 
     @Override
-    public Result postExecution(GfshParseResult parseResult, Result commandResult) {
+    public Result postExecution(GfshParseResult parseResult, Result commandResult, Path tempFile) {
       if (commandResult.hasIncomingFiles()) {
         try {
           commandResult.saveIncomingFiles(System.getProperty("user.dir"));
@@ -292,11 +292,6 @@ public class ExportImportClusterConfigurationCommands extends AbstractCommandsSu
       }
 
       return fileResult;
-    }
-
-    @Override
-    public Result postExecution(GfshParseResult parseResult, Result commandResult) {
-      return null;
     }
   }
 

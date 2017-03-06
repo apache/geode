@@ -14,7 +14,13 @@
  */
 package org.apache.geode.test.dunit.standalone;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.test.dunit.VM;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.nio.file.Files;
 import java.rmi.AccessException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -32,13 +39,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.io.FileUtils;
-
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.FileUtil;
-import org.apache.geode.test.dunit.VM;
 
 /**
  *
@@ -76,7 +76,7 @@ public class ProcessManager {
       workingDir.mkdirs();
     } else if (!bouncedVM || DUnitLauncher.MAKE_NEW_WORKING_DIRS) {
       try {
-        FileUtil.delete(workingDir);
+        Files.delete(workingDir.toPath());
       } catch (IOException e) {
         // This delete is occasionally failing on some platforms, maybe due to a lingering
         // process. Allow the process to be launched anyway.

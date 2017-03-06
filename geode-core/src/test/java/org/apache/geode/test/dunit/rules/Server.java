@@ -16,12 +16,10 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import org.apache.geode.test.dunit.VM;
-
 import java.io.File;
 
 public class Server extends Member {
-  public Server(VM vm, int port, File workingDir, String name) {
-    super(vm, port, workingDir, name);
+  public Server(int port, File workingDir, String name) {
+    super(port, workingDir, name);
   }
 }

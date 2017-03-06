@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.configuration;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -106,5 +107,20 @@ public class ZipUtilsJUnitTest {
 
     assertTrue(clusterText.equals(FileUtils.readFileToString(destinationClusterTextFile)));
     assertTrue(groupText.equals(FileUtils.readFileToString(destinationGroupTextFile)));
+  }
+
+  @Test
+  public void zipUtilsCanCreateParentDirsIfNecessary() throws IOException {
+    File newFolder = new File(zipFolder, "newFolder");
+    assertFalse(newFolder.exists());
+
+    File zipFile = new File(newFolder, "target.zip");
+    assertFalse(zipFile.exists());
+    assertFalse(zipFile.isFile());
+
+    ZipUtils.zipDirectory(sourceFolder.getCanonicalPath(), zipFile.getCanonicalPath());
+    assertTrue(newFolder.exists());
+    assertTrue(zipFile.exists());
+    assertTrue(zipFile.isFile());
   }
 }

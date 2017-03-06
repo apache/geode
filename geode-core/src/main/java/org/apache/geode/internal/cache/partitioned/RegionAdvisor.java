@@ -1004,6 +1004,28 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     });
   }
 
+  public Set adviseAllServersWithInterest() {
+    return adviseFilter(new Filter() {
+      public boolean include(Profile profile) {
+        CacheProfile prof = (CacheProfile) profile;
+        return prof.hasCacheServer && prof.filterProfile != null
+            && prof.filterProfile.hasInterest();
+      }
+    });
+  }
+
+  private static final Filter prServerWithInterestFilter = new Filter() {
+    public boolean include(Profile profile) {
+      CacheProfile prof = (CacheProfile) profile;
+      return prof.isPartitioned && prof.hasCacheServer && prof.filterProfile != null
+          && prof.filterProfile.hasInterest();
+    }
+  };
+
+  public boolean hasPRServerWithInterest() {
+    return satisfiesFilter(prServerWithInterestFilter);
+  }
+
   /**
    * return the set of all members who must receive operation notifications
    * 

@@ -251,7 +251,6 @@ import org.apache.geode.internal.cache.RemoteRegionOperation.RemoteRegionOperati
 import org.apache.geode.internal.cache.RemoteRemoveAllMessage;
 import org.apache.geode.internal.cache.RoleEventImpl;
 import org.apache.geode.internal.cache.SearchLoadAndWriteProcessor;
-import org.apache.geode.internal.cache.SendQueueOperation.SendQueueMessage;
 import org.apache.geode.internal.cache.ServerPingMessage;
 import org.apache.geode.internal.cache.StateFlushOperation.StateMarkerMessage;
 import org.apache.geode.internal.cache.StateFlushOperation.StateStabilizationMessage;
@@ -667,7 +666,6 @@ public final class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(CLEAR_REGION_MESSAGE, ClearRegionMessage.class);
     registerDSFID(TOMBSTONE_MESSAGE, TombstoneMessage.class);
     registerDSFID(INVALIDATE_REGION_MESSAGE, InvalidateRegionMessage.class);
-    registerDSFID(SEND_QUEUE_MESSAGE, SendQueueMessage.class);
     registerDSFID(STATE_MARKER_MESSAGE, StateMarkerMessage.class);
     registerDSFID(STATE_STABILIZATION_MESSAGE, StateStabilizationMessage.class);
     registerDSFID(STATE_STABILIZED_MESSAGE, StateStabilizedMessage.class);

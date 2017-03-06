@@ -43,11 +43,12 @@ public class RestServersJUnitTest {
   };
 
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule(properties);
+  public static ServerStarterRule serverStarter = new ServerStarterRule();
   private static GeodeRestClient restClient;
 
   @BeforeClass
   public static void before() throws Exception {
+    serverStarter.startServer(properties);
     restClient = new GeodeRestClient("localhost", defaultPort);
   }
 

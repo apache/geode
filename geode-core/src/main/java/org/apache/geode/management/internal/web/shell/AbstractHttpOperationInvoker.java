@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.web.shell;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.logging.LogService;
@@ -34,6 +35,7 @@ import org.apache.geode.management.internal.web.util.UriUtils;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -41,14 +43,18 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.ResponseErrorHandler;
+import org.springframework.web.client.ResponseExtractor;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
@@ -583,8 +589,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @see org.apache.geode.management.internal.web.http.ClientHttpRequest
    * @see org.springframework.http.ResponseEntity
    */
-  protected <T> ResponseEntity<T> send(final ClientHttpRequest request,
-      final Class<T> responseType) {
+  protected <T> T send(final ClientHttpRequest request, final Class<T> responseType) {
     return send(request, responseType, Collections.<String, Object>emptyMap());
   }
 
@@ -603,10 +608,9 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
    * @see org.springframework.web.client.RestTemplate#exchange(java.net.URI,
    *      org.springframework.http.HttpMethod, org.springframework.http.HttpEntity, Class)
    */
-  protected <T> ResponseEntity<T> send(final ClientHttpRequest request, final Class<T> responseType,
+  protected <T> T send(final ClientHttpRequest request, final Class<T> responseType,
       final Map<String, ?> uriVariables) {
     final URI url = request.getURL(uriVariables);
-
     if (isDebugEnabled()) {
       printInfo("Link: %1$s", request.getLink().toHttpRequestLine());
       printInfo("HTTP URL: %1$s", url);
@@ -626,7 +630,31 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
       printInfo("HTTP response body: ", response.getBody());
     }
 
-    return response;
+    return response.getBody();
+  }
+
+  protected Path downloadResponseToTempFile(ClientHttpRequest request,
+      Map<String, ?> uriVariables) {
+    final URI url = request.getURL(uriVariables);
+
+    // Optional Accept header
+    RequestCallback requestCallback = r -> {
+      r.getHeaders().setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
+      HttpHeaders header = request.getHeaders();
+      r.getHeaders().setAll(request.getHeaders().toSingleValueMap());
+    };
+
+    // Streams the response instead of loading it all in memory
+    ResponseExtractor<Path> responseExtractor = resp -> {
+      Path tempFile = Files.createTempFile("fileDownload", "");
+      if (tempFile.toFile().exists()) {
+        FileUtils.deleteQuietly(tempFile.toFile());
+      }
+      Files.copy(resp.getBody(), tempFile);
+      return tempFile;
+    };
+    return getRestTemplate().execute(url, org.springframework.http.HttpMethod.GET, requestCallback,
+        responseExtractor);
   }
 
   /**
@@ -680,10 +708,8 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
       request.addParameterValues("resourceName", resourceName);
       request.addParameterValues("attributeName", attributeName);
 
-      final ResponseEntity<byte[]> response = send(request, byte[].class);
-
       try {
-        return IOUtils.deserializeObject(response.getBody());
+        return IOUtils.deserializeObject(send(request, byte[].class));
       } catch (IOException e) {
         throw new MBeanAccessException(String.format(
             "De-serializing the result of accessing attribute (%1$s) on MBean (%2$s) failed!",
@@ -785,10 +811,8 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
       request.addParameterValues("parameters", params); // TODO may need to convert method parameter
                                                         // arguments
 
-      final ResponseEntity<byte[]> response = send(request, byte[].class);
-
       try {
-        return IOUtils.deserializeObject(response.getBody());
+        return IOUtils.deserializeObject(send(request, byte[].class));
       } catch (IOException e) {
         throw new MBeanAccessException(String.format(
             "De-serializing the result from invoking operation (%1$s) on MBean (%2$s) failed!",
@@ -831,11 +855,8 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
       final ClientHttpRequest request = createHttpRequest(link);
 
       request.setContent(new QueryParameterSource(objectName, queryExpression));
-
-      final ResponseEntity<byte[]> response = send(request, byte[].class);
-
       try {
-        return (Set<ObjectName>) IOUtils.deserializeObject(response.getBody());
+        return (Set<ObjectName>) IOUtils.deserializeObject(send(request, byte[].class));
       } catch (Exception e) {
         throw new MBeanAccessException(String.format(
             "An error occurred while querying for MBean names using ObjectName pattern (%1$s) and Query expression (%2$s)!",

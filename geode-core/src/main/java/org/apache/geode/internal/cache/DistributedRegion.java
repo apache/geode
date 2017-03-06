@@ -110,13 +110,6 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   private final boolean requiresReliabilityCheck;
 
   /**
-   * Provides a queue for reliable message delivery
-   * 
-   * @since GemFire 5.0
-   */
-  protected final ReliableMessageQueue rmq;
-
-  /**
    * Latch that is opened after initialization waits for required roles up to the
    * <a href="DistributedSystem#member-timeout">member-timeout </a>.
    */
@@ -182,18 +175,6 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     }
 
     this.requiresReliabilityCheck = setRequiresReliabilityCheck;
-
-    {
-      ReliableMessageQueue tmp = null;
-      if (this.requiresReliabilityCheck) {
-        // if
-        // (attrs.getMembershipAttributes().getLossAction().isAllAccessWithQueuing())
-        // {
-        // tmp = cache.getReliableMessageQueueFactory().create(this);
-        // }
-      }
-      this.rmq = tmp;
-    }
 
     if (internalRegionArgs.isUsedForPartitionedRegionBucket()) {
       this.persistenceAdvisor = internalRegionArgs.getPersistenceAdvisor();
@@ -567,14 +548,12 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   }
 
   @Override
-  protected void handleReliableDistribution(ReliableDistributionData data,
-      Set successfulRecipients) {
-    handleReliableDistribution(data, successfulRecipients, Collections.EMPTY_SET,
-        Collections.EMPTY_SET);
+  protected void handleReliableDistribution(Set successfulRecipients) {
+    handleReliableDistribution(successfulRecipients, Collections.EMPTY_SET, Collections.EMPTY_SET);
   }
 
-  protected void handleReliableDistribution(ReliableDistributionData data, Set successfulRecipients,
-      Set otherRecipients1, Set otherRecipients2) {
+  protected void handleReliableDistribution(Set successfulRecipients, Set otherRecipients1,
+      Set otherRecipients2) {
     if (this.requiresReliabilityCheck) {
       MembershipAttributes ra = getMembershipAttributes();
       Set recipients = successfulRecipients;
@@ -2140,19 +2119,6 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     return getSystem().getDistributionManager().getConfig();
   }
 
-  /**
-   * Sends a list of queued messages to members playing a specified role
-   * 
-   * @param list List of QueuedOperation instances to send. Any messages sent will be removed from
-   *        this list
-   * @param role the role that a recipient must be playing
-   * @return true if at least one message made it to at least one guy playing the role
-   */
-  boolean sendQueue(List list, Role role) {
-    SendQueueOperation op = new SendQueueOperation(getDistributionManager(), this, list, role);
-    return op.distribute();
-  }
-
   /*
    * @see SearchLoadAndWriteProcessor#initialize(LocalRegion, Object, Object)
    */
@@ -2336,17 +2302,27 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
         if (requestingClient != null) {
           event.setContext(requestingClient);
         }
-        SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
-        try {
-          processor.initialize(this, key, aCallbackArgument);
-          // processor fills in event
-          processor.doSearchAndLoad(event, txState, localValue);
-          if (clientEvent != null && clientEvent.getVersionTag() == null) {
-            clientEvent.setVersionTag(event.getVersionTag());
+        // If this event is because of a register interest call, don't invoke the CacheLoader
+        boolean getForRegisterInterest = clientEvent != null && clientEvent.getOperation() != null
+            && clientEvent.getOperation().isGetForRegisterInterest();
+        if (!getForRegisterInterest) {
+          SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+          try {
+            processor.initialize(this, key, aCallbackArgument);
+            // processor fills in event
+            processor.doSearchAndLoad(event, txState, localValue);
+            if (clientEvent != null && clientEvent.getVersionTag() == null) {
+              clientEvent.setVersionTag(event.getVersionTag());
+            }
+            lastModified = processor.getLastModified();
+          } finally {
+            processor.release();
           }
-          lastModified = processor.getLastModified();
-        } finally {
-          processor.release();
+        } else {
+          if (logger.isDebugEnabled()) {
+            logger.debug("DistributedRegion.findObjectInSystem skipping loader for region="
+                + getFullPath() + "; key=" + key);
+          }
         }
       }
       if (event.hasNewValue() && !isMemoryThresholdReachedForLoad()) {
@@ -2521,10 +2497,6 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
             this.getFullPath()), ex);
       }
     }
-    if (this.rmq != null) {
-      this.rmq.close();
-    }
-
     // Fix for #48066 - make sure that region operations are completely
     // distributed to peers before destroying the region.
     long timeout = 1000L * getCache().getDistributedSystem().getConfig().getAckWaitThreshold();
@@ -2628,9 +2600,6 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       logger.warn("postDestroyRegion: encountered cancellation", e);
     }
 
-    if (this.rmq != null && destroyDiskRegion) {
-      this.rmq.destroy();
-    }
   }
 
   @Override
@@ -3601,27 +3570,6 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
             newlyAcquiredRoles = new HashSet(missingRequiredRoles);
             newlyAcquiredRoles.retainAll(roles); // find the intersection
             if (!newlyAcquiredRoles.isEmpty()) {
-              if (DistributedRegion.this.rmq != null) {
-                Iterator it = newlyAcquiredRoles.iterator();
-                final DM dm = getDistributionManager();
-                while (it.hasNext()) {
-                  getCache().getCancelCriterion().checkCancelInProgress(null);
-                  final Role role = (Role) it.next();
-                  try {
-                    // do this in the waiting pool to make it async
-                    // @todo darrel/klund: add a single serial executor for
-                    // queue flush
-                    dm.getWaitingThreadPool().execute(new Runnable() {
-                      public void run() {
-                        DistributedRegion.this.rmq.roleReady(role);
-                      }
-                    });
-                    break;
-                  } catch (RejectedExecutionException ex) {
-                    throw ex;
-                  }
-                } // while
-              }
               missingRequiredRoles.removeAll(newlyAcquiredRoles);
               if (this.members == null && missingRequiredRoles.isEmpty()) {
                 isMissingRequiredRoles = false;

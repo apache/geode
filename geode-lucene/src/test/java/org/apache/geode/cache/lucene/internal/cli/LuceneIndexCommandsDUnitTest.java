@@ -28,6 +28,7 @@ import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -349,7 +350,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "notAnIndex");
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
     String resultAsString = executeCommandAndLogResult(csb);
-    assertTrue(resultAsString.contains("Region not found"));
+    assertTrue(resultAsString.contains(getRegionNotFoundErrorMessage(REGION_NAME)));
   }
 
   @Test
@@ -498,7 +499,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     csb.addOption(LuceneCliStrings.LUCENE_SEARCH_INDEX__DEFAULT_FIELD, "field2");
 
     String resultAsString = executeCommandAndLogResult(csb);
-    assertTrue(resultAsString.contains("Region not found"));
+    assertTrue(resultAsString.contains(getRegionNotFoundErrorMessage(REGION_NAME)));
   }
 
   @Test
@@ -550,6 +551,45 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
     TabularResultData data = (TabularResultData) executeCommandAndGetResult(csb).getResultData();
     assertEquals(4, data.retrieveAllValues("key").size());
 
+  }
+
+  @Test
+  public void destroySingleIndexOnRegion() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+    createIndex(vm1);
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESTROY_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    String resultAsString = executeCommandAndLogResult(csb);
+    String expectedStatus = CliStrings.format(
+        LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FOR_REGION_1,
+        new Object[] {INDEX_NAME, REGION_NAME});
+    assertTrue(resultAsString.contains(expectedStatus));
+  }
+
+  @Test
+  public void destroyAllIndexesOnRegion() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+    createIndex(vm1);
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESTROY_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    String resultAsString = executeCommandAndLogResult(csb);
+    String expectedStatus = CliStrings.format(
+        LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FOR_REGION_0,
+        new Object[] {REGION_NAME});
+    assertTrue(resultAsString.contains(expectedStatus));
+  }
+
+  @Test
+  public void destroyIndexWithoutRegionShouldReturnError() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+    createIndexWithoutRegion(vm1);
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESTROY_INDEX);
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
+    String resultAsString = executeCommandAndLogResult(csb);
+    assertTrue(resultAsString.contains(getRegionNotFoundErrorMessage(REGION_NAME)));
   }
 
   private void createRegion() {
@@ -626,6 +666,12 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
           .create(INDEX_NAME, REGION_NAME, queryString, defaultField);
       assertEquals(Collections.singletonList("A"), query.findKeys());
     });
+  }
+
+  private String getRegionNotFoundErrorMessage(String regionPath) {
+    return CliStrings.format(
+        LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULDNOT_FIND_MEMBERS_FOR_REGION_0,
+        new Object[] {regionPath});
   }
 
   protected class TestObject implements Serializable {

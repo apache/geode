@@ -31,7 +31,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
@@ -64,6 +64,48 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
     createIndex(cache, "text");
     cache.createRegionFactory(RegionShortcut.PARTITION_OVERFLOW).create(REGION_NAME);
     verifyInternalRegions(region -> {
+      assertTrue(region.getAttributes().getEvictionAttributes().getAction().isNone());
+    });
+  }
+
+  @Test
+  public void shouldInheritRecoveryDelayFromUserRegion() {
+    createIndex(cache, "text");
+
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setRecoveryDelay(0);
+
+    cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(paf.create())
+        .create(REGION_NAME);
+    verifyInternalRegions(region -> {
+      assertEquals(0, region.getAttributes().getPartitionAttributes().getRecoveryDelay());
+    });
+  }
+
+  @Test
+  public void shouldInheritStartupRecoveryDelayFromUserRegion() {
+    createIndex(cache, "text");
+
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setStartupRecoveryDelay(1);
+
+    cache.createRegionFactory(RegionShortcut.PARTITION).setPartitionAttributes(paf.create())
+        .create(REGION_NAME);
+    verifyInternalRegions(region -> {
+      assertEquals(1, region.getAttributes().getPartitionAttributes().getStartupRecoveryDelay());
+    });
+  }
+
+  @Test
+  public void shouldNotUseDiskStoreWhenUserRegionIsNotPersistent() {
+    createIndex(cache, "text");
+    String diskStoreName = "diskStore";
+    cache.createDiskStoreFactory().setDiskDirs(new File[] {diskDirRule.get()})
+        .create(diskStoreName);
+    cache.createRegionFactory(RegionShortcut.PARTITION_OVERFLOW).setDiskStoreName(diskStoreName)
+        .create(REGION_NAME);
+    verifyInternalRegions(region -> {
+      assertTrue(region.getAttributes().getDiskStoreName() == null);
       assertTrue(region.getAttributes().getEvictionAttributes().getAction().isNone());
     });
   }

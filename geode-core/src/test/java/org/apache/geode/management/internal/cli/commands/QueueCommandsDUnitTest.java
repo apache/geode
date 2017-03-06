@@ -34,15 +34,15 @@ import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.Wait.waitForCriterion;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.ClassBuilder;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -418,7 +419,10 @@ public class QueueCommandsDUnitTest extends CliCommandTestBase {
     for (String path : this.filesToBeDeleted) {
       try {
         final File fileToDelete = new File(path);
-        FileUtil.delete(fileToDelete);
+        if (fileToDelete.isDirectory())
+          FileUtils.deleteDirectory(fileToDelete);
+        else
+          Files.delete(fileToDelete.toPath());
         if (path.endsWith(".jar")) {
           executeCommand("undeploy --jar=" + fileToDelete.getName());
         }

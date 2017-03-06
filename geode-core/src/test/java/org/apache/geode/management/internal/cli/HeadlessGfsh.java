@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli;
 
 import jline.console.ConsoleReader;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
@@ -94,14 +95,18 @@ public class HeadlessGfsh implements ResultHandler {
 
   // TODO : Have non-blocking method also where we move executeCommand call to separate thread-pool
   public boolean executeCommand(String command) {
-    boolean status = false;
+    boolean success = false;
     try {
       outputString = null;
-      status = shell.executeScriptLine(command);
+      success = shell.executeScriptLine(command);
     } catch (Exception e) {
       outputString = e.getMessage();
     }
-    return status;
+    if (!success && shell.output != null) {
+      outputString = shell.output.toString();
+      shell.output.reset();
+    }
+    return success;
   }
 
   public int getCommandExecutionStatus() {
@@ -122,6 +127,13 @@ public class HeadlessGfsh implements ResultHandler {
     try {
       Object result = queue.poll(timeout, TimeUnit.SECONDS);
       queue.clear();
+      if (!(result instanceof org.apache.geode.management.internal.cli.result.CommandResult)) {
+        if (result == null) {
+          return ResultBuilder.createBadResponseErrorResult("command response was null");
+        } else {
+          return ResultBuilder.createBadResponseErrorResult(result.toString());
+        }
+      }
       return result;
     } catch (InterruptedException e) {
       e.printStackTrace();
@@ -157,6 +169,14 @@ public class HeadlessGfsh implements ResultHandler {
 
   public String getError() {
     return shell.errorString;
+  }
+
+  /**
+   * Method for tests to access the results queue
+   *
+   */
+  LinkedBlockingQueue getQueue() {
+    return queue;
   }
 
   public static class HeadlessGfshShell extends Gfsh {

@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.InternalCache;
 @Experimental
 public class LuceneServiceProvider {
   /**
-   * Retrieve or create the lucene service for this cache
+   * Retrieve or create the Lucene service for this cache
    */
   public static LuceneService get(GemFireCache cache) {
     InternalCache internalCache = (InternalCache) cache;

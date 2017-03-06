@@ -78,10 +78,11 @@ public class GfshCommandsSecurityTest {
       new GfshShellConnectionRule(jmxPort, GfshShellConnectionRule.PortType.jmxManger);
 
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule(properties);
+  public static ServerStarterRule serverStarter = new ServerStarterRule();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    serverStarter.startServer(properties);
     serverStarter.cache.createRegionFactory(RegionShortcut.REPLICATE).create("region1");
   }
 
@@ -155,9 +156,7 @@ public class GfshCommandsSecurityTest {
     List<TestCommand> allPermitted =
         TestCommand.getPermittedCommands(new WildcardPermission(permission, true));
     for (TestCommand permitted : allPermitted) {
-      LogService.getLogger().info("Processing authorized command: " + permitted.getCommand());
-
-
+      System.out.println("Processing authorized command: " + permitted.getCommand());
       CommandResult result = gfshConnection.executeCommand(permitted.getCommand());
       assertNotNull(result);
 
@@ -176,7 +175,7 @@ public class GfshCommandsSecurityTest {
       if (other.getPermission() == null)
         continue;
 
-      LogService.getLogger().info("Processing unauthorized command: " + other.getCommand());
+      System.out.println("Processing unauthorized command: " + other.getCommand());
       CommandResult result = (CommandResult) gfshConnection.executeCommand(other.getCommand());
       int errorCode = ((ErrorResultData) result.getResultData()).getErrorCode();
 

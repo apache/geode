@@ -68,7 +68,7 @@ public final class PRTombstoneMessage extends PartitionMessageWithDirectReply
 
   public static void send(BucketRegion r, final Set<Object> keys, EventID eventID) {
     Set<InternalDistributedMember> recipients =
-        r.getPartitionedRegion().getRegionAdvisor().adviseAllPRNodes();
+        r.getPartitionedRegion().getRegionAdvisor().adviseAllServersWithInterest();
     recipients.removeAll(r.getDistributionAdvisor().adviseReplicates());
     if (recipients.size() == 0) {
       return;

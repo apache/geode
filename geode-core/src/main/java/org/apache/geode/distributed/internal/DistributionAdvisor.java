@@ -1295,6 +1295,28 @@ public class DistributionAdvisor {
   }
 
   /**
+   * This method calls filter->include on every profile until include returns true.
+   * 
+   * @return false if all filter->include calls returns false; otherwise true.
+   **/
+  protected boolean satisfiesFilter(Filter f) {
+    initializationGate();
+    if (disabled) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Intelligent Messaging Disabled");
+      }
+      return !getDefaultDistributionMembers().isEmpty();
+    }
+    Profile[] locProfiles = this.profiles; // grab current profiles
+    for (Profile p : locProfiles) {
+      if (f.include(p)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * A visitor interface for all the available profiles used by
    * {@link DistributionAdvisor#accept(ProfileVisitor, Object)}. Unlike the {@link Filter} class
    * this does not assume of two state visit of inclusion or exclusion rather allows manipulation of

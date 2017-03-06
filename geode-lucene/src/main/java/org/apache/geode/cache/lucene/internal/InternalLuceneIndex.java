@@ -27,4 +27,9 @@ public interface InternalLuceneIndex extends LuceneIndex {
    */
   public void dumpFiles(String directory);
 
+  /**
+   * Destroy the index
+   */
+  public void destroy(boolean initiator);
+
 }

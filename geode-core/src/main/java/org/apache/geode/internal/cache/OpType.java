@@ -49,6 +49,8 @@ public final class OpType {
 
   public static final byte UPDATE_ENTRY_VERSION = 11;
 
+  public static final byte GET_FOR_REGISTER_INTEREST = 12;
+
   public static final byte CLEAR = 16;
 
   public static final byte MARKER = 32;

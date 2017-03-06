@@ -33,7 +33,10 @@ import org.apache.geode.i18n.StringId;
  * <li>{@link #SEVERE_LEVEL}
  * <li>{@link #NONE_LEVEL}
  * </ol>
+ * 
+ * @deprecated use log4j api instead
  */
+@Deprecated
 public interface InternalLogWriter extends LogWriter, LogWriterI18n {
 
   /**

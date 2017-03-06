@@ -18,7 +18,7 @@ package org.apache.geode.cache.lucene;
 import org.apache.geode.GemFireCheckedException;
 
 /**
- * Thrown when a lucene query fails.
+ * Thrown when a Lucene query fails.
  */
 public class LuceneQueryException extends GemFireCheckedException {
 

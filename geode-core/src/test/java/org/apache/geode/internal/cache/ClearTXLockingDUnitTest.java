@@ -42,6 +42,8 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
+
 import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.Ignore;
@@ -107,6 +109,7 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
     performTestAndCheckResults(putOperationsTest);
   }
 
+  @Category(FlakyTest.class) // GEODE-2275
   @Test
   public void testPutWithClearDifferentVM() throws InterruptedException {
     getVMs();

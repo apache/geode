@@ -77,7 +77,7 @@ public class PulseDataExportTest {
         .addIgnoredException("Failed to properly release resources held by the HTTP service:");
     IgnoredException.addIgnoredException("!STOPPED");
 
-    locator = lsRule.startLocatorVMWithPulse(0, new Properties());
+    locator = lsRule.startLocatorVM(0, new Properties());
 
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();

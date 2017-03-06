@@ -23,6 +23,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.test.junit.categories.UnitTest;
 
+import java.nio.file.Path;
+
 /**
  * AbstractCliAroundInterceptor Tester.
  */
@@ -38,7 +40,8 @@ public class AbstractCliAroundInterceptorJUnitTest {
       }
 
       @Override
-      public Result postExecution(final GfshParseResult parseResult, final Result commandResult) {
+      public Result postExecution(final GfshParseResult parseResult, final Result commandResult,
+          final Path tempFile) {
         return null;
       }
     };

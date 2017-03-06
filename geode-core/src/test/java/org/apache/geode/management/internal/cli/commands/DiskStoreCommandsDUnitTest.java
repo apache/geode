@@ -36,6 +36,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -53,11 +54,10 @@ import org.apache.geode.cache.query.data.PortfolioPdx;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -257,7 +257,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
       vm.invoke(new SerializableRunnable() {
         public void run() {
           try {
-            FileUtil.delete((new File(diskStoreName + vm.getPid())));
+            FileUtils.deleteDirectory((new File(diskStoreName + vm.getPid())));
           } catch (IOException iex) {
             // There's nothing else we can do
           }
@@ -498,7 +498,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
       vm.invoke(new SerializableRunnable() {
         public void run() {
           try {
-            FileUtil.delete((new File(diskStoreName + vm.getPid())));
+            FileUtils.deleteDirectory((new File(diskStoreName + vm.getPid())));
           } catch (IOException iex) {
             // There's nothing else we can do
           }
@@ -1475,7 +1475,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
 
   private void deleteFiles() throws IOException {
     for (String path : this.filesToBeDeleted) {
-      FileUtil.delete(new File(path));
+      FileUtils.deleteDirectory(new File(path));
     }
 
   }

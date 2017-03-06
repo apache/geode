@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
@@ -49,7 +51,7 @@ import org.apache.geode.internal.logging.LogService;
  * in current AEQs are flushed into index. This function enables an accessor and client to call to
  * make sure the current events are processed.
  */
-public class WaitUntilFlushedFunction extends FunctionAdapter implements InternalEntity {
+public class WaitUntilFlushedFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
   public static final String ID = WaitUntilFlushedFunction.class.getName();
 
@@ -61,7 +63,7 @@ public class WaitUntilFlushedFunction extends FunctionAdapter implements Interna
     ResultSender<Boolean> resultSender = ctx.getResultSender();
 
     Region region = ctx.getDataSet();
-
+    Cache cache = region.getCache();
     WaitUntilFlushedFunctionContext arg = (WaitUntilFlushedFunctionContext) ctx.getArguments();
     String indexName = arg.getIndexName();
     if (indexName == null) {
@@ -70,12 +72,12 @@ public class WaitUntilFlushedFunction extends FunctionAdapter implements Interna
     long timeout = arg.getTimeout();
     TimeUnit unit = arg.getTimeunit();
 
-    LuceneService service = LuceneServiceProvider.get(region.getCache());
+    LuceneService service = LuceneServiceProvider.get(cache);
     LuceneIndexImpl index = (LuceneIndexImpl) service.getIndex(indexName, region.getFullPath());
 
     boolean result = false;
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, region.getFullPath());
-    AsyncEventQueueImpl queue = (AsyncEventQueueImpl) region.getCache().getAsyncEventQueue(aeqId);
+    AsyncEventQueueImpl queue = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
     if (queue != null) {
       try {
         result = queue.waitUntilFlushed(timeout, unit);

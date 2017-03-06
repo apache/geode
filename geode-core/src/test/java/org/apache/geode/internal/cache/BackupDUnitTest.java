@@ -14,33 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.apache.geode.GemFireIOException;
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.admin.BackupStatus;
-import org.apache.geode.admin.internal.FinishBackupRequest;
 import org.apache.geode.admin.internal.PrepareBackupRequest;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
@@ -58,7 +38,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ReplyMessage;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.partitioned.PersistentPartitionedRegionTestBase;
 import org.apache.geode.test.dunit.Assert;
@@ -71,6 +50,26 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 @Category(DistributedTest.class)
 public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
@@ -80,7 +79,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
     StringBuilder failures = new StringBuilder();
-    FileUtil.delete(getBackupDir(), failures);
+    delete(getBackupDir(), failures);
     if (failures.length() > 0) {
       LogWriterUtils.getLogWriter().error(failures.toString());
     }
@@ -108,9 +107,9 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     assertEquals(2, status.getBackedUpDiskStores().size());
     assertEquals(Collections.emptySet(), status.getOfflineDiskStores());
 
-
-    List<File> mytexts = FileUtil.findAll(getBackupDir(), ".*my.txt.*");
-    assertEquals(2, mytexts.size());
+    Pattern pattern = Pattern.compile(".*my.txt.*");
+    Collection<File> files = FileUtils.listFiles(getBackupDir(), new String[] {"txt"}, true);
+    assertEquals(4, files.size());
     deleteOldUserUserFile(vm0);
     deleteOldUserUserFile(vm1);
     validateBackupComplete();
@@ -153,8 +152,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
   /**
    * Test of bug 42419
-   * 
-   * @throws Throwable
    */
   @Test
   public void testBackupFromMemberWithDiskStore() throws Throwable {
@@ -176,7 +173,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
       assertNotNull(key);
     }
     assertEquals(Collections.emptySet(), status.getOfflineDiskStores());
-
 
     validateBackupComplete();
 
@@ -218,8 +214,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
   /**
    * Test for bug 42419
-   * 
-   * @throws Throwable
    */
   @Test
   public void testBackupWhileBucketIsCreated() throws Throwable {
@@ -227,7 +221,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     final VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
-
 
     LogWriterUtils.getLogWriter().info("Creating region in VM0");
     createPersistentRegion(vm0);
@@ -238,7 +231,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     // create the pr on vm1, which won't have any buckets
     LogWriterUtils.getLogWriter().info("Creating region in VM1");
     createPersistentRegion(vm1);
-
 
     final AtomicReference<BackupStatus> statusRef = new AtomicReference<BackupStatus>();
     Thread thread1 = new Thread() {
@@ -259,11 +251,9 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     thread1.join();
     thread2.join();
 
-
     BackupStatus status = statusRef.get();
     assertEquals(2, status.getBackedUpDiskStores().size());
     assertEquals(Collections.emptySet(), status.getOfflineDiskStores());
-
 
     validateBackupComplete();
 
@@ -416,7 +406,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
    * Test for bug 42420. Invoke a backup when a bucket is in the middle of being moved.
    * 
    * @param observer - a message observer that triggers at the backup at the correct time.
-   * @throws Throwable
    */
   public void backupWhileBucketIsMoved(final DistributionMessageObserver observer)
       throws Throwable {
@@ -467,7 +456,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
         }
       });
 
-
       validateBackupComplete();
 
       createData(vm0, 0, 5, "C", "region1");
@@ -510,8 +498,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
   /**
    * Make sure we don't report members without persistent data as backed up.
-   * 
-   * @throws Throwable
    */
   @Test
   public void testBackupOverflow() throws Throwable {
@@ -532,7 +518,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
     assertEquals("Backed up disk stores  " + status, 1, status.getBackedUpDiskStores().size());
     assertEquals(2, status.getBackedUpDiskStores().values().iterator().next().size());
     assertEquals(Collections.emptySet(), status.getOfflineDiskStores());
-
 
     validateBackupComplete();
 
@@ -558,13 +543,10 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
     closeCache(vm2);
 
-
     BackupStatus status = backup(vm3);
     assertEquals(2, status.getBackedUpDiskStores().size());
     assertEquals(2, status.getOfflineDiskStores().size());
   }
-
-
 
   // TODO
   // Test default disk store.
@@ -574,8 +556,10 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
   private void validateBackupComplete() {
     File backupDir = getBackupDir();
-    File incompleteBackup = FileUtil.find(backupDir, ".*INCOMPLETE.*");
-    assertNull(incompleteBackup);
+    Pattern pattern = Pattern.compile(".*INCOMPLETE.*");
+    File[] files = backupDir.listFiles((dir1, name) -> pattern.matcher(name).matches());
+    assertNotNull(files);
+    assertTrue(files.length == 0);
   }
 
   protected void createPersistentRegion(VM vm) throws Throwable {
@@ -594,7 +578,7 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
       public void run() {
         final int pid = vm.getPid();
         try {
-          FileUtil.delete(new File("userbackup_" + pid));
+          FileUtils.deleteDirectory(new File("userbackup_" + pid));
         } catch (IOException e) {
           fail(e.getMessage());
         }
@@ -674,7 +658,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
         dsf.setMaxOplogSize(1);
         DiskStore ds = dsf.create(getUniqueName());
 
-
         RegionFactory rf = new RegionFactory();
         rf.setDiskStoreName(ds.getName());
         rf.setDiskSynchronous(true);
@@ -703,7 +686,6 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
         dsf.setDiskDirs(getDiskDirs(getUniqueName()));
         dsf.setMaxOplogSize(1);
         DiskStore ds = dsf.create(getUniqueName());
-
 
         RegionFactory rf = new RegionFactory();
         rf.setDiskStoreName(ds.getName());
@@ -802,4 +784,31 @@ public class BackupDUnitTest extends PersistentPartitionedRegionTestBase {
 
   }
 
+  /**
+   * Recursively delete a file or directory. A description of any files or directories that can not
+   * be deleted will be added to failures if failures is non-null. This method tries to delete as
+   * much as possible.
+   */
+  public static void delete(File file, StringBuilder failures) {
+    if (!file.exists())
+      return;
+
+    if (file.isDirectory()) {
+      File[] fileList = file.listFiles();
+      if (fileList != null) {
+        for (File child : fileList) {
+          delete(child, failures);
+        }
+      }
+    }
+
+    try {
+      Files.delete(file.toPath());
+    } catch (IOException e) {
+      if (failures != null) {
+        failures.append("Could not delete ").append(file).append(" due to ").append(e.getMessage())
+            .append('\n');
+      }
+    }
+  }
 }

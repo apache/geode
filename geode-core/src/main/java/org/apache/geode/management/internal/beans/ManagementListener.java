@@ -185,6 +185,10 @@ public class ManagementListener implements ResourceEventsListener {
         AsyncEventQueue queue = (AsyncEventQueue) resource;
         adapter.handleAsyncEventQueueCreation(queue);
         break;
+      case ASYNCEVENTQUEUE_REMOVE:
+        AsyncEventQueue removedQueue = (AsyncEventQueue) resource;
+        adapter.handleAsyncEventQueueRemoval(removedQueue);
+        break;
       case SYSTEM_ALERT:
         AlertDetails details = (AlertDetails) resource;
         adapter.handleSystemNotification(details);

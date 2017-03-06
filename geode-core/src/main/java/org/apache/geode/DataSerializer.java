@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
@@ -2666,6 +2667,74 @@ public abstract class DataSerializer {
       return map;
     }
   }
+
+
+  /**
+   * Writes a <code>LinkedHashMap</code> to a <code>DataOutput</code>. Note that even though
+   * <code>map</code> may be an instance of a subclass of <code>LinkedHashMap</code>,
+   * <code>readLinkedHashMap</code> will always return an instance of <code>LinkedHashMap</code>,
+   * <B>not</B> an instance of the subclass. To preserve the class type of <code>map</code>,
+   * {@link #writeObject(Object, DataOutput)} should be used for data serialization. This method
+   * will serialize a <code>null</code> map and not throw a <code>NullPointerException</code>.
+   *
+   * @throws IOException A problem occurs while writing to <code>out</code>
+   * @see #readLinkedHashMap
+   */
+  public static void writeLinkedHashMap(Map<?, ?> map, DataOutput out) throws IOException {
+
+    InternalDataSerializer.checkOut(out);
+
+    int size;
+    if (map == null) {
+      size = -1;
+    } else {
+      size = map.size();
+    }
+    InternalDataSerializer.writeArrayLength(size, out);
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
+      logger.trace(LogMarker.SERIALIZER, "Writing LinkedHashMap with {} elements: {}", size, map);
+    }
+    if (size > 0) {
+      for (Map.Entry<?, ?> entry : map.entrySet()) {
+        writeObject(entry.getKey(), out);
+        writeObject(entry.getValue(), out);
+      }
+    }
+  }
+
+  /**
+   * Reads a <code>LinkedHashMap</code> from a <code>DataInput</code>.
+   *
+   * @throws IOException A problem occurs while reading from <code>in</code>
+   * @throws ClassNotFoundException The class of one of the <Code>HashMap</code>'s elements cannot
+   *         be found.
+   * @see #writeLinkedHashMap
+   */
+  public static <K, V> LinkedHashMap<K, V> readLinkedHashMap(DataInput in)
+      throws IOException, ClassNotFoundException {
+
+    InternalDataSerializer.checkIn(in);
+
+    int size = InternalDataSerializer.readArrayLength(in);
+    if (size == -1) {
+      return null;
+    } else {
+      LinkedHashMap<K, V> map = new LinkedHashMap<>(size);
+      for (int i = 0; i < size; i++) {
+        K key = DataSerializer.<K>readObject(in);
+        V value = DataSerializer.<V>readObject(in);
+        map.put(key, value);
+      }
+
+      if (logger.isTraceEnabled(LogMarker.SERIALIZER)) {
+        logger.trace(LogMarker.SERIALIZER, "Read LinkedHashMap with {} elements: {}", size, map);
+      }
+
+      return map;
+    }
+  }
+
+
 
   /**
    * Writes a <code>TreeSet</code> to a <code>DataOutput</code>. Note that even though

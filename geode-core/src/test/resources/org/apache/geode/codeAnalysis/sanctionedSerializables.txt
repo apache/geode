@@ -563,6 +563,8 @@ org/apache/geode/management/internal/cli/functions/DestroyDiskStoreFunction,true
 org/apache/geode/management/internal/cli/functions/DestroyIndexFunction,true,1
 org/apache/geode/management/internal/cli/functions/ExportConfigFunction,true,1
 org/apache/geode/management/internal/cli/functions/ExportDataFunction,true,1
+org/apache/geode/management/internal/cli/functions/ExportLogsFunction,true,1
+org/apache/geode/management/internal/cli/functions/ExportLogsFunction$Args,false,endTime:java/time/LocalDateTime,includeLogs:boolean,includeStats:boolean,logLevel:org/apache/logging/log4j/Level,startTime:java/time/LocalDateTime,thisLogLevelOnly:boolean
 org/apache/geode/management/internal/cli/functions/FetchRegionAttributesFunction,true,4366812590788342070
 org/apache/geode/management/internal/cli/functions/FetchRegionAttributesFunction$FetchRegionAttributesFunctionResult,true,-3970828263897978845,cacheListenerClasses:java/lang/String[],cacheLoaderClass:java/lang/String,cacheWriterClass:java/lang/String,regionAttributes:org/apache/geode/cache/RegionAttributes
 org/apache/geode/management/internal/cli/functions/FetchSharedConfigurationStatusFunction,true,1
@@ -618,8 +620,10 @@ org/apache/geode/management/internal/cli/shell/JMXInvocationException,true,-4265
 org/apache/geode/management/internal/cli/shell/jline/ANSIHandler$ANSIStyle,false
 org/apache/geode/management/internal/cli/util/DiskStoreNotFoundException,true,-5184836041554948093
 org/apache/geode/management/internal/cli/util/EvictionAttributesInfo,true,1,evictionAction:java/lang/String,evictionAlgorithm:java/lang/String,evictionMaxValue:int
+org/apache/geode/management/internal/cli/util/ExportLogsCacheWriter,false,currentFile:java/nio/file/Path,currentOutputStream:java/io/BufferedOutputStream,isEmpty:boolean
 org/apache/geode/management/internal/cli/util/FixedPartitionAttributesInfo,false,isPrimary:boolean,numBuckets:int,partitionName:java/lang/String
 org/apache/geode/management/internal/cli/util/JConsoleNotFoundException,true,-1485615321440327206
+org/apache/geode/management/internal/cli/util/LogFilter$LineFilterResult,false
 org/apache/geode/management/internal/cli/util/MemberInformation,true,1,cacheXmlFilePath:java/lang/String,cpuUsage:java/lang/String,groups:java/lang/String,heapUsage:java/lang/String,host:java/lang/String,id:java/lang/String,initHeapSize:java/lang/String,locatorBindAddress:java/lang/String,locatorPort:int,locators:java/lang/String,logFilePath:java/lang/String,maxHeapSize:java/lang/String,name:java/lang/String,processId:java/lang/String,serverBindAddress:java/lang/String,statArchiveFilePath:java/lang/String,workingDirPath:java/lang/String
 org/apache/geode/management/internal/cli/util/MemberNotFoundException,true,5686788909239181174
 org/apache/geode/management/internal/cli/util/VisualVmNotFoundException,true,-8491645604829510102

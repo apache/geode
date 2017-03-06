@@ -29,6 +29,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.LoaderHelper;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
@@ -351,6 +354,44 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     assertEquals(2, page2.size());
     final List<LuceneResultStruct<Object, Object>> page3 = pages.next();
     assertEquals(2, page3.size());
+    assertFalse(pages.hasNext());
+
+    allEntries.addAll(page1);
+    allEntries.addAll(page2);
+    allEntries.addAll(page3);
+    assertEquals(region.keySet(),
+        allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+    assertEquals(region.values(),
+        allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+  }
+
+  @Test
+  public void shouldReturnCorrectResultsOnDeletionAfterQueryExecutionWithLoader() throws Exception {
+    final int pageSize = 2;
+    final LuceneQuery<Object, Object> query = addValuesAndCreateQuery(pageSize);
+    region.getAttributesMutator().setCacheLoader(new CacheLoader() {
+      @Override
+      public Object load(final LoaderHelper helper) throws CacheLoaderException {
+        return new TestObject("should not", "load this");
+      }
+
+      @Override
+      public void close() {
+
+      }
+    });
+    final PageableLuceneQueryResults<Object, Object> pages = query.findPages();
+    List<LuceneResultStruct<Object, Object>> allEntries = new ArrayList<>();
+    assertTrue(pages.hasNext());
+    assertEquals(7, pages.size());
+    // Destroying an entry from the region after the query is executed.
+    region.destroy("C");
+    final List<LuceneResultStruct<Object, Object>> page1 = pages.next();
+    assertEquals(pageSize, page1.size());
+    final List<LuceneResultStruct<Object, Object>> page2 = pages.next();
+    assertEquals(pageSize, page2.size());
+    final List<LuceneResultStruct<Object, Object>> page3 = pages.next();
+    assertEquals(pageSize, page3.size());
     assertFalse(pages.hasNext());
 
     allEntries.addAll(page1);

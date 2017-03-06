@@ -340,10 +340,5 @@ public final class DeployCommands extends AbstractCommandsSupport {
 
       return fileResult;
     }
-
-    @Override
-    public Result postExecution(GfshParseResult parseResult, Result commandResult) {
-      return null;
-    }
   }
 }

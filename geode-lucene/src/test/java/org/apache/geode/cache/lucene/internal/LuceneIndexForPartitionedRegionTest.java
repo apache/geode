@@ -290,6 +290,7 @@ public class LuceneIndexForPartitionedRegionTest {
     String regionPath = "regionName";
     GemFireCacheImpl cache = Fakes.cache();
     RegionAttributes regionAttributes = mock(RegionAttributes.class);
+    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     PartitionAttributes partitionAttributes = initializeAttributes(cache);
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
@@ -310,6 +311,7 @@ public class LuceneIndexForPartitionedRegionTest {
     GemFireCacheImpl cache = Fakes.cache();
     PartitionAttributes partitionAttributes = initializeAttributes(cache);
     RegionAttributes regionAttributes = mock(RegionAttributes.class);
+    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.PARTITION);
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     LuceneIndexForPartitionedRegion indexSpy = spy(index);

@@ -29,10 +29,9 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 
 import org.apache.lucene.analysis.Analyzer;
 
-public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Serializable {
+public class LuceneIndexDetails extends LuceneFunctionSerializable
+    implements Comparable<LuceneIndexDetails> {
   private static final long serialVersionUID = 1L;
-  private final String indexName;
-  private final String regionPath;
   private final String serverName;
   private final String[] searchableFieldNames;
   private Map<String, String> fieldAnalyzers = null;
@@ -42,8 +41,7 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
   public LuceneIndexDetails(final String indexName, final String regionPath,
       final String[] searchableFieldNames, final Map<String, Analyzer> fieldAnalyzers,
       LuceneIndexStats indexStats, boolean initialized, final String serverName) {
-    this.indexName = indexName;
-    this.regionPath = regionPath;
+    super(indexName, regionPath);
     this.serverName = serverName;
     this.searchableFieldNames = searchableFieldNames;
     this.fieldAnalyzers = getFieldAnalyzerStrings(fieldAnalyzers);
@@ -139,14 +137,6 @@ public class LuceneIndexDetails implements Comparable<LuceneIndexDetails>, Seria
 
   public boolean getInitialized() {
     return initialized;
-  }
-
-  public String getIndexName() {
-    return indexName;
-  }
-
-  public String getRegionPath() {
-    return regionPath;
   }
 
   private static <T extends Comparable<T>> int compare(final T obj1, final T obj2) {

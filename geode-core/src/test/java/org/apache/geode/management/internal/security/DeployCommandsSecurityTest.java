@@ -47,12 +47,7 @@ public class DeployCommandsSecurityTest {
   private MemberMXBean bean;
 
   @ClassRule
-  public static ServerStarterRule serverRule = new ServerStarterRule(new Properties() {
-    {
-      setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
-      setProperty(JMX_MANAGER_PORT, jmxManagerPort + "");
-    }
-  });
+  public static ServerStarterRule serverRule = new ServerStarterRule();
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -61,6 +56,10 @@ public class DeployCommandsSecurityTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
+    Properties properties = new Properties();
+    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
+    properties.setProperty(JMX_MANAGER_PORT, jmxManagerPort + "");
+    serverRule.startServer(properties);
     File zipFile = temporaryFolder.newFile(zipFileName);
     deployCommand = "deploy --jar=" + zipFile.getAbsolutePath();
   }

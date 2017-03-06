@@ -37,7 +37,7 @@ public class LuceneCliStrings {
   public static final String LUCENE_CREATE_INDEX__NAME__HELP =
       "Name of the lucene index to create.";
   public static final String LUCENE_CREATE_INDEX__REGION_HELP =
-      "Name/Path of the region where the lucene index is created on.";
+      "Name/Path of the region on which to create the lucene index.";
   public static final String LUCENE_CREATE_INDEX__FIELD = "field";
   public static final String LUCENE_CREATE_INDEX__FIELD_HELP =
       "fields on the region values which are stored in the lucene index.";
@@ -61,14 +61,13 @@ public class LuceneCliStrings {
   // Describe lucene index commands
   public static final String LUCENE_DESCRIBE_INDEX = "describe lucene index";
   public static final String LUCENE_DESCRIBE_INDEX__HELP =
-      "Display the describe of lucene indexes created for all members.";
+      "Display the description of lucene indexes created for all members.";
   public static final String LUCENE_DESCRIBE_INDEX__ERROR_MESSAGE =
       "An error occurred while collecting lucene index information across the Geode cluster: %1$s";
   public static final String LUCENE_DESCRIBE_INDEX__NAME__HELP =
       "Name of the lucene index to describe.";
   public static final String LUCENE_DESCRIBE_INDEX__REGION_HELP =
-      "Name/Path of the region where the lucene index to be described exists.";
-
+      "Name/Path of the region defining the lucene index to be described.";
 
   // Search lucene index commands
   public static final String LUCENE_SEARCH_INDEX = "search lucene";
@@ -78,7 +77,7 @@ public class LuceneCliStrings {
   public static final String LUCENE_SEARCH_INDEX__NAME__HELP =
       "Name of the lucene index to search.";
   public static final String LUCENE_SEARCH_INDEX__REGION_HELP =
-      "Name/Path of the region where the lucene index exists.";
+      "Name/Path of the region defining the lucene index to be searched.";
   public static final String LUCENE_SEARCH_INDEX__QUERY_STRING = "queryStrings";
   public static final String LUCENE_SEARCH_INDEX__LIMIT = "limit";
   public static final String LUCENE_SEARCH_INDEX__LIMIT__HELP = "Number of search results needed";
@@ -95,4 +94,23 @@ public class LuceneCliStrings {
   public static final String LUCENE_SEARCH_INDEX__KEYSONLY__HELP =
       "Return only keys of search results.";
 
+  // Destroy lucene index command
+  public static final String LUCENE_DESTROY_INDEX = "destroy lucene index";
+  public static final String LUCENE_DESTROY_INDEX__HELP = "Destroy the lucene index.";
+  public static final String LUCENE_DESTROY_INDEX__EXCEPTION_MESSAGE =
+      "An unexpected exception occurred while destroying lucene index:";
+  public static final String LUCENE_DESTROY_INDEX__NAME__HELP =
+      "Name of the lucene index to destroy.";
+  public static final String LUCENE_DESTROY_INDEX__REGION_HELP =
+      "Name of the region defining the lucene index to be destroyed.";
+  public static final String LUCENE_DESTROY_INDEX__MSG__REGION_CANNOT_BE_EMPTY =
+      "Region cannot be empty.";
+  public static final String LUCENE_DESTROY_INDEX__MSG__INDEX_CANNOT_BE_EMPTY =
+      "Index cannot be empty.";
+  public static final String LUCENE_DESTROY_INDEX__MSG__COULDNOT_FIND_MEMBERS_FOR_REGION_0 =
+      "Could not find any members defining region {0}.";
+  public static final String LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FOR_REGION_0 =
+      "Successfully destroyed all lucene indexes for region {0}";
+  public static final String LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FOR_REGION_1 =
+      "Successfully destroyed lucene index {0} for region {1}";
 }

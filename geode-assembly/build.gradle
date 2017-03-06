@@ -96,7 +96,7 @@ test {
 }
 
 tasks.withType(Test){
-  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}/lib"
+  environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
 }
 
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
@@ -168,7 +168,6 @@ def cp = {
         it.contains('spring-core') ||
         it.contains('spring-shell') ||
         it.contains('snappy') ||
-        it.contains('hbase') ||
         it.contains('jgroups') ||
         it.contains('netty') ||
 
@@ -215,6 +214,8 @@ task gfshDepsJar (type: Jar, dependsOn: ':geode-core:classes') {
 def docsDir = file("$buildDir/javadocs")
 task docs(type: Javadoc) {
     options.addStringOption('Xdoclint:none', '-quiet')
+    options.links("https://lucene.apache.org/core/6_4_1/core/")
+    options.links("https://lucene.apache.org/core/6_4_1/queryparser/")
     options.encoding='UTF-8'
     source parent.subprojects*.javadoc*.source
     classpath = files(parent.subprojects*.javadoc*.classpath)

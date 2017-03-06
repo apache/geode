@@ -14,19 +14,11 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
-import org.apache.geode.security.TestSecurityManager;
-import org.json.JSONException;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result.Status;
@@ -35,6 +27,7 @@ import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -42,6 +35,15 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.awaitility.Awaitility;
+import org.json.JSONException;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class MultiUserDUnitTest extends CliCommandTestBase {
@@ -49,6 +51,8 @@ public class MultiUserDUnitTest extends CliCommandTestBase {
   @Category(FlakyTest.class) // GEODE-1579
   @Test
   public void testMultiUser() throws IOException, JSONException, InterruptedException {
+    IgnoredException.addIgnoredException("java.util.zip.ZipException: zip file is empty");
+
     Properties properties = new Properties();
     properties.put(NAME, MultiUserDUnitTest.class.getSimpleName());
     properties.put(SECURITY_MANAGER, TestSecurityManager.class.getName());

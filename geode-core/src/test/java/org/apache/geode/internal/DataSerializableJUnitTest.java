@@ -32,22 +32,7 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.Vector;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
@@ -1578,6 +1563,53 @@ public class DataSerializableJUnitTest implements Serializable {
     Hashtable map2 = (Hashtable) DataSerializer.readObject(in);
     assertEquals(map, map2);
   }
+
+  /**
+   * Tests data serializing an {@link java.util.LinkedHashMap}
+   */
+  @Test
+  public void testLinkedHashMap() throws Exception {
+    Random random = getRandom();
+    LinkedHashMap map = new LinkedHashMap();
+    int size = random.nextInt(50);
+    for (int i = 0; i < size; i++) {
+      Object key = new Long(random.nextLong());
+      Object value = String.valueOf(random.nextLong());
+      map.put(key, value);
+    }
+
+    DataOutputStream out = getDataOutput();
+    DataSerializer.writeLinkedHashMap(map, out);
+    out.flush();
+
+    DataInput in = getDataInput();
+    LinkedHashMap map2 = DataSerializer.readLinkedHashMap(in);
+    assertEquals(map, map2);
+  }
+
+  /**
+   * Tests data serializing an {@link LinkedHashMap} using {@link DataSerializer#writeObject}.
+   */
+  @Test
+  public void testLinkedHashMapObject() throws Exception {
+    Random random = getRandom();
+    LinkedHashMap map = new LinkedHashMap();
+    int size = random.nextInt(50);
+    for (int i = 0; i < size; i++) {
+      Object key = new Long(random.nextLong());
+      Object value = String.valueOf(random.nextLong());
+      map.put(key, value);
+    }
+
+    DataOutputStream out = getDataOutput();
+    DataSerializer.writeObject(map, out);
+    out.flush();
+
+    DataInput in = getDataInput();
+    LinkedHashMap map2 = (LinkedHashMap) DataSerializer.readObject(in);
+    assertEquals(map, map2);
+  }
+
 
   /**
    * Tests data serializing an {@link IdentityHashMap}

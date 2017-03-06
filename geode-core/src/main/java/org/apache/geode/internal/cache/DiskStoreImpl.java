@@ -14,25 +14,47 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
 import org.apache.geode.internal.cache.lru.LRUAlgorithm;
 import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.persistence.*;
+import org.apache.geode.internal.cache.persistence.BackupInspector;
+import org.apache.geode.internal.cache.persistence.BackupManager;
+import org.apache.geode.internal.cache.persistence.BytesAndBits;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.internal.cache.persistence.DiskStoreFilter;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.persistence.OplogType;
+import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.internal.cache.persistence.RestoreScript;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
@@ -50,17 +72,41 @@ import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.apache.logging.log4j.Logger;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.net.InetAddress;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -69,8 +115,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Represents a (disk-based) persistent store for region data. Used for both persistent recoverable
@@ -86,15 +130,15 @@ public class DiskStoreImpl implements DiskStore {
   private static final String BACKUP_DIR_PREFIX = "dir";
   public static final boolean KRF_DEBUG = Boolean.getBoolean("disk.KRF_DEBUG");
 
-  public static final int MAX_OPEN_INACTIVE_OPLOGS = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPEN_INACTIVE_OPLOGS", 7).intValue();
+  public static final int MAX_OPEN_INACTIVE_OPLOGS =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPEN_INACTIVE_OPLOGS", 7);
 
   /*
    * If less than 20MB (default - configurable through this property) of the available space is left
    * for logging and other misc stuff then it is better to bail out.
    */
-  public static final int MIN_DISK_SPACE_FOR_LOGS = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "MIN_DISK_SPACE_FOR_LOGS", 20).intValue();
+  public static final int MIN_DISK_SPACE_FOR_LOGS =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MIN_DISK_SPACE_FOR_LOGS", 20);
 
   /** Represents an invalid id of a key/value on disk */
   public static final long INVALID_ID = 0L; // must be zero
@@ -158,17 +202,15 @@ public class DiskStoreImpl implements DiskStore {
    * other regions waiting for a compactor thread from the pool. Ignored if set to <= 0. Made non
    * static so tests can set it.
    */
-  private final int MAX_OPLOGS_PER_COMPACTION = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION", Integer
-          .getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_ROLL", 1).intValue())
-      .intValue();
+  private final int MAX_OPLOGS_PER_COMPACTION = Integer.getInteger(
+      DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_COMPACTION",
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_OPLOGS_PER_ROLL", 1).intValue());
   /**
    *
    */
-  public static final int MAX_CONCURRENT_COMPACTIONS = Integer
-      .getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_CONCURRENT_COMPACTIONS", Integer
-          .getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_CONCURRENT_ROLLS", 1).intValue())
-      .intValue();
+  public static final int MAX_CONCURRENT_COMPACTIONS = Integer.getInteger(
+      DistributionConfig.GEMFIRE_PREFIX + "MAX_CONCURRENT_COMPACTIONS",
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "MAX_CONCURRENT_ROLLS", 1).intValue());
 
   /**
    * This system property indicates that maximum number of delayed write tasks that can be pending
@@ -1441,8 +1483,8 @@ public class DiskStoreImpl implements DiskStore {
   private volatile boolean flusherThreadTerminated;
 
   private void startAsyncFlusher() {
-    final String thName = LocalizedStrings.DiskRegion_ASYNCHRONOUS_DISK_WRITER_0
-        .toLocalizedString(new Object[] {getName()});
+    final String thName =
+        LocalizedStrings.DiskRegion_ASYNCHRONOUS_DISK_WRITER_0.toLocalizedString(getName());
     this.flusherThread = new Thread(
         LoggingThreadGroup.createThreadGroup(
             LocalizedStrings.DiskRegion_DISK_WRITERS.toLocalizedString(), logger),
@@ -1802,7 +1844,7 @@ public class DiskStoreImpl implements DiskStore {
         f.deleteOnExit();
         dae = null;
         break;
-      } catch (IOException ex) {
+      } catch (IOException | IllegalStateException ex) {
         if (fs != null) {
           try {
             fs.close();
@@ -1811,16 +1853,6 @@ public class DiskStoreImpl implements DiskStore {
         }
         dae = new DiskAccessException(
             LocalizedStrings.Oplog_COULD_NOT_LOCK_0.toLocalizedString(f.getPath()), ex, this);
-      } catch (IllegalStateException ex2) {
-        // OverlappingFileLockExtension needs to be caught here see bug 41290
-        if (fs != null) {
-          try {
-            fs.close();
-          } catch (IOException ignore) {
-          }
-        }
-        dae = new DiskAccessException(
-            LocalizedStrings.Oplog_COULD_NOT_LOCK_0.toLocalizedString(f.getPath()), ex2, this);
       }
       cnt++;
       try {
@@ -1945,17 +1977,7 @@ public class DiskStoreImpl implements DiskStore {
       {
         FilenameFilter overflowFileFilter =
             new DiskStoreFilter(OplogType.OVERFLOW, true, partialFileName);
-        for (DirectoryHolder dh : this.directories) {
-          File dir = dh.getDir();
-          // delete all overflow files
-          File[] files = FileUtil.listFiles(dir, overflowFileFilter);
-          for (File file : files) {
-            boolean deleted = file.delete();
-            if (!deleted && file.exists() && logger.isDebugEnabled()) {
-              logger.debug("Could not delete file {}", file);
-            }
-          }
-        }
+        deleteFiles(overflowFileFilter);
       }
 
       persistentOplogs.createOplogs(needsOplogs, persistentBackupFiles);
@@ -1991,8 +2013,8 @@ public class DiskStoreImpl implements DiskStore {
   private void statsClose() {
     this.stats.close();
     if (this.directories != null) {
-      for (int i = 0; i < this.directories.length; i++) {
-        this.directories[i].close();
+      for (final DirectoryHolder directory : this.directories) {
+        directory.close();
       }
     }
   }
@@ -2137,9 +2159,7 @@ public class DiskStoreImpl implements DiskStore {
     try {
       // Now while holding the write lock remove any elements from the queue
       // for this region.
-      Iterator<Object> it = this.asyncQueue.iterator();
-      while (it.hasNext()) {
-        Object o = it.next();
+      for (final Object o : this.asyncQueue) {
         if (o instanceof AsyncDiskEntry) {
           AsyncDiskEntry ade = (AsyncDiskEntry) o;
           if (shouldClear(region, rvv, ade)) {
@@ -2531,8 +2551,7 @@ public class DiskStoreImpl implements DiskStore {
 
   int incBackgroundTasks() {
     getCache().getCachePerfStats().incDiskTasksWaiting();
-    int v = this.backgroundTasks.incrementAndGet();
-    return v;
+    return this.backgroundTasks.incrementAndGet();
   }
 
   void decBackgroundTasks() {
@@ -2636,13 +2655,14 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   private void deleteFiles(FilenameFilter overflowFileFilter) {
-    for (int i = 0; i < this.directories.length; i++) {
-      File dir = this.directories[i].getDir();
-      File[] files = FileUtil.listFiles(dir, overflowFileFilter);
-      for (File file : files) {
-        boolean deleted = file.delete();
-        if (!deleted && file.exists() && logger.isDebugEnabled()) {
-          logger.debug("Could not delete file {}", file);
+    for (final DirectoryHolder directory : this.directories) {
+      File[] files = directory.getDir().listFiles(overflowFileFilter);
+      if (files != null) {
+        for (File file : files) {
+          boolean deleted = file.delete();
+          if (!deleted && file.exists() && logger.isDebugEnabled()) {
+            logger.debug("Could not delete file {}", file);
+          }
         }
       }
     }
@@ -2738,8 +2758,8 @@ public class DiskStoreImpl implements DiskStore {
 
     // Find all of the member's diskstore oplogs in the member's baseline
     // diskstore directory structure (*.crf,*.krf,*.drf)
-    List<File> baselineOplogFiles = FileUtil.findAll(baselineDir, ".*\\.[kdc]rf$");
-
+    Collection<File> baselineOplogFiles =
+        FileUtils.listFiles(baselineDir, new String[] {"krf", "drf", "crf"}, true);
     // Our list of oplogs to copy (those not already in the baseline)
     List<Oplog> oplogList = new LinkedList<Oplog>();
 
@@ -2858,11 +2878,7 @@ public class DiskStoreImpl implements DiskStore {
      * @return true if compaction done; false if it was not
      */
     private synchronized boolean scheduleIfNeeded(CompactableOplog[] opLogs) {
-      if (!this.scheduled) {
-        return schedule(opLogs);
-      } else {
-        return false;
-      }
+      return !this.scheduled && schedule(opLogs);
     }
 
     /**
@@ -2873,8 +2889,8 @@ public class DiskStoreImpl implements DiskStore {
       if (!this.compactorEnabled)
         return false;
       if (opLogs != null) {
-        for (int i = 0; i < opLogs.length; i++) {
-          opLogs[i].prepareForCompact();
+        for (final CompactableOplog opLog : opLogs) {
+          opLog.prepareForCompact();
         }
         this.scheduled = true;
         this.scheduledOplogs = opLogs;
@@ -2922,10 +2938,7 @@ public class DiskStoreImpl implements DiskStore {
         return true;
       }
       CancelCriterion stopper = getCache().getCancelCriterion();
-      if (stopper.isCancelInProgress()) {
-        return true;
-      }
-      return false;
+      return stopper.isCancelInProgress();
     }
 
     /**
@@ -2953,7 +2966,7 @@ public class DiskStoreImpl implements DiskStore {
           String tName = "OplogCompactor " + getName() + " for oplog " + oplogs[0].toString();
           Thread.currentThread().setName(tName);
 
-          StringBuffer buffer = new StringBuffer();
+          StringBuilder buffer = new StringBuilder();
           for (int j = 0; j < oplogs.length; ++j) {
             buffer.append(oplogs[j].toString());
             if (j + 1 < oplogs.length) {
@@ -3239,9 +3252,8 @@ public class DiskStoreImpl implements DiskStore {
 
     // NOTE - do NOT use DM.cacheTimeMillis here. See bug #49920
     long timestamp = System.currentTimeMillis();
-    PersistentMemberID id = new PersistentMemberID(getDiskStoreID(), memberId.getInetAddress(),
+    return new PersistentMemberID(getDiskStoreID(), memberId.getInetAddress(),
         firstDir.getAbsolutePath(), memberId.getName(), timestamp, (short) 0);
-    return id;
   }
 
   public PersistentID getPersistentID() {
@@ -3534,12 +3546,12 @@ public class DiskStoreImpl implements DiskStore {
     public String toString() {
       StringBuilder sb = new StringBuilder();
       sb.append("dr=").append(region.getDiskRegion().getId());
-      sb.append(" versionOnly=" + this.versionOnly);
+      sb.append(" versionOnly=").append(this.versionOnly);
       if (this.versionOnly) {
-        sb.append(" versionTag=" + this.tag);
+        sb.append(" versionTag=").append(this.tag);
       }
       if (de != null) {
-        sb.append(" key=" + de.getKey());
+        sb.append(" key=").append(de.getKey());
       } else {
         sb.append(" <END CLEAR>");
       }
@@ -3698,18 +3710,8 @@ public class DiskStoreImpl implements DiskStore {
           enums.add((EnumInfo) i);
         }
       }
-      Collections.sort(types, new Comparator<PdxType>() {
-        @Override
-        public int compare(PdxType o1, PdxType o2) {
-          return o1.getClassName().compareTo(o2.getClassName());
-        }
-      });
-      Collections.sort(enums, new Comparator<EnumInfo>() {
-        @Override
-        public int compare(EnumInfo o1, EnumInfo o2) {
-          return o1.compareTo(o2);
-        }
-      });
+      types.sort(Comparator.comparing(PdxType::getClassName));
+      enums.sort(EnumInfo::compareTo);
 
       printStream.println("PDX Types:");
       for (PdxType type : types) {
@@ -4132,7 +4134,7 @@ public class DiskStoreImpl implements DiskStore {
         }
 
         // Get an appropriate lock object for each set of oplogs.
-        Object childLock = childOplog == null ? new Object() : childOplog.lock;;
+        Object childLock = childOplog.lock;;
 
         // TODO - We really should move this lock into the disk store, but
         // until then we need to do this magic to make sure we're actually
@@ -4152,7 +4154,7 @@ public class DiskStoreImpl implements DiskStore {
           // Create the directories for this disk store
           for (int i = 0; i < directories.length; i++) {
             File dir = getBackupDir(targetDir, i);
-            if (!FileUtil.mkdirs(dir)) {
+            if (!dir.mkdirs()) {
               throw new IOException("Could not create directory " + dir);
             }
             restoreScript.addFile(directories[i].getDir(), dir);
@@ -4364,7 +4366,7 @@ public class DiskStoreImpl implements DiskStore {
     try {
       DiskStoreImpl dsi = createForOffline(dsName, dsDirs, false);
       dsi.dumpInfo(printStream, regName);
-      if (listPdxTypes != null && listPdxTypes.booleanValue()) {
+      if (listPdxTypes != null && listPdxTypes) {
         dsi.dumpPdxTypes(printStream);
       }
     } finally {
@@ -4554,7 +4556,7 @@ public class DiskStoreImpl implements DiskStore {
     boolean result = false;
     Boolean tmp = backgroundTaskThread.get();
     if (tmp != null) {
-      result = tmp.booleanValue();
+      result = tmp;
     }
     return result;
   }

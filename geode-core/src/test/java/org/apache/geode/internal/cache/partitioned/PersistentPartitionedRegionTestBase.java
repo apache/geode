@@ -14,20 +14,11 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.AdminDistributedSystemFactory;
 import org.apache.geode.admin.AdminException;
@@ -45,7 +36,6 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -64,6 +54,18 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.util.Collection;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTestCase {
 
@@ -774,7 +776,8 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
   }
 
   protected void restoreBackup(int expectedNumScripts) throws IOException, InterruptedException {
-    List<File> restoreScripts = FileUtil.findAll(getBackupDir(), ".*restore.*");
+    Collection<File> restoreScripts = FileUtils.listFiles(getBackupDir(),
+        new RegexFileFilter(".*restore.*"), DirectoryFileFilter.DIRECTORY);
     assertEquals("Restore scripts " + restoreScripts, expectedNumScripts, restoreScripts.size());
     for (File script : restoreScripts) {
       execute(script);

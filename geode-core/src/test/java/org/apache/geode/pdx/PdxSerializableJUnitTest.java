@@ -14,31 +14,12 @@
  */
 package org.apache.geode.pdx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.geode.test.junit.categories.SerializationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.DataSerializable;
@@ -51,7 +32,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.SystemAdmin;
@@ -66,6 +46,30 @@ import org.apache.geode.pdx.internal.PdxWriterImpl;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.NotSerializableException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 @Category({IntegrationTest.class, SerializationTest.class})
 public class PdxSerializableJUnitTest {
@@ -188,7 +192,13 @@ public class PdxSerializableJUnitTest {
       try {
         this.c.close();
       } finally {
-        FileUtil.deleteMatching(new File("."), "BACKUP(DEFAULT|pdxDS|r2DS).*");
+        Pattern pattern = Pattern.compile("BACKUP(DEFAULT|pdxDS|r2DS).*");
+        File[] files = new File(".").listFiles((dir1, name) -> pattern.matcher(name).matches());
+        if (files != null) {
+          for (File file : files) {
+            Files.delete(file.toPath());
+          }
+        }
       }
     }
   }
@@ -265,7 +275,13 @@ public class PdxSerializableJUnitTest {
       try {
         this.c.close();
       } finally {
-        FileUtil.deleteMatching(new File("."), "BACKUP(DEFAULT|r2DS).*");
+        Pattern pattern = Pattern.compile("BACKUP(DEFAULT|r2DS).*");
+        File[] files = new File(".").listFiles((dir1, name) -> pattern.matcher(name).matches());
+        if (files != null) {
+          for (File file : files) {
+            Files.delete(file.toPath());
+          }
+        }
       }
     }
   }

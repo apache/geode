@@ -550,7 +550,7 @@ public class TombstoneService {
             DistributedRegion tr = (DistributedRegion) t.region;
             boolean tombstoneWasStillInRegionMap =
                 tr.getRegionMap().removeTombstone(t.entry, t, false, true);
-            if (tombstoneWasStillInRegionMap && tr.isUsedForPartitionedRegionBucket()) {
+            if (tombstoneWasStillInRegionMap && hasToTrackKeysForClients(tr)) {
               Set<Object> keys = reapedKeys.get(tr);
               if (keys.isEmpty()) {
                 keys = new HashSet<Object>();
@@ -587,6 +587,15 @@ public class TombstoneService {
           }
         }
       } // sync on deltaGIILock
+    }
+
+    /**
+     * Returns true if keys needs to be tracked for clients registering interests on PR.
+     */
+    private boolean hasToTrackKeysForClients(DistributedRegion r) {
+      return r.isUsedForPartitionedRegionBucket()
+          && ((r.getFilterProfile() != null && r.getFilterProfile().hasInterest())
+              || r.getPartitionedRegion().getRegionAdvisor().hasPRServerWithInterest());
     }
 
     @Override

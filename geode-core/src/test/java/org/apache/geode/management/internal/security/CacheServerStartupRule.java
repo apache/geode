@@ -33,7 +33,8 @@ import java.util.Properties;
  */
 public class CacheServerStartupRule extends ExternalResource implements Serializable {
 
-  private ServerStarterRule serverStarter = null;
+  private ServerStarterRule serverStarter = new ServerStarterRule();
+  private Properties properties = new Properties();
 
   public static CacheServerStartupRule withDefaultSecurityJson(int jmxManagerPort) {
     return new CacheServerStartupRule(jmxManagerPort,
@@ -41,7 +42,7 @@ public class CacheServerStartupRule extends ExternalResource implements Serializ
   }
 
   public CacheServerStartupRule(int jmxManagerPort, String jsonFile) {
-    Properties properties = new Properties();
+    properties = new Properties();
     if (jmxManagerPort > 0) {
       properties.put(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort));
     }
@@ -49,12 +50,12 @@ public class CacheServerStartupRule extends ExternalResource implements Serializ
       properties.put(SECURITY_MANAGER, TestSecurityManager.class.getName());
       properties.put(TestSecurityManager.SECURITY_JSON, jsonFile);
     }
-    serverStarter = new ServerStarterRule(properties);
   }
 
   @Before
   public void before() throws Throwable {
-    serverStarter.startServer();
+    serverStarter.before();
+    serverStarter.startServer(properties);
     serverStarter.cache.createRegionFactory().create("region1");
   }
 

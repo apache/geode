@@ -25,6 +25,7 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
@@ -191,8 +192,16 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
     return ((AbstractGatewaySender) sender).getIsMetaQueue();
   }
 
+  public void stop() {
+    if (this.sender.isRunning()) {
+      this.sender.stop();
+    }
+  }
+
   public void destroy() {
+    GemFireCacheImpl gfci = (GemFireCacheImpl) ((AbstractGatewaySender) this.sender).getCache();
     this.sender.destroy();
+    gfci.removeAsyncEventQueue(this);
   }
 
   public boolean isBucketSorted() {

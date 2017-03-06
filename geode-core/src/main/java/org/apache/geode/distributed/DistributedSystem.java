@@ -15,6 +15,8 @@
 
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
 import org.apache.geode.StatisticsFactory;
@@ -30,16 +32,18 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.security.GemFireSecurityException;
 
 import java.io.File;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * A "connection" to a GemFire distributed system. A <code>DistributedSystem</code> is created by
@@ -685,7 +689,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   }
 
   private static URL getFileURL(String fileName) {
-    File file = new File(fileName);
+    File file = new File(fileName).getAbsoluteFile();
 
     if (file.exists()) {
       try {

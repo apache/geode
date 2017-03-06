@@ -14,21 +14,20 @@
  */
 package org.apache.geode.modules.session.installer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-
-import org.apache.geode.internal.FileUtil;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-
-import org.apache.commons.io.IOUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 
 @Category(IntegrationTest.class)
 public class InstallerJUnitTest {
@@ -43,7 +42,7 @@ public class InstallerJUnitTest {
 
   private void testTransformation(final String name) throws Exception {
     File webXmlFile = temporaryFolder.newFile();
-    FileUtil.copy(getClass().getResource(name), webXmlFile);
+    FileUtils.copyFile(new File(getClass().getResource(name).getFile()), webXmlFile);
     final String[] args = {"-t", "peer-to-peer", "-w", webXmlFile.getAbsolutePath()};
 
     ByteArrayOutputStream output = new ByteArrayOutputStream();

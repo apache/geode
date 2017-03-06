@@ -20,9 +20,7 @@ Copyright 2016 AddThis
 This product includes software developed by the MX4J
 project (http://mx4j.sourceforge.net).
 
-This project includes software licensed under the JSON license.
-
-Jackson Core 2.8.0
+Jackson Core 2.8.6
 
   # Jackson JSON processor
   
@@ -45,8 +43,8 @@ Jackson Core 2.8.0
   in some artifacts (usually source distributions); but is always available
   from the source code management (SCM) system project uses.
 
-Spring Framework 4.3.2.RELEASE
-Copyright (c) 2002-2015 Pivotal, Inc.
+Spring Framework 4.3.6.RELEASE
+Copyright (c) 2002-2017 Pivotal, Inc.
 
   This product is licensed to you under the Apache License, Version 2.0
   (the "License"). You may not use this product except in compliance with
@@ -57,7 +55,7 @@ Copyright (c) 2002-2015 Pivotal, Inc.
   these subcomponents is subject to the terms and conditions of the
   subcomponent's license, as noted in the license.txt file.
 
-Spring LDAP Core 2.1.0.RELEASE
+Spring LDAP Core 2.3.1.RELEASE
 
    This product includes software developed by the Spring LDAP
    Project (http://www.springframework.org/ldap).

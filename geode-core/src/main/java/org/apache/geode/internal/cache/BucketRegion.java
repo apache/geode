@@ -332,9 +332,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       // have the filter profile ferret out all of the clients that have interest
       // in this region
       FilterProfile fp = getFilterProfile();
+      // fix for bug #46309 - don't send null/empty key set to clients
       if ((removedKeys != null && !removedKeys.isEmpty()) // bug #51877 - NPE in clients
-          && (routing != null || fp != null)) { // fix for bug #46309 - don't send null/empty key
-                                                // set to clients
+          && (routing != null || (fp != null && fp.hasInterest()))) {
         RegionEventImpl regionEvent = new RegionEventImpl(getPartitionedRegion(),
             Operation.REGION_DESTROY, null, true, getMyId());
         FilterInfo clientRouting = routing;

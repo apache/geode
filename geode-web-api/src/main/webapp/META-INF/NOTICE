@@ -20,15 +20,13 @@ Copyright 2016 AddThis
 This product includes software developed by the MX4J
 project (http://mx4j.sourceforge.net).
 
-This project includes software licensed under the JSON license.
-
 Java ClassMate library was originally written by Tatu Saloranta (tatu.saloranta@iki.fi)
 
   Other developers who have contributed code are:
   
   * Brian Langel
 
-Jackson Core 2.8.2
+Jackson Core 2.8.6
 
   # Jackson JSON processor
   
@@ -51,8 +49,8 @@ Jackson Core 2.8.2
   in some artifacts (usually source distributions); but is always available
   from the source code management (SCM) system project uses.
 
-Spring Framework 4.3.2.RELEASE
-Copyright (c) 2002-2015 Pivotal, Inc.
+Spring Framework 4.3.6.RELEASE
+Copyright (c) 2002-2017 Pivotal, Inc.
 
   This product is licensed to you under the Apache License, Version 2.0
   (the "License"). You may not use this product except in compliance with
@@ -63,7 +61,7 @@ Copyright (c) 2002-2015 Pivotal, Inc.
   these subcomponents is subject to the terms and conditions of the
   subcomponent's license, as noted in the license.txt file.
 
-Spring Hateoas 0.21.0
+Spring Hateoas 0.23.0.RELEASE
 Copyright (c) [2012-2014] Pivotal Software, Inc.
 
   This product is licensed to you under the Apache License, Version 2.0 (the "License").  

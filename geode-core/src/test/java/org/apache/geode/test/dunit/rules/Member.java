@@ -26,12 +26,12 @@ import java.io.Serializable;
  * A server or locator inside a DUnit {@link VM}.
  */
 public abstract class Member implements Serializable {
-  private VM vm;
+  private transient VM vm;
   private int port;
   private File workingDir;
   private String name;
 
-  public Member(VM vm, int port, File workingDir, String name) {
+  public Member(int port, File workingDir, String name) {
     this.vm = vm;
     this.port = port;
     this.workingDir = workingDir;
@@ -45,6 +45,10 @@ public abstract class Member implements Serializable {
    */
   public VM getVM() {
     return vm;
+  }
+
+  public void setVM(VM vm) {
+    this.vm = vm;
   }
 
   public int getPort() {

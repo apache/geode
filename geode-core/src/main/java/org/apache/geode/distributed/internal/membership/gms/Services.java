@@ -135,12 +135,6 @@ public class Services {
     this.manager.init(this);
     this.joinLeave.init(this);
     this.healthMon.init(this);
-    InternalLocator l = (InternalLocator) org.apache.geode.distributed.Locator.getLocator();
-    if (l != null && l.getLocatorHandler() != null) {
-      if (l.getLocatorHandler().setMembershipManager((MembershipManager) this.manager)) {
-        this.locator = (Locator) l.getLocatorHandler();
-      }
-    }
   }
 
   protected void start() {
@@ -176,6 +170,12 @@ public class Services {
     this.joinLeave.started();
     this.healthMon.started();
     this.manager.started();
+    InternalLocator l = (InternalLocator) org.apache.geode.distributed.Locator.getLocator();
+    if (l != null && l.getLocatorHandler() != null) {
+      if (l.getLocatorHandler().setMembershipManager((MembershipManager) this.manager)) {
+        this.locator = (Locator) l.getLocatorHandler();
+      }
+    }
     logger.debug("All membership services have been started");
     try {
       this.manager.joinDistributedSystem();

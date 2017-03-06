@@ -14,13 +14,15 @@
  */
 package org.apache.geode.internal.logging;
 
-import java.util.logging.Level;
-
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
+import java.util.logging.Level;
+
 /**
  * Extension that adds ERROR to the standard JDK logging level class.
+ * 
+ * @deprecated use log4j level
  */
 public class GemFireLevel extends Level {
   private static final long serialVersionUID = -8123818329485173242L;

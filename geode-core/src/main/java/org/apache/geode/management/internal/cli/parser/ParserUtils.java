@@ -93,7 +93,7 @@ public class ParserUtils {
 
       // Remove quotes from the beginning and end of split strings
       for (int i = 0; i < split.length; i++) {
-        if ((split[i].endsWith("\"") && split[i].endsWith("\""))
+        if ((split[i].startsWith("\"") && split[i].endsWith("\""))
             || (split[i].startsWith("\'") && split[i].endsWith("\'"))) {
           split[i] = split[i].substring(1, split[i].length() - 1);
         }

@@ -16,6 +16,7 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.HeadlessGfsh;
@@ -23,6 +24,8 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.rules.DescribedExternalResource;
+import org.json.JSONArray;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 
 /**
@@ -53,6 +56,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   private PortType portType = PortType.jmxManger;
   private HeadlessGfsh gfsh = null;
   private boolean connected = false;
+  private TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   public GfshShellConnectionRule() {}
 
@@ -63,7 +67,9 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   @Override
   protected void before(Description description) throws Throwable {
-    this.gfsh = new HeadlessGfsh(getClass().getName(), 30, "gfsh_files");
+    temporaryFolder.create();
+    this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
+        temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
     // do not auto connect if no port initialized
     if (port < 0) {
       return;
@@ -86,6 +92,11 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   public void connectAndVerify(Locator locator, String... options) throws Exception {
     connect(locator.getPort(), PortType.locator, options);
+    assertThat(this.connected).isTrue();
+  }
+
+  public void connectAndVerify(int port, PortType type, String... options) throws Exception {
+    connect(port, type, options);
     assertThat(this.connected).isTrue();
   }
 
@@ -131,6 +142,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   @Override
   protected void after(Description description) throws Throwable {
+    temporaryFolder.delete();
     if (connected) {
       disconnect();
     }
@@ -157,15 +169,31 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   public CommandResult executeCommand(String command) throws Exception {
     gfsh.executeCommand(command);
     CommandResult result = (CommandResult) gfsh.getResult();
-    System.out.println("Command Result: \n" + gfsh.outputString);
+    if (StringUtils.isBlank(gfsh.outputString) && result != null && result.getContent() != null) {
+      if (result.getStatus() == Result.Status.ERROR) {
+        gfsh.outputString = result.toString();
+      } else {
+        // print out the message body as the command result
+        JSONArray messages = ((JSONArray) result.getContent().get("message"));
+        if (messages != null) {
+          for (int i = 0; i < messages.length(); i++) {
+            gfsh.outputString += messages.getString(i) + "\n";
+          }
+        }
+      }
+    }
+    System.out.println("Command result for <" + command + ">: \n" + gfsh.outputString);
     return result;
+  }
+
+  public String getGfshOutput() {
+    return gfsh.outputString;
   }
 
 
   public CommandResult executeAndVerifyCommand(String command) throws Exception {
     CommandResult result = executeCommand(command);
-    assertThat(result.getStatus()).describedAs(result.getContent().toString())
-        .isEqualTo(Result.Status.OK);
+    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     return result;
   }
 

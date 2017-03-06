@@ -14,21 +14,19 @@
  */
 package org.apache.geode.management;
 
+import org.apache.geode.management.internal.SystemManagementService;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 import org.awaitility.Awaitility;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.apache.geode.cache.Cache;
@@ -36,7 +34,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.wan.WANTestBase;
-import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
@@ -215,16 +212,50 @@ public class WANManagementDUnitTest extends ManagementTestBase {
         1, 100, false));
     nyReceiver.invoke(() -> WANTestBase.createReceiver());
 
-    checkAsyncQueueMBean(puneSender);
-    checkAsyncQueueMBean(managing);
+    checkAsyncQueueMBean(puneSender, true);
+    checkAsyncQueueMBean(managing, true);
 
     DistributedMember puneMember =
         (DistributedMember) puneSender.invoke(() -> WANManagementDUnitTest.getMember());
 
-    checkProxyAsyncQueue(managing, puneMember);
+    checkProxyAsyncQueue(managing, puneMember, true);
 
   }
 
+  @Test
+  public void testCreateDestroyAsyncEventQueue() throws Exception {
+    VM memberVM = getManagedNodeList().get(2);
+    VM managerVm = getManagingNode();
+    VM locatorVm = Host.getLocator();
+
+    int locatorPort = (Integer) locatorVm.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+
+    memberVM.invoke(() -> WANTestBase.createCache(locatorPort));
+    managerVm.invoke(() -> WANTestBase.createManagementCache(locatorPort));
+    startManagingNode(managerVm);
+
+    // Create AsyncEventQueue
+    String aeqId = "pn";
+    memberVM.invoke(
+        () -> WANTestBase.createAsyncEventQueue(aeqId, false, 100, 100, false, false, null, false));
+    managerVm.invoke(
+        () -> WANTestBase.createAsyncEventQueue(aeqId, false, 100, 100, false, false, null, false));
+
+    // Verify AsyncEventQueueMXBean exists
+    checkAsyncQueueMBean(memberVM, true);
+    checkAsyncQueueMBean(managerVm, true);
+    DistributedMember member = memberVM.invoke(() -> WANManagementDUnitTest.getMember());
+    checkProxyAsyncQueue(managerVm, member, true);
+
+    // Destroy AsyncEventQueue
+    memberVM.invoke(() -> WANTestBase.destroyAsyncEventQueue(aeqId));
+    managerVm.invoke(() -> WANTestBase.destroyAsyncEventQueue(aeqId));
+
+    // Verify AsyncEventQueueMXBean no longer exists
+    checkAsyncQueueMBean(memberVM, false);
+    checkAsyncQueueMBean(managerVm, false);
+    checkProxyAsyncQueue(managerVm, member, false);
+  }
 
   @SuppressWarnings("serial")
   protected void checkSenderNavigationAPIS(final VM vm, final DistributedMember senderMember) {
@@ -448,15 +479,18 @@ public class WANManagementDUnitTest extends ManagementTestBase {
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
-  protected void checkAsyncQueueMBean(final VM vm) {
+  protected void checkAsyncQueueMBean(final VM vm, final boolean shouldExist) {
     SerializableRunnable checkAsyncQueueMBean =
         new SerializableRunnable("Check Async Queue MBean") {
           public void run() {
             Cache cache = GemFireCacheImpl.getInstance();
             ManagementService service = ManagementService.getManagementService(cache);
             AsyncEventQueueMXBean bean = service.getLocalAsyncEventQueueMXBean("pn");
-            assertNotNull(bean);
-            // Already in started State
+            if (shouldExist) {
+              assertNotNull(bean);
+            } else {
+              assertNull(bean);
+            }
           }
         };
     vm.invoke(checkAsyncQueueMBean);
@@ -468,28 +502,36 @@ public class WANManagementDUnitTest extends ManagementTestBase {
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
-  protected void checkProxyAsyncQueue(final VM vm, final DistributedMember senderMember) {
+  protected void checkProxyAsyncQueue(final VM vm, final DistributedMember senderMember,
+      final boolean shouldExist) {
     SerializableRunnable checkProxyAsyncQueue =
         new SerializableRunnable("Check Proxy Async Queue") {
           public void run() {
             Cache cache = GemFireCacheImpl.getInstance();
-            ManagementService service = ManagementService.getManagementService(cache);
-            AsyncEventQueueMXBean bean = null;
-            try {
-              bean = MBeanUtil.getAsyncEventQueueMBeanProxy(senderMember, "pn");
-            } catch (Exception e) {
-              fail("Could not obtain Sender Proxy in desired time " + e);
-            }
-            assertNotNull(bean);
+            SystemManagementService service =
+                (SystemManagementService) ManagementService.getManagementService(cache);
             final ObjectName queueMBeanName =
                 service.getAsyncEventQueueMBeanName(senderMember, "pn");
+            AsyncEventQueueMXBean bean = null;
+            if (shouldExist) {
+              // Verify the MBean proxy exists
+              try {
+                bean = MBeanUtil.getAsyncEventQueueMBeanProxy(senderMember, "pn");
+              } catch (Exception e) {
+                fail("Could not obtain Sender Proxy in desired time " + e);
+              }
+              assertNotNull(bean);
 
-            try {
-              MBeanUtil.printBeanDetails(queueMBeanName);
-            } catch (Exception e) {
-              fail("Error while Printing Bean Details " + e);
+              try {
+                MBeanUtil.printBeanDetails(queueMBeanName);
+              } catch (Exception e) {
+                fail("Error while Printing Bean Details " + e);
+              }
+            } else {
+              // Verify the MBean proxy doesn't exist
+              bean = service.getMBeanProxy(queueMBeanName, AsyncEventQueueMXBean.class);
+              assertNull(bean);
             }
-
           }
         };
     vm.invoke(checkProxyAsyncQueue);

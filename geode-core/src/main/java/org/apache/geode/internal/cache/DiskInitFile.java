@@ -20,6 +20,38 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.compression.Compressor;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.InternalInstantiator;
+import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.persistence.CanonicalIdHolder;
+import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
+import org.apache.geode.internal.cache.persistence.DiskInitFileInterpreter;
+import org.apache.geode.internal.cache.persistence.DiskInitFileParser;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
+import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
+import org.apache.geode.internal.cache.versions.RegionVersionHolder;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -46,40 +78,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
-import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.FileUtil;
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.InternalInstantiator;
-import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.persistence.CanonicalIdHolder;
-import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
-import org.apache.geode.internal.cache.persistence.DiskInitFileInterpreter;
-import org.apache.geode.internal.cache.persistence.DiskInitFileParser;
-import org.apache.geode.internal.cache.persistence.DiskRegionView;
-import org.apache.geode.internal.cache.persistence.DiskStoreID;
-import org.apache.geode.internal.cache.persistence.PRPersistentConfig;
-import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
-import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
-import org.apache.geode.internal.cache.versions.RegionVersionHolder;
-import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * Does all the IF file work for a DiskStoreImpl.
@@ -1506,7 +1504,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
   public void copyTo(File targetDir) throws IOException {
     lock.lock(false);
     try {
-      FileUtil.copy(this.ifFile, targetDir);
+      FileUtils.copyFileToDirectory(this.ifFile, targetDir);
     } finally {
       lock.unlock();
     }

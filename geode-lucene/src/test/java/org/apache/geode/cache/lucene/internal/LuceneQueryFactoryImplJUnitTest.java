@@ -44,13 +44,10 @@ public class LuceneQueryFactoryImplJUnitTest {
     LuceneQueryFactoryImpl f = new LuceneQueryFactoryImpl(cache);
     f.setPageSize(5);
     f.setResultLimit(25);
-    String[] projection = new String[] {"a", "b"};
-    f.setProjectionFields(projection);
     LuceneQuery<Object, Object> query =
         f.create("index", "region", new StringQueryProvider("test", DEFAULT_FIELD));
     assertEquals(25, query.getLimit());
     assertEquals(5, query.getPageSize());
-    assertArrayEquals(projection, query.getProjectedFieldNames());
 
     Mockito.verify(cache).getRegion(Mockito.eq("region"));
   }

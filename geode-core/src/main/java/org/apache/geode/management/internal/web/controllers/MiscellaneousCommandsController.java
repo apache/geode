@@ -14,12 +14,9 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import java.util.concurrent.Callable;
-
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,56 +43,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @RequestMapping(AbstractCommandsController.REST_API_VERSION)
 @SuppressWarnings("unused")
 public class MiscellaneousCommandsController extends AbstractCommandsController {
-
-  @RequestMapping(method = RequestMethod.GET, value = "/logs")
-  public Callable<ResponseEntity<String>> exportLogs(
-      @RequestParam(CliStrings.EXPORT_LOGS__DIR) final String directory,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__GROUP, required = false) final String[] groups,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__MEMBER,
-          required = false) final String memberNameId,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__LOGLEVEL,
-          required = false) final String logLevel,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL,
-          defaultValue = "false") final Boolean onlyLogLevel,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__MERGELOG,
-          defaultValue = "false") final Boolean mergeLog,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__STARTTIME,
-          required = false) final String startTime,
-      @RequestParam(value = CliStrings.EXPORT_LOGS__ENDTIME,
-          required = false) final String endTime) {
-    final CommandStringBuilder command = new CommandStringBuilder(CliStrings.EXPORT_LOGS);
-
-    command.addOption(CliStrings.EXPORT_LOGS__DIR, decode(directory));
-
-    if (hasValue(groups)) {
-      command.addOption(CliStrings.EXPORT_LOGS__GROUP,
-          StringUtils.concat(groups, StringUtils.COMMA_DELIMITER));
-    }
-
-    if (hasValue(memberNameId)) {
-      command.addOption(CliStrings.EXPORT_LOGS__MEMBER, memberNameId);
-    }
-
-    if (hasValue(logLevel)) {
-      command.addOption(CliStrings.EXPORT_LOGS__LOGLEVEL, logLevel);
-    }
-
-    command.addOption(CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL,
-        String.valueOf(Boolean.TRUE.equals(onlyLogLevel)));
-    command.addOption(CliStrings.EXPORT_LOGS__MERGELOG,
-        String.valueOf(Boolean.TRUE.equals(mergeLog)));
-
-    if (hasValue(startTime)) {
-      command.addOption(CliStrings.EXPORT_LOGS__STARTTIME, startTime);
-    }
-
-    if (hasValue(endTime)) {
-      command.addOption(CliStrings.EXPORT_LOGS__ENDTIME, endTime);
-    }
-
-    return getProcessCommandCallable(command.toString());
-  }
-
   // TODO determine whether Async functionality is required
   @RequestMapping(method = RequestMethod.GET, value = "/stacktraces")
   @ResponseBody

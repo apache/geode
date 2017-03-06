@@ -383,7 +383,7 @@ public class StatArchiveHandler implements SampleHandler {
       }
       try {
         StatArchiveDescriptor archiveDescriptor = new StatArchiveDescriptor.Builder()
-            .setArchiveName(newFile.getPath()).setSystemId(this.config.getSystemId())
+            .setArchiveName(newFile.getAbsolutePath()).setSystemId(this.config.getSystemId())
             .setSystemStartTime(this.config.getSystemStartTime())
             .setSystemDirectoryPath(this.config.getSystemDirectoryPath())
             .setProductDescription(this.config.getProductDescription()).build();
@@ -446,7 +446,7 @@ public class StatArchiveHandler implements SampleHandler {
    * @return the modified archive file name to use; it is modified by applying mainArchiveId and
    *         archiveId to the name for supporting file rolling
    */
-  private File getRollingArchiveName(File archive, boolean archiveClosed) {
+  File getRollingArchiveName(File archive, boolean archiveClosed) {
     if (mainArchiveId != -1) {
       // leave mainArchiveId as is. Bump archiveId.
     } else {
@@ -538,7 +538,7 @@ public class StatArchiveHandler implements SampleHandler {
     return result;
   }
 
-  private void initMainArchiveId(File archive) {
+  void initMainArchiveId(File archive) {
     if (mainArchiveId != -1) {
       // already initialized
       return;
@@ -598,7 +598,7 @@ public class StatArchiveHandler implements SampleHandler {
    * @return the modified archive file name to use; it is modified by applying the next main id if
    *         any files in the dir already have a main id in the file name
    */
-  private File getRenameArchiveName(File archive) {
+  File getRenameArchiveName(File archive) {
     File dir = archive.getAbsoluteFile().getParentFile();
     int previousMainId = this.rollingFileHandler.calcNextMainId(dir, false);
     if (previousMainId == 0) {

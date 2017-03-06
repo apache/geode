@@ -44,6 +44,14 @@ public @interface CliMetaData {
   boolean shellOnly() default false;
 
   /**
+   * Indicates when executed over http, is this command downloading files from the member. When this
+   * is set to true, the RestHttpOperationInvoker will use an extractor to extract the inputstream
+   * in the response to a temporary file and it's up to your command's interceptor's postExecution
+   * to use that temp file to fit your need.
+   **/
+  boolean isFileDownloadOverHttp() default false;
+
+  /**
    * Indicates that the effect of the command is persisted or the commands affects the persistent
    * configuration
    */

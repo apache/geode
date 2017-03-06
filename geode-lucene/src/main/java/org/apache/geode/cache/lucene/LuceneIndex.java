@@ -23,34 +23,35 @@ import org.apache.geode.annotations.Experimental;
 
 
 /**
- * An lucene index is built over the data stored in a GemFire Region.
+ * <p>
+ * An Lucene index is built over the data stored in a GemFire Region.
+ * </p>
  * <p>
  * An index is specified using a index name, field names, region name.
- * <p>
- * The index name and region name together uniquely identifies the lucene index.
- * <p>
+ * </p>
+ * The index name and region name together uniquely identifies the Lucene index.
  * 
  */
 @Experimental
 public interface LuceneIndex {
 
   /**
-   * @return the index name of this index
+   * @return the name of this index
    */
   public String getName();
 
   /**
-   * @return the region name for this index
+   * @return the name of the region that is being indexed
    */
   public String getRegionPath();
 
   /**
-   * @return the indexed field names in a Set
+   * @return the indexed field names
    */
   public String[] getFieldNames();
 
   /**
-   * @return the field to analyzer map
+   * @return a map of what {@link Analyzer} is being used for each indexed field.
    */
   public Map<String, Analyzer> getFieldAnalyzers();
 

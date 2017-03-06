@@ -23,7 +23,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
-import org.apache.geode.cache.lucene.internal.distributed.LuceneFunction;
+import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Rule;
@@ -34,6 +34,7 @@ import org.junit.rules.ExpectedException;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @Category(IntegrationTest.class)
 public class LuceneServiceImplIntegrationTest {
@@ -52,16 +53,24 @@ public class LuceneServiceImplIntegrationTest {
     assertNotNull(luceneService);
   }
 
+  @Test
+  public void getCacheShouldReturnTheCorrectCache() {
+    cache = getCache();
+    new LuceneServiceImpl().init(cache);
+    LuceneService service = LuceneServiceProvider.get(cache);
+    assertTrue(service.getCache().equals(cache));
+  }
+
   // lucene service will register query execution function on initialization
   @Test
   public void shouldRegisterQueryFunction() {
-    Function function = FunctionService.getFunction(LuceneFunction.ID);
+    Function function = FunctionService.getFunction(LuceneQueryFunction.ID);
     assertNull(function);
 
     cache = getCache();
     new LuceneServiceImpl().init(cache);
 
-    function = FunctionService.getFunction(LuceneFunction.ID);
+    function = FunctionService.getFunction(LuceneQueryFunction.ID);
     assertNotNull(function);
   }
 

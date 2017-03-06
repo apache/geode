@@ -18,14 +18,14 @@
  * <p>
  * All indexing and query operations are performed through the
  * {@link org.apache.geode.cache.lucene.LuceneService} class. See
- * {@link org.apache.geode.cache.lucene.LuceneService} for an example of how to add a lucene index
- * to a geode region.
+ * {@link org.apache.geode.cache.lucene.LuceneService} for an example of how to add a Lucene index
+ * to a Geode region.
  * <p>
  *
- * The Lucene indexes created using this API are stored in geode and colocated with the indexed
+ * The Lucene indexes created using this API are stored in Geode and colocated with the indexed
  * region, which means they have the same availability guarantees as the underlying region. The
  * indexes are maintained asynchronously, so changes to the region may not be immediately visible in
- * the lucene index.
+ * the Lucene index.
  */
 
 package org.apache.geode.cache.lucene;

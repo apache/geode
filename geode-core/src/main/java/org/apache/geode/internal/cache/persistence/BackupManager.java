@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedSystem;
@@ -21,7 +22,6 @@ import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.JarClassLoader;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.DiskStoreImpl;
@@ -30,10 +30,18 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class manages the state an logic to backup a single cache.
@@ -108,20 +116,19 @@ public class BackupManager implements MembershipListener {
      * Find the first matching DiskStoreId directory for this member.
      */
     for (DiskStoreImpl diskStore : cache.listDiskStoresIncludingRegionOwned()) {
-      baselineDir = FileUtil.find(baselineParentDir, ".*" + diskStore.getBackupDirName() + "$");
-      if (null != baselineDir) {
-        break;
-      }
-    }
+      File[] matchingFiles = baselineParentDir.listFiles(new FilenameFilter() {
+        Pattern pattern = Pattern.compile(".*" + diskStore.getBackupDirName() + "$");
 
-    /*
-     * We found it? Good. Set this member's baseline to the backed up disk store's member dir (two
-     * levels up).
-     */
-    if (null != baselineDir) {
-      baselineDir = baselineDir.getParentFile().getParentFile();
+        public boolean accept(File dir, String name) {
+          Matcher m = pattern.matcher(name);
+          return m.find();
+        }
+      });
+      // We found it? Good. Set this member's baseline to the backed up disk store's member dir (two
+      // levels up).
+      if (null != matchingFiles && matchingFiles.length > 0)
+        baselineDir = matchingFiles[0].getParentFile().getParentFile();
     }
-
     return baselineDir;
   }
 
@@ -233,19 +240,19 @@ public class BackupManager implements MembershipListener {
 
   private void backupConfigFiles(RestoreScript restoreScript, File backupDir) throws IOException {
     File configBackupDir = new File(backupDir, CONFIG);
-    FileUtil.mkdirs(configBackupDir);
+    configBackupDir.mkdirs();
     URL url = cache.getCacheXmlURL();
     if (url != null) {
       File cacheXMLBackup =
           new File(configBackupDir, DistributionConfig.DEFAULT_CACHE_XML_FILE.getName());
-      FileUtil.copy(url, cacheXMLBackup);
+      FileUtils.copyFile(new File(cache.getCacheXmlURL().getFile()), cacheXMLBackup);
     }
 
-    URL propertyURL = DistributedSystem.getPropertyFileURL();
+    URL propertyURL = DistributedSystem.getPropertiesFileURL();
     if (propertyURL != null) {
       File propertyBackup =
           new File(configBackupDir, DistributionConfig.GEMFIRE_PREFIX + "properties");
-      FileUtil.copy(propertyURL, propertyBackup);
+      FileUtils.copyFile(new File(DistributedSystem.getPropertiesFile()), propertyBackup);
     }
 
     // TODO sbawaska: should the gfsecurity.properties file be backed up?
@@ -261,7 +268,11 @@ public class BackupManager implements MembershipListener {
       if (original.exists()) {
         original = original.getAbsoluteFile();
         File dest = new File(userBackupDir, original.getName());
-        FileUtil.copy(original, dest);
+        if (original.isDirectory()) {
+          FileUtils.copyDirectory(original, dest);
+        } else {
+          FileUtils.copyFile(original, dest);
+        }
         restoreScript.addExistenceTest(original);
         restoreScript.addFile(original, dest);
       }
@@ -296,7 +307,11 @@ public class BackupManager implements MembershipListener {
         for (JarClassLoader loader : jarList) {
           File source = new File(loader.getFileCanonicalPath());
           File dest = new File(userBackupDir, source.getName());
-          FileUtil.copy(source, dest);
+          if (source.isDirectory()) {
+            FileUtils.copyDirectory(source, dest);
+          } else {
+            FileUtils.copyFile(source, dest);
+          }
           restoreScript.addFile(source, dest);
         }
       }
@@ -325,7 +340,7 @@ public class BackupManager implements MembershipListener {
       throw new IOException("Backup directory " + backupDir.getAbsolutePath() + " already exists.");
     }
 
-    if (!FileUtil.mkdirs(backupDir)) {
+    if (!backupDir.mkdirs()) {
       throw new IOException("Could not create directory: " + backupDir);
     }
 

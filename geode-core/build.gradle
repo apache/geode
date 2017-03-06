@@ -107,7 +107,11 @@ dependencies {
   } 
 
   compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
- 
+  // This is only added since shiro is using an old version of beanutils and we want
+  // to use a standard version. Once shiro deps are updated, remove this explicit dependency
+  // in favor of a transitive dependency on beanutils.
+  compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
+  
   compile project(':geode-common')
   compile project(':geode-json')
   
@@ -118,6 +122,7 @@ dependencies {
 
   // Test Dependencies
   // External
+  testCompile 'com.google.guava:guava:' + project.'guava.version'
   testCompile 'com.jayway.jsonpath:json-path-assert:' + project.'json-path-assert.version'
   testCompile 'org.apache.bcel:bcel:' + project.'bcel.version'
   testRuntime 'org.apache.derby:derby:' + project.'derby.version'

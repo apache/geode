@@ -14,10 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper.*;
-
-import java.lang.reflect.Method;
-import java.util.Map;
+import static org.apache.geode.management.internal.cli.multistep.CLIMultiStepHelper.execCLISteps;
 
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
@@ -35,12 +32,15 @@ import org.apache.geode.management.internal.cli.multistep.MultiStepCommand;
 import org.apache.geode.management.internal.cli.result.FileResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.NotAuthorizedException;
-
 import org.springframework.shell.core.ExecutionStrategy;
 import org.springframework.shell.core.Shell;
 import org.springframework.shell.event.ParseResult;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
+
+import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.util.Map;
 
 /**
  * Defines the {@link ExecutionStrategy} for commands that are executed in GemFire SHell (gfsh).
@@ -115,11 +115,6 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       } else {
         logWrapper.warning(e.getMessage());
       }
-    } catch (RuntimeException e) {
-      Gfsh.getCurrentInstance().logWarning("Exception occurred. " + e.getMessage(), e);
-      // Log other runtime exception in gfsh log
-      logWrapper.warning("Error occurred while executing command : "
-          + ((GfshParseResult) parseResult).getUserInput(), e);
     } catch (Exception e) {
       Gfsh.getCurrentInstance().logWarning("Unexpected exception occurred. " + e.getMessage(), e);
       // Log other exceptions in gfsh log
@@ -235,9 +230,12 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     try {
       response = shell.getOperationInvoker()
           .processCommand(new CommandRequest(parseResult, env, fileData));
+
     } catch (NotAuthorizedException e) {
       return ResultBuilder
           .createGemFireUnAuthorizedErrorResult("Unauthorized. Reason : " + e.getMessage());
+    } catch (Exception e) {
+      shell.logSevere(e.getMessage(), e);
     } finally {
       env.clear();
     }
@@ -250,33 +248,39 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
               + "Please check manager logs for error.");
     }
 
-    if (logWrapper.fineEnabled()) {
-      logWrapper.fine("Received response :: " + response);
-    }
-    CommandResponse commandResponse =
-        CommandResponseBuilder.prepareCommandResponseFromJson((String) response);
+    // the response could be a string which is a json respresentation of the CommandResult object
+    // it can also be a Path to a temp file downloaded from the rest http request
+    if (response instanceof String) {
+      CommandResponse commandResponse =
+          CommandResponseBuilder.prepareCommandResponseFromJson((String) response);
 
-    if (commandResponse.isFailedToPersist()) {
-      shell.printAsSevere(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
-      logWrapper.severe(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
+      if (commandResponse.isFailedToPersist()) {
+        shell.printAsSevere(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
+        logWrapper.severe(CliStrings.SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES);
+      }
+
+      String debugInfo = commandResponse.getDebugInfo();
+      if (debugInfo != null && !debugInfo.trim().isEmpty()) {
+        // TODO - Abhishek When debug is ON, log response in gfsh logs
+        // TODO - Abhishek handle \n better. Is it coming from GemFire formatter
+        debugInfo = debugInfo.replaceAll("\n\n\n", "\n");
+        debugInfo = debugInfo.replaceAll("\n\n", "\n");
+        debugInfo =
+            debugInfo.replaceAll("\n", "\n[From Manager : " + commandResponse.getSender() + "]");
+        debugInfo = "[From Manager : " + commandResponse.getSender() + "]" + debugInfo;
+        LogWrapper.getInstance().info(debugInfo);
+      }
+      commandResult = ResultBuilder.fromJson((String) response);
     }
 
-    String debugInfo = commandResponse.getDebugInfo();
-    if (debugInfo != null && !debugInfo.trim().isEmpty()) {
-      // TODO - Abhishek When debug is ON, log response in gfsh logs
-      // TODO - Abhishek handle \n better. Is it coming from GemFire formatter
-      debugInfo = debugInfo.replaceAll("\n\n\n", "\n");
-      debugInfo = debugInfo.replaceAll("\n\n", "\n");
-      debugInfo =
-          debugInfo.replaceAll("\n", "\n[From Manager : " + commandResponse.getSender() + "]");
-      debugInfo = "[From Manager : " + commandResponse.getSender() + "]" + debugInfo;
-      LogWrapper.getInstance().info(debugInfo);
+    Path tempFile = null;
+    if (response instanceof Path) {
+      tempFile = (Path) response;
     }
-    commandResult = ResultBuilder.fromJson((String) response);
 
     // 3. Post Remote Execution
     if (interceptor != null) {
-      Result postExecResult = interceptor.postExecution(parseResult, commandResult);
+      Result postExecResult = interceptor.postExecution(parseResult, commandResult, tempFile);
       if (postExecResult != null) {
         if (Status.ERROR.equals(postExecResult.getStatus())) {
           if (logWrapper.infoEnabled()) {

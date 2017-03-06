@@ -15,18 +15,16 @@
 
 package org.apache.geode.management.internal.web.shell;
 
-import java.net.URI;
-import java.util.Map;
-
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.web.domain.Link;
 import org.apache.geode.management.internal.web.http.ClientHttpRequest;
 import org.apache.geode.management.internal.web.http.HttpMethod;
-
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
+import java.util.Map;
 
 /**
  * The SimpleHttpOperationInvoker class is an implementation of the OperationInvoker interface that
@@ -156,9 +154,7 @@ public class SimpleHttpOperationInvoker extends AbstractHttpOperationInvoker {
         "Gfsh must be connected to the GemFire Manager in order to process commands remotely!");
 
     try {
-      final ResponseEntity<String> response = send(createHttpRequest(command), String.class);
-
-      return response.getBody();
+      return send(createHttpRequest(command), String.class);
     } catch (ResourceAccessException e) {
       return handleResourceAccessException(e);
     }

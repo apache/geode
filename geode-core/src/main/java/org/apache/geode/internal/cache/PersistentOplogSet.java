@@ -15,6 +15,20 @@
 package org.apache.geode.internal.cache;
 
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
+import org.apache.geode.internal.cache.persistence.DiskStoreFilter;
+import org.apache.geode.internal.cache.persistence.OplogType;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -31,23 +45,6 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.internal.FileUtil;
-import org.apache.geode.internal.cache.DiskEntry.Helper.ValueWrapper;
-import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
-import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
-import org.apache.geode.internal.cache.persistence.DiskRegionView;
-import org.apache.geode.internal.cache.persistence.DiskStoreFilter;
-import org.apache.geode.internal.cache.persistence.OplogType;
-import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.sequencelog.EntryLogger;
 
 public class PersistentOplogSet implements OplogSet {
   private static final Logger logger = LogService.getLogger();
@@ -212,10 +209,11 @@ public class PersistentOplogSet implements OplogSet {
     Map<File, DirectoryHolder> backupFiles = new HashMap<File, DirectoryHolder>();
     FilenameFilter backupFileFilter = getFileNameFilter(partialFileName);
     for (DirectoryHolder dh : parent.directories) {
-      File dir = dh.getDir();
-      File[] backupList = FileUtil.listFiles(dir, backupFileFilter);
-      for (File f : backupList) {
-        backupFiles.put(f, dh);
+      File[] backupList = dh.getDir().listFiles(backupFileFilter);
+      if (backupList != null) {
+        for (File f : backupList) {
+          backupFiles.put(f, dh);
+        }
       }
     }
 

@@ -14,7 +14,18 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Region;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,15 +33,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.Region;
-import org.apache.geode.internal.FileUtil;
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class DiskRegionAsyncRecoveryJUnitTest extends DiskRegionTestingBase {
@@ -492,15 +494,15 @@ public class DiskRegionAsyncRecoveryJUnitTest extends DiskRegionTestingBase {
     File tmpDir = new File(dirs[0].getParent(), "backupDir");
     tmpDir.mkdirs();
     for (File file : dirs) {
-      FileUtil.copy(file, new File(tmpDir, file.getName()));
+      FileUtils.copyDirectory(file, new File(tmpDir, file.getName()));
     }
   }
 
   private void restoreDisk() throws IOException {
     File tmpDir = new File(dirs[0].getParent(), "backupDir");
     for (File file : dirs) {
-      FileUtil.delete(file);
-      FileUtil.copy(new File(tmpDir, file.getName()), file);
+      FileUtils.deleteDirectory(file);
+      FileUtils.copyDirectory(new File(tmpDir, file.getName()), file);
     }
   }
 

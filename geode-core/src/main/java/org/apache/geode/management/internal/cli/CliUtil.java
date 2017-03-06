@@ -301,7 +301,31 @@ public class CliUtil {
     return matchingMembers;
   }
 
+  /**
+   * Finds all Members (including both servers and locators) which belong to the given arrays of
+   * groups or members.
+   */
+  public static Set<DistributedMember> findMembersIncludingLocators(String[] groups,
+      String[] members) {
+    Cache cache = CacheFactory.getAnyInstance();
+    Set<DistributedMember> allMembers = getAllMembers(cache);
+
+    return findMembers(allMembers, groups, members);
+  }
+
+  /**
+   * Finds all Servers which belong to the given arrays of groups or members. Does not include
+   * locators.
+   */
   public static Set<DistributedMember> findMembers(String[] groups, String[] members) {
+    Cache cache = CacheFactory.getAnyInstance();
+    Set<DistributedMember> allNormalMembers = getAllNormalMembers(cache);
+
+    return findMembers(allNormalMembers, groups, members);
+  }
+
+  private static Set<DistributedMember> findMembers(Set<DistributedMember> membersToConsider,
+      String[] groups, String[] members) {
     if (groups == null) {
       groups = new String[] {};
     }
@@ -310,21 +334,18 @@ public class CliUtil {
       members = new String[] {};
     }
 
-    Cache cache = CacheFactory.getAnyInstance();
-
     if ((members.length > 0) && (groups.length > 0)) {
       throw new IllegalArgumentException(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
     }
 
-    Set<DistributedMember> allNormalMembers = getAllNormalMembers(cache);
     if (members.length == 0 && groups.length == 0) {
-      return allNormalMembers;
+      return membersToConsider;
     }
 
     Set<DistributedMember> matchingMembers = new HashSet<DistributedMember>();
     // it will either go into this loop or the following loop, not both.
     for (String memberNameOrId : members) {
-      for (DistributedMember member : allNormalMembers) {
+      for (DistributedMember member : membersToConsider) {
         if (memberNameOrId.equalsIgnoreCase(member.getId())
             || memberNameOrId.equals(member.getName())) {
           matchingMembers.add(member);
@@ -333,7 +354,7 @@ public class CliUtil {
     }
 
     for (String group : groups) {
-      for (DistributedMember member : allNormalMembers) {
+      for (DistributedMember member : membersToConsider) {
         if (member.getGroups().contains(group)) {
           matchingMembers.add(member);
         }
@@ -440,11 +461,6 @@ public class CliUtil {
 
       compressedDataLength = compresser.deflate(buffer);
       totalCompressedDataLength += compressedDataLength;
-      // System.out.println(compressedDataLength);
-      // System.out.println("uc: b "+buffer.length);
-      // System.out.println("uc: r "+result.length);
-      // System.out.println("uc: nr "+newResult.length);
-      // System.out.println();
       System.arraycopy(buffer, 0, newResult, result.length, buffer.length);
       result = newResult;
     } while (compressedDataLength != 0);

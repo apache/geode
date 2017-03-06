@@ -42,10 +42,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.channels.FileLock;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 /**
  * Unit tests for the JarDeployer class
@@ -515,9 +517,7 @@ public class JarDeployerDUnitTest extends JUnit4CacheTestCase {
   }
 
   FileLock acquireSharedLock(final File file) throws IOException {
-    @SuppressWarnings("resource")
-    FileLock fileLock = new FileInputStream(file).getChannel().lock(0, 1, true);
-    return fileLock;
+    return new FileInputStream(file).getChannel().lock(0, 1, true);
   }
 
   void releaseLock(final FileLock fileLock, final File lockFile) throws IOException {
@@ -544,31 +544,27 @@ public class JarDeployerDUnitTest extends JUnit4CacheTestCase {
     }
 
     // Open the file then loop comparing each byte
-    InputStream inStream = new FileInputStream(file);
     int index = 0;
-    try {
+    try (InputStream inStream = new FileInputStream(file)) {
       for (; index < bytes.length; index++) {
         if (((byte) inStream.read()) != bytes[index])
           break;
       }
-    } finally {
-      inStream.close();
     }
 
     // If we didn't get to the end then something was different
-    if (index < bytes.length)
-      return false;
-
-    return true;
+    return index >= bytes.length;
   }
 
   private void deleteSavedJarFiles() throws IOException {
-    FileUtil.deleteMatching(new File("."),
-        "^" + JarDeployer.JAR_PREFIX + "JarDeployerDUnit.*#\\d++$");
-    FileUtil.delete(new File("JarDeployerDUnit"));
+    Pattern pattern = Pattern.compile("^" + JarDeployer.JAR_PREFIX + "JarDeployerDUnit.*#\\d++$");
+    File[] files = new File(".").listFiles((dir1, name) -> pattern.matcher(name).matches());
+    if (files != null) {
+      for (File file : files) {
+        Files.delete(file.toPath());
+      }
+    }
   }
-
-
 
   void writeJarBytesToFile(File jarFile, byte[] jarBytes) throws IOException {
     final OutputStream outStream = new FileOutputStream(jarFile);

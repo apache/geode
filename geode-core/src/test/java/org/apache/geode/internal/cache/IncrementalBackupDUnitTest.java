@@ -14,24 +14,15 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.AdminDistributedSystemFactory;
 import org.apache.geode.admin.AdminException;
@@ -47,7 +38,6 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ClassBuilder;
-import org.apache.geode.internal.FileUtil;
 import org.apache.geode.internal.JarClassLoader;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.persistence.BackupManager;
@@ -62,6 +52,22 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Tests for the incremental backup feature.
@@ -105,7 +111,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
   };
 
   protected RegionFactory<Integer, String> getRegionFactory(Cache cache) {
-    return cache.<Integer, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
+    return cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
   }
 
   /**
@@ -376,7 +382,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    final Set<PersistentID> missingMembers = new HashSet<PersistentID>();
+    final Set<PersistentID> missingMembers = new HashSet<>();
     Wait.waitForCriterion(new WaitCriterion() {
       @Override
       public boolean done() {
@@ -415,7 +421,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         Collection<DiskStoreImpl> backupInProgress =
             ((GemFireCacheImpl) getCache()).listDiskStores();
-        List<DiskStoreImpl> backupCompleteList = new LinkedList<DiskStoreImpl>();
+        List<DiskStoreImpl> backupCompleteList = new LinkedList<>();
 
         while (backupCompleteList.size() < backupInProgress.size()) {
           for (DiskStoreImpl diskStore : backupInProgress) {
@@ -497,7 +503,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     File[] memberDirs = dateDirs[0].listFiles(new FileFilter() {
       @Override
       public boolean accept(File file) {
-        return (file.isDirectory() && (file.getName().indexOf(memberId) != -1));
+        return (file.isDirectory() && (file.getName().contains(memberId)));
       }
     });
 
@@ -578,9 +584,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
       }
     }).start();
 
-    int result = process.waitFor();
-
-    return result;
+    return process.waitFor();
   }
 
   /**
@@ -593,7 +597,8 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
      * The restore script will not restore if there is an if file in the copy to directory. Remove
      * these files first.
      */
-    List<File> ifFiles = FileUtil.findAll(memberDir, ".*\\.if$");
+    Collection<File> ifFiles = FileUtils.listFiles(memberDir, new RegexFileFilter(".*\\.if$"),
+        DirectoryFileFilter.DIRECTORY);
     for (File file : ifFiles) {
       file.delete();
     }
@@ -601,7 +606,8 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Remove all operation logs.
      */
-    List<File> oplogs = FileUtil.findAll(memberDir, OPLOG_REGEX);
+    Collection<File> oplogs = FileUtils.listFiles(memberDir, new RegexFileFilter(OPLOG_REGEX),
+        DirectoryFileFilter.DIRECTORY);
     for (File file : oplogs) {
       file.delete();
     }
@@ -688,9 +694,9 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
    */
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    FileUtil.delete(getIncremental2Dir());
-    FileUtil.delete(getIncrementalDir());
-    FileUtil.delete(getBaselineDir());
+    FileUtils.deleteDirectory(getIncremental2Dir());
+    FileUtils.deleteDirectory(getIncrementalDir());
+    FileUtils.deleteDirectory(getBaselineDir());
   }
 
   /**
@@ -709,7 +715,8 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(memberDir);
 
     // Find all of the member's oplogs in the disk directory (*.crf,*.krf,*.drf)
-    List<File> memberOplogFiles = FileUtil.findAll(memberDir, OPLOG_REGEX);
+    Collection<File> memberOplogFiles = FileUtils.listFiles(memberDir,
+        new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
     assertFalse(memberOplogFiles.isEmpty());
 
     // Perform a full backup and wait for it to finish
@@ -717,11 +724,12 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     waitForBackup(Host.getHost(0).getVM(1));
 
     // Find all of the member's oplogs in the baseline (*.crf,*.krf,*.drf)
-    List<File> memberBaselineOplogs =
-        FileUtil.findAll(getBackupDirForMember(getBaselineDir(), memberId), OPLOG_REGEX);
+    Collection<File> memberBaselineOplogs =
+        FileUtils.listFiles(getBackupDirForMember(getBaselineDir(), memberId),
+            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
     assertFalse(memberBaselineOplogs.isEmpty());
 
-    List<String> memberBaselineOplogNames = new LinkedList<String>();
+    List<String> memberBaselineOplogNames = new LinkedList<>();
     TransformUtils.transform(memberBaselineOplogs, memberBaselineOplogNames,
         TransformUtils.fileNameTransformer);
 
@@ -731,11 +739,12 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     waitForBackup(Host.getHost(0).getVM(1));
 
     // Find all of the member's oplogs in the incremental (*.crf,*.krf,*.drf)
-    List<File> memberIncrementalOplogs =
-        FileUtil.findAll(getBackupDirForMember(getIncrementalDir(), memberId), OPLOG_REGEX);
+    Collection<File> memberIncrementalOplogs =
+        FileUtils.listFiles(getBackupDirForMember(getIncrementalDir(), memberId),
+            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
     assertFalse(memberIncrementalOplogs.isEmpty());
 
-    List<String> memberIncrementalOplogNames = new LinkedList<String>();
+    List<String> memberIncrementalOplogNames = new LinkedList<>();
     TransformUtils.transform(memberIncrementalOplogs, memberIncrementalOplogNames,
         TransformUtils.fileNameTransformer);
 
@@ -755,11 +764,12 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     assertBackupStatus(performIncremental2());
     waitForBackup(Host.getHost(0).getVM(1));
 
-    List<File> memberIncremental2Oplogs =
-        FileUtil.findAll(getBackupDirForMember(getIncremental2Dir(), memberId), OPLOG_REGEX);
+    Collection<File> memberIncremental2Oplogs =
+        FileUtils.listFiles(getBackupDirForMember(getIncremental2Dir(), memberId),
+            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
     assertFalse(memberIncremental2Oplogs.isEmpty());
 
-    List<String> memberIncremental2OplogNames = new LinkedList<String>();
+    List<String> memberIncremental2OplogNames = new LinkedList<>();
     TransformUtils.transform(memberIncremental2Oplogs, memberIncremental2OplogNames,
         TransformUtils.fileNameTransformer);
 
@@ -792,9 +802,10 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Collect all of the restored operation logs.
      */
-    List<File> restoredOplogs = FileUtil.findAll(new File(id.getDirectory()), OPLOG_REGEX);
+    Collection<File> restoredOplogs = FileUtils.listFiles(new File(id.getDirectory()),
+        new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
     assertFalse(restoredOplogs.isEmpty());
-    List<String> restoredOplogNames = new LinkedList<String>();
+    List<String> restoredOplogNames = new LinkedList<>();
     TransformUtils.transform(restoredOplogs, restoredOplogNames,
         TransformUtils.fileNameTransformer);
 
@@ -854,8 +865,9 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
     // Find all of the member's oplogs in the missing member's diskstore directory structure
     // (*.crf,*.krf,*.drf)
-    List<File> missingMemberOplogFiles =
-        FileUtil.findAll(new File(missingMember.getDirectory()), OPLOG_REGEX);
+    Collection<File> missingMemberOplogFiles =
+        FileUtils.listFiles(new File(missingMember.getDirectory()),
+            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
     assertFalse(missingMemberOplogFiles.isEmpty());
 
     /*
@@ -866,7 +878,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * After reconnecting make sure the other members agree that the missing member is back online.
      */
-    final Set<PersistentID> missingMembers = new HashSet<PersistentID>();
+    final Set<PersistentID> missingMembers = new HashSet<>();
     Wait.waitForCriterion(new WaitCriterion() {
       @Override
       public boolean done() {
@@ -897,16 +909,17 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
 
     // Get list of backed up oplog files in the incremental backup for the missing member
     File incrementalMemberDir = getBackupDirForMember(getIncrementalDir(), memberId);
-    List<File> backupOplogFiles = FileUtil.findAll(incrementalMemberDir, OPLOG_REGEX);
+    Collection<File> backupOplogFiles = FileUtils.listFiles(incrementalMemberDir,
+        new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
     assertFalse(backupOplogFiles.isEmpty());
 
     // Transform missing member oplogs to just their file names.
-    List<String> missingMemberOplogNames = new LinkedList<String>();
+    List<String> missingMemberOplogNames = new LinkedList<>();
     TransformUtils.transform(missingMemberOplogFiles, missingMemberOplogNames,
         TransformUtils.fileNameTransformer);
 
     // Transform missing member's incremental backup oplogs to just their file names.
-    List<String> backupOplogNames = new LinkedList<String>();
+    List<String> backupOplogNames = new LinkedList<>();
     TransformUtils.transform(backupOplogFiles, backupOplogNames,
         TransformUtils.fileNameTransformer);
 
@@ -932,11 +945,12 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Find all of the member's oplogs in the baseline (*.crf,*.krf,*.drf)
      */
-    List<File> memberBaselineOplogs =
-        FileUtil.findAll(getBackupDirForMember(getBaselineDir(), memberId), OPLOG_REGEX);
+    Collection<File> memberBaselineOplogs =
+        FileUtils.listFiles(getBackupDirForMember(getBaselineDir(), memberId),
+            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
     assertFalse(memberBaselineOplogs.isEmpty());
 
-    List<String> memberBaselineOplogNames = new LinkedList<String>();
+    List<String> memberBaselineOplogNames = new LinkedList<>();
     TransformUtils.transform(memberBaselineOplogs, memberBaselineOplogNames,
         TransformUtils.fileNameTransformer);
 
@@ -952,11 +966,12 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Find all of the member's oplogs in the incremental (*.crf,*.krf,*.drf)
      */
-    List<File> memberIncrementalOplogs =
-        FileUtil.findAll(getBackupDirForMember(getIncrementalDir(), memberId), OPLOG_REGEX);
+    Collection<File> memberIncrementalOplogs =
+        FileUtils.listFiles(getBackupDirForMember(getIncrementalDir(), memberId),
+            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
     assertFalse(memberIncrementalOplogs.isEmpty());
 
-    List<String> memberIncrementalOplogNames = new LinkedList<String>();
+    List<String> memberIncrementalOplogNames = new LinkedList<>();
     TransformUtils.transform(memberIncrementalOplogs, memberIncrementalOplogNames,
         TransformUtils.fileNameTransformer);
 
@@ -984,11 +999,12 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Find all of the member's oplogs in the baseline (*.crf,*.krf,*.drf)
      */
-    List<File> memberBaselineOplogs =
-        FileUtil.findAll(getBackupDirForMember(getBaselineDir(), memberId), OPLOG_REGEX);
+    Collection<File> memberBaselineOplogs =
+        FileUtils.listFiles(getBackupDirForMember(getBaselineDir(), memberId),
+            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
     assertFalse(memberBaselineOplogs.isEmpty());
 
-    List<String> memberBaselineOplogNames = new LinkedList<String>();
+    List<String> memberBaselineOplogNames = new LinkedList<>();
     TransformUtils.transform(memberBaselineOplogs, memberBaselineOplogNames,
         TransformUtils.fileNameTransformer);
 
@@ -1021,17 +1037,18 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
      * Do an incremental after deleting the baseline. It should discover that the baseline is gone
      * and backup all of the operation logs that are in the baseline.
      */
-    FileUtil.delete(getBaselineDir());
+    FileUtils.deleteDirectory(getBaselineDir());
     Host.getHost(0).getVM(1).invoke(callable);
 
     /*
      * Find all of the member's oplogs in the incremental (*.crf,*.krf,*.drf)
      */
-    List<File> memberIncrementalOplogs =
-        FileUtil.findAll(getBackupDirForMember(getIncrementalDir(), memberId), OPLOG_REGEX);
+    Collection<File> memberIncrementalOplogs =
+        FileUtils.listFiles(getBackupDirForMember(getIncrementalDir(), memberId),
+            new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
     assertFalse(memberIncrementalOplogs.isEmpty());
 
-    List<String> memberIncrementalOplogNames = new LinkedList<String>();
+    List<String> memberIncrementalOplogNames = new LinkedList<>();
     TransformUtils.transform(memberIncrementalOplogs, memberIncrementalOplogNames,
         TransformUtils.fileNameTransformer);
 
@@ -1078,8 +1095,9 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Make sure the user deployed jar is part of the backup.
      */
-    List<File> memberDeployedJarFiles =
-        FileUtil.findAll(getBackupDirForMember(getBaselineDir(), getMemberId(vm0)), jarNameRegex);
+    Collection<File> memberDeployedJarFiles =
+        FileUtils.listFiles(getBackupDirForMember(getBaselineDir(), getMemberId(vm0)),
+            new RegexFileFilter(jarNameRegex), DirectoryFileFilter.DIRECTORY);
     assertFalse(memberDeployedJarFiles.isEmpty());
 
     // Shut down our member so we can perform a restore
@@ -1103,7 +1121,8 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Cleanup "dummy" jar from file system.
      */
-    FileUtil.deleteMatching(new File(vmDir), "^" + JarDeployer.JAR_PREFIX + jarName + ".*#\\d++$");
+    Pattern pattern = Pattern.compile("^" + JarDeployer.JAR_PREFIX + jarName + ".*#\\d++$");
+    deleteMatching(new File("."), pattern);
 
     // Execute the restore
     performRestore(new File(id.getDirectory()), backupDir);
@@ -1111,13 +1130,14 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Make sure the user deployed jar is part of the restore.
      */
-    List<File> restoredJars = FileUtil.findAll(new File(vmDir), jarNameRegex);
+    Collection<File> restoredJars = FileUtils.listFiles(new File(vmDir),
+        new RegexFileFilter(jarNameRegex), DirectoryFileFilter.DIRECTORY);
     assertFalse(restoredJars.isEmpty());
-    List<String> restoredJarNames = new LinkedList<String>();
+    List<String> restoredJarNames = new LinkedList<>();
     TransformUtils.transform(memberDeployedJarFiles, restoredJarNames,
         TransformUtils.fileNameTransformer);
     for (String name : restoredJarNames) {
-      assertTrue(name.indexOf(jarName) != -1);
+      assertTrue(name.contains(jarName));
     }
 
     // Restart the member
@@ -1142,6 +1162,15 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Cleanup "dummy" jar from file system.
      */
-    FileUtil.deleteMatching(new File(vmDir), "^" + JarDeployer.JAR_PREFIX + jarName + ".*#\\d++$");
+    pattern = Pattern.compile("^" + JarDeployer.JAR_PREFIX + jarName + ".*#\\d++$");
+    deleteMatching(new File(vmDir), pattern);
+  }
+
+  private void deleteMatching(File dir, final Pattern pattern) throws IOException {
+    Collection<File> files =
+        FileUtils.listFiles(dir, new RegexFileFilter(pattern), DirectoryFileFilter.DIRECTORY);
+    for (File file : files) {
+      Files.delete(file.toPath());
+    }
   }
 }

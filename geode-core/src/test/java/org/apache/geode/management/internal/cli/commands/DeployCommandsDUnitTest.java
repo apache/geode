@@ -395,8 +395,9 @@ public class DeployCommandsDUnitTest extends CliCommandTestBase {
       Properties properties = new Properties();
       properties.setProperty("name", "Manager");
       properties.setProperty("groups", groupName);
-      ServerStarterRule serverStarterRule = new ServerStarterRule(properties);
-      serverStarterRule.startServer(locatorPort);
+      ServerStarterRule serverStarterRule = new ServerStarterRule();
+      serverStarterRule.before();
+      serverStarterRule.startServer(properties, locatorPort);
     });
 
     // Create a JAR file

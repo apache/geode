@@ -145,7 +145,7 @@ public final class ProcessUtils {
     } catch (LinkageError e) {
       // fall through
     } catch (PidUnavailableException e) {
-      // fall through TODO:KIRK log warning??
+      // fall through (log warning??)
     } catch (UnsupportedOperationException e) {
       // fall through
     }
