@@ -28,8 +28,6 @@ public class LuceneIndexMetrics {
 
   private final long queryExecutionTime;
 
-  private final float queryRate;
-
   private final long queryRateAverageLatency;
 
   private final int queryExecutionsInProgress;
@@ -40,8 +38,6 @@ public class LuceneIndexMetrics {
 
   private final long updateTime;
 
-  private final float updateRate;
-
   private final long updateRateAverageLatency;
 
   private final int updatesInProgress;
@@ -49,8 +45,6 @@ public class LuceneIndexMetrics {
   private final int commits;
 
   private final long commitTime;
-
-  private final float commitRate;
 
   private final long commitRateAverageLatency;
 
@@ -63,32 +57,27 @@ public class LuceneIndexMetrics {
    * an instance of this class.
    */
   @ConstructorProperties({"regionPath", "indexName", "queryExecutions", "queryExecutionTime",
-      "queryRate", "queryRateAverageLatency", "queryExecutionsInProgress",
-      "queryExecutionTotalHits", "updates", "updateTime", "updateRate", "updateRateAverageLatency",
-      "updatesInProgress", "commits", "commitTime", "commitRate", "commitRateAverageLatency",
-      "commitsInProgress", "documents"})
+      "queryRateAverageLatency", "queryExecutionsInProgress", "queryExecutionTotalHits", "updates",
+      "updateTime", "updateRateAverageLatency", "updatesInProgress", "commits", "commitTime",
+      "commitRateAverageLatency", "commitsInProgress", "documents"})
   public LuceneIndexMetrics(String regionPath, String indexName, int queryExecutions,
-      long queryExecutionTime, float queryRate, long queryRateAverageLatency,
-      int queryExecutionsInProgress, long queryExecutionTotalHits, int updates, long updateTime,
-      float updateRate, long updateRateAverageLatency, int updatesInProgress, int commits,
-      long commitTime, float commitRate, long commitRateAverageLatency, int commitsInProgress,
-      int documents) {
+      long queryExecutionTime, long queryRateAverageLatency, int queryExecutionsInProgress,
+      long queryExecutionTotalHits, int updates, long updateTime, long updateRateAverageLatency,
+      int updatesInProgress, int commits, long commitTime, long commitRateAverageLatency,
+      int commitsInProgress, int documents) {
     this.regionPath = regionPath;
     this.indexName = indexName;
     this.queryExecutions = queryExecutions;
     this.queryExecutionTime = queryExecutionTime;
-    this.queryRate = queryRate;
     this.queryRateAverageLatency = queryRateAverageLatency;
     this.queryExecutionsInProgress = queryExecutionsInProgress;
     this.queryExecutionTotalHits = queryExecutionTotalHits;
     this.updates = updates;
     this.updateTime = updateTime;
-    this.updateRate = updateRate;
     this.updateRateAverageLatency = updateRateAverageLatency;
     this.updatesInProgress = updatesInProgress;
     this.commits = commits;
     this.commitTime = commitTime;
-    this.commitRate = commitRate;
     this.commitRateAverageLatency = commitRateAverageLatency;
     this.commitsInProgress = commitsInProgress;
     this.documents = documents;
@@ -129,15 +118,6 @@ public class LuceneIndexMetrics {
    */
   public long getQueryExecutionTime() {
     return this.queryExecutionTime;
-  }
-
-  /**
-   * Returns the rate of query execution using the {@link LuceneIndex}
-   *
-   * @return the rate of query execution using the Lucene Index
-   */
-  public float getQueryRate() {
-    return this.queryRate;
   }
 
   /**
@@ -186,15 +166,6 @@ public class LuceneIndexMetrics {
   }
 
   /**
-   * Returns the rate at which update operations are executed on the {@link LuceneIndex}
-   *
-   * @return rate at which update operations are executed on the {@link LuceneIndex}
-   */
-  public float getUpdateRate() {
-    return this.updateRate;
-  }
-
-  /**
    * Returns the average latency for the update operations on the {@link LuceneIndex}
    *
    * @return the average latency for the update operations in nanoseconds on the Lucene Index
@@ -228,15 +199,6 @@ public class LuceneIndexMetrics {
    */
   public long getCommitTime() {
     return this.commitTime;
-  }
-
-  /**
-   * Returns the rate of commit operations on the {@link LuceneIndex}
-   *
-   * @return the rate of commit operations on the Lucene Index
-   */
-  public float getCommitRate() {
-    return this.commitRate;
   }
 
   /**
@@ -277,16 +239,14 @@ public class LuceneIndexMetrics {
     return new StringBuilder().append(getClass().getSimpleName()).append("[").append("regionPath=")
         .append(this.regionPath).append("; indexName=").append(this.indexName)
         .append("; queryExecutions=").append(this.queryExecutions).append("; queryExecutionTime=")
-        .append(this.queryExecutionTime).append("; queryRate=").append(this.queryRate)
-        .append("; queryRateAverageLatency=").append(this.queryRateAverageLatency)
-        .append("; queryExecutionsInProgress=").append(this.queryExecutionsInProgress)
-        .append("; queryExecutionTotalHits=").append(this.queryExecutionTotalHits)
-        .append("; updates=").append(this.updates).append("; updateTime=").append(this.updateTime)
-        .append("; updateRate=").append(this.updateRate).append("; updateRateAverageLatency=")
+        .append(this.queryExecutionTime).append("; queryRateAverageLatency=")
+        .append(this.queryRateAverageLatency).append("; queryExecutionsInProgress=")
+        .append(this.queryExecutionsInProgress).append("; queryExecutionTotalHits=")
+        .append(this.queryExecutionTotalHits).append("; updates=").append(this.updates)
+        .append("; updateTime=").append(this.updateTime).append("; updateRateAverageLatency=")
         .append(this.updateRateAverageLatency).append("; updatesInProgress=")
         .append(this.updatesInProgress).append("; commits=").append(this.commits)
-        .append("; commitTime=").append(this.commitTime).append("; commitRate=")
-        .append(this.commitRate).append("; commitRateAverageLatency=")
+        .append("; commitTime=").append(this.commitTime).append("; commitRateAverageLatency=")
         .append(this.commitRateAverageLatency).append("; commitsInProgress=")
         .append(this.commitsInProgress).append("; documents=").append(this.documents).append("]")
         .toString();
