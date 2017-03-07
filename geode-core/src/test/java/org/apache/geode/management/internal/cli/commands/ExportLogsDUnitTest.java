@@ -143,8 +143,7 @@ public class ExportLogsDUnitTest {
     String cutoffTimeString = dateTimeFormatter.format(cutoffTime);
 
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder("export logs");
-    commandStringBuilder.addOption("start-time",
-        dateTimeFormatter.format(cutoffTime.minusHours(1)));
+    commandStringBuilder.addOption("start-time", dateTimeFormatter.format(cutoffTime.minusDays(1)));
     commandStringBuilder.addOption("end-time", cutoffTimeString);
     commandStringBuilder.addOption("log-level", "debug");
     commandStringBuilder.addOption("dir", "someDir");
