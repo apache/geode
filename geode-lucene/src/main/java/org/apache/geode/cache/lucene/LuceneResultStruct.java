@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache.lucene;
 
+import java.io.Serializable;
+
 import org.apache.geode.annotations.Experimental;
 
 /**
@@ -21,7 +23,7 @@ import org.apache.geode.annotations.Experimental;
  * 
  */
 @Experimental
-public interface LuceneResultStruct<K, V> {
+public interface LuceneResultStruct<K, V> extends Serializable {
 
   /**
    * @return The region key of the entry matching the query
