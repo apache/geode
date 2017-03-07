@@ -124,7 +124,8 @@ public class LuceneIndexMetrics {
   /**
    * Returns the time duration for execution of queries using the {@link LuceneIndex}
    *
-   * @return long value for the time consumed in the execution of queries using this Lucene Index
+   * @return long value for the time in nanoseconds consumed in the execution of queries using this
+   *         Lucene Index
    */
   public long getQueryExecutionTime() {
     return this.queryExecutionTime;
@@ -142,7 +143,7 @@ public class LuceneIndexMetrics {
   /**
    * Returns the average latency for query executions using the {@link LuceneIndex}
    *
-   * @return the average latency for query executions using the Lucene Index
+   * @return the average latency for query executions in nanoseconds using the Lucene Index
    */
   public long getQueryRateAverageLatency() {
     return this.queryRateAverageLatency;
@@ -160,7 +161,7 @@ public class LuceneIndexMetrics {
   /**
    * Returns the number of hits for the query execution using the {@link LuceneIndex}
    *
-   * @return the number of hit for the query execution using the Lucene Index
+   * @return the number of hits for the query execution using the Lucene Index
    */
   public long getQueryExecutionTotalHits() {
     return this.queryExecutionTotalHits;
@@ -178,7 +179,7 @@ public class LuceneIndexMetrics {
   /**
    * Returns the time consumed for the update operations on the {@link LuceneIndex}
    *
-   * @return the time consumed for the update operations on the Lucene Index
+   * @return the time consumed in nanoseconds for the update operations on the Lucene Index
    */
   public long getUpdateTime() {
     return this.updateTime;
@@ -196,7 +197,7 @@ public class LuceneIndexMetrics {
   /**
    * Returns the average latency for the update operations on the {@link LuceneIndex}
    *
-   * @return the average latency for the update operations on the Lucene Index
+   * @return the average latency for the update operations in nanoseconds on the Lucene Index
    */
   public long getUpdateRateAverageLatency() {
     return this.updateRateAverageLatency;
@@ -212,9 +213,9 @@ public class LuceneIndexMetrics {
   }
 
   /**
-   * Returns the number of commit operation executed on the {@link LuceneIndex}
+   * Returns the number of commit operations executed on the {@link LuceneIndex}
    *
-   * @return the number of commit operation executed on the Lucene Index
+   * @return the number of commit operations executed on the Lucene Index
    */
   public int getCommits() {
     return this.commits;
@@ -223,7 +224,7 @@ public class LuceneIndexMetrics {
   /**
    * Returns the time consumed by the commit operations on the {@link LuceneIndex}
    *
-   * @return the time consumed by the commit operations on the Lucene Index
+   * @return the time consumed in nanoseconds by the commit operations on the Lucene Index
    */
   public long getCommitTime() {
     return this.commitTime;
@@ -241,7 +242,8 @@ public class LuceneIndexMetrics {
   /**
    * Returns the average latency for the commit operations using the {@link LuceneIndex}
    *
-   * @return Returns the average latency for the commit operations using the Lucene Index
+   * @return Returns the average latency for the commit operations in nanoseconds using the Lucene
+   *         Index
    */
   public long getCommitRateAverageLatency() {
     return this.commitRateAverageLatency;
@@ -268,7 +270,7 @@ public class LuceneIndexMetrics {
   /**
    * Outputs the string message containing all the stats stored for the {@link LuceneIndex}
    *
-   * @return the string message containing all the stats stored for the {@link LuceneIndex}
+   * @return the string message containing all the stats stored for the Lucene Index
    */
   @Override
   public String toString() {
