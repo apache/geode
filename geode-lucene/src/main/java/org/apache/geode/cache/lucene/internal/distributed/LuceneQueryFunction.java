@@ -23,6 +23,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.search.Query;
@@ -112,7 +113,8 @@ public class LuceneQueryFunction implements Function, InternalEntity {
       }
       stats.incNumberOfQueryExecuted();
       resultSender.lastResult(mergedResult);
-    } catch (IOException | BucketNotFoundException | CacheClosedException e) {
+    } catch (IOException | BucketNotFoundException | CacheClosedException
+        | PrimaryBucketException e) {
       logger.debug("Exception during lucene query function", e);
       throw new InternalFunctionInvocationTargetException(e);
     }
