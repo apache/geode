@@ -124,6 +124,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
+    // TODO: assert that queue was created or this test is just broken
+
     assertThat(distributionManager.getMembershipManager().waitForDeparture(member))
         .as("expected the serial queue to be flushed").isTrue();
   }
