@@ -48,9 +48,9 @@ public class LogExporter {
   private final File baseStatsFile;
 
   /**
-   * @param logFilter: the filter that's used to check if we need to accept the file or the logLine
-   * @param baseLogFile: if not null, we will export the logs in that directory
-   * @param baseStatsFile: if not null, we will export stats in that directory
+   * @param logFilter the filter that's used to check if we need to accept the file or the logLine
+   * @param baseLogFile if not null, we will export the logs in that directory
+   * @param baseStatsFile if not null, we will export stats in that directory
    * @throws ParseException
    */
   public LogExporter(LogFilter logFilter, File baseLogFile, File baseStatsFile)
