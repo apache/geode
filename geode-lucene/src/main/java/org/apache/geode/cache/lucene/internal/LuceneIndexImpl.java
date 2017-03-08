@@ -244,7 +244,10 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(aeqId);
 
     // Stop the AsyncEventQueue (this stops the AsyncEventQueue's underlying GatewaySender)
-    aeq.stop();
+    // The AsyncEventQueue can be null in an accessor member
+    if (aeq != null) {
+      aeq.stop();
+    }
 
     // Remove the id from the dataRegion's AsyncEventQueue ids
     // Note: The region may already have been destroyed by a remote member
@@ -254,7 +257,10 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     }
 
     // Destroy the aeq (this also removes it from the GemFireCacheImpl)
-    aeq.destroy();
+    // The AsyncEventQueue can be null in an accessor member
+    if (aeq != null) {
+      aeq.destroy();
+    }
     if (logger.isDebugEnabled()) {
       logger.debug("Destroyed aeqId=" + aeqId);
     }

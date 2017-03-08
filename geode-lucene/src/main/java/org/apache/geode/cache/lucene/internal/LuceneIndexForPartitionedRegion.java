@@ -251,7 +251,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   private void destroyOnRemoteMembers() {
     PartitionedRegion pr = (PartitionedRegion) getDataRegion();
     DM dm = pr.getDistributionManager();
-    Set<InternalDistributedMember> recipients = pr.getRegionAdvisor().adviseDataStore();
+    Set<InternalDistributedMember> recipients = pr.getRegionAdvisor().adviseAllPRNodes();
     if (!recipients.isEmpty()) {
       if (logger.isDebugEnabled()) {
         logger.debug("LuceneIndexForPartitionedRegion: About to send destroy message recipients="

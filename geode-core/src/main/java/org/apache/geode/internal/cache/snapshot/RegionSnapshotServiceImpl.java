@@ -257,7 +257,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
                 .getDistributionManager().getWaitingThreadPool().submit(new Runnable() {
                   @Override
                   public void run() {
-                    local.basicImportPutAll(copy, true);
+                    local.basicImportPutAll(copy, !options.shouldInvokeCallbacks());
                   }
                 });
 
@@ -270,7 +270,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
       // send off any remaining entries
       if (!buffer.isEmpty()) {
-        local.basicImportPutAll(buffer, true);
+        local.basicImportPutAll(buffer, !options.shouldInvokeCallbacks());
       }
 
       // wait for completion and check for errors
