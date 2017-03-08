@@ -74,7 +74,6 @@ import org.apache.geode.internal.process.signal.SignalEvent;
 import org.apache.geode.internal.process.signal.SignalListener;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.cli.CliMetaData;
@@ -169,11 +168,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   protected static final int MINIMUM_HEAP_FREE_RATIO = 10;
   protected static final int NUM_ATTEMPTS_FOR_SHARED_CONFIGURATION_STATUS = 3;
 
-  protected static final AtomicReference<Boolean> ATTACH_API_AVAILABLE =
-      new AtomicReference<>(null);
-
-  protected static final String ATTACH_API_CLASS_NAME =
-      "com.sun.tools.attach.AttachNotSupportedException";
   protected static final String GEODE_HOME = System.getenv("GEODE_HOME");
   protected static final String JAVA_HOME = System.getProperty("java.home");
   protected static final String LOCALHOST = "localhost";
@@ -184,19 +178,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
   protected static final String CORE_DEPENDENCIES_JAR_PATHNAME =
       IOUtils.appendToPath(GEODE_HOME, "lib", "geode-dependencies.jar");
-
-  protected static boolean isAttachApiAvailable() {
-    if (ATTACH_API_AVAILABLE.get() == null) {
-      try {
-        ClassUtils.forName(ATTACH_API_CLASS_NAME, new AttachAPINotFoundException());
-        ATTACH_API_AVAILABLE.set(Boolean.TRUE);
-      } catch (AttachAPINotFoundException ignore) {
-        ATTACH_API_AVAILABLE.set(Boolean.FALSE);
-      }
-    }
-
-    return ATTACH_API_AVAILABLE.get();
-  }
 
   private final ThreePhraseGenerator nameGenerator;
 
@@ -424,9 +405,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
               TimeUnit.MILLISECONDS.timedWait(this, 500);
             }
 
-            locatorState = (ProcessUtils.isAttachApiAvailable()
-                ? locatorStatus(locatorPidFile, oldPid, memberName)
-                : locatorStatus(workingDirectory, memberName));
+            locatorState = locatorStatus(workingDirectory, memberName);
 
             String currentLocatorStatusMessage = locatorState.getStatusMessage();
 
@@ -1222,29 +1201,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     return new File(new File(JAVA_HOME, "bin"), "java").getPath();
   }
 
-  @Deprecated
-  protected String getToolsJarPath() throws AttachAPINotFoundException {
-    String toolsJarPathname = null;
-
-    if (!SystemUtils.isMacOSX()) {
-      toolsJarPathname = IOUtils.appendToPath(JAVA_HOME, "lib", "tools.jar");
-
-      if (!IOUtils.isExistingPathname(toolsJarPathname)) {
-        // perhaps the java.home System property refers to the JRE ($JAVA_HOME/jre)...
-        String JDK_HOME = new File(JAVA_HOME).getParentFile().getPath();
-        toolsJarPathname = IOUtils.appendToPath(JDK_HOME, "lib", "tools.jar");
-      }
-
-      try {
-        IOUtils.verifyPathnameExists(toolsJarPathname);
-      } catch (IOException e) {
-        throw new AttachAPINotFoundException(getAttachAPINotFoundMessage());
-      }
-    }
-
-    return toolsJarPathname;
-  }
-
   // TODO refactor the following method into a common base class or utility class
   protected String getLocalHost() {
     try {
@@ -1252,11 +1208,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     } catch (UnknownHostException ignore) {
       return LOCALHOST;
     }
-  }
-
-  protected String getAttachAPINotFoundMessage() {
-    return CliStrings.format(CliStrings.ATTACH_API_IN_0_NOT_FOUND_ERROR_MESSAGE,
-        ((SystemUtils.isMacOSX() && SystemUtils.isAppleJVM()) ? "classes.jar" : "tools.jar"));
   }
 
   protected String getLocatorId(final String host, final Integer port) {
@@ -1347,8 +1298,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   }
 
   protected boolean isVmWithProcessIdRunning(final Integer pid) {
-    // note: this will use JNA if available or Attach if available or return false if neither is
-    // available
+    // note: this will use JNA if available or return false
     return ProcessUtils.isProcessAlive(pid);
   }
 
@@ -1717,9 +1667,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
               TimeUnit.MILLISECONDS.timedWait(this, 500);
             }
 
-            serverState = (ProcessUtils.isAttachApiAvailable()
-                ? serverStatus(serverPidFile, oldPid, memberName)
-                : serverStatus(workingDirectory, memberName));
+            serverState = serverStatus(workingDirectory, memberName);
 
             String currentServerStatusMessage = serverState.getStatusMessage();
 

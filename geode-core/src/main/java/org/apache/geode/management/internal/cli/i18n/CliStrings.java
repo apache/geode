@@ -2721,7 +2721,8 @@ public class CliStrings {
   public static final String STATUS_LOCATOR__MEMBER__HELP =
       "Member name or ID of the Locator in the Geode cluster.";
   public static final String STATUS_LOCATOR__PID = "pid";
-  public static final String STATUS_LOCATOR__PID__HELP = "Process ID (PID) of the running Locator.";
+  public static final String STATUS_LOCATOR__PID__HELP =
+      "Process ID (PID) of the running Locator. Deprecated: Since Geode1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
   public static final String STATUS_LOCATOR__PORT = "port";
   public static final String STATUS_LOCATOR__PORT__HELP =
       "Port on which the Locator is listening. The default is 10334.";
@@ -2745,7 +2746,7 @@ public class CliStrings {
       "No Geode Cache Server with member name or ID {0} could be found.";
   public static final String STATUS_SERVER__PID = "pid";
   public static final String STATUS_SERVER__PID__HELP =
-      "Process ID (PID) of the running Geode Cache Server.";
+      "Process ID (PID) of the running Geode Cache Server. Deprecated: Since Geode1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
 
   /* stop gateway-reciver */
   public static final String STOP_GATEWAYRECEIVER = "stop gateway-receiver";
@@ -2782,7 +2783,7 @@ public class CliStrings {
       "Member name or ID of the Locator in the Geode cluster.";
   public static final String STOP_LOCATOR__PID = "pid";
   public static final String STOP_LOCATOR__PID__HELP =
-      "The process id (PID) of the running Locator.";
+      "The process id (PID) of the running Locator. Deprecated: Since Geode1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
   public static final String STOP_LOCATOR__GENERAL_ERROR_MESSAGE =
       "An error occurred while attempting to stop a Locator: %1$s";
   public static final String STOP_LOCATOR__LOCATOR_IS_CACHE_SERVER_ERROR_MESSAGE =
@@ -2813,7 +2814,7 @@ public class CliStrings {
       "No Cache Server with member name or ID {0} could be found.";
   public static final String STOP_SERVER__PID = "pid";
   public static final String STOP_SERVER__PID__HELP =
-      "Process ID (PID) of the running Geode Cache Server.";
+      "Process ID (PID) of the running Geode Cache Server. Deprecated: Since Geode1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
   public static final String STOP_SERVER__SHUTDOWN_MEMBER_MESSAGE =
       "Cache Server {0} has been requested to stop.";
   public static final String STOP_SERVER__STOPPING_SERVER_MESSAGE =

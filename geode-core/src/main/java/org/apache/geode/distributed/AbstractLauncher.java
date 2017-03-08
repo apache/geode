@@ -72,31 +72,21 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   protected static final long READ_PID_FILE_TIMEOUT_MILLIS = 2 * 1000;
 
-  // @see
-  // http://publib.boulder.ibm.com/infocenter/javasdk/v6r0/index.jsp?topic=%2Fcom.ibm.java.doc.user.lnx.60%2Fuser%2Fattachapi.html
-  // @see
-  // http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/geninfo/diagnos/aboutjrockit.html#wp1083571
-  private static final List<String> ATTACH_API_PACKAGES = Arrays.asList("com.sun.tools.attach",
-      "com/sun/tools/attach", "com.ibm.tools.attach", "com/ibm/tools/attach");
-
   public static final String DEFAULT_WORKING_DIRECTORY = SystemUtils.CURRENT_DIRECTORY;
+
   public static final String SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "launcher.registerSignalHandlers";
 
   protected static final String OPTION_PREFIX = "-";
 
-  private static final String IBM_ATTACH_API_CLASS_NAME =
-      "com.ibm.tools.attach.AgentNotSupportedException";
-  private static final String SUN_ATTACH_API_CLASS_NAME =
-      "com.sun.tools.attach.AttachNotSupportedException";
   private static final String SUN_SIGNAL_API_CLASS_NAME = "sun.misc.Signal";
 
   private volatile boolean debug;
 
   protected final transient AtomicBoolean running = new AtomicBoolean(false);
 
-  protected Logger logger = Logger.getLogger(getClass().getName()); // TODO:KIRK: does this need
-  // log4j2?
+  // TODO: use log4j logger instead of JUL
+  protected Logger logger = Logger.getLogger(getClass().getName());
 
   public AbstractLauncher() {
     try {
@@ -194,52 +184,6 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       System.err.flush();
       throw new RuntimeException(e);
     }
-  }
-
-  /**
-   * This method attempts to make a best effort determination for whether the Attach API classes are
-   * on the classpath.
-   *
-   * @param t the Throwable being evaluated for missing Attach API classes.
-   * @return a boolean indicating whether the Exception or Error condition is a result of the Attach
-   *         API missing from the classpath.
-   */
-  protected boolean isAttachAPINotFound(final Throwable t) {
-    boolean missing = false;
-
-    // NOTE prerequisite, Throwable must be a ClassNotFoundException or NoClassDefFoundError
-    if (t instanceof ClassNotFoundException || t instanceof NoClassDefFoundError) {
-      // NOTE the use of the 'testing' class member variable, yuck!
-      if (!isAttachAPIOnClasspath()) {
-        // NOTE ok, the Attach API is not available, however we still do not know whether an user
-        // application class
-        // caused the ClassNotFoundException or NoClassDefFoundError.
-        final StringWriter stackTraceWriter = new StringWriter();
-
-        // NOTE the full stack trace includes the Throwable message, which typically indicates the
-        // Exception/Error
-        // thrown and the reason (as in which class was not found).
-        t.printStackTrace(new PrintWriter(stackTraceWriter));
-
-        final String stackTrace = stackTraceWriter.toString();
-
-        for (String attachApiPackage : ATTACH_API_PACKAGES) {
-          missing |= stackTrace.contains(attachApiPackage);
-        }
-      }
-    }
-
-    return missing;
-  }
-
-  /**
-   * Determines if the Attach API is on the classpath.
-   *
-   * @return a boolean value indicating if the Attach API is on the classpath.
-   */
-  boolean isAttachAPIOnClasspath() {
-    return (ClassUtils.isClassAvailable(SUN_ATTACH_API_CLASS_NAME)
-        || ClassUtils.isClassAvailable(IBM_ATTACH_API_CLASS_NAME));
   }
 
   /**

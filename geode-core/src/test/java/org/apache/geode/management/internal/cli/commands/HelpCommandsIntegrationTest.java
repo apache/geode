@@ -73,8 +73,7 @@ public class HelpCommandsIntegrationTest {
   }
 
   /**
-   * TODO:GEODE-1466: update golden file to geode.properties TODO:GEODE-1566: update golden file to
-   * GeodeRedisServer
+   * TODO:GEODE-1466: update golden file to geode.properties
    */
   @Test
   public void testOfflineHelp() throws Exception {
