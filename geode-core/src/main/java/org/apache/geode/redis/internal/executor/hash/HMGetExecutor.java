@@ -25,6 +25,25 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
+/**
+ * <pre>
+ * Implementation of the HMGET command.
+ * Returns values associated with the specified fields in the hash stored for a given key.
+
+ * Examples:
+ * 
+ * redis> HSET myhash field1 "Hello"
+ * (integer) 1
+ * redis> HSET myhash field2 "World"
+ * (integer) 1
+ * redis> HMGET myhash field1 field2 nofield
+ * 1) "Hello"
+ * 2) "World"
+ * 3) (nil)
+ * 
+ * </pre>
+ *
+ */
 public class HMGetExecutor extends HashExecutor {
 
   @Override
@@ -39,6 +58,7 @@ public class HMGetExecutor extends HashExecutor {
     ByteArrayWrapper key = command.getKey();
 
     Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+
     checkDataType(key, RedisDataType.REDIS_HASH, context);
 
     if (map == null) {

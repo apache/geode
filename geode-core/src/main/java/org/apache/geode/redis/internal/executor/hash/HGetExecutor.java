@@ -16,15 +16,26 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
 import java.util.Map;
-
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
+/**
+ * <pre>
+ * 
+ * Implements the Redis HGET command to returns the value associated with field in the hash stored
+ * at key.
+ * 
+ * Examples:
+ * 
+ * redis> HSET myhash field1 "foo" (integer) 1 redis> HGET myhash field1 "foo" redis> HGET myhash
+ * field2
+ * 
+ * <pre>
+ *
+ */
 public class HGetExecutor extends HashExecutor {
 
   @Override
@@ -36,23 +47,13 @@ public class HGetExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper regioName = toEntryKey(command.getKey());
-
-    checkDataType(regioName, RedisDataType.REDIS_HASH, context);
-    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
-        getRegion(context, regioName);
-
-    if (keyRegion == null) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      return;
-    }
-
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
-    ByteArrayWrapper key = toEntryKey(command.getKey());
+    ByteArrayWrapper key = command.getKey();
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> entry = keyRegion.get(key);
+    Map<ByteArrayWrapper, ByteArrayWrapper> entry = getMap(context, key);
+
     if (entry == null) {
       command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
       return;

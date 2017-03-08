@@ -43,8 +43,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.redis.internal.executor.ExpirationExecutor;
 import org.apache.geode.redis.internal.executor.ListQuery;
 import org.apache.geode.redis.internal.executor.SortedSetQuery;
-import org.apache.geode.redis.internal.executor.hash.HashExecutor;
-import org.apache.geode.redis.internal.executor.set.SetExecutor;
 import org.apache.geode.internal.hll.HyperLogLogPlus;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.Result.Status;
@@ -219,24 +217,16 @@ public class RegionProvider implements Closeable {
           return this.hLLRegion.remove(key) != null;
         } else if (type == RedisDataType.REDIS_LIST) {
           return this.destroyRegion(key, type);
-        } else {
-
-
-          // Check hash
-          ByteArrayWrapper regionName = HashExecutor.toRegionNameByteArray(key);
-          Region<?, ?> region = this.getRegion(regionName);
-          if (region != null) {
-            region.remove(HashExecutor.toEntryKey(key));
-          }
-
+        } else if (type == RedisDataType.REDIS_SET) {
           // remove the set
-          region = this.getRegion(SetExecutor.SET_REGION_KEY);
-          if (region != null) {
-            region.remove(key);
-          }
-
-
+          this.setRegion.remove(key);
           return true;
+        } else if (type == RedisDataType.REDIS_HASH) {
+          // Check hash
+          this.hashRegion.remove(key);
+          return true;
+        } else {
+          return false;
         }
       } catch (Exception exc) {
         return false;
@@ -430,6 +420,7 @@ public class RegionProvider implements Closeable {
     this.preparedQueries.put(key, queryList);
   }
 
+  @SuppressWarnings("rawtypes")
   private void doInitializeList(ByteArrayWrapper key, Region r) {
     r.put("head", Integer.valueOf(0));
     r.put("tail", Integer.valueOf(0));

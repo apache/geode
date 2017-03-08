@@ -222,6 +222,10 @@ public class Coder {
   }
 
   public static final ByteBuf getScanResponse(ByteBufAllocator alloc, List<?> items) {
+
+    if (items == null || items.isEmpty())
+      return null;
+
     ByteBuf response = alloc.buffer();
     response.writeByte(ARRAY_ID);
     response.writeBytes(intToBytes(2));

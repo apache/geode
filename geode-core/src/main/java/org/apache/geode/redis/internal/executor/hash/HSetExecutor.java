@@ -23,8 +23,22 @@ import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
-import org.apache.geode.redis.internal.RedisDataType;
 
+/**
+ * <pre>
+ * Implements the HSET command to sets field in the hash stored at key to value. 
+ * A new entry in the hash is created if key does not exist. 
+ * Any existing in the hash with the given key is overwritten.
+ * 
+ * Examples:
+ * 
+ * redis> HSET myhash field1 "Hello"
+ * (integer) 1
+ * redis> HGET myhash field1
+ * 
+ * 
+ * </pre>
+ */
 public class HSetExecutor extends HashExecutor implements Extendable {
 
   private final int EXISTING_FIELD = 0;
@@ -44,7 +58,8 @@ public class HSetExecutor extends HashExecutor implements Extendable {
 
     ByteArrayWrapper key = command.getKey();
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key, RedisDataType.REDIS_HASH);
+
+    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);

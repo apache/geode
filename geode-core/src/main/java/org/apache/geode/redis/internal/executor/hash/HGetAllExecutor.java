@@ -19,14 +19,31 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
+/**
+ * <pre>
+ * Implements the Redis HGETALL command to return
+ * 
+ * Returns all fields and values of the hash stored at key.
+ * 
+ * Examples:
+ * 
+ * redis> HSET myhash field1 "Hello"
+ * (integer) 1
+ * redis> HSET myhash field2 "World"
+ * (integer) 1
+ * redis> HGETALL myhash
+ * 1) "field1"
+ * 2) "Hello"
+ * 3) "field2"
+ * 4) "World"
+ * </pre>
+ */
 public class HGetAllExecutor extends HashExecutor {
 
   @Override
@@ -38,19 +55,7 @@ public class HGetAllExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper regionName = toRegionNameByteArray(command.getKey());
-    ByteArrayWrapper entryKey = toEntryKey(command.getKey());
-
-    // checkDataType(regionName, RedisDataType.REDIS_HASH, context);
-    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
-        getRegion(context, regionName);
-
-    if (keyRegion == null) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      return;
-    }
-
-    Map<ByteArrayWrapper, ByteArrayWrapper> results = keyRegion.get(entryKey);
+    Map<ByteArrayWrapper, ByteArrayWrapper> results = getMap(context, command.getKey());
 
     if (results == null || results.isEmpty()) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));

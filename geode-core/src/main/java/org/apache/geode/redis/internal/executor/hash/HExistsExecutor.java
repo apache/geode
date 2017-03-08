@@ -16,15 +16,29 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
 import java.util.Map;
-
-import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
+/**
+ * <pre>
+ * 
+ * Implements the Redis HEXISTS command to determine if a hash field exists for a given key.
+ * 
+ * Examples:
+ * 
+ * redis> HSET myhash field1 "foo"
+ * (integer) 1
+ * redis> HEXISTS myhash field1
+ * (integer) 1
+ * redis> HEXISTS myhash field2
+ * (integer) 0
+ * 
+ * </pre>
+ *
+ */
 public class HExistsExecutor extends HashExecutor {
 
   private final int NOT_EXISTS = 0;
@@ -40,14 +54,10 @@ public class HExistsExecutor extends HashExecutor {
       return;
     }
 
-    ByteArrayWrapper regionName = toRegionNameByteArray(command.getKey());
 
-    checkDataType(regionName, RedisDataType.REDIS_HASH, context);
+    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, command.getKey());
 
-    Region<ByteArrayWrapper, Map<ByteArrayWrapper, ByteArrayWrapper>> keyRegion =
-        getRegion(context, regionName);
-
-    if (keyRegion == null) {
+    if (map == null || map.isEmpty()) {
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
       return;
     }
@@ -55,7 +65,7 @@ public class HExistsExecutor extends HashExecutor {
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
-    boolean hasField = keyRegion.containsKey(field);
+    boolean hasField = map.containsKey(field);
 
     if (hasField)
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));

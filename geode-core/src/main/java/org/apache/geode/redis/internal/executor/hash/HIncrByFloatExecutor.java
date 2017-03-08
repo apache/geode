@@ -16,14 +16,34 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
 import java.util.Map;
-
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.RedisDataType;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
+/**
+ * <pre>
+ * Implementation of HINCRBYFLOAT Redis command.
+ * The purpose is to increment the specified field of a hash for a given key. 
+ *  The value is floating number (represented as a double), by the specified increment.
+ * 
+ * Examples:
+ * 
+ * redis> HSET mykey field 10.50
+ * (integer) 1
+ * redis> HINCRBYFLOAT mykey field 0.1
+ * "10.6"
+ * redis> HINCRBYFLOAT mykey field -5
+ * "5.6"
+ * redis> HSET mykey field 5.0e3
+ * (integer) 0
+ * redis> HINCRBYFLOAT mykey field 2.0e2
+ * "5200"
+ * 
+ * 
+ * </pre>
+ */
 public class HIncrByFloatExecutor extends HashExecutor {
 
   private final String ERROR_FIELD_NOT_USABLE =
@@ -59,13 +79,14 @@ public class HIncrByFloatExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key, RedisDataType.REDIS_HASH);
+
+    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
 
     /*
-     * Put incrememnt as value if field doesn't exist
+     * Put increment as value if field doesn't exist
      */
 
     ByteArrayWrapper oldValue = map.get(field);
@@ -74,6 +95,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
       map.put(field, new ByteArrayWrapper(incrArray));
 
       this.saveMap(map, context, key);
+
       command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), increment));
       return;
     }
@@ -99,6 +121,7 @@ public class HIncrByFloatExecutor extends HashExecutor {
 
     value += increment;
     map.put(field, new ByteArrayWrapper(Coder.doubleToBytes(value)));
+
     this.saveMap(map, context, key);
 
     command.setResponse(Coder.getBulkStringResponse(context.getByteBufAllocator(), value));

@@ -22,6 +22,23 @@ import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
+/**
+ * <pre>
+ * Implements the Redis HDEL command.
+ * 
+ * Removes the specified fields from the hash for a given key.
+ * 
+ * Examples:
+ * 
+ * redis> HSET myhash field1 "foo"
+ * (integer) 1
+ * redis> HDEL myhash field1
+ * (integer) 1
+ * redis> HDEL myhash field2
+ * (integer) 0
+ * 
+ * </pre>
+ */
 public class HDelExecutor extends HashExecutor {
 
   private final int START_FIELDS_INDEX = 2;
@@ -38,6 +55,7 @@ public class HDelExecutor extends HashExecutor {
     int numDeleted = 0;
 
     ByteArrayWrapper key = command.getKey();
+
     Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
     if (map == null || map.isEmpty()) {
