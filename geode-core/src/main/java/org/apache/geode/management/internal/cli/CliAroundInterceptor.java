@@ -38,8 +38,7 @@ public interface CliAroundInterceptor {
 
   /**
    * called by the OperationInvoker after the command is executed
-   * 
-   * @param tempFile: if the command's isFileDownloadOverHttp is true, the is the File downloaded
+   * @param tempFile if the command's isFileDownloadOverHttp is true, the is the File downloaded
    *        after the http response is processed.
    */
   default Result postExecution(GfshParseResult parseResult, Result commandResult, Path tempFile) {
