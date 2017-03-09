@@ -26,7 +26,7 @@ import org.mockito.stubbing.Answer;
 
 import java.util.function.Consumer;
 
-public class LuceneIndexFactorySpy extends LuceneIndexFactory {
+public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
 
   public static LuceneIndexFactorySpy injectSpy() {
     LuceneIndexFactorySpy factory = new LuceneIndexFactorySpy();
@@ -35,7 +35,7 @@ public class LuceneIndexFactorySpy extends LuceneIndexFactory {
   }
 
   public static void remove() {
-    LuceneServiceImpl.luceneIndexFactory = new LuceneIndexFactory();
+    LuceneServiceImpl.luceneIndexFactory = new LuceneIndexImplFactory();
   }
 
 

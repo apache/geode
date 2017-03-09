@@ -16,7 +16,7 @@ package org.apache.geode.cache.lucene.internal;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
-public class LuceneRawIndexFactory extends LuceneIndexFactory {
+public class LuceneRawIndexFactory extends LuceneIndexImplFactory {
   public LuceneIndexImpl create(String indexName, String regionPath, GemFireCacheImpl cache) {
     return new LuceneRawIndex(indexName, regionPath, cache);
   }

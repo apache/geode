@@ -45,7 +45,8 @@ public class DumpDirectoryFilesIntegrationTest extends LuceneIntegrationTest {
 
   @Test
   public void shouldDumpReadableLuceneIndexFile() throws Exception {
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
+    luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
+        REGION_NAME);
 
     Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
     region.put(0, new TestObject("title 1", "hello world"));

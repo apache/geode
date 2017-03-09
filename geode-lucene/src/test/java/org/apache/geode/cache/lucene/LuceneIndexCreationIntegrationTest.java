@@ -15,9 +15,7 @@
 
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.RegionShortcut.*;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static junitparams.JUnitParamsRunner.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -28,9 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.EvictionAction;
@@ -42,7 +38,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
-import org.apache.geode.cache.lucene.internal.LuceneIndexFactory;
+import org.apache.geode.cache.lucene.internal.LuceneIndexImplFactory;
 import org.apache.geode.cache.lucene.internal.LuceneRawIndex;
 import org.apache.geode.cache.lucene.internal.LuceneRawIndexFactory;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
@@ -52,7 +48,6 @@ import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.awaitility.Awaitility;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordTokenizer;
@@ -90,7 +85,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
     final RecordingAnalyzer field2Analyzer = new RecordingAnalyzer();
     analyzers.put("field1", field1Analyzer);
     analyzers.put("field2", field2Analyzer);
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, analyzers);
+    luceneService.createIndexFactory().setFields(analyzers).create(INDEX_NAME, REGION_NAME);
     Region region = createRegion();
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
     region.put("key1", new TestObject());
@@ -166,7 +161,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
     analyzers.put("field2", field2Analyzer);
     LuceneServiceImpl.luceneIndexFactory = new LuceneRawIndexFactory();
     try {
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, analyzers);
+      luceneService.createIndexFactory().setFields(analyzers).create(INDEX_NAME, REGION_NAME);
       Region region = createRegion();
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertTrue(index instanceof LuceneRawIndex);
@@ -176,7 +171,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
       assertEquals(Arrays.asList("field1"), field1Analyzer.analyzedfields);
       assertEquals(Arrays.asList("field2"), field2Analyzer.analyzedfields);
     } finally {
-      LuceneServiceImpl.luceneIndexFactory = new LuceneIndexFactory();
+      LuceneServiceImpl.luceneIndexFactory = new LuceneIndexImplFactory();
     }
   }
 
@@ -225,8 +220,10 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
   @Test
   public void shouldReturnAllDefinedIndexes() {
     LuceneServiceImpl luceneServiceImpl = (LuceneServiceImpl) luceneService;
-    luceneServiceImpl.createIndex(INDEX_NAME, REGION_NAME, "field1", "field2", "field3");
-    luceneServiceImpl.createIndex("index2", "region2", "field4", "field5", "field6");
+    luceneServiceImpl.createIndexFactory().setFields("field1", "field2", "field3")
+        .create(INDEX_NAME, REGION_NAME);
+    luceneServiceImpl.createIndexFactory().setFields("field4", "field5", "field6").create("index2",
+        "region2");
     final Collection<LuceneIndexCreationProfile> indexList =
         luceneServiceImpl.getAllDefinedIndexes();
 

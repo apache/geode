@@ -331,15 +331,15 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
   private SerializableRunnableIF createIndex(String indexName, String field) {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(indexName, REGION_NAME, field);
+      luceneService.createIndexFactory().setFields(field).create(INDEX_NAME, REGION_NAME);
     };
   }
 
   private SerializableRunnableIF createIndexes() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME + "0", REGION_NAME, "text");
-      luceneService.createIndex(INDEX_NAME + "1", REGION_NAME, "text");
+      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME + "0", REGION_NAME);
+      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME + "1", REGION_NAME);
     };
   }
 

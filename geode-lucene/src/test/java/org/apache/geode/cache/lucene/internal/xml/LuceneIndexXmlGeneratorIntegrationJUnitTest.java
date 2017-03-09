@@ -52,7 +52,7 @@ public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
   public void generateWithFields() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     LuceneService service = LuceneServiceProvider.get(cache);
-    service.createIndex("index", "region", "a", "b", "c");
+    service.createIndexFactory().setFields("a", "b", "c").create("index", "region");
     cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
 
 

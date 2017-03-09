@@ -184,7 +184,8 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
   private void createIndexes(String regionName, int numIndexes) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     for (int i = 0; i < numIndexes; i++) {
-      luceneService.createIndex(INDEX_NAME + "_" + i, regionName, "field" + i);
+      luceneService.createIndexFactory().setFields("field" + i).create(INDEX_NAME + "_" + i,
+          regionName);
     }
   }
 
