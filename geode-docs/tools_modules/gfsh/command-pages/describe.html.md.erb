@@ -18,36 +18,38 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<a id="concept_B8A3E21674294C65AE9F9A60F37A284E"></a>
-
 
 Display details of a member's configuration, shell connection, disk-stores, members, or regions.
 
--   **[describe client](../../../tools_modules/gfsh/command-pages/describe.html#topic_gyr_jgz_ck)**
+-   **[describe client](#topic_gyr_jgz_ck)**
 
     Displays details about a specified client.
 
--   **[describe config](../../../tools_modules/gfsh/command-pages/describe.html#topic_3C2C817D999C4E40AF788808B7B6AF99)**
+-   **[describe config](#topic_3C2C817D999C4E40AF788808B7B6AF99)**
 
     Display the configuration of a member.
 
--   **[describe connection](../../../tools_modules/gfsh/command-pages/describe.html#topic_591DC6B781B641168E6173E69AC6D201)**
+-   **[describe connection](#topic_591DC6B781B641168E6173E69AC6D201)**
 
     Display connection information details.
 
--   **[describe disk-store](../../../tools_modules/gfsh/command-pages/describe.html#topic_C635B500BE6A4F1D9572D0BC98A224F2)**
+-   **[describe disk-store](#topic_C635B500BE6A4F1D9572D0BC98A224F2)**
 
     Display information about a member's disk store.
 
--   **[describe member](../../../tools_modules/gfsh/command-pages/describe.html#topic_D62F3D42B1D84CF68F03D54D5122806A)**
+-   **[describe lucene index](#describe_lucene_index)**
+
+    Display information about a Lucene index.
+
+-   **[describe member](#topic_D62F3D42B1D84CF68F03D54D5122806A)**
 
     Display details of a member with given name/id.
 
--   **[describe offline-disk-store](../../../tools_modules/gfsh/command-pages/describe.html#topic_kys_yvk_2l)**
+-   **[describe offline-disk-store](#topic_kys_yvk_2l)**
 
     Display information about an offline member's disk store.
 
--   **[describe region](../../../tools_modules/gfsh/command-pages/describe.html#topic_DECF7D3D33F54071B6B8AD4EA7E3F90B)**
+-   **[describe region](#topic_DECF7D3D33F54071B6B8AD4EA7E3F90B)**
 
     Display the attributes and key information of a region.
 
@@ -63,13 +65,12 @@ Displays details about a specified client.
 describe client --clientID=value
 ```
 
-<a id="topic_gyr_jgz_ck__table_pzd_qdh_2w"></a>
+**Parameters, describe client:**
 
 | Name                                             | Description                                                                                                                                     |
 |--------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">&#8209;&#8209;clientID</span> | *Required.* ID of the client. To find a client ID, you can use the `list clients` command to display a list of connected clients and their IDs. |
 
-<span class="tablecap">Table 1. Describe Client Parameters</span>
 
 **Example Commands:**
 
@@ -108,14 +109,13 @@ Display the configuration of a member.
 describe config --member=value [--hide-defaults(=value)?]
 ```
 
-<a id="topic_3C2C817D999C4E40AF788808B7B6AF99__table_ohx_tdh_2w"></a>
+**Parameters, describe config:**
 
 | Name                                                  | Description                                                                      | Default Value |
 |-------------------------------------------------------|----------------------------------------------------------------------------------|---------------|
 | <span class="keyword parmname">\\-\\-member </span>       | Name or ID of a member whose configuration is to be shown.                       |               |
 | <span class="keyword parmname">\\-\\-hide-defaults</span> | Whether to hide configuration information for properties with the default value. | true          |
 
-<span class="tablecap">Table 2. Describe Config Parameters</span>
 
 **Example Commands:**
 
@@ -192,14 +192,13 @@ Display information about a member's disk store.
 describe disk-store --member=value --name=value
 ```
 
-<a id="topic_C635B500BE6A4F1D9572D0BC98A224F2__table_xs1_12h_2w"></a>
+**Parameters, describe disk-store:**
 
 | Name                                           | Description                                                            |
 |------------------------------------------------|------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-member</span> | *Required.* Name/ID of the member with the disk store to be described. |
 | <span class="keyword parmname">\\-\\-name </span>  | *Required*. Name of the disk store to be described.                    |
 
-<span class="tablecap">Table 3. Describe Disk-Store Parameters</span>
 
 **Example Commands:**
 
@@ -233,6 +232,49 @@ PDX Serialization Meta-Data Stored : No
 
 ```
 
+## <a id="describe_lucene_index" class="no-quick-link"></a>describe lucene index
+
+Describe a Lucene index.
+
+See also [create lucene index](create.html#create_lucene_index), [destroy lucene index](destroy.html#destroy_lucene_index), [list lucene indexes](list.html#list_lucene_indexes) and [search lucene](search.html#search_lucene).
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+describe lucene index --name=value --region=value
+```
+
+**Parameters, describe lucene index:**
+
+| Name                                               | Description                                                                  |
+|----------------------------------------------------|------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the Lucene index to describe                          |
+| <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name and path of the region in which the Lucene index exists               |
+
+
+
+**Example Commands:**
+
+``` pre
+gfsh>describe lucene index --name=personIndex --region=/Person
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>describe lucene index --name=personIndex --region=/Person
+Index Name  | Region Path |                 Indexed Fields                 | Field Analyzer |   Status    | Query Executions | Updates | Commits | Documents
+----------- | ----------- | ---------------------------------------------- | -------------- | ----------- | ---------------- | ------- | ------- | ---------
+personIndex | /Person     | [name, email, address, streetAddress, revenue] | {}             | Initialized | 339              | 1008    | 962     | 1004
+
+gfsh>describe lucene index --name=analyzerIndex --region=/Person
+ Index Name   | Region Path |     Indexed Fields     |            Field Analyzer             |   Status    | Query Executions | Updates | Commits | Documents
+------------- | ----------- | ---------------------- | ------------------------------------- | ----------- | ---------------- | ------- | ------- | ---------
+analyzerIndex | /Person     | [address, name, email] | {address=MyCharacterAnalyzer, email.. | Initialized | 1695             | 1008    | 962     | 1004
+```
+
 ## <a id="topic_D62F3D42B1D84CF68F03D54D5122806A" class="no-quick-link"></a>describe member
 
 Display details of a member with given name/id.
@@ -245,13 +287,12 @@ Display details of a member with given name/id.
 describe member --name=value
 ```
 
-<a id="topic_D62F3D42B1D84CF68F03D54D5122806A__table_psn_c2h_2w"></a>
+**Parameters, describe member:**
 
 | Name                                          | Description                                                                               |
 |-----------------------------------------------|-------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">&#8209;&#8209;name </span> | *Required.* Display information about a member, including name, ID, groups, regions, etc. |
 
-<span class="tablecap">Table 4. Describe Member Parameters</span>
 
 **Example Commands:**
 
@@ -298,7 +339,7 @@ Display information about an offline member's disk store.
 describe offline-disk-store --name=value --disk-dirs=value(,value)* [--pdx=value] [--region=value]
 ```
 
-<a id="topic_kys_yvk_2l__table_rlg_f2h_2w"></a>
+**Parameters, describe offline-disk-store:**
 
 | Name                                               | Description                                                                  |
 |----------------------------------------------------|------------------------------------------------------------------------------|
@@ -307,7 +348,6 @@ describe offline-disk-store --name=value --disk-dirs=value(,value)* [--pdx=value
 | <span class="keyword parmname">\\-\\-pdx</span>        | If set (or set to true), display all the pdx types stored in the disk store. |
 | <span class="keyword parmname">\\-\\-region</span>     | Name and path of the region in the disk store to be described.               |
 
-<span class="tablecap">Table 5. Describe Offline-Disk-Store Parameters</span>
 
 **Example Commands:**
 
@@ -375,13 +415,12 @@ Display the attributes and key information of a region.
 describe region --name=value
 ```
 
-<a id="topic_DECF7D3D33F54071B6B8AD4EA7E3F90B__table_wvt_32h_2w"></a>
+**Parameters, describe region:**
 
 | Name                                          | Description                                          |
 |-----------------------------------------------|------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-name </span> | *Required.* Name/Path of the region to be described. |
 
-<span class="tablecap">Table 6. Describe Region Parameters</span>
 
 **Example Commands:**
 

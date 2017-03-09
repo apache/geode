@@ -19,7 +19,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<a id="topic_AE5B406FAE7F4152B2919EDF45F4EE80"></a>
 
 
 List existing Geode resources such as deployed applications, disk-stores, functions, members, servers, and regions.
@@ -55,6 +54,10 @@ List existing Geode resources such as deployed applications, disk-stores, functi
 -   **[list indexes](#topic_B3B51B6DEA484EE086C4F657EC9831F2)**
 
     Display the list of indexes created for all members.
+
+-   **[list lucene indexes](#list_lucene_indexes)**
+
+    List Lucene indexes created for all members.
 
 -   **[list members](#topic_5B5BFB2E5F314210858641BE3A689637)**
 
@@ -127,13 +130,12 @@ Display a list of JARs that were deployed to members using the deploy command.
 list deployed [--group=value(,value)*]
 ```
 
-<a id="topic_59DF60DE71AD4097B281749425254BFF__table_ch5_b2g_2w"></a>
+**Parameters, list deployed:**
 
 | Name                                          | Description                                                                                                          |
 |-----------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">&#8209;&#8209;group</span> | Group(s) of members for which deployed JARs will be displayed. If not specified, JARs for all members are displayed. |
 
-<span class="tablecap">Table 1. List Deployed Parameters</span>
 
 **Example Commands:**
 
@@ -211,7 +213,7 @@ List durable client CQs associated with the specified durable client id.
 list durable-cqs --durable-client-id=value [--member=value] [--group=value]
 ```
 
-<a id="topic_66016A698C334F4EBA19B99F51B0204B__table_esj_32g_2w"></a>
+**Parameters, list durable-cqs:**
 
 | Name                                                       | Description                                                                                            |
 |------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
@@ -219,7 +221,6 @@ list durable-cqs --durable-client-id=value [--member=value] [--group=value]
 | <span class="keyword parmname">\\-\\-member</span>             | Name or Id of the member for which the durable client is registered and durable CQs will be displayed. |
 | <span class="keyword parmname">\\-\\-group</span>              | Group of members for which the durable client is registered and durable CQs will be displayed.         |
 
-<span class="tablecap">Table 2. List Durable-CQs Parameters</span>
 
 **Example Commands**:
 
@@ -267,7 +268,7 @@ list functions [--matches=value] [--group=value(,value)*]
 [--member=value(,value)*]
 ```
 
-<a id="topic_DCC7CCBBEF5942B783A8F2A4A5B2FABF__table_d3y_l2g_2w"></a>
+**Parameters, list functions:**
 
 | Name                                             | Description                                                                                                                                                                                     |
 |--------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -275,7 +276,6 @@ list functions [--matches=value] [--group=value(,value)*]
 | <span class="keyword parmname">\\-\\-group</span>    | Group(s) of members for which functions will be displayed. Use a comma separated list for multiple groups.                                                                                      |
 | <span class="keyword parmname">&#8209;&#8209;member </span>  | Name or ID of the member(s) for which functions will be displayed. Use a comma separated list for multiple members.                                                                             |
 
-<span class="tablecap">Table 3. List Functions Parameters</span>
 
 **Example Commands:**
 
@@ -325,14 +325,13 @@ Displays the gateway senders and receivers for a member or members.
 list gateways [--group=value(,value)*]
 ```
 
-<a id="topic_B1D89671C7B74074899C7D52F15849ED__table_n3w_q2g_2w"></a>
+**Parameters, list gateways:**
 
 | Name                                           | Description                                                                                                                    |
 |------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">&#8209;&#8209;member</span> | Member(s) whose gateways senders and receiver display.                                                                         |
 | <span class="keyword parmname">\\-\\-group</span>  | Group(s) of members for which Gateway Senders and Receivers will be displayed. Use a comma separated list for multiple groups. |
 
-<span class="tablecap">Table 4. List Gateways Parameters</span>
 
 **Example Commands:**
 
@@ -352,13 +351,12 @@ Display the list of indexes created for all members.
 list indexes [--with-stats(=value)?]
 ```
 
-<a id="topic_B3B51B6DEA484EE086C4F657EC9831F2__table_hth_t2g_2w"></a>
+**Parameters, list indexes:**
 
 | Name                                               | Description                                            | Default Value |
 |----------------------------------------------------|--------------------------------------------------------|---------------|
 | <span class="keyword parmname">\\-\\-with-stats</span> | Specifies whether statistics should also be displayed. | false         |
 
-<span class="tablecap">Table 5. List Indexes Parameters </span>
 
 **Example Commands:**
 
@@ -398,6 +396,50 @@ gfsh> list indexes
 No Indexes Found
 ```
 
+## <a id="list_lucene_indexes" class="no-quick-link"></a>list lucene indexes
+
+Display the list of Lucene indexes created for all members. The optional `--with-stats` qualifier shows activity on the indexes.
+
+See also [create lucene index](create.html#create_lucene_index), [describe lucene index](describe.html#describe_lucene_index), [destroy lucene index](destroy.html#destroy_lucene_index) and [search lucene](search.html#search_lucene).
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+list lucene indexes [--with-stats(=value)]
+```
+
+**Parameters, list lucene indexes:**
+
+| Name                                               | Description                                            | Default Value |
+|----------------------------------------------------|--------------------------------------------------------|---------------|
+| <span class="keyword parmname">\\-\\-with-stats</span> | Specifies whether statistics should also be displayed. | false if not specified, true if specified         |
+
+
+**Example Commands:**
+
+``` pre
+list lucene indexes
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>list lucene indexes --with-stats
+Index Name | Region Path |     Indexed Fields     | Field Analy.. | Status  | Query Executions | Updates | Commits | Documents
+---------- | ----------- | ---------------------- | ------------- | ------- | ---------------- | ------- | ------- | ---------
+testIndex  | /testRegion | [__REGION_VALUE_FIELD] | {__REGION_V.. | Defined | NA               | NA      | NA      | NA
+
+gfsh>list lucene indexes
+ Index Name   | Region Path |                           Indexed Fields                           | Field Analy.. | Status
+------------- | ----------- | ------------------------------------------------------------------ | ------------- | -----------
+analyzerIndex | /Person     | [revenue, address, name, email]                                    | {revenue=St.. | Initialized
+customerIndex | /Customer   | [symbol, revenue, SSN, name, email, address, __REGION_VALUE_FIELD] | {}            | Initialized
+pageIndex     | /Page       | [id, title, content]                                               | {}            | Initialized
+personIndex   | /Person     | [name, email, address, revenue]                                    | {}            | Initialized
+```
+
 ## <a id="topic_5B5BFB2E5F314210858641BE3A689637" class="no-quick-link"></a>list members
 
 Display all or a subset of members.
@@ -410,13 +452,12 @@ Display all or a subset of members.
 list members [--group=value]
 ```
 
-<a id="topic_5B5BFB2E5F314210858641BE3A689637__table_r2h_x2g_2w"></a>
+**Parameters, list members:**
 
 | Name                                          | Description                                     |
 |-----------------------------------------------|-------------------------------------------------|
 | <span class="keyword parmname">\\-\\-group</span> | Group name for which members will be displayed. |
 
-<span class="tablecap">Table 6. List Members Parameters</span>
 
 **Example Commands:**
 
@@ -446,14 +487,13 @@ Display regions of a member or members. If no parameter is specified, all region
 list regions [--group=value] [--member=value]
 ```
 
-<a id="topic_F0ECEFF26086474498598035DD83C588__table_ckh_1fg_2w"></a>
+**Parameters, list regions:**
 
 | Name                                            | Description                                                                 |
 |-------------------------------------------------|-----------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-group</span>   | Group of members for which regions will be displayed.                       |
 | <span class="keyword parmname">\\-\\-member </span> | Name or ID of the member of the member for which regions will be displayed. |
 
-<span class="tablecap">Table 7. List Regions Parameters</span>
 
 **Example Commands:**
 
