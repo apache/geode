@@ -104,7 +104,7 @@ public class EvictionDUnitTest extends LuceneQueriesAccessorBase {
         getCache().getResourceManager().setEvictionHeapPercentage(INITIAL_EVICTION_HEAP_PERCENTAGE);
         final PartitionedRegion partitionedRegion = (PartitionedRegion) getRootRegion(REGION_NAME);
         raiseFakeNotification();
-        Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+        Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
           assertTrue(partitionedRegion.getDiskRegionStats().getNumOverflowOnDisk() > 0);
         });
       } finally {
