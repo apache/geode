@@ -63,10 +63,10 @@ public class ArgumentRedactor {
 
   /**
    * Parse a string to find key=value pairs and redact the values if necessary. If more than one
-   * key=value pair exists in the input, each pair must be preceeded by a hyphen '-' to delineate
+   * key=value pair exists in the input, each pair must be preceded by a hyphen '-' to delineate
    * the pairs. <br>
    * Example:<br>
-   * Single value: "password=secret" or "--password=secret" Mulitple values: "-Dflag -Dkey=value
+   * Single value: "password=secret" or "--password=secret" Multiple values: "-Dflag -Dkey=value
    * --classpath=."
    * 
    * @param line The input to be parsed
@@ -145,10 +145,5 @@ public class ArgumentRedactor {
       compareKey = compareKey.substring(2);
     }
     return compareKey.toLowerCase().contains("password");
-    // return compareKey
-    // .startsWith(DistributionConfig.GEMFIRE_PREFIX + DistributionConfig.SECURITY_PREFIX_NAME)
-    // || compareKey.startsWith(
-    // DistributionConfigImpl.SECURITY_SYSTEM_PREFIX + DistributionConfig.SECURITY_PREFIX_NAME)
-    // || compareKey.toLowerCase().contains("password");
   }
 }

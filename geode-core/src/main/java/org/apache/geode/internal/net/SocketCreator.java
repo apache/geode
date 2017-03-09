@@ -14,6 +14,32 @@
  */
 package org.apache.geode.internal.net;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.admin.internal.InetAddressUtil;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.ClientSocketFactory;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.ConnectionWatcher;
+import org.apache.geode.internal.GfeConsoleReaderFactory;
+import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
+import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.util.ArgumentRedactor;
+import org.apache.geode.internal.util.PasswordUtil;
+import org.apache.logging.log4j.Logger;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.BindException;
@@ -70,32 +96,6 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509ExtendedKeyManager;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.SystemConnectException;
-import org.apache.geode.SystemFailure;
-import org.apache.geode.admin.internal.InetAddressUtil;
-import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.distributed.ClientSocketFactory;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.ConnectionWatcher;
-import org.apache.geode.internal.GfeConsoleReaderFactory;
-import org.apache.geode.internal.GfeConsoleReaderFactory.GfeConsoleReader;
-import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
-import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.util.PasswordUtil;
 
 /**
  * Analyze configuration data (gemfire.properties) and configure sockets accordingly for SSL.
@@ -1126,13 +1126,14 @@ public class SocketCreator {
   private void printConfig() {
     if (!configShown && logger.isDebugEnabled()) {
       configShown = true;
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("SSL Configuration: \n");
-      sb.append("  ssl-enabled = " + this.sslConfig.isEnabled()).append("\n");
+      sb.append("  ssl-enabled = ").append(this.sslConfig.isEnabled()).append("\n");
       // add other options here....
       for (String key : System.getProperties().stringPropertyNames()) { // fix for 46822
         if (key.startsWith("javax.net.ssl")) {
-          sb.append("  ").append(key).append(" = ").append(System.getProperty(key)).append("\n");
+          String redactedString = ArgumentRedactor.redact(key, System.getProperty(key));
+          sb.append("  ").append(key).append(" = ").append(redactedString).append("\n");
         }
       }
       logger.debug(sb.toString());
