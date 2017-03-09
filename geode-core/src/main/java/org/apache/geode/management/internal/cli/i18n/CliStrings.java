@@ -1566,6 +1566,9 @@ public class CliStrings {
   public static final String IMPORT_DATA__REGION__NOT__FOUND = "Region {0} not found.";
   public static final String IMPORT_DATA__SUCCESS__MESSAGE =
       "Data imported from file : {0} on host : {1} to region : {2}";
+  public static final String IMPORT_DATA__INVOKE_CALLBACKS = "invoke-callbacks";
+  public static final String IMPORT_DATA__INVOKE_CALLBACKS__HELP =
+      "Whether callbacks should be invoked";
 
   /* 'list async-event-queues' command */
   public static final String LIST_ASYNC_EVENT_QUEUES = "list async-event-queues";

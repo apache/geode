@@ -841,7 +841,10 @@ public class DataCommands implements CommandMarker {
       @CliOption(key = CliStrings.IMPORT_DATA__MEMBER, mandatory = true,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId) {
+          help = CliStrings.IMPORT_DATA__MEMBER__HELP) String memberNameOrId,
+      @CliOption(key = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, mandatory = false,
+          unspecifiedDefaultValue = "false",
+          help = CliStrings.IMPORT_DATA__INVOKE_CALLBACKS__HELP) boolean invokeCallbacks) {
 
     this.securityService.authorizeRegionWrite(regionName);
 
@@ -856,7 +859,7 @@ public class DataCommands implements CommandMarker {
             .format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.GEODE_DATA_FILE_EXTENSION));
       }
       if (targetMember != null) {
-        final String args[] = {regionName, filePath};
+        final Object args[] = {regionName, filePath, invokeCallbacks};
         ResultCollector<?, ?> rc = CliUtil.executeFunction(importDataFunction, args, targetMember);
         List<Object> results = (List<Object>) rc.getResult();
 

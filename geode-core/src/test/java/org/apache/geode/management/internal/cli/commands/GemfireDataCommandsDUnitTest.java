@@ -31,8 +31,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Ignore;
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -1730,18 +1733,19 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
 
       setUpJmxManagerOnVm0ThenConnect(null);
 
-      manager.invoke(new SerializableCallable() {
-        public Object call() {
-          Region region = createParReg(regionName, getCache());
-          return region.put("Manager", "ASD");
+      manager.invoke(new SerializableRunnable() {
+        public void run() {
+          createParReg(regionName, getCache());
         }
       });
 
-      vm1.invoke(new SerializableCallable() {
+      vm1.invoke(new SerializableRunnable() {
         @Override
-        public Object call() throws Exception {
+        public void run() throws Exception {
           Region region = createParReg(regionName, getCache());
-          return region.put("VM1", "QWE");
+          for (int i = 0; i < 100; i++) {
+            region.put(i, i);
+          }
         }
       });
 
@@ -1760,10 +1764,18 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       vm1.invoke(new SerializableRunnable() {
         public void run() {
           Region region = getCache().getRegion(regionName);
-          region.destroy("Manager");
-          region.destroy("VM1");
+          for (int i = 0; i < 100; i++) {
+            region.destroy(i);
+          }
         }
       });
+
+      /**
+       * Add CacheListener
+       */
+
+      manager.invoke(addCacheListenerInvocations(regionName));
+      vm1.invoke(addCacheListenerInvocations(regionName));
 
       /**
        * Import the data
@@ -1789,10 +1801,48 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
       manager.invoke(new SerializableRunnable() {
         public void run() {
           Region region = getCache().getRegion(regionName);
-          assertEquals(region.get("Manager"), "ASD");
-          assertEquals(region.get("VM1"), "QWE");
+          for (int i = 0; i < 100; i++) {
+            assertEquals(i, region.get(i));
+          }
         }
       });
+
+      /**
+       * Verify callbacks were not invoked
+       */
+
+      manager.invoke(verifyCacheListenerInvocations(regionName, false));
+      vm1.invoke(verifyCacheListenerInvocations(regionName, false));
+
+      /**
+       * Import the data with invokeCallbacks=true
+       */
+
+      vm1.invoke(new SerializableRunnable() {
+        public void run() {
+          Region region = getCache().getRegion(regionName);
+          for (int i = 0; i < 100; i++) {
+            region.destroy(i);
+          }
+        }
+      });
+
+      csb = new CommandStringBuilder(CliStrings.IMPORT_DATA);
+      csb.addOption(CliStrings.IMPORT_DATA__REGION, regionName);
+      csb.addOption(CliStrings.IMPORT_DATA__FILE, filePath);
+      csb.addOption(CliStrings.IMPORT_DATA__MEMBER, "Manager");
+      csb.addOption(CliStrings.IMPORT_DATA__INVOKE_CALLBACKS, "true");
+      commandString = csb.toString();
+      cmdResult = executeCommand(commandString);
+      commandResultToString(cmdResult);
+      assertEquals(Result.Status.OK, cmdResult.getStatus());
+
+      /**
+       * Verify callbacks were invoked
+       */
+
+      manager.invoke(verifyCacheListenerInvocations(regionName, true));
+      vm1.invoke(verifyCacheListenerInvocations(regionName, true));
 
       // Test for bad input
       csb = new CommandStringBuilder(CliStrings.EXPORT_DATA);
@@ -1822,6 +1872,35 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     } finally {
       exportFile.delete();
     }
+  }
+
+  private SerializableRunnable addCacheListenerInvocations(final String regionName) {
+    return new SerializableRunnable() {
+      public void run() {
+        Region region = getCache().getRegion(regionName);
+        region.getAttributesMutator().addCacheListener(new CountingCacheListener());
+      }
+    };
+  }
+
+  private SerializableRunnable verifyCacheListenerInvocations(final String regionName,
+      boolean callbacksShouldHaveBeenInvoked) {
+    return new SerializableRunnable() {
+      public void run() {
+        Region region = getCache().getRegion(regionName);
+        CacheListener<?, ?>[] listeners = region.getAttributes().getCacheListeners();
+        for (CacheListener<?, ?> listener : listeners) {
+          if (listener instanceof CountingCacheListener) {
+            CountingCacheListener ccl = (CountingCacheListener) listener;
+            if (callbacksShouldHaveBeenInvoked) {
+              assertNotEquals(0, ccl.getEvents());
+            } else {
+              assertEquals(0, ccl.getEvents());
+            }
+          }
+        }
+      }
+    };
   }
 
   void setupWith2Regions() {
@@ -2328,5 +2407,19 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     getLogWriter().info("testRegionsViaMbeanAndFunctionsForPartRgn memSizeFromFunctionCall= "
         + memSizeFromFunctionCall);
     assertTrue(memSizeFromFunctionCall.equals(memSizeFromMbean));
+  }
+
+  private static class CountingCacheListener extends CacheListenerAdapter {
+
+    private final AtomicInteger events = new AtomicInteger();
+
+    @Override
+    public void afterCreate(EntryEvent event) {
+      events.incrementAndGet();
+    }
+
+    private int getEvents() {
+      return events.get();
+    }
   }
 }
