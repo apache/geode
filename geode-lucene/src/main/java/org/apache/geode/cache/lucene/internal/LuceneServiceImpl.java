@@ -381,6 +381,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
         DestroyLuceneIndexMessage.class);
 
     DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_PAGE_RESULTS, PageResults.class);
+
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_RESULT_STRUCT,
+        LuceneResultStructImpl.class);
   }
 
   public Collection<LuceneIndexCreationProfile> getAllDefinedIndexes() {
