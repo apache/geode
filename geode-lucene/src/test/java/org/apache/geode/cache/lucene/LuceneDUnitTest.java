@@ -36,7 +36,7 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
   protected VM dataStore2;
 
   protected static int NUM_BUCKETS = 10;
-
+  protected static int MAX_ENTRIES_FOR_EVICTION = 20;
 
   @Override
   public void postSetUp() throws Exception {
@@ -83,7 +83,16 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
     PARTITION_OVERFLOW_TO_DISK(RegionShortcut.PARTITION_PROXY, RegionShortcut.PARTITION_OVERFLOW,
         EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK)),
     FIXED_PARTITION(RegionShortcut.PARTITION, RegionShortcut.PARTITION),
-    PARTITION_WITH_CLIENT(RegionShortcut.PARTITION_PROXY, RegionShortcut.PARTITION);
+    PARTITION_WITH_CLIENT(RegionShortcut.PARTITION_PROXY, RegionShortcut.PARTITION),
+    PARTITION_REDUNDANT_EVICTION_OVERFLOW(RegionShortcut.PARTITION_PROXY_REDUNDANT,
+        RegionShortcut.PARTITION_REDUNDANT,
+        EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK)),
+    PARTITION_PERSISTENT_REDUNDANT_EVICTION_OVERFLOW(RegionShortcut.PARTITION_PROXY_REDUNDANT,
+        RegionShortcut.PARTITION_REDUNDANT_PERSISTENT,
+        EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK)),
+    PARTITION_REDUNDANT_EVICTION_LOCAL_DESTROY(RegionShortcut.PARTITION_PROXY_REDUNDANT,
+        RegionShortcut.PARTITION_REDUNDANT_PERSISTENT, EvictionAttributes
+            .createLRUEntryAttributes(MAX_ENTRIES_FOR_EVICTION, EvictionAction.LOCAL_DESTROY));
 
 
     EvictionAttributes evictionAttributes = null;

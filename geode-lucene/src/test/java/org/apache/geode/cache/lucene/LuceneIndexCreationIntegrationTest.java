@@ -200,7 +200,8 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
   }
 
   @Test
-  public void cannotCreateLuceneIndexForRegionWithEviction() throws IOException, ParseException {
+  public void cannotCreateLuceneIndexForRegionWithEvictionWithLocalDestroy()
+      throws IOException, ParseException {
     try {
       createIndex("field1", "field2", "field3");
       RegionFactory regionFactory = this.cache.createRegionFactory(RegionShortcut.PARTITION);
@@ -212,6 +213,21 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
           "Lucene indexes on regions with eviction and action local destroy are not supported",
           e.getMessage());
       assertNull(cache.getRegion(REGION_NAME));
+    }
+  }
+
+  @Test
+  public void canCreateLuceneIndexForRegionWithEvictionWithOverflowToDisk()
+      throws IOException, ParseException {
+    try {
+      createIndex("field1", "field2", "field3");
+      RegionFactory regionFactory = this.cache.createRegionFactory(RegionShortcut.PARTITION);
+      regionFactory.setEvictionAttributes(
+          EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
+      regionFactory.create(REGION_NAME);
+    } catch (Exception e) {
+      fail("Should have been able to create Lucene Index");
+      e.printStackTrace();
     }
   }
 
