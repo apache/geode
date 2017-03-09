@@ -1,0 +1,114 @@
+---
+title:  search lucene
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+## <a id="search_lucene" class="no-quick-link"></a>search lucene
+
+Search a Lucene index
+
+See also [create lucene index](create.html#create_lucene_index), [describe lucene index](describe.html#describe_lucene_index), [destroy lucene index](destroy.html#destroy_lucene_index) and [list lucene indexes](list.html#list_lucene_indexes).
+
+**Availability:** Online.
+
+**Syntax:**
+
+``` pre
+search lucene --name=value --region=value --queryStrings=value --defaultField=value
+    [--limit=value] [--pageSize=value] [--keys-only=value]
+```
+
+**Parameters, search lucene:**
+
+<table>
+<colgroup>
+<col width="33%" />
+<col width="34%" />
+<col width="33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="keyword parmname">\-\-name</span></td>
+<td><em>Required</em>. Name of the lucene index to search.</td>
+<td> </td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-region</span></td>
+<td><em>Required</em>. Name/Path of the region where the lucene index exists.</td>
+<td> </td>
+</tr>
+<tr>
+<td><span class="keyword parmname" style="whitespace:nowrap;">&#8209;&#8208;queryStrings</span></td>
+<td><em>Required</em>. Query string to search the lucene index.</td>
+<td> </td>
+</tr>
+<tr>
+<td><span class="keyword parmname" style="whitespace:nowrap;">&#8209;&#8208;defaultField</span></td>
+<td><em>Required</em>. Default field to search in.</td>
+<td> </td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-limit</span></td>
+<td>Number of search results needed.</td>
+<td>If the parameter is not specified: -1</td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-pageSize</span></td>
+<td>Number of results to be returned in a page.</td>
+<td>If the parameter is not specified: -1</td>
+</tr>
+<td><span class="keyword parmname">\-\-keys-only</span></td>
+<td>Return only keys of search results.</td>
+<td>If the parameter is not specified: false</td>
+</tr>
+</table>
+
+**Example Commands:**
+
+``` pre
+gfsh> search lucene --name=testIndex --region=/testRegion --queryStrings=value1 --defaultField=__REGION_VALUE_FIELD
+ 
+```
+
+**Sample Output:**
+
+``` pre
+gfsh>search lucene --name=testIndex --region=/testRegion --queryStrings=value* --defaultField=__REGION_VALUE_FIELD
+key | value  | score
+--- | ------ | -----
+3   | value3 | 1
+2   | value2 | 1
+1   | value1 | 1
+
+gfsh>search lucene --region=/Person --name=analyzerIndex --defaultField=address --queryStrings="97763"
+ key   |                                                   value                                                   | score
+------ | --------------------------------------------------------------------------------------------------------- | ---------
+key763 | Person{name='Fred Freeloader', email='ffl@example.com', address='763 Miles Dv, Portland_OR_97763', re.. | 1.6694657
+
+
+```
+
+
