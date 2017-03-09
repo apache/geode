@@ -99,9 +99,18 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
           StringBuffer strBuffer = new StringBuffer();
           Iterator<String> itr = response.getLocators().iterator();
           while (itr.hasNext()) {
-            DistributionLocatorId locatorId = new DistributionLocatorId(itr.next());
-            pf.addLocator(locatorId.getHost().getHostName(), locatorId.getPort());
-            locatorCount++;
+            String remoteLocator = itr.next();
+            try {
+              DistributionLocatorId locatorId = new DistributionLocatorId(remoteLocator);
+              pf.addLocator(locatorId.getHost().getHostName(), locatorId.getPort());
+              locatorCount++;
+            } catch (Exception e) {
+              if (logProxyFailure()) {
+                logger.warn(LocalizedMessage.create(
+                    LocalizedStrings.PoolFactoryImpl_CAUGHT_EXCEPTION_ATTEMPTING_TO_ADD_REMOTE_LOCATOR_0,
+                    new Object[] {remoteLocator}), e);
+              }
+            }
           }
           break;
         }
