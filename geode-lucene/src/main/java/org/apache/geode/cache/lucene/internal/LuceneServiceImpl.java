@@ -82,6 +82,11 @@ public class LuceneServiceImpl implements InternalLuceneService {
   }
 
   @Override
+  public org.apache.geode.cache.lucene.LuceneIndexFactory createIndexFactory() {
+    return new LuceneIndexFactoryImpl(this);
+  }
+
+  @Override
   public Cache getCache() {
     return this.cache;
   }
@@ -127,17 +132,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return getUniqueIndexName(indexName, regionPath) + regionSuffix;
   }
 
-  @Override
-  public void createIndex(String indexName, String regionPath, String... fields) {
-    if (fields == null || fields.length == 0) {
-      throw new IllegalArgumentException("At least one field must be indexed");
-    }
-    StandardAnalyzer analyzer = new StandardAnalyzer();
-
-    createIndex(indexName, regionPath, analyzer, null, fields);
-  }
-
-  @Override
   public void createIndex(String indexName, String regionPath,
       Map<String, Analyzer> fieldAnalyzers) {
     if (fieldAnalyzers == null || fieldAnalyzers.isEmpty()) {

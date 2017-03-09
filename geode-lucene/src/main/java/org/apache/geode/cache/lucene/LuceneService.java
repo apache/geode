@@ -14,17 +14,16 @@
  */
 package org.apache.geode.cache.lucene;
 
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
+import org.apache.lucene.analysis.Analyzer;
+
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.lucene.analysis.Analyzer;
-
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 
 /**
  *
@@ -37,15 +36,17 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
  * </p>
  * <p>
  * Lucene indexes can be created using gfsh, xml, or the java API. Below is an example of creating a
- * Lucene index with the java API. The Lucene index created on each member that will host data for
- * the region.
+ * Lucene index with the java API. The Lucene index should be created on each member that has the
+ * region that is being indexed.
  * </p>
  * 
  * <pre>
  * {
  *   &#64;code
- *   LuceneIndex index =
- *       luceneService.createIndex(indexName, regionName, "field1", "field2", "field3");
+*       luceneService.createCreateIndexFactory()
+ *        .addField("name")
+ *        .addField("zipcode")
+ *        .create(indexName, regionName);
  * }
  * </pre>
  * <p>
@@ -55,7 +56,7 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
  * <pre>
  * {
  *   &#64;code
- *   LuceneIndex index = luceneService.createIndex(indexName, regionName, analyzerPerField);
+ *   LuceneIndex index = luceneService.create(indexName, regionName, analyzerPerField);
  * }
  * </pre>
  *
@@ -107,27 +108,9 @@ public interface LuceneService {
   public String REGION_VALUE_FIELD = "__REGION_VALUE_FIELD";
 
   /**
-   * Create a Lucene index using default analyzer.
-   * 
-   * @param fields The fields of the object to index. Only fields listed here will be stored in the
-   *        index. Fields should map to PDX fieldNames if the object is serialized with PDX, or to
-   *        java fields on the object otherwise. The special field name {@link #REGION_VALUE_FIELD}
-   *        indicates that the entire value should be stored as a single field in the index.
+   * Get a factory for creating a lucene index on this member.
    */
-  public void createIndex(String indexName, String regionPath, String... fields);
-
-  /**
-   * Create a Lucene index using specified {@link Analyzer} per field. Analyzers are used by Lucene
-   * to tokenize your field into individual words.
-   * 
-   * @param indexName index name
-   * @param regionPath region name
-   * @param analyzerPerField A map of fields to analyzers. See
-   *        {@link #createIndex(String, String, String...)} for details on valid values for fields.
-   *        Each field will be tokenized using the provided Analyzer.
-   */
-  public void createIndex(String indexName, String regionPath,
-      Map<String, Analyzer> analyzerPerField);
+  public LuceneIndexFactory createIndexFactory();
 
   /**
    * Destroy the Lucene index

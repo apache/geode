@@ -160,7 +160,7 @@ public class IndexRepositoryImplPerformanceTest {
       public void init() throws Exception {
         cache = new CacheFactory().set(MCAST_PORT, "0").set(LOG_LEVEL, "warning").create();
         service = LuceneServiceProvider.get(cache);
-        service.createIndex("index", "/region", "text");
+        service.createIndexFactory().addField("test").create("index", "/region");
         region =
             cache.<String, TestObject>createRegionFactory(RegionShortcut.PARTITION)
                 .setPartitionAttributes(

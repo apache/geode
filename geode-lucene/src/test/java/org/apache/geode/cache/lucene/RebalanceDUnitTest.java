@@ -15,34 +15,21 @@
 
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.IndexRepositorySpy.doOnce;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 
 import java.util.stream.IntStream;
 
-import org.apache.geode.cache.lucene.internal.LuceneIndexFactorySpy;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.InitialImageOperation;
-import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
-import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.After;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.control.RebalanceOperation;
-import org.apache.geode.cache.control.RebalanceResults;
-import org.apache.geode.cache.lucene.test.IndexRepositorySpy;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.VM;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
@@ -125,7 +112,7 @@ public class RebalanceDUnitTest extends LuceneQueriesAccessorBase {
       RegionTestableType regionTestType) throws InterruptedException {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME, REGION_NAME);
     };
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
     accessor.invoke(() -> initAccessor(createIndex, regionTestType));
@@ -147,7 +134,7 @@ public class RebalanceDUnitTest extends LuceneQueriesAccessorBase {
       RegionTestableType regionTestType) throws InterruptedException {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME, REGION_NAME);
     };
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
     accessor.invoke(() -> initAccessor(createIndex, regionTestType));
@@ -168,7 +155,7 @@ public class RebalanceDUnitTest extends LuceneQueriesAccessorBase {
   protected void putEntriesAndValidateQueryResults(RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME, REGION_NAME);
     };
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
     accessor.invoke(() -> initAccessor(createIndex, regionTestType));
@@ -181,7 +168,7 @@ public class RebalanceDUnitTest extends LuceneQueriesAccessorBase {
 
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
 
-    // dataStore3.invoke(() -> initDataStore(createIndex, regionType));
+    // dataStore3.invoke(() -> initDataStore(create, regionType));
     executeTextSearch(accessor, "world", "text", NUM_BUCKETS);
   }
 

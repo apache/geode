@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.lucene.analysis.Analyzer;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Before;
@@ -50,6 +50,7 @@ public class LuceneCreateIndexFunctionJUnitTest {
   FunctionContext context;
   ResultSender resultSender;
   CliFunctionResult expectedResult;
+  private LuceneIndexFactory factory;
 
   @Before
   public void prepare() {
@@ -58,7 +59,8 @@ public class LuceneCreateIndexFunctionJUnitTest {
     member = ds.getDistributedMember().getId();
     service = mock(InternalLuceneService.class);
     when(cache.getService(InternalLuceneService.class)).thenReturn(service);
-    doNothing().when(service).createIndex(anyString(), anyString(), anyMap());
+    factory = mock(LuceneIndexFactory.class);
+    when(service.createIndexFactory()).thenReturn(factory);
 
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
@@ -87,12 +89,11 @@ public class LuceneCreateIndexFunctionJUnitTest {
     function.execute(context);
 
     ArgumentCaptor<Map> analyzersCaptor = ArgumentCaptor.forClass(Map.class);
-    verify(service).createIndex(eq("index1"), eq("/region1"), analyzersCaptor.capture());
-    Map<String, Analyzer> analyzerPerField = analyzersCaptor.getValue();
-    assertEquals(3, analyzerPerField.size());
-    assertTrue(analyzerPerField.get("field1") instanceof StandardAnalyzer);
-    assertTrue(analyzerPerField.get("field2") instanceof KeywordAnalyzer);
-    assertTrue(analyzerPerField.get("field3") instanceof StandardAnalyzer);
+    verify(service).createIndexFactory();
+    verify(factory).addField(eq("field1"), isA(StandardAnalyzer.class));
+    verify(factory).addField(eq("field2"), isA(KeywordAnalyzer.class));
+    verify(factory).addField(eq("field3"), isA(StandardAnalyzer.class));
+    verify(factory).create(eq("index1"), eq("/region1"));
 
     ArgumentCaptor<Set> resultCaptor = ArgumentCaptor.forClass(Set.class);
     verify(resultSender).lastResult(resultCaptor.capture());
@@ -113,8 +114,10 @@ public class LuceneCreateIndexFunctionJUnitTest {
     doReturn(cache).when(function).getCache();
     function.execute(context);
 
-    verify(service).createIndex(eq("index1"), eq("/region1"), eq("field1"), eq("field2"),
-        eq("field3"));
+    verify(factory).addField(eq("field1"));
+    verify(factory).addField(eq("field2"));
+    verify(factory).addField(eq("field3"));
+    verify(factory).create(eq("index1"), eq("/region1"));
 
     ArgumentCaptor<Set> resultCaptor = ArgumentCaptor.forClass(Set.class);
     verify(resultSender).lastResult(resultCaptor.capture());

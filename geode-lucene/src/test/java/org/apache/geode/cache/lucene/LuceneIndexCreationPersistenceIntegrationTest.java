@@ -164,8 +164,10 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
   @Test
   @Parameters(method = "getRegionShortcuts")
   public void shouldHandleMultipleIndexes(RegionShortcut shortcut) throws Exception {
-    LuceneServiceProvider.get(this.cache).createIndex(INDEX_NAME + "_1", REGION_NAME, "field1");
-    LuceneServiceProvider.get(this.cache).createIndex(INDEX_NAME + "_2", REGION_NAME, "field2");
+    LuceneServiceProvider.get(this.cache).createIndexFactory().setFields("field1")
+        .create(INDEX_NAME + "_1", REGION_NAME);
+    LuceneServiceProvider.get(this.cache).createIndexFactory().setFields("field2")
+        .create(INDEX_NAME + "_2", REGION_NAME);
     Region region = cache.createRegionFactory(shortcut).create(REGION_NAME);
     region.put("key1", new TestObject());
     verifyQueryResultSize(INDEX_NAME + "_1", REGION_NAME, "field1:world", DEFAULT_FIELD, 1);
@@ -175,7 +177,8 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
   @Test
   @Parameters(method = "getRegionShortcuts")
   public void shouldCreateInternalRegionsForIndex(RegionShortcut shortcut) {
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1", "field2");
+    luceneService.createIndexFactory().setFields("field1", "field2").create(INDEX_NAME,
+        REGION_NAME);
 
     // Create partitioned region
     createRegion(REGION_NAME, shortcut);
