@@ -186,13 +186,13 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   public void verifyDifferentIndexNamesFails(RegionTestableType regionType) {
     SerializableRunnableIF createIndex1 = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME + "1", REGION_NAME, "field1");
+      luceneService.createIndexFactory().addField("field1").create(INDEX_NAME + "1", REGION_NAME);
     };
     dataStore1.invoke(() -> initDataStore(createIndex1, regionType));
 
     SerializableRunnableIF createIndex2 = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME + "2", REGION_NAME, "field1");
+      luceneService.createIndexFactory().addField("field1").create(INDEX_NAME + "2", REGION_NAME);
     };
     dataStore2.invoke(
         () -> initDataStore(createIndex2, regionType, CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_NAMES));
@@ -219,8 +219,8 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
 
     SerializableRunnableIF createIndex2 = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1");
-      luceneService.createIndex(INDEX_NAME + "2", REGION_NAME, "field2");
+      luceneService.createIndexFactory().addField("field1").create(INDEX_NAME, REGION_NAME);
+      luceneService.createIndexFactory().addField("field2").create(INDEX_NAME + "2", REGION_NAME);
     };
     dataStore2.invoke(() -> initDataStore(createIndex2, regionType,
         CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2));
@@ -362,22 +362,23 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   protected SerializableRunnableIF getFieldsIndexWithOneField() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1");
+      luceneService.createIndexFactory().addField("field1").create(INDEX_NAME, REGION_NAME);
     };
   }
 
   protected SerializableRunnableIF getFieldsIndexWithTwoFields() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1", "field2");
+      luceneService.createIndexFactory().addField("field1").addField("field2").create(INDEX_NAME,
+          REGION_NAME);
     };
   }
 
   protected SerializableRunnableIF get2FieldsIndexes() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME + "_1", REGION_NAME, "field1");
-      luceneService.createIndex(INDEX_NAME + "_2", REGION_NAME, "field2");
+      luceneService.createIndexFactory().addField("field1").create(INDEX_NAME + "_1", REGION_NAME);
+      luceneService.createIndexFactory().addField("field2").create(INDEX_NAME + "_2", REGION_NAME);
     };
   }
 
@@ -385,7 +386,8 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       for (int count = 1; count <= numberOfIndexes; count++) {
-        luceneService.createIndex(INDEX_NAME + "_" + count, REGION_NAME, "field" + count);
+        luceneService.createIndexFactory().addField("field" + count)
+            .create(INDEX_NAME + "_" + count, REGION_NAME);
       }
     };
   }
@@ -410,7 +412,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       Map<String, Analyzer> analyzers = new HashMap<>();
       analyzers.put("field1", null);
       analyzers.put("field2", new KeywordAnalyzer());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, analyzers);
+      luceneService.createIndexFactory().setFields(analyzers).create(INDEX_NAME, REGION_NAME);
     };
   }
 
@@ -420,7 +422,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       Map<String, Analyzer> analyzers = new HashMap<>();
       analyzers.put("field1", new KeywordAnalyzer());
       analyzers.put("field2", null);
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, analyzers);
+      luceneService.createIndexFactory().setFields(analyzers).create(INDEX_NAME, REGION_NAME);
     };
   }
 
@@ -430,7 +432,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       Map<String, Analyzer> analyzers = new HashMap<>();
       analyzers.put("field1", analyzerClass.newInstance());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, analyzers);
+      luceneService.createIndexFactory().setFields(analyzers).create(INDEX_NAME, REGION_NAME);
     };
   }
 
@@ -439,7 +441,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       Map<String, Analyzer> analyzers = new HashMap<>();
       analyzers.put("field1", new KeywordAnalyzer());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, analyzers);
+      luceneService.createIndexFactory().setFields(analyzers).create(INDEX_NAME, REGION_NAME);
     };
   }
 
@@ -449,7 +451,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       Map<String, Analyzer> analyzers = new HashMap<>();
       analyzers.put("field1", new KeywordAnalyzer());
       analyzers.put("field2", new KeywordAnalyzer());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, analyzers);
+      luceneService.createIndexFactory().setFields(analyzers).create(INDEX_NAME, REGION_NAME);
     };
   }
 
@@ -459,7 +461,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       Map<String, Analyzer> analyzers = new HashMap<>();
       analyzers.put("field1", new StandardAnalyzer());
       analyzers.put("field2", new KeywordAnalyzer());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, analyzers);
+      luceneService.createIndexFactory().setFields(analyzers).create(INDEX_NAME, REGION_NAME);
     };
   }
 }

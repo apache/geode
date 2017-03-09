@@ -23,7 +23,6 @@ import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.awaitility.Awaitility;
 import org.junit.Ignore;
@@ -31,7 +30,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.io.InterruptedIOException;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
@@ -184,15 +182,15 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
   private SerializableRunnableIF createIndex() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME, REGION_NAME);
     };
   }
 
   private SerializableRunnableIF createIndexes() {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME + "0", REGION_NAME, "text");
-      luceneService.createIndex(INDEX_NAME + "1", REGION_NAME, "text");
+      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME + "0", REGION_NAME);
+      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME + "1", REGION_NAME);
     };
   }
 

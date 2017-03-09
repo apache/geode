@@ -44,7 +44,6 @@ import org.apache.lucene.search.Query;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
@@ -54,10 +53,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.pdx.internal.AutoSerializableManager.ObjectArrayField;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -76,7 +73,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
     fields.put("field1", new StandardAnalyzer());
     fields.put("field2", new KeywordAnalyzer());
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, fields);
+    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
@@ -134,7 +131,8 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   public void shouldQueryUsingIntRangeQueryProvider() throws Exception {
     // Note: range query on numeric field has some limitations. But IntRangeQueryProvider
     // provided basic functionality
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, LuceneService.REGION_VALUE_FIELD);
+    luceneService.createIndexFactory().setFields(LuceneService.REGION_VALUE_FIELD)
+        .create(INDEX_NAME, REGION_NAME);
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
@@ -153,7 +151,8 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   public void queryParserCannotQueryByRange() throws Exception {
     // Note: range query on numeric field has some limitations. But IntRangeQueryProvider
     // provided basic functionality
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, LuceneService.REGION_VALUE_FIELD);
+    luceneService.createIndexFactory().setFields(LuceneService.REGION_VALUE_FIELD)
+        .create(INDEX_NAME, REGION_NAME);
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
@@ -208,7 +207,8 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   private LuceneQuery<Object, Object> addValuesAndCreateQuery(int pagesize)
       throws InterruptedException {
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "field1", "field2");
+    luceneService.createIndexFactory().setFields("field1", "field2").create(INDEX_NAME,
+        REGION_NAME);
     region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
@@ -236,7 +236,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     // Note: fields has to contain "field1", otherwise, field1 will not be tokenized
     fields.put("field1", null);
     fields.put("field2", new MyCharacterAnalyzer());
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, fields);
+    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
@@ -261,7 +261,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
     fields.put("field1", null);
     fields.put("field2", null);
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, fields);
+    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
@@ -279,7 +279,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     fields.put("name", null);
     fields.put("lastName", null);
     fields.put("address", null);
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, fields);
+    luceneService.createIndexFactory().setFields(fields).create(INDEX_NAME, REGION_NAME);
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
@@ -297,7 +297,8 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void shouldAllowQueryOnRegionWithStringValue() throws Exception {
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, LuceneService.REGION_VALUE_FIELD);
+    luceneService.createIndexFactory().setFields(LuceneService.REGION_VALUE_FIELD)
+        .create(INDEX_NAME, REGION_NAME);
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
     final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
@@ -310,7 +311,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
   @Test()
   public void throwFunctionExceptionWhenGivenBadQuery() throws Exception {
     LuceneService luceneService = LuceneServiceProvider.get(cache);
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+    luceneService.createIndexFactory().setFields("text").create(INDEX_NAME, REGION_NAME);
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
 
     // Create a query that throws an exception

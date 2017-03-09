@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.lucene.test;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -36,6 +35,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
@@ -43,13 +43,8 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.cache.persistence.PartitionOfflineException;
-import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 
 public class LuceneTestUtilities {
@@ -186,7 +181,8 @@ public class LuceneTestUtilities {
   }
 
   public static void createIndex(Cache cache, String... fieldNames) {
-    LuceneServiceProvider.get(cache).createIndex(INDEX_NAME, REGION_NAME, fieldNames);
+    final LuceneIndexFactory indexFactory = LuceneServiceProvider.get(cache).createIndexFactory();
+    indexFactory.setFields(fieldNames).create(INDEX_NAME, REGION_NAME);
   }
 
   public static void verifyIndexFinishFlushing(Cache cache, String indexName, String regionName)

@@ -43,7 +43,8 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
   @Test
   public void indexIsNotUpdatedIfTransactionHasNotCommittedYet() throws Exception {
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
+    luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
+        REGION_NAME);
 
     Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
     region.put("object-1", new TestObject("title 1", "hello world"));
@@ -69,7 +70,8 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
   @Test
   public void indexIsUpdatedAfterTransactionHasCommitted() throws Exception {
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
+    luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
+        REGION_NAME);
 
     Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
     region.put("object-1", new TestObject("title 1", "hello world"));
@@ -96,7 +98,8 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
   @Test
   public void indexIsNotUpdatedAfterTransactionRollback() throws Exception {
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
+    luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
+        REGION_NAME);
 
     Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
     region.put("object-1", new TestObject("title 1", "hello world"));
@@ -123,7 +126,8 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
   @Test
   public void statsAreUpdatedAfterACommit() throws Exception {
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
+    luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
+        REGION_NAME);
 
     Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
     region.put("object-1", new TestObject("title 1", "hello world"));
@@ -146,7 +150,8 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
   @Test
   public void indexShouldBeUpdatedWithRegionExpirationDestroyOperation() throws Exception {
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
+    luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
+        REGION_NAME);
 
     // Configure PR with expiration operation set to destroy
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
@@ -173,7 +178,8 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
   @Test
   public void nullValuesShouldNotCauseAnException() throws Exception {
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
+    luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
+        REGION_NAME);
 
     // Configure PR with expiration operation set to destroy
     Region region = cache.createRegionFactory(RegionShortcut.PARTITION).create(REGION_NAME);
@@ -192,7 +198,8 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
 
   @Test
   public void entriesFlushedToIndexAfterWaitForFlushCalled() throws InterruptedException {
-    luceneService.createIndex(INDEX_NAME, REGION_NAME, "title", "description");
+    luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
+        REGION_NAME);
 
     Region region = createRegion(REGION_NAME, RegionShortcut.PARTITION);
     LuceneTestUtilities.pauseSender(cache);

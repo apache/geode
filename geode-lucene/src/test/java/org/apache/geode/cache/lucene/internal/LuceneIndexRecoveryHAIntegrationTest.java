@@ -31,7 +31,6 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
@@ -77,7 +76,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
   public void recoverRepoInANewNode()
       throws BucketNotFoundException, IOException, InterruptedException {
     LuceneServiceImpl service = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
-    service.createIndex("index1", "/userRegion", indexedFields);
+    service.createIndexFactory().setFields(indexedFields).create("index1", "/userRegion");
     PartitionAttributes<String, String> attrs =
         new PartitionAttributesFactory().setTotalNumBuckets(1).create();
     RegionFactory<String, String> regionfactory =

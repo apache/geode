@@ -50,7 +50,7 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
       RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
     };
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
     dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
@@ -68,7 +68,7 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
       RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
     };
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
     dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
@@ -85,7 +85,7 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
   public void canQueryWithCustomLuceneQueryObject(RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
     };
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
     dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
@@ -113,7 +113,7 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
       throws InterruptedException {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
     };
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
     dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));

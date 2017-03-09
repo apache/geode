@@ -63,7 +63,7 @@ public class LuceneQueriesPersistenceIntegrationTest extends LuceneIntegrationTe
     String aeqId = LuceneServiceImpl.getUniqueIndexName(INDEX_NAME, REGION_NAME);
 
     LuceneService service = LuceneServiceProvider.get(cache);
-    service.createIndex(INDEX_NAME, REGION_NAME, Type1.fields);
+    service.createIndexFactory().setFields(Type1.fields).create(INDEX_NAME, REGION_NAME);
 
     RegionFactory<String, Type1> regionFactory =
         cache.createRegionFactory(RegionShortcut.PARTITION);
