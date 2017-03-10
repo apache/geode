@@ -77,6 +77,7 @@ public class HIncrByExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
+
     Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
     byte[] byteField = commandElems.get(FIELD_INDEX);

@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -54,23 +56,26 @@ public class HGetAllExecutor extends HashExecutor {
       command.setResponse(Coder.getErrorResponse(context.getByteBufAllocator(), ArityDef.HGETALL));
       return;
     }
+    Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> entries;
+    ByteArrayWrapper key = command.getKey();
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Map<ByteArrayWrapper, ByteArrayWrapper> results = getMap(context, key);
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> results = getMap(context, command.getKey());
+      if (results == null || results.isEmpty()) {
+        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
+        return;
+      }
 
-    if (results == null || results.isEmpty()) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      return;
+      entries = results.entrySet();
+
+      if (entries == null || entries.isEmpty()) {
+        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
+        return;
+      }
+
+      // create a copy
+      entries = new ArrayList<Entry<ByteArrayWrapper, ByteArrayWrapper>>(entries);
     }
-
-    Collection<Entry<ByteArrayWrapper, ByteArrayWrapper>> entries = results.entrySet();
-
-    if (entries == null || entries.isEmpty()) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      return;
-    }
-
-    // create a copy
-    entries = new ArrayList<Entry<ByteArrayWrapper, ByteArrayWrapper>>(entries);
 
     command.setResponse(Coder.getKeyValArrayResponse(context.getByteBufAllocator(), entries));
   }

@@ -17,7 +17,9 @@ package org.apache.geode.redis.internal.executor.set;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.redis.GeodeRedisServer;
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -45,4 +47,15 @@ public abstract class SetExecutor extends AbstractExecutor {
   Region<ByteArrayWrapper, Set<ByteArrayWrapper>> getRegion(ExecutionHandlerContext context) {
     return context.getRegionProvider().getSetRegion();
   }
+
+  protected AutoCloseableLock withRegionLock(ExecutionHandlerContext context,
+      ByteArrayWrapper key) {
+    DistributedLockService lockService = context.getSetLockService();
+    boolean lock = lockService.lock(key, -1, -1);
+    if (!lock) {
+      throw new RuntimeException("Couldn't get lock for " + key.toString());
+    }
+    return new AutoCloseableLock(() -> lockService.unlock(key));
+  }
+
 }

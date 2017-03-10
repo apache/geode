@@ -37,6 +37,9 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.RegionNotFoundException;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.redis.internal.executor.transactions.TransactionExecutor;
 import org.apache.geode.redis.GeodeRedisServer;
 
@@ -57,7 +60,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private static final int WAIT_REGION_DSTRYD_MILLIS = 100;
   private static final int MAXIMUM_NUM_RETRIES = (1000 * 60) / WAIT_REGION_DSTRYD_MILLIS; // 60
                                                                                           // seconds
-                                                                                          // total
+  private DistributedLockService hashLockService;
+  private DistributedLockService setLockService;
 
   private final Cache cache;
   private final GeodeRedisServer server;
@@ -115,6 +119,26 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.regionProvider = regionProvider;
     this.authPwd = pwd;
     this.isAuthenticated = pwd != null ? false : true;
+
+    this.setLockService = getOrCreateDLockService(cache, "__redis_set");
+    this.hashLockService = getOrCreateDLockService(cache, "__redis_hash");
+  }
+
+  public DistributedLockService getHashLockService() {
+    return this.hashLockService;
+  }
+
+  public DistributedLockService getSetLockService() {
+    return this.setLockService;
+  }
+
+  private synchronized DistributedLockService getOrCreateDLockService(Cache cache, String name) {
+    DistributedSystem distributedSystem = cache.getDistributedSystem();
+    DistributedLockService service = DistributedLockService.getServiceNamed(name);
+    if (service == null) {
+      service = DistributedLockService.create("__redis_set", cache.getDistributedSystem());
+    }
+    return service;
   }
 
   private void flushChannel() {

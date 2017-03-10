@@ -16,6 +16,8 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
 import java.util.Map;
+
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -52,21 +54,22 @@ public class HGetExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> entry = getMap(context, key);
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Map<ByteArrayWrapper, ByteArrayWrapper> entry = getMap(context, key);
 
-    if (entry == null) {
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-      return;
+      if (entry == null) {
+        command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
+        return;
+      }
+
+      ByteArrayWrapper valueWrapper = entry.get(field);
+
+      if (valueWrapper != null) {
+        command.setResponse(
+            Coder.getBulkStringResponse(context.getByteBufAllocator(), valueWrapper.toBytes()));
+      } else
+        command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
     }
-
-    ByteArrayWrapper valueWrapper = entry.get(field);
-
-    if (valueWrapper != null) {
-      command.setResponse(
-          Coder.getBulkStringResponse(context.getByteBufAllocator(), valueWrapper.toBytes()));
-    } else
-      command.setResponse(Coder.getNilResponse(context.getByteBufAllocator()));
-
   }
 
 }
