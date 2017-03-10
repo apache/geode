@@ -16,13 +16,16 @@
 package org.apache.geode.management.internal.web.controllers;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -85,21 +88,50 @@ public class ExportLogController extends AbstractCommandsController {
       command.addOption(CliStrings.EXPORT_LOGS__ENDTIME, endTime);
     }
 
-    // the result is json string from CommandResult
     String result = processCommand(command.toString());
+    return getResponse(result);
 
-    // parse the result to get the file path. This file Path should always exist in the file system
-    String filePath = ResultBuilder.fromJson(result).nextLine().trim();
+  }
 
+  ResponseEntity<InputStreamResource> getResponse(String result) {
+    // the result is json string from CommandResul
+    Result commandResult = ResultBuilder.fromJson(result);
+    if (commandResult.getStatus().equals(Result.Status.OK)) {
+      return getOKResponse(commandResult);
+
+    } else {
+      return getErrorResponse(result);
+    }
+  }
+
+  private ResponseEntity<InputStreamResource> getErrorResponse(String result) {
     HttpHeaders respHeaders = new HttpHeaders();
+    InputStreamResource isr;// if the command is successful, the output is the filepath,
+    // else we need to send the orignal result back so that the receiver will know to turn it
+    // into a Result object
+    try {
+      isr = new InputStreamResource(IOUtils.toInputStream(result, "UTF-8"));
+      respHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+      return new ResponseEntity<InputStreamResource>(isr, respHeaders, HttpStatus.OK);
+    } catch (Exception e) {
+      throw new RuntimeException("IO Error writing file to output stream", e);
+    }
+  }
+
+  private ResponseEntity<InputStreamResource> getOKResponse(Result commandResult) {
+    HttpHeaders respHeaders = new HttpHeaders();
+    InputStreamResource isr;// if the command is successful, the output is the filepath,
+    String filePath = commandResult.nextLine().trim();
     File zipFile = new File(filePath);
     try {
-      InputStreamResource isr = new InputStreamResource(new FileInputStream(zipFile));
+      isr = new InputStreamResource(new FileInputStream(zipFile));
+      respHeaders.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE);
       return new ResponseEntity<InputStreamResource>(isr, respHeaders, HttpStatus.OK);
-    } catch (Exception ex) {
-      throw new RuntimeException("IOError writing file to output stream", ex);
+    } catch (Exception e) {
+      throw new RuntimeException("IO Error writing file to output stream", e);
     } finally {
       FileUtils.deleteQuietly(zipFile);
     }
   }
+
 }

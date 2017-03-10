@@ -284,12 +284,10 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       if (postExecResult != null) {
         if (Status.ERROR.equals(postExecResult.getStatus())) {
           if (logWrapper.infoEnabled()) {
-            logWrapper
-                .info("Post execution Result :: " + ResultBuilder.resultAsString(postExecResult));
+            logWrapper.info("Post execution Result :: " + postExecResult);
           }
         } else if (logWrapper.fineEnabled()) {
-          logWrapper
-              .fine("Post execution Result :: " + ResultBuilder.resultAsString(postExecResult));
+          logWrapper.fine("Post execution Result :: " + postExecResult);
         }
         commandResult = postExecResult;
       }

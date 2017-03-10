@@ -32,7 +32,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 @Category(DistributedTest.class)
-public class ExportLogsOverHttpDUnitTest extends ExportStatsDUnitTest {
+public class ExportLogsStatsOverHttpDUnitTest extends ExportLogsStatsDUnitTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

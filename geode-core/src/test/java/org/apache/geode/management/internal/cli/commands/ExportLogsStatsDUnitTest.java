@@ -49,7 +49,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 @Category(DistributedTest.class)
-public class ExportStatsDUnitTest {
+public class ExportLogsStatsDUnitTest {
   @ClassRule
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
@@ -136,11 +136,8 @@ public class ExportStatsDUnitTest {
     commandStringBuilder.addOption("end-time", dateTimeFormatter.format(yesterday));
     commandStringBuilder.addOption("log-level", "debug");
 
-    connector.executeAndVerifyCommand(commandStringBuilder.toString());
-    String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
-
-    Set<String> actualZipEnries = getZipEntries(zipPath);
-    assertThat(actualZipEnries).hasSize(0);
+    String output = connector.execute(commandStringBuilder.toString());
+    assertThat(output).contains("No files to be exported");
   }
 
   protected String getZipPathFromCommandResult(String message) {

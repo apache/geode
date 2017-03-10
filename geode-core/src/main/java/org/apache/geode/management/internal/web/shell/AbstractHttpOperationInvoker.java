@@ -633,7 +633,7 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
     return response.getBody();
   }
 
-  protected Path downloadResponseToTempFile(ClientHttpRequest request,
+  protected Object downloadResponseToTempFile(ClientHttpRequest request,
       Map<String, ?> uriVariables) {
     final URI url = request.getURL(uriVariables);
 
@@ -645,13 +645,18 @@ public abstract class AbstractHttpOperationInvoker implements HttpOperationInvok
     };
 
     // Streams the response instead of loading it all in memory
-    ResponseExtractor<Path> responseExtractor = resp -> {
-      Path tempFile = Files.createTempFile("fileDownload", "");
-      if (tempFile.toFile().exists()) {
-        FileUtils.deleteQuietly(tempFile.toFile());
+    ResponseExtractor<Object> responseExtractor = resp -> {
+      MediaType mediaType = resp.getHeaders().getContentType();
+      if (mediaType.equals(MediaType.APPLICATION_JSON)) {
+        return org.apache.commons.io.IOUtils.toString(resp.getBody(), "UTF-8");
+      } else {
+        Path tempFile = Files.createTempFile("fileDownload", "");
+        if (tempFile.toFile().exists()) {
+          FileUtils.deleteQuietly(tempFile.toFile());
+        }
+        Files.copy(resp.getBody(), tempFile);
+        return tempFile;
       }
-      Files.copy(resp.getBody(), tempFile);
-      return tempFile;
     };
     return getRestTemplate().execute(url, org.springframework.http.HttpMethod.GET, requestCallback,
         responseExtractor);

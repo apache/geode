@@ -98,6 +98,10 @@ public class ExportLogCommand implements CommandMarker {
       Set<DistributedMember> targetMembers =
           CliUtil.findMembersIncludingLocators(groups, memberIds);
 
+      if (targetMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      }
+
       Map<String, Path> zipFilesFromMembers = new HashMap<>();
       for (DistributedMember server : targetMembers) {
         Region region = ExportLogsFunction.createOrGetExistingExportLogsRegion(true, cache);
@@ -120,8 +124,11 @@ public class ExportLogCommand implements CommandMarker {
         }
       }
 
-      Path tempDir = Files.createTempDirectory("exportedLogs");
+      if (zipFilesFromMembers.isEmpty()) {
+        return ResultBuilder.createUserErrorResult("No files to be exported.");
+      }
 
+      Path tempDir = Files.createTempDirectory("exportedLogs");
       // make sure the directory is created, so that even if there is no files unzipped to this dir,
       // we can
       // still zip it and send an empty zip file back to the client
