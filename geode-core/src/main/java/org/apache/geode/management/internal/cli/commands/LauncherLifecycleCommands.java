@@ -384,21 +384,9 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                 new File(locatorLauncher.getWorkingDirectory()))),
             null);
 
+        locatorState = locatorStatus(workingDirectory, memberName);
         do {
-          try {
-            final int exitValue = locatorProcess.exitValue();
-
-            stderrReader.join(PROCESS_STREAM_READER_JOIN_TIMEOUT_MILLIS); // was Long.MAX_VALUE
-
-            // Gfsh.println(message);
-
-            return ResultBuilder.createShellClientErrorResult(
-                String.format(CliStrings.START_LOCATOR__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
-                    exitValue, locatorLauncher.getWorkingDirectory(), message.toString()));
-          } catch (IllegalThreadStateException ignore) {
-            // the IllegalThreadStateException is expected; it means the Locator's process has not
-            // terminated,
-            // and basically should not
+          if (locatorProcess.isAlive()) {
             Gfsh.print(".");
 
             synchronized (this) {
@@ -410,12 +398,19 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
             String currentLocatorStatusMessage = locatorState.getStatusMessage();
 
             if (isStartingOrNotResponding(locatorState.getStatus())
-                && !(StringUtils.isBlank(currentLocatorStatusMessage) || currentLocatorStatusMessage
-                    .equalsIgnoreCase(previousLocatorStatusMessage))) {
+                && !(StringUtils.isBlank(currentLocatorStatusMessage)
+                    || currentLocatorStatusMessage.equalsIgnoreCase(previousLocatorStatusMessage)
+                    || currentLocatorStatusMessage.trim().toLowerCase().equals("null"))) {
               Gfsh.println();
               Gfsh.println(currentLocatorStatusMessage);
               previousLocatorStatusMessage = currentLocatorStatusMessage;
             }
+          } else {
+            final int exitValue = locatorProcess.exitValue();
+
+            return ResultBuilder.createShellClientErrorResult(
+                String.format(CliStrings.START_LOCATOR__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
+                    exitValue, locatorLauncher.getWorkingDirectory(), message.toString()));
           }
         } while (!(registeredLocatorSignalListener && locatorSignalListener.isSignaled())
             && isStartingOrNotResponding(locatorState.getStatus()));
@@ -1646,21 +1641,9 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
                 new File(serverLauncher.getWorkingDirectory()))),
             null);
 
+        serverState = serverStatus(workingDirectory, memberName);
         do {
-          try {
-            final int exitValue = serverProcess.exitValue();
-
-            stderrReader.join(PROCESS_STREAM_READER_JOIN_TIMEOUT_MILLIS); // was Long.MAX_VALUE
-
-            // Gfsh.println(message);
-
-            return ResultBuilder.createShellClientErrorResult(
-                String.format(CliStrings.START_SERVER__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
-                    exitValue, serverLauncher.getWorkingDirectory(), message.toString()));
-          } catch (IllegalThreadStateException ignore) {
-            // the IllegalThreadStateException is expected; it means the Server's process has not
-            // terminated,
-            // and should not
+          if (serverProcess.isAlive()) {
             Gfsh.print(".");
 
             synchronized (this) {
@@ -1673,11 +1656,19 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
 
             if (isStartingOrNotResponding(serverState.getStatus())
                 && !(StringUtils.isBlank(currentServerStatusMessage)
-                    || currentServerStatusMessage.equalsIgnoreCase(previousServerStatusMessage))) {
+                    || currentServerStatusMessage.equalsIgnoreCase(previousServerStatusMessage)
+                    || currentServerStatusMessage.trim().toLowerCase().equals("null"))) {
               Gfsh.println();
               Gfsh.println(currentServerStatusMessage);
               previousServerStatusMessage = currentServerStatusMessage;
             }
+          } else {
+            final int exitValue = serverProcess.exitValue();
+
+            return ResultBuilder.createShellClientErrorResult(
+                String.format(CliStrings.START_SERVER__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
+                    exitValue, serverLauncher.getWorkingDirectory(), message.toString()));
+
           }
         } while (!(registeredServerSignalListener && serverSignalListener.isSignaled())
             && isStartingOrNotResponding(serverState.getStatus()));
