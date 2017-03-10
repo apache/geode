@@ -14,6 +14,16 @@
  */
 package org.apache.geode.modules.session.internal.filter;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import com.meterware.httpunit.GetMethodWebRequest;
+import com.meterware.httpunit.WebConversation;
+import com.meterware.httpunit.WebRequest;
+import com.meterware.httpunit.WebResponse;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
@@ -32,6 +42,15 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -39,18 +58,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
-
-import com.meterware.httpunit.GetMethodWebRequest;
-import com.meterware.httpunit.WebConversation;
-import com.meterware.httpunit.WebRequest;
-import com.meterware.httpunit.WebResponse;
 
 /**
  * In-container testing using Jetty. This allows us to test context listener events as well as
