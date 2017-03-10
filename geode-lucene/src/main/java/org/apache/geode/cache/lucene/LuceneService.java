@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
  * <pre>
  * {
  *   &#64;code
-*       luceneService.createCreateIndexFactory()
+*       luceneService.createIndexFactory()
  *        .addField("name")
  *        .addField("zipcode")
  *        .addField("email", new KeywordAnalyzer())
