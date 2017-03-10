@@ -331,7 +331,7 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
   private SerializableRunnableIF createIndex(String indexName, String field) {
     return () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndexFactory().setFields(field).create(INDEX_NAME, REGION_NAME);
+      luceneService.createIndexFactory().setFields(field).create(indexName, REGION_NAME);
     };
   }
 
