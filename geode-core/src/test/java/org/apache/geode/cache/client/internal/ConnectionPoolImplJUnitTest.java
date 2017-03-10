@@ -148,6 +148,9 @@ public class ConnectionPoolImplJUnitTest {
       assertEquals(port, addr.getPort());
       assertEquals("localhost", addr.getHostName());
     }
+    LiveServerPinger lsp = new LiveServerPinger(pool);
+    long NANOS_PER_MS = 1000000L;
+    assertEquals(((pool.getPingInterval() + 1)/ 2) * NANOS_PER_MS, lsp.pingIntervalNanos  );
   }
 
   @Test
