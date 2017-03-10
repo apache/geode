@@ -17,6 +17,8 @@ package org.apache.geode.cache.lucene;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -37,6 +39,7 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
 
   protected static int NUM_BUCKETS = 10;
   protected static int MAX_ENTRIES_FOR_EVICTION = 20;
+  protected static int EXPIRATION_TIMEOUT_SEC = 5;
 
   @Override
   public void postSetUp() throws Exception {
@@ -98,12 +101,16 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
             EvictionAction.LOCAL_DESTROY)),
     PARTITION_PERSISTENT_EVICTION_LOCAL_DESTROY(RegionShortcut.PARTITION_PROXY,
         RegionShortcut.PARTITION_PERSISTENT, EvictionAttributes
-            .createLRUEntryAttributes(MAX_ENTRIES_FOR_EVICTION, EvictionAction.LOCAL_DESTROY))
+            .createLRUEntryAttributes(MAX_ENTRIES_FOR_EVICTION, EvictionAction.LOCAL_DESTROY)),
+    PARTITION_REDUNDANT_WITH_EXPIRATION_DESTROY(RegionShortcut.PARTITION_PROXY_REDUNDANT,
+        RegionShortcut.PARTITION_REDUNDANT, EXPIRATION_TIMEOUT_SEC, ExpirationAction.DESTROY),
+    PARTITION_WITH_EXPIRATION_DESTROY(RegionShortcut.PARTITION_PROXY, RegionShortcut.PARTITION,
+        EXPIRATION_TIMEOUT_SEC, ExpirationAction.DESTROY),
+    PARTITION_REDUNDANT_PERSISTENT_WITH_EXPIRATION_DESTROY(RegionShortcut.PARTITION_PROXY_REDUNDANT,
+        RegionShortcut.PARTITION_REDUNDANT_PERSISTENT, EXPIRATION_TIMEOUT_SEC,
+        ExpirationAction.DESTROY);
 
-
-    ;
-
-
+    ExpirationAttributes expirationAttributes = null;
     EvictionAttributes evictionAttributes = null;
     private RegionShortcut serverRegionShortcut;
     private RegionShortcut clientRegionShortcut;
@@ -117,6 +124,15 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
       this.clientRegionShortcut = clientRegionShortcut;
       this.serverRegionShortcut = serverRegionShortcut;
       this.evictionAttributes = evictionAttributes;
+      this.expirationAttributes = null;
+    }
+
+    RegionTestableType(RegionShortcut clientRegionShortcut, RegionShortcut serverRegionShortcut,
+        int timeout, ExpirationAction expirationAction) {
+      this.clientRegionShortcut = clientRegionShortcut;
+      this.serverRegionShortcut = serverRegionShortcut;
+      this.evictionAttributes = null;
+      this.expirationAttributes = new ExpirationAttributes(timeout, expirationAction);
     }
 
     public Region createDataStore(Cache cache, String regionName) {
@@ -128,7 +144,11 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
           return null;
         }
       }
-      if (evictionAttributes == null) {
+      if (expirationAttributes != null) {
+        return cache.createRegionFactory(serverRegionShortcut)
+            .setEntryTimeToLive(expirationAttributes)
+            .setPartitionAttributes(getPartitionAttributes(false)).create(regionName);
+      } else if (evictionAttributes == null) {
         return cache.createRegionFactory(serverRegionShortcut)
             .setPartitionAttributes(getPartitionAttributes(false)).create(regionName);
       } else {
