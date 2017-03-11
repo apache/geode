@@ -52,7 +52,7 @@ public class LuceneServiceImplJUnitTest {
   @Test
   public void shouldThrowIllegalArgumentExceptionIfFieldsAreMissing() {
     thrown.expect(IllegalArgumentException.class);
-    service.createIndex("index", "region");
+    service.createIndexFactory().create("index", "region");
   }
 
   @Test

@@ -69,7 +69,7 @@ Region region = cache.createRegionFactory(RegionShutcut.PARTITION).create(region
  
 ```
 
-## Search Example
+## <a id="search-example" class="no-quick-link"></a>Search Example
 
 ``` pre
 LuceneQuery<String, Person> query = luceneService.createLuceneQueryFactory()
@@ -82,22 +82,24 @@ Collection<Person> results = query.findValues();
 
 ## <a id="gfsh-api" class="no-quick-link"></a>Gfsh API
 
-The gfsh command-line utility supports four Apache Lucene actions:
+The gfsh command-line utility supports five Apache Lucene actions:
 
-<dt><b>create lucene index</b></dt>
-    <dd>Create a lucene index that can be used to execute queries.</dd>
-<dt><b>describe lucene index</b></dt>
-    <dd>Display the describe of lucene indexes created for all members.</dd>
-<dt><b>list lucene indexes [with-stats]</b></dt>
-    <dd>Display the list of lucene indexes created for all members. The optional `with-stats` qualifier shows activity on the indexes.</dd>
-<dt><b>search lucene</b></dt>
-    <dd>Search lucene index</dd>
+<dt><a href="gfsh/command-pages/create.html#create_lucene_index"><b>create lucene index</b></a></dt>
+    <dd>Create a Lucene index that can be used to execute queries.</dd>
+<dt><a href="gfsh/command-pages/describe.html#describe_lucene_index"><b>describe lucene index</b></a></dt>
+    <dd>Describe a Lucene index.</dd>
+<dt><a href="gfsh/command-pages/destroy.html#destroy_lucene_index"><b>destroy lucene index</b></a></dt>
+    <dd>Destroy a Lucene index.</dd>
+<dt><a href="gfsh/command-pages/list.html#list_lucene_indexes"><b>list lucene indexes</b></a></dt>
+    <dd>List Lucene indexes created for all members.</dd>
+<dt><a href="gfsh/command-pages/search.html#search_lucene"><b>search lucene</b></a></dt>
+    <dd>Search a Lucene index</dd>
 
 **Gfsh command-line examples:**
 
 ``` pre
 // List Index
-gfsh> list lucene indexes [with-stats]
+gfsh> list lucene indexes --with-stats
 
 // Create Index
 gfsh>create lucene index --name=indexName --region=/orders --field=customer,tags
@@ -111,7 +113,7 @@ gfsh> lucene search --regionName=/orders -queryStrings="John*" --defaultField=fi
 ```
 
 
-## XML Configuration
+## <a id="xml-configuration" class="no-quick-link"></a>XML Configuration
 
 ``` pre
 <cache

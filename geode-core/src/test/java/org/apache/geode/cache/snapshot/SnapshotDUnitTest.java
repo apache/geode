@@ -14,21 +14,29 @@
  */
 package org.apache.geode.cache.snapshot;
 
+import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.awaitility.Awaitility;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
-import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.examples.snapshot.MyObject;
 import com.examples.snapshot.MyPdxSerializer;
@@ -42,12 +50,14 @@ import org.apache.geode.cache.snapshot.RegionGenerator.SerializationType;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 
 @Category(DistributedTest.class)
 public class SnapshotDUnitTest extends JUnit4CacheTestCase {
+
+  private static final int NUM_ENTRIES = 1000;
+
   public SnapshotDUnitTest() {
     super();
   }
@@ -60,17 +70,8 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
     // save all regions
     getCache().getSnapshotService().save(dir, SnapshotFormat.GEMFIRE);
 
-    for (final RegionType rt : RegionType.values()) {
-      for (final SerializationType st : SerializationType.values()) {
-        String name = "test-" + rt.name() + "-" + st.name();
-
-        // overwrite region with bad data
-        Region<Integer, MyObject> region = getCache().getRegion(name);
-        for (Entry<Integer, MyObject> entry : region.entrySet()) {
-          region.put(entry.getKey(), new MyObject(Integer.MAX_VALUE, "bad!!"));
-        }
-      }
-    }
+    // update regions with data to be overwritten by import
+    updateRegions();
 
     SerializableCallable callbacks = new SerializableCallable() {
       @Override
@@ -106,8 +107,83 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
     forEachVm(callbacks, true);
 
     // load all regions
+    loadRegions(dir, null);
+  }
+
+  @Test
+  public void testExportAndImportWithInvokeCallbacksEnabled() throws Exception {
+    File dir = new File(getDiskDirs()[0], "callbacks");
+    dir.mkdir();
+
+    // save all regions
+    CacheSnapshotService service = getCache().getSnapshotService();
+    service.save(dir, SnapshotFormat.GEMFIRE);
+
+    // update regions with data to be overwritten by import
+    updateRegions();
+
+    SerializableCallable callbacks = new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        for (final RegionType rt : RegionType.values()) {
+          for (final SerializationType st : SerializationType.values()) {
+            String name = "test-" + rt.name() + "-" + st.name();
+            Cache cache = getCache();
+            Region<Integer, MyObject> region = cache.getRegion(name);
+            // add CacheWriter and CacheListener
+            AttributesMutator mutator = region.getAttributesMutator();
+            mutator.setCacheWriter(new CountingCacheWriter());
+            mutator.addCacheListener(new CountingCacheListener());
+            // add AsyncEventQueue
+            addAsyncEventQueue(region, name);
+          }
+        }
+        return null;
+      }
+    };
+
+    // add callbacks
+    forEachVm(callbacks, true);
+
+    // load all regions with invoke callbacks enabled
+    SnapshotOptions options = service.createOptions();
+    options.invokeCallbacks(true);
+    loadRegions(dir, options);
+
+    // verify callbacks were invoked
+    verifyCallbacksInvoked();
+  }
+
+  private void addAsyncEventQueue(Region region, String name) {
+    DiskStoreFactory dsFactory = getCache().createDiskStoreFactory();
+    dsFactory.create(name);
+    AsyncEventQueueFactory aeqFactory = getCache().createAsyncEventQueueFactory();
+    aeqFactory.setDiskStoreName(name);
+    aeqFactory.create(name, new CountingAsyncEventListener());
+    region.getAttributesMutator().addAsyncEventQueueId(name);
+  }
+
+  private void updateRegions() {
+    for (final RegionType rt : RegionType.values()) {
+      for (final SerializationType st : SerializationType.values()) {
+        String name = "test-" + rt.name() + "-" + st.name();
+
+        // overwrite region with bad data
+        Region<Integer, MyObject> region = getCache().getRegion(name);
+        for (Entry<Integer, MyObject> entry : region.entrySet()) {
+          region.put(entry.getKey(), new MyObject(Integer.MAX_VALUE, "bad!!"));
+        }
+      }
+    }
+  }
+
+  private void loadRegions(File dir, SnapshotOptions options) throws Exception {
     RegionGenerator rgen = new RegionGenerator();
-    getCache().getSnapshotService().load(dir, SnapshotFormat.GEMFIRE);
+    if (options != null) {
+      getCache().getSnapshotService().load(dir.listFiles(), SnapshotFormat.GEMFIRE, options);
+    } else {
+      getCache().getSnapshotService().load(dir, SnapshotFormat.GEMFIRE);
+    }
     for (final RegionType rt : RegionType.values()) {
       for (final SerializationType st : SerializationType.values()) {
         Region<Integer, MyObject> region =
@@ -116,6 +192,51 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
           assertEquals("Comparison failure for " + rt.name() + "/" + st.name(), entry.getValue(),
               region.get(entry.getKey()));
         }
+      }
+    }
+  }
+
+  private void verifyCallbacksInvoked() throws Exception {
+    for (final RegionType rt : RegionType.values()) {
+      for (final SerializationType st : SerializationType.values()) {
+        SerializableCallable counts = new SerializableCallable() {
+          @Override
+          public Object call() throws Exception {
+            String name = "test-" + rt.name() + "-" + st.name();
+            Region<Integer, MyObject> region = getCache().getRegion(name);
+            // get CacheWriter and CacheListener events
+            CountingCacheWriter writer =
+                (CountingCacheWriter) region.getAttributes().getCacheWriter();
+            CountingCacheListener listener =
+                (CountingCacheListener) region.getAttributes().getCacheListener();
+            // get AsyncEventListener events
+            int numAeqEvents = 0;
+            AsyncEventQueue aeq = getCache().getAsyncEventQueue(name);
+            CountingAsyncEventListener aeqListener =
+                (CountingAsyncEventListener) aeq.getAsyncEventListener();
+            if (aeq.isPrimary()) {
+              Awaitility.waitAtMost(60, TimeUnit.SECONDS)
+                  .until(() -> aeqListener.getEvents() == NUM_ENTRIES);
+              numAeqEvents = aeqListener.getEvents();
+            }
+            return new int[] {writer.getEvents(), listener.getEvents(), numAeqEvents};
+          }
+        };
+        Object result = forEachVm(counts, true);
+        int totalWriterUpdates = 0, totalListenerUpdates = 0, totalAeqEvents = 0;
+        List<int[]> list = (List) result;
+        for (int[] vmResult : list) {
+          totalWriterUpdates += vmResult[0];
+          totalListenerUpdates += vmResult[1];
+          totalAeqEvents += vmResult[2];
+        }
+        if (rt.name().contains("PARTITION")) {
+          assertEquals(NUM_ENTRIES, totalListenerUpdates);
+        } else {
+          assertEquals(NUM_ENTRIES * (Host.getHost(0).getVMCount() + 1), totalListenerUpdates);
+        }
+        assertEquals(NUM_ENTRIES, totalWriterUpdates);
+        assertEquals(NUM_ENTRIES, totalAeqEvents);
       }
     }
   }
@@ -190,7 +311,7 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
   public static Map<Integer, MyObject> createExpected(SerializationType type,
       RegionGenerator rgen) {
     Map<Integer, MyObject> expected = new HashMap<Integer, MyObject>();
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < NUM_ENTRIES; i++) {
       expected.put(i, rgen.createData(type, i, "The number is " + i));
     }
     return expected;
@@ -222,16 +343,63 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static Object forEachVm(SerializableCallable call, boolean local) throws Exception {
+    List result = new ArrayList();
     Host host = Host.getHost(0);
     int vms = host.getVMCount();
 
     for (int i = 0; i < vms; ++i) {
-      host.getVM(i).invoke(call);
+      result.add(host.getVM(i).invoke(call));
     }
 
     if (local) {
-      return call.call();
+      result.add(call.call());
     }
-    return null;
+    return result;
+  }
+
+  private static class CountingCacheListener extends CacheListenerAdapter<Integer, MyObject> {
+
+    private final AtomicInteger events = new AtomicInteger();
+
+    @Override
+    public void afterUpdate(EntryEvent<Integer, MyObject> event) {
+      events.incrementAndGet();
+    }
+
+    private int getEvents() {
+      return events.get();
+    }
+  }
+
+  private static class CountingCacheWriter extends CacheWriterAdapter<Integer, MyObject> {
+
+    private final AtomicInteger events = new AtomicInteger();
+
+    @Override
+    public void beforeUpdate(EntryEvent<Integer, MyObject> event) {
+      events.incrementAndGet();
+    }
+
+    private int getEvents() {
+      return events.get();
+    }
+  }
+
+  private static final class CountingAsyncEventListener implements AsyncEventListener {
+
+    private final AtomicInteger events = new AtomicInteger();
+
+    @Override
+    public boolean processEvents(final List<AsyncEvent> list) {
+      events.addAndGet(list.size());
+      return true;
+    }
+
+    private int getEvents() {
+      return events.get();
+    }
+
+    @Override
+    public void close() {}
   }
 }

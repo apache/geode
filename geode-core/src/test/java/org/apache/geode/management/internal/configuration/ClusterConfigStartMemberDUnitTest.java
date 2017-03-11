@@ -23,8 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOAD_CLUSTER_
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.geode.test.dunit.rules.Locator;
-import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +34,7 @@ import java.util.Properties;
 
 @Category(DistributedTest.class)
 public class ClusterConfigStartMemberDUnitTest extends ClusterConfigBaseTest {
-  protected Locator locator;
+  protected MemberVM locator;
 
   @Before
   public void before() throws Exception {
@@ -46,7 +45,7 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigBaseTest {
   @Test
   public void testStartLocator() throws Exception {
     locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
-    Locator secondLocator = lsRule.startLocatorVM(1, locatorProps);
+    MemberVM secondLocator = lsRule.startLocatorVM(1, locatorProps);
 
     REPLICATED_CONFIG_FROM_ZIP.verify(secondLocator);
   }
@@ -57,15 +56,15 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigBaseTest {
     ClusterConfig expectedGroup1Config = new ClusterConfig(CLUSTER, GROUP1);
     ClusterConfig expectedGroup2Config = new ClusterConfig(CLUSTER, GROUP2);
 
-    Server serverWithNoGroup = lsRule.startServerVM(1, serverProps, locator.getPort());
+    MemberVM serverWithNoGroup = lsRule.startServerVM(1, serverProps, locator.getPort());
     expectedNoGroupConfig.verify(serverWithNoGroup);
 
     serverProps.setProperty(GROUPS, "group1");
-    Server serverForGroup1 = lsRule.startServerVM(2, serverProps, locator.getPort());
+    MemberVM serverForGroup1 = lsRule.startServerVM(2, serverProps, locator.getPort());
     expectedGroup1Config.verify(serverForGroup1);
 
     serverProps.setProperty(GROUPS, "group2");
-    Server serverForGroup2 = lsRule.startServerVM(3, serverProps, locator.getPort());
+    MemberVM serverForGroup2 = lsRule.startServerVM(3, serverProps, locator.getPort());
     expectedGroup2Config.verify(serverForGroup2);
   }
 
@@ -74,12 +73,12 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigBaseTest {
     ClusterConfig expectedGroup1And2Config = new ClusterConfig(CLUSTER, GROUP1, GROUP2);
 
     serverProps.setProperty(GROUPS, "group1,group2");
-    Server server = lsRule.startServerVM(1, serverProps, locator.getPort());
+    MemberVM server = lsRule.startServerVM(1, serverProps, locator.getPort());
 
     expectedGroup1And2Config.verify(server);
   }
 
-  private Locator startLocatorWithLoadCCFromDir() throws Exception {
+  private MemberVM startLocatorWithLoadCCFromDir() throws Exception {
     File locatorDir = lsRule.getTempFolder().newFolder("locator-0");
     File configDir = new File(locatorDir, "cluster_config");
 
@@ -96,7 +95,7 @@ public class ClusterConfigStartMemberDUnitTest extends ClusterConfigBaseTest {
     properties.setProperty(LOAD_CLUSTER_CONFIGURATION_FROM_DIR, "true");
     properties.setProperty(CLUSTER_CONFIGURATION_DIR, locatorDir.getCanonicalPath());
 
-    Locator locator = lsRule.startLocatorVM(0, properties);
+    MemberVM locator = lsRule.startLocatorVM(0, properties);
     CONFIG_FROM_ZIP.verify(locator);
 
     return locator;

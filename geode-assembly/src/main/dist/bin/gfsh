@@ -110,20 +110,6 @@ if [ "x$GF_JAVA_PATH" == "x" ]; then
   echo "ERROR: Could not find java executable in the path. Please set JAVA_HOME to point to the JDK directory or point GF_JAVA to java executable from JDK."
   exit 1
 fi
-GF_JAVA_PARENT=`dirname "$GF_JAVA_PATH"`
-GF_JAVA_PARENT=`dirname "$GF_JAVA_PARENT"`
-TOOLS_JAR="$GF_JAVA_PARENT/lib/tools.jar"
-if [ ! -f "$TOOLS_JAR" ]; then
-    # Now consider java is from JRE in JDK 
-    TOOLS_JAR="$GF_JAVA_PARENT/../lib/tools.jar"
-    if [ ! -f "$TOOLS_JAR" ]; then
-        TOOLS_JAR=
-    fi
-fi
-
-if [ "x$TOOLS_JAR" != "x" ]; then
-  CLASSPATH="$CLASSPATH:$TOOLS_JAR"
-fi
 
 if [ "${UNAME}" = "cygwin" ]; then
   CLASSPATH=$( cygpath -w -p "$CLASSPATH" )

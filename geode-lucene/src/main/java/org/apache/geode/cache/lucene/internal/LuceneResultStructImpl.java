@@ -15,12 +15,22 @@
 
 package org.apache.geode.cache.lucene.internal;
 
-import org.apache.geode.cache.lucene.LuceneResultStruct;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-public class LuceneResultStructImpl<K, V> implements LuceneResultStruct<K, V> {
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.lucene.LuceneResultStruct;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+
+public class LuceneResultStructImpl<K, V>
+    implements LuceneResultStruct<K, V>, DataSerializableFixedID {
   K key;
   V value;
   float score;
+
+  public LuceneResultStructImpl() {}
 
   public LuceneResultStructImpl(K key, V value, float score) {
     this.key = key;
@@ -81,4 +91,29 @@ public class LuceneResultStructImpl<K, V> implements LuceneResultStruct<K, V> {
   public String toString() {
     return "LuceneResultStructImpl [key=" + key + ", value=" + value + ", score=" + score + "]";
   }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return null;
+  }
+
+  @Override
+  public int getDSFID() {
+    return LUCENE_RESULT_STRUCT;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeObject(key, out);
+    DataSerializer.writeObject(value, out);
+    out.writeFloat(score);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    key = DataSerializer.readObject(in);
+    value = DataSerializer.readObject(in);
+    score = in.readFloat();
+  }
+
 }

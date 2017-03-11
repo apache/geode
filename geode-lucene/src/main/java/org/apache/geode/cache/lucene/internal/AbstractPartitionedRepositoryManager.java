@@ -49,11 +49,13 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
   protected final PartitionedRegion userRegion;
   protected final LuceneSerializer serializer;
   protected final LuceneIndexImpl index;
+  protected volatile boolean closed;
 
   public AbstractPartitionedRepositoryManager(LuceneIndexImpl index, LuceneSerializer serializer) {
     this.index = index;
     this.userRegion = (PartitionedRegion) index.getCache().getRegion(index.getRegionPath());
     this.serializer = serializer;
+    this.closed = false;
   }
 
   @Override
@@ -91,9 +93,13 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
       LuceneSerializer serializer, LuceneIndexImpl index, PartitionedRegion userRegion,
       IndexRepository oldRepository) throws IOException;
 
-  protected IndexRepository computeRepository(Integer bucketId) throws BucketNotFoundException {
+  protected IndexRepository computeRepository(Integer bucketId) {
     IndexRepository repo = indexRepositories.compute(bucketId, (key, oldRepository) -> {
       try {
+        if (closed && oldRepository != null) {
+          oldRepository.cleanup();
+          return null;
+        }
         return computeRepository(bucketId, serializer, index, userRegion, oldRepository);
       } catch (IOException e) {
         throw new InternalGemFireError("Unable to create index repository", e);
@@ -118,5 +124,13 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
           "Unable to find lucene index because no longer primary for bucket " + bucketId);
     }
     return repo;
+  }
+
+  @Override
+  public void close() {
+    this.closed = true;
+    for (Integer bucketId : indexRepositories.keySet()) {
+      computeRepository(bucketId);
+    }
   }
 }

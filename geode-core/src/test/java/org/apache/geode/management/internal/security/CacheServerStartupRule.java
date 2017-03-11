@@ -56,7 +56,7 @@ public class CacheServerStartupRule extends ExternalResource implements Serializ
   public void before() throws Throwable {
     serverStarter.before();
     serverStarter.startServer(properties);
-    serverStarter.cache.createRegionFactory().create("region1");
+    serverStarter.getCache().createRegionFactory().create("region1");
   }
 
   @After
@@ -65,10 +65,10 @@ public class CacheServerStartupRule extends ExternalResource implements Serializ
   }
 
   public Cache getCache() {
-    return serverStarter.cache;
+    return serverStarter.getCache();
   }
 
   public int getServerPort() {
-    return serverStarter.server.getPort();
+    return serverStarter.getPort();
   }
 }

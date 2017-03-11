@@ -29,7 +29,6 @@ import org.apache.geode.management.internal.web.http.HttpMethod;
 import org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker;
 import org.apache.geode.test.dunit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,21 +47,16 @@ public class QueryNamesOverHttpDUnitTest {
   protected static int jmxPort = ports[0];
   protected static int httpPort = ports[1];
 
+  protected static Properties locatorProps = new Properties() {
+    {
+      setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
+      setProperty(HTTP_SERVICE_PORT, httpPort + "");
+      setProperty(JMX_MANAGER_PORT, jmxPort + "");
+    }
+  };
+
   @Rule
-  public LocatorStarterRule locatorRule = new LocatorStarterRule();
-
-  @Before
-  public void before() throws Exception {
-    Properties locatorProps = new Properties() {
-      {
-        setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
-        setProperty(HTTP_SERVICE_PORT, httpPort + "");
-        setProperty(JMX_MANAGER_PORT, jmxPort + "");
-      }
-    };
-    locatorRule.startLocator(locatorProps);
-  }
-
+  public LocatorStarterRule locatorRule = new LocatorStarterRule().startLocator(locatorProps);
 
   @Test
   public void testQueryNameOverHttp() throws Exception {

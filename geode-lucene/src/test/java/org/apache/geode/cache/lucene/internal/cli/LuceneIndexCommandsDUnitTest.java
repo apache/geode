@@ -15,7 +15,6 @@
 package org.apache.geode.cache.lucene.internal.cli;
 
 import org.apache.geode.cache.*;
-import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.cache.lucene.LuceneService;
@@ -24,7 +23,6 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
@@ -39,33 +37,24 @@ import org.awaitility.Awaitility;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.search.Collector;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
 import static org.apache.geode.test.dunit.Assert.*;
-import static junitparams.JUnitParamsRunner.$;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -623,7 +612,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
       fieldAnalyzers.put("field1", new StandardAnalyzer());
       fieldAnalyzers.put("field2", new KeywordAnalyzer());
       fieldAnalyzers.put("field3", null);
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, fieldAnalyzers);
+      luceneService.createIndexFactory().setFields(fieldAnalyzers).create(INDEX_NAME, REGION_NAME);
       createRegion();
     });
   }
@@ -635,7 +624,7 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
       fieldAnalyzers.put("field1", new StandardAnalyzer());
       fieldAnalyzers.put("field2", new KeywordAnalyzer());
       fieldAnalyzers.put("field3", null);
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, fieldAnalyzers);
+      luceneService.createIndexFactory().setFields(fieldAnalyzers).create(INDEX_NAME, REGION_NAME);
     });
   }
 

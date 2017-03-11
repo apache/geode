@@ -73,7 +73,7 @@ public class SecurityWithoutClusterConfigDUnitTest {
 
     // initial security properties should only contain initial set of values
     serverStarter.startServer(props, lsRule.getMember(0).getPort());
-    DistributedSystem ds = serverStarter.cache.getDistributedSystem();
+    DistributedSystem ds = serverStarter.getCache().getDistributedSystem();
     assertEquals(3, ds.getSecurityProperties().size());
 
     // after cache is created, we got the security props passed in by cluster config

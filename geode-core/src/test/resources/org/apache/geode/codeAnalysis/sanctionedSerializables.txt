@@ -335,7 +335,7 @@ org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$1,true,1
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$ParallelArgs,true,1,file:java/io/File,format:org/apache/geode/cache/snapshot/SnapshotOptions$SnapshotFormat,options:org/apache/geode/internal/cache/snapshot/SnapshotOptionsImpl
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$ParallelExportFunction,false
 org/apache/geode/internal/cache/snapshot/RegionSnapshotServiceImpl$ParallelImportFunction,false
-org/apache/geode/internal/cache/snapshot/SnapshotOptionsImpl,true,1,filter:org/apache/geode/cache/snapshot/SnapshotFilter,mapper:org/apache/geode/internal/cache/snapshot/SnapshotFileMapper,parallel:boolean
+org/apache/geode/internal/cache/snapshot/SnapshotOptionsImpl,true,1,filter:org/apache/geode/cache/snapshot/SnapshotFilter,invokeCallbacks:boolean,mapper:org/apache/geode/internal/cache/snapshot/SnapshotFileMapper,parallel:boolean
 org/apache/geode/internal/cache/snapshot/WindowedExporter$WindowedArgs,true,1,exporter:org/apache/geode/distributed/DistributedMember,options:org/apache/geode/cache/snapshot/SnapshotOptions
 org/apache/geode/internal/cache/snapshot/WindowedExporter$WindowedExportFunction,true,1
 org/apache/geode/internal/cache/tier/BatchException,true,-6707074107791305564,_index:int

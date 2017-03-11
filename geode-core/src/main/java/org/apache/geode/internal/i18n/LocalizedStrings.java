@@ -7672,6 +7672,11 @@ public class LocalizedStrings {
       new StringId(6651, "Lucene index {0} was not found in region {1}.");
   public static final StringId LuceneService_DESTROYED_INDEX_0_FROM_REGION_1 =
       new StringId(6652, "Destroyed Lucene index {0} from region {1}.");
+
+  public static final StringId PoolFactoryImpl_CAUGHT_EXCEPTION_ATTEMPTING_TO_ADD_REMOTE_LOCATOR_0 =
+      new StringId(6653,
+          "Caught the following exception attempting to add remote locator {0}. The locator will be ignored.");
+
   /** Testing strings, messageId 90000-99999 **/
 
   /**

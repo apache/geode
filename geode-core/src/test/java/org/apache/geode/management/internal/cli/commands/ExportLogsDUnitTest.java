@@ -34,11 +34,11 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.Member;
-import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
@@ -71,11 +71,11 @@ public class ExportLogsDUnitTest {
   @Rule
   public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
 
-  private Locator locator;
-  private Server server1;
-  private Server server2;
+  private MemberVM locator;
+  private MemberVM server1;
+  private MemberVM server2;
 
-  private Map<Member, List<LogLine>> expectedMessages;
+  private Map<MemberVM, List<LogLine>> expectedMessages;
 
   @Before
   public void setup() throws Exception {
@@ -94,7 +94,7 @@ public class ExportLogsDUnitTest {
     expectedMessages.put(server2, listOfLogLines(server2, "info", "error", "debug"));
 
     // log the messages in each of the members
-    for (Member member : expectedMessages.keySet()) {
+    for (MemberVM member : expectedMessages.keySet()) {
       List<LogLine> logLines = expectedMessages.get(member);
 
       member.invoke(() -> {
@@ -127,6 +127,7 @@ public class ExportLogsDUnitTest {
   }
 
   @Test
+  @Category(FlakyTest.class) // time sensitive
   public void testExportWithStartAndEndDateTimeFiltering() throws Exception {
     ZonedDateTime cutoffTime = LocalDateTime.now().atZone(ZoneId.systemDefault());
 
@@ -142,8 +143,7 @@ public class ExportLogsDUnitTest {
     String cutoffTimeString = dateTimeFormatter.format(cutoffTime);
 
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder("export logs");
-    commandStringBuilder.addOption("start-time",
-        dateTimeFormatter.format(cutoffTime.minusHours(1)));
+    commandStringBuilder.addOption("start-time", dateTimeFormatter.format(cutoffTime.minusDays(1)));
     commandStringBuilder.addOption("end-time", cutoffTimeString);
     commandStringBuilder.addOption("log-level", "debug");
     commandStringBuilder.addOption("dir", "someDir");
@@ -239,7 +239,7 @@ public class ExportLogsDUnitTest {
       throws IOException {
 
     String memberName = dirForMember.getName();
-    Member member = expectedMessages.keySet().stream()
+    MemberVM member = expectedMessages.keySet().stream()
         .filter((Member aMember) -> aMember.getName().equals(memberName)).findFirst().get();
 
     assertThat(member).isNotNull();

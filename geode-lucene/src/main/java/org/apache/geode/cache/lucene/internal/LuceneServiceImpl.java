@@ -69,7 +69,7 @@ import org.apache.geode.internal.logging.LogService;
  * @since GemFire 8.5
  */
 public class LuceneServiceImpl implements InternalLuceneService {
-  public static LuceneIndexFactory luceneIndexFactory = new LuceneIndexFactory();
+  public static LuceneIndexImplFactory luceneIndexFactory = new LuceneIndexImplFactory();
   private static final Logger logger = LogService.getLogger();
 
   private GemFireCacheImpl cache;
@@ -79,6 +79,11 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   public LuceneServiceImpl() {
 
+  }
+
+  @Override
+  public org.apache.geode.cache.lucene.LuceneIndexFactory createIndexFactory() {
+    return new LuceneIndexFactoryImpl(this);
   }
 
   @Override
@@ -127,17 +132,6 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return getUniqueIndexName(indexName, regionPath) + regionSuffix;
   }
 
-  @Override
-  public void createIndex(String indexName, String regionPath, String... fields) {
-    if (fields == null || fields.length == 0) {
-      throw new IllegalArgumentException("At least one field must be indexed");
-    }
-    StandardAnalyzer analyzer = new StandardAnalyzer();
-
-    createIndex(indexName, regionPath, analyzer, null, fields);
-  }
-
-  @Override
   public void createIndex(String indexName, String regionPath,
       Map<String, Analyzer> fieldAnalyzers) {
     if (fieldAnalyzers == null || fieldAnalyzers.isEmpty()) {
@@ -381,6 +375,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
         DestroyLuceneIndexMessage.class);
 
     DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_PAGE_RESULTS, PageResults.class);
+
+    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_RESULT_STRUCT,
+        LuceneResultStructImpl.class);
   }
 
   public Collection<LuceneIndexCreationProfile> getAllDefinedIndexes() {

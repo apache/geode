@@ -55,4 +55,20 @@ public interface SnapshotOptions<K, V> extends Serializable {
    * @return the filter, or null if the filter is not set
    */
   SnapshotFilter<K, V> getFilter();
+
+  /**
+   * Sets whether to invoke callbacks when loading a snapshot. The default is false.
+   *
+   * @param invokeCallbacks
+   *
+   * @return the snapshot options
+   */
+  SnapshotOptions<K, V> invokeCallbacks(boolean invokeCallbacks);
+
+  /**
+   * Returns whether loading a snapshot causes callbacks to be invoked
+   *
+   * @return whether loading a snapshot causes callbacks to be invoked
+   */
+  boolean shouldInvokeCallbacks();
 }

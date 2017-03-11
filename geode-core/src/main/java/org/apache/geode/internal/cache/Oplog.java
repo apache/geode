@@ -5275,11 +5275,11 @@ public final class Oplog implements CompactableOplog, Flushable {
           olf.bytesFlushed += flushed;
           bb.clear();
         }
-      }
-      if (doSync) {
-        if (SYNC_WRITES) {
-          // Synch Meta Data as well as content
-          olf.channel.force(true);
+        if (doSync) {
+          if (SYNC_WRITES) {
+            // Synch Meta Data as well as content
+            olf.channel.force(true);
+          }
         }
       }
     } catch (ClosedChannelException ignore) {

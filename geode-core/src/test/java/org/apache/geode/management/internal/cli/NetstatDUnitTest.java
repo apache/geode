@@ -18,7 +18,7 @@ package org.apache.geode.management.internal.cli;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.Server;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.After;
@@ -30,7 +30,7 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Properties;
 
-@Category({DistributedTest.class, FlakyTest.class})
+@Category(DistributedTest.class)
 public class NetstatDUnitTest {
   @ClassRule
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
@@ -58,7 +58,7 @@ public class NetstatDUnitTest {
     // start server with jmx Manager as well
     properties.remove("start-locator");
     properties.setProperty("jmx-manager-port", ports[2] + "");
-    Server server = lsRule.startServerVM(1, properties);
+    MemberVM server = lsRule.startServerVM(1, properties);
 
     // start server with no jmx Manager
     properties.setProperty("jmx-manager", "false");
@@ -91,21 +91,21 @@ public class NetstatDUnitTest {
     gfshConnector.executeAndVerifyCommand(netStatCommand);
   }
 
-  @Ignore
+  @Ignore("GEODE-2488")
   @Test
   public void testConnectToLocatorWithLargeCommandResponse() throws Exception {
     gfshConnector.connect(ports[0], GfshShellConnectionRule.PortType.locator);
     gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
   }
 
-  @Ignore
+  @Ignore("GEODE-2488")
   @Test
   public void testConnectToJmxManagerOneWithLargeCommandResponse() throws Exception {
     gfshConnector.connect(ports[1], GfshShellConnectionRule.PortType.jmxManger);
     gfshConnector.executeAndVerifyCommand(netStatLsofCommand);
   }
 
-  @Ignore
+  @Ignore("GEODE-2488")
   @Test
   public void testConnectToJmxManagerTwoWithLargeCommandResponse() throws Exception {
     gfshConnector.connect(ports[2], GfshShellConnectionRule.PortType.jmxManger);

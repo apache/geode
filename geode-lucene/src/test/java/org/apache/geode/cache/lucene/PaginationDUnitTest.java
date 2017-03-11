@@ -64,7 +64,7 @@ public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
       RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME, REGION_NAME);
     };
 
 
@@ -104,7 +104,7 @@ public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
       RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME, REGION_NAME);
     };
 
 
@@ -145,7 +145,7 @@ public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
       RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndex(INDEX_NAME, REGION_NAME, "text");
+      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME, REGION_NAME);
     };
 
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));

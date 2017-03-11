@@ -19,6 +19,8 @@ import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.management.LuceneIndexMetrics;
+import org.apache.geode.cache.lucene.management.LuceneServiceMXBean;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.ManagementTestBase;
@@ -182,7 +184,8 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
   private void createIndexes(String regionName, int numIndexes) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     for (int i = 0; i < numIndexes; i++) {
-      luceneService.createIndex(INDEX_NAME + "_" + i, regionName, "field" + i);
+      luceneService.createIndexFactory().setFields("field" + i).create(INDEX_NAME + "_" + i,
+          regionName);
     }
   }
 

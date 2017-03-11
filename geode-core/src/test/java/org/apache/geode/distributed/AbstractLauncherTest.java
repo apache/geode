@@ -14,6 +14,9 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
@@ -23,9 +26,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.Assert.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * The AbstractLauncherTest class is a test suite of unit tests testing the contract and
@@ -43,28 +43,6 @@ public class AbstractLauncherTest {
   private AbstractLauncher<?> createAbstractLauncher(final String memberName,
       final String memberId) {
     return new FakeServiceLauncher(memberName, memberId);
-  }
-
-  @Test
-  public void testIsAttachAPINotFound() {
-    final AbstractLauncher<?> launcher = createAbstractLauncher("012", "TestMember");
-
-    assertTrue(launcher.isAttachAPINotFound(new NoClassDefFoundError(
-        "Exception in thread \"main\" java.lang.NoClassDefFoundError: com/sun/tools/attach/AttachNotSupportedException")));
-    assertTrue(launcher.isAttachAPINotFound(new ClassNotFoundException(
-        "Caused by: java.lang.ClassNotFoundException: com.sun.tools.attach.AttachNotSupportedException")));
-    assertTrue(launcher.isAttachAPINotFound(new NoClassDefFoundError(
-        "Exception in thread \"main\" java.lang.NoClassDefFoundError: com/ibm/tools/attach/AgentNotSupportedException")));
-    assertTrue(launcher.isAttachAPINotFound(new ClassNotFoundException(
-        "Caused by: java.lang.ClassNotFoundException: com.ibm.tools.attach.AgentNotSupportedException")));
-    assertFalse(launcher.isAttachAPINotFound(new IllegalArgumentException(
-        "Caused by: java.lang.ClassNotFoundException: com.sun.tools.attach.AttachNotSupportedException")));
-    assertFalse(launcher.isAttachAPINotFound(new IllegalStateException(
-        "Caused by: java.lang.ClassNotFoundException: com.ibm.tools.attach.AgentNotSupportedException")));
-    assertFalse(launcher.isAttachAPINotFound(new NoClassDefFoundError(
-        "Exception in thread \"main\" java.lang.NoClassDefFoundError: com/companyx/app/service/MyServiceClass")));
-    assertFalse(launcher.isAttachAPINotFound(new ClassNotFoundException(
-        "Caused by: java.lang.ClassNotFoundException: com.companyx.app.attach.NutsNotAttachedException")));
   }
 
   @Test
@@ -279,11 +257,6 @@ public class AbstractLauncherTest {
     public FakeServiceLauncher(final String memberName, final String memberId) {
       this.memberId = memberId;
       this.memberName = memberName;
-    }
-
-    @Override
-    boolean isAttachAPIOnClasspath() {
-      return false;
     }
 
     @Override

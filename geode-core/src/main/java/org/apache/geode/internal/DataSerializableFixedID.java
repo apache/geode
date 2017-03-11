@@ -811,6 +811,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   public static final short WAIT_UNTIL_FLUSHED_FUNCTION_CONTEXT = 2177;
   public static final short DESTROY_LUCENE_INDEX_MESSAGE = 2178;
   public static final short LUCENE_PAGE_RESULTS = 2179;
+  public static final short LUCENE_RESULT_STRUCT = 2180;
 
   // NOTE, codes > 65535 will take 4 bytes to serialize
 

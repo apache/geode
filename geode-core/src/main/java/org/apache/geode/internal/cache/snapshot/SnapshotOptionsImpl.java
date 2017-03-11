@@ -30,6 +30,9 @@ public class SnapshotOptionsImpl<K, V> implements SnapshotOptions<K, V> {
   /** the entry filter */
   private volatile SnapshotFilter<K, V> filter;
 
+  /** true if callbacks should be invoked on load */
+  private volatile boolean invokeCallbacks;
+
   /** true if parallel mode is enabled */
   private volatile boolean parallel;
 
@@ -38,6 +41,7 @@ public class SnapshotOptionsImpl<K, V> implements SnapshotOptions<K, V> {
 
   public SnapshotOptionsImpl() {
     filter = null;
+    invokeCallbacks = false;
   }
 
   @Override
@@ -49,6 +53,17 @@ public class SnapshotOptionsImpl<K, V> implements SnapshotOptions<K, V> {
   @Override
   public SnapshotFilter<K, V> getFilter() {
     return filter;
+  }
+
+  @Override
+  public SnapshotOptions<K, V> invokeCallbacks(boolean invokeCallbacks) {
+    this.invokeCallbacks = invokeCallbacks;
+    return this;
+  }
+
+  @Override
+  public boolean shouldInvokeCallbacks() {
+    return this.invokeCallbacks;
   }
 
   /**

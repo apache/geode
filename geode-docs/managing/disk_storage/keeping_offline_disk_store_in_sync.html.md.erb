@@ -20,13 +20,30 @@ limitations under the License.
 -->
 
 <a id="syncing_offline_disk_store__section_7D01550D750E48289EFBA9BBDB5A334E"></a>
-You can take several actions to optimize disk store use and data loading at startup.
+Recovering data from an offline disk store proceeds most quickly when the configuration of the offline data matches that of the online data.
+
+Whenever you change or remove persistent regions (by modifying your cache.xml or the code that configures
+the regions), then you should alter the corresponding offline disk-store to match. If you don't, then the next time
+this disk-store is recovered it will recover all of that region's data into a temporary region using the
+old configuration. The old configuration will still consume the old configured resources (heap
+memory, off-heap memory). If those resources are no longer available (for example the old
+configuration of the region was off-heap but you decide to no longer configure off-heap memory on
+the JVM), the disk-store recovery will fail.
+
+It is common practice to have more than one off-line disk store, because each member of the cluster usually has its own copy.
+Be sure to apply the same `alter disk-store` command to each offline copy of the disk store.
 
 ## <a id="syncing_offline_disk_store__section_7B95B20F07BD40699CDB7F3D6A93B905" class="no-quick-link"></a>Change Region Configuration
 
-When your disk store is offline, you can keep the configuration for its regions up-to-date with your `cache.xml` and API settings. The disk store retains region capacity and load settings, including entry map settings (initial capacity, concurrency level, load factor), LRU eviction settings, and the statistics enabled boolean. If the configurations do not match at startup, the `cache.xml` and API override any disk store settings and the disk store is automatically updated to match. So you do not need to modify your disk store to keep your cache configuration and disk store synchronized, but you will save startup time and memory if you do.
+When your disk store is offline, you can keep the configuration for its regions up-to-date with your
+`cache.xml` and API settings. The disk store retains a subset of the region configuration
+attributes.  (For a list of the retained attributes, see [alter
+disk-store](../../tools_modules/gfsh/command-pages/alter.html#topic_99BCAD98BDB5470189662D2F308B68EB)).  If the configurations do not
+match at startup, the `cache.xml` and API override any disk store settings and the disk store is
+automatically updated to match. So you do not need to modify your disk store to keep your cache
+configuration and disk store synchronized, but you will save startup time and memory if you do.
 
-For example, to change the initial capacity of the disk store:
+For example, to change the initial capacity of the region named "partitioned_region" in the disk store:
 
 ``` pre
 gfsh>alter disk-store --name=myDiskStoreName --region=partitioned_region 

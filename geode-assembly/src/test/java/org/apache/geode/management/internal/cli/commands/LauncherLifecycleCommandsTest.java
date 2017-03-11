@@ -43,8 +43,8 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
- * The LauncherLifecycleCommandsJUnitTest class is a test suite of test cases testing the contract
- * and functionality of the lifecycle launcher GemFire shell (Gfsh) commands.
+ * The LauncherLifecycleCommandsTest class is a test suite of test cases testing the contract and
+ * functionality of the lifecycle launcher GemFire shell (Gfsh) commands.
  *
  * @see org.apache.geode.management.internal.cli.commands.LauncherLifecycleCommands
  * @see org.junit.Assert
@@ -53,7 +53,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 @SuppressWarnings("unused")
-public class LauncherLifecycleCommandsJUnitTest {
+public class LauncherLifecycleCommandsTest {
 
   private LauncherLifecycleCommands launcherCommands;
 

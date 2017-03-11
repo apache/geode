@@ -40,11 +40,6 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
         lucenePartitionRepositoryManager.computeRepository(bucketId);
       } catch (PrimaryBucketException e) {
         logger.info("Index repository could not be created because we are no longer primary?", e);
-      } catch (BucketNotFoundException e) {
-        logger.info(
-            "Index repository could not be created when index chunk region bucket became primary. "
-                + "Deferring index repository to be created lazily during lucene query execution."
-                + e);
       }
     });
   }
@@ -57,7 +52,7 @@ public class LuceneBucketListener extends PartitionListenerAdapter {
     dm.getWaitingThreadPool().execute(() -> {
       try {
         lucenePartitionRepositoryManager.computeRepository(bucketId);
-      } catch (PrimaryBucketException | BucketNotFoundException | AlreadyClosedException e) {
+      } catch (PrimaryBucketException | AlreadyClosedException e) {
         logger.debug("Exception while cleaning up Lucene Index Repository", e);
       }
     });

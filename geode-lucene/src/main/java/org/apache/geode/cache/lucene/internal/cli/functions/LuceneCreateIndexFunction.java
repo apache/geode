@@ -15,15 +15,11 @@
 
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
@@ -73,18 +69,20 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
       String[] fields = indexInfo.getSearchableFieldNames();
       String[] analyzerName = indexInfo.getFieldAnalyzers();
 
+      final LuceneIndexFactory indexFactory = service.createIndexFactory();
       if (analyzerName == null || analyzerName.length == 0) {
-        service.createIndex(indexInfo.getIndexName(), indexInfo.getRegionPath(), fields);
+        for (String field : fields) {
+          indexFactory.addField(field);
+        }
       } else {
         if (analyzerName.length != fields.length)
           throw new Exception("Mismatch in lengths of fields and analyzers");
-        Map<String, Analyzer> fieldAnalyzer = new HashMap<>();
         for (int i = 0; i < fields.length; i++) {
           Analyzer analyzer = toAnalyzer(analyzerName[i]);
-          fieldAnalyzer.put(fields[i], analyzer);
+          indexFactory.addField(fields[i], analyzer);
         }
-        service.createIndex(indexInfo.getIndexName(), indexInfo.getRegionPath(), fieldAnalyzer);
       }
+      indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath());
 
       // TODO - update cluster configuration by returning a valid XmlEntity
       XmlEntity xmlEntity = null;

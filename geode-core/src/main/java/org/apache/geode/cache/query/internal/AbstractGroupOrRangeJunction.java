@@ -68,7 +68,7 @@ public abstract class AbstractGroupOrRangeJunction extends AbstractCompiledValue
     this.completeExpansion = completeExpansion;
     this.indpndntItr = indpnds;
     if (iterOp != null) {
-      if (iterOp instanceof CompiledComparison) {
+      if (iterOp instanceof CompiledComparison || iterOp instanceof CompiledIn) {
         int finalSize = 1 + oldGJ._operands.length;
         this._operands = new CompiledValue[finalSize];
         System.arraycopy(oldGJ._operands, 0, this._operands, 0, finalSize - 1);

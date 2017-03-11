@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -36,7 +37,7 @@ public class StartServerAuthorizationTest {
 
   @ClassRule
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
-  private static Locator locator = null;
+  private static MemberVM<Locator> locator = null;
 
   @Rule
   public ServerStarterRule serverStarter = new ServerStarterRule();

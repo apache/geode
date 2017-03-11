@@ -600,7 +600,8 @@ public class PartitionedRegion extends LocalRegion
 
   private byte fixedPASet;
 
-  public List<PartitionedRegion> colocatedByList = new CopyOnWriteArrayList<PartitionedRegion>();
+  private final List<PartitionedRegion> colocatedByList =
+      new CopyOnWriteArrayList<PartitionedRegion>();
 
   private final PartitionListener[] partitionListeners;
 
@@ -670,9 +671,7 @@ public class PartitionedRegion extends LocalRegion
     this.colocatedWithRegion = ColocationHelper.getColocatedRegion(this);
 
     if (colocatedWithRegion != null) {
-      synchronized (colocatedWithRegion.colocatedByList) {
-        colocatedWithRegion.colocatedByList.add(this);
-      }
+      colocatedWithRegion.getColocatedByList().add(this);
     }
 
     if (colocatedWithRegion != null && !internalRegionArgs.isUsedForParallelGatewaySenderQueue()) {
@@ -786,7 +785,7 @@ public class PartitionedRegion extends LocalRegion
     return parallelGatewaySenderIds;
   }
 
-  List<PartitionedRegion> getColocatedByList() {
+  public List<PartitionedRegion> getColocatedByList() {
     return this.colocatedByList;
   }
 
@@ -7921,6 +7920,9 @@ public class PartitionedRegion extends LocalRegion
 
         }
       }
+    }
+    if (colocatedWithRegion != null) {
+      colocatedWithRegion.getColocatedByList().remove(this);
     }
 
     RegionLogger.logDestroy(getName(), cache.getMyId(), null, op.isClose());

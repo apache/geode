@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
+import org.apache.geode.test.dunit.IgnoredException;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
@@ -580,5 +581,67 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
           .append(Thread.activeCount()).append(". Check log file for a thread dump.");
       fail(builder.toString());
     }
+  }
+
+  @Test
+  public void testNoRemoteLocators() {
+    IgnoredException ie = IgnoredException
+        .addIgnoredException("could not get remote locator information for remote site");
+    try {
+      testRemoteLocators(null, false, 0);
+    } finally {
+      ie.remove();
+    }
+  }
+
+  @Test
+  public void testValidHostRemoteLocators() {
+    Set<String> remoteLocators = new HashSet();
+    remoteLocators.add("localhost[12345]");
+    testRemoteLocators(remoteLocators, true, 1);
+  }
+
+  @Test
+  public void testInvalidHostRemoteLocators() {
+    IgnoredException ie = IgnoredException
+        .addIgnoredException("could not get remote locator information for remote site");
+    try {
+      Set<String> remoteLocators = new HashSet();
+      remoteLocators.add("unknown[12345]");
+      testRemoteLocators(remoteLocators, false, 0);
+    } finally {
+      ie.remove();
+    }
+  }
+
+  @Test
+  public void testValidAndInvalidHostRemoteLocators() {
+    Set<String> remoteLocators = new HashSet();
+    remoteLocators.add("localhost[12345]");
+    remoteLocators.add("unknown[12345]");
+    testRemoteLocators(remoteLocators, true, 1);
+  }
+
+  private void testRemoteLocators(Set<String> remoteLocators, boolean poolShouldExist,
+      int expectedPoolLocatorsSize) {
+    // Start locator
+    Integer lnLocPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+
+    // Add remote locators
+    int remoteDsId = 2;
+    vm0.invoke(() -> WANTestBase.putRemoteSiteLocators(remoteDsId, remoteLocators));
+
+    // Create cache
+    vm2.invoke(() -> WANTestBase.createCache(lnLocPort));
+
+    // Create sender
+    vm2.invoke(() -> WANTestBase.createSender("ln", remoteDsId, false, 100, 10, false, false, null,
+        false));
+
+    // Verify sender is running
+    vm2.invoke(() -> WANTestBase.verifySenderRunningState("ln"));
+
+    // Verify pool exists or not
+    vm2.invoke(() -> WANTestBase.verifyPool("ln", poolShouldExist, expectedPoolLocatorsSize));
   }
 }

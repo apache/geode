@@ -16,11 +16,8 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import java.io.File;
+import org.apache.geode.distributed.internal.InternalLocator;
 
-public class Locator extends Member {
-
-  public Locator(int port, File workingDir, String name) {
-    super(port, workingDir, name);
-  }
+public interface Locator extends Member {
+  InternalLocator getLocator();
 }

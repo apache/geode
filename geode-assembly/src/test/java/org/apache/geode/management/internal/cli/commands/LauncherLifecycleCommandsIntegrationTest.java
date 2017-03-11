@@ -40,8 +40,8 @@ import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * The LauncherLifecycleCommandsJUnitTest class is a test suite of test cases testing the contract
- * and functionality of the lifecycle launcher GemFire shell (Gfsh) commands.
+ * The LauncherLifecycleCommandsIntegrationTest class is a test suite of test cases testing the
+ * contract and functionality of the lifecycle launcher GemFire shell (Gfsh) commands.
  *
  * @see org.apache.geode.management.internal.cli.commands.LauncherLifecycleCommands
  * @see org.junit.Assert

@@ -18,24 +18,27 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<a id="concept_B8A3E21674294C65AE9F9A60F37A284E"></a>
 
 
 Delete or unregister functions, remove indexes, disk stores and regions.
 
--   **[destroy disk-store](../../../tools_modules/gfsh/command-pages/destroy.html#topic_yfr_l2z_ck)**
+-   **[destroy disk-store](#topic_yfr_l2z_ck)**
 
     Deletes a disk store and all files on disk used by the disk store. Data for closed regions that previously used this disk store is lost.
 
--   **[destroy function](../../../tools_modules/gfsh/command-pages/destroy.html#topic_E48C2DF809054C12A162026D8A2139BB)**
+-   **[destroy function](#topic_E48C2DF809054C12A162026D8A2139BB)**
 
     Destroy or unregister a function.
 
--   **[destroy index](../../../tools_modules/gfsh/command-pages/destroy.html#topic_D00219CCD6F64C1582A0802AC5CDF3F3)**
+-   **[destroy index](#topic_D00219CCD6F64C1582A0802AC5CDF3F3)**
 
     Destroy or remove the specified index.
 
--   **[destroy region](../../../tools_modules/gfsh/command-pages/destroy.html#topic_BEDACECF4599407794ACBC0E56B30F65)**
+-   **[destroy lucene index](#destroy_lucene_index)**
+
+    Destroy or remove the specified Lucene index.
+
+-   **[destroy region](#topic_BEDACECF4599407794ACBC0E56B30F65)**
 
     Destroy or remove a region.
 
@@ -51,14 +54,13 @@ Deletes a disk store and all files on disk used by the disk store. Data for clos
 destroy disk-store --name=value [--group=value(,value)*]
 ```
 
-<a id="topic_yfr_l2z_ck__table_ypc_1dh_2w"></a>
+**Parameters, destroy disk-store:**
 
 | Name                                          | Description                                                                                                                          |
 |-----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-name</span>  | *Required.* Name of the disk store to be deleted.                                                                                    |
 | <span class="keyword parmname">&#8209;&#8209;group</span> | Group(s) of members on which the disk store will be destroyed. If no group is specified, the disk store is destroyed on all members. |
 
-<span class="tablecap">Table 1. Destroy Disk-Store Parameters</span>
 
 **Example Commands:**
 
@@ -89,7 +91,7 @@ The default is for the function to be unregistered from all members.
 destroy function --id=value [--group=value] [--member=value]
 ```
 
-<a id="topic_E48C2DF809054C12A162026D8A2139BB__table_rq1_ddh_2w"></a>
+**Parameters, destroy function:**
 
 | Name                                           | Description                                                                                |
 |------------------------------------------------|--------------------------------------------------------------------------------------------|
@@ -97,7 +99,6 @@ destroy function --id=value [--group=value] [--member=value]
 | <span class="keyword parmname">\\-\\-groups</span> | One or more groups of members from which this function will be unregistered.               |
 | <span class="keyword parmname">&#8209;&#8209;member</span> | Name or ID of the member from which this function will be unregistered.                    |
 
-<span class="tablecap">Table 2. Destroy Function Parameters</span>
 
 **Example Commands:**
 
@@ -123,22 +124,53 @@ destroy index [--name=value] [--region=value] [--member=value]
 **Note:**
 You must specify at least one of the parameter options. If you enter `destroy index` without any parameters, the command will ask you to specify at least one option.
 
-<a id="topic_D00219CCD6F64C1582A0802AC5CDF3F3__table_n24_fdh_2w"></a>
+**Parameters, destroy index:**
 
 | Name                                           | Description                                                                  |
 |------------------------------------------------|------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-name</span>   | Name for the index to be removed.                                            |
-| <span class="keyword parmname">\\-\\-member</span> | Id of the member on which index is to be created.                            |
-| <span class="keyword parmname">\\-\\-region</span> | Name of the region , from where an index or all indexes are to be destroyed. |
-| <span class="keyword parmname">\\-\\-group</span>  | The index will be created on all the members in this member group.           |
+| <span class="keyword parmname">\\-\\-name</span>   | Name of the index to be removed.                                            |
+| <span class="keyword parmname">\\-\\-member</span> | Id of the member on which index is to be removed.                            |
+| <span class="keyword parmname">\\-\\-region</span> | Name of the region from which an index or all indexes are to be destroyed. |
+| <span class="keyword parmname">\\-\\-group</span>  | The index will be removed on all the members in this member group.           |
 
-<span class="tablecap">Table 3. Destroy Index Parameters</span>
 
 **Example Commands:**
 
 ``` pre
 destroy index --member=server2
 destroy index --name=MyKeyIndex
+```
+
+## <a id="destroy_lucene_index" class="no-quick-link"></a>destroy lucene index
+
+Destroy or remove the specified Lucene index.
+
+See also [create lucene index](create.html#create_lucene_index), [describe lucene index](describe.html#describe_lucene_index), [list lucene indexes](list.html#list_lucene_indexes) and [search lucene](search.html#search_lucene).
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+destroy lucene index [--name=value] [--region=value]
+```
+
+**Note:**
+You must specify at least one of the parameter options. If you enter `destroy lucene index` without any parameters, the command will ask you to specify at least one option.
+
+**Parameters, destroy lucene index:**
+
+| Name                                           | Description                                                                  |
+|------------------------------------------------|------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-name</span>   | Name of the index to be removed.                                            |
+| <span class="keyword parmname">\\-\\-region</span> | Name of the region from which an index or all indexes are to be removed. |
+
+
+**Example Commands:**
+
+``` pre
+destroy lucene index --member=server2
+destroy lucene index --name=MyKeyIndex
 ```
 
 ## <a id="topic_BEDACECF4599407794ACBC0E56B30F65" class="no-quick-link"></a>destroy region
@@ -153,13 +185,12 @@ Destroy or remove a region.
 destroy region --name=value
 ```
 
-<a id="topic_BEDACECF4599407794ACBC0E56B30F65__table_yb5_3dh_2w"></a>
+**Parameters, destroy region:**
 
 | Name                                         | Description                                            |
 |----------------------------------------------|--------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-name</span> | *Required.* Name and path of the region to be removed. |
 
-<span class="tablecap">Table 4. Destroy Region Parameters</span>
 
 **Example Commands:**
 

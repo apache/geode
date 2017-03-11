@@ -68,14 +68,6 @@ REM @if not exist "%USERPROFILE%\.gemfire" (
 REM @mkdir "%USERPROFILE%\.gemfire"
 REM )
 
-REM  Expect to find the tools.jar from the JDK
-@set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar
-@IF EXIST "%TOOLS_JAR%" (
-    @set DEPENDENCIES=%DEPENDENCIES%;%TOOLS_JAR%
-) ELSE (
-    set TOOLS_JAR=
-)
-
 @set LAUNCHER=org.apache.geode.management.internal.cli.Launcher
 @if defined JAVA_ARGS (
     @set JAVA_ARGS="%JAVA_ARGS%"
