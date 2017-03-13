@@ -19,7 +19,6 @@ package org.apache.geode.tools.pulse.tests.rules;
 import static org.junit.Assert.assertNotNull;
 
 import org.apache.commons.lang.StringUtils;
-import org.junit.Rule;
 import org.junit.rules.ExternalResource;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -59,7 +58,7 @@ public class WebDriverRule extends ExternalResource {
   @Override
   public void before() throws Throwable {
     setUpWebDriver();
-    driver.get(getPulseURL() + "Login.html");
+    driver.get(getPulseURL() + "login.html");
     if (StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
       login();
     }

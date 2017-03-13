@@ -440,14 +440,14 @@ function openDataView() {
  * function used for opening Data Browser
  */
 function openDataBrowser() {
-	location.href = 'DataBrowser.html';
+	location.href = 'dataBrowser.html';
 }
 
 /**
  * function used for opening Query statistics
  */
 function openQueryStatistics() {
-  location.href = 'QueryStatistics.html';
+  location.href = 'queryStatistics.html';
 }
 
 function destroyScrollPane(scrollPaneParentId) {

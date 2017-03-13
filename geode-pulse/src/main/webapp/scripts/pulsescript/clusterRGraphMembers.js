@@ -1345,7 +1345,7 @@ function createClusteRGraph() {
           // it's an edge
         } else {
           if (node._depth == 2)
-            location.href = 'MemberDetails.html?member=' + node.id
+            location.href = 'memberDetails.html?member=' + node.id
                 + '&memberName=' + node.name;
         }
       }
@@ -1392,12 +1392,12 @@ function createClusteRGraph() {
                   });
                 }
               } else {
-                location.href = 'MemberDetails.html?member=' + node.id
+                location.href = 'memberDetails.html?member=' + node.id
                     + '&memberName=' + node.name;
               }
             } else {
               if (node._depth == 2) {
-                location.href = 'MemberDetails.html?member=' + node.id
+                location.href = 'memberDetails.html?member=' + node.id
                     + '&memberName=' + node.name;
               }
             }
