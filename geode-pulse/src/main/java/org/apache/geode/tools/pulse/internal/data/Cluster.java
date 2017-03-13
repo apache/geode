@@ -21,11 +21,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 import org.apache.geode.tools.pulse.internal.util.StringUtils;
-import org.apache.commons.collections.buffer.CircularFifoBuffer;
 
-import javax.management.remote.JMXConnector;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,6 +53,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.management.remote.JMXConnector;
 
 /**
  * Class Cluster This class is the Data Model for the data used for the Pulse Web UI.

@@ -19,30 +19,10 @@ package org.apache.geode.tools.pulse.internal.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.geode.tools.pulse.internal.controllers.PulseController;
 import org.apache.geode.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
 import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 import org.apache.geode.tools.pulse.internal.util.StringUtils;
 
-import javax.management.Attribute;
-import javax.management.AttributeList;
-import javax.management.AttributeNotFoundException;
-import javax.management.InstanceNotFoundException;
-import javax.management.IntrospectionException;
-import javax.management.InvalidAttributeValueException;
-import javax.management.MBeanException;
-import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
-import javax.management.Notification;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
-import javax.management.ReflectionException;
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-import javax.rmi.ssl.SslRMIClientSocketFactory;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -63,6 +43,25 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
+import javax.management.Attribute;
+import javax.management.AttributeList;
+import javax.management.AttributeNotFoundException;
+import javax.management.InstanceNotFoundException;
+import javax.management.IntrospectionException;
+import javax.management.InvalidAttributeValueException;
+import javax.management.MBeanException;
+import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
+import javax.management.openmbean.CompositeData;
+import javax.management.openmbean.TabularData;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 /**
  * Class JMXDataUpdater Class used for creating JMX connection and getting all the required MBeans
@@ -78,8 +77,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   private MBeanServerConnection mbs;
   private final String serverName;
   private final String port;
-  private final String userName;
-  private final String userPassword;
   private Boolean isAddedNotiListner = false;
   private final Cluster cluster;
 
@@ -104,8 +101,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   public JMXDataUpdater(String server, String port, Cluster cluster) {
     this.serverName = server;
     this.port = port;
-    this.userName = cluster.getJmxUserName();
-    this.userPassword = cluster.getJmxUserPassword();
     this.cluster = cluster;
 
     try {
@@ -129,7 +124,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         LOGGER.severe(e.getMessage(), e);
       }
     }
-
   }
 
   private JmxManagerInfo getManagerInfoFromLocator(Repository repository) {
@@ -242,7 +236,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
       if (StringUtils.isNotNullNotEmptyNotWhiteSpace(jmxSerURL)) {
         JMXServiceURL url = new JMXServiceURL(jmxSerURL);
-        String[] creds = {this.userName, this.userPassword};
+        String[] creds = {this.cluster.getJmxUserName(), this.cluster.getJmxUserPassword()};
         Map<String, Object> env = new HashMap<String, Object>();
         env.put(JMXConnector.CREDENTIALS, creds);
 

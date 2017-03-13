@@ -75,7 +75,7 @@ function resErrHandler(data){
   // Check for unauthorized access
   if (data.status == 401) {
     // redirect user on Login Page
-    window.location.href = "Login.html?error=UNAUTH_ACCESS";
+    window.location.href = "login.html?error=UNAUTH_ACCESS";
   }else{
     console.log(data);
   }

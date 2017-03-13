@@ -57,7 +57,7 @@ $(document).ready(function() {
     // return isUserLoggedIn
     if(!data.isUserLoggedIn){
       // redirect user on Login Page 
-      window.location.href = "Login.html";
+      window.location.href = "login.html";
     }else{
       getPulseVersion();
       

@@ -462,7 +462,7 @@ function createMemberTreeMap() {
             },
             onClick : function(node) {
               if (node.id != "root") {
-                location.href ='MemberDetails.html?member=' + node.id + "&memberName=" + node.name;
+                location.href ='memberDetails.html?member=' + node.id + "&memberName=" + node.name;
               }
             }
           },
@@ -691,7 +691,7 @@ jQuery("#memberList").jqGrid(
    },
    onSelectRow : function(rowid) {
      var member = rowid.split("&");
-     location.href = 'MemberDetails.html?member=' + member[0]
+     location.href = 'memberDetails.html?member=' + member[0]
      + '&memberName=' + member[1];
    },
    resizeStop : function(width, index) {

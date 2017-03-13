@@ -148,7 +148,7 @@ function repsonseErrorHandler(data) {
   // Check for unauthorized access
   if (data.status == 401) {
     // redirect user on Login Page
-    window.location.href = "Login.html?error=HTTP Error 401 : Unauthorized Access..";
+    window.location.href = "login.html?error=HTTP Error 401 : Unauthorized Access..";
   }
 };
 
