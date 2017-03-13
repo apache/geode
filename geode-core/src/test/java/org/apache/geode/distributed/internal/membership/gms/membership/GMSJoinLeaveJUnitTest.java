@@ -55,6 +55,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMembe
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.Version;
 import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
@@ -326,6 +327,7 @@ public class GMSJoinLeaveJUnitTest {
     return memberList;
   }
 
+  @Category(FlakyTest.class) // GEODE-2653: flaky due to Thread.sleep
   @Test
   public void testRemoveMember() throws Exception {
     initMocks();
