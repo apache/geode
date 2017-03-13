@@ -63,8 +63,8 @@ public class ArgumentRedactor {
 
   /**
    * Parse a string to find key=value pairs and redact the values if necessary. If more than one
-   * key=value pair exists in the input, each pair must be preceded by a hyphen '-' to delineate
-   * the pairs. <br>
+   * key=value pair exists in the input, each pair must be preceded by a hyphen '-' to delineate the
+   * pairs. <br>
    * Example:<br>
    * Single value: "password=secret" or "--password=secret" Multiple values: "-Dflag -Dkey=value
    * --classpath=."
