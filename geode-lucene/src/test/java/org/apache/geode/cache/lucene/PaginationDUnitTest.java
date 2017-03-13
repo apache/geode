@@ -138,60 +138,6 @@ public class PaginationDUnitTest extends LuceneQueriesAccessorBase {
     });
   }
 
-  @Test
-  @Ignore
-  @Parameters(method = "getListOfRegionTestTypes")
-  public void alternativelyCloseDataStoresAfterGettingAPageAndThenValidateTheContentsOfTheResults(
-      RegionTestableType regionTestType) {
-    SerializableRunnableIF createIndex = () -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      luceneService.createIndexFactory().setFields("text").create(INDEX_NAME, REGION_NAME);
-    };
-
-    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
-    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
-    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
-
-    putEntryInEachBucket();
-
-    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, FLUSH_WAIT_TIME_MS));
-
-    accessor.invoke(() -> {
-      List<LuceneResultStruct<Integer, TestObject>> combinedResult =
-          new ArrayList<LuceneResultStruct<Integer, TestObject>>();
-      Cache cache = getCache();
-      LuceneService service = LuceneServiceProvider.get(cache);
-      LuceneQuery<Integer, TestObject> query;
-      query = service.createLuceneQueryFactory().setResultLimit(1000).setPageSize(PAGE_SIZE)
-          .create(INDEX_NAME, REGION_NAME, "world", "text");
-      PageableLuceneQueryResults<Integer, TestObject> pages = query.findPages();
-      assertTrue(pages.hasNext());
-
-      dataStore1.invoke(() -> closeCache());
-      dataStore2.invoke(() -> closeCache());
-
-      for (int i = 0; i < (NUM_BUCKETS / PAGE_SIZE); i++) {
-        List<LuceneResultStruct<Integer, TestObject>> page;
-        if (i % 2 == 0) {
-          // Bring up dataStore2 and shutdown dataStore1
-          dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
-          assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore2, FLUSH_WAIT_TIME_MS));
-          dataStore1.invoke(() -> closeCache());
-          page = pages.next();
-        } else {
-          // Bring up dataStore1 and shutdown dataStore2
-          dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
-          assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, FLUSH_WAIT_TIME_MS));
-          dataStore2.invoke(() -> closeCache());
-          page = pages.next();
-        }
-        assertEquals(PAGE_SIZE, page.size());
-        combinedResult.addAll(page);
-      }
-      validateTheCombinedResult(combinedResult);
-    });
-  }
-
   private void validateTheCombinedResult(
       final List<LuceneResultStruct<Integer, TestObject>> combinedResult) {
     Map<Integer, TestObject> resultMap = combinedResult.stream()
