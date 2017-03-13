@@ -15,7 +15,12 @@
 
 package org.apache.geode.internal.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.RandomAccess;
 
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.offheap.annotations.Unretained;
@@ -361,4 +366,26 @@ public abstract class ArrayUtils {
     }
     return array;
   }
+
+  /**
+   * Use this instead of Arrays.asList(T... array) when you need a modifiable List.
+   *
+   * Returns a modifiable list containing the elements of the specified array.
+   *
+   * <p>
+   * Example usage:
+   * 
+   * <pre>
+   * List&lt;String&gt; stooges = Arrays.asList("Larry", "Moe", "Curly");
+   * stooges.remove("Curly");
+   * </pre>
+   *
+   * @param <T> the class of the objects in the array
+   * @param array the array of elements to be added to the list
+   * @return a list containing the elements of the specified array
+   */
+  public static <T> List<T> asList(T... array) {
+    return new ArrayList<>(Arrays.asList(array));
+  }
+
 }
