@@ -132,9 +132,8 @@ public class DistributedScoringJUnitTest {
   }
 
   private IndexRepositoryImpl createIndexRepo() throws IOException {
-    ConcurrentHashMap<String, File> fileRegion = new ConcurrentHashMap<String, File>();
-    ConcurrentHashMap<ChunkKey, byte[]> chunkRegion = new ConcurrentHashMap<ChunkKey, byte[]>();
-    RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion, fileSystemStats);
+    ConcurrentHashMap fileAndChunkRegion = new ConcurrentHashMap();
+    RegionDirectory dir = new RegionDirectory(fileAndChunkRegion, fileSystemStats);
 
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     IndexWriter writer = new IndexWriter(dir, config);

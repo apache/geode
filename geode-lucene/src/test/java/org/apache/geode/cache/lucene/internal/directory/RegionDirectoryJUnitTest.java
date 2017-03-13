@@ -58,7 +58,6 @@ public class RegionDirectoryJUnitTest extends BaseDirectoryTestCase {
     // test asserts that no system properties have changed. Unfortunately, there is no
     // way to control the order of rules, so we can't clear this property with a rule
     // or @After method. Instead, do it in the close method of the directory.
-    return new RegionDirectory(new ConcurrentHashMap<String, File>(),
-        new ConcurrentHashMap<ChunkKey, byte[]>(), stats);
+    return new RegionDirectory(new ConcurrentHashMap(), stats);
   }
 }

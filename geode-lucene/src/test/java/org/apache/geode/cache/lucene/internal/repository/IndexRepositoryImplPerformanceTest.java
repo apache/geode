@@ -93,12 +93,10 @@ public class IndexRepositoryImplPerformanceTest {
       @Override
       public void init() throws Exception {
         cache = new CacheFactory().set(MCAST_PORT, "0").set(LOG_LEVEL, "error").create();
-        Region<String, File> fileRegion =
-            cache.<String, File>createRegionFactory(RegionShortcut.REPLICATE).create("files");
-        Region<ChunkKey, byte[]> chunkRegion =
-            cache.<ChunkKey, byte[]>createRegionFactory(RegionShortcut.REPLICATE).create("chunks");
+        Region fileAndChunkRegion =
+            cache.createRegionFactory(RegionShortcut.REPLICATE).create("files");
 
-        RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion,
+        RegionDirectory dir = new RegionDirectory(fileAndChunkRegion,
             new FileSystemStats(cache.getDistributedSystem(), "region-index"));
         final LuceneIndexStats stats =
             new LuceneIndexStats(cache.getDistributedSystem(), "region-index");
@@ -108,7 +106,7 @@ public class IndexRepositoryImplPerformanceTest {
         writer = new IndexWriter(dir, config);
         String[] indexedFields = new String[] {"text"};
         HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
-        repo = new IndexRepositoryImpl(fileRegion, writer, mapper, stats, null);
+        repo = new IndexRepositoryImpl(fileAndChunkRegion, writer, mapper, stats, null);
       }
 
       @Override
@@ -213,8 +211,7 @@ public class IndexRepositoryImplPerformanceTest {
       public void init() throws Exception {
         cache = new CacheFactory().set(MCAST_PORT, "0").set(LOG_LEVEL, "warning").create();
         final FileSystemStats stats = new FileSystemStats(cache.getDistributedSystem(), "stats");
-        RegionDirectory dir = new RegionDirectory(new ConcurrentHashMap<String, File>(),
-            new ConcurrentHashMap<ChunkKey, byte[]>(), stats);
+        RegionDirectory dir = new RegionDirectory(new ConcurrentHashMap(), stats);
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         writer = new IndexWriter(dir, config);
         searcherManager = new SearcherManager(writer, true, true, null);

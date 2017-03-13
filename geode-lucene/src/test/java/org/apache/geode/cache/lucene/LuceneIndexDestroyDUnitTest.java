@@ -439,11 +439,6 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
         LuceneIndexForPartitionedRegion.FILES_REGION_SUFFIX);
     assertNull(getCache().getRegion(filesRegionName));
 
-    // Verify the underlying chunks region no longer exists
-    String chunksRegionName = LuceneServiceImpl.getUniqueIndexRegionName(indexName, REGION_NAME,
-        LuceneIndexForPartitionedRegion.CHUNKS_REGION_SUFFIX);
-    assertNull(getCache().getRegion(chunksRegionName));
-
     // Verify the underlying AsyncEventQueue no longer exists
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, REGION_NAME);
     assertNull(getCache().getAsyncEventQueue(aeqId));

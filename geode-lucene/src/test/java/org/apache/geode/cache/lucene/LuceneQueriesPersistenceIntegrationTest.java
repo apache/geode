@@ -88,8 +88,6 @@ public class LuceneQueriesPersistenceIntegrationTest extends LuceneIntegrationTe
 
     PartitionedRegion fileRegion = (PartitionedRegion) cache.getRegion(aeqId + ".files");
     assertNotNull(fileRegion);
-    PartitionedRegion chunkRegion = (PartitionedRegion) cache.getRegion(aeqId + ".chunks");
-    assertNotNull(chunkRegion);
     Assert.assertTrue(0 < userRegion.getDiskRegionStats().getNumOverflowOnDisk());
 
     LuceneQuery<Integer, Type1> query = service.createLuceneQueryFactory().create(INDEX_NAME,

@@ -69,10 +69,9 @@ public class IndexRepositoryImplJUnitTest {
 
   @Before
   public void setUp() throws IOException {
-    ConcurrentHashMap<String, File> fileRegion = new ConcurrentHashMap<String, File>();
-    ConcurrentHashMap<ChunkKey, byte[]> chunkRegion = new ConcurrentHashMap<ChunkKey, byte[]>();
+    ConcurrentHashMap fileAndChunkRegion = new ConcurrentHashMap();
     fileSystemStats = mock(FileSystemStats.class);
-    RegionDirectory dir = new RegionDirectory(fileRegion, chunkRegion, fileSystemStats);
+    RegionDirectory dir = new RegionDirectory(fileAndChunkRegion, fileSystemStats);
     IndexWriterConfig config = new IndexWriterConfig(analyzer);
     writer = new IndexWriter(dir, config);
     String[] indexedFields = new String[] {"s", "i", "l", "d", "f", "s2", "missing"};

@@ -69,8 +69,8 @@ public class LuceneIndexRecoveryHAIntegrationTest {
   }
 
   /**
-   * On rebalance, new repository manager will be created. It will try to read fileRegion and
-   * construct index. This test simulates the same.
+   * On rebalance, new repository manager will be created. It will try to read fileAndChunkRegion
+   * and construct index. This test simulates the same.
    */
   // @Test
   public void recoverRepoInANewNode()
@@ -99,7 +99,7 @@ public class LuceneIndexRecoveryHAIntegrationTest {
 
     // close the region to simulate bucket movement. New node will create repo using data persisted
     // by old region
-    // ((PartitionedRegion)index.fileRegion).close();
+    // ((PartitionedRegion)index.fileAndChunkRegion).close();
     // ((PartitionedRegion)index.chunkRegion).close();
     userRegion.close();
 

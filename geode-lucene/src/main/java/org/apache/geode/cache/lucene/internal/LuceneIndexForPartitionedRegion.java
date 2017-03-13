@@ -29,7 +29,6 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
-import org.apache.geode.cache.lucene.internal.filesystem.ChunkKey;
 import org.apache.geode.cache.lucene.internal.filesystem.File;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.partition.BucketTargetingFixedResolver;
@@ -48,12 +47,10 @@ import java.util.Set;
 
 /* wrapper of IndexWriter */
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
-  protected Region<String, File> fileRegion;
-  protected Region<ChunkKey, byte[]> chunkRegion;
+  protected Region fileAndChunkRegion;
   protected final FileSystemStats fileSystemStats;
 
   public static final String FILES_REGION_SUFFIX = ".files";
-  public static final String CHUNKS_REGION_SUFFIX = ".chunks";
 
   public LuceneIndexForPartitionedRegion(String indexName, String regionPath, Cache cache) {
     super(indexName, regionPath, cache);
@@ -81,16 +78,12 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       regionShortCut = RegionShortcut.PARTITION;
     }
 
-    // create PR fileRegion, but not to create its buckets for now
+    // create PR fileAndChunkRegion, but not to create its buckets for now
     final String fileRegionName = createFileRegionName();
     PartitionAttributes partitionAttributes = dataRegion.getPartitionAttributes();
-    if (!fileRegionExists(fileRegionName)) {
-      fileRegion =
-          createFileRegion(regionShortCut, fileRegionName, partitionAttributes, regionAttributes);
-    }
+
 
     // create PR chunkRegion, but not to create its buckets for now
-    final String chunkRegionName = createChunkRegionName();
 
     // we will create RegionDirectories on the fly when data comes in
     HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
@@ -99,23 +92,20 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     DM dm = ((GemFireCacheImpl) getCache()).getDistributedSystem().getDistributionManager();
     LuceneBucketListener lucenePrimaryBucketListener =
         new LuceneBucketListener(partitionedRepositoryManager, dm);
-    if (!chunkRegionExists(chunkRegionName)) {
-      chunkRegion = createChunkRegion(regionShortCut, fileRegionName, partitionAttributes,
-          chunkRegionName, regionAttributes, lucenePrimaryBucketListener);
+
+    if (!fileRegionExists(fileRegionName)) {
+      fileAndChunkRegion = createFileRegion(regionShortCut, fileRegionName, partitionAttributes,
+          regionAttributes, lucenePrimaryBucketListener);
     }
-    fileSystemStats.setFileSupplier(() -> (int) getFileRegion().getLocalSize());
-    fileSystemStats.setChunkSupplier(() -> (int) getChunkRegion().getLocalSize());
-    fileSystemStats.setBytesSupplier(() -> getChunkRegion().getPrStats().getDataStoreBytesInUse());
+
+    fileSystemStats
+        .setBytesSupplier(() -> getFileAndChunkRegion().getPrStats().getDataStoreBytesInUse());
 
     return partitionedRepositoryManager;
   }
 
-  public PartitionedRegion getFileRegion() {
-    return (PartitionedRegion) fileRegion;
-  }
-
-  public PartitionedRegion getChunkRegion() {
-    return (PartitionedRegion) chunkRegion;
+  public PartitionedRegion getFileAndChunkRegion() {
+    return (PartitionedRegion) fileAndChunkRegion;
   }
 
   public FileSystemStats getFileSystemStats() {
@@ -123,33 +113,18 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   }
 
   boolean fileRegionExists(String fileRegionName) {
-    return cache.<String, File>getRegion(fileRegionName) != null;
+    return cache.getRegion(fileRegionName) != null;
   }
 
   Region createFileRegion(final RegionShortcut regionShortCut, final String fileRegionName,
-      final PartitionAttributes partitionAttributes, final RegionAttributes regionAttributes) {
+      final PartitionAttributes partitionAttributes, final RegionAttributes regionAttributes,
+      PartitionListener listener) {
     return createRegion(fileRegionName, regionShortCut, this.regionPath, partitionAttributes,
-        regionAttributes, null);
+        regionAttributes, listener);
   }
 
   public String createFileRegionName() {
     return LuceneServiceImpl.getUniqueIndexRegionName(indexName, regionPath, FILES_REGION_SUFFIX);
-  }
-
-  boolean chunkRegionExists(String chunkRegionName) {
-    return cache.<ChunkKey, byte[]>getRegion(chunkRegionName) != null;
-  }
-
-  Region<ChunkKey, byte[]> createChunkRegion(final RegionShortcut regionShortCut,
-      final String fileRegionName, final PartitionAttributes partitionAttributes,
-      final String chunkRegionName, final RegionAttributes regionAttributes,
-      final PartitionListener lucenePrimaryBucketListener) {
-    return createRegion(chunkRegionName, regionShortCut, fileRegionName, partitionAttributes,
-        regionAttributes, lucenePrimaryBucketListener);
-  }
-
-  public String createChunkRegionName() {
-    return LuceneServiceImpl.getUniqueIndexRegionName(indexName, regionPath, CHUNKS_REGION_SUFFIX);
   }
 
   private PartitionAttributesFactory configureLuceneRegionAttributesFactory(
@@ -175,8 +150,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
       final RegionShortcut regionShortCut, final String colocatedWithRegionName,
       final PartitionAttributes partitionAttributes, final RegionAttributes regionAttributes,
       PartitionListener lucenePrimaryBucketListener) {
-    PartitionAttributesFactory partitionAttributesFactory =
-        new PartitionAttributesFactory<String, File>();
+    PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
     if (lucenePrimaryBucketListener != null) {
       partitionAttributesFactory.addPartitionListener(lucenePrimaryBucketListener);
     }
@@ -217,23 +191,13 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     // Invoke super destroy to remove the extension
     super.destroy(initiator);
 
-    // Destroy the chunk region (colocated with the file region)
-    // localDestroyRegion can't be used because locally destroying regions is not supported on
-    // colocated regions
-    if (!chunkRegion.isDestroyed()) {
-      chunkRegion.destroyRegion();
-      if (logger.isDebugEnabled()) {
-        logger.debug("Destroyed chunkRegion=" + chunkRegion.getName());
-      }
-    }
-
     // Destroy the file region (colocated with the application region)
     // localDestroyRegion can't be used because locally destroying regions is not supported on
     // colocated regions
-    if (!fileRegion.isDestroyed()) {
-      fileRegion.destroyRegion();
+    if (!fileAndChunkRegion.isDestroyed()) {
+      fileAndChunkRegion.destroyRegion();
       if (logger.isDebugEnabled()) {
-        logger.debug("Destroyed fileRegion=" + fileRegion.getName());
+        logger.debug("Destroyed fileAndChunkRegion=" + fileAndChunkRegion.getName());
       }
     }
 

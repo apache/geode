@@ -47,10 +47,9 @@ public class RegionDirectory extends BaseDirectory {
    * Create a region directory with a given file and chunk region. These regions may be bucket
    * regions or they may be replicated regions.
    */
-  public RegionDirectory(Map<String, File> fileRegion, Map<ChunkKey, byte[]> chunkRegion,
-      FileSystemStats stats) {
+  public RegionDirectory(Map fileAndChunkRegion, FileSystemStats stats) {
     super(new SingleInstanceLockFactory());
-    fs = new FileSystem(fileRegion, chunkRegion, stats);
+    fs = new FileSystem(fileAndChunkRegion, stats);
   }
 
   @Override

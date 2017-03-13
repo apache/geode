@@ -168,10 +168,7 @@ public class LuceneTestUtilities {
     LuceneIndexForPartitionedRegion index =
         (LuceneIndexForPartitionedRegion) luceneService.getIndex(INDEX_NAME, REGION_NAME);
 
-    // Verify the meta regions exist and are internal
-    LocalRegion chunkRegion = (LocalRegion) cache.getRegion(index.createChunkRegionName());
     LocalRegion fileRegion = (LocalRegion) cache.getRegion(index.createFileRegionName());
-    verify.accept(chunkRegion);
     verify.accept(fileRegion);
   }
 

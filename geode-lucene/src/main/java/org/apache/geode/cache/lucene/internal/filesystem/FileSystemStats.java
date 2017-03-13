@@ -38,8 +38,6 @@ public class FileSystemStats {
   private static final int temporaryFileCreatesId;
   private static final int fileDeletesId;
   private static final int fileRenamesId;
-  private static final int filesId;
-  private static final int chunksId;
   private static final int bytesId;
 
   static {
@@ -63,8 +61,6 @@ public class FileSystemStats {
     temporaryFileCreatesId = statsType.nameToId("temporaryFileCreates");
     fileDeletesId = statsType.nameToId("fileDeletes");
     fileRenamesId = statsType.nameToId("fileRenames");
-    filesId = statsType.nameToId("files");
-    chunksId = statsType.nameToId("chunks");
     bytesId = statsType.nameToId("bytes");
   }
 
@@ -94,22 +90,6 @@ public class FileSystemStats {
 
   public void incFileRenames(final int delta) {
     stats.incInt(fileRenamesId, delta);
-  }
-
-  public void setFileSupplier(IntSupplier supplier) {
-    stats.setIntSupplier(filesId, supplier);
-  }
-
-  public int getFiles() {
-    return stats.getInt(filesId);
-  }
-
-  public void setChunkSupplier(IntSupplier supplier) {
-    stats.setIntSupplier(chunksId, supplier);
-  }
-
-  public int getChunks() {
-    return stats.getInt(chunksId);
   }
 
   public void setBytesSupplier(LongSupplier supplier) {

@@ -23,9 +23,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,7 +37,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -51,8 +52,7 @@ public class FileSystemJUnitTest {
 
   private FileSystem system;
   private Random rand = new Random();
-  private ConcurrentHashMap<String, File> fileRegion;
-  private ConcurrentHashMap<ChunkKey, byte[]> chunkRegion;
+  private ConcurrentHashMap fileAndChunkRegion;
 
   @Rule
   public DiskDirRule dirRule = new DiskDirRule();
@@ -60,10 +60,9 @@ public class FileSystemJUnitTest {
 
   @Before
   public void setUp() {
-    fileRegion = new ConcurrentHashMap<String, File>();
-    chunkRegion = new ConcurrentHashMap<ChunkKey, byte[]>();
+    fileAndChunkRegion = new ConcurrentHashMap();
     fileSystemStats = mock(FileSystemStats.class);
-    system = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
+    system = new FileSystem(fileAndChunkRegion, fileSystemStats);
   }
 
   /**
@@ -201,7 +200,7 @@ public class FileSystemJUnitTest {
 
     // Assert that there are only 2 chunks in the system, since we wrote just
     // past the end of the first chunk.
-    assertEquals(2, chunkRegion.size());
+    assertEquals(2, numberOfChunks(fileAndChunkRegion));
 
     SeekableInputStream in = file.getInputStream();
 
@@ -254,7 +253,7 @@ public class FileSystemJUnitTest {
     file1 = system.getFile(name1);
     file2 = system.getFile(name2);
 
-    assertEquals(new HashSet(Arrays.asList(name1, name2)), system.listFileNames());
+    assertEquals(Arrays.asList(name1, name2), system.listFileNames());
     assertContents(file1Data, file1);
     assertContents(file2Data, file2);
 
@@ -265,7 +264,7 @@ public class FileSystemJUnitTest {
     } catch (IOException expected) {
 
     }
-    assertEquals(new HashSet(Arrays.asList(name1, name2)), system.listFileNames());
+    assertEquals(Arrays.asList(name1, name2), system.listFileNames());
     assertContents(file1Data, file1);
     assertContents(file2Data, file2);
 
@@ -275,17 +274,17 @@ public class FileSystemJUnitTest {
 
     File file3 = system.getFile(name3);
 
-    assertEquals(new HashSet(Arrays.asList(name3, name2)), system.listFileNames());
+    assertEquals(Arrays.asList(name3, name2), system.listFileNames());
     assertContents(file1Data, file3);
     assertContents(file2Data, file2);
 
     system.deleteFile(name2);
 
-    assertEquals(new HashSet(Arrays.asList(name3)), system.listFileNames());
+    assertEquals(Arrays.asList(name3), system.listFileNames());
 
     system.renameFile(name3, name2);
 
-    assertEquals(new HashSet(Arrays.asList(name2)), system.listFileNames());
+    assertEquals(Arrays.asList(name2), system.listFileNames());
 
     file2 = system.getFile(name2);
     assertContents(file1Data, file2);
@@ -313,7 +312,7 @@ public class FileSystemJUnitTest {
     byte[] bytes = getRandomBytes(size);
     file1.getOutputStream().write(bytes);
 
-    FileSystem system2 = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
+    FileSystem system2 = new FileSystem(fileAndChunkRegion, fileSystemStats);
     File file = system2.getFile(name1);
 
     assertTrue(file.getLength() <= bytes.length);
@@ -325,7 +324,7 @@ public class FileSystemJUnitTest {
 
     if (length == 0) {
       assertEquals(-1, file.getInputStream().read(results));
-      assertTrue(chunkRegion.isEmpty());
+      assertEquals(0, numberOfChunks(fileAndChunkRegion));
     } else {
       // Make sure the amount of data we can read matches the length
       assertEquals(length, file.getInputStream().read(results));
@@ -349,12 +348,11 @@ public class FileSystemJUnitTest {
     // Create a couple of mock regions where we count the operations
     // that happen to them. We will then use this to abort the rename
     // in the middle.
-    ConcurrentHashMap<String, File> spyFileRegion =
-        mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
-    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion =
-        mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
+    ConcurrentHashMap spyFileAndChunkRegion =
+        mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileAndChunkRegion));
 
-    system = new FileSystem(spyFileRegion, spyChunkRegion, fileSystemStats);
+
+    system = new FileSystem(spyFileAndChunkRegion, fileSystemStats);
 
     String name = "file";
     File file = system.createFile(name);
@@ -394,7 +392,7 @@ public class FileSystemJUnitTest {
 
     }
 
-    system = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
+    system = new FileSystem(fileAndChunkRegion, fileSystemStats);
 
     // This is not the ideal behavior. We are left
     // with two duplicate files. However, we will still
@@ -407,72 +405,6 @@ public class FileSystemJUnitTest {
 
     assertContents(expectedBytes, sourceFile);
     assertContents(expectedBytes, destFile);
-  }
-
-  /**
-   * Test what happens a file delete is aborted in the middle due to the a cache closed exception.
-   * The next member that uses those files should be able to clean up after the partial rename.
-   */
-  @Test
-  public void testPartialDelete() throws Exception {
-
-    final CountOperations countOperations = new CountOperations();
-    // Create a couple of mock regions where we count the operations
-    // that happen to them. We will then use this to abort the rename
-    // in the middle.
-    ConcurrentHashMap<String, File> spyFileRegion =
-        mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, fileRegion));
-    ConcurrentHashMap<ChunkKey, byte[]> spyChunkRegion =
-        mock(ConcurrentHashMap.class, new SpyWrapper(countOperations, chunkRegion));
-
-    system = new FileSystem(spyFileRegion, spyChunkRegion, fileSystemStats);
-
-    String name1 = "file1";
-    String name2 = "file2";
-    File file1 = system.createFile(name1);
-    File file2 = system.createFile(name2);
-
-    ByteArrayOutputStream expected = new ByteArrayOutputStream();
-
-    // Make sure the file has a lot of chunks
-    for (int i = 0; i < 10; i++) {
-      byte[] bytes = writeRandomBytes(file1);
-      writeBytes(file2, bytes);
-      expected.write(bytes);
-    }
-
-    countOperations.reset();
-
-    system.deleteFile(name1);
-
-    assertTrue(2 <= countOperations.count);
-
-    countOperations.after(countOperations.count / 2, new Runnable() {
-
-      @Override
-      public void run() {
-        throw new CacheClosedException();
-      }
-    });
-    countOperations.reset();
-
-    try {
-      system.deleteFile(name2);
-      fail("should have seen an error");
-    } catch (CacheClosedException expectedException) {
-    }
-
-    system = new FileSystem(fileRegion, chunkRegion, fileSystemStats);
-
-    if (system.listFileNames().size() == 0) {
-      // File was deleted, but shouldn't have any dangling chunks at this point
-      assertEquals(Collections.EMPTY_SET, fileRegion.keySet());
-      // TODO - need to purge chunks of deleted files somehow.
-      // assertIndexDetailsEquals(Collections.EMPTY_SET, chunkRegion.keySet());
-    } else {
-      file2 = system.getFile(name2);
-      assertContents(expected.toByteArray(), file2);
-    }
   }
 
   @Test
@@ -544,8 +476,8 @@ public class FileSystemJUnitTest {
 
   @Test
   public void testDeletePossiblyRenamedFileDoesNotDestroyChunks() throws Exception {
-    ConcurrentHashMap<String, File> spyFileRegion = Mockito.spy(fileRegion);
-    system = new FileSystem(spyFileRegion, chunkRegion, fileSystemStats);
+    ConcurrentHashMap spyFileRegion = Mockito.spy(fileAndChunkRegion);
+    system = new FileSystem(spyFileRegion, fileSystemStats);
 
     String sourceFileName = "sourceFile";
     File file1 = system.createFile(sourceFileName);
@@ -608,6 +540,10 @@ public class FileSystemJUnitTest {
     rand.nextBytes(data);
 
     return data;
+  }
+
+  private long numberOfChunks(Map map) {
+    return map.keySet().parallelStream().filter(k -> (k instanceof ChunkKey)).count();
   }
 
   /**

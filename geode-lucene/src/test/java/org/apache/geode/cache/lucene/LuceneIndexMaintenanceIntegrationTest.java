@@ -143,8 +143,6 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     FileSystemStats fileSystemStats = index.getFileSystemStats();
     LuceneIndexStats indexStats = index.getIndexStats();
     await(() -> assertEquals(4, indexStats.getDocuments()));
-    await(() -> assertTrue(fileSystemStats.getFiles() > 0));
-    await(() -> assertTrue(fileSystemStats.getChunks() > 0));
     await(() -> assertTrue(fileSystemStats.getBytes() > 0));
   }
 
