@@ -38,6 +38,7 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.cache.lucene.LuceneQueryException;
+import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
@@ -46,6 +47,9 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.test.dunit.VM;
+import org.apache.lucene.document.FloatPoint;
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.search.Query;
 
 public class LuceneTestUtilities {
   public static final String INDEX_NAME = "index";
@@ -77,6 +81,53 @@ public class LuceneTestUtilities {
   public static String Quarter2 = "Q2";
   public static String Quarter3 = "Q3";
   public static String Quarter4 = "Q4";
+
+  public static class IntRangeQueryProvider implements LuceneQueryProvider {
+    String fieldName;
+    int lowerValue;
+    int upperValue;
+
+    private transient Query luceneQuery;
+
+    public IntRangeQueryProvider(String fieldName, int lowerValue, int upperValue) {
+      this.fieldName = fieldName;
+      this.lowerValue = lowerValue;
+      this.upperValue = upperValue;
+    }
+
+    @Override
+    public Query getQuery(LuceneIndex index) throws LuceneQueryException {
+      if (luceneQuery == null) {
+        luceneQuery = IntPoint.newRangeQuery(fieldName, lowerValue, upperValue);
+      }
+      System.out.println("IntRangeQueryProvider, using java serializable");
+      return luceneQuery;
+    }
+  }
+
+  public static class FloatRangeQueryProvider implements LuceneQueryProvider {
+    String fieldName;
+    float lowerValue;
+    float upperValue;
+
+    private transient Query luceneQuery;
+
+    public FloatRangeQueryProvider(String fieldName, float lowerValue, float upperValue) {
+      this.fieldName = fieldName;
+      this.lowerValue = lowerValue;
+      this.upperValue = upperValue;
+    }
+
+    @Override
+    public Query getQuery(LuceneIndex index) throws LuceneQueryException {
+      if (luceneQuery == null) {
+        luceneQuery = FloatPoint.newRangeQuery(fieldName, lowerValue, upperValue);
+        // luceneQuery = DoublePoint.newRangeQuery(fieldName, lowerValue, upperValue);
+      }
+      System.out.println("IntRangeQueryProvider, using java serializable");
+      return luceneQuery;
+    }
+  }
 
   public static Region initDataStoreForFixedPR(final Cache cache) throws Exception {
     List<FixedPartitionAttributes> fpaList = new ArrayList<FixedPartitionAttributes>();
