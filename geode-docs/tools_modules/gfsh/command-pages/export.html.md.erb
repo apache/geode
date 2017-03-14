@@ -23,27 +23,27 @@ limitations under the License.
 
 Export configurations, data, logs and stack-traces.
 
--   **[export cluster-configuration](../../../tools_modules/gfsh/command-pages/export.html#topic_mdv_jgz_ck)**
+-   **[export cluster-configuration](#topic_mdv_jgz_ck)**
 
     Exports a cluster configuration zip file that contains the `cache.xml` files, `gemfire.properties` files, and application jar files needed to configure and operate a Geode distributed system.
 
--   **[export config](../../../tools_modules/gfsh/command-pages/export.html#topic_C7C69306F93743459E65D46537F4A1EE)**
+-   **[export config](#topic_C7C69306F93743459E65D46537F4A1EE)**
 
     Export configuration properties for a member or members.
 
--   **[export data](../../../tools_modules/gfsh/command-pages/export.html#topic_263B70069BFC4A7185F86B3272011734)**
+-   **[export data](#topic_263B70069BFC4A7185F86B3272011734)**
 
     Export user data from a region to a file.
 
--   **[export logs](../../../tools_modules/gfsh/command-pages/export.html#topic_B80978CC659244AE91E2B8CE56EBDFE3)**
+-   **[export logs](#topic_B80978CC659244AE91E2B8CE56EBDFE3)**
 
     Export logs to a given directory.
 
--   **[export offline-disk-store](../../../tools_modules/gfsh/command-pages/export.html#topic_sjg_bvt_gq)**
+-   **[export offline-disk-store](#topic_sjg_bvt_gq)**
 
     Export region data from an offline disk store into gemfire snapshot files.
 
--   **[export stack-traces](../../../tools_modules/gfsh/command-pages/export.html#topic_195D27B8B2B64A4E84CF2256636D54BD)**
+-   **[export stack-traces](#topic_195D27B8B2B64A4E84CF2256636D54BD)**
 
     Export the stack trace for a member or members.
 
@@ -60,8 +60,6 @@ See [Overview of the Cluster Configuration Service](../../../configuring/cluster
 ``` pre
 export cluster-configuration --zip-file-name=value [--dir=value]
 ```
-
-<a id="topic_mdv_jgz_ck__table_qyw_hbh_2w"></a>
 
 | Name                                                  | Description                                                                          | Default Value     |
 |-------------------------------------------------------|--------------------------------------------------------------------------------------|-------------------|
@@ -98,8 +96,6 @@ export config [--member=value(,value)*] [--group=value(,value)*]
 [--dir=value]
 ```
 
-<a id="topic_C7C69306F93743459E65D46537F4A1EE__table_u5w_2bh_2w"></a>
-
 | Name                                           | Description                                                          |
 |------------------------------------------------|----------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-member</span> | Name/Id of the member(s) whose configuration will be exported.       |
@@ -135,8 +131,6 @@ Export user data from a region to a file.
 export data --region=value --file=value --member=value
 ```
 
-<a id="topic_263B70069BFC4A7185F86B3272011734__table_lds_lbh_2w"></a>
-
 | Name                                           | Description                                                                                                                                     |
 |------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|
 | <span class="keyword parmname">\\-\\-region</span> | *Required.* Region from which data is to be exported.                                                                                           |
@@ -167,28 +161,30 @@ Export logs to a given directory.
 
 All files that have logs in the specified time range will be exported. If no time range is specified, all logs will be exported.
 
+The `--dir` parameter specifies a local directory to which log files will be written. This is used only when you are exporting logs using an http connection.  If executed over http, the zip archive will be saved in the specified directory on the user's client machine. If not specified, logs are written to the location specified by the `user.dir` system property. When the command is executed over JMX, logs will be saved as `exportedlogs_xxx.zip` in the connected locator's working directory.
+
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
 **Syntax:**
 
 ``` pre
-export logs --dir=value [--group=value(,value)*] [--member=value] [--log
--level=value] [--only-log-level=value] [--merge-log=value] [--start-time=value]
-[--end-time=value]
+export logs [--dir=value] [--group=value(,value)*] [--member=value(,value)*] 
+[--log-level=value] [--only-log-level=value] [--merge-log=value] 
+[--start-time=value] [--end-time=value] [logs-only(=value)?] [--stats-only(=value)?]
 ```
-
-<a id="topic_B80978CC659244AE91E2B8CE56EBDFE3__table_xw5_4bh_2w"></a>
 
 | Name                                                   | Description                                                                                                                | Default Value |
 |--------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|---------------|
-| <span class="keyword parmname">\\-\\-dir</span>            | *Required.* Directory to which log files will be written.                                                                  |               |
+| <span class="keyword parmname">\\-\\-dir</span>            | Local directory to which log files will be written when logs are exported using an http connection. Ignored when the command is executed over JMX.     |               | 
 | <span class="keyword parmname">\\-\\-group</span>          | Group of members whose log files will be exported.                                                                         |               |
 | <span class="keyword parmname">&#8209;&#8209;member</span>         | Name/ID of the member whose log files will be exported.                                                                    |               |
-| <span class="keyword parmname">\\-\\-log-level</span>      | Minimum level of log entries to export. Valid values are: `none`, `error`, `info`, `config`, `fine`, `finer` and `finest`. | `info`        |
-| <span class="keyword parmname">\\-\\-only-log-level</span> | Whether to only include those entries that exactly match the <span class="keyword parmname">\\-\\-log-level</span> specified.  | false         |
-| <span class="keyword parmname">&#8209;&#8209;merge&#8209;log</span>      | Whether to merge logs after exporting to the target directory.                                                             | false         |
+| <span class="keyword parmname">\\-\\-log-level</span>      | Minimum level of log entries to export. Valid values are: `fatal`, `error`, `warn`, `info`, `debug`, `trace`, and `all`. | `info`        |
+| <span class="keyword parmname">\\-\\-only-log-level</span> | Whether to only include only entries that exactly match the <span class="keyword parmname">\\-\\-log-level</span> specified.  | false         |
+| <span class="keyword parmname">&#8209;&#8209;merge&#8209;log</span>      | Whether to merge logs after exporting to the target directory (deprecated).                                                             | false         |
 | <span class="keyword parmname">\\-\\-start-time</span>     | Log entries that occurred after this time will be exported. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd                | no limit      |
 | <span class="keyword parmname">\\-\\-end-time</span>       | Log entries that occurred before this time will be exported. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd               | no limit      |
+| <span class="keyword parmname">\\-\\-logs-only</span>       | Whether to export only logs (not statistics)               | If parameter not specified: false. If parameter specified without a value: true      |
+| <span class="keyword parmname">\\-\\-stats-only</span>       | Whether to export only statistics (not logs)               | If parameter not specified: false. If parameter specified without a value: true      |
 
 <span class="tablecap">Table 4. Export Logs Parameters</span>
 
@@ -201,8 +197,8 @@ export logs --dir=data/logs
 **Sample Output:**
 
 ``` pre
-gfsh>export logs --dir=data/logs
-Successfully exported to directory data/logs
+gfsh>export logs
+Logs exported to the connected member's file system: /data/my-locator/exportedLogs_1489513007261.zip
 ```
 
 ## <a id="topic_sjg_bvt_gq" class="no-quick-link"></a>export offline-disk-store
@@ -216,8 +212,6 @@ Export region data from an offline disk store into gemfire snapshot files.
 ``` pre
 export offline-disk-store --name=value --disk-dirs=value(,value)* --dir=value
 ```
-
-<a id="topic_sjg_bvt_gq__table_gzr_rbh_2w"></a>
 
 | Name                                              | Description                                        |
 |---------------------------------------------------|----------------------------------------------------|
@@ -245,8 +239,6 @@ Export the stack trace for a member or members.
 ``` pre
 export stack-traces --file=value [--member=value] [--group=value]
 ```
-
-<a id="topic_195D27B8B2B64A4E84CF2256636D54BD__table_cjr_wbh_2w"></a>
 
 | Name                                           | Description                                                     |
 |------------------------------------------------|-----------------------------------------------------------------|
