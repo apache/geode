@@ -1391,7 +1391,7 @@ public class CliStrings {
   public static final String EXPORT_LOGS__HELP = "Export the log files for a member or members.";
   public static final String EXPORT_LOGS__DIR = "dir";
   public static final String EXPORT_LOGS__DIR__HELP =
-      "Local directory to which log files will be written. This is only used when you are exporting logs using http connection. If not specified, user.dir will be used.";
+      "Local directory to which logs will be written. This is used only when you are exporting logs using an http connection. If not specified, logs are written to the location specified by the user.dir system property.";
   public static final String EXPORT_LOGS__MEMBER = "member";
   public static final String EXPORT_LOGS__MEMBER__HELP =
       "Name/Id of the member whose log files will be exported.";
@@ -1413,7 +1413,7 @@ public class CliStrings {
       "Log entries that occurred before this time will be exported. The default is no limit. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd";
   public static final String EXPORT_LOGS__MERGELOG = "merge-log";
   public static final String EXPORT_LOGS__MERGELOG__HELP =
-      "Whether to merge logs after exporting to the target directory.";
+      "Whether to merge logs after exporting to the target directory. Deprecated: Since Geode1.2, no longer used.";
   public static final String EXPORT_LOGS__MSG__CANNOT_MERGE =
       "Could not merge the files in target directory";
   public static final String EXPORT_LOGS__MSG__SPECIFY_ONE_OF_OPTION =
