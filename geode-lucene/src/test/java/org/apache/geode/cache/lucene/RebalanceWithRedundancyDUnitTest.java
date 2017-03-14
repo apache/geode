@@ -36,6 +36,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 import org.awaitility.Awaitility;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -46,6 +47,12 @@ import junitparams.Parameters;
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase {
+
+  @After
+  public void cleanupRebalanceCallback() {
+    removeCallback(dataStore1);
+    removeCallback(dataStore2);
+  }
 
   @Override
   protected RegionTestableType[] getListOfRegionTestTypes() {
