@@ -105,7 +105,7 @@ public class EvictionDUnitTest extends LuceneQueriesAccessorBase {
       Region region = cache.getRegion(REGION_NAME);
       IntStream.range(0, NUM_BUCKETS).forEach(i -> region.put(i, new TestObject("hello world")));
     });
-
+    waitForFlushBeforeExecuteTextSearch(accessor, 60000);
     dataStore1.invoke(() -> {
       try {
         getCache().getResourceManager().setEvictionHeapPercentage(INITIAL_EVICTION_HEAP_PERCENTAGE);
