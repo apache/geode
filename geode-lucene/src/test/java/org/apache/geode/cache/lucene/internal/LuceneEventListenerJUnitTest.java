@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -80,18 +82,16 @@ public class LuceneEventListenerJUnitTest {
       Mockito.when(event.getKey()).thenReturn(i);
       Mockito.when(event.getCallbackArgument()).thenReturn(callback);
 
-      switch (i % 3) {
+      switch (i % 4) {
         case 0:
-          Mockito.when(event.getOperation()).thenReturn(Operation.CREATE);
-          Mockito.when(event.getDeserializedValue()).thenReturn(i);
-          break;
         case 1:
-          Mockito.when(event.getOperation()).thenReturn(Operation.UPDATE);
-          Mockito.when(event.getDeserializedValue()).thenReturn(i);
+          final Entry entry = mock(Entry.class);
+          when(entry.getValue()).thenReturn(i);
+          when(region.getEntry(eq(i))).thenReturn(entry);
           break;
         case 2:
-          Mockito.when(event.getOperation()).thenReturn(Operation.DESTROY);
-          Mockito.when(event.getDeserializedValue()).thenThrow(new AssertionError());
+        case 3:
+          // Do nothing, get value will return a destroy
           break;
       }
 
@@ -100,10 +100,10 @@ public class LuceneEventListenerJUnitTest {
 
     listener.processEvents(events);
 
-    verify(repo1, atLeast(numEntries / 6)).delete(any());
-    verify(repo1, atLeast(numEntries / 3)).update(any(), any());
-    verify(repo2, atLeast(numEntries / 6)).delete(any());
-    verify(repo2, atLeast(numEntries / 3)).update(any(), any());
+    verify(repo1, atLeast(numEntries / 4)).delete(any());
+    verify(repo1, atLeast(numEntries / 4)).update(any(), any());
+    verify(repo2, atLeast(numEntries / 4)).delete(any());
+    verify(repo2, atLeast(numEntries / 4)).update(any(), any());
     verify(repo1, times(1)).commit();
     verify(repo2, times(1)).commit();
   }

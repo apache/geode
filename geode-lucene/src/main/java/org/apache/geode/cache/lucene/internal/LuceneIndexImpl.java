@@ -180,6 +180,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
       return null;
     }
     LuceneEventListener listener = new LuceneEventListener(repositoryManager);
+    factory.setGatewayEventSubstitutionListener(new LuceneEventSubstitutionFilter());
     String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), regionPath);
     AsyncEventQueue indexQueue = factory.create(aeqId, listener);
     return indexQueue;
