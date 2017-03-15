@@ -14,16 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.converters;
 
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.logging.log4j.Level;
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.management.cli.ConverterHint;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * 
@@ -34,9 +33,9 @@ public class LogLevelConverter implements Converter<String> {
 
   public LogLevelConverter() {
     logLevels = new LinkedHashSet<Completion>();
-    int[] alllevels = LogWriterImpl.allLevels;
-    for (int level : alllevels) {
-      logLevels.add(new Completion(LogWriterImpl.levelToString(level)));
+    Level[] levels = Level.values();
+    for (Level level : levels) {
+      logLevels.add(new Completion(level.name()));
     }
   }
 

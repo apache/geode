@@ -14,19 +14,33 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.ACK_WAIT_THRESHOLD;
+import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_DISK_SPACE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_FILE_SIZE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HTTP_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_DISK_SPACE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE_SIZE_LIMIT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
-
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.UnmodifiableException;
@@ -38,6 +52,15 @@ import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.File;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 @Category({UnitTest.class, MembershipTest.class})
 public class DistributionConfigJUnitTest {
@@ -302,6 +325,13 @@ public class DistributionConfigJUnitTest {
 
     config.setAttributeObject(SECURITY_LOG_LEVEL, "debug", ConfigSource.api());
     assertEquals(config.getSecurityLogLevel(), 500);
+  }
+
+  @Test
+  public void testLog4jLogLevel() {
+    config.modifiable = true;
+    config.setAttribute(LOG_LEVEL, "fatal", ConfigSource.api());
+    assertEquals(config.getLogLevel(), 1000);
   }
 
   @Test

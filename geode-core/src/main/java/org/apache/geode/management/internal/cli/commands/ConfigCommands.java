@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
@@ -41,6 +42,7 @@ import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -251,7 +253,8 @@ public class ConfigCommands extends AbstractCommandsSupport {
 
   @CliCommand(value = {CliStrings.ALTER_RUNTIME_CONFIG},
       help = CliStrings.ALTER_RUNTIME_CONFIG__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG},
+      interceptor = "org.apache.geode.management.internal.cli.commands.ConfigCommands$AlterRuntimeInterceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   public Result alterRuntimeConfig(
       @CliOption(key = {CliStrings.ALTER_RUNTIME_CONFIG__MEMBER},
@@ -449,6 +452,20 @@ public class ConfigCommands extends AbstractCommandsSupport {
     } catch (Exception e) {
       return ResultBuilder.createGemFireErrorResult(
           CliStrings.format(CliStrings.EXCEPTION_CLASS_AND_MESSAGE, e.getClass(), e.getMessage()));
+    }
+  }
+
+  public static class AlterRuntimeInterceptor extends AbstractCliAroundInterceptor {
+    @Override
+    public Result preExecution(GfshParseResult parseResult) {
+      Map<String, String> arguments = parseResult.getParamValueStrings();
+      // validate log level
+      String logLevel = arguments.get("log-level");
+      if (!StringUtils.isBlank(logLevel) && (LogLevel.getLevel(logLevel) == null)) {
+        return ResultBuilder.createUserErrorResult("Invalid log level: " + logLevel);
+      }
+
+      return ResultBuilder.createInfoResult("");
     }
   }
 

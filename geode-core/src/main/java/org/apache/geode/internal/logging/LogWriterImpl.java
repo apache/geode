@@ -14,6 +14,12 @@
  */
 package org.apache.geode.internal.logging;
 
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.process.StartupStatusListener;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.BreakIterator;
@@ -25,12 +31,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Handler;
 import java.util.logging.Level;
-
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.process.StartupStatusListener;
-import org.apache.geode.i18n.StringId;
 
 /**
  * Abstract implementation of {@link InternalLogWriter}. Each logger has a level and it will only
@@ -56,6 +56,7 @@ import org.apache.geode.i18n.StringId;
  * <li>{@link #put(int, StringId, Object[], Throwable)}
  * </ol>
  */
+@Deprecated
 public abstract class LogWriterImpl implements InternalLogWriter {
 
   // Constants
@@ -201,6 +202,7 @@ public abstract class LogWriterImpl implements InternalLogWriter {
    * Gets the level code for the given <code>levelName</code>.
    * 
    * @throws IllegalArgumentException if an unknown level name is given.
+   * @deprecated
    */
   public static int levelNameToCode(String levelName) {
     if ("all".equalsIgnoreCase(levelName)) {

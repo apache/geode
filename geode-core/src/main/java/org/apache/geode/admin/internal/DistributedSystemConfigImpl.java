@@ -14,7 +14,24 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+
+import org.apache.geode.admin.AdminXmlException;
+import org.apache.geode.admin.CacheServerConfig;
+import org.apache.geode.admin.CacheVmConfig;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.DistributionLocator;
+import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -22,15 +39,20 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
 
 /**
  * An implementation of the configuration object for an <code>AdminDistributedSystem</code>. After a
@@ -252,7 +274,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     return new LogConfig() {
       @Override
       public int getLogLevel() {
-        return LogWriterImpl.levelNameToCode(DistributedSystemConfigImpl.this.getLogLevel());
+        return LogLevel.getLogWriterLevel(DistributedSystemConfigImpl.this.getLogLevel());
       }
 
       @Override
@@ -992,7 +1014,7 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     // "mcastPort must be zero when locators are specified");
     // }
 
-    LogWriterImpl.levelNameToCode(this.logLevel);
+    LogLevel.getLogWriterLevel(this.logLevel);
 
     if (this.logFileSizeLimit < MIN_LOG_FILE_SIZE_LIMIT
         || this.logFileSizeLimit > MAX_LOG_FILE_SIZE_LIMIT) {

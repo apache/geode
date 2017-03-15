@@ -15,10 +15,10 @@
 
 package org.apache.geode;
 
-import java.util.logging.Handler;
-
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
+
+import java.util.logging.Handler;
 
 /**
  * Defines methods available to clients that want to write a log message to their GemFire
@@ -74,6 +74,7 @@ import org.apache.geode.i18n.LogWriterI18n;
  * <em>level</em><code>Enabled</code>.
  *
  */
+@Deprecated
 public interface LogWriter {
 
   /**

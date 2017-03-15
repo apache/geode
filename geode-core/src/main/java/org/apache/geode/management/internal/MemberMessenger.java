@@ -15,8 +15,6 @@
 
 package org.apache.geode.management.internal;
 
-import java.util.Set;
-
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -24,7 +22,9 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AlertLevelChangeMessage;
-import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.internal.logging.log4j.LogLevel;
+
+import java.util.Set;
 
 /**
  * This class will act as a messenger from manager to members for various operations.
@@ -51,7 +51,7 @@ public class MemberMessenger {
   public void sendManagerInfo(DistributedMember receiver) {
 
     String levelName = jmxAdapter.getDistributedSystemMXBean().getAlertLevel();
-    int alertCode = LogWriterImpl.levelNameToCode(levelName);
+    int alertCode = LogLevel.getLogWriterLevel(levelName);
     ManagerStartupMessage msg = ManagerStartupMessage.create(alertCode);
     msg.setRecipient((InternalDistributedMember) receiver);
     sendAsync(msg);
@@ -62,7 +62,7 @@ public class MemberMessenger {
     Set<DistributedMember> otherMemberSet = system.getDistributionManager().getAllOtherMembers();
 
     String levelName = jmxAdapter.getDistributedSystemMXBean().getAlertLevel();
-    int alertCode = LogWriterImpl.levelNameToCode(levelName);
+    int alertCode = LogLevel.getLogWriterLevel(levelName);
     ManagerStartupMessage msg = ManagerStartupMessage.create(alertCode);
     if (otherMemberSet != null && otherMemberSet.size() > 0) {
       msg.setRecipients(otherMemberSet);
@@ -92,7 +92,7 @@ public class MemberMessenger {
    * member of the distributed system.
    */
   public void setAlertLevel(String levelName) {
-    int alertCode = LogWriterImpl.levelNameToCode(levelName);
+    int alertCode = LogLevel.getLogWriterLevel(levelName);
     AlertLevelChangeMessage m = AlertLevelChangeMessage.create(alertCode);
     sendAsync(m);
   }

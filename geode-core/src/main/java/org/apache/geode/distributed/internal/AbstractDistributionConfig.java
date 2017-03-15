@@ -25,6 +25,7 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.memcached.GemFireMemcachedServer;
@@ -571,7 +572,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
     // accepts int
     if (attName.equalsIgnoreCase(LOG_LEVEL) || attName.equalsIgnoreCase(SECURITY_LOG_LEVEL)) {
       if (attValue instanceof String) {
-        attValue = LogWriterImpl.levelNameToCode((String) attValue);
+        attValue = LogLevel.getLogWriterLevel((String) attValue);
       }
     }
 

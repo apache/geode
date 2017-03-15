@@ -31,10 +31,10 @@ import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -177,7 +177,7 @@ public class ExportLogCommand implements CommandMarker {
 
       // validate log level
       String logLevel = arguments.get("log-level");
-      if (StringUtils.isBlank(logLevel) || Level.getLevel(logLevel.toUpperCase()) == null) {
+      if (StringUtils.isBlank(logLevel) || LogLevel.getLevel(logLevel) == null) {
         return ResultBuilder.createUserErrorResult("Invalid log level: " + logLevel);
       }
 

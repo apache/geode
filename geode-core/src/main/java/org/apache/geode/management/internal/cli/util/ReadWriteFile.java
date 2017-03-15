@@ -14,6 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.internal.logging.log4j.LogLevel;
+import org.apache.geode.management.internal.cli.GfshParser;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,10 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.management.internal.cli.GfshParser;
 
 /**
  * 
@@ -101,7 +102,7 @@ public class ReadWriteFile {
       if (onlyLogLevel.toLowerCase().equals("false")) {
         int[] intLogLevels = LogWriterImpl.allLevels;
         for (int level : intLogLevels) {
-          if (level >= LogWriterImpl.levelNameToCode(logLevel)) {
+          if (level >= LogLevel.getLogWriterLevel(logLevel)) {
             logLevels.add(LogWriterImpl.levelToString(level).toLowerCase());
           }
         }

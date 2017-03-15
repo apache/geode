@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -30,7 +31,6 @@ import org.apache.geode.distributed.internal.deadlock.DependencyGraph;
 import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetector;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -70,6 +70,7 @@ import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -1893,7 +1894,8 @@ public class MiscellaneousCommands implements CommandMarker {
 
 
   @CliCommand(value = CliStrings.CHANGE_LOGLEVEL, help = CliStrings.CHANGE_LOGLEVEL__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_CHANGELOGLEVEL})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_CHANGELOGLEVEL},
+      interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$ChangeLogLevelInterceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   public Result changeLogLevel(
       @CliOption(key = CliStrings.CHANGE_LOGLEVEL__MEMBER, unspecifiedDefaultValue = "",
@@ -1909,27 +1911,8 @@ public class MiscellaneousCommands implements CommandMarker {
             .createUserErrorResult(CliStrings.CHANGE_LOGLEVEL__MSG__SPECIFY_GRP_OR_MEMBER);
       }
 
-      if (logLevel == null || logLevel.length() == 0) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.CHANGE_LOGLEVEL__MSG__SPECIFY_LOG_LEVEL);
-      }
-
       Cache cache = GemFireCacheImpl.getInstance();
       LogWriter logger = cache.getLogger();
-
-      boolean validLogLevel = false;
-
-      for (int i = 0; i < LogWriterImpl.allLevels.length - 1; i++) {
-        if (LogWriterImpl.allLevels[i] == LogWriterImpl.levelNameToCode(logLevel)) {
-          validLogLevel = true;
-          break;
-        }
-      }
-
-      if (!validLogLevel) {
-        return ResultBuilder
-            .createUserErrorResult(CliStrings.CHANGE_LOGLEVEL__MSG__INVALID_LOG_LEVEL);
-      }
 
       Set<DistributedMember> dsMembers = new HashSet<DistributedMember>();
       Set<DistributedMember> ds = CliUtil.getAllMembers(cache);
@@ -2008,6 +1991,20 @@ public class MiscellaneousCommands implements CommandMarker {
     } catch (Exception ex) {
       GemFireCacheImpl.getInstance().getLogger().error("GFSH Changeloglevel exception: " + ex);
       return ResultBuilder.createUserErrorResult(ex.getMessage());
+    }
+  }
+
+  public static class ChangeLogLevelInterceptor extends AbstractCliAroundInterceptor {
+    @Override
+    public Result preExecution(GfshParseResult parseResult) {
+      Map<String, String> arguments = parseResult.getParamValueStrings();
+      // validate log level
+      String logLevel = arguments.get("loglevel");
+      if (StringUtils.isBlank(logLevel) || LogLevel.getLevel(logLevel) == null) {
+        return ResultBuilder.createUserErrorResult("Invalid log level: " + logLevel);
+      }
+
+      return ResultBuilder.createInfoResult("");
     }
   }
 

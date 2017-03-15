@@ -105,7 +105,7 @@ public final class LogWriterLogger extends FastLogger implements InternalLogWrit
 
   @Override
   public void setLogWriterLevel(final int logWriterLevel) {
-    setLevel(logWriterLeveltoLog4jLevel(logWriterLevel));
+    setLevel(LogLevel.getLog4jLevel(logWriterLevel));
   }
 
   /**
@@ -1325,102 +1325,10 @@ public final class LogWriterLogger extends FastLogger implements InternalLogWrit
     this.logWrapper.logIfEnabled(this.loggerName, Level.FATAL, null, message, t);
   }
 
-  /************************************************************
-   * Methods to support backwards compatibility between levels.
-   ************************************************************/
-
-  public static Level logWriterLeveltoLog4jLevel(final int logWriterLevel) {
-    switch (logWriterLevel) {
-      case InternalLogWriter.SEVERE_LEVEL:
-        return Level.FATAL;
-      case InternalLogWriter.ERROR_LEVEL:
-        return Level.ERROR;
-      case InternalLogWriter.WARNING_LEVEL:
-        return Level.WARN;
-      case InternalLogWriter.CONFIG_LEVEL:
-        return Level.INFO;
-      case InternalLogWriter.INFO_LEVEL:
-        return Level.INFO;
-      case InternalLogWriter.FINE_LEVEL:
-        return Level.DEBUG;
-      case InternalLogWriter.FINER_LEVEL:
-        return Level.DEBUG;
-      case InternalLogWriter.FINEST_LEVEL:
-        return Level.TRACE;
-      case InternalLogWriter.ALL_LEVEL:
-        return Level.ALL;
-      case InternalLogWriter.NONE_LEVEL:
-        return Level.OFF;
-    }
-
-    throw new IllegalArgumentException("Unknown LogWriter level [" + logWriterLevel + "].");
-  }
-
-  public static Level logWriterNametoLog4jLevel(String levelName) {
-    if ("all".equalsIgnoreCase(levelName)) {
-      return Level.ALL;
-    }
-    if ("finest".equalsIgnoreCase(levelName)) {
-      return Level.TRACE;
-    }
-    if ("finer".equalsIgnoreCase(levelName)) {
-      return Level.DEBUG;
-    }
-    if ("fine".equalsIgnoreCase(levelName)) {
-      return Level.DEBUG;
-    }
-    if ("config".equalsIgnoreCase(levelName)) {
-      return Level.INFO;
-    }
-    if ("info".equalsIgnoreCase(levelName)) {
-      return Level.INFO;
-    }
-    if ("warning".equalsIgnoreCase(levelName)) {
-      return Level.WARN;
-    }
-    if ("error".equalsIgnoreCase(levelName)) {
-      return Level.ERROR;
-    }
-    if ("severe".equalsIgnoreCase(levelName)) {
-      return Level.FATAL;
-    }
-    if ("none".equalsIgnoreCase(levelName)) {
-      return Level.OFF;
-    }
-
-    throw new IllegalArgumentException("Unknown LogWriter level [" + levelName + "].");
-  }
-
-  public static int log4jLevelToLogWriterLevel(final Level log4jLevel) {
-    if (log4jLevel == Level.FATAL) {
-      return InternalLogWriter.SEVERE_LEVEL;
-    } else if (log4jLevel == Level.ERROR) {
-      return InternalLogWriter.ERROR_LEVEL;
-    } else if (log4jLevel == Level.WARN) {
-      return InternalLogWriter.WARNING_LEVEL;
-    } else if (log4jLevel == Level.INFO) {
-      return InternalLogWriter.INFO_LEVEL;
-    } else if (log4jLevel == Level.DEBUG) {
-      return InternalLogWriter.FINE_LEVEL;
-    } else if (log4jLevel == Level.TRACE) {
-      return InternalLogWriter.FINEST_LEVEL;
-    } else if (log4jLevel == Level.ALL) {
-      return InternalLogWriter.ALL_LEVEL;
-    } else if (log4jLevel == Level.OFF) {
-      return InternalLogWriter.NONE_LEVEL;
-    }
-
-    throw new IllegalArgumentException("Unknown Log4J level [" + log4jLevel + "].");
-  }
-
   public void log(int logWriterLevel, final String message, final Throwable t) {
-    Level level = logWriterLeveltoLog4jLevel(logWriterLevel);
+    Level level = LogLevel.getLog4jLevel(logWriterLevel);
     this.logWrapper.logIfEnabled(this.loggerName, level, null, message, t);
   }
-
-  /*****************************************
-   * Methods below are specific to LogWriter
-   *****************************************/
 
   @Override
   public boolean severeEnabled() {

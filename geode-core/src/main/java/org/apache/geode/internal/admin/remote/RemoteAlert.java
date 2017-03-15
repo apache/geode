@@ -20,6 +20,7 @@ import org.apache.geode.internal.admin.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 
 import java.io.*;
 import java.util.*;
@@ -117,7 +118,7 @@ public class RemoteAlert implements Alert {
     String stamp = s.substring(firstBracket, lastBracket);
     StringTokenizer st = new StringTokenizer(stamp, "[ ");
 
-    final int level = LogWriterImpl.levelNameToCode(st.nextToken());
+    final int level = LogLevel.getLogWriterLevel(st.nextToken());
 
     StringBuffer sb = new StringBuffer();
     sb.append(st.nextToken());

@@ -93,25 +93,4 @@ public class LogLevelExtractorTest {
 
     assertThat(result).isNull();
   }
-
-  @Test
-  public void testGetLevel() {
-    assertThat(LogLevelExtractor.getLevel("all")).isEqualTo(Level.ALL);
-    assertThat(LogLevelExtractor.getLevel("fatal")).isEqualTo(Level.FATAL);
-    assertThat(LogLevelExtractor.getLevel("severe")).isEqualTo(Level.FATAL);
-    assertThat(LogLevelExtractor.getLevel("error")).isEqualTo(Level.ERROR);
-    assertThat(LogLevelExtractor.getLevel("warn")).isEqualTo(Level.WARN);
-    assertThat(LogLevelExtractor.getLevel("warning")).isEqualTo(Level.WARN);
-    assertThat(LogLevelExtractor.getLevel("info")).isEqualTo(Level.INFO);
-    assertThat(LogLevelExtractor.getLevel("config")).isEqualTo(Level.DEBUG);
-    assertThat(LogLevelExtractor.getLevel("debug")).isEqualTo(Level.DEBUG);
-    assertThat(LogLevelExtractor.getLevel("fine")).isEqualTo(Level.DEBUG);
-    assertThat(LogLevelExtractor.getLevel("finer")).isEqualTo(Level.TRACE);
-    assertThat(LogLevelExtractor.getLevel("finest")).isEqualTo(Level.TRACE);
-    assertThat(LogLevelExtractor.getLevel("all")).isEqualTo(Level.ALL);
-    assertThat(LogLevelExtractor.getLevel("none")).isEqualTo(Level.OFF);
-    assertThat(LogLevelExtractor.getLevel("notrecognizable")).isEqualTo(Level.OFF);
-
-  }
-
 }

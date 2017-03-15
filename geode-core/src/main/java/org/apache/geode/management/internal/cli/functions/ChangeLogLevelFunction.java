@@ -25,6 +25,7 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 
@@ -54,7 +55,7 @@ public class ChangeLogLevelFunction implements Function, InternalEntity {
       LogWriterLogger logwriterLogger = (LogWriterLogger) cache.getLogger();
       Object[] args = (Object[]) context.getArguments();
       final String logLevel = (String) args[0];
-      Level log4jLevel = LogWriterLogger.logWriterNametoLog4jLevel(logLevel);
+      Level log4jLevel = LogLevel.getLevel(logLevel);
       logwriterLogger.setLevel(log4jLevel);
       System.setProperty(DistributionConfig.GEMFIRE_PREFIX + LOG_LEVEL, logLevel);
       // LOG:CONFIG:

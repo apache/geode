@@ -16,13 +16,11 @@
 
 package org.apache.geode.management.internal.cli.util;
 
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.logging.log4j.Level;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,7 +54,7 @@ public class LogLevelExtractor {
     private LocalDateTime logTimestamp;
 
     public Result(String logLevel, LocalDateTime logTimestamp) {
-      this.logLevel = LogLevelExtractor.getLevel(logLevel);
+      this.logLevel = LogLevel.resolveLevel(logLevel);
       this.logTimestamp = logTimestamp;
     }
 
@@ -68,27 +66,6 @@ public class LogLevelExtractor {
       return logTimestamp;
     }
 
-  }
-
-  private static Map<String, Level> LEVELS = new HashMap<>();
-  static {
-    // put all the log4j levels in the map first
-    Arrays.stream(Level.values()).forEach(level -> {
-      LEVELS.put(level.name(), level);
-    });
-    // put all the other levels geode has been using and map them to log4j levels
-    LEVELS.put("SEVERE", Level.FATAL);
-    LEVELS.put("WARNING", Level.WARN);
-    LEVELS.put("CONFIG", Level.DEBUG);
-    LEVELS.put("FINE", Level.DEBUG);
-    LEVELS.put("FINER", Level.TRACE);
-    LEVELS.put("FINEST", Level.TRACE);
-  }
-
-  public static Level getLevel(String level) {
-    Level log4jLevel = LEVELS.get(level.toUpperCase());
-    // make sure any unrecognizable log level is assigned a most specific level
-    return log4jLevel == null ? Level.OFF : log4jLevel;
   }
 }
 

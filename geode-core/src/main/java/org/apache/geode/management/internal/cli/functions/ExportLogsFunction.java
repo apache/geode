@@ -32,6 +32,7 @@ import org.apache.geode.management.internal.cli.commands.ExportLogCommand;
 import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
 import org.apache.geode.management.internal.cli.util.LogExporter;
 import org.apache.geode.management.internal.cli.util.LogFilter;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
@@ -168,7 +169,7 @@ public class ExportLogsFunction implements Function, InternalEntity {
       if (StringUtils.isBlank(logLevel)) {
         this.logLevel = Level.INFO;
       } else {
-        this.logLevel = Level.getLevel(logLevel.toUpperCase());
+        this.logLevel = LogLevel.getLevel(logLevel);
       }
       this.thisLogLevelOnly = logLevelOnly;
 

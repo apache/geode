@@ -117,6 +117,16 @@ public class ExportLogsFunctionIntegrationTest {
     assertThat(args.isIncludeStats()).isFalse();
   }
 
+  @Test
+  public void argsCorrectlyBuiltWithGeodeLevel() {
+    ExportLogsFunction.Args args =
+        new ExportLogsFunction.Args(null, null, "fine", true, true, false);
+    assertThat(args.getLogLevel()).isEqualTo(Level.DEBUG);
+    assertThat(args.isThisLogLevelOnly()).isTrue();
+    assertThat(args.isIncludeLogs()).isTrue();
+    assertThat(args.isIncludeStats()).isFalse();
+  }
+
   private static class CapturingResultSender implements ResultSender {
     private Throwable t;
 
