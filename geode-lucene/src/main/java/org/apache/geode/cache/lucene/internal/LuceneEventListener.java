@@ -20,6 +20,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.cache.EntryDestroyedException;
+import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.CacheClosedException;
@@ -87,19 +89,20 @@ public class LuceneEventListener implements AsyncEventListener {
 
         IndexRepository repository = repositoryManager.getRepository(region, key, callbackArgument);
 
-        Operation op = event.getOperation();
-
-        if (op.isCreate()) {
-          repository.update(key, event.getDeserializedValue());
-        } else if (op.isUpdate()) {
-          repository.update(key, event.getDeserializedValue());
-        } else if (op.isDestroy()) {
-          repository.delete(key);
-        } else if (op.isInvalidate()) {
-          repository.delete(key);
-        } else {
-          throw new InternalGemFireError("Unhandled operation " + op + " on " + event.getRegion());
+        final Entry entry = region.getEntry(key);
+        Object value;
+        try {
+          value = entry == null ? null : entry.getValue();
+        } catch (EntryDestroyedException e) {
+          value = null;
         }
+
+        if (value != null) {
+          repository.update(key, value);
+        } else {
+          repository.delete(key);
+        }
+
         affectedRepos.add(repository);
       }
 
