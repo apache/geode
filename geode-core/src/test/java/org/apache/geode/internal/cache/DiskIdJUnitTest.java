@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
@@ -217,6 +218,29 @@ public class DiskIdJUnitTest {
 
   private DiskId getDiskId() {
     return DiskId.createDiskId(1024, true /* is persistence type */, true);
+  }
+
+  /**
+   * Tests unmarkForWrite for persistent region does not change keyId
+   */
+  @Test
+  public void testPersistUnmarkForWrite() {
+    DiskId diskId = getDiskId();
+    diskId.setKeyId(11);
+    diskId.unmarkForWriting();
+    long newKeyId = diskId.getKeyId();
+
+    assertEquals(11, newKeyId);
+  }
+
+  /**
+   * Tests markForWrite for persistent region failed
+   */
+  @Test
+  public void testPersistMarkForWrite() {
+    DiskId diskId = getDiskId();
+    diskId.setKeyId(11);
+    assertThatThrownBy(() -> diskId.markForWriting()).isInstanceOf(IllegalStateException.class);
   }
 
 }

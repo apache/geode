@@ -704,8 +704,7 @@ public class DiskStoreImpl implements DiskStore {
     DiskRegion dr = region.getDiskRegion();
     DiskId id = entry.getDiskId();
     if (dr.isBackup() && id.getKeyId() < 0) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.DiskRegion_CANT_PUT_A_KEYVALUE_PAIR_WITH_ID_0.toLocalizedString(id));
+      id.setKeyId(-id.getKeyId());
     }
     long start = async ? this.stats.startFlush() : this.stats.startWrite();
     if (!async) {

@@ -1690,6 +1690,7 @@ public interface DiskEntry extends RegionEntry {
 
       // Asif: This will convert the -ve OplogKeyId to positive as part of fixing
       // Bug # 39989
+      // GEODE-2535 fix should address the original #39989 negative keyId issue.
       did.unmarkForWriting();
 
       // System.out.println("DEBUG: removeFromDisk doing remove(" + id + ")");
