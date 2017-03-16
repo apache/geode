@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.Token;
 public class LuceneEventSubstitutionFilter implements GatewayEventSubstitutionFilter {
   @Override
   public Object getSubstituteValue(final EntryEvent event) {
-    return "";
+    return null;
   }
 
   @Override
