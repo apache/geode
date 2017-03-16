@@ -19,19 +19,25 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.security.Principal;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import org.apache.geode.serialization.SerializationType;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
@@ -42,6 +48,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -147,6 +154,9 @@ public class ServerConnection implements Runnable {
   private final CachedRegionHelper crHelper;
   private String name = null;
 
+  // The new protocol lives in a separate module and gets loaded when this class is instantiated.
+  private static ClientProtocolMessageHandler newClientProtocol;
+
   // IMPORTANT: if new messages are added change setHandshake to initialize them
   // to the correct Version for serializing to the client
   private Message requestMsg = new Message(2, Version.CURRENT);
@@ -180,7 +190,9 @@ public class ServerConnection implements Runnable {
    */
   private volatile int requestSpecificTimeout = -1;
 
-  /** Tracks the id of the most recent batch to which a reply has been sent */
+  /**
+   * Tracks the id of the most recent batch to which a reply has been sent
+   */
   private int latestBatchIdReplied = -1;
 
   /*
@@ -276,6 +288,21 @@ public class ServerConnection implements Runnable {
     this.postAuthzRequest = null;
     this.randomConnectionIdGen = new Random(this.hashCode());
 
+    if (newClientProtocol == null) {
+      Iterator<ClientProtocolMessageHandler> protocolIterator =
+          ServiceLoader.load(ClientProtocolMessageHandler.class).iterator();
+      if (protocolIterator.hasNext()) {
+        newClientProtocol = protocolIterator.next();
+      } else {
+        logger.warn("Implementation not found in the JVM for ClientProtocolMessageHandler");
+      }
+      // TODO handle multiple ClientProtocolMessageHandler impls.
+      if (protocolIterator.hasNext()) {
+        logger.warn(
+            "Multiple implementations found in the JVM for ClientProtocolMessageHandler; using the first one available.");
+      }
+    }
+
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
       // requestMsg.setUseDataStream(useDataStream);
@@ -319,11 +346,25 @@ public class ServerConnection implements Runnable {
     return executeFunctionOnLocalNodeOnly.get();
   }
 
+  private boolean createClientHandshake() {
+    logger.info("createClientHandshake this.getCommunicationMode() " + this.getCommunicationMode());
+    if (this.getCommunicationMode() != AcceptorImpl.CLIENT_TO_SERVER_NEW_PROTOCOL) {
+      return ServerHandShakeProcessor.readHandShake(this);
+    } else {
+      InetSocketAddress remoteAddress = (InetSocketAddress) theSocket.getRemoteSocketAddress();
+      DistributedMember member =
+          new InternalDistributedMember(remoteAddress.getAddress(), remoteAddress.getPort());
+      this.proxyId = new ClientProxyMembershipID(member);
+      this.handshake = new HandShake(this.proxyId, this.getDistributedSystem(), Version.CURRENT);
+      return true;
+    }
+  }
+
   private boolean verifyClientConnection() {
     synchronized (this.handShakeMonitor) {
       if (this.handshake == null) {
         // synchronized (getCleanupTable()) {
-        boolean readHandShake = ServerHandShakeProcessor.readHandShake(this);
+        boolean readHandShake = createClientHandshake();
         if (readHandShake) {
           if (this.handshake.isOK()) {
             try {
@@ -593,8 +634,10 @@ public class ServerConnection implements Runnable {
 
   private boolean acceptHandShake(byte epType, int qSize) {
     try {
-      this.handshake.accept(theSocket.getOutputStream(), theSocket.getInputStream(), epType, qSize,
-          this.communicationMode, this.principal);
+      if (this.communicationMode != AcceptorImpl.CLIENT_TO_SERVER_NEW_PROTOCOL) {
+        this.handshake.accept(theSocket.getOutputStream(), theSocket.getInputStream(), epType,
+            qSize, this.communicationMode, this.principal);
+      }
     } catch (IOException ioe) {
       if (!crHelper.isShutdown() && !isTerminated()) {
         logger.warn(LocalizedMessage.create(
@@ -905,6 +948,22 @@ public class ServerConnection implements Runnable {
   }
 
   private void doOneMessage() {
+    boolean useNewClientProtocol =
+        this.communicationMode == AcceptorImpl.CLIENT_TO_SERVER_NEW_PROTOCOL;
+    if (useNewClientProtocol) {
+      try {
+        Socket socket = this.getSocket();
+        InputStream inputStream = socket.getInputStream();
+        OutputStream outputStream = socket.getOutputStream();
+        // TODO serialization types?
+        newClientProtocol.receiveMessage(inputStream, outputStream,
+            SerializationType.STRING.deserializer, this.getCache());
+      } catch (IOException e) {
+        // TODO?
+      }
+      return;
+    }
+
     if (this.doHandshake) {
       doHandshake();
       this.doHandshake = false;
@@ -913,6 +972,7 @@ public class ServerConnection implements Runnable {
       doNormalMsg();
     }
   }
+
 
   private void initializeClientUserAuths() {
     this.clientUserAuths = getClientUserAuths(this.proxyId);
@@ -1070,7 +1130,7 @@ public class ServerConnection implements Runnable {
   /**
    * MessageType of the messages (typically internal commands) which do not need to participate in
    * security should be added in the following if block.
-   * 
+   *
    * @return Part
    * @see AbstractOp#processSecureBytes(Connection, Message)
    * @see AbstractOp#needsUserId()
@@ -1191,6 +1251,7 @@ public class ServerConnection implements Runnable {
    * If registered with a selector then this will be the key we are registered with.
    */
   // private SelectionKey sKey = null;
+
   /**
    * Register this connection with the given selector for read events. Note that switch the channel
    * to non-blocking so it can be in a selector.
@@ -1206,7 +1267,8 @@ public class ServerConnection implements Runnable {
   }
 
   public void registerWithSelector2(Selector s) throws IOException {
-    /* this.sKey = */getSelectableChannel().register(s, SelectionKey.OP_READ, this);
+    /* this.sKey = */
+    getSelectableChannel().register(s, SelectionKey.OP_READ, this);
   }
 
   /**
@@ -1229,7 +1291,6 @@ public class ServerConnection implements Runnable {
   }
 
   /**
-   *
    * @return String representing the DistributedSystemMembership of the Client VM
    */
   public String getMembershipID() {
@@ -1497,7 +1558,7 @@ public class ServerConnection implements Runnable {
 
   /**
    * Just ensure that this class gets loaded.
-   * 
+   *
    * @see SystemFailure#loadEmergencyClasses()
    */
   public static void loadEmergencyClasses() {
@@ -1524,7 +1585,9 @@ public class ServerConnection implements Runnable {
     return this.name;
   }
 
-  /** returns the name of this connection */
+  /**
+   * returns the name of this connection
+   */
   public String getName() {
     return this.name;
   }
@@ -1808,7 +1871,9 @@ public class ServerConnection implements Runnable {
     return postAuthReq;
   }
 
-  /** returns the member ID byte array to be used for creating EventID objects */
+  /**
+   * returns the member ID byte array to be used for creating EventID objects
+   */
   public byte[] getEventMemberIDByteArray() {
     return this.memberIdByteArray;
   }

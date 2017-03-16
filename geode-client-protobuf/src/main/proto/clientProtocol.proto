@@ -1,0 +1,64 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+syntax = "proto3";
+package org.apache.geode.protocol.protobuf;
+
+import "google/protobuf/any.proto";
+import "region_API.proto";
+
+message Message {
+    MessageHeader messageHeader = 1;
+    oneof messageType {
+        Request request = 2;
+        Response response = 3;
+    }
+}
+
+message MessageHeader {
+    int32 correlationId = 2;
+    MetaData metadata = 1;
+}
+
+message Request {
+    oneof requestAPI {
+        PutRequest putRequest = 1;
+        GetRequest getRequest = 2;
+        PutAllRequest putAllRequest = 3;
+        GetAllRequest getAllRequest = 4;
+    }
+}
+
+message Response {
+    ResponseHeader responseHeader = 1;
+    oneof responseAPI {
+        PutResponse putResponse = 2;
+        GetResponse getResponse = 3;
+        PutAllResponse putAllResponse = 4;
+        GetAllResponse getAllResponse = 5;
+    }
+}
+
+message ResponseHeader {
+    oneof reponseType {
+        int32 responseTypeID = 1;
+        int32 errorCode = 2;
+    }
+}
+
+message MetaData {
+    int32 numberOfMetadata = 1;
+    map<int32, google.protobuf.Any> metaDataEntries = 2;
+}

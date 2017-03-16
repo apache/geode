@@ -593,7 +593,10 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   private int createServerRegion(final Class constraintClass) throws IOException {
-    CacheFactory cf = new CacheFactory(getDistributedSystemProperties());
+    Properties p = getDistributedSystemProperties();
+    p.put("log-level", "debug");
+    CacheFactory cf = new CacheFactory();
+
     Cache cache = getCache(cf);
     RegionFactory rf = cache.createRegionFactory(RegionShortcut.REPLICATE);
     rf.setValueConstraint(constraintClass);

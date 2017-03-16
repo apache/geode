@@ -1,0 +1,88 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+apply plugin: 'java'
+apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
+
+repositories {
+  maven { url "https://plugins.gradle.org/m2/" }
+}
+
+buildscript {
+  repositories {
+    maven { url "https://plugins.gradle.org/m2/" }
+  }
+  dependencies {
+    classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.1'
+  }
+}
+
+dependencies {
+  compile 'com.google.protobuf:protobuf-java:3.0.0'
+  //compile 'io.grpc:grpc-stub:1.0.0-pre2'
+  //compile 'io.grpc:grpc-protobuf:1.0.0-pre2'
+  // Extra proto source files besides the ones residing under
+  // "src/main".
+  protobuf files("main/proto/")
+  protobuf fileTree("ext/")
+
+  provided project(':geode-core')
+
+  testCompile 'junit:junit:4.12'
+  testCompile project (':geode-junit')
+  testCompile "org.mockito:mockito-core:2.+"
+  testCompile files(project(':geode-core').sourceSets.test.output)
+  // Extra proto source files for test besides the ones residing under
+  // "src/test".
+  //testProtobuf files("lib/protos-test.tar.gz")
+}
+
+protobuf {
+  protoc {
+    // The artifact spec for the Protobuf Compiler
+    artifact = 'com.google.protobuf:protoc:3.0.0'
+  }
+  // this allows our spotless rule to skip this directory (hopefully rat too)
+  generatedFilesBaseDir = "$buildDir/generated-src/proto"
+
+//  plugins {
+//    // Optional: an artifact spec for a protoc plugin, with "grpc" as
+//    // the identifier, which can be referred to in the "plugins"
+//    // container of the "generateProtoTasks" closure.
+//    grpc {
+//      artifact = 'io.grpc:protoc-gen-grpc-java:1.0.0-pre2'
+//    }
+//  }
+//  generateProtoTasks {
+//    ofSourceSet('main')*.plugins {
+//      // Apply the "grpc" plugin whose spec is defined above, without
+//      // options.  Note the braces cannot be omitted, otherwise the
+//      // plugin will not be added. This is because of the implicit way
+//      // NamedDomainObjectContainer binds the methods.
+//      grpc { }
+//    }
+//  }
+}
+
+// let IntelliJ know where the generated sources are.
+idea {
+  module {
+    sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
+  }
+}

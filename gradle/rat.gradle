@@ -120,11 +120,7 @@ rat {
     'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/domain/CacheElementJUnitTest.xml',
     'geode-core/src/test/resources/org/apache/geode/management/internal/configuration/utils/*.xml',
 
-    '**/META-INF/services/org.xml.sax.ext.EntityResolver2',
-    '**/META-INF/services/org.apache.geode.internal.cache.CacheService',
-    '**/META-INF/services/org.apache.geode.internal.cache.xmlcache.XmlParser',
-    '**/META-INF/services/org.apache.geode.distributed.ServerLauncherCacheProvider',
-    '**/META-INF/services/org.springframework.shell.core.CommandMarker',
+    '**/META-INF/services/*',
 
     // --- Other Licenses ---
 

@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
@@ -31,16 +32,19 @@ import org.apache.geode.cache.client.internal.ExecuteFunctionOp.ExecuteFunctionO
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * A single client to server connection.
@@ -114,7 +118,16 @@ public class ConnectionImpl implements Connection {
     theSocket.setSoTimeout(handShakeTimeout);
     out = theSocket.getOutputStream();
     in = theSocket.getInputStream();
-    this.status = handShake.handshakeWithServer(this, location, communicationMode);
+
+    if (communicationMode == AcceptorImpl.CLIENT_TO_SERVER_NEW_PROTOCOL) {
+      handShake.writeNewProtcolVersionForServer(this, communicationMode);
+      InetSocketAddress remoteAddr = (InetSocketAddress) theSocket.getRemoteSocketAddress();
+      DistributedMember distributedMember =
+          new InternalDistributedMember(remoteAddr.getAddress(), remoteAddr.getPort());
+      this.status = new ServerQueueStatus(distributedMember);
+    } else {
+      this.status = handShake.handshakeWithServer(this, location, communicationMode);
+    }
     commBuffer = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
     if (sender != null) {
       commBufferForAsyncRead = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
