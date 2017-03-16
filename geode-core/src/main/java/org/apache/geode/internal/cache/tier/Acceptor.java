@@ -71,6 +71,11 @@ public abstract class Acceptor {
    */
   public static final byte CLIENT_TO_SERVER_FOR_QUEUE = (byte) 107;
 
+  /**
+   * For new client-server protocol which ignores current handshake mechanism
+   */
+  public static final byte CLIENT_TO_SERVER_NEW_PROTOCOL = (byte) 110;
+
 
   /**
    * The GFE version of the server.

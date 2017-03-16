@@ -116,7 +116,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     } else if (forQueue) {
       return Acceptor.CLIENT_TO_SERVER_FOR_QUEUE;
     } else {
-      return Acceptor.CLIENT_TO_SERVER;
+      // return Acceptor.CLIENT_TO_SERVER;
+      return Acceptor.CLIENT_TO_SERVER_NEW_PROTOCOL;
     }
   }
 
