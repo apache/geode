@@ -99,19 +99,11 @@ public class LogFilter {
   }
 
   public boolean acceptsFile(Path file) {
-    if (startDate == null && endDate == null) {
+    if (startDate == null) {
       return true;
     }
 
-    if (endDate == null) {
-      return getEndTimeOf(file).isAfter(startDate);
-    }
-
-    if (startDate == null) {
-      return getStartTimeOf(file).isBefore(endDate);
-    }
-
-    return (getEndTimeOf(file).isAfter(startDate) && getStartTimeOf(file).isBefore(endDate));
+    return getEndTimeOf(file).isAfter(startDate);
 
   }
 
@@ -126,15 +118,4 @@ public class LogFilter {
     }
   }
 
-  private static LocalDateTime getStartTimeOf(Path file) {
-    try {
-      BasicFileAttributes attributes = Files.readAttributes(file, BasicFileAttributes.class);
-      long lastModifiedMillis = attributes.creationTime().toMillis();
-      return Instant.ofEpochMilli(lastModifiedMillis).atZone(ZoneId.systemDefault())
-          .toLocalDateTime();
-    } catch (Exception e) {
-      LOGGER.error("Unable to determine creation time", e);
-      return LocalDateTime.MIN;
-    }
-  }
 }

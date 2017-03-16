@@ -188,7 +188,6 @@ public class LogFilterTest {
     when(path.getFileSystem().provider()).thenReturn(mock(FileSystemProvider.class));
     when(path.getFileSystem().provider().readAttributes(path, BasicFileAttributes.class))
         .thenReturn(attributes);
-    when(attributes.creationTime()).thenReturn(FileTime.fromMillis(now - 10000));
 
     // a filter with no start/end date should accept this file
     LogFilter filter = new LogFilter(Level.INFO, null, null);
@@ -206,8 +205,8 @@ public class LogFilterTest {
     filter = new LogFilter(Level.INFO, null, LocalDateTime.now());
     assertThat(filter.acceptsFile(path)).isTrue();
 
-    // a filter with an end date of an hour ago should not accept the file
+    // a filter with an end date of an hour ago should accept the file
     filter = new LogFilter(Level.INFO, null, LocalDateTime.now().minusHours(1));
-    assertThat(filter.acceptsFile(path)).isFalse();
+    assertThat(filter.acceptsFile(path)).isTrue();
   }
 }
