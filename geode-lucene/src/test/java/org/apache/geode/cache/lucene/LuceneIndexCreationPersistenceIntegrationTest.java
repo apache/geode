@@ -112,7 +112,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
 
   @Test
   @Parameters({"true", "false"})
-  public void shouldUseDiskSynchronousWhenUserRegionHasDiskSynchronous(boolean synchronous) {
+  public void aeqShouldAlwaysBeDiskSynchronousWhenUserRegionIsEither(boolean synchronous) {
     createIndex(cache, "text");
     cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT).setDiskSynchronous(synchronous)
         .create(REGION_NAME);
@@ -122,7 +122,7 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
       assertTrue(region.isDiskSynchronous());
     });
     AsyncEventQueue queue = getIndexQueue(cache);
-    assertEquals(synchronous, queue.isDiskSynchronous());
+    assertTrue(queue.isDiskSynchronous());
     assertEquals(true, queue.isPersistent());
   }
 

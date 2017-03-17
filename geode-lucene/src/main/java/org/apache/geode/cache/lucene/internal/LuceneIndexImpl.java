@@ -170,7 +170,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
       factory.setPersistent(true);
     }
     factory.setDiskStoreName(dataRegion.getAttributes().getDiskStoreName());
-    factory.setDiskSynchronous(dataRegion.getAttributes().isDiskSynchronous());
+    factory.setDiskSynchronous(true);
     factory.setForwardExpirationDestroy(true);
     return factory;
   }
