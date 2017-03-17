@@ -72,12 +72,12 @@ public final class ClassPathLoader {
       DistributionConfig.GEMFIRE_PREFIX + "excludeThreadContextClassLoader";
   public static final boolean EXCLUDE_TCCL_DEFAULT_VALUE = false;
 
-  private boolean excludeTCCL;
+  private static volatile ClassPathLoader latest;
 
   private volatile URLClassLoader classLoaderForDeployedJars;
   private final JarDeployer jarDeployer;
 
-  private static final AtomicReference<ClassPathLoader> latest = new AtomicReference<>();
+  private boolean excludeTCCL;
 
   public void rebuildClassLoaderForDeployedJars() {
     ClassLoader parent = ClassPathLoader.class.getClassLoader();
@@ -98,13 +98,13 @@ public final class ClassPathLoader {
   }
 
   public static ClassPathLoader setLatestToDefault() {
-    latest.set(new ClassPathLoader(Boolean.getBoolean(EXCLUDE_TCCL_PROPERTY)));
-    return latest.get();
+    latest = new ClassPathLoader(Boolean.getBoolean(EXCLUDE_TCCL_PROPERTY));
+    return latest;
   }
 
   public static ClassPathLoader setLatestToDefault(File workingDir) {
-    latest.set(new ClassPathLoader(Boolean.getBoolean(EXCLUDE_TCCL_PROPERTY), workingDir));
-    return latest.get();
+    latest = new ClassPathLoader(Boolean.getBoolean(EXCLUDE_TCCL_PROPERTY), workingDir);
+    return latest;
   }
 
   public JarDeployer getJarDeployer() {
@@ -347,10 +347,14 @@ public final class ClassPathLoader {
   }
 
   public static ClassPathLoader getLatest() {
-    if (latest.get() == null) {
-      setLatestToDefault();
+    if (latest == null) {
+      synchronized(ClassPathLoader.class) {
+        if (latest == null)
+          setLatestToDefault();
+      }
     }
-    return latest.get();
+
+    return latest;
   }
 
   /**
@@ -360,7 +364,7 @@ public final class ClassPathLoader {
    * @since GemFire 8.1
    */
   public static final ClassLoader getLatestAsClassLoader() {
-    return latest.get().asClassLoader();
+    return latest.asClassLoader();
   }
 
 }
