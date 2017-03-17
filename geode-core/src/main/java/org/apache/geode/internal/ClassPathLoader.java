@@ -348,7 +348,7 @@ public final class ClassPathLoader {
 
   public static ClassPathLoader getLatest() {
     if (latest == null) {
-      synchronized(ClassPathLoader.class) {
+      synchronized (ClassPathLoader.class) {
         if (latest == null)
           setLatestToDefault();
       }

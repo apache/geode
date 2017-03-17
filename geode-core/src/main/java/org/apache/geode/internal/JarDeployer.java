@@ -62,7 +62,7 @@ public class JarDeployer implements Serializable {
   public static final String JAR_PREFIX_FOR_REGEX = "";
   private static final Lock lock = new ReentrantLock();
 
-  private Map<String, DeployedJar> deployedJars = new ConcurrentHashMap<>();
+  private final Map<String, DeployedJar> deployedJars = new ConcurrentHashMap<>();
 
 
   // Split a versioned filename into its name and version
@@ -85,8 +85,9 @@ public class JarDeployer implements Serializable {
 
   public DeployedJar deployWithoutRegistering(final String jarName, final byte[] jarBytes)
       throws IOException {
+    lock.lock();
+
     try {
-      lock.lock();
       verifyWritableDeployDirectory();
 
       File newVersionedJarFile = getNextVersionedJarFile(jarName);
@@ -378,6 +379,7 @@ public class JarDeployer implements Serializable {
    * Re-deploy all previously deployed JAR files.
    */
   public void loadPreviouslyDeployedJars() {
+    lock.lock();
     try {
       verifyWritableDeployDirectory();
       renameJarsWithOldNamingConvention();
@@ -422,6 +424,8 @@ public class JarDeployer implements Serializable {
       // latestVersionOfEachJar.values().toArray())
     } catch (Exception e) {
       throw new RuntimeException(e);
+    } finally {
+      lock.unlock();
     }
   }
 
@@ -433,21 +437,26 @@ public class JarDeployer implements Serializable {
 
   public List<DeployedJar> registerNewVersions(List<DeployedJar> deployedJars)
       throws ClassNotFoundException {
-    for (DeployedJar deployedJar : deployedJars) {
-      if (deployedJar != null) {
-        DeployedJar oldJar = this.deployedJars.put(deployedJar.getJarName(), deployedJar);
-        if (oldJar != null) {
-          oldJar.cleanUp();
+    lock.lock();
+    try {
+      for (DeployedJar deployedJar : deployedJars) {
+        if (deployedJar != null) {
+          DeployedJar oldJar = this.deployedJars.put(deployedJar.getJarName(), deployedJar);
+          if (oldJar != null) {
+            oldJar.cleanUp();
+          }
         }
       }
-    }
 
-    ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
+      ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
 
-    for (DeployedJar deployedJar : deployedJars) {
-      if (deployedJar != null) {
-        deployedJar.loadClassesAndRegisterFunctions();
+      for (DeployedJar deployedJar : deployedJars) {
+        if (deployedJar != null) {
+          deployedJar.loadClassesAndRegisterFunctions();
+        }
       }
+    } finally {
+      lock.unlock();
     }
 
     return deployedJars;
@@ -462,7 +471,7 @@ public class JarDeployer implements Serializable {
    *         already deployed.
    * @throws IOException When there's an error saving the JAR file to disk
    */
-  public synchronized List<DeployedJar> deploy(final String jarNames[], final byte[][] jarBytes)
+  public List<DeployedJar> deploy(final String jarNames[], final byte[][] jarBytes)
       throws IOException, ClassNotFoundException {
     DeployedJar[] deployedJars = new DeployedJar[jarNames.length];
 
@@ -473,20 +482,25 @@ public class JarDeployer implements Serializable {
       }
     }
 
-    for (int i = 0; i < jarNames.length; i++) {
-      String jarName = jarNames[i];
-      byte[] newJarBytes = jarBytes[i];
+    lock.lock();
+    try {
+      for (int i = 0; i < jarNames.length; i++) {
+        String jarName = jarNames[i];
+        byte[] newJarBytes = jarBytes[i];
 
-      boolean shouldDeployNewVersion = shouldDeployNewVersion(jarName, newJarBytes);
+        boolean shouldDeployNewVersion = shouldDeployNewVersion(jarName, newJarBytes);
 
-      if (shouldDeployNewVersion) {
-        deployedJars[i] = deployWithoutRegistering(jarName, newJarBytes);
-      } else {
-        deployedJars[i] = null;
+        if (shouldDeployNewVersion) {
+          deployedJars[i] = deployWithoutRegistering(jarName, newJarBytes);
+        } else {
+          deployedJars[i] = null;
+        }
       }
-    }
 
-    return registerNewVersions(Arrays.asList(deployedJars));
+      return registerNewVersions(Arrays.asList(deployedJars));
+    } finally {
+      lock.unlock();
+    }
   }
 
   private boolean shouldDeployNewVersion(String jarName, byte[] newJarBytes) throws IOException {
@@ -510,15 +524,21 @@ public class JarDeployer implements Serializable {
     return this.deployedJars.get(jarName);
   }
 
-  public synchronized DeployedJar deploy(final String jarName, final byte[] jarBytes)
+  public DeployedJar deploy(final String jarName, final byte[] jarBytes)
       throws IOException, ClassNotFoundException {
+    lock.lock();
 
-    List<DeployedJar> deployedJars = deploy(new String[] {jarName}, new byte[][] {jarBytes});
-    if (deployedJars == null || deployedJars.size() == 0) {
-      return null;
+    try {
+      List<DeployedJar> deployedJars = deploy(new String[] {jarName}, new byte[][] {jarBytes});
+      if (deployedJars == null || deployedJars.size() == 0) {
+        return null;
+      }
+
+      return deployedJars.get(0);
+    } finally {
+      lock.unlock();
     }
 
-    return deployedJars.get(0);
   }
 
   public Map<String, DeployedJar> getDeployedJars() {
@@ -532,15 +552,22 @@ public class JarDeployer implements Serializable {
    * @return The path to the location on disk where the JAR file had been deployed
    * @throws IOException If there's a problem deleting the file
    */
-  public synchronized String undeploy(final String jarName) throws IOException {
-    DeployedJar deployedJar = deployedJars.remove(jarName);
-    if (deployedJar == null) {
-      throw new IllegalArgumentException("JAR not deployed");
+  public String undeploy(final String jarName) throws IOException {
+    lock.lock();
+
+    try {
+      DeployedJar deployedJar = deployedJars.remove(jarName);
+      if (deployedJar == null) {
+        throw new IllegalArgumentException("JAR not deployed");
+      }
+
+      ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
+
+      deployedJar.cleanUp();
+
+      return deployedJar.getFileCanonicalPath();
+    } finally {
+      lock.unlock();
     }
-
-    ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
-
-    deployedJar.cleanUp();
-    return deployedJar.getFileCanonicalPath();
   }
 }
