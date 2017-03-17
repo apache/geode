@@ -5908,8 +5908,15 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         doCallback = true;
       }
       if (doCallback) {
-        notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
-            : EnumListenerEvent.AFTER_CREATE, event);
+        if (event.isBulkOpInProgress() && this.isUsedForPartitionedRegionBucket) {
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+                "For bulk operation on bucket region, not to notify gateway sender earlier.");
+          }
+        } else {
+          notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
+              : EnumListenerEvent.AFTER_CREATE, event);
+        }
         // Notify listeners
         if (!event.isBulkOpInProgress()) {
           try {
@@ -6968,7 +6975,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
      * throw new IndexMaintenanceException(e); } } }
      */
 
-    notifyGatewaySender(EnumListenerEvent.AFTER_DESTROY, event);
+    if (event.isBulkOpInProgress() && this.isUsedForPartitionedRegionBucket) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("For bulk operation on bucket region, not to notify gateway sender earlier.");
+      }
+    } else {
+      notifyGatewaySender(EnumListenerEvent.AFTER_DESTROY, event);
+    }
 
     // invoke callbacks if initialized and told to do so, or if this
     // is a bucket in a partitioned region
@@ -10406,10 +10419,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         EnumListenerEvent op = event.getOperation().isCreate() ? EnumListenerEvent.AFTER_CREATE
             : EnumListenerEvent.AFTER_UPDATE;
         invokePutCallbacks(op, event, !event.callbacksInvoked() && !event.isPossibleDuplicate(),
-            false /*
-                   * We must notify gateways inside RegionEntry lock, NOT here, to preserve the
-                   * order of events sent by gateways for same key
-                   */);
+            this.isUsedForPartitionedRegionBucket
+        /*
+         * If this is replicated region, use "false". We must notify gateways inside RegionEntry
+         * lock, NOT here, to preserve the order of events sent by gateways for same key. If this is
+         * bucket region, use "true", because the event order is guaranteed
+         */);
       }
     }
   }
@@ -10433,10 +10448,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (successfulKeys.contains(event.getKey())) {
         invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event,
             !event.callbacksInvoked() && !event.isPossibleDuplicate(),
-            false /*
-                   * We must notify gateways inside RegionEntry lock, NOT here, to preserve the
-                   * order of events sent by gateways for same key
-                   */);
+            this.isUsedForPartitionedRegionBucket
+        /*
+         * If this is replicated region, use "false". We must notify gateways inside RegionEntry
+         * lock, NOT here, to preserve the order of events sent by gateways for same key. If this is
+         * bucket region, use "true", because the event order is guaranteed
+         */);
       }
     }
   }
