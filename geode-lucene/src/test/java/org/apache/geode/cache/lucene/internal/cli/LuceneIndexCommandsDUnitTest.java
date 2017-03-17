@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.lucene.internal.cli;
 
+import junitparams.Parameters;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQuery;
@@ -22,7 +23,7 @@ import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.commands.CliCommandTestBase;
@@ -38,6 +39,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -51,7 +53,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
@@ -199,47 +200,6 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
       assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field1").getClass());
       assertEquals(KeywordAnalyzer.class, fieldAnalyzers.get("field2").getClass());
       assertEquals(StandardAnalyzer.class, fieldAnalyzers.get("field3").getClass());
-    });
-  }
-
-  @Test
-  public void createIndexOnGroupShouldCreateANewIndexOnGroup() throws Exception {
-    final VM vm1 = Host.getHost(0).getVM(1);
-    final VM vm2 = Host.getHost(0).getVM(2);
-    vm1.invoke(() -> {
-      getCache();
-    });
-    vm2.invoke(() -> {
-      Properties props = new Properties();
-      props.setProperty(ConfigurationProperties.GROUPS, "group1");
-      getSystem(props);
-      getCache();
-    });
-
-    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
-
-    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
-    csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__GROUP, "group1");
-    String resultAsString = executeCommandAndLogResult(csb);
-
-    vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      createRegion();
-      final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-      assertArrayEquals(new String[] {"field1", "field2", "field3"}, index.getFieldNames());
-    });
-
-    vm1.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(getCache());
-      try {
-        createRegion();
-        fail("Should have thrown an exception due to the missing index");
-      } catch (IllegalStateException expected) {
-
-      }
     });
   }
 
@@ -543,42 +503,70 @@ public class LuceneIndexCommandsDUnitTest extends CliCommandTestBase {
   }
 
   @Test
-  public void destroySingleIndexOnRegion() throws Exception {
+  @Parameters({"true", "false"})
+  public void testDestroySingleIndex(boolean createRegion) throws Exception {
     final VM vm1 = Host.getHost(0).getVM(1);
-    createIndex(vm1);
-    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
-    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESTROY_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
-    String resultAsString = executeCommandAndLogResult(csb);
+    if (createRegion) {
+      createIndex(vm1);
+    } else {
+      createIndexWithoutRegion(vm1);
+    }
+    CommandResult result = createAndExecuteDestroyIndexCommand(INDEX_NAME, REGION_NAME);
+    String resultAsString = commandResultToString(result);
     String expectedStatus = CliStrings.format(
-        LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FOR_REGION_1,
+        LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
         new Object[] {INDEX_NAME, REGION_NAME});
     assertTrue(resultAsString.contains(expectedStatus));
   }
 
   @Test
-  public void destroyAllIndexesOnRegion() throws Exception {
+  @Parameters({"true", "false"})
+  public void testDestroyAllIndexes(boolean createRegion) throws Exception {
     final VM vm1 = Host.getHost(0).getVM(1);
-    createIndex(vm1);
-    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
-    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESTROY_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
-    String resultAsString = executeCommandAndLogResult(csb);
+    if (createRegion) {
+      createIndex(vm1);
+    } else {
+      createIndexWithoutRegion(vm1);
+    }
+    CommandResult result = createAndExecuteDestroyIndexCommand(null, REGION_NAME);
+    String resultAsString = commandResultToString(result);
     String expectedStatus = CliStrings.format(
-        LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FOR_REGION_0,
+        LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
         new Object[] {REGION_NAME});
     assertTrue(resultAsString.contains(expectedStatus));
   }
 
   @Test
-  public void destroyIndexWithoutRegionShouldReturnError() throws Exception {
+  public void testDestroyNonExistentSingleIndex() throws Exception {
     final VM vm1 = Host.getHost(0).getVM(1);
-    createIndexWithoutRegion(vm1);
+    vm1.invoke(() -> createRegion());
+    CommandResult result = createAndExecuteDestroyIndexCommand(INDEX_NAME, REGION_NAME);
+    String resultAsString = commandResultToString(result);
+    String expectedStatus = LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1
+        .toLocalizedString(new Object[] {INDEX_NAME, '/' + REGION_NAME});
+    assertTrue(resultAsString.contains(expectedStatus));
+  }
+
+  @Test
+  public void testDestroyNonExistentIndexes() throws Exception {
+    final VM vm1 = Host.getHost(0).getVM(1);
+    vm1.invoke(() -> createRegion());
+    CommandResult result = createAndExecuteDestroyIndexCommand(null, REGION_NAME);
+    String resultAsString = commandResultToString(result);
+    String expectedStatus = LocalizedStrings.LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0
+        .toLocalizedString(new Object[] {'/' + REGION_NAME});
+    assertTrue(resultAsString.contains(expectedStatus));
+  }
+
+  private CommandResult createAndExecuteDestroyIndexCommand(String indexName, String regionPath)
+      throws Exception {
+    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESTROY_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
-    String resultAsString = executeCommandAndLogResult(csb);
-    assertTrue(resultAsString.contains(getRegionNotFoundErrorMessage(REGION_NAME)));
+    if (indexName != null) {
+      csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, indexName);
+    }
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, regionPath);
+    return executeCommandAndGetResult(csb);
   }
 
   private void createRegion() {

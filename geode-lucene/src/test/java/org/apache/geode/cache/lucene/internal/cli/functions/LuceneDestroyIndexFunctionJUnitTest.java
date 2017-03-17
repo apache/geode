@@ -17,6 +17,8 @@ package org.apache.geode.cache.lucene.internal.cli.functions;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.internal.cli.LuceneDestroyIndexInfo;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -34,7 +36,7 @@ import static org.mockito.Mockito.*;
 @Category(UnitTest.class)
 public class LuceneDestroyIndexFunctionJUnitTest {
 
-  private InternalLuceneService service;
+  private LuceneServiceImpl service;
   private GemFireCacheImpl cache;
   private String member;
   private FunctionContext context;
@@ -44,7 +46,7 @@ public class LuceneDestroyIndexFunctionJUnitTest {
   public void prepare() {
     this.cache = Fakes.cache();
     this.member = Fakes.distributedSystem().getDistributedMember().getId();
-    this.service = mock(InternalLuceneService.class);
+    this.service = mock(LuceneServiceImpl.class);
     when(this.cache.getService(InternalLuceneService.class)).thenReturn(this.service);
     this.context = mock(FunctionContext.class);
     this.resultSender = mock(ResultSender.class);
@@ -53,41 +55,127 @@ public class LuceneDestroyIndexFunctionJUnitTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testExecuteWithRegionAndIndex() throws Throwable {
-    LuceneIndexInfo indexInfo = new LuceneIndexInfo("index1", "/region1");
+  public void testDestroyIndex() throws Throwable {
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo("index1", "/region1", false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
     doReturn(this.cache).when(function).getCache();
-    doReturn(mock(XmlEntity.class)).when(function).getXmlEntity(any());
     function.execute(this.context);
     verify(this.service).destroyIndex(eq("index1"), eq("/region1"));
+    verify(function).getXmlEntity(eq("index1"), eq("/region1"));
+    verify(this.service, never()).destroyDefinedIndex(eq("index1"), eq("/region1"));
     verify(this.service, never()).destroyIndexes(eq("/region1"));
-    ArgumentCaptor<CliFunctionResult> resultCaptor =
-        ArgumentCaptor.forClass(CliFunctionResult.class);
-    verify(resultSender).lastResult(resultCaptor.capture());
-    CliFunctionResult result = resultCaptor.getValue();
-    assertEquals(this.member, result.getMemberIdOrName());
-    assertEquals(true, result.isSuccessful());
+    verifyFunctionResult(true);
   }
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testExecuteWithRegion() throws Throwable {
-    LuceneIndexInfo indexInfo = new LuceneIndexInfo(null, "/region1");
+  public void testDestroyIndexFailure() throws Throwable {
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo("index1", "/region1", false);
     when(this.context.getArguments()).thenReturn(indexInfo);
     LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
     function = spy(function);
     doReturn(this.cache).when(function).getCache();
-    doReturn(mock(XmlEntity.class)).when(function).getXmlEntity(any());
+    doThrow(new IllegalStateException()).when(this.service).destroyIndex(eq("index1"),
+        eq("/region1"));
+    function.execute(this.context);
+    verifyFunctionResult(false);
+  }
+
+  @Test
+  public void testDestroyDefinedIndex() throws Throwable {
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo("index1", "/region1", true);
+    when(this.context.getArguments()).thenReturn(indexInfo);
+    LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
+    function = spy(function);
+    doReturn(this.cache).when(function).getCache();
+    function.execute(this.context);
+    verify(this.service).destroyDefinedIndex(eq("index1"), eq("/region1"));
+    verify(this.service, never()).destroyIndex(eq("index1"), eq("/region1"));
+    verify(this.service, never()).destroyIndexes(eq("/region1"));
+    verify(function, never()).getXmlEntity(eq("index1"), eq("/region1"));
+    verifyFunctionResult(true);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void testDestroyDefinedIndexFailure() throws Throwable {
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo("index1", "/region1", true);
+    when(this.context.getArguments()).thenReturn(indexInfo);
+    LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
+    function = spy(function);
+    doReturn(this.cache).when(function).getCache();
+    doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndex(eq("index1"),
+        eq("/region1"));
+    function.execute(this.context);
+    verifyFunctionResult(false);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void testDestroyIndexes() throws Throwable {
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, "/region1", false);
+    when(this.context.getArguments()).thenReturn(indexInfo);
+    LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
+    function = spy(function);
+    doReturn(this.cache).when(function).getCache();
     function.execute(this.context);
     verify(this.service).destroyIndexes(eq("/region1"));
+    verify(function).getXmlEntity(eq(null), eq("/region1"));
+    verify(this.service, never()).destroyDefinedIndexes(eq("/region1"));
     verify(this.service, never()).destroyIndex(any(), eq("/region1"));
+    verifyFunctionResult(true);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void testDestroyIndexesFailure() throws Throwable {
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, "/region1", false);
+    when(this.context.getArguments()).thenReturn(indexInfo);
+    LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
+    function = spy(function);
+    doReturn(this.cache).when(function).getCache();
+    doThrow(new IllegalStateException()).when(this.service).destroyIndexes(eq("/region1"));
+    function.execute(this.context);
+    verifyFunctionResult(false);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void testDestroyDefinedIndexes() throws Throwable {
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, "/region1", true);
+    when(this.context.getArguments()).thenReturn(indexInfo);
+    LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
+    function = spy(function);
+    doReturn(this.cache).when(function).getCache();
+    function.execute(this.context);
+    verify(this.service).destroyDefinedIndexes(eq("/region1"));
+    verify(this.service, never()).destroyIndexes(eq("/region1"));
+    verify(this.service, never()).destroyIndex(any(), eq("/region1"));
+    verify(function, never()).getXmlEntity(eq("index1"), eq("/region1"));
+    verifyFunctionResult(true);
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void testDestroyDefinedIndexesFailure() throws Throwable {
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(null, "/region1", true);
+    when(this.context.getArguments()).thenReturn(indexInfo);
+    LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
+    function = spy(function);
+    doReturn(this.cache).when(function).getCache();
+    doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndexes(eq("/region1"));
+    function.execute(this.context);
+    verifyFunctionResult(false);
+  }
+
+  private void verifyFunctionResult(boolean result) {
     ArgumentCaptor<CliFunctionResult> resultCaptor =
         ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender).lastResult(resultCaptor.capture());
-    CliFunctionResult result = resultCaptor.getValue();
-    assertEquals(this.member, result.getMemberIdOrName());
-    assertEquals(true, result.isSuccessful());
+    CliFunctionResult functionResult = resultCaptor.getValue();
+    assertEquals(this.member, functionResult.getMemberIdOrName());
+    assertEquals(result, functionResult.isSuccessful());
   }
 }

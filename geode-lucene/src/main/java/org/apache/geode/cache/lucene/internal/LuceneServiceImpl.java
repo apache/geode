@@ -160,56 +160,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
       throw new IllegalStateException("The lucene index must be created before region");
     }
 
-    final String dataRegionPath = regionPath;
-    cache.addRegionListener(new RegionListener() {
-      @Override
-      public RegionAttributes beforeCreate(Region parent, String regionName, RegionAttributes attrs,
-          InternalRegionArguments internalRegionArgs) {
-        RegionAttributes updatedRA = attrs;
-        String path = parent == null ? "/" + regionName : parent.getFullPath() + "/" + regionName;
-
-        if (path.equals(dataRegionPath)) {
-
-          if (!attrs.getDataPolicy().withPartitioning()) {
-            // replicated region
-            throw new UnsupportedOperationException(
-                "Lucene indexes on replicated regions are not supported");
-          }
-
-          // For now we cannot support eviction with local destroy.
-          // Eviction with overflow to disk still needs to be supported
-          EvictionAttributes evictionAttributes = attrs.getEvictionAttributes();
-          EvictionAlgorithm evictionAlgorithm = evictionAttributes.getAlgorithm();
-          if (evictionAlgorithm != EvictionAlgorithm.NONE
-              && evictionAttributes.getAction().isLocalDestroy()) {
-            throw new UnsupportedOperationException(
-                "Lucene indexes on regions with eviction and action local destroy are not supported");
-          }
-
-          String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, dataRegionPath);
-          if (!attrs.getAsyncEventQueueIds().contains(aeqId)) {
-            AttributesFactory af = new AttributesFactory(attrs);
-            af.addAsyncEventQueueId(aeqId);
-            updatedRA = af.create();
-          }
-
-          // Add index creation profile
-          internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName,
-              dataRegionPath, fields, analyzer, fieldAnalyzers));
-        }
-        return updatedRA;
-      }
-
-      @Override
-      public void afterCreate(Region region) {
-        if (region.getFullPath().equals(dataRegionPath)) {
-          afterDataRegionCreated(indexName, analyzer, dataRegionPath, fieldAnalyzers, fields);
-          cache.removeRegionListener(this);
-        }
-      }
-    });
+    cache.addRegionListener(new LuceneRegionListener(this, cache, indexName, regionPath, fields,
+        analyzer, fieldAnalyzers));
   }
-
 
   /**
    * Finish creating the lucene index after the data region is created .
@@ -273,14 +226,38 @@ public class LuceneServiceImpl implements InternalLuceneService {
     }
     LuceneIndexImpl indexImpl = (LuceneIndexImpl) getIndex(indexName, regionPath);
     if (indexImpl == null) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1.toLocalizedString(indexName,
-              regionPath));
+      destroyDefinedIndex(indexName, regionPath);
     } else {
       indexImpl.destroy(initiator);
       removeFromIndexMap(indexImpl);
-      logger.info(LocalizedStrings.LuceneService_DESTROYED_INDEX_0_FROM_REGION_1
-          .toLocalizedString(indexName, regionPath));
+      logger.info(LocalizedStrings.LuceneService_DESTROYED_INDEX_0_FROM_1_REGION_2
+          .toLocalizedString(indexName, "initialized", regionPath));
+    }
+  }
+
+  public void destroyDefinedIndex(String indexName, String regionPath) {
+    String uniqueIndexName = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
+    if (definedIndexMap.containsKey(uniqueIndexName)) {
+      definedIndexMap.remove(uniqueIndexName);
+      RegionListener listenerToRemove = null;
+      for (RegionListener listener : cache.getRegionListeners()) {
+        if (listener instanceof LuceneRegionListener) {
+          LuceneRegionListener lrl = (LuceneRegionListener) listener;
+          if (lrl.getRegionPath().equals(regionPath) && lrl.getIndexName().equals(indexName)) {
+            listenerToRemove = lrl;
+            break;
+          }
+        }
+      }
+      if (listenerToRemove != null) {
+        cache.removeRegionListener(listenerToRemove);
+      }
+      logger.info(LocalizedStrings.LuceneService_DESTROYED_INDEX_0_FROM_1_REGION_2
+          .toLocalizedString(indexName, "defined", regionPath));
+    } else {
+      throw new IllegalArgumentException(
+          LocalizedStrings.LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1.toLocalizedString(indexName,
+              regionPath));
     }
   }
 
@@ -301,10 +278,43 @@ public class LuceneServiceImpl implements InternalLuceneService {
         indexesToDestroy.add(indexImpl);
       }
     }
-    for (LuceneIndex index : indexesToDestroy) {
-      removeFromIndexMap(index);
-      logger.info(LocalizedStrings.LuceneService_DESTROYED_INDEX_0_FROM_REGION_1
-          .toLocalizedString(index.getName(), regionPath));
+
+    // If list is empty throw an exception; otherwise iterate and destroy the defined index
+    if (indexesToDestroy.isEmpty()) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0
+              .toLocalizedString(regionPath));
+    } else {
+      for (LuceneIndex index : indexesToDestroy) {
+        removeFromIndexMap(index);
+        logger.info(LocalizedStrings.LuceneService_DESTROYED_INDEX_0_FROM_1_REGION_2
+            .toLocalizedString(index.getName(), "initialized", regionPath));
+      }
+    }
+  }
+
+  public void destroyDefinedIndexes(String regionPath) {
+    if (!regionPath.startsWith("/")) {
+      regionPath = "/" + regionPath;
+    }
+
+    // Iterate the defined indexes to get the ones for the regionPath
+    List<LuceneIndexCreationProfile> indexesToDestroy = new ArrayList<>();
+    for (Map.Entry<String, LuceneIndexCreationProfile> entry : definedIndexMap.entrySet()) {
+      if (entry.getValue().getRegionPath().equals(regionPath)) {
+        indexesToDestroy.add(entry.getValue());
+      }
+    }
+
+    // If list is empty throw an exception; otherwise iterate and destroy the defined index
+    if (indexesToDestroy.isEmpty()) {
+      throw new IllegalArgumentException(
+          LocalizedStrings.LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0
+              .toLocalizedString(regionPath));
+    } else {
+      for (LuceneIndexCreationProfile profile : indexesToDestroy) {
+        destroyDefinedIndex(profile.getIndexName(), profile.getRegionPath());
+      }
     }
   }
 

@@ -31,13 +31,14 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Cache;
@@ -54,7 +55,7 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathCo
  * 
  * 
  */
-public class XmlEntity implements DataSerializable {
+public class XmlEntity implements VersionedDataSerializable {
   private static final long serialVersionUID = 1L;
   private static final Logger logger = LogService.getLogger();
 
@@ -68,6 +69,10 @@ public class XmlEntity implements DataSerializable {
   private String prefix = CacheXml.PREFIX;
 
   private String namespace = CacheXml.GEODE_NAMESPACE;
+
+  private String childPrefix;
+
+  private String childNamespace;
 
   /**
    * Default constructor for serialization only.
@@ -113,24 +118,55 @@ public class XmlEntity implements DataSerializable {
     // TODO consider parent as nested XmlEntity type.
     this.parentType = parentType;
     this.type = childType;
+    initializeSearchString(parentKey, parentValue, this.prefix, childKey, childValue);
 
+    // no init();
+  }
+
+  /****
+   * Construct a new XmlEntity while creating Xml from the cache using the element which has
+   * attributes matching those given
+   *
+   * @param parentType Parent type of the XML element to search for. Should be one of the constants
+   *        from the {@link CacheXml} class. For example, CacheXml.REGION.
+   *
+   * @param parentKey Identifier for the parent elements such "name/id"
+   * @param parentValue Value of the identifier
+   * @param childPrefix Namespace prefix for the child element such as "lucene"
+   * @param childNamespace Namespace for the child element such as
+   *        "http://geode.apache.org/schema/lucene"
+   * @param childType Child type of the XML element to search for within the parent . Should be one
+   *        of the constants from the {@link CacheXml} class. For example, CacheXml.INDEX.
+   * @param childKey Identifier for the child element such as "name/id"
+   * @param childValue Value of the child element identifier
+   */
+  public XmlEntity(final String parentType, final String parentKey, final String parentValue,
+      final String childPrefix, final String childNamespace, final String childType,
+      final String childKey, final String childValue) {
+    // Note: Do not invoke init
+    this.parentType = parentType;
+    this.type = childType;
+    this.childPrefix = childPrefix;
+    this.childNamespace = childNamespace;
+    initializeSearchString(parentKey, parentValue, childPrefix, childKey, childValue);
+  }
+
+  private void initializeSearchString(final String parentKey, final String parentValue,
+      final String childPrefix, final String childKey, final String childValue) {
     StringBuffer sb = new StringBuffer();
-    sb.append("//").append(prefix).append(':').append(parentType);
+    sb.append("//").append(this.prefix).append(':').append(this.parentType);
 
     if (!StringUtils.isBlank(parentKey) && !StringUtils.isBlank(parentValue)) {
       sb.append("[@").append(parentKey).append("='").append(parentValue).append("']");
     }
 
-    sb.append("/").append(prefix).append(':').append(childType);
+    sb.append("/").append(childPrefix).append(':').append(this.type);
 
     if (!StringUtils.isBlank(childKey) && !StringUtils.isBlank(childValue)) {
       sb.append("[@").append(childKey).append("='").append(childValue).append("']");
     }
     this.searchString = sb.toString();
-
-    // no init();
   }
-
 
   /**
    * Initialize new instances. Called from {@link #XmlEntity(String, String, String)} and
@@ -312,6 +348,24 @@ public class XmlEntity implements DataSerializable {
     return prefix;
   }
 
+  /**
+   * Gets the prefix for the child element.
+   *
+   * @return XML element prefix for the child element
+   */
+  public String getChildPrefix() {
+    return this.childPrefix;
+  }
+
+  /**
+   * Gets the namespace for the child element.
+   * 
+   * @return XML element namespace for the child element
+   */
+  public String getChildNamespace() {
+    return this.childNamespace;
+  }
+
   @Override
   public String toString() {
     return "XmlEntity [namespace=" + namespace + ", type=" + this.type + ", attributes="
@@ -356,6 +410,12 @@ public class XmlEntity implements DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
+    toDataPre_GFE_9_1_0_0(out);
+    DataSerializer.writeString(this.childPrefix, out);
+    DataSerializer.writeString(this.childNamespace, out);
+  }
+
+  public void toDataPre_GFE_9_1_0_0(DataOutput out) throws IOException {
     DataSerializer.writeString(this.type, out);
     DataSerializer.writeObject(this.attributes, out);
     DataSerializer.writeString(this.xmlDefinition, out);
@@ -366,6 +426,12 @@ public class XmlEntity implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromDataPre_GFE_9_1_0_0(in);
+    this.childPrefix = DataSerializer.readString(in);
+    this.childNamespace = DataSerializer.readString(in);
+  }
+
+  public void fromDataPre_GFE_9_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
     this.type = DataSerializer.readString(in);
     this.attributes = DataSerializer.readObject(in);
     this.xmlDefinition = DataSerializer.readString(in);
@@ -382,6 +448,11 @@ public class XmlEntity implements DataSerializable {
    */
   public static final XmlEntityBuilder builder() {
     return new XmlEntityBuilder();
+  }
+
+  @Override
+  public Version[] getSerializationVersions() {
+    return new Version[] {Version.GFE_91};
   }
 
   /**

@@ -7669,14 +7669,16 @@ public class LocalizedStrings {
           "Caught the following exception attempting waitUntilFlushed and will return:");
 
   public static final StringId LuceneService_INDEX_0_NOT_FOUND_IN_REGION_1 =
-      new StringId(6651, "Lucene index {0} was not found in region {1}.");
-  public static final StringId LuceneService_DESTROYED_INDEX_0_FROM_REGION_1 =
-      new StringId(6652, "Destroyed Lucene index {0} from region {1}.");
+      new StringId(6651, "Lucene index {0} was not found in region {1}");
+  public static final StringId LuceneService_DESTROYED_INDEX_0_FROM_1_REGION_2 =
+      new StringId(6652, "Destroyed Lucene index {1} from {0} region {2}");
 
   public static final StringId PoolFactoryImpl_CAUGHT_EXCEPTION_ATTEMPTING_TO_ADD_REMOTE_LOCATOR_0 =
       new StringId(6653,
           "Caught the following exception attempting to add remote locator {0}. The locator will be ignored.");
 
+  public static final StringId LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0 =
+      new StringId(6654, "No Lucene indexes were found in region {0}");
   /** Testing strings, messageId 90000-99999 **/
 
   /**

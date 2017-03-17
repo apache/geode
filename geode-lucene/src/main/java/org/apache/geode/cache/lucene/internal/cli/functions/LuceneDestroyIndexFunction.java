@@ -20,7 +20,9 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
-import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.internal.cli.LuceneDestroyIndexInfo;
+import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -29,26 +31,39 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 public class LuceneDestroyIndexFunction implements Function, InternalEntity {
 
   public void execute(final FunctionContext context) {
+    CliFunctionResult result = null;
     String memberId = getCache().getDistributedSystem().getDistributedMember().getId();
     try {
-      LuceneIndexInfo indexInfo = (LuceneIndexInfo) context.getArguments();
+      LuceneDestroyIndexInfo indexInfo = (LuceneDestroyIndexInfo) context.getArguments();
       String indexName = indexInfo.getIndexName();
       String regionPath = indexInfo.getRegionPath();
       LuceneService service = LuceneServiceProvider.get(getCache());
       if (indexName == null) {
-        service.destroyIndexes(regionPath);
+        if (indexInfo.isDefinedDestroyOnly()) {
+          ((LuceneServiceImpl) service).destroyDefinedIndexes(regionPath);
+          result = new CliFunctionResult(memberId);
+        } else {
+          service.destroyIndexes(regionPath);
+          result = new CliFunctionResult(memberId, getXmlEntity(indexName, regionPath));
+        }
       } else {
-        service.destroyIndex(indexName, regionPath);
+        if (indexInfo.isDefinedDestroyOnly()) {
+          ((LuceneServiceImpl) service).destroyDefinedIndex(indexName, regionPath);
+          result = new CliFunctionResult(memberId);
+        } else {
+          service.destroyIndex(indexName, regionPath);
+          result = new CliFunctionResult(memberId, getXmlEntity(indexName, regionPath));
+        }
       }
-      context.getResultSender()
-          .lastResult(new CliFunctionResult(memberId, getXmlEntity(regionPath)));
     } catch (Exception e) {
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, e, e.getMessage()));
+      result = new CliFunctionResult(memberId, e, e.getMessage());
     }
+    context.getResultSender().lastResult(result);
   }
 
-  protected XmlEntity getXmlEntity(String regionPath) {
-    return new XmlEntity(CacheXml.REGION, "name", regionPath);
+  protected XmlEntity getXmlEntity(String indexName, String regionPath) {
+    return new XmlEntity(CacheXml.REGION, "name", regionPath, LuceneXmlConstants.PREFIX,
+        LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.INDEX, "name", indexName);
   }
 
   protected Cache getCache() {

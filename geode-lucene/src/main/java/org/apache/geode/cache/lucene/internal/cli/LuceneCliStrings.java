@@ -44,9 +44,6 @@ public class LuceneCliStrings {
   public static final String LUCENE_CREATE_INDEX__ANALYZER = "analyzer";
   public static final String LUCENE_CREATE_INDEX__ANALYZER_HELP =
       "Type of the analyzer for each field.";
-  public static final String LUCENE_CREATE_INDEX__GROUP = "group";
-  public static final String LUCENE_CREATE_INDEX__GROUP__HELP =
-      "Group of members in which the lucene index will be created.";
   public static final String CREATE_INDEX__SUCCESS__MSG =
       "Index successfully created with following details";
   public static final String CREATE_INDEX__FAILURE__MSG =
@@ -109,8 +106,8 @@ public class LuceneCliStrings {
       "Index cannot be empty.";
   public static final String LUCENE_DESTROY_INDEX__MSG__COULDNOT_FIND_MEMBERS_FOR_REGION_0 =
       "Could not find any members defining region {0}.";
-  public static final String LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FOR_REGION_0 =
-      "Successfully destroyed all lucene indexes for region {0}";
-  public static final String LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FOR_REGION_1 =
-      "Successfully destroyed lucene index {0} for region {1}";
+  public static final String LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0 =
+      "Successfully destroyed all lucene indexes from region {0}";
+  public static final String LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1 =
+      "Successfully destroyed lucene index {0} from region {1}";
 }

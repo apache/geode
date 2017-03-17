@@ -55,7 +55,7 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
   }
 
   public String getId() {
-    return LuceneListIndexFunction.class.getName();
+    return LuceneCreateIndexFunction.class.getName();
   }
 
   public void execute(final FunctionContext context) {

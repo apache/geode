@@ -158,9 +158,10 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
 
   public String toString() {
     return new StringBuilder().append(getClass().getSimpleName()).append("[").append("indexName=")
-        .append(this.indexName).append("; fieldNames=").append(Arrays.toString(this.fieldNames))
-        .append("; analyzerClass=").append(this.analyzerClass).append("; fieldAnalyzers=")
-        .append(this.fieldAnalyzers).append("]").toString();
+        .append(this.indexName).append("; regionPath=").append(this.regionPath)
+        .append("; fieldNames=").append(Arrays.toString(this.fieldNames)).append("; analyzerClass=")
+        .append(this.analyzerClass).append("; fieldAnalyzers=").append(this.fieldAnalyzers)
+        .append("]").toString();
   }
 
   public String getRegionPath() {

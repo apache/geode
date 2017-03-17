@@ -35,6 +35,12 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexCreationException;
 import org.apache.geode.cache.query.MultiIndexCreationException;
@@ -43,6 +49,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -89,9 +96,12 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * This test will not run properly in eclipse at this point due to having to bounce vms Currently,
@@ -1006,6 +1016,63 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
 
 
+  @Test
+  // This test verifies that an XmlEntity created in the current version serializes properly to
+  // previous versions and vice versa.
+  public void testVerifyXmlEntity() throws Exception {
+    doTestVerifyXmlEntity(oldVersion);
+  }
+
+  private void doTestVerifyXmlEntity(String oldVersion) throws Exception {
+    final Host host = Host.getHost(0);
+    VM oldLocator = host.getVM(oldVersion, 0);
+    VM oldServer = host.getVM(oldVersion, 1);
+    VM currentServer1 = host.getVM(2);
+    VM currentServer2 = host.getVM(3);
+
+    int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(1);
+    String hostName = NetworkUtils.getServerHostName(host);
+    String locatorsString = getLocatorString(locatorPorts);
+    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
+
+    try {
+      // Start locator
+      oldLocator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
+          getLocatorPropertiesPre91(locatorsString)));
+
+      // Start servers
+      invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), oldServer,
+          currentServer1, currentServer2);
+      currentServer1.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
+      currentServer2.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
+
+      // Get DistributedMembers of the servers
+      DistributedMember oldServerMember = oldServer.invoke(() -> getDistributedMember());
+      DistributedMember currentServer1Member = currentServer1.invoke(() -> getDistributedMember());
+      DistributedMember currentServer2Member = currentServer2.invoke(() -> getDistributedMember());
+
+      // Register function in all servers
+      Function function = new GetDataSerializableFunction();
+      invokeRunnableInVMs(invokeRegisterFunction(function), oldServer, currentServer1,
+          currentServer2);
+
+      // Execute the function in the old server against the other servers to verify the
+      // DataSerializable can be serialized from a newer server to an older one.
+      oldServer.invoke(() -> executeFunctionAndVerify(function.getId(),
+          "org.apache.geode.management.internal.configuration.domain.XmlEntity",
+          currentServer1Member, currentServer2Member));
+
+      // Execute the function in a new server against the other servers to verify the
+      // DataSerializable can be serialized from an older server to a newer one.
+      currentServer1.invoke(() -> executeFunctionAndVerify(function.getId(),
+          "org.apache.geode.management.internal.configuration.domain.XmlEntity", oldServerMember,
+          currentServer2Member));
+    } finally {
+      invokeRunnableInVMs(true, invokeStopLocator(), oldLocator);
+      invokeRunnableInVMs(true, invokeCloseCache(), oldServer, currentServer1, currentServer2);
+    }
+  }
+
   // ******** TEST HELPER METHODS ********/
   private void putAndVerify(String objectType, VM putter, String regionName, int start, int end,
       VM check1, VM check2, VM check3) throws Exception {
@@ -1088,6 +1155,19 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
       }
     }
 
+  }
+
+  private void executeFunctionAndVerify(String functionId, String dsClassName,
+      DistributedMember... members) {
+    Set<DistributedMember> membersSet = new HashSet<>();
+    Collections.addAll(membersSet, members);
+    Execution execution = FunctionService.onMembers(membersSet).withArgs(dsClassName);
+    ResultCollector rc = execution.execute(functionId);
+    List result = (List) rc.getResult();
+    assertEquals(membersSet.size(), result.size());
+    for (Iterator i = result.iterator(); i.hasNext();) {
+      assertTrue(i.next().getClass().getName().equals(dsClassName));
+    }
   }
 
   private void query(String queryString, int numExpectedResults, VM... vms) {
@@ -1525,6 +1605,18 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     };
   }
 
+  private CacheSerializableRunnable invokeRegisterFunction(final Function function) {
+    return new CacheSerializableRunnable("invokeRegisterFunction") {
+      public void run2() {
+        try {
+          registerFunction(function, RollingUpgrade2DUnitTest.cache);
+        } catch (Exception e) {
+          fail("Error registering function ", e);
+        }
+      }
+    };
+  }
+
   public void deleteDiskStores() throws Exception {
     try {
       FileUtils.deleteDirectory(new File(diskDir).getAbsoluteFile());
@@ -1566,6 +1658,10 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   public static Region getRegion(GemFireCache cache, String regionName) throws Exception {
     return cache.getRegion(regionName);
+  }
+
+  public static DistributedMember getDistributedMember() {
+    return cache.getDistributedSystem().getDistributedMember();
   }
 
   public static boolean assertEntriesCorrect(GemFireCache cache, String regionName, int start,
@@ -1731,6 +1827,10 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
+  public static void registerFunction(Function function, GemFireCache cache) {
+    FunctionService.registerFunction(function);
+  }
+
   public static void stopCacheServers(GemFireCache cache) throws Exception {
     List<CacheServer> servers = ((Cache) cache).getCacheServers();
     for (CacheServer server : servers) {
@@ -1813,5 +1913,24 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return Host.getHost(0).getHostName();
   }
 
+  public static class GetDataSerializableFunction implements Function {
+
+    @Override
+    public void execute(FunctionContext context) {
+      String dsClassName = (String) context.getArguments();
+      try {
+        Class aClass = Thread.currentThread().getContextClassLoader().loadClass(dsClassName);
+        Constructor constructor = aClass.getConstructor(new Class[0]);
+        context.getResultSender().lastResult(constructor.newInstance(new Object[0]));
+      } catch (Exception e) {
+        throw new FunctionException(e);
+      }
+    }
+
+    @Override
+    public String getId() {
+      return GetDataSerializableFunction.class.getName();
+    }
+  }
 }
 

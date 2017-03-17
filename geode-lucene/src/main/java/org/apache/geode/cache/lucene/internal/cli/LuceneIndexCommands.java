@@ -22,6 +22,7 @@ import org.apache.geode.cache.lucene.internal.cli.functions.*;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -44,6 +45,8 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -173,13 +176,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, mandatory = false,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER_HELP) @CliMetaData(
-              valueSeparator = ",") final String[] analyzers,
-
-      @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__GROUP,
-          optionContext = ConverterHint.MEMBERGROUP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = LuceneCliStrings.LUCENE_CREATE_INDEX__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") final String[] groups) {
+              valueSeparator = ",") final String[] analyzers) {
 
     Result result = null;
     XmlEntity xmlEntity = null;
@@ -189,7 +186,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       final Cache cache = getCache();
       LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath, fields, analyzers);
       final ResultCollector<?, ?> rc =
-          this.executeFunctionOnGroups(createIndexFunction, groups, indexInfo);
+          this.executeFunctionOnAllMembers(createIndexFunction, indexInfo);
       final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
 
       final TabularResultData tabularResult = ResultBuilder.createTabularResultData();
@@ -255,7 +252,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
   protected List<LuceneIndexDetails> getIndexDetails(LuceneIndexInfo indexInfo) throws Exception {
     this.securityService.authorizeRegionManage(indexInfo.getRegionPath());
     final ResultCollector<?, ?> rc =
-        this.executeFunctionOnGroups(describeIndexFunction, new String[] {}, indexInfo);
+        executeFunctionOnRegion(describeIndexFunction, indexInfo, true);
     final List<LuceneIndexDetails> funcResults = (List<LuceneIndexDetails>) rc.getResult();
     return funcResults.stream().filter(indexDetails -> indexDetails != null)
         .collect(Collectors.toList());
@@ -318,7 +315,6 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       help = LuceneCliStrings.LUCENE_DESTROY_INDEX__HELP)
   @CliMetaData(shellOnly = false,
       relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result destroyIndex(
       @CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = false,
           help = LuceneCliStrings.LUCENE_DESTROY_INDEX__NAME__HELP) final String indexName,
@@ -338,32 +334,16 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
     this.securityService.authorizeRegionManage(regionPath);
 
-    Result result = null;
+    Result result;
     try {
-      LuceneIndexInfo indexInfo = new LuceneIndexInfo(indexName, regionPath);
-      ResultCollector<?, ?> rc = executeFunction(destroyIndexFunction, indexInfo, false);
-      List<CliFunctionResult> functionResults = (List<CliFunctionResult>) rc.getResult();
-      CliFunctionResult cliFunctionResult = functionResults.get(0);
-
-      final TabularResultData tabularResult = ResultBuilder.createTabularResultData();
-      tabularResult.accumulate("Member", cliFunctionResult.getMemberIdOrName());
-      if (cliFunctionResult.isSuccessful()) {
-        tabularResult.accumulate("Status",
-            indexName == null
-                ? CliStrings.format(
-                    LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FOR_REGION_0,
-                    new Object[] {regionPath})
-                : CliStrings.format(
-                    LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FOR_REGION_1,
-                    new Object[] {indexName, regionPath}));
-      } else {
-        tabularResult.accumulate("Status", "Failed: " + cliFunctionResult.getMessage());
-      }
-      result = ResultBuilder.buildResult(tabularResult);
-      if (cliFunctionResult.isSuccessful()) {
+      List<CliFunctionResult> accumulatedResults = new ArrayList<>();
+      final XmlEntity xmlEntity =
+          executeDestroyIndexFunction(accumulatedResults, indexName, regionPath);
+      result = getDestroyIndexResult(accumulatedResults, indexName, regionPath);
+      if (xmlEntity != null) {
         persistClusterConfiguration(result, () -> {
-          // Update the xml entity (region entity) to remove the async event id(s) and index(es)
-          getSharedConfiguration().addXmlEntity((XmlEntity) cliFunctionResult.getXmlEntity(), null);
+          // Delete the xml entity to remove the index(es) in all groups
+          getSharedConfiguration().deleteXmlEntity(xmlEntity, null);
         });
       }
     } catch (FunctionInvocationTargetException ignore) {
@@ -375,11 +355,97 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     } catch (IllegalArgumentException e) {
       result = ResultBuilder.createInfoResult(e.getMessage());
     } catch (Throwable t) {
+      t.printStackTrace();
       SystemFailure.checkFailure();
       getCache().getLogger().warning(LuceneCliStrings.LUCENE_DESTROY_INDEX__EXCEPTION_MESSAGE, t);
       result = ResultBuilder.createGemFireErrorResult(t.getMessage());
     }
     return result;
+  }
+
+  private XmlEntity executeDestroyIndexFunction(List<CliFunctionResult> accumulatedResults,
+      String indexName, String regionPath) {
+    // Destroy has three cases:
+    //
+    // - no members define the region
+    // In this case, send the request to all members to handle the case where the index has been
+    // created, but not the region
+    //
+    // - all members define the region
+    // In this case, send the request to one of the region members to destroy the index on all
+    // member
+    //
+    // - some members define the region; some don't
+    // In this case, send the request to one of the region members to destroy the index in all the
+    // region members. Then send the function to the remaining members to handle the case where
+    // the index has been created, but not the region
+    XmlEntity xmlEntity = null;
+    Cache cache = getCache();
+    Set<DistributedMember> regionMembers = getRegionMembers(cache, regionPath);
+    Set<DistributedMember> normalMembers = getNormalMembers(cache);
+    LuceneDestroyIndexInfo indexInfo = new LuceneDestroyIndexInfo(indexName, regionPath);
+    ResultCollector<?, ?> rc;
+    if (regionMembers.isEmpty()) {
+      // Attempt to destroy the proxy index on all members
+      indexInfo.setDefinedDestroyOnly(true);
+      rc = executeFunction(destroyIndexFunction, indexInfo, normalMembers);
+      accumulatedResults.addAll((List<CliFunctionResult>) rc.getResult());
+    } else {
+      // Attempt to destroy the index on a region member
+      indexInfo.setDefinedDestroyOnly(false);
+      Set<DistributedMember> singleMember = new HashSet<>();
+      singleMember.add(regionMembers.iterator().next());
+      rc = executeFunction(destroyIndexFunction, indexInfo, singleMember);
+      List<CliFunctionResult> cliFunctionResults = (List<CliFunctionResult>) rc.getResult();
+      CliFunctionResult cliFunctionResult = cliFunctionResults.get(0);
+      xmlEntity = cliFunctionResult.getXmlEntity();
+      for (DistributedMember regionMember : regionMembers) {
+        accumulatedResults.add(new CliFunctionResult(regionMember.getId(),
+            cliFunctionResult.isSuccessful(), cliFunctionResult.getMessage()));
+      }
+      // If that succeeds, destroy the proxy index(es) on all other members if necessary
+      if (cliFunctionResult.isSuccessful()) {
+        normalMembers.removeAll(regionMembers);
+        if (!normalMembers.isEmpty()) {
+          indexInfo.setDefinedDestroyOnly(true);
+          rc = executeFunction(destroyIndexFunction, indexInfo, normalMembers);
+          accumulatedResults.addAll((List<CliFunctionResult>) rc.getResult());
+        }
+      } else {
+        // @todo Should dummy results be added to the accumulatedResults for the non-region
+        // members in the failed case
+      }
+    }
+    return xmlEntity;
+  }
+
+  protected Set<DistributedMember> getRegionMembers(Cache cache, String regionPath) {
+    return CliUtil.getMembersForeRegionViaFunction(cache, regionPath, true);
+  }
+
+  protected Set<DistributedMember> getNormalMembers(Cache cache) {
+    return CliUtil.getAllNormalMembers(cache);
+  }
+
+  private Result getDestroyIndexResult(List<CliFunctionResult> cliFunctionResults, String indexName,
+      String regionPath) {
+    final TabularResultData tabularResult = ResultBuilder.createTabularResultData();
+    for (CliFunctionResult cliFunctionResult : cliFunctionResults) {
+      tabularResult.accumulate("Member", cliFunctionResult.getMemberIdOrName());
+      if (cliFunctionResult.isSuccessful()) {
+        tabularResult.accumulate("Status",
+            indexName == null
+                ? CliStrings.format(
+                    LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEXES_FROM_REGION_0,
+                    new Object[] {regionPath})
+                : CliStrings.format(
+                    LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
+                    new Object[] {indexName, regionPath}));
+      } else {
+        tabularResult.accumulate("Status", cliFunctionResult.getMessage());
+      }
+    }
+    return ResultBuilder.buildResult(tabularResult);
   }
 
   private Result displayResults(int pageSize, boolean keysOnly) throws Exception {
@@ -492,23 +558,18 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
     return ResultBuilder.buildResult(data);
   }
 
-  protected ResultCollector<?, ?> executeFunctionOnGroups(FunctionAdapter function, String[] groups,
-      final LuceneIndexInfo indexInfo) throws IllegalArgumentException, CommandResultException {
-    ResultCollector<?, ?> results = null;
-    if (function != createIndexFunction) {
-      results = executeFunction(function, indexInfo, true);
-    } else {
-      Set<DistributedMember> targetMembers = CliUtil.findMembersOrThrow(groups, null);
-      results = CliUtil.executeFunction(function, indexInfo, targetMembers);
-    }
-    return results;
+  protected ResultCollector<?, ?> executeFunctionOnAllMembers(Function function,
+      final LuceneFunctionSerializable functionArguments)
+      throws IllegalArgumentException, CommandResultException {
+    Set<DistributedMember> targetMembers = CliUtil.getAllNormalMembers(getCache());
+    return executeFunction(function, functionArguments, targetMembers);
   }
 
   protected ResultCollector<?, ?> executeSearch(final LuceneQueryInfo queryInfo) throws Exception {
-    return executeFunction(searchIndexFunction, queryInfo, false);
+    return executeFunctionOnRegion(searchIndexFunction, queryInfo, false);
   }
 
-  protected ResultCollector<?, ?> executeFunction(Function function,
+  protected ResultCollector<?, ?> executeFunctionOnRegion(Function function,
       LuceneFunctionSerializable functionArguments, boolean returnAllMembers) {
     Set<DistributedMember> targetMembers = CliUtil.getMembersForeRegionViaFunction(getCache(),
         functionArguments.getRegionPath(), returnAllMembers);
@@ -517,6 +578,11 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
           LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__COULDNOT_FIND_MEMBERS_FOR_REGION_0,
           new Object[] {functionArguments.getRegionPath()}));
     }
+    return executeFunction(function, functionArguments, targetMembers);
+  }
+
+  protected ResultCollector<?, ?> executeFunction(Function function,
+      LuceneFunctionSerializable functionArguments, Set<DistributedMember> targetMembers) {
     return CliUtil.executeFunction(function, functionArguments, targetMembers);
   }
 

@@ -355,8 +355,12 @@ public class XmlUtils {
    */
   public static NodeList getNodes(Document doc, XmlEntity xmlEntity)
       throws XPathExpressionException {
-    return query(doc, xmlEntity.getSearchString(),
-        new XPathContext(xmlEntity.getPrefix(), xmlEntity.getNamespace()));
+    XPathContext context = new XPathContext();
+    context.addNamespace(xmlEntity.getPrefix(), xmlEntity.getNamespace());
+    if (xmlEntity.getChildPrefix() != null) {
+      context.addNamespace(xmlEntity.getChildPrefix(), xmlEntity.getChildNamespace());
+    }
+    return query(doc, xmlEntity.getSearchString(), context);
   }
 
   /**

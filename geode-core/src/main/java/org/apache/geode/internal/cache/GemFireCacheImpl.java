@@ -3886,6 +3886,10 @@ public class GemFireCacheImpl
     this.regionListeners.remove(l);
   }
 
+  public Set<RegionListener> getRegionListeners() {
+    return Collections.unmodifiableSet(this.regionListeners);
+  }
+
   @SuppressWarnings("unchecked")
   public <T extends CacheService> T getService(Class<T> clazz) {
     return (T) services.get(clazz);
