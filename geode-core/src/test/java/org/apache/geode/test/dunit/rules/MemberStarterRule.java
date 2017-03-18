@@ -16,40 +16,66 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import org.apache.commons.io.FileUtils;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.VM;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * A server or locator inside a DUnit {@link VM}.
  */
-public abstract class MemberStarterRule extends ExternalResource implements Member {
-  protected TemporaryFolder temporaryFolder;
+public abstract class MemberStarterRule<T> extends ExternalResource implements Member {
+  protected transient TemporaryFolder temporaryFolder;
   protected String oldUserDir;
 
   protected File workingDir;
   protected int memberPort = -1;
   protected int jmxPort = -1;
-  protected String name;
+  protected int httpPort = -1;
 
-  @Override
-  public void before() throws Exception {
+  protected String name;
+  protected Properties properties = new Properties();
+
+  public MemberStarterRule() {
+    this(null);
+  }
+
+  public MemberStarterRule(File workDir) {
+    workingDir = workDir;
     oldUserDir = System.getProperty("user.dir");
     if (workingDir == null) {
       temporaryFolder = new TemporaryFolder();
-      temporaryFolder.create();
-      workingDir = temporaryFolder.newFolder("locator").getAbsoluteFile();
+      try {
+        temporaryFolder.create();
+      } catch (IOException e) {
+        throw new RuntimeException(e.getMessage(), e);
+      }
+      workingDir = temporaryFolder.getRoot().getAbsoluteFile();
     }
+
     System.setProperty("user.dir", workingDir.toString());
+    // initial values
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(LOCATORS, "");
   }
 
   @Override
   public void after() {
     stopMember();
-    FileUtils.deleteQuietly(workingDir);
     if (oldUserDir == null) {
       System.clearProperty("user.dir");
     } else {
@@ -57,6 +83,83 @@ public abstract class MemberStarterRule extends ExternalResource implements Memb
     }
     if (temporaryFolder != null) {
       temporaryFolder.delete();
+    }
+  }
+
+  public T withProperty(String key, String value) {
+    properties.setProperty(key, value);
+    return (T) this;
+  }
+
+  public T withProperties(Properties props) {
+    if (props != null) {
+      this.properties.putAll(props);
+    }
+    return (T) this;
+  }
+
+  public T withName(String name) {
+    this.name = name;
+    properties.setProperty(NAME, name);
+    // if log-file is not already set
+    properties.putIfAbsent(LOG_FILE, new File(name + ".log").getAbsolutePath().toString());
+    return (T) this;
+  }
+
+  public T withConnectionToLocator(int locatorPort) {
+    if (locatorPort > 0) {
+      properties.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
+    }
+    return (T) this;
+  }
+
+  /**
+   * be able to start JMX manager and admin rest on default ports
+   */
+  public T withJMXManager(boolean useDefault) {
+    // the real port numbers will be set after we started the server/locator.
+    this.jmxPort = 0;
+    this.httpPort = 0;
+    if (!useDefault) {
+      // do no override these properties if already exists
+      properties.putIfAbsent(JMX_MANAGER_PORT,
+          AvailablePortHelper.getRandomAvailableTCPPort() + "");
+      properties.putIfAbsent(HTTP_SERVICE_PORT,
+          AvailablePortHelper.getRandomAvailableTCPPort() + "");
+    }
+    properties.putIfAbsent(JMX_MANAGER, "true");
+    properties.putIfAbsent(JMX_MANAGER_START, "true");
+    properties.putIfAbsent(HTTP_SERVICE_BIND_ADDRESS, "localhost");
+    return (T) this;
+  }
+
+  /**
+   * start the jmx manager and admin rest on a random ports
+   */
+  public T withJMXManager() {
+    return withJMXManager(false);
+  }
+
+  protected void normalizeProperties() {
+    // if name is set via property, not with API
+    if (name == null) {
+      if (properties.containsKey(NAME)) {
+        name = properties.getProperty(NAME);
+      } else {
+        if (this instanceof ServerStarterRule)
+          name = "server";
+        else {
+          name = "locator";
+        }
+      }
+      withName(name);
+    }
+
+    // if jmxPort is set via property, not with API
+    if (jmxPort < 0 && properties.containsKey(JMX_MANAGER_PORT)) {
+      // this will make sure we have all the missing properties, but it won't override
+      // the existing properties
+      withJMXManager(false);
     }
   }
 
@@ -75,6 +178,11 @@ public abstract class MemberStarterRule extends ExternalResource implements Memb
   @Override
   public int getJmxPort() {
     return jmxPort;
+  }
+
+  @Override
+  public int getHttpPort() {
+    return httpPort;
   }
 
   @Override

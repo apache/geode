@@ -15,13 +15,9 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.web.domain.Link;
 import org.apache.geode.management.internal.web.domain.LinkIndex;
@@ -35,7 +31,6 @@ import org.junit.experimental.categories.Category;
 
 import java.net.URI;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.Set;
 import javax.management.ObjectName;
 import javax.management.Query;
@@ -43,27 +38,16 @@ import javax.management.QueryExp;
 
 @Category(IntegrationTest.class)
 public class QueryNamesOverHttpDUnitTest {
-  protected static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-  protected static int jmxPort = ports[0];
-  protected static int httpPort = ports[1];
-
-  protected static Properties locatorProps = new Properties() {
-    {
-      setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
-      setProperty(HTTP_SERVICE_PORT, httpPort + "");
-      setProperty(JMX_MANAGER_PORT, jmxPort + "");
-    }
-  };
-
   @Rule
-  public LocatorStarterRule locatorRule = new LocatorStarterRule().startLocator(locatorProps);
+  public LocatorStarterRule locatorRule = new LocatorStarterRule().withJMXManager().startLocator();
 
   @Test
   public void testQueryNameOverHttp() throws Exception {
 
     LinkIndex links = new LinkIndex();
     links.add(new Link("mbean-query",
-        new URI("http://localhost:" + httpPort + "/gemfire/v1/mbean/query"), HttpMethod.POST));
+        new URI("http://localhost:" + locatorRule.getHttpPort() + "/gemfire/v1/mbean/query"),
+        HttpMethod.POST));
     RestHttpOperationInvoker invoker =
         new RestHttpOperationInvoker(links, mock(Gfsh.class), new HashMap<>());
 

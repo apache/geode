@@ -14,6 +14,17 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
+import static org.apache.geode.security.SecurityTestUtil.createClientCache;
+import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
+
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -31,13 +42,26 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({DistributedTest.class, SecurityTest.class})
-public class ClientQueryAuthDistributedTest extends AbstractSecureServerDUnitTest {
+public class ClientQueryAuthDUnitTest extends JUnit4DistributedTestCase {
+
+  private static String REGION_NAME = "AuthRegion";
+  final Host host = Host.getHost(0);
+  final VM client1 = host.getVM(1);
+  final VM client2 = host.getVM(2);
+  final VM client3 = host.getVM(3);
+
+  @Rule
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .startServer().createRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
   public void testQuery() {
     client1.invoke(() -> {
-      ClientCache cache = createClientCache("stranger", "1234567", serverPort);
-      final Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
+      final Region region = createProxyRegion(cache, REGION_NAME);
 
       String query = "select * from /AuthRegion";
       assertNotAuthorized(() -> region.query(query), "DATA:READ:AuthRegion");
@@ -52,8 +76,8 @@ public class ClientQueryAuthDistributedTest extends AbstractSecureServerDUnitTes
   public void testCQ() {
     String query = "select * from /AuthRegion";
     client1.invoke(() -> {
-      ClientCache cache = createClientCache("stranger", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
 
@@ -69,8 +93,8 @@ public class ClientQueryAuthDistributedTest extends AbstractSecureServerDUnitTes
     });
 
     client2.invoke(() -> {
-      ClientCache cache = createClientCache("authRegionReader", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("authRegionReader", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
 
@@ -84,8 +108,8 @@ public class ClientQueryAuthDistributedTest extends AbstractSecureServerDUnitTes
     });
 
     client3.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
 

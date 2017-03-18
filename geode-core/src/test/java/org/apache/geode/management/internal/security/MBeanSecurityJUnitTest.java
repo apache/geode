@@ -14,12 +14,28 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.util.Set;
-
 import javax.management.DynamicMBean;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerConnection;
@@ -28,32 +44,18 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.management.ManagementException;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.MemberMXBean;
-import org.apache.geode.management.internal.MBeanJMXAdapter;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
-
 @Category({IntegrationTest.class, SecurityTest.class})
 public class MBeanSecurityJUnitTest {
-
-  private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-
   @ClassRule
-  public static CacheServerStartupRule serverRule =
-      CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
+  public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
+      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+      .withProperty(TestSecurityManager.SECURITY_JSON,
+          "org/apache/geode/management/internal/security/cacheServer.json")
+      .startServer();
 
   @Rule
-  public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
+  public MBeanServerConnectionRule connectionRule =
+      new MBeanServerConnectionRule(server.getJmxPort());
 
   /**
    * No user can call createBean or unregisterBean of GemFire Domain
@@ -112,7 +114,7 @@ public class MBeanSecurityJUnitTest {
   @ConnectionConfiguration(user = "stranger", password = "1234567")
   public void testServerSideCalls() {
     // calls through ManagementService is not going through authorization checks
-    ManagementService service = ManagementService.getManagementService(serverRule.getCache());
+    ManagementService service = ManagementService.getManagementService(server.getCache());
     MemberMXBean bean = service.getMemberMXBean();
     bean.compactAllDiskStores();
   }

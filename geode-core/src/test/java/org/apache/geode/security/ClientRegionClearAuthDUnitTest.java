@@ -14,33 +14,49 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
+import static org.apache.geode.security.SecurityTestUtil.createClientCache;
+import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
-
 @Category({DistributedTest.class, SecurityTest.class})
-public class IntegratedClientRegionClearAuthDistributedTest extends AbstractSecureServerDUnitTest {
+public class ClientRegionClearAuthDUnitTest extends JUnit4DistributedTestCase {
 
-  @Category(FlakyTest.class) // GEODE-1876
+  private static String REGION_NAME = "AuthRegion";
+
+  final Host host = Host.getHost(0);
+  final VM client1 = host.getVM(1);
+  final VM client2 = host.getVM(2);
+
+  @Rule
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .startServer().createRegion(RegionShortcut.REPLICATE, REGION_NAME);
+
   @Test
   public void testRegionClear() throws InterruptedException {
     // Verify that an unauthorized user can't clear the region
     SerializableRunnable clearUnauthorized = new SerializableRunnable() {
       @Override
       public void run() {
-        ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567"))
-            .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort).create();
-
-        Region region =
-            cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+        ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
+        Region region = createProxyRegion(cache, REGION_NAME);
         assertNotAuthorized(() -> region.clear(), "DATA:WRITE:AuthRegion");
       }
     };
@@ -50,12 +66,8 @@ public class IntegratedClientRegionClearAuthDistributedTest extends AbstractSecu
     SerializableRunnable clearAuthorized = new SerializableRunnable() {
       @Override
       public void run() {
-        ClientCache cache =
-            new ClientCacheFactory(createClientProperties("authRegionUser", "1234567"))
-                .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort).create();
-
-        Region region =
-            cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+        ClientCache cache = createClientCache("authRegionUser", "1234567", server.getPort());
+        Region region = createProxyRegion(cache, REGION_NAME);
         region.clear();
       }
     };

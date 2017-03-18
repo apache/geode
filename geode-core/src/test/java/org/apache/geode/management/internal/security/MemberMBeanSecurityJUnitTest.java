@@ -14,13 +14,14 @@
  */
 package org.apache.geode.management.internal.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.MemberMXBean;
+import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
@@ -28,22 +29,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-/**
- * GEODE-2496: Flaky -- possibly due to use of AvailablePort
- */
-@Category({IntegrationTest.class, SecurityTest.class, FlakyTest.class})
+@Category({IntegrationTest.class, SecurityTest.class})
 public class MemberMBeanSecurityJUnitTest {
-
-  private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-
   private MemberMXBean bean;
 
-  @Rule
-  public CacheServerStartupRule serverRule =
-      CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
+  @Rule // do not use a ClassRule since some test will do a shutdownMember
+  public ServerStarterRule server = new ServerStarterRule().withJMXManager()
+      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+      .withProperty(TestSecurityManager.SECURITY_JSON,
+          "org/apache/geode/management/internal/security/cacheServer.json")
+      .startServer();
 
   @Rule
-  public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
+  public MBeanServerConnectionRule connectionRule =
+      new MBeanServerConnectionRule(server.getJmxPort());
 
   @Before
   public void setUp() throws Exception {

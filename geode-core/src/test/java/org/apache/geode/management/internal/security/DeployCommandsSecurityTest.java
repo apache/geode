@@ -14,12 +14,10 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.SimpleTestSecurityManager;
@@ -37,17 +35,16 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
-import java.util.Properties;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class DeployCommandsSecurityTest {
 
-  private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-
   private MemberMXBean bean;
 
   @ClassRule
-  public static ServerStarterRule serverRule = new ServerStarterRule();
+  public static ServerStarterRule server = new ServerStarterRule()
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withJMXManager()
+      .startServer();
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -56,16 +53,13 @@ public class DeployCommandsSecurityTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    Properties properties = new Properties();
-    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
-    properties.setProperty(JMX_MANAGER_PORT, jmxManagerPort + "");
-    serverRule.startServer(properties);
     File zipFile = temporaryFolder.newFile(zipFileName);
     deployCommand = "deploy --jar=" + zipFile.getAbsolutePath();
   }
 
   @Rule
-  public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
+  public MBeanServerConnectionRule connectionRule =
+      new MBeanServerConnectionRule(server.getJmxPort());
 
   @Before
   public void setUp() throws Exception {

@@ -24,7 +24,9 @@ import static org.junit.Assert.assertFalse;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -45,6 +47,8 @@ public class SecurityWithoutClusterConfigDUnitTest {
   @Rule
   public ServerStarterRule serverStarter = new ServerStarterRule();
 
+  private MemberVM<Locator> locator;
+
   @Before
   public void before() throws Exception {
     IgnoredException
@@ -55,7 +59,7 @@ public class SecurityWithoutClusterConfigDUnitTest {
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    lsRule.startLocatorVM(0, props);
+    locator = lsRule.startLocatorVM(0, props);
   }
 
   @Test
@@ -72,7 +76,7 @@ public class SecurityWithoutClusterConfigDUnitTest {
     props.setProperty("use-cluster-configuration", "true");
 
     // initial security properties should only contain initial set of values
-    serverStarter.startServer(props, lsRule.getMember(0).getPort());
+    serverStarter.withProperties(props).withConnectionToLocator(locator.getPort()).startServer();
     DistributedSystem ds = serverStarter.getCache().getDistributedSystem();
     assertEquals(3, ds.getSecurityProperties().size());
 

@@ -14,11 +14,19 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
-import javax.management.ObjectName;
-
+import org.apache.geode.management.GatewaySenderMXBean;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.beans.GatewaySenderMBean;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -27,20 +35,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.management.GatewaySenderMXBean;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.internal.beans.GatewaySenderMBean;
-import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+import javax.management.ObjectName;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class GatewaySenderMBeanSecurityTest {
-
-  private static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-
   private static GatewaySenderMBean mock = mock(GatewaySenderMBean.class);
   private static ObjectName mockBeanName = null;
   private static ManagementService service = null;
@@ -48,17 +46,21 @@ public class GatewaySenderMBeanSecurityTest {
   private GatewaySenderMXBean bean;
 
   @ClassRule
-  public static CacheServerStartupRule serverRule =
-      CacheServerStartupRule.withDefaultSecurityJson(jmxManagerPort);
+  public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
+      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+      .withProperty(TestSecurityManager.SECURITY_JSON,
+          "org/apache/geode/management/internal/security/cacheServer.json")
+      .startServer();
 
   @Rule
-  public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
+  public MBeanServerConnectionRule connectionRule =
+      new MBeanServerConnectionRule(server.getJmxPort());
 
   @BeforeClass
   public static void beforeClass() throws Exception {
     // the server does not have a GAtewaySenderMXBean registered initially, has to register a mock
     // one.
-    service = ManagementService.getManagementService(serverRule.getCache());
+    service = ManagementService.getManagementService(server.getCache());
     mockBeanName = ObjectName.getInstance("GemFire", "key", "value");
     service.registerMBean(mock, mockBeanName);
   }

@@ -14,32 +14,59 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.security.SecurityTestUtil.createClientCache;
+import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Category({DistributedTest.class, SecurityTest.class})
-public class NoShowValue1PostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
+public class NoShowValue1PostProcessorDUnitTest extends JUnit4DistributedTestCase {
 
-  public Properties getProperties() {
-    Properties properties = super.getProperties();
-    properties.setProperty(SECURITY_POST_PROCESSOR, NoShowValue1PostProcessor.class.getName());
-    return properties;
+  private static String REGION_NAME = "AuthRegion";
+
+  final Host host = Host.getHost(0);
+  final VM client1 = host.getVM(1);
+
+  @Rule
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .withProperty(SECURITY_POST_PROCESSOR, NoShowValue1PostProcessor.class.getName())
+          .startServer();
+
+  @Before
+  public void before() throws Exception {
+    Region region =
+        server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    for (int i = 0; i < 5; i++) {
+      region.put("key" + i, "value" + i);
+    }
   }
 
   @Test
@@ -49,8 +76,8 @@ public class NoShowValue1PostProcessorDUnitTest extends AbstractSecureServerDUni
     keys.add("key2");
 
     client1.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
 
       // post process for get
       assertEquals("value3", region.get("key3"));

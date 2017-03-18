@@ -15,21 +15,15 @@
 
 package org.apache.geode.test.dunit.rules;
 
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.Locator.startLocatorAndDS;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.awaitility.Awaitility;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,14 +38,14 @@ import java.util.concurrent.TimeUnit;
  * use {@link LocatorServerStartupRule}.
  */
 
-public class LocatorStarterRule extends MemberStarterRule implements Locator {
+public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> implements Locator {
 
   private transient InternalLocator locator;
 
   public LocatorStarterRule() {}
 
   public LocatorStarterRule(File workingDir) {
-    this.workingDir = workingDir.getAbsoluteFile();
+    super(workingDir);
   }
 
   public InternalLocator getLocator() {
@@ -66,44 +60,26 @@ public class LocatorStarterRule extends MemberStarterRule implements Locator {
   }
 
   public LocatorStarterRule startLocator() {
-    return startLocator(new Properties());
-  }
-
-  public LocatorStarterRule startLocator(Properties properties) {
-    if (properties == null)
-      properties = new Properties();
-    if (!properties.containsKey(NAME)) {
-      properties.setProperty(NAME, "locator");
+    normalizeProperties();
+    // start locator will start a jmx manager by default, if withJmxManager is not called explicitly
+    // the tests will use random ports by default.
+    if (jmxPort < 0) {
+      withJMXManager();
     }
 
-    name = properties.getProperty(NAME);
-    if (!properties.containsKey(LOG_FILE)) {
-      properties.setProperty(LOG_FILE, new File(name + ".log").getAbsolutePath());
-    }
-
-    if (!properties.containsKey(MCAST_PORT)) {
-      properties.setProperty(MCAST_PORT, "0");
-    }
-    if (properties.containsKey(JMX_MANAGER_PORT)) {
-      jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
-      if (jmxPort > 0) {
-        if (!properties.containsKey(JMX_MANAGER)) {
-          properties.put(JMX_MANAGER, "true");
-        }
-        if (!properties.containsKey(JMX_MANAGER_START)) {
-          properties.put(JMX_MANAGER_START, "true");
-        }
-      }
-    }
     try {
+      // this will start a jmx manager and admin rest service by default
       locator = (InternalLocator) startLocatorAndDS(0, null, properties);
     } catch (IOException e) {
       throw new RuntimeException("unable to start up locator.", e);
     }
     memberPort = locator.getPort();
+    DistributionConfig config = locator.getConfig();
+    jmxPort = config.getJmxManagerPort();
+    httpPort = config.getHttpServicePort();
     locator.resetInternalLocatorFileNamesWithCorrectPortNumber(memberPort);
 
-    if (locator.getConfig().getEnableClusterConfiguration()) {
+    if (config.getEnableClusterConfiguration()) {
       Awaitility.await().atMost(65, TimeUnit.SECONDS)
           .until(() -> assertTrue(locator.isSharedConfigurationRunning()));
     }

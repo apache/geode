@@ -25,5 +25,7 @@ public interface Member extends Serializable {
 
   int getJmxPort();
 
+  int getHttpPort();
+
   String getName();
 }

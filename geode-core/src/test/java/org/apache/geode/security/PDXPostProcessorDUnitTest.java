@@ -15,52 +15,59 @@
 
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.security.SecurityTestUtil.createClientCache;
+import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.pdx.SimpleClass;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.awaitility.Awaitility;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.ClientRegionFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.HeadlessGfsh;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.pdx.SimpleClass;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
+public class PDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
+  private static String REGION_NAME = "AuthRegion";
+
+  final Host host = Host.getHost(0);
+  final VM client1 = host.getVM(1);
+  final VM client2 = host.getVM(2);
+
+  private boolean pdxPersistent = false;
   private static byte[] BYTES = PDXPostProcessor.BYTES;
-  private int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
   @Parameterized.Parameters
   public static Collection<Object[]> parameters() {
@@ -68,27 +75,24 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     return Arrays.asList(params);
   }
 
-  public Properties getProperties() {
-    Properties properties = super.getProperties();
-    properties.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
-    properties.setProperty(JMX_MANAGER_PORT, jmxPort + "");
-    properties.setProperty("security-pdx", pdxPersistent + "");
-    return properties;
-  }
-
-  public Map<String, String> getData() {
-    return new HashMap();
-  }
-
   public PDXPostProcessorDUnitTest(boolean pdxPersistent) {
     this.pdxPersistent = pdxPersistent;
   }
 
+  @Rule
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .withProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName())
+          .withProperty("security-pdx", pdxPersistent + "").withJMXManager().startServer()
+          .createRegion(RegionShortcut.REPLICATE, REGION_NAME);
+
   @Test
   public void testRegionGet() {
     client2.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
       // put in a value that's a domain object
       region.put("key1", new SimpleClass(1, (byte) 1));
       // put in a byte value
@@ -96,8 +100,8 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     });
 
     client1.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
 
       // post process for get the client domain object
       Object value = region.get("key1");
@@ -117,16 +121,16 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
   @Test
   public void testQuery() {
     client2.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
       // put in a value that's a domain object
       region.put("key1", new SimpleClass(1, (byte) 1));
       region.put("key2", BYTES);
     });
 
     client1.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
 
       // post process for query
       String query = "select * from /AuthRegion";
@@ -149,12 +153,11 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     assertEquals(pp.getCount(), 2);
   }
 
-  @Category(FlakyTest.class) // GEODE-2204
   @Test
   public void testRegisterInterest() {
+    IgnoredException.addIgnoredException("NoAvailableServersException");
     client1.invoke(() -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567"))
-          .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort).create();
+      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
 
       ClientRegionFactory factory = cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
       factory.addCacheListener(new CacheListenerAdapter() {
@@ -177,8 +180,8 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     });
 
     client2.invoke(() -> {
-      ClientCache cache = createClientCache("dataUser", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("dataUser", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
       // put in a value that's a domain object
       region.put("key1", new SimpleClass(1, (byte) 1));
       region.put("key2", BYTES);
@@ -191,13 +194,12 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     assertEquals(pp.getCount(), 2);
   }
 
-  @Category(FlakyTest.class) // GEODE-1719
   @Test
   public void testGfshCommand() {
     // have client2 input some domain data into the region
     client2.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
       // put in a value that's a domain object
       region.put("key1", new SimpleClass(1, (byte) 1));
       // put in a byte value
@@ -205,39 +207,22 @@ public class PDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     });
 
     client1.invoke(() -> {
-      CliUtil.isGfshVM = true;
-      String shellId = getClass().getSimpleName();
-      HeadlessGfsh gfsh = new HeadlessGfsh(shellId, 30, "gfsh_files");
-
-      // connect to the jmx server
-      final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
-      connectCommand.addOption(CliStrings.CONNECT__USERNAME, "dataUser");
-      connectCommand.addOption(CliStrings.CONNECT__PASSWORD, "1234567");
-
-      String endpoint = "localhost[" + jmxPort + "]";
-      connectCommand.addOption(CliStrings.CONNECT__JMX_MANAGER, endpoint);
-
-      gfsh.executeCommand(connectCommand.toString());
-      CommandResult result = (CommandResult) gfsh.getResult();
+      GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+      gfsh.secureConnectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger,
+          "dataUser", "1234567");
 
       // get command
-      gfsh.executeCommand("get --key=key1 --region=AuthRegion");
-      result = (CommandResult) gfsh.getResult();
-      assertEquals(result.getStatus(), Status.OK);
+      CommandResult result = gfsh.executeAndVerifyCommand("get --key=key1 --region=AuthRegion");
       if (pdxPersistent)
-        assertTrue(result.getContent().toString()
-            .contains("org.apache.geode.pdx.internal.PdxInstanceImpl"));
+        assertThat(gfsh.getGfshOutput().contains("org.apache.geode.pdx.internal.PdxInstanceImpl"));
       else
-        assertTrue(result.getContent().toString().contains("SimpleClass"));
+        assertThat(gfsh.getGfshOutput()).contains("SimpleClass");
 
-      gfsh.executeCommand("get --key=key2 --region=AuthRegion");
-      result = (CommandResult) gfsh.getResult();
-      assertEquals(result.getStatus(), Status.OK);
+      result = gfsh.executeAndVerifyCommand("get --key=key2 --region=AuthRegion");
       assertTrue(result.getContent().toString().contains("byte[]"));
 
-      gfsh.executeCommand("query --query=\"select * from /AuthRegion\"");
-      result = (CommandResult) gfsh.getResult();
-      System.out.println("gfsh result: " + result);
+      gfsh.executeAndVerifyCommand("query --query=\"select * from /AuthRegion\"");
+      gfsh.close();
     });
 
     PDXPostProcessor pp =

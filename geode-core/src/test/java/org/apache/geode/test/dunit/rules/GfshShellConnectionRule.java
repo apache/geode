@@ -58,18 +58,24 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   private boolean connected = false;
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  public GfshShellConnectionRule() {}
+  public GfshShellConnectionRule() {
+    try {
+      temporaryFolder.create();
+      this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
+          temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
+    } catch (Exception e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+  }
 
   public GfshShellConnectionRule(int port, PortType portType) {
+    this();
     this.portType = portType;
     this.port = port;
   }
 
   @Override
   protected void before(Description description) throws Throwable {
-    temporaryFolder.create();
-    this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
-        temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
     // do not auto connect if no port initialized
     if (port < 0) {
       return;
@@ -97,6 +103,19 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   public void connectAndVerify(int port, PortType type, String... options) throws Exception {
     connect(port, type, options);
+    assertThat(this.connected).isTrue();
+  }
+
+  public void secureConnect(int port, PortType type, String username, String password)
+      throws Exception {
+    connect(port, type, CliStrings.CONNECT__USERNAME, username, CliStrings.CONNECT__PASSWORD,
+        password);
+  }
+
+  public void secureConnectAndVerify(int port, PortType type, String username, String password)
+      throws Exception {
+    connect(port, type, CliStrings.CONNECT__USERNAME, username, CliStrings.CONNECT__PASSWORD,
+        password);
     assertThat(this.connected).isTrue();
   }
 
@@ -142,10 +161,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   @Override
   protected void after(Description description) throws Throwable {
-    temporaryFolder.delete();
-    if (connected) {
-      disconnect();
-    }
     close();
   }
 
@@ -156,6 +171,10 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   }
 
   public void close() throws Exception {
+    temporaryFolder.delete();
+    if (connected) {
+      disconnect();
+    }
     gfsh.executeCommand("exit");
     gfsh.terminate();
     gfsh = null;

@@ -15,10 +15,8 @@
 
 package org.apache.geode.rest.internal.web;
 
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
@@ -29,41 +27,32 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
 @Category({IntegrationTest.class, RestAPITest.class})
 public class RestServersJUnitTest {
 
-  private static int defaultPort = 7070;
-  static Properties properties = new Properties() {
-    {
-      setProperty(START_DEV_REST_API, "true");
-      setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
-    }
-  };
-
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule();
+  public static ServerStarterRule serverStarter =
+      new ServerStarterRule().withRestService(true).startServer();
+
   private static GeodeRestClient restClient;
 
   @BeforeClass
   public static void before() throws Exception {
-    serverStarter.startServer(properties);
-    restClient = new GeodeRestClient("localhost", defaultPort);
+    assertThat(serverStarter.getHttpPort()).isEqualTo(7070);
+    restClient = new GeodeRestClient("localhost", serverStarter.getHttpPort());
   }
 
   @Test
-  public void testDefaultPort() throws Exception {
-    // make sure the server is started on the default port and we can connect using the default port
+  public void testGet() throws Exception {
     HttpResponse response = restClient.doGet("/", null, null);
-    Assert.assertEquals(200, GeodeRestClient.getCode(response));
+    assertThat(GeodeRestClient.getCode(response)).isEqualTo(200);
   }
 
   @Test
-  public void testServers() throws Exception {
+  public void testServerStartedOnDefaultPort() throws Exception {
     HttpResponse response = restClient.doGet("/servers", null, null);
     JSONArray body = GeodeRestClient.getJsonArray(response);
-    Assert.assertEquals(1, body.length());
-    Assert.assertEquals("http://localhost:7070", body.getString(0));
+    assertThat(body.length()).isEqualTo(1);
+    assertThat(body.getString(0)).isEqualTo("http://localhost:7070");
   }
 }

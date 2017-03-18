@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,7 +22,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -44,41 +41,19 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.List;
-import java.util.Properties;
 
 @Category({IntegrationTest.class, SecurityTest.class})
-// @RunWith(Parameterized.class)
-// @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class GfshCommandsSecurityTest {
-
-  protected static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-  protected static int jmxPort = ports[0];
-  protected static int httpPort = ports[1];
-
-  // can't do parameterized tests here since useHttp tests needs to be in geode-web project
-  // @Parameterized.Parameters
-  // public static Collection<Object> data() {
-  // return Arrays.asList(new Object[] {true, false});
-  // }
-  //
-  // @Parameterized.Parameter
-  // public boolean useHttp;
-
-  static Properties properties = new Properties() {
-    {
-      setProperty(JMX_MANAGER_PORT, jmxPort + "");
-      setProperty(HTTP_SERVICE_PORT, httpPort + "");
-      setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
-      setProperty("security-json",
-          "org/apache/geode/management/internal/security/cacheServer.json");
-    }
-  };
-  @Rule
-  public GfshShellConnectionRule gfshConnection =
-      new GfshShellConnectionRule(jmxPort, GfshShellConnectionRule.PortType.jmxManger);
-
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule().startServer(properties);
+  public static ServerStarterRule serverStarter = new ServerStarterRule().withJMXManager()
+      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+      .withProperty("security-json",
+          "org/apache/geode/management/internal/security/cacheServer.json")
+      .startServer();
+
+  @Rule
+  public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(
+      serverStarter.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
 
   @BeforeClass
   public static void beforeClass() throws Exception {

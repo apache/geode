@@ -14,13 +14,11 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
@@ -34,30 +32,20 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
 @Category({IntegrationTest.class, SecurityTest.class})
 public class GfshCommandsPostProcessorTest {
 
-  protected static int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
-
-  static Properties properties = new Properties() {
-    {
-      setProperty(JMX_MANAGER_PORT, jmxPort + "");
-      setProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName());
-      setProperty(SECURITY_MANAGER, TestSecurityManager.class.getName());
-      setProperty("security-json",
-          "org/apache/geode/management/internal/security/cacheServer.json");
-    }
-  };
-
-
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule().startServer(properties);
+  public static ServerStarterRule serverStarter = new ServerStarterRule().withJMXManager()
+      .withProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName())
+      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+      .withProperty("security-json",
+          "org/apache/geode/management/internal/security/cacheServer.json")
+      .startServer();
 
   @Rule
-  public GfshShellConnectionRule gfshConnection =
-      new GfshShellConnectionRule(jmxPort, GfshShellConnectionRule.PortType.jmxManger);
+  public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(
+      serverStarter.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
 
   @BeforeClass
   public static void beforeClass() throws Exception {

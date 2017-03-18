@@ -14,11 +14,9 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_SHIRO_INIT;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
@@ -26,36 +24,22 @@ import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
 @Category({IntegrationTest.class, SecurityTest.class})
 public class CacheServerMBeanShiroJUnitTest {
-  static int jmxManagerPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-  static Properties properties = new Properties() {
-    {
-      setProperty(JMX_MANAGER_PORT, jmxManagerPort + "");
-      setProperty(SECURITY_SHIRO_INIT, "shiro.ini");
-    }
-  };
-
   private CacheServerMXBean bean;
 
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule();
-
-  @BeforeClass
-  public static void beforeClass() throws Exception {
-    serverStarter.startServer(properties);
-  }
+  public static ServerStarterRule server = new ServerStarterRule()
+      .withProperty(SECURITY_SHIRO_INIT, "shiro.ini").withJMXManager().startServer();
 
   @Rule
-  public MBeanServerConnectionRule connectionRule = new MBeanServerConnectionRule(jmxManagerPort);
+  public MBeanServerConnectionRule connectionRule =
+      new MBeanServerConnectionRule(server.getJmxPort());
 
   @Before
   public void setUp() throws Exception {

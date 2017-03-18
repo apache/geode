@@ -14,46 +14,62 @@
  */
 package org.apache.geode.security;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
-
 @Category({DistributedTest.class, SecurityTest.class})
-public class IntegratedClientDestroyRegionAuthDistributedTest
-    extends AbstractSecureServerDUnitTest {
+public class ClientDestroyRegionAuthDUnitTest extends JUnit4DistributedTestCase {
+  private static String REGION_NAME = "testRegion";
+
+  final Host host = Host.getHost(0);
+  final VM client1 = host.getVM(1);
+  final VM client2 = host.getVM(2);
+  final VM client3 = host.getVM(3);
+
+  @Rule
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .startServer().createRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
   public void testDestroyRegion() throws InterruptedException {
     client1.invoke(() -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("dataWriter", "1234567"))
-          .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort).create();
+      ClientCache cache =
+          SecurityTestUtil.createClientCache("dataWriter", "1234567", server.getPort());
 
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-      assertNotAuthorized(() -> region.destroyRegion(), "DATA:MANAGE");
+      SecurityTestUtil.assertNotAuthorized(() -> region.destroyRegion(), "DATA:MANAGE");
     });
 
     client2.invoke(() -> {
       ClientCache cache =
-          new ClientCacheFactory(createClientProperties("authRegionManager", "1234567"))
-              .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort).create();
+          SecurityTestUtil.createClientCache("authRegionManager", "1234567", server.getPort());
 
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
-      assertNotAuthorized(() -> region.destroyRegion(), "DATA:MANAGE");
+      SecurityTestUtil.assertNotAuthorized(() -> region.destroyRegion(), "DATA:MANAGE");
     });
 
     client3.invoke(() -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567"))
-          .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort).create();
+      ClientCache cache =
+          SecurityTestUtil.createClientCache("super-user", "1234567", server.getPort());
 
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);

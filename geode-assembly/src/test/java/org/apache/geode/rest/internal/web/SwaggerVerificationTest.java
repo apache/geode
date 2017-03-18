@@ -15,14 +15,10 @@
 package org.apache.geode.rest.internal.web;
 
 
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
@@ -30,38 +26,23 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.http.HttpResponse;
 import org.json.JSONObject;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
 @Category({IntegrationTest.class, RestAPITest.class})
 public class SwaggerVerificationTest {
 
-  private static int restPort = AvailablePortHelper.getRandomAvailableTCPPort();
-  static Properties properties = new Properties() {
-    {
-      setProperty(START_DEV_REST_API, "true");
-      setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
-      setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
-      setProperty(HTTP_SERVICE_PORT, restPort + "");
-    }
-  };
-
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule();
-  private GeodeRestClient restClient;
+  public static ServerStarterRule serverStarter = new ServerStarterRule()
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withRestService()
+      .startServer();
 
-  @BeforeClass
-  public static void beforeClass() throws Exception {
-    serverStarter.startServer(properties);
-  }
+  private GeodeRestClient restClient;
 
   @Test
   public void isSwaggerRunning() throws Exception {
-    GeodeRestClient restClient = new GeodeRestClient("localhost", restPort);
+    GeodeRestClient restClient = new GeodeRestClient("localhost", serverStarter.getHttpPort());
     // Check the UI
     HttpResponse response = restClient.doGetRequest("/geode/swagger-ui.html");
     assertThat(GeodeRestClient.getCode(response), is(200));

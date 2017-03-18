@@ -14,34 +14,62 @@
  */
 package org.apache.geode.security;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
+import static org.apache.geode.security.SecurityTestUtil.createClientCache;
+import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
 
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @Category({DistributedTest.class, SecurityTest.class})
-public class IntegratedClientGetEntryAuthDistributedTest extends AbstractSecureServerDUnitTest {
+public class ClientGetEntryAuthDUnitTest extends JUnit4DistributedTestCase {
+
+  private static String REGION_NAME = "AuthRegion";
+
+  final Host host = Host.getHost(0);
+  final VM client1 = host.getVM(1);
+  final VM client2 = host.getVM(2);
+
+  @Rule
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .startServer();
+
+  @Before
+  public void before() throws Exception {
+    Region region =
+        server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    for (int i = 0; i < 5; i++) {
+      region.put("key" + i, "value" + i);
+    }
+  }
 
   @Test
-  public void testGetEntry() throws InterruptedException {
+  public void testGetEntry() throws Exception {
     // client1 connects to server as a user not authorized to do any operations
-
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("stranger", "1234567"))
-          .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort).create();
+      ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
 
       CacheTransactionManager transactionManager = cache.getCacheTransactionManager();
       transactionManager.begin();
       try {
-        Region region =
-            cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+        Region region = createProxyRegion(cache, REGION_NAME);
         assertNotAuthorized(() -> region.getEntry("key3"), "DATA:READ:AuthRegion:key3");
       } finally {
         transactionManager.commit();
@@ -50,15 +78,12 @@ public class IntegratedClientGetEntryAuthDistributedTest extends AbstractSecureS
     });
 
     AsyncInvocation ai2 = client2.invokeAsync(() -> {
-      ClientCache cache =
-          new ClientCacheFactory(createClientProperties("authRegionReader", "1234567"))
-              .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort).create();
+      ClientCache cache = createClientCache("authRegionReader", "1234567", server.getPort());
 
       CacheTransactionManager transactionManager = cache.getCacheTransactionManager();
       transactionManager.begin();
       try {
-        Region region =
-            cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
+        Region region = createProxyRegion(cache, REGION_NAME);
         region.getEntry("key3");
       } finally {
         transactionManager.commit();
@@ -66,10 +91,8 @@ public class IntegratedClientGetEntryAuthDistributedTest extends AbstractSecureS
 
     });
 
-    ai1.join();
-    ai2.join();
-    ai1.checkException();
-    ai2.checkException();
+    ai1.await();
+    ai2.await();
 
   }
 }

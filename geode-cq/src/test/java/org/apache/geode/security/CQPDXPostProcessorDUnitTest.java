@@ -15,23 +15,15 @@
 
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
-import org.awaitility.Awaitility;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.security.SecurityTestUtil.createClientCache;
+import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
@@ -42,19 +34,38 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.cq.CqListenerImpl;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.SimpleClass;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import org.awaitility.Awaitility;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class CQPDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
+public class CQPDXPostProcessorDUnitTest extends JUnit4DistributedTestCase {
+
+  private static String REGION_NAME = "AuthRegion";
+  final Host host = Host.getHost(0);
+  final VM client1 = host.getVM(1);
+  final VM client2 = host.getVM(2);
+
+  private boolean pdxPersistent = false;
   private static byte[] BYTES = {1, 0};
-  private static int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
   @Parameterized.Parameters
   public static Collection<Object[]> parameters() {
@@ -62,17 +73,14 @@ public class CQPDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     return Arrays.asList(params);
   }
 
-  public Properties getProperties() {
-    Properties properties = super.getProperties();
-    properties.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());
-    properties.setProperty("security-pdx", pdxPersistent + "");
-    properties.setProperty(JMX_MANAGER_PORT, jmxPort + "");
-    return properties;
-  }
-
-  public Map<String, String> getData() {
-    return new HashMap();
-  }
+  @Rule
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .withProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName())
+          .withProperty("security-pdx", pdxPersistent + "").startServer()
+          .createRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   public CQPDXPostProcessorDUnitTest(boolean pdxPersistent) {
     this.pdxPersistent = pdxPersistent;
@@ -80,10 +88,10 @@ public class CQPDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
 
   @Test
   public void testCQ() {
-    String query = "select * from /AuthRegion";
+    String query = "select * from /" + REGION_NAME;
     client1.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
 
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
@@ -111,8 +119,8 @@ public class CQPDXPostProcessorDUnitTest extends AbstractSecureServerDUnitTest {
     });
 
     client2.invoke(() -> {
-      ClientCache cache = createClientCache("authRegionUser", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("authRegionUser", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
       region.put("key1", new SimpleClass(1, (byte) 1));
       region.put("key2", BYTES);
     });

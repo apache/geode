@@ -67,7 +67,7 @@ public class RestSecurityWithSSLTest {
     properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     properties.setProperty(SSL_PROTOCOLS, "TLSv1.2,TLSv1.1");
 
-    serverStarter.startServer(properties);
+    serverStarter.withProperties(properties).startServer();
 
     GeodeRestClient restClient = new GeodeRestClient("localhost", restPort, true);
     HttpResponse response = restClient.doGet("/servers", "cluster", "cluster");

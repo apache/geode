@@ -17,39 +17,23 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
 @Category(IntegrationTest.class)
 public class ExportLogsIntegrationTest {
 
   @ClassRule
-  public static LocatorStarterRule locator = new LocatorStarterRule();
+  public static LocatorStarterRule locator =
+      new LocatorStarterRule().withJMXManager().startLocator();
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
-
-  private static int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-  protected static int httpPort = ports[0];
-  protected static int jmxPort = ports[1];
-
-  @BeforeClass
-  public static void before() throws Exception {
-    Properties properties = new Properties();
-    properties.setProperty(ConfigurationProperties.HTTP_SERVICE_PORT, httpPort + "");
-    properties.setProperty(ConfigurationProperties.JMX_MANAGER_PORT, jmxPort + "");
-    locator.startLocator(properties);
-  }
 
   protected void connect() throws Exception {
     gfsh.connectAndVerify(locator);

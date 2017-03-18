@@ -42,7 +42,7 @@ public class MemberVM<T extends Member> implements Member {
   }
 
   public T getMember() {
-    return member;
+    return (T) member;
   }
 
   @Override
@@ -58,6 +58,11 @@ public class MemberVM<T extends Member> implements Member {
   @Override
   public int getJmxPort() {
     return member.getJmxPort();
+  }
+
+  @Override
+  public int getHttpPort() {
+    return member.getHttpPort();
   }
 
   @Override

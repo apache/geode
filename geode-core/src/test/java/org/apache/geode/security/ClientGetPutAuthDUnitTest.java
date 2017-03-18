@@ -14,7 +14,26 @@
  */
 package org.apache.geode.security;
 
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
+import static org.apache.geode.security.SecurityTestUtil.createClientCache;
+import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
+import static org.junit.Assert.assertEquals;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,18 +41,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+@Category({DistributedTest.class, SecurityTest.class})
+public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
+  private static String REGION_NAME = "AuthRegion";
 
-@Category({DistributedTest.class, SecurityTest.class, FlakyTest.class})
-public class IntegratedClientGetPutAuthDistributedTest extends AbstractSecureServerDUnitTest {
+  final Host host = Host.getHost(0);
+  final VM client1 = host.getVM(1);
+  final VM client2 = host.getVM(2);
+  final VM client3 = host.getVM(3);
+
+  @Rule
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .startServer();
+
+  @Before
+  public void before() throws Exception {
+    Region region =
+        server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(REGION_NAME);
+    for (int i = 0; i < 5; i++) {
+      region.put("key" + i, "value" + i);
+    }
+  }
 
   @Test
   public void testGetPutAuthorization() throws InterruptedException {
@@ -47,8 +79,8 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractSecureSer
 
     // client1 connects to server as a user not authorized to do any operations
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
-      ClientCache cache = createClientCache("stranger", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
 
       assertNotAuthorized(() -> region.put("key3", "value3"), "DATA:WRITE:AuthRegion:key3");
       assertNotAuthorized(() -> region.get("key3"), "DATA:READ:AuthRegion:key3");
@@ -66,8 +98,8 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractSecureSer
 
     // client2 connects to user as a user authorized to use AuthRegion region
     AsyncInvocation ai2 = client2.invokeAsync(() -> {
-      ClientCache cache = createClientCache("authRegionUser", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("authRegionUser", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
 
       region.put("key3", "value3");
       assertEquals("value3", region.get("key3"));
@@ -86,8 +118,8 @@ public class IntegratedClientGetPutAuthDistributedTest extends AbstractSecureSer
 
     // client3 connects to user as a user authorized to use key1 in AuthRegion region
     AsyncInvocation ai3 = client3.invokeAsync(() -> {
-      ClientCache cache = createClientCache("key1User", "1234567", serverPort);
-      Region region = cache.getRegion(REGION_NAME);
+      ClientCache cache = createClientCache("key1User", "1234567", server.getPort());
+      Region region = createProxyRegion(cache, REGION_NAME);
 
       assertNotAuthorized(() -> region.put("key2", "value1"), "DATA:WRITE:AuthRegion:key2");
       assertNotAuthorized(() -> region.get("key2"), "DATA:READ:AuthRegion:key2");

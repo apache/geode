@@ -24,4 +24,6 @@ public interface Server extends Member {
 
   CacheServer getServer();
 
+  int getEmbeddedLocatorPort();
+
 }

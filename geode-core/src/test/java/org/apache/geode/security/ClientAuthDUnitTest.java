@@ -14,35 +14,45 @@
  */
 package org.apache.geode.security;
 
-import static com.googlecode.catchexception.CatchException.*;
-import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
-import static org.assertj.core.api.Assertions.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
-
 @Category({DistributedTest.class, SecurityTest.class})
-public class IntegratedClientAuthDUnitTest extends AbstractSecureServerDUnitTest {
+public class ClientAuthDUnitTest extends JUnit4DistributedTestCase {
+
+  final Host host = Host.getHost(0);
+  final VM client1 = host.getVM(1);
+  final VM client2 = host.getVM(2);
+
+  @Rule
+  public ServerStarterRule server = new ServerStarterRule()
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).startServer();
 
   @Test
   public void authWithCorrectPasswordShouldPass() {
     client1.invoke("logging in super-user with correct password", () -> {
-      ClientCache cache = new ClientCacheFactory(createClientProperties("super-user", "1234567"))
-          .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort).create();
+      SecurityTestUtil.createClientCache("test", "test", server.getPort());
     });
   }
 
   @Test
   public void authWithIncorrectPasswordShouldFail() {
+    IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
     client2.invoke("logging in super-user with wrong password", () -> {
-      catchException(new ClientCacheFactory(createClientProperties("data", "wrong"))
-          .setPoolSubscriptionEnabled(true).addPoolServer("localhost", serverPort)).create();
-      assertThat((Throwable) caughtException()).isInstanceOf(AuthenticationFailedException.class);
+      assertThatThrownBy(
+          () -> SecurityTestUtil.createClientCache("test", "wrong", server.getPort()))
+              .isInstanceOf(AuthenticationFailedException.class);
     });
   }
 }

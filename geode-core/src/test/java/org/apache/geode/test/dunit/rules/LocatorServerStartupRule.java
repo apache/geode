@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.test.dunit.Host.getHost;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
@@ -77,7 +78,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     temporaryFolder.delete();
   }
 
-  public MemberVM startLocatorVM(int index) throws IOException {
+  public MemberVM startLocatorVM(int index) throws Exception {
     return startLocatorVM(index, new Properties());
   }
 
@@ -87,60 +88,55 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    *
    * @return VM locator vm
    */
-  public MemberVM<Locator> startLocatorVM(int index, Properties locatorProperties)
-      throws IOException {
+  public MemberVM<Locator> startLocatorVM(int index, Properties properties) throws Exception {
     String name = "locator-" + index;
-    locatorProperties.setProperty(NAME, name);
+    properties.setProperty(NAME, name);
     File workingDir = createWorkingDirForMember(name);
     VM locatorVM = getHost(0).getVM(index);
     Locator locator = locatorVM.invoke(() -> {
       locatorStarter = new LocatorStarterRule(workingDir);
-      locatorStarter.before();
-      return locatorStarter.startLocator(locatorProperties);
+      return locatorStarter.withProperties(properties).startLocator();
     });
     members[index] = new MemberVM(locator, locatorVM);
     return members[index];
   }
 
+
   public MemberVM startServerVM(int index) throws IOException {
     return startServerVM(index, new Properties(), -1);
-  }
-
-  /**
-   * starts a cache server that does not connect to a locator
-   * 
-   * @return VM node vm
-   */
-  public MemberVM startServerVM(int index, Properties properties) throws IOException {
-    return startServerVM(index, properties, -1);
   }
 
   public MemberVM startServerVM(int index, int locatorPort) throws IOException {
     return startServerVM(index, new Properties(), locatorPort);
   }
 
-  public MemberVM startServerAsJmxManager(int index, int jmxManagerPort) throws IOException {
-    Properties properties = new Properties();
-    properties.setProperty(JMX_MANAGER_PORT, jmxManagerPort + "");
-    return startServerVM(index, properties);
+  public MemberVM startServerVM(int index, Properties properties) throws IOException {
+    return startServerVM(index, properties, -1);
   }
 
-  public MemberVM startServerAsEmbededLocator(int index, int locatorPort, int jmxManagerPort)
-      throws IOException {
+  public MemberVM startServerAsJmxManager(int index) throws IOException {
     Properties properties = new Properties();
-    properties.setProperty("start-locator", "localhost[" + locatorPort + "]");
-    if (jmxManagerPort > 0) {
-      properties.setProperty(JMX_MANAGER_PORT, jmxManagerPort + "");
-    }
-    return startServerVM(index, properties);
+    properties.setProperty(JMX_MANAGER_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
+    return startServerVM(index, properties, -1);
+  }
+
+  public MemberVM startServerAsEmbededLocator(int index) throws IOException {
+    String name = "server-" + index;
+    File workingDir = createWorkingDirForMember(name);
+    VM serverVM = getHost(0).getVM(index);
+    Server server = serverVM.invoke(() -> {
+      serverStarter = new ServerStarterRule(workingDir);
+      return serverStarter.withEmbeddedLocator().withName(name).withJMXManager().startServer();
+    });
+    members[index] = new MemberVM(server, serverVM);
+    return members[index];
   }
 
   /**
-   * Starts a cache server that connect to the locator running at the given port.
+   * Starts a cache server with given properties
    */
   public MemberVM startServerVM(int index, Properties properties, int locatorPort)
       throws IOException {
-
     String name = "server-" + index;
     properties.setProperty(NAME, name);
 
@@ -148,8 +144,8 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     VM serverVM = getHost(0).getVM(index);
     Server server = serverVM.invoke(() -> {
       serverStarter = new ServerStarterRule(workingDir);
-      serverStarter.before();
-      return serverStarter.startServer(properties, locatorPort);
+      return serverStarter.withProperties(properties).withConnectionToLocator(locatorPort)
+          .startServer();
     });
     members[index] = new MemberVM(server, serverVM);
     return members[index];
