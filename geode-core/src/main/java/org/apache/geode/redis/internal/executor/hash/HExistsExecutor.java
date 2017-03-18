@@ -16,6 +16,8 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
 import java.util.Map;
+
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -54,18 +56,19 @@ public class HExistsExecutor extends HashExecutor {
       return;
     }
 
-
-    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, command.getKey());
-
-    if (map == null || map.isEmpty()) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-      return;
-    }
-
+    boolean hasField;
     byte[] byteField = commandElems.get(FIELD_INDEX);
     ByteArrayWrapper field = new ByteArrayWrapper(byteField);
+    ByteArrayWrapper key = command.getKey();
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
-    boolean hasField = map.containsKey(field);
+      if (map == null || map.isEmpty()) {
+        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
+        return;
+      }
+      hasField = map.containsKey(field);
+    }
 
     if (hasField)
       command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), EXISTS));
