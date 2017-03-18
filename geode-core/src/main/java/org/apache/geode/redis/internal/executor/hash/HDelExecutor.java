@@ -16,6 +16,8 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
 import java.util.Map;
+
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -56,21 +58,23 @@ public class HDelExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
-    if (map == null || map.isEmpty()) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
-      return;
-    }
+      if (map == null || map.isEmpty()) {
+        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
+        return;
+      }
 
-    for (int i = START_FIELDS_INDEX; i < commandElems.size(); i++) {
-      ByteArrayWrapper field = new ByteArrayWrapper(commandElems.get(i));
-      Object oldValue = map.remove(field);
-      if (oldValue != null)
-        numDeleted++;
+      for (int i = START_FIELDS_INDEX; i < commandElems.size(); i++) {
+        ByteArrayWrapper field = new ByteArrayWrapper(commandElems.get(i));
+        Object oldValue = map.remove(field);
+        if (oldValue != null)
+          numDeleted++;
+      }
+      // save map
+      saveMap(map, context, key);
     }
-    // save map
-    saveMap(map, context, key);
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), numDeleted));
   }

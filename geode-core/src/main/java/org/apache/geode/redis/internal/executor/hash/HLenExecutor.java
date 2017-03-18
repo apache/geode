@@ -16,6 +16,8 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.List;
 import java.util.Map;
+
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
@@ -50,15 +52,18 @@ public class HLenExecutor extends HashExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
+    final int size;
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
-    if (map == null) {
-      command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
-      return;
+      if (map == null) {
+        command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), NOT_EXISTS));
+        return;
+      }
+
+      size = map.size();
     }
-
-    final int size = map.size();
 
     command.setResponse(Coder.getIntegerResponse(context.getByteBufAllocator(), size));
   }

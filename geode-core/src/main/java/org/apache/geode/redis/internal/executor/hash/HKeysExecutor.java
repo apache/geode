@@ -18,6 +18,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -54,16 +56,18 @@ public class HKeysExecutor extends HashExecutor {
     }
 
     ByteArrayWrapper key = command.getKey();
+    Set<ByteArrayWrapper> keys;
+    try (AutoCloseableLock regionLock = withRegionLock(context, key)) {
+      Map<ByteArrayWrapper, ByteArrayWrapper> keyMap = getMap(context, key);
 
-    Map<ByteArrayWrapper, ByteArrayWrapper> keyMap = getMap(context, key);
+      if (keyMap == null || keyMap.isEmpty()) {
+        command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
+        return;
+      }
 
-    if (keyMap == null || keyMap.isEmpty()) {
-      command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));
-      return;
+
+      keys = new HashSet<ByteArrayWrapper>(keyMap.keySet());
     }
-
-
-    Set<ByteArrayWrapper> keys = new HashSet<ByteArrayWrapper>(keyMap.keySet());
 
     if (keys.isEmpty()) {
       command.setResponse(Coder.getEmptyArrayResponse(context.getByteBufAllocator()));

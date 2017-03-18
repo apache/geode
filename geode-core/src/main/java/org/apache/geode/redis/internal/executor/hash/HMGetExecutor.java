@@ -57,6 +57,7 @@ public class HMGetExecutor extends HashExecutor {
 
     ByteArrayWrapper key = command.getKey();
 
+
     Map<ByteArrayWrapper, ByteArrayWrapper> map = getMap(context, key);
 
     checkDataType(key, RedisDataType.REDIS_HASH, context);
