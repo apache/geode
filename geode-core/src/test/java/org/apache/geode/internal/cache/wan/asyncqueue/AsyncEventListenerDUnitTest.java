@@ -1466,7 +1466,6 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
    * Test case to test possibleDuplicates. vm1 & vm2 are hosting the PR. vm2 is killed and
    * subsequently vm3 is brought up. Buckets are now rebalanced between vm1 & vm3.
    */
-  @Category(FlakyTest.class) // GEODE-688: random ports, thread sleeps, async actions
   @Test
   public void testParallelAsyncEventQueueHA_Scenario2() {
     Integer lnPort =
@@ -1493,8 +1492,6 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
     vm1.invoke(pauseAsyncEventQueueRunnable());
     vm2.invoke(pauseAsyncEventQueueRunnable());
-    Wait.pause(1000);// pause for the batchTimeInterval to make sure the AsyncQueue
-    // is paused
 
     LogWriterUtils.getLogWriter().info("Paused the AsyncEventQueue");
 
@@ -1519,9 +1516,9 @@ public class AsyncEventListenerDUnitTest extends AsyncEventQueueTestBase {
 
     // ------------------------------------------------------------------
 
-    Wait.pause(1000);// give some time for rebalancing to happen
-    Set<Integer> primaryBucketsvm3 = (Set<Integer>) vm3.invoke(
-        () -> AsyncEventQueueTestBase.getAllPrimaryBucketsOnTheNode(getTestMethodName() + "_PR"));
+    String regionName = getTestMethodName() + "_PR";
+    Set<Integer> primaryBucketsvm3 = (Set<Integer>) vm3
+        .invoke(() -> AsyncEventQueueTestBase.getAllPrimaryBucketsOnTheNode(regionName));
 
     vm1.invoke(() -> AsyncEventQueueTestBase.resumeAsyncEventQueue("ln"));
 

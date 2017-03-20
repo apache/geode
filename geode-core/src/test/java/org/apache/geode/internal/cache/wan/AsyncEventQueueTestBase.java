@@ -35,8 +35,11 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
@@ -664,9 +667,21 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
    * Create PartitionedRegion with 1 redundant copy
    */
   public static void createPRWithRedundantCopyWithAsyncEventQueue(String regionName,
-      String asyncEventQueueId, Boolean offHeap) {
+      String asyncEventQueueId, Boolean offHeap) throws InterruptedException {
     IgnoredException exp =
         IgnoredException.addIgnoredException(ForceReattemptException.class.getName());
+
+
+    CountDownLatch recoveryDone = new CountDownLatch(2);
+
+    ResourceObserver observer = new InternalResourceManager.ResourceObserverAdapter() {
+      @Override
+      public void recoveryFinished(Region region) {
+        recoveryDone.countDown();
+      }
+    };
+    InternalResourceManager.setResourceObserver(observer);
+
 
     try {
       AttributesFactory fact = new AttributesFactory();
@@ -679,6 +694,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       Region r = cache.createRegionFactory(fact.create()).addAsyncEventQueueId(asyncEventQueueId)
           .create(regionName);
       assertNotNull(r);
+      recoveryDone.await();
     } finally {
       exp.remove();
     }
