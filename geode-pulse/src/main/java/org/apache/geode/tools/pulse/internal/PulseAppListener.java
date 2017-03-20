@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -141,13 +140,6 @@ public class PulseAppListener implements ServletContextListener {
       try {
         // Get host name of machine running pulse in embedded mode
         sysPulseHost = InetAddress.getLocalHost().getCanonicalHostName();
-      } catch (UnknownHostException e) {
-        if (LOGGER.fineEnabled()) {
-          LOGGER.fine(
-              resourceBundle.getString("LOG_MSG_JMX_CONNECTION_UNKNOWN_HOST") + e.getMessage());
-        }
-        // Set default host name
-        sysPulseHost = PulseConstants.GEMFIRE_DEFAULT_HOST;
       } catch (Exception e) {
         if (LOGGER.fineEnabled()) {
           LOGGER.fine(
@@ -156,7 +148,10 @@ public class PulseAppListener implements ServletContextListener {
         // Set default host name
         sysPulseHost = PulseConstants.GEMFIRE_DEFAULT_HOST;
       }
-      sysPulsePort = PulseConstants.GEMFIRE_DEFAULT_PORT;
+      sysPulsePort = System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT);
+      if (StringUtils.isBlank(sysPulsePort)) {
+        sysPulsePort = PulseConstants.GEMFIRE_DEFAULT_PORT;
+      }
 
     } else {
       // Application Pulse is running in Non-Embedded Mode

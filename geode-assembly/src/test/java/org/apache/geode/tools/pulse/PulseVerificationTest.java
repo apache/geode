@@ -39,6 +39,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
@@ -52,10 +53,13 @@ public class PulseVerificationTest {
   @ClassRule
   public static LocatorStarterRule locatorStarterRule = new LocatorStarterRule();
 
+  @ClassRule
+  public static RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
   private static int httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
   // use a random port when fixing GEODE-2671
-  private static int jmxPort = 1099; // AvailablePortHelper.getRandomAvailableTCPPort();
+  private static int jmxPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
   private static HttpHost host;
 

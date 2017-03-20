@@ -14,6 +14,32 @@
  */
 package org.apache.geode.management.internal;
 
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
+import org.apache.geode.internal.tcp.TCPConduit;
+import org.apache.geode.management.ManagementException;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.ManagerMXBean;
+import org.apache.geode.management.internal.security.AccessControlMBean;
+import org.apache.geode.management.internal.security.MBeanServerWrapper;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.management.internal.unsafe.ReadOpFileAccessController;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
@@ -41,33 +67,6 @@ import javax.management.remote.rmi.RMIConnectorServer;
 import javax.management.remote.rmi.RMIJRMPServerImpl;
 import javax.management.remote.rmi.RMIServerImpl;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
-
-import org.apache.logging.log4j.Logger;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.net.SSLConfigurationFactory;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
-import org.apache.geode.internal.tcp.TCPConduit;
-import org.apache.geode.management.ManagementException;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.ManagerMXBean;
-import org.apache.geode.management.internal.security.AccessControlMBean;
-import org.apache.geode.management.internal.security.MBeanServerWrapper;
-import org.apache.geode.management.internal.security.ResourceConstants;
-import org.apache.geode.management.internal.unsafe.ReadOpFileAccessController;
 
 /**
  * Agent implementation that controls the JMX server end points for JMX clients to connect, such as
@@ -100,6 +99,7 @@ public class ManagementAgent {
    * embedded pulse webapp can use a local MBeanServer instead of a remote JMX connection.
    */
   private static final String PULSE_EMBEDDED_PROP = "pulse.embedded";
+  private static final String PULSE_PORT_PROP = "pulse.port";
 
   public ManagementAgent(DistributionConfig config) {
     this.config = config;
@@ -267,6 +267,7 @@ public class ManagementAgent {
           }
 
           System.setProperty(PULSE_EMBEDDED_PROP, "true");
+          System.setProperty(PULSE_PORT_PROP, "" + config.getJmxManagerPort());
 
           this.httpServer = JettyHelper.startJetty(this.httpServer);
 

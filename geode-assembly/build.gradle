@@ -58,12 +58,12 @@ dependencies {
   archives project(':geode-old-client-support')
   archives project(':geode-web')
   archives project(':geode-web-api')
-  archives project(':geode-pulse')
   archives project(':geode-wan')
   archives project(':geode-cq')
   archives project(':geode-rebalancer')
 
   testCompile project(':geode-junit')
+  testCompile project(':geode-pulse')
   testCompile files(project(':geode-core').sourceSets.test.output)
   testCompile ('org.springframework:spring-web:' + project.'springframework.version') {
     exclude module: 'aopalliance'

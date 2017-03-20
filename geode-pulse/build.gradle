@@ -29,7 +29,7 @@ sourceSets {
 
 dependencies {
   compile 'org.springframework:spring-beans:' + project.'springframework.version'
-  
+
   compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
   compile 'commons-collections:commons-collections:' + project.'commons-collections.version'
   compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
