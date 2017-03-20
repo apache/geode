@@ -126,14 +126,12 @@ public class ExportLogsStatsDUnitTest {
   public void startAndEndDateCanExcludeLogs() throws Exception {
     connectIfNeeded();
     ZonedDateTime now = LocalDateTime.now().atZone(ZoneId.systemDefault());
-    ZonedDateTime yesterday = now.minusDays(1);
-    ZonedDateTime twoDaysAgo = now.minusDays(2);
+    ZonedDateTime tomorrow = now.plusDays(1);
 
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(ONLY_DATE_FORMAT);
 
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder("export logs");
-    commandStringBuilder.addOption("start-time", dateTimeFormatter.format(twoDaysAgo));
-    commandStringBuilder.addOption("end-time", dateTimeFormatter.format(yesterday));
+    commandStringBuilder.addOption("start-time", dateTimeFormatter.format(tomorrow));
     commandStringBuilder.addOption("log-level", "debug");
 
     String output = connector.execute(commandStringBuilder.toString());
