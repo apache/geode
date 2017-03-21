@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
-import org.apache.geode.tools.pulse.internal.util.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -441,9 +441,9 @@ public class Cluster extends Thread {
     }
 
     public String getHostnameForClients() {
-      if (StringUtils.isNotNullNotEmptyNotWhiteSpace(hostnameForClients))
+      if (StringUtils.isNotBlank(hostnameForClients))
         return this.hostnameForClients;
-      else if (StringUtils.isNotNullNotEmptyNotWhiteSpace(bindAddress))
+      else if (StringUtils.isNotBlank(bindAddress))
         return this.bindAddress;
       return null;
     }

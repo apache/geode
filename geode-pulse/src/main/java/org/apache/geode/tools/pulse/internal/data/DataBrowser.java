@@ -21,8 +21,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
-import org.apache.geode.tools.pulse.internal.util.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,8 +59,7 @@ public class DataBrowser {
    */
   public boolean addQueryInHistory(String queryText, String userId) {
     boolean operationStatus = false;
-    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(queryText)
-        && StringUtils.isNotNullNotEmptyNotWhiteSpace(userId)) {
+    if (StringUtils.isNotBlank(queryText) && StringUtils.isNotBlank(userId)) {
 
       // Fetch all queries from query log file
       ObjectNode queries = fetchAllQueriesFromFile();
@@ -92,8 +91,7 @@ public class DataBrowser {
   public boolean deleteQueryById(String userId, String queryId) {
 
     boolean operationStatus = false;
-    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(queryId)
-        && StringUtils.isNotNullNotEmptyNotWhiteSpace(userId)) {
+    if (StringUtils.isNotBlank(queryId) && StringUtils.isNotBlank(userId)) {
 
       // Fetch all queries from query log file
       ObjectNode queries = fetchAllQueriesFromFile();
@@ -123,7 +121,7 @@ public class DataBrowser {
 
     ArrayNode queryList = mapper.createArrayNode();
 
-    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(userId)) {
+    if (StringUtils.isNotBlank(userId)) {
 
       // Fetch all queries from query log file
       ObjectNode queries = fetchAllQueriesFromFile();

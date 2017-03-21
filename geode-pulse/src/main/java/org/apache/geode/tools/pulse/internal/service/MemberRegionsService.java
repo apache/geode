@@ -17,21 +17,22 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
+import static org.apache.geode.tools.pulse.internal.util.NameUtil.makeCompliantName;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.geode.tools.pulse.internal.controllers.PulseController;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.geode.tools.pulse.internal.util.StringUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
 import java.text.DecimalFormat;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Class MemberRegionsService
@@ -65,7 +66,7 @@ public class MemberRegionsService implements PulseService {
     JsonNode requestDataJSON = mapper.readTree(request.getParameter("pulseData"));
     String memberName = requestDataJSON.get("MemberRegions").get("memberName").textValue();
 
-    Cluster.Member clusterMember = cluster.getMember(StringUtils.makeCompliantName(memberName));
+    Cluster.Member clusterMember = cluster.getMember(makeCompliantName(memberName));
 
     if (clusterMember != null) {
       responseJSON.put("memberId", clusterMember.getId());
@@ -89,17 +90,17 @@ public class MemberRegionsService implements PulseService {
         String entrySizeInMB = form.format(entrySize / (1024f * 1024f));
 
         if (entrySize < 0) {
-          regionJSON.put(this.ENTRY_SIZE, this.VALUE_NA);
+          regionJSON.put(this.ENTRY_SIZE, VALUE_NA);
         } else {
           regionJSON.put(this.ENTRY_SIZE, entrySizeInMB);
         }
         regionJSON.put("scope", memberRegion.getScope());
         String diskStoreName = memberRegion.getDiskStoreName();
-        if (StringUtils.isNotNullNotEmptyNotWhiteSpace(diskStoreName)) {
+        if (StringUtils.isNotBlank(diskStoreName)) {
           regionJSON.put(this.DISC_STORE_NAME, diskStoreName);
           regionJSON.put(this.DISC_SYNCHRONOUS, memberRegion.isDiskSynchronous());
         } else {
-          regionJSON.put(this.DISC_SYNCHRONOUS, this.VALUE_NA);
+          regionJSON.put(this.DISC_SYNCHRONOUS, VALUE_NA);
           regionJSON.put(this.DISC_STORE_NAME, "");
         }
         regionJSON.put("gatewayEnabled", memberRegion.getWanEnabled());

@@ -17,20 +17,20 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
+import static org.apache.geode.tools.pulse.internal.util.NameUtil.makeCompliantName;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.geode.tools.pulse.internal.controllers.PulseController;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.geode.tools.pulse.internal.util.StringUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
 import java.text.DecimalFormat;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Class MemberDetailsService
@@ -60,7 +60,7 @@ public class MemberDetailsService implements PulseService {
     String memberName = requestDataJSON.get("MemberDetails").get("memberName").textValue();
     DecimalFormat df2 = new DecimalFormat(PulseConstants.DECIMAL_FORMAT_PATTERN);
 
-    Cluster.Member clusterMember = cluster.getMember(StringUtils.makeCompliantName(memberName));
+    Cluster.Member clusterMember = cluster.getMember(makeCompliantName(memberName));
     if (clusterMember != null) {
       responseJSON.put("memberId", clusterMember.getId());
       responseJSON.put("name", clusterMember.getName());

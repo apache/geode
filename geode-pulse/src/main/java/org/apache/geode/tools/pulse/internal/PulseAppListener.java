@@ -17,17 +17,15 @@
 
 package org.apache.geode.tools.pulse.internal;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.tools.pulse.internal.controllers.PulseController;
 import org.apache.geode.tools.pulse.internal.data.PulseConfig;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
-import org.apache.geode.tools.pulse.internal.util.StringUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -44,6 +42,8 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 /**
  * This class is used for checking the application running mode i.e. Embedded or not
@@ -447,50 +447,50 @@ public class PulseAppListener implements ServletContextListener {
     PulseConfig pulseConfig = Repository.get().getPulseConfig();
 
     // log file name
-    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(
-        logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILENAME))) {
+    if (StringUtils
+        .isNotBlank(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILENAME))) {
       pulseConfig.setLogFileName(
           logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILENAME));
     }
 
     // log file location
-    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(
+    if (StringUtils.isNotBlank(
         logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILELOCATION))) {
       pulseConfig.setLogFileLocation(
           logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILELOCATION));
     }
 
     // log file size
-    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(
-        logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILESIZE))) {
+    if (StringUtils
+        .isNotBlank(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILESIZE))) {
       pulseConfig.setLogFileSize(Integer
           .parseInt(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILESIZE)));
     }
 
     // log file count
-    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(
-        logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILECOUNT))) {
+    if (StringUtils
+        .isNotBlank(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILECOUNT))) {
       pulseConfig.setLogFileCount(Integer
           .parseInt(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILECOUNT)));
     }
 
     // log message date pattern
-    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(
+    if (StringUtils.isNotBlank(
         logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGDATEPATTERN))) {
       pulseConfig.setLogDatePattern(
           logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGDATEPATTERN));
     }
 
     // log level
-    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(
-        logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGLEVEL))) {
+    if (StringUtils
+        .isNotBlank(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGLEVEL))) {
       pulseConfig.setLogLevel(Level.parse(
           logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGLEVEL).toUpperCase()));
     }
 
     // log append
-    if (StringUtils.isNotNullNotEmptyNotWhiteSpace(
-        logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGAPPEND))) {
+    if (StringUtils
+        .isNotBlank(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGAPPEND))) {
       pulseConfig.setLogAppend(Boolean
           .valueOf(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGAPPEND)));
     }

@@ -19,9 +19,9 @@ package org.apache.geode.tools.pulse.internal.data;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
 import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
-import org.apache.geode.tools.pulse.internal.util.StringUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -115,11 +115,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       this.MBEAN_OBJECT_NAME_STATEMENT_DISTRIBUTED =
           new ObjectName(PulseConstants.OBJECT_NAME_STATEMENT_DISTRIBUTED);
 
-    } catch (MalformedObjectNameException e) {
-      if (LOGGER.severeEnabled()) {
-        LOGGER.severe(e.getMessage(), e);
-      }
-    } catch (NullPointerException e) {
+    } catch (MalformedObjectNameException | NullPointerException e) {
       if (LOGGER.severeEnabled()) {
         LOGGER.severe(e.getMessage(), e);
       }
@@ -234,7 +230,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         jmxSerURL = formJMXServiceURLString(this.serverName, this.port);
       }
 
-      if (StringUtils.isNotNullNotEmptyNotWhiteSpace(jmxSerURL)) {
+      if (StringUtils.isNotBlank(jmxSerURL)) {
         JMXServiceURL url = new JMXServiceURL(jmxSerURL);
         String[] creds = {this.cluster.getJmxUserName(), this.cluster.getJmxUserPassword()};
         Map<String, Object> env = new HashMap<String, Object>();

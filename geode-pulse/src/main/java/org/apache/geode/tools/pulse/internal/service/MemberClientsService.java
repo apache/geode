@@ -17,13 +17,14 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
+import static org.apache.geode.tools.pulse.internal.util.NameUtil.makeCompliantName;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.geode.tools.pulse.internal.util.StringUtils;
 import org.apache.geode.tools.pulse.internal.util.TimeUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -62,7 +63,7 @@ public class MemberClientsService implements PulseService {
 
     ArrayNode clientListJson = mapper.createArrayNode();
 
-    Cluster.Member clusterMember = cluster.getMember(StringUtils.makeCompliantName(memberName));
+    Cluster.Member clusterMember = cluster.getMember(makeCompliantName(memberName));
     if (clusterMember != null) {
       responseJSON.put("memberId", clusterMember.getId());
       responseJSON.put(this.NAME, clusterMember.getName());
@@ -83,7 +84,7 @@ public class MemberClientsService implements PulseService {
             memberClient.isSubscriptionEnabled() ? "Yes" : "No");
         regionJSON.put("uptime", TimeUtils.convertTimeSecondsToHMS(memberClient.getUptime()));
 
-        regionJSON.put("cpuUsage", String.format("%.4f", memberClient.getCpuUsage()).toString());
+        regionJSON.put("cpuUsage", String.format("%.4f", memberClient.getCpuUsage()));
         // regionJSON.put("cpuUsage", memberClient.getCpuUsage());
         regionJSON.put("threads", memberClient.getThreads());
         regionJSON.put("gets", memberClient.getGets());

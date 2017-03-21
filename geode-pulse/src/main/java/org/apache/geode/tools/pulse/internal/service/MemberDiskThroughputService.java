@@ -17,12 +17,13 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
+import static org.apache.geode.tools.pulse.internal.util.NameUtil.makeCompliantName;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.geode.tools.pulse.internal.util.StringUtils;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -56,7 +57,7 @@ public class MemberDiskThroughputService implements PulseService {
     JsonNode requestDataJSON = mapper.readTree(request.getParameter("pulseData"));
     String memberName = requestDataJSON.get("MemberDiskThroughput").get("memberName").textValue();
 
-    Cluster.Member clusterMember = cluster.getMember(StringUtils.makeCompliantName(memberName));
+    Cluster.Member clusterMember = cluster.getMember(makeCompliantName(memberName));
 
     if (clusterMember != null) {
       // response

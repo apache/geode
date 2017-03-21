@@ -17,18 +17,12 @@
 
 package org.apache.geode.tools.pulse.internal.controllers;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sun.net.httpserver.Headers;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.PulseVersion;
@@ -37,13 +31,17 @@ import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 import org.apache.geode.tools.pulse.internal.service.PulseService;
 import org.apache.geode.tools.pulse.internal.service.PulseServiceFactory;
 import org.apache.geode.tools.pulse.internal.service.SystemAlertsService;
-import org.apache.geode.tools.pulse.internal.util.StringUtils;
-
-import org.apache.commons.lang.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Class PulseController
@@ -350,7 +348,7 @@ public class PulseController {
     ObjectNode queryResult = mapper.createObjectNode();
     try {
 
-      if (StringUtils.isNotNullNotEmptyNotWhiteSpace(query)) {
+      if (StringUtils.isNotBlank(query)) {
         // get cluster object
         Cluster cluster = Repository.get().getCluster();
         String userName = request.getUserPrincipal().getName();
@@ -388,13 +386,13 @@ public class PulseController {
 
       // get query string
       action = request.getParameter(QUERYSTRING_PARAM_ACTION);
-      if (!StringUtils.isNotNullNotEmptyNotWhiteSpace(action)) {
+      if (StringUtils.isBlank(action)) {
         action = ACTION_VIEW;
       }
 
       if (action.toLowerCase().equalsIgnoreCase(ACTION_DELETE)) {
         String queryId = request.getParameter(QUERYSTRING_PARAM_QUERYID);
-        if (StringUtils.isNotNullNotEmptyNotWhiteSpace(queryId)) {
+        if (StringUtils.isNotBlank(queryId)) {
 
           boolean deleteStatus = cluster.deleteQueryById(userName, queryId);
           if (deleteStatus) {
@@ -443,7 +441,7 @@ public class PulseController {
     ObjectNode queryResult = mapper.createObjectNode();
     try {
 
-      if (StringUtils.isNotNullNotEmptyNotWhiteSpace(query)) {
+      if (StringUtils.isNotBlank(query)) {
         // get cluster object
         Cluster cluster = Repository.get().getCluster();
         String userName = request.getUserPrincipal().getName();
