@@ -33,12 +33,14 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Category(IntegrationTest.class)
 public class JarDeployerIntegrationTest {
-
   private ClassBuilder classBuilder;
 
   @Rule
@@ -60,7 +62,7 @@ public class JarDeployerIntegrationTest {
   }
 
   @Test
-  public void testFileVersioning() throws IOException, ClassNotFoundException {
+  public void testFileVersioning() throws Exception {
     String jarName = "JarDeployerIntegrationTest.jar";
 
     byte[] firstJarBytes = createJarWithClass("ClassA");
@@ -89,7 +91,7 @@ public class JarDeployerIntegrationTest {
   }
 
   @Test
-  public void testDeployToInvalidDirectory() throws IOException, ClassNotFoundException {
+  public void testDeployToInvalidDirectory() throws Exception {
     final File alternateDir = new File(temporaryFolder.getRoot(), "JarDeployerDUnit");
     alternateDir.delete();
 
@@ -106,40 +108,20 @@ public class JarDeployerIntegrationTest {
     // Test to verify that deployment succeeds if the directory doesn't
     // initially exist, but is then created while the JarDeployer is looping
     // looking for a valid directory.
-    Thread thread = new Thread() {
-      @Override
-      public void run() {
-        try {
-          barrier.await();
-        } catch (InterruptedException iex) {
-          fail("Interrupted while waiting.");
-        } catch (BrokenBarrierException bbex) {
-          fail("Broken barrier.");
-        }
-
-        try {
-          jarDeployer.deployWithoutRegistering("JarDeployerIntegrationTest.jar", jarBytes);
-        } catch (IOException ioex) {
-          fail("IOException received unexpectedly.");
-        }
-      }
-    };
-    thread.start();
-
-    try {
+    Future<Boolean> done = Executors.newSingleThreadExecutor().submit(() -> {
       barrier.await();
-      Thread.sleep(500);
-      alternateDir.mkdir();
-      thread.join();
-    } catch (InterruptedException iex) {
-      fail("Interrupted while waiting.");
-    } catch (BrokenBarrierException bbex) {
-      fail("Broken barrier.");
-    }
+      jarDeployer.deployWithoutRegistering("JarDeployerIntegrationTest.jar", jarBytes);
+      return true;
+    });
+
+    barrier.await();
+    Thread.sleep(500);
+    alternateDir.mkdir();
+    assertThat(done.get(2, TimeUnit.MINUTES)).isTrue();
   }
 
   @Test
-  public void testVersionNumberCreation() throws IOException, ClassNotFoundException {
+  public void testVersionNumberCreation() throws Exception {
     File versionedName = jarDeployer.getNextVersionedJarFile("myJar.jar");
     assertThat(versionedName.getName()).isEqualTo("myJar.v1.jar");
 
@@ -163,7 +145,7 @@ public class JarDeployerIntegrationTest {
   }
 
   @Test
-  public void testRenamingOfOldJarFiles() throws IOException {
+  public void testRenamingOfOldJarFiles() throws Exception {
     File deployDir = jarDeployer.getDeployDirectory();
 
     File jarAVersion1 = new File(deployDir, "vf.gf#myJarA.jar#1");
@@ -200,7 +182,7 @@ public class JarDeployerIntegrationTest {
   }
 
   @Test
-  public void testOldJarNameMatcher() throws IOException {
+  public void testOldJarNameMatcher() throws Exception {
     File deployDir = jarDeployer.getDeployDirectory();
 
     File jarAVersion1 = new File(deployDir, "vf.gf#myJarA.jar#1");
