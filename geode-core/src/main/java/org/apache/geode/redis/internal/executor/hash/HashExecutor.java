@@ -16,15 +16,13 @@ package org.apache.geode.redis.internal.executor.hash;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.redis.internal.AutoCloseableLock;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisDataType;
+import org.apache.geode.redis.internal.RedisLockService;
 import org.apache.geode.redis.internal.RegionProvider;
 import org.apache.geode.redis.internal.executor.AbstractExecutor;
 
@@ -61,8 +59,8 @@ public abstract class HashExecutor extends AbstractExecutor {
 
   protected AutoCloseableLock withRegionLock(ExecutionHandlerContext context,
       ByteArrayWrapper key) {
-    DistributedLockService lockService = context.getHashLockService();
-    boolean lock = lockService.lock(key, -1, -1);
+    RedisLockService lockService = context.getHashLockService();
+    boolean lock = lockService.lock(key);
     if (!lock) {
       throw new RuntimeException("Couldn't get lock for " + key.toString());
     }
