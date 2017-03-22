@@ -28,10 +28,11 @@ import org.apache.geode.tools.pulse.internal.data.Cluster.Region;
 import org.apache.geode.tools.pulse.internal.data.IClusterUpdater;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Locator;
 import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Peer;
 import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Server;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -47,7 +48,7 @@ import java.util.ResourceBundle;
 
 public class PropMockDataUpdater implements IClusterUpdater {
   private static final int MAX_HOSTS = 40;
-  private static final PulseLogWriter LOGGER = PulseLogWriter.getLogger();
+  private static final Logger logger = LogManager.getLogger();
   private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
   private static final int POLL_INTERVAL = 5000;
   public static final int MAX_SAMPLE_SIZE = 180;
@@ -412,9 +413,7 @@ public class PropMockDataUpdater implements IClusterUpdater {
    */
 
   private void refresh(Member m) {
-    if (LOGGER.infoEnabled()) {
-      LOGGER.info(resourceBundle.getString("LOG_MSG_REFRESHING_MEMBER_DATA") + " : " + m.getName());
-    }
+    logger.info("{} : {}", resourceBundle.getString("LOG_MSG_REFRESHING_MEMBER_DATA"), m.getName());
 
     Random r = new Random(System.currentTimeMillis());
 

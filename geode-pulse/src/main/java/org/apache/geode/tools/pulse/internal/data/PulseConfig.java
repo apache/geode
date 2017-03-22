@@ -17,7 +17,7 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
-import java.util.logging.Level;
+import org.apache.logging.log4j.Level;
 
 /**
  * Class PulseConfig

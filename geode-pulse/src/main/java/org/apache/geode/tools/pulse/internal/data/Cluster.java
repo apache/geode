@@ -23,7 +23,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.collections.buffer.CircularFifoBuffer;
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -66,7 +67,7 @@ public class Cluster extends Thread {
   public static final int ALERTS_MAX_SIZE = 1000;
   public static final int PAGE_ALERTS_MAX_SIZE = 100;
 
-  private final PulseLogWriter LOGGER = PulseLogWriter.getLogger();
+  private static final Logger logger = LogManager.getLogger();
   private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
 
   private String jmxUserName;
@@ -2308,25 +2309,19 @@ public class Cluster extends Thread {
             this.stale = 0;
           }
         } catch (Exception e) {
-          if (LOGGER.infoEnabled()) {
-            LOGGER.info("Exception Occurred while updating cluster data : " + e.getMessage());
-          }
+          logger.info("Exception Occurred while updating cluster data : ", e);
         }
 
         clusterHasBeenInitialized.countDown();
         try {
           Thread.sleep(POLL_INTERVAL);
         } catch (InterruptedException e) {
-          if (LOGGER.infoEnabled()) {
-            LOGGER.info("InterruptedException Occurred : " + e.getMessage());
-          }
+          logger.info("InterruptedException Occurred : ", e);
         }
       }
 
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info(resourceBundle.getString("LOG_MSG_STOP_THREAD_UPDATES") + " :: "
-            + this.serverName + ":" + this.port);
-      }
+      logger.info("{} :: {}:{}", resourceBundle.getString("LOG_MSG_STOP_THREAD_UPDATES"),
+          this.serverName, this.port);
     } finally {
       clusterHasBeenInitialized.countDown();
     }
@@ -2342,10 +2337,8 @@ public class Cluster extends Thread {
     // some dummy data.
     // Connect if required or hold a connection. If unable to connect,
     // return false
-    if (LOGGER.finerEnabled()) {
-      LOGGER.finer(resourceBundle.getString("LOG_MSG_CLUSTER_DATA_IS_UPDATING") + "::"
-          + this.serverName + ":" + this.port);
-    }
+    logger.debug("{} :: {}:{}", resourceBundle.getString("LOG_MSG_CLUSTER_DATA_IS_UPDATING"),
+        this.serverName, this.port);
     return this.updater.updateData();
   }
 
@@ -2358,10 +2351,7 @@ public class Cluster extends Thread {
     try {
       join();
     } catch (InterruptedException e) {
-      if (LOGGER.infoEnabled()) {
-        LOGGER
-            .info("InterruptedException occured while stoping cluster thread : " + e.getMessage());
-      }
+      logger.info("InterruptedException occured while stoping cluster thread : ", e);
     }
   }
 
@@ -3021,9 +3011,7 @@ public class Cluster extends Thread {
 
       if (clusterStatementMap.size() < 500) {
         for (int i = 1; i <= 500; ++i) {
-          if (LOGGER.infoEnabled()) {
-            LOGGER.info("Adding statement = " + i);
-          }
+          logger.info("Adding statement = {}", i);
 
           updateClusterStatement(i);
         }
@@ -3097,9 +3085,7 @@ public class Cluster extends Thread {
       statement.setqNRespDeSerTime(randomGenerator.nextLong());
       addClusterStatement(statementDefinition, statement);
 
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info("statementDefinition [" + iNum + "]" + statementDefinition);
-      }
+      logger.info("statementDefinition [{}]{}", iNum, statementDefinition);
     }
 
     private Region initMemberRegion(int count, String memName) {
@@ -3325,9 +3311,7 @@ public class Cluster extends Thread {
     }
 
     private void refresh(Member m) {
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info(resourceBundle.getString("LOG_MSG_REFRESHING_MEMBER_DATA") + " : " + m.name);
-      }
+      logger.info("{} : {}", resourceBundle.getString("LOG_MSG_REFRESHING_MEMBER_DATA"), m.name);
 
       Random r = new Random(System.currentTimeMillis());
 
@@ -3564,7 +3548,7 @@ public class Cluster extends Thread {
         // close stream reader
         streamReader.close();
       } catch (IOException ex) {
-        LOGGER.severe(ex.getMessage());
+        logger.fatal(ex);
       }
 
       return (ObjectNode) jsonObject;
@@ -3709,20 +3693,9 @@ public class Cluster extends Thread {
           Object updaterObject = constructor.newInstance(cluster);
           IClusterUpdater updater = (IClusterUpdater) updaterObject;
           return updater;
-        } catch (ClassNotFoundException e) {
-          cluster.LOGGER.severe(e);
-        } catch (SecurityException e) {
-          cluster.LOGGER.severe(e);
-        } catch (NoSuchMethodException e) {
-          cluster.LOGGER.severe(e);
-        } catch (IllegalArgumentException e) {
-          cluster.LOGGER.severe(e);
-        } catch (InstantiationException e) {
-          cluster.LOGGER.severe(e);
-        } catch (IllegalAccessException e) {
-          cluster.LOGGER.severe(e);
-        } catch (InvocationTargetException e) {
-          cluster.LOGGER.severe(e);
+        } catch (ClassNotFoundException | SecurityException | NoSuchMethodException
+            | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+          cluster.logger.fatal(e);
         }
         return null;
       } else {

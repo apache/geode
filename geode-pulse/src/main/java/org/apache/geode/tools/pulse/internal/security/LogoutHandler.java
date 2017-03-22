@@ -20,8 +20,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
@@ -31,6 +32,7 @@ import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuc
  *
  */
 public class LogoutHandler extends SimpleUrlLogoutSuccessHandler implements LogoutSuccessHandler {
+  private static final Logger logger = LogManager.getLogger();
 
   public LogoutHandler(String defaultTargetURL) {
     this.setDefaultTargetUrl(defaultTargetURL);
@@ -38,13 +40,12 @@ public class LogoutHandler extends SimpleUrlLogoutSuccessHandler implements Logo
 
   public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) throws IOException, ServletException {
-    PulseLogWriter LOGGER = PulseLogWriter.getLogger();
-    LOGGER.fine("Invoked #LogoutHandler ...");
+    logger.debug("Invoked #LogoutHandler ...");
     if (Repository.get().isUseGemFireCredentials()) {
       GemFireAuthentication gemauthentication = (GemFireAuthentication) authentication;
       if (gemauthentication != null) {
         gemauthentication.getJmxc().close();
-        LOGGER.info("#LogoutHandler : Closing GemFireAuthentication JMX Connection...");
+        logger.info("#LogoutHandler : Closing GemFireAuthentication JMX Connection...");
       }
     }
     super.onLogoutSuccess(request, response, authentication);

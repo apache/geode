@@ -21,7 +21,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.geode.tools.pulse.internal.data.JmxManagerFinder.JmxManagerInfo;
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -70,7 +71,7 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
  */
 public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
-  private final PulseLogWriter LOGGER = PulseLogWriter.getLogger();
+  private static final Logger logger = LogManager.getLogger();
   private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
 
   private JMXConnector conn = null;
@@ -116,9 +117,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           new ObjectName(PulseConstants.OBJECT_NAME_STATEMENT_DISTRIBUTED);
 
     } catch (MalformedObjectNameException | NullPointerException e) {
-      if (LOGGER.severeEnabled()) {
-        LOGGER.severe(e.getMessage(), e);
-      }
+      logger.fatal(e);
     }
   }
 
@@ -128,41 +127,31 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       String locatorHost = repository.getJmxHost();
       int locatorPort = Integer.parseInt(repository.getJmxPort());
 
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info(resourceBundle.getString("LOG_MSG_HOST") + " : " + locatorHost + " & "
-            + resourceBundle.getString("LOG_MSG_PORT") + " : " + locatorPort);
-      }
+      logger.info("{} : {} & {} : {}", resourceBundle.getString("LOG_MSG_HOST"), locatorHost,
+          resourceBundle.getString("LOG_MSG_PORT"), locatorPort);
 
       InetAddress inetAddr = InetAddress.getByName(locatorHost);
 
       if ((inetAddr instanceof Inet4Address) || (inetAddr instanceof Inet6Address)) {
 
         if (inetAddr instanceof Inet4Address) {
-          if (LOGGER.infoEnabled()) {
-            LOGGER.info(resourceBundle.getString("LOG_MSG_LOCATOR_IPV4_ADDRESS") + " - "
-                + inetAddr.toString());
-          }
+          logger.info("{} - {}", resourceBundle.getString("LOG_MSG_LOCATOR_IPV4_ADDRESS"),
+              inetAddr);
         } else {
-          if (LOGGER.infoEnabled()) {
-            LOGGER.info(resourceBundle.getString("LOG_MSG_LOCATOR_IPV6_ADDRESS") + " - "
-                + inetAddr.toString());
-          }
+          logger.info("{} - {}", resourceBundle.getString("LOG_MSG_LOCATOR_IPV6_ADDRESS"),
+              inetAddr);
         }
 
         JmxManagerInfo jmxManagerInfo = JmxManagerFinder.askLocatorForJmxManager(inetAddr,
             locatorPort, 15000, repository.isUseSSLLocator());
 
         if (jmxManagerInfo.port == 0) {
-          if (LOGGER.infoEnabled()) {
-            LOGGER.info(resourceBundle.getString("LOG_MSG_LOCATOR_COULD_NOT_FIND_MANAGER"));
-          }
+          logger.info(resourceBundle.getString("LOG_MSG_LOCATOR_COULD_NOT_FIND_MANAGER"));
         }
         return jmxManagerInfo;
       } else {
         // Locator has Invalid locator Address
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info(resourceBundle.getString("LOG_MSG_LOCATOR_BAD_ADDRESS"));
-        }
+        logger.info(resourceBundle.getString("LOG_MSG_LOCATOR_BAD_ADDRESS"));
         cluster
             .setConnectionErrorMsg(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_BAD_ADDRESS"));
         // update message to display on UI
@@ -174,7 +163,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       StringWriter swBuffer = new StringWriter();
       PrintWriter prtWriter = new PrintWriter(swBuffer);
       e.printStackTrace(prtWriter);
-      LOGGER.severe("Exception Details : " + swBuffer.toString() + "\n");
+      logger.fatal("Exception Details : {}\n", swBuffer);
     }
     return null;
   }
@@ -198,35 +187,28 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
       String jmxSerURL = "";
 
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info(resourceBundle.getString("LOG_MSG_USE_LOCATOR_VALUE") + ":"
-            + repository.getJmxUseLocator());
-      }
+      logger.info("{}:{}", resourceBundle.getString("LOG_MSG_USE_LOCATOR_VALUE"),
+          repository.getJmxUseLocator());
 
       if (repository.getJmxUseLocator()) {
         JmxManagerInfo jmxManagerInfo = getManagerInfoFromLocator(repository);
 
         if (jmxManagerInfo.port == 0) {
-          if (LOGGER.infoEnabled()) {
-            LOGGER.info(resourceBundle.getString("LOG_MSG_LOCATOR_COULD_NOT_FIND_MANAGER"));
-          }
+          logger.info(resourceBundle.getString("LOG_MSG_LOCATOR_COULD_NOT_FIND_MANAGER"));
         } else {
-          if (LOGGER.infoEnabled()) {
-            LOGGER.info(resourceBundle.getString("LOG_MSG_LOCATOR_FOUND_MANAGER") + " : "
-                + resourceBundle.getString("LOG_MSG_HOST") + " : " + jmxManagerInfo.host + " & "
-                + resourceBundle.getString("LOG_MSG_PORT") + " : " + jmxManagerInfo.port
-                + (jmxManagerInfo.ssl ? resourceBundle.getString("LOG_MSG_WITH_SSL")
-                    : resourceBundle.getString("LOG_MSG_WITHOUT_SSL")));
-          }
+          logger.info("{} : {} : {} & {} : {}{}",
+              resourceBundle.getString("LOG_MSG_LOCATOR_FOUND_MANAGER"),
+              resourceBundle.getString("LOG_MSG_HOST"), jmxManagerInfo.host,
+              resourceBundle.getString("LOG_MSG_PORT"), jmxManagerInfo.port,
+              (jmxManagerInfo.ssl ? resourceBundle.getString("LOG_MSG_WITH_SSL")
+                  : resourceBundle.getString("LOG_MSG_WITHOUT_SSL")));
 
           jmxSerURL =
               formJMXServiceURLString(jmxManagerInfo.host, String.valueOf(jmxManagerInfo.port));
         }
       } else {
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info(resourceBundle.getString("LOG_MSG_HOST") + " : " + this.serverName + " & "
-              + resourceBundle.getString("LOG_MSG_PORT") + " : " + this.port);
-        }
+        logger.info("{} : {} & {} : {}", resourceBundle.getString("LOG_MSG_HOST"), this.serverName,
+            resourceBundle.getString("LOG_MSG_PORT"), this.port);
         jmxSerURL = formJMXServiceURLString(this.serverName, this.port);
       }
 
@@ -240,7 +222,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           // use ssl to connect
           env.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
         }
-        LOGGER.info("Connecting to jmxURL : " + jmxSerURL);
+        logger.info("Connecting to jmxURL : {}", jmxSerURL);
         connection = JMXConnectorFactory.connect(url, env);
 
         // Register Pulse URL if not already present in the JMX Manager
@@ -257,12 +239,12 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       StringWriter swBuffer = new StringWriter();
       PrintWriter prtWriter = new PrintWriter(swBuffer);
       e.printStackTrace(prtWriter);
-      LOGGER.severe("Exception Details : " + swBuffer.toString() + "\n");
+      logger.fatal("Exception Details : {}\n", swBuffer);
       if (this.conn != null) {
         try {
           this.conn.close();
         } catch (Exception e1) {
-          LOGGER.severe("Error closing JMX connection " + swBuffer.toString() + "\n");
+          logger.fatal("Error closing JMX connection {}\n", swBuffer);
         }
         this.conn = null;
       }
@@ -298,9 +280,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   private void registerPulseUrlToManager(JMXConnector connection)
       throws IOException, AttributeNotFoundException, InstanceNotFoundException, MBeanException,
       ReflectionException, MalformedObjectNameException, InvalidAttributeValueException {
-    if (LOGGER.infoEnabled()) {
-      LOGGER.info(resourceBundle.getString("LOG_MSG_REGISTERING_APP_URL_TO_MANAGER"));
-    }
+    logger.info(resourceBundle.getString("LOG_MSG_REGISTERING_APP_URL_TO_MANAGER"));
 
     // Reference to repository
     Repository repository = Repository.get();
@@ -316,16 +296,12 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             (String) mbsc.getAttribute(mbeanName, PulseConstants.MBEAN_MANAGER_ATTRIBUTE_PULSEURL);
         String pulseWebAppUrl = repository.getPulseWebAppUrl();
         if (pulseWebAppUrl != null && (presentUrl == null || !pulseWebAppUrl.equals(presentUrl))) {
-          if (LOGGER.fineEnabled()) {
-            LOGGER.fine(resourceBundle.getString("LOG_MSG_SETTING_APP_URL_TO_MANAGER"));
-          }
+          logger.debug(resourceBundle.getString("LOG_MSG_SETTING_APP_URL_TO_MANAGER"));
           Attribute pulseUrlAttr =
               new Attribute(PulseConstants.MBEAN_MANAGER_ATTRIBUTE_PULSEURL, pulseWebAppUrl);
           mbsc.setAttribute(mbeanName, pulseUrlAttr);
         } else {
-          if (LOGGER.fineEnabled()) {
-            LOGGER.fine(resourceBundle.getString("LOG_MSG_APP_URL_ALREADY_PRESENT_IN_MANAGER"));
-          }
+          logger.debug(resourceBundle.getString("LOG_MSG_APP_URL_ALREADY_PRESENT_IN_MANAGER"));
         }
       }
     }
@@ -345,24 +321,18 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           cluster.setConnectedFlag(false);
           cluster.setConnectionErrorMsg(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_NOT_FOUND")
               + " " + resourceBundle.getString("LOG_MSG_JMX_GETTING_NEW_CONNECTION"));
-          if (LOGGER.fineEnabled()) {
-            LOGGER.fine(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_NOT_FOUND") + " "
-                + resourceBundle.getString("LOG_MSG_JMX_GET_NEW_CONNECTION"));
-          }
+          logger.debug("{} {}", resourceBundle.getString("LOG_MSG_JMX_CONNECTION_NOT_FOUND"),
+              resourceBundle.getString("LOG_MSG_JMX_GET_NEW_CONNECTION"));
           this.conn = getJMXConnection();
           if (this.conn != null) {
             this.mbs = this.conn.getMBeanServerConnection();
             cluster.setConnectedFlag(true);
           } else {
-            if (LOGGER.infoEnabled()) {
-              LOGGER.info(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_NOT_FOUND"));
-            }
+            logger.info(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_NOT_FOUND"));
             return false;
           }
         } else {
-          if (LOGGER.fineEnabled()) {
-            LOGGER.fine(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_IS_AVAILABLE"));
-          }
+          logger.debug(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_IS_AVAILABLE"));
           cluster.setConnectedFlag(true);
           if (this.mbs == null) {
             this.mbs = this.conn.getMBeanServerConnection();
@@ -374,7 +344,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           try {
             this.conn.close();
           } catch (Exception e1) {
-            LOGGER.severe(e);
+            logger.fatal(e);
           }
         }
         this.conn = null;
@@ -466,9 +436,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       // Cluster Query Statistics
       Set<ObjectName> statementObjectNames =
           this.mbs.queryNames(this.MBEAN_OBJECT_NAME_STATEMENT_DISTRIBUTED, null);
-      // LOGGER.info("statementObjectNames = " + statementObjectNames);
       for (ObjectName stmtObjectName : statementObjectNames) {
-        // LOGGER.info("stmtObjectName = " + stmtObjectName);
         updateClusterStatement(stmtObjectName);
       }
     } catch (IOException ioe) {
@@ -477,13 +445,13 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       StringWriter swBuffer = new StringWriter();
       PrintWriter prtWriter = new PrintWriter(swBuffer);
       ioe.printStackTrace(prtWriter);
-      LOGGER.severe("IOException Details : " + swBuffer.toString() + "\n");
+      logger.fatal("IOException Details : {}\n", swBuffer);
       this.mbs = null;
       if (this.conn != null) {
         try {
           this.conn.close();
         } catch (IOException e1) {
-          LOGGER.severe("Error closing JMX connection " + swBuffer.toString() + "\n");
+          logger.fatal("Error closing JMX connection {}\n", swBuffer);
         }
       }
 
@@ -663,12 +631,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         }
       }
 
-    } catch (InstanceNotFoundException infe) {
-      LOGGER.warning(infe);
-    } catch (ReflectionException re) {
-      LOGGER.warning(re);
-    } catch (MBeanException anfe) {
-      LOGGER.warning(anfe);
+    } catch (InstanceNotFoundException | ReflectionException | MBeanException infe) {
+      logger.warn(infe);
     }
   }
 
@@ -797,16 +761,9 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         member.getGatewaySenderList().add(gatewaySender);
         cluster.getMembersHMap().put(memberName, member);
       }
-    } catch (InstanceNotFoundException infe) {
-      LOGGER.warning(infe);
-    } catch (ReflectionException re) {
-      LOGGER.warning(re);
-    } catch (MBeanException me) {
-      LOGGER.warning(me);
-    } catch (AttributeNotFoundException anfe) {
-      LOGGER.warning(anfe);
-    } catch (IntrospectionException ire) {
-      LOGGER.warning(ire);
+    } catch (InstanceNotFoundException | ReflectionException | AttributeNotFoundException
+        | IntrospectionException | MBeanException infe) {
+      logger.warn(infe);
     }
   }
 
@@ -894,16 +851,9 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
         cluster.getMembersHMap().put(memberName, member);
       }
-    } catch (InstanceNotFoundException infe) {
-      LOGGER.warning(infe);
-    } catch (ReflectionException re) {
-      LOGGER.warning(re);
-    } catch (MBeanException me) {
-      LOGGER.warning(me);
-    } catch (AttributeNotFoundException anfe) {
-      LOGGER.warning(anfe);
-    } catch (IntrospectionException ire) {
-      LOGGER.warning(ire);
+    } catch (InstanceNotFoundException | ReflectionException | AttributeNotFoundException
+        | IntrospectionException | MBeanException infe) {
+      logger.warn(infe);
     }
   }
 
@@ -928,16 +878,9 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         member.setGatewayReceiver(gatewayReceiver);
         cluster.getMembersHMap().put(memberName, member);
       }
-    } catch (InstanceNotFoundException infe) {
-      LOGGER.warning(infe);
-    } catch (ReflectionException re) {
-      LOGGER.warning(re);
-    } catch (MBeanException me) {
-      LOGGER.warning(me);
-    } catch (AttributeNotFoundException anfe) {
-      LOGGER.warning(anfe);
-    } catch (IntrospectionException ire) {
-      LOGGER.warning(ire);
+    } catch (InstanceNotFoundException | ReflectionException | MBeanException
+        | AttributeNotFoundException | IntrospectionException infe) {
+      logger.warn(infe);
     }
   }
 
@@ -1016,14 +959,9 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         }
         existingMember.updateMemberClientsHMap(memberClientsHM);
       }
-    } catch (InstanceNotFoundException infe) {
-      LOGGER.warning(infe);
-    } catch (ReflectionException re) {
-      LOGGER.warning(re);
-    } catch (MBeanException me) {
-      LOGGER.warning(me);
-    } catch (AttributeNotFoundException anfe) {
-      LOGGER.warning(anfe);
+    } catch (InstanceNotFoundException | ReflectionException | AttributeNotFoundException
+        | MBeanException infe) {
+      logger.warn(infe);
     }
   }
 
@@ -1048,9 +986,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         regionOnMemberList =
             new ArrayList<Cluster.RegionOnMember>(Arrays.asList(regionOnMemberNames));
       }
-      LOGGER.fine("updateRegionOnMembers : # regionOnMembers objects in region = "
-          + regionOnMemberList.size());
-
+      logger.debug("updateRegionOnMembers : # regionOnMembers objects in region = {}",
+          regionOnMemberList.size());
       for (Cluster.RegionOnMember anRom : regionOnMemberList) {
 
         for (String memberName : memberNames) {
@@ -1058,14 +995,14 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             // Add regionOnMember object in new list
             regionOnMemberListNew.add(anRom);
 
-            LOGGER.fine("updateRegionOnMembers : Processing existing Member name = "
-                + anRom.getMemberName());
+            logger.debug("updateRegionOnMembers : Processing existing Member name = {}",
+                anRom.getMemberName());
             String objectNameROM =
                 PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_REGION + regionObjectName
                     + PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_MEMBER + anRom.getMemberName();
             ObjectName regionOnMemberMBean = new ObjectName(objectNameROM);
-            LOGGER.fine(
-                "updateRegionOnMembers : Object name = " + regionOnMemberMBean.getCanonicalName());
+            logger.debug("updateRegionOnMembers : Object name = {}",
+                regionOnMemberMBean.getCanonicalName());
 
             AttributeList attributeList = this.mbs.getAttributes(regionOnMemberMBean,
                 PulseConstants.REGION_ON_MEMBER_MBEAN_ATTRIBUTES);
@@ -1075,41 +1012,41 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               switch (name) {
                 case PulseConstants.MBEAN_ATTRIBUTE_ENTRYSIZE:
                   anRom.setEntrySize(getLongAttribute(attribute.getValue(), attribute.getName()));
-                  LOGGER.fine(
-                      "updateRegionOnMembers : anRom.getEntrySize() = " + anRom.getEntrySize());
+                  logger.debug("updateRegionOnMembers : anRom.getEntrySize() = {}",
+                      anRom.getEntrySize());
                   break;
                 case PulseConstants.MBEAN_ATTRIBUTE_ENTRYCOUNT:
                   anRom.setEntryCount(getLongAttribute(attribute.getValue(), attribute.getName()));
-                  LOGGER.fine(
-                      "updateRegionOnMembers : anRom.getEntryCount() = " + anRom.getEntryCount());
+                  logger.debug("updateRegionOnMembers : anRom.getEntryCount() = {}",
+                      anRom.getEntryCount());
                   break;
                 case PulseConstants.MBEAN_ATTRIBUTE_PUTSRATE:
                   anRom.setPutsRate(getDoubleAttribute(attribute.getValue(), attribute.getName()));
-                  LOGGER
-                      .fine("updateRegionOnMembers : anRom.getPutsRate() = " + anRom.getPutsRate());
+                  logger.debug("updateRegionOnMembers : anRom.getPutsRate() = {}",
+                      anRom.getPutsRate());
                   break;
                 case PulseConstants.MBEAN_ATTRIBUTE_GETSRATE:
                   anRom.setGetsRate(getDoubleAttribute(attribute.getValue(), attribute.getName()));
-                  LOGGER
-                      .fine("updateRegionOnMembers : anRom.getGetsRate() = " + anRom.getGetsRate());
+                  logger.debug("updateRegionOnMembers : anRom.getGetsRate() = {}",
+                      anRom.getGetsRate());
                   break;
                 case PulseConstants.MBEAN_ATTRIBUTE_DISKREADSRATE:
                   anRom.setDiskGetsRate(
                       getDoubleAttribute(attribute.getValue(), attribute.getName()));
-                  LOGGER.fine("updateRegionOnMembers : anRom.getDiskGetsRate() = "
-                      + anRom.getDiskGetsRate());
+                  logger.debug("updateRegionOnMembers : anRom.getDiskGetsRate() = {}",
+                      anRom.getDiskGetsRate());
                   break;
                 case PulseConstants.MBEAN_ATTRIBUTE_DISKWRITESRATE:
                   anRom.setDiskPutsRate(
                       getDoubleAttribute(attribute.getValue(), attribute.getName()));
-                  LOGGER.fine("updateRegionOnMembers : anRom.getDiskPutsRate() = "
-                      + anRom.getDiskPutsRate());
+                  logger.debug("updateRegionOnMembers : anRom.getDiskPutsRate() = {}",
+                      anRom.getDiskPutsRate());
                   break;
                 case PulseConstants.MBEAN_ATTRIBUTE_LOCALMAXMEMORY:
                   anRom.setLocalMaxMemory(
                       getIntegerAttribute(attribute.getValue(), attribute.getName()));
-                  LOGGER.fine("updateRegionOnMembers : anRom.getLocalMaxMemory() = "
-                      + anRom.getLocalMaxMemory());
+                  logger.debug("updateRegionOnMembers : anRom.getLocalMaxMemory() = {}",
+                      anRom.getLocalMaxMemory());
                   break;
               }
             }
@@ -1118,12 +1055,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
             anRom.getPutsPerSecTrend().add(anRom.getPutsRate());
             anRom.getDiskReadsPerSecTrend().add(anRom.getDiskGetsRate());
             anRom.getDiskWritesPerSecTrend().add(anRom.getDiskPutsRate());
-            LOGGER.fine("updateRegionOnMembers : Existing member on region : getGetsRate() = "
-                + anRom.getGetsPerSecTrend().size() + ", getPutsRate() = "
-                + anRom.getPutsPerSecTrend().size() + ", getDiskGetsRate() = "
-                + anRom.getDiskReadsPerSecTrend().size() + ", getDiskPutsRate() = "
-                + anRom.getDiskWritesPerSecTrend().size());
-
+            logger.debug(
+                "updateRegionOnMembers : Existing member on region : getGetsRate() = {}, getPutsRate() = {}, getDiskGetsRate() = {}, getDiskPutsRate() = {}",
+                anRom.getGetsPerSecTrend().size(), anRom.getPutsPerSecTrend().size(),
+                anRom.getDiskReadsPerSecTrend().size(), anRom.getDiskWritesPerSecTrend().size());
             // remove existing member names from list so only new ones will remain
             memberNames.remove(anRom.getMemberName());
 
@@ -1132,11 +1067,11 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         }
       }
 
-      LOGGER.fine(
-          "updateRegionOnMembers : Loop over remaining member names and adding new member in region. Existing count = "
-              + regionOnMemberList.size());
-      LOGGER.fine(
-          "updateRegionOnMembers : Remaining new members in this region = " + memberNames.size());
+      logger.debug(
+          "updateRegionOnMembers : Loop over remaining member names and adding new member in region. Existing count = {}",
+          regionOnMemberList.size());
+      logger.debug("updateRegionOnMembers : Remaining new members in this region = {}",
+          memberNames.size());
       // loop over the remaining regions members and add new members for this region
       for (String memberName : memberNames) {
         String objectNameROM = PulseConstants.OBJECT_NAME_REGION_ON_MEMBER_REGION + regionObjectName
@@ -1187,24 +1122,19 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         regionOnMember.getDiskReadsPerSecTrend().add(regionOnMember.getDiskGetsRate());
         regionOnMember.getDiskWritesPerSecTrend().add(regionOnMember.getDiskPutsRate());
 
-        LOGGER.fine("updateRegionOnMembers : Adding New member on region : getGetsRate() = "
-            + regionOnMember.getGetsRate() + ", getPutsRate() = " + regionOnMember.getPutsRate()
-            + ", getDiskGetsRate() = " + regionOnMember.getDiskGetsRate() + ", getDiskPutsRate() = "
-            + regionOnMember.getDiskPutsRate());
-
+        logger.debug(
+            "updateRegionOnMembers : Adding New member on region : getGetsRate() = {}, getPutsRate() = {}, getDiskGetsRate() = {}, getDiskPutsRate() = {}",
+            regionOnMember.getGetsRate(), regionOnMember.getPutsRate(),
+            regionOnMember.getDiskGetsRate(), regionOnMember.getDiskPutsRate());
         regionOnMemberListNew.add(regionOnMember);
       }
 
       // set region on member
       region.setRegionOnMembers(regionOnMemberListNew);
-      LOGGER.fine("updateRegionOnMembers : Total regions on member in region "
-          + region.getFullPath() + " after update = " + region.getRegionOnMembers().length);
-    } catch (MalformedObjectNameException e) {
-      LOGGER.warning(e);
-    } catch (InstanceNotFoundException infe) {
-      LOGGER.warning(infe);
-    } catch (ReflectionException re) {
-      LOGGER.warning(re);
+      logger.debug("updateRegionOnMembers : Total regions on member in region after update = {}",
+          region.getFullPath(), region.getRegionOnMembers().length);
+    } catch (MalformedObjectNameException | InstanceNotFoundException | ReflectionException e) {
+      logger.warn(e);
     }
   }
 
@@ -1314,10 +1244,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       region.getDiskReadsPerSecTrend().add(region.getDiskReadsRate());
       region.getDiskWritesPerSecTrend().add(region.getDiskWritesRate());
 
-    } catch (InstanceNotFoundException infe) {
-      LOGGER.warning(infe);
-    } catch (ReflectionException re) {
-      LOGGER.warning(re);
+    } catch (InstanceNotFoundException | ReflectionException infe) {
+      logger.warn(infe);
     }
   }
 
@@ -1430,10 +1358,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
        * region.getPutsPerSecTrend().add(region.getPutsRate());
        * region.getGetsPerSecTrend().add(region.getGetsRate());
        */
-    } catch (InstanceNotFoundException infe) {
-      LOGGER.warning(infe);
-    } catch (ReflectionException re) {
-      LOGGER.warning(re);
+    } catch (InstanceNotFoundException | ReflectionException infe) {
+      logger.warn(infe);
     }
   }
 
@@ -1609,10 +1535,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         memberList.add(clusterMember);
         cluster.getPhysicalToMember().put(clusterMember.getHost(), memberList);
       }
-    } catch (InstanceNotFoundException infe) {
-      LOGGER.warning(infe);
-    } catch (ReflectionException re) {
-      LOGGER.warning(re);
+    } catch (InstanceNotFoundException | ReflectionException infe) {
+      logger.warn(infe);
     }
   }
 
@@ -1627,19 +1551,15 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     try {
       if (!(object.getClass().equals(Float.class))) {
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info("************************Unexpected type for attribute: " + name
-              + " Expected type: " + Float.class.getName() + " Received type: "
-              + object.getClass().getName() + "************************");
-        }
+        logger.info(
+            "************************Unexpected type for attribute: {}; Expected type: {}; Received type: {}************************",
+            name, Float.class.getName(), object.getClass().getName());
         return Float.valueOf(0.0f);
       } else {
         return (Float) object;
       }
     } catch (Exception e) {
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception occurred: " + e.getMessage());
-      }
+      logger.info("Exception occurred: ", e);
       return Float.valueOf(0.0f);
     }
   }
@@ -1655,19 +1575,15 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     try {
       if (!(object.getClass().equals(Integer.class))) {
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info("************************Unexpected type for attribute: " + name
-              + " Expected type: " + Integer.class.getName() + " Received type: "
-              + object.getClass().getName() + "************************");
-        }
+        logger.info(
+            "************************Unexpected type for attribute: {}; Expected type: {}; Received type: {}************************",
+            name, Integer.class.getName(), object.getClass().getName());
         return Integer.valueOf(0);
       } else {
         return (Integer) object;
       }
     } catch (Exception e) {
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception occurred: " + e.getMessage());
-      }
+      logger.info("Exception occurred: ", e);
       return Integer.valueOf(0);
     }
   }
@@ -1683,19 +1599,15 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     try {
       if (!(object.getClass().equals(Long.class))) {
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info("************************Unexpected type for attribute: " + name
-              + " Expected type: " + Long.class.getName() + " Received type: "
-              + object.getClass().getName() + "************************");
-        }
+        logger.info(
+            "************************Unexpected type for attribute: {}; Expected type: {}; Received type: {}************************",
+            name, Long.class.getName(), object.getClass().getName());
         return Long.valueOf(0);
       } else {
         return (Long) object;
       }
     } catch (Exception e) {
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception occurred: " + e.getMessage());
-      }
+      logger.info("Exception occurred: ", e);
       return Long.valueOf(0);
     }
 
@@ -1712,19 +1624,15 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     try {
       if (!(object.getClass().equals(String.class))) {
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info("************************Unexpected type for attribute: " + name
-              + " Expected type: " + String.class.getName() + " Received type: "
-              + object.getClass().getName() + "************************");
-        }
+        logger.info(
+            "************************Unexpected type for attribute: {}; Expected type: {}; Received type: {}************************",
+            name, String.class.getName(), object.getClass().getName());
         return "";
       } else {
         return (String) object;
       }
     } catch (Exception e) {
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception occurred: " + e.getMessage());
-      }
+      logger.info("Exception occurred: ", e);
       return "";
     }
   }
@@ -1740,19 +1648,15 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
 
     try {
       if (!(object.getClass().equals(Boolean.class))) {
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info("************************Unexpected type for attribute: " + name
-              + " Expected type: " + Boolean.class.getName() + " Received type: "
-              + object.getClass().getName() + "************************");
-        }
+        logger.info(
+            "************************Unexpected type for attribute: {}; Expected type: {}; Received type: {}************************",
+            name, Boolean.class.getName(), object.getClass().getName());
         return Boolean.FALSE;
       } else {
         return (Boolean) object;
       }
     } catch (Exception e) {
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception Occured: " + e.getMessage());
-      }
+      logger.info("Exception Occured: ", e);
       return Boolean.FALSE;
     }
   }
@@ -1772,17 +1676,13 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       } else if (object instanceof Double) {
         return (Double) object;
       } else {
-        if (LOGGER.infoEnabled()) {
-          LOGGER.info("************************Unexpected type for attribute: " + name
-              + " Expected type: " + Double.class.getName() + " Received type: "
-              + object.getClass().getName() + "************************");
-        }
+        logger.info(
+            "************************Unexpected type for attribute: {}; Expected type: {}; Received type: {}************************",
+            name, Double.class.getName(), object.getClass().getName());
         return Double.valueOf(0);
       }
     } catch (Exception e) {
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info("Exception occurred: ", e);
-      }
+      logger.info("Exception occurred: ", e);
       return Double.valueOf(0);
     }
   }
@@ -1898,9 +1798,9 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
        * .containsKey(PulseConstants.COMPOSITE_DATA_KEY_DISKSYNCHRONOUS)) {
        * region.setDiskSynchronous((Boolean) compositeData
        * .get(PulseConstants.COMPOSITE_DATA_KEY_DISKSYNCHRONOUS)); } } }catch (MBeanException anfe)
-       * { LOGGER.warning(anfe); }catch (javax.management.RuntimeMBeanException anfe) {
+       * { logger.warn(anfe); }catch (javax.management.RuntimeMBeanException anfe) {
        * region.setScope(""); region.setDiskStoreName(""); region.setDiskSynchronous(false);
-       * //LOGGER.
+       * //logger.
        * warning("Some of the Pulse elements are not available currently. There might be a GemFire upgrade going on."
        * ); }
        * 
@@ -1911,10 +1811,8 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
        * member.getMemberRegions().remove(deletedRegion); }
        * member.setTotalRegionCount(member.getMemberRegions().size()); }
        */
-    } catch (InstanceNotFoundException infe) {
-      LOGGER.warning(infe);
-    } catch (ReflectionException re) {
-      LOGGER.warning(re);
+    } catch (InstanceNotFoundException | ReflectionException infe) {
+      logger.warn(infe);
     }
   }
 
@@ -1995,9 +1893,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         } catch (Exception e) {
           // Send error into result
           queryResult.put("error", e.getMessage());
-          if (LOGGER.fineEnabled()) {
-            LOGGER.fine(e.getMessage());
-          }
+          logger.debug(e);
         }
       }
     }

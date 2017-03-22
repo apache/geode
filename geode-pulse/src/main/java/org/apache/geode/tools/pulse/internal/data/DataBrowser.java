@@ -22,7 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,7 +44,7 @@ import java.util.Scanner;
  */
 public class DataBrowser {
 
-  private final PulseLogWriter LOGGER = PulseLogWriter.getLogger();
+  private static final Logger logger = LogManager.getLogger();
   private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
 
   private SimpleDateFormat simpleDateFormat =
@@ -160,23 +161,17 @@ public class DataBrowser {
       String inputStreamString = new Scanner(inputStream, "UTF-8").useDelimiter("\\A").next();
       queriesJSON = mapper.readTree(inputStreamString);
     } catch (FileNotFoundException e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine(resourceBundle.getString("LOG_MSG_DATA_BROWSER_QUERY_HISTORY_FILE_NOT_FOUND")
-            + " : " + e.getMessage());
-      }
+      logger.debug(resourceBundle.getString("LOG_MSG_DATA_BROWSER_QUERY_HISTORY_FILE_NOT_FOUND"),
+          e);
     } catch (Exception e) {
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info(e.getMessage());
-      }
+      logger.info(e);
     } finally {
       // Close input stream
       if (inputStream != null) {
         try {
           inputStream.close();
         } catch (IOException e) {
-          if (LOGGER.infoEnabled()) {
-            LOGGER.info(e.getMessage());
-          }
+          logger.info(e);
         }
       }
     }
@@ -211,22 +206,16 @@ public class DataBrowser {
       operationStatus = true;
     } catch (FileNotFoundException e) {
 
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine(resourceBundle.getString("LOG_MSG_DATA_BROWSER_QUERY_HISTORY_FILE_NOT_FOUND")
-            + " : " + e.getMessage());
-      }
+      logger.debug(resourceBundle.getString("LOG_MSG_DATA_BROWSER_QUERY_HISTORY_FILE_NOT_FOUND"),
+          e.getMessage());
     } catch (IOException e) {
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info(e.getMessage());
-      }
+      logger.info(e);
     } finally {
       if (fileOut != null) {
         try {
           fileOut.close();
         } catch (IOException e) {
-          if (LOGGER.infoEnabled()) {
-            LOGGER.info(e.getMessage());
-          }
+          logger.info(e);
         }
       }
     }

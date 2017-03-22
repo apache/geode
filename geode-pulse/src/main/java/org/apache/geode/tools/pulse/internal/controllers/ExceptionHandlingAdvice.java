@@ -21,12 +21,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 
 /**
  * For handling IO exception in our controllers
@@ -35,15 +36,15 @@ import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
  */
 @ControllerAdvice
 public class ExceptionHandlingAdvice {
+  private static final Logger logger = LogManager.getLogger();
 
   @ExceptionHandler(IOException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public void handleExc(IOException ext) {
-    PulseLogWriter LOGGER = PulseLogWriter.getLogger();
     // write errors
     StringWriter swBuffer = new StringWriter();
     PrintWriter prtWriter = new PrintWriter(swBuffer);
     ext.printStackTrace(prtWriter);
-    LOGGER.severe("IOException Details : " + swBuffer.toString() + "\n");
+    logger.fatal("IOException Details : {}\n", swBuffer);
   }
 }

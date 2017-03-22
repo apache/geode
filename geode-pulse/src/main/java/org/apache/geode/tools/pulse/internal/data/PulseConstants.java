@@ -17,7 +17,7 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
-import java.util.logging.Level;
+import org.apache.logging.log4j.Level;
 
 public class PulseConstants {
 
@@ -73,7 +73,7 @@ public class PulseConstants {
   // Append logs - true.
   public static final boolean PULSE_LOG_APPEND = true;
   // Log level - FINE
-  public static final Level PULSE_LOG_LEVEL = Level.FINE;
+  public static final Level PULSE_LOG_LEVEL = Level.DEBUG;
 
   // SYSTEM PROPERTIES
   public static final String SYSTEM_PROPERTY_PULSE_EMBEDDED = "pulse.embedded";
