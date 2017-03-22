@@ -18,8 +18,9 @@ import java.util.Collection;
 import javax.management.remote.JMXConnector;
 
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -37,7 +38,7 @@ import org.springframework.security.core.GrantedAuthority;
  */
 public class GemFireAuthenticationProvider implements AuthenticationProvider {
 
-  private final static PulseLogWriter LOGGER = PulseLogWriter.getLogger();
+  private static final Logger logger = LogManager.getLogger();
 
   public GemFireAuthenticationProvider() {}
 
@@ -46,7 +47,7 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
 
     if (authentication instanceof GemFireAuthentication) {
       GemFireAuthentication gemAuth = (GemFireAuthentication) authentication;
-      LOGGER.fine("GemAuthentication is connected? = " + gemAuth.getJmxc());
+      logger.debug("GemAuthentication is connected? = {}", gemAuth.getJmxc());
       if (gemAuth.getJmxc() != null && gemAuth.isAuthenticated())
         return gemAuth;
     }
@@ -55,13 +56,13 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
     String password = authentication.getCredentials().toString();
 
     try {
-      LOGGER.fine("Connecting to GemFire with user=" + name);
+      logger.debug("Connecting to GemFire with user={}", name);
       JMXConnector jmxc = Repository.get().getCluster(name, password).connectToGemFire();
       if (jmxc != null) {
         Collection<GrantedAuthority> list = GemFireAuthentication.populateAuthorities(jmxc);
         GemFireAuthentication auth = new GemFireAuthentication(authentication.getPrincipal(),
             authentication.getCredentials(), list, jmxc);
-        LOGGER.fine("For user " + name + " authList=" + list);
+        logger.debug("For user " + name + " authList={}", list);
         return auth;
       } else {
         throw new AuthenticationServiceException("JMX Connection unavailable");

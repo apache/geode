@@ -30,6 +30,9 @@ sourceSets {
 dependencies {
   compile 'org.springframework:spring-beans:' + project.'springframework.version'
 
+  compile 'org.apache.logging.log4j:log4j-api:' + project.'log4j.version'
+  compile 'org.apache.logging.log4j:log4j-core:' + project.'log4j.version'
+
   compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
   compile 'commons-collections:commons-collections:' + project.'commons-collections.version'
   compile 'commons-digester:commons-digester:' + project.'commons-digester.version'
