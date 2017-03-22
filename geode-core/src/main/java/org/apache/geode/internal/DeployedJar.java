@@ -85,6 +85,9 @@ public class DeployedJar {
     this(versionedJarFile, jarName, Files.readAllBytes(versionedJarFile.toPath()));
   }
 
+  /**
+   * Writes the given jarBytes to versionedJarFile
+   */
   public DeployedJar(File versionedJarFile, final String jarName, byte[] jarBytes)
       throws IOException {
     Assert.assertTrue(jarBytes != null, "jarBytes cannot be null");
@@ -377,6 +380,9 @@ public class DeployedJar {
     return new byte[0];
   }
 
+  /**
+   * @return the unversioned name of this jar file, e.g. myJar.jar
+   */
   public String getJarName() {
     return this.jarName;
   }

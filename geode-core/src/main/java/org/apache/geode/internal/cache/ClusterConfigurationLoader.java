@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +30,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.logging.log4j.Logger;
 
@@ -61,21 +66,37 @@ public class ClusterConfigurationLoader {
    */
   public static void deployJarsReceivedFromClusterConfiguration(Cache cache,
       ConfigurationResponse response) throws IOException, ClassNotFoundException {
+    System.out.println("Requesting cluster config");
     if (response == null) {
       return;
     }
 
     String[] jarFileNames = response.getJarNames();
     byte[][] jarBytes = response.getJars();
+    System.out.println("Got response with jars: " + Stream.of(jarFileNames).collect(joining(",")));
 
     if (jarFileNames != null && jarBytes != null) {
-      List<DeployedJar> deployedJars =
-          ClassPathLoader.getLatest().getJarDeployer().deploy(jarFileNames, jarBytes);
+      JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
+      jarDeployer.suspendAll();
+      try {
+        List<String> extraJarsOnServer =
+            jarDeployer.findDeployedJars().stream().map(DeployedJar::getJarName)
+                .filter(jarName -> !ArrayUtils.contains(jarFileNames, jarName)).collect(toList());
 
-      deployedJars.stream().filter(Objects::nonNull)
-          .forEach((jar) -> logger.info("Deployed " + (jar.getFile().getAbsolutePath())));
+        for (String extraJar : extraJarsOnServer) {
+          logger.info("Removing jar not present in cluster configuration: " + extraJar);
+          System.out.println("Removing jar not present in cluster configuration: " + extraJar);
+          jarDeployer.deleteAllVersionsOfJar(extraJar);
+        }
+
+        List<DeployedJar> deployedJars = jarDeployer.deploy(jarFileNames, jarBytes);
+
+        deployedJars.stream().filter(Objects::nonNull)
+            .forEach((jar) -> logger.info("Deployed " + (jar.getFile().getAbsolutePath())));
+      } finally {
+        jarDeployer.resumeAll();
+      }
     }
-    // TODO: Jared - Does this need to actually undeploy extra jars like the javadoc says?
   }
 
   /***

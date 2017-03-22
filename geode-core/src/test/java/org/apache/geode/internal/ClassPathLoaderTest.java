@@ -494,39 +494,6 @@ public class ClassPathLoaderTest {
     }
   }
 
-  private static void exploreClassLoader(ClassLoader cl, int indent) {
-    String prefix = "";
-    for (int i = 0; i < indent; i++) {
-      prefix += "\t";
-    }
-    System.out.println(prefix + "ClassLoader toString() = " + cl);
-
-    Class<?> clazz = cl.getClass();
-    System.out.println(prefix + "ClassLoader getClass().getName() = " + clazz.getName());
-    exploreClassLoaderSuperClass(prefix, clazz);
-
-    try {
-      URL[] urls = ((URLClassLoader) cl).getURLs();
-      StringBuilder sb = new StringBuilder(prefix).append("ClassLoader getURLs = [");
-      for (int i = 0; i < urls.length; i++) {
-        if (i > 0) {
-          sb.append(", ");
-        }
-        sb.append(urls[i].toString());
-      }
-      sb.append("]");
-      System.out.println(sb.toString());
-    } catch (Exception e) {
-      System.out.println(prefix + "ClassLoader is not a URLClassLoader");
-    }
-
-    ClassLoader parent = cl.getParent();
-    if (parent != null) {
-      System.out.println(prefix + "ClassLoader has parent...");
-      exploreClassLoader(parent, ++indent);
-    }
-  }
-
   private static void exploreClassLoaderSuperClass(String prefix, Class<?> clazz) {
     Class<?> superClazz = clazz.getSuperclass();
     if (superClazz != null) {
@@ -643,31 +610,6 @@ public class ClassPathLoaderTest {
 
     protected File getTempFile() {
       return null;
-    }
-  }
-
-  static class OneClassClassLoader extends ClassLoader {
-
-    private final GeneratingClassLoader genClassLoader = new GeneratingClassLoader();
-    private String className;
-
-    public OneClassClassLoader(final String className) {
-      super(null); // no parent!!
-      this.className = className;
-    }
-
-    @Override
-    public Class<?> findClass(String name) throws ClassNotFoundException {
-      if (!name.equals(className)) {
-        throw new ClassNotFoundException();
-      } else {
-        return this.genClassLoader.findClass(name);
-      }
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-      return (other instanceof OneClassClassLoader);
     }
   }
 

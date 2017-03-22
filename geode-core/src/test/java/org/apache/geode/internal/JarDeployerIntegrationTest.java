@@ -17,7 +17,6 @@
 package org.apache.geode.internal;
 
 
-import static org.apache.geode.internal.Assert.fail;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -31,7 +30,6 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
-import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -87,7 +85,7 @@ public class JarDeployerIntegrationTest {
     assertThat(sortedOldJars).hasSize(2);
     assertThat(sortedOldJars[0].getName()).contains(".v2.");
     assertThat(sortedOldJars[1].getName()).contains(".v1.");
-    assertThat(jarDeployer.findDistinctDeployedJars()).hasSize(1);
+    assertThat(jarDeployer.findDistinctDeployedJarsOnDisk()).hasSize(1);
   }
 
   @Test
@@ -205,6 +203,65 @@ public class JarDeployerIntegrationTest {
 
     Set<File> foundJarsWithOldNamingConvention = jarDeployer.findJarsWithOldNamingConvention();
     assertThat(foundJarsWithOldNamingConvention).isEqualTo(jarsWithOldNamingConvention);
+  }
+
+
+  @Test
+  public void testDeleteAllVersionsOfJar() throws Exception {
+    File deployDir = jarDeployer.getDeployDirectory();
+
+    File jarAVersion1 = new File(deployDir, "myJarA.v1.jar");
+    this.classBuilder.writeJarFromName("ClassA", jarAVersion1);
+
+    File jarAVersion2 = new File(deployDir, "myJarA.v2.jar");
+    this.classBuilder.writeJarFromName("ClassA", jarAVersion2);
+
+    File jarBVersion2 = new File(deployDir, "myJarB.v2.jar");
+    this.classBuilder.writeJarFromName("ClassB", jarBVersion2);
+
+    File jarBVersion3 = new File(deployDir, "myJarB.v3.jar");
+    this.classBuilder.writeJarFromName("ClassB", jarBVersion3);
+
+    jarDeployer.deleteAllVersionsOfJar("myJarA.jar");
+
+    assertThat(jarAVersion1).doesNotExist();
+    assertThat(jarAVersion2).doesNotExist();
+    assertThat(jarBVersion2).exists();
+    assertThat(jarBVersion3).exists();
+  }
+
+
+  @Test
+  public void testDeleteOtherVersionsOfJar() throws Exception {
+    File deployDir = jarDeployer.getDeployDirectory();
+
+    File jarAVersion1 = new File(deployDir, "myJarA.v1.jar");
+    this.classBuilder.writeJarFromName("ClassA", jarAVersion1);
+
+    File jarAVersion2 = new File(deployDir, "myJarA.v2.jar");
+    this.classBuilder.writeJarFromName("ClassA", jarAVersion2);
+
+    File jarBVersion2 = new File(deployDir, "myJarB.v2.jar");
+    this.classBuilder.writeJarFromName("ClassB", jarBVersion2);
+
+    File jarBVersion3 = new File(deployDir, "myJarB.v3.jar");
+    this.classBuilder.writeJarFromName("ClassB", jarBVersion3);
+
+    DeployedJar deployedJarBVersion3 = new DeployedJar(jarBVersion3, "myJarB.jar");
+    jarDeployer.deleteOtherVersionsOfJar(deployedJarBVersion3);
+
+    assertThat(jarAVersion1).exists();
+    assertThat(jarAVersion2).exists();
+    assertThat(jarBVersion2).doesNotExist();
+    assertThat(jarBVersion3).exists();
+
+    DeployedJar deployedJarAVersion1 = new DeployedJar(jarAVersion1, "myJarA.jar");
+    jarDeployer.deleteOtherVersionsOfJar(deployedJarAVersion1);
+
+    assertThat(jarAVersion1).exists();
+    assertThat(jarAVersion2).doesNotExist();
+    assertThat(jarBVersion2).doesNotExist();
+    assertThat(jarBVersion3).exists();
   }
 
 

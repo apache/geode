@@ -108,7 +108,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
@@ -1238,8 +1237,10 @@ public class GemFireCacheImpl
     initializeServices();
 
     try {
-      // Deploy all the jars from the deploy working dir.
-      ClassPathLoader.getLatest().getJarDeployer().loadPreviouslyDeployedJars();
+      if (configurationResponse == null) {
+        // Deploy all the jars from the deploy working dir.
+        ClassPathLoader.getLatest().getJarDeployer().loadPreviouslyDeployedJarsFromDisk();
+      }
       ClusterConfigurationLoader.applyClusterXmlConfiguration(this, configurationResponse,
           system.getConfig());
       initializeDeclarativeCache();

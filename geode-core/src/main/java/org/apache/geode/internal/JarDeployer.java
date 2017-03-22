@@ -18,10 +18,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.geode.GemFireException;
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
@@ -34,13 +30,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -83,11 +75,24 @@ public class JarDeployer implements Serializable {
     return this.deployDirectory;
   }
 
+  /**
+   * Writes the jarBytes for the given jarName to the next version of that jar file (if the bytes do
+   * not match the latest deployed version)
+   * 
+   * @return the DeployedJar that was written from jarBytes, or null if those bytes matched the
+   *         latest deployed version
+   * @throws IOException
+   */
   public DeployedJar deployWithoutRegistering(final String jarName, final byte[] jarBytes)
       throws IOException {
     lock.lock();
 
     try {
+      boolean shouldDeployNewVersion = shouldDeployNewVersion(jarName, jarBytes);
+      if (!shouldDeployNewVersion) {
+        return null;
+      }
+
       verifyWritableDeployDirectory();
 
       File newVersionedJarFile = getNextVersionedJarFile(jarName);
@@ -128,6 +133,7 @@ public class JarDeployer implements Serializable {
   public void resumeAll() {
     lock.unlock();
   }
+
 
   protected File getNextVersionedJarFile(String unversionedJarName) {
     File[] oldVersions = findSortedOldVersionsOfJar(unversionedJarName);
@@ -246,21 +252,17 @@ public class JarDeployer implements Serializable {
     }
   }
 
-  protected Set<String> findDistinctDeployedJars() {
+  protected Set<String> findDistinctDeployedJarsOnDisk() {
     // Find all deployed JAR files
-    final File[] oldFiles = this.deployDirectory.listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(final File file, final String name) {
-        return versionedPattern.matcher(name).matches();
-      }
-    });
+    final File[] oldFiles =
+        this.deployDirectory.listFiles((file, name) -> versionedPattern.matcher(name).matches());
 
     // Now add just the original JAR name to the set
-    final Set<String> jarNames = new HashSet<String>();
+    final Set<String> jarNames = new HashSet<>();
     for (File oldFile : oldFiles) {
       Matcher matcher = versionedPattern.matcher(oldFile.getName());
       matcher.find();
-      jarNames.add(matcher.group(1));
+      jarNames.add(matcher.group(1) + ".jar");
     }
     return jarNames;
   }
@@ -376,52 +378,32 @@ public class JarDeployer implements Serializable {
   }
 
   /**
-   * Re-deploy all previously deployed JAR files.
+   * Re-deploy all previously deployed JAR files on disk.
    */
-  public void loadPreviouslyDeployedJars() {
+  public void loadPreviouslyDeployedJarsFromDisk() {
+    logger.info("Loading previously deployed jars");
     lock.lock();
     try {
       verifyWritableDeployDirectory();
       renameJarsWithOldNamingConvention();
 
-      final Set<String> jarNames = findDistinctDeployedJars();
+      final Set<String> jarNames = findDistinctDeployedJarsOnDisk();
       if (jarNames.isEmpty()) {
         return;
       }
 
-      Map<String, DeployedJar> latestVersionOfEachJar = new LinkedHashMap<>();
+      List<DeployedJar> latestVersionOfEachJar = new ArrayList<>();
 
       for (String jarName : jarNames) {
-        final File[] jarFiles = findSortedOldVersionsOfJar(jarName);
+        DeployedJar deployedJar = findLatestValidDeployedJarFromDisk(jarName);
 
-        Optional<File> latestValidDeployedJarOptional =
-            Arrays.stream(jarFiles).filter(Objects::nonNull).filter(jarFile -> {
-              try {
-                return DeployedJar.isValidJarContent(FileUtils.readFileToByteArray(jarFile));
-              } catch (IOException e) {
-                return false;
-              }
-            }).findFirst();
-
-        if (!latestValidDeployedJarOptional.isPresent()) {
-          // No valid version of this jar
-          continue;
-        }
-
-        File latestValidDeployedJar = latestValidDeployedJarOptional.get();
-        latestVersionOfEachJar.put(jarName, new DeployedJar(latestValidDeployedJar, jarName));
-
-        // Remove any old left-behind versions of this JAR file
-        for (File jarFile : jarFiles) {
-          if (!latestValidDeployedJar.equals(jarFile)) {
-            FileUtils.deleteQuietly(jarFile);
-          }
+        if (deployedJar != null) {
+          latestVersionOfEachJar.add(deployedJar);
+          deleteOtherVersionsOfJar(deployedJar);
         }
       }
 
-      registerNewVersions(latestVersionOfEachJar.values().stream().collect(toList()));
-      // ClassPathLoader.getLatest().deploy(latestVersionOfEachJar.keySet().toArray(),
-      // latestVersionOfEachJar.values().toArray())
+      registerNewVersions(latestVersionOfEachJar);
     } catch (Exception e) {
       throw new RuntimeException(e);
     } finally {
@@ -429,6 +411,43 @@ public class JarDeployer implements Serializable {
     }
   }
 
+  /**
+   * Deletes all versions of this jar on disk other than the given version
+   */
+  public void deleteOtherVersionsOfJar(DeployedJar deployedJar) {
+    logger.info("Deleting all versions of " + deployedJar.getJarName() + " other than "
+        + deployedJar.getFileName());
+    final File[] jarFiles = findSortedOldVersionsOfJar(deployedJar.getJarName());
+
+    Stream.of(jarFiles).filter(jarFile -> !jarFile.equals(deployedJar.getFile()))
+        .forEach(jarFile -> {
+          logger.info("Deleting old version of jar: " + jarFile.getAbsolutePath());
+          FileUtils.deleteQuietly(jarFile);
+        });
+  }
+
+  public DeployedJar findLatestValidDeployedJarFromDisk(String unversionedJarName)
+      throws IOException {
+    final File[] jarFiles = findSortedOldVersionsOfJar(unversionedJarName);
+
+    Optional<File> latestValidDeployedJarOptional =
+        Arrays.stream(jarFiles).filter(Objects::nonNull).filter(jarFile -> {
+          try {
+            return DeployedJar.isValidJarContent(FileUtils.readFileToByteArray(jarFile));
+          } catch (IOException e) {
+            return false;
+          }
+        }).findFirst();
+
+    if (!latestValidDeployedJarOptional.isPresent()) {
+      // No valid version of this jar
+      return null;
+    }
+
+    File latestValidDeployedJar = latestValidDeployedJarOptional.get();
+
+    return new DeployedJar(latestValidDeployedJar, unversionedJarName);
+  }
 
   public URL[] getDeployedJarURLs() {
     return this.deployedJars.values().stream().map(DeployedJar::getFileURL).toArray(URL[]::new);
@@ -488,13 +507,11 @@ public class JarDeployer implements Serializable {
         String jarName = jarNames[i];
         byte[] newJarBytes = jarBytes[i];
 
-        boolean shouldDeployNewVersion = shouldDeployNewVersion(jarName, newJarBytes);
+        // TODO - jared what if the jar is on disk and CC is enabled? We send it back over since
+        // the jar is on disk but not registered
 
-        if (shouldDeployNewVersion) {
-          deployedJars[i] = deployWithoutRegistering(jarName, newJarBytes);
-        } else {
-          deployedJars[i] = null;
-        }
+        deployedJars[i] = deployWithoutRegistering(jarName, newJarBytes);
+
       }
 
       return registerNewVersions(Arrays.asList(deployedJars));
@@ -520,6 +537,11 @@ public class JarDeployer implements Serializable {
     return true;
   }
 
+  /**
+   * Returns the latest registered {@link DeployedJar} for the given JarName
+   * 
+   * @param jarName - the unversioned jar name, e.g. myJar.jar
+   */
   public DeployedJar findDeployedJar(String jarName) {
     return this.deployedJars.get(jarName);
   }
@@ -569,5 +591,19 @@ public class JarDeployer implements Serializable {
     } finally {
       lock.unlock();
     }
+  }
+
+  public void deleteAllVersionsOfJar(String unversionedJarName) {
+    lock.lock();
+    try {
+      File[] jarFiles = findSortedOldVersionsOfJar(unversionedJarName);
+      for (File jarFile : jarFiles) {
+        logger.info("Deleting " + jarFile.getAbsolutePath());
+        FileUtils.deleteQuietly(jarFile);
+      }
+    } finally {
+      lock.unlock();
+    }
+
   }
 }
