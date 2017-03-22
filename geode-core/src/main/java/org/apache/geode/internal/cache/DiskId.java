@@ -92,8 +92,6 @@ public abstract class DiskId {
    */
   abstract void setOffsetInOplog(long offsetInOplog);
 
-  abstract boolean isKeyIdNegative();
-
   abstract void markForWriting();
 
   abstract void unmarkForWriting();
@@ -409,11 +407,6 @@ public abstract class DiskId {
     }
 
     @Override
-    boolean isKeyIdNegative() {
-      return false;
-    }
-
-    @Override
     void markForWriting() {
       this.valueLength |= 0x80000000;
     }
@@ -483,11 +476,6 @@ public abstract class DiskId {
     }
 
     @Override
-    boolean isKeyIdNegative() {
-      return false;
-    }
-
-    @Override
     void markForWriting() {
       this.valueLength |= 0x80000000;
     }
@@ -549,11 +537,6 @@ public abstract class DiskId {
     @Override
     void setKeyId(long keyId) {
       this.keyId = keyId;
-    }
-
-    @Override
-    boolean isKeyIdNegative() {
-      return this.keyId < 0;
     }
 
     @Override
@@ -627,11 +610,6 @@ public abstract class DiskId {
     @Override
     void setKeyId(long keyId) {
       this.keyId = keyId;
-    }
-
-    @Override
-    boolean isKeyIdNegative() {
-      return this.keyId < 0;
     }
 
     @Override

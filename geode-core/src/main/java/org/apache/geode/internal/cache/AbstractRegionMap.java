@@ -719,8 +719,8 @@ public abstract class AbstractRegionMap implements RegionMap {
                 _getOwner().calculateRegionEntryValueSize(re));
           }
         } else {
-          DiskEntry.Helper.updateRecoveredEntry((PlaceHolderDiskRegion) _getOwnerObject(),
-              (DiskEntry) re, value, (RegionEntryContext) _getOwnerObject());
+          value.applyToDiskEntry((PlaceHolderDiskRegion) _getOwnerObject(), (DiskEntry) re,
+              (RegionEntryContext) _getOwnerObject());
         }
       } catch (RegionClearedException rce) {
         throw new IllegalStateException(

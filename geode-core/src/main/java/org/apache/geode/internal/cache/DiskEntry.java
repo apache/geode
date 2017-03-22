@@ -455,7 +455,7 @@ public interface DiskEntry extends RegionEntry {
         did.setKeyId(re.getRecoveredKeyId());
         did.setUserBits(re.getUserBits());
         did.setValueLength(re.getValueLength());
-        if (re.getRecoveredKeyId() < 0) {
+        if (!re.getValueRecovered()) {
           updateStats(drv, r, 0/* InVM */, 1/* OnDisk */, did.getValueLength());
         } else {
           entry.setValueWithContext(drv,
@@ -899,63 +899,7 @@ public interface DiskEntry extends RegionEntry {
           }
         }
       } else if (newValue instanceof RecoveredEntry) {
-        // Now that oplog creates are immediately put in cache
-        // a later oplog modify will get us here
-        RecoveredEntry re = (RecoveredEntry) newValue;
-        long oldKeyId = did.getKeyId();
-        Object oldValueAsToken = entry.getValueAsToken();
-        long oldOplogId = did.getOplogId();
-        long newOplogId = re.getOplogId();
-        if (newOplogId != oldOplogId) {
-          did.setOplogId(newOplogId);
-          re.setOplogId(oldOplogId); // so caller knows oldoplog id
-        }
-        did.setOffsetInOplog(re.getOffsetInOplog());
-        // id already set
-        did.setUserBits(re.getUserBits());
-        oldValueLength = did.getValueLength();
-        did.setValueLength(re.getValueLength());
-
-        if (re.getRecoveredKeyId() < 0) {
-          if (!entry.isValueNull()) {
-            entry.handleValueOverflow(region);
-            entry.setValueWithContext(region, null); // fixes bug 41119
-          }
-        } else {
-          entry.setValueWithContext(region,
-              entry.prepareValueForCache(region, re.getValue(), false));
-        }
-
-        if (re.getRecoveredKeyId() < 0) { // recovering an entry whose new value is on disk
-          if (oldKeyId >= 0) { // the entry's old value is in vm
-            // TODO: oldKeyId == 0 is the ILLEGAL id; what does that indicate?
-            int inVM = -1;
-            if (Token.isInvalidOrRemoved(oldValueAsToken)) { // but tokens are never in vm
-              inVM = 0;
-            }
-            updateStats(dr, region, inVM, 1/* OnDisk */, did.getValueLength());
-          } else { // the entry's old value is also on disk
-            int valueLenDelta = -oldValueLength; // but it is no longer
-            valueLenDelta += did.getValueLength(); // new one is now on disk
-            updateStats(dr, region, 0, 0, valueLenDelta);
-          }
-        } else { // recovering an entry whose new value is in vm
-          int inVM = 1;
-          if (Token.isInvalidOrRemoved(re.getValue())) { // but tokens never in vm
-            inVM = 0;
-          }
-          if (oldKeyId < 0) { // the entry's old value is on disk
-            updateStats(dr, region, inVM, -1/* OnDisk */, -oldValueLength);
-          } else { // the entry's old value was in the vm
-            if (inVM == 1 && Token.isInvalidOrRemoved(oldValueAsToken)) {
-              // the old state was not in vm and not on disk. But now we are in vm.
-              updateStats(dr, region, 1, 0, 0);
-            } else if (inVM == 0 && !Token.isInvalidOrRemoved(oldValueAsToken)) {
-              // the old state was in vm and not on disk. But now we are not in vm.
-              updateStats(dr, region, -1, 0, 0);
-            }
-          }
-        }
+        ((RecoveredEntry) newValue).applyToDiskEntry(entry, region, dr, did);
       } else {
         // The new value in the entry needs to be set after the disk writing
         // has succeeded.
@@ -1052,67 +996,6 @@ public interface DiskEntry extends RegionEntry {
         }
       }
       return result;
-    }
-
-    public static void updateRecoveredEntry(PlaceHolderDiskRegion drv, DiskEntry entry,
-        RecoveredEntry newValue, RegionEntryContext context) {
-      if (newValue == null) {
-        throw new NullPointerException(
-            LocalizedStrings.DiskEntry_ENTRYS_VALUE_SHOULD_NOT_BE_NULL.toLocalizedString());
-      }
-      DiskId did = entry.getDiskId();
-      synchronized (did) {
-        Object oldValueAsToken = entry.getValueAsToken();
-        boolean oldValueWasNull = oldValueAsToken == null;
-        int oldValueLength = did.getValueLength();
-        // Now that oplog creates are immediately put in cache
-        // a later oplog modify will get us here
-        long oldOplogId = did.getOplogId();
-        long newOplogId = newValue.getOplogId();
-        if (newOplogId != oldOplogId) {
-          did.setOplogId(newOplogId);
-          newValue.setOplogId(oldOplogId); // so caller knows oldoplog id
-        }
-        did.setOffsetInOplog(newValue.getOffsetInOplog());
-        // id already set
-        did.setUserBits(newValue.getUserBits());
-        did.setValueLength(newValue.getValueLength());
-        if (newValue.getRecoveredKeyId() >= 0) {
-          entry.setValueWithContext(context,
-              entry.prepareValueForCache(drv, newValue.getValue(), false));
-          int inVM = 1;
-          if (Token.isInvalidOrRemoved(newValue.getValue())) { // but tokens never in vm
-            inVM = 0;
-          }
-          if (oldValueWasNull) { // the entry's old value is on disk
-            updateStats(drv, null, inVM, -1/* OnDisk */, -oldValueLength);
-          } else { // the entry's old value was in the vm
-            if (inVM == 1 && Token.isInvalidOrRemoved(oldValueAsToken)) {
-              // the old state was not in vm and not on disk. But now we are in vm.
-              updateStats(drv, null, 1, 0, 0);
-            } else if (inVM == 0 && !Token.isInvalidOrRemoved(oldValueAsToken)) {
-              // the old state was in vm and not on disk. But now we are not in vm.
-              updateStats(drv, null, -1, 0, 0);
-            }
-          }
-        } else {
-          if (!oldValueWasNull) {
-            entry.handleValueOverflow(context);
-            entry.setValueWithContext(context, null); // fixes bug 41119
-          }
-          if (!oldValueWasNull) { // the entry's old value is in vm
-            int inVM = -1;
-            if (Token.isInvalidOrRemoved(oldValueAsToken)) { // but tokens are never in vm
-              inVM = 0;
-            }
-            updateStats(drv, null, inVM, 1/* OnDisk */, did.getValueLength());
-          } else { // the entry's old value is also on disk
-            int valueLenDelta = -oldValueLength; // but it is no longer
-            valueLenDelta += did.getValueLength(); // new one is now on disk
-            updateStats(drv, null, 0, 0, valueLenDelta);
-          }
-        }
-      }
     }
 
     public static Object getValueInVMOrDiskWithoutFaultIn(DiskEntry entry, LocalRegion region) {
@@ -1282,9 +1165,6 @@ public interface DiskEntry extends RegionEntry {
         // must have been destroyed
         value = null;
       } else {
-        if (did.isKeyIdNegative()) {
-          did.setKeyId(-did.getKeyId());
-        }
         // if a bucket region then create a CachedDeserializable here instead of object
         value = dr.getRaw(did); // fix bug 40192
         if (value instanceof BytesAndBits) {
@@ -1688,9 +1568,7 @@ public interface DiskEntry extends RegionEntry {
       }
       AsyncDiskEntry result = null;
 
-      // Asif: This will convert the -ve OplogKeyId to positive as part of fixing
       // Bug # 39989
-      // GEODE-2535 fix should address the original #39989 negative keyId issue.
       did.unmarkForWriting();
 
       // System.out.println("DEBUG: removeFromDisk doing remove(" + id + ")");
@@ -1786,6 +1664,9 @@ public interface DiskEntry extends RegionEntry {
     private long oplogId;
     private VersionTag tag;
 
+    /** whether the entry value has been faulted in after recovery. */
+    private final boolean valueRecovered;
+
     /**
      * Only for this constructor, the value is not loaded into the region & it is lying on the
      * oplogs. Since Oplogs rely on DiskId to furnish user bits so as to correctly interpret bytes,
@@ -1793,17 +1674,23 @@ public interface DiskEntry extends RegionEntry {
      */
     public RecoveredEntry(long keyId, long oplogId, long offsetInOplog, byte userBits,
         int valueLength) {
-      this(-keyId, oplogId, offsetInOplog, userBits, valueLength, null);
+      this(keyId, oplogId, offsetInOplog, userBits, valueLength, null, false);
     }
 
     public RecoveredEntry(long keyId, long oplogId, long offsetInOplog, byte userBits,
         int valueLength, Object value) {
+      this(keyId, oplogId, offsetInOplog, userBits, valueLength, value, true);
+    }
+
+    public RecoveredEntry(long keyId, long oplogId, long offsetInOplog, byte userBits,
+        int valueLength, Object value, boolean valueRecovered) {
       this.recoveredKeyId = keyId;
       this.value = value;
       this.oplogId = oplogId;
       this.offsetInOplog = offsetInOplog;
       this.userBits = EntryBits.setRecoveredFromDisk(userBits, true);
       this.valueLength = valueLength;
+      this.valueRecovered = valueRecovered;
     }
 
     /**
@@ -1847,12 +1734,84 @@ public interface DiskEntry extends RegionEntry {
       this.oplogId = v;
     }
 
+    public boolean getValueRecovered() {
+      return this.valueRecovered;
+    }
+
     public VersionTag getVersionTag() {
       return this.tag;
     }
 
     public void setVersionTag(VersionTag tag) {
       this.tag = tag;
+    }
+
+    public void applyToDiskEntry(PlaceHolderDiskRegion drv, DiskEntry entry,
+        RegionEntryContext context) {
+      DiskId did = entry.getDiskId();
+      synchronized (did) {
+        applyToDiskEntry(entry, context, drv, did);
+      }
+    }
+
+    public void applyToDiskEntry(DiskEntry entry, RegionEntryContext region, AbstractDiskRegion dr,
+        DiskId did) {
+      int oldValueLength;
+      // Now that oplog creates are immediately put in cache
+      // a later oplog modify will get us here
+      Object oldValueAsToken = entry.getValueAsToken();
+      boolean oldValueWasNull = oldValueAsToken == null;
+      long oldOplogId = did.getOplogId();
+      long newOplogId = getOplogId();
+      if (newOplogId != oldOplogId) {
+        did.setOplogId(newOplogId);
+        setOplogId(oldOplogId); // so caller knows oldoplog id
+      }
+      did.setOffsetInOplog(getOffsetInOplog());
+      // id already set
+      did.setUserBits(getUserBits());
+      oldValueLength = did.getValueLength();
+      did.setValueLength(getValueLength());
+
+      if (!getValueRecovered()) {
+        if (!oldValueWasNull) {
+          entry.handleValueOverflow(region);
+          entry.setValueWithContext(region, null); // fixes bug 41119
+        }
+      } else {
+        entry.setValueWithContext(region, entry.prepareValueForCache(region, getValue(), false));
+      }
+
+      if (!getValueRecovered()) { // recovering an entry whose new value is on disk
+        if (!oldValueWasNull) { // the entry's old value is in vm
+          // TODO: oldKeyId == 0 is the ILLEGAL id; what does that indicate?
+          int inVM = -1;
+          if (Token.isInvalidOrRemoved(oldValueAsToken)) { // but tokens are never in vm
+            inVM = 0;
+          }
+          Helper.updateStats(dr, region, inVM, 1/* OnDisk */, did.getValueLength());
+        } else { // the entry's old value is also on disk
+          int valueLenDelta = -oldValueLength; // but it is no longer
+          valueLenDelta += did.getValueLength(); // new one is now on disk
+          Helper.updateStats(dr, region, 0, 0, valueLenDelta);
+        }
+      } else { // recovering an entry whose new value is in vm
+        int inVM = 1;
+        if (Token.isInvalidOrRemoved(getValue())) { // but tokens never in vm
+          inVM = 0;
+        }
+        if (oldValueWasNull) { // the entry's old value is on disk
+          Helper.updateStats(dr, region, inVM, -1/* OnDisk */, -oldValueLength);
+        } else { // the entry's old value was in the vm
+          if (inVM == 1 && Token.isInvalidOrRemoved(oldValueAsToken)) {
+            // the old state was not in vm and not on disk. But now we are in vm.
+            Helper.updateStats(dr, region, 1, 0, 0);
+          } else if (inVM == 0 && !Token.isInvalidOrRemoved(oldValueAsToken)) {
+            // the old state was in vm and not on disk. But now we are not in vm.
+            Helper.updateStats(dr, region, -1, 0, 0);
+          }
+        }
+      }
     }
   }
 }

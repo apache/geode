@@ -858,27 +858,26 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       b = EntryBits.setRecoveredFromDisk(b, true);
       b = EntryBits.setWithVersions(b, true);
 
-      // TODO darrel: need to wait for async recovery so keyIds will not be
-      // negative.
-      // TODO darrel: the current impl of KRF always has the keyId negative
-      // until a real get is done.
+      // TODO need to wait for async recovery
       for (int i = 0; i < 3; ++i) {
         DiskEntry de = (DiskEntry) rgn.basicGetEntry("" + i);
         DiskId did = de.getDiskId();
-        // assertTrue(did.getKeyId() < 0);
+        assertTrue(did.getKeyId() > 0);
         assertEquals(1, did.getOplogId());
         assertTrue(did.getOffsetInOplog() > -1);
         assertEquals(b, did.getUserBits());
         assertTrue(did.getValueLength() > 0);
         assertEquals("" + i, rgn.get("" + i));
         assertTrue(did.getKeyId() > 0);
+        assertFalse(de.isValueNull());
       }
       // this last oplog does not have a krf because this disk store has not
-      // been closed. So its keyIds are > 0.
+      // been closed. So its value should be in memory now.
       for (int i = 3; i < 6; ++i) {
         DiskEntry de = (DiskEntry) rgn.basicGetEntry("" + i);
         DiskId did = de.getDiskId();
         assertTrue(did.getKeyId() > 0);
+        assertFalse(de.isValueNull());
         assertEquals(2, did.getOplogId());
         assertTrue(did.getOffsetInOplog() > -1);
         assertEquals(b, did.getUserBits());
@@ -1010,23 +1009,27 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       for (int i = 0; i < 3; ++i) {
         DiskEntry de = (DiskEntry) rgn.basicGetEntry("" + i);
         DiskId did = de.getDiskId();
-        assertTrue(did.getKeyId() < 0);
+        assertTrue(did.getKeyId() > 0);
+        assertTrue(de.isValueNull());
         assertEquals(1, did.getOplogId());
         assertTrue(did.getOffsetInOplog() > -1);
         assertEquals(b, did.getUserBits());
         assertTrue(did.getValueLength() > 0);
         assertEquals("" + i, rgn.get("" + i));
+        assertFalse(de.isValueNull());
         assertTrue(did.getKeyId() > 0);
       }
       for (int i = 3; i < 6; ++i) {
         DiskEntry de = (DiskEntry) rgn.basicGetEntry("" + i);
         DiskId did = de.getDiskId();
-        assertTrue(did.getKeyId() < 0);
+        assertTrue(de.isValueNull());
+        assertTrue(did.getKeyId() > 0);
         assertEquals(2, did.getOplogId());
         assertTrue(did.getOffsetInOplog() > -1);
         assertEquals(b, did.getUserBits());
         assertTrue(did.getValueLength() > 0);
         assertEquals("" + i, rgn.get("" + i));
+        assertFalse(de.isValueNull());
         assertTrue(did.getKeyId() > 0);
       }
       // ((LocalRegion)region).getDiskStore().forceCompaction();
@@ -1316,6 +1319,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       assertEquals(0, dr.getNumOverflowOnDisk());
 
       region.put(new Integer(1), new Integer(1));
+      region.put(new Integer(1), new Integer(2));
       region.localInvalidate(new Integer(1));
       region.close();
       region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
@@ -1355,6 +1359,35 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
       assertEquals(0, dr.getNumEntriesInVM());
       assertEquals(0, dr.getNumOverflowOnDisk());
 
+      region.clear();
+      assertEquals(0, dr.getNumEntriesInVM());
+      assertEquals(0, dr.getNumOverflowOnDisk());
+
+      region.create(new Integer(1), null);
+      region.put(new Integer(1), new Integer(2));
+      region.destroy(new Integer(1));
+      region.close(); // No KRF generated, force multiple reads from CRF for same key
+      region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
+      dr = ((LocalRegion) region).getDiskRegion();
+      // entry destroyed so not inVM or onDisk
+      assertEquals(0, dr.getNumEntriesInVM());
+      assertEquals(0, dr.getNumOverflowOnDisk());
+
+      region.clear();
+      assertEquals(0, dr.getNumEntriesInVM());
+      assertEquals(0, dr.getNumOverflowOnDisk());
+
+      region.create(new Integer(1), null);
+      region.put(new Integer(1), new Integer(2));
+      region.destroy(new Integer(1));
+      region.put(new Integer(1), new Integer(2)); // recreate
+      region.invalidate(new Integer(1));
+      region.close(); // No KRF generated, force multiple reads from CRF for same key
+      region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
+      dr = ((LocalRegion) region).getDiskRegion();
+      // entry invalidated so not inVM or onDisk
+      assertEquals(0, dr.getNumEntriesInVM());
+      assertEquals(0, dr.getNumOverflowOnDisk());
     } finally {
       if (oldValue != null) {
         System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, oldValue);
@@ -1379,5 +1412,6 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
   public void testVerifyStatsNoValues() {
     basicVerifyStats(false);
   }
+
 }
 

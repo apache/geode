@@ -703,9 +703,6 @@ public class DiskStoreImpl implements DiskStore {
       throws RegionClearedException {
     DiskRegion dr = region.getDiskRegion();
     DiskId id = entry.getDiskId();
-    if (dr.isBackup() && id.getKeyId() < 0) {
-      id.setKeyId(-id.getKeyId());
-    }
     long start = async ? this.stats.startFlush() : this.stats.startWrite();
     if (!async) {
       dr.getStats().startWrite();

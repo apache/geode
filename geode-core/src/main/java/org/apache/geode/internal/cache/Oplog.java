@@ -3659,7 +3659,6 @@ public final class Oplog implements CompactableOplog, Flushable {
         // This allows us to not encode the oplogEntryId explicitly in the
         // record
         long createOplogEntryId = getOplogSet().newOplogEntryId();
-        long old_kid = id.getKeyId();
         id.setKeyId(createOplogEntryId);
 
         // startPosForSynchOp = this.crf.currSize;
@@ -3989,7 +3988,7 @@ public final class Oplog implements CompactableOplog, Flushable {
           return;
         }
         userBits = di.getUserBits();
-        oplogKeyId = Math.abs(di.getKeyId());
+        oplogKeyId = di.getKeyId();
         valueOffset = di.getOffsetInOplog();
         valueLength = di.getValueLength();
         deKey = de.getKey();
@@ -6812,7 +6811,7 @@ public final class Oplog implements CompactableOplog, Flushable {
           Assert.fail("Attempting to write an entry with keyId=0 to oplog. Entry key="
               + entry.getKey() + " diskId=" + entry.getDiskId() + " region=" + dr);
         }
-        long delta = calcDelta(abs(keyId), this.opCode);
+        long delta = calcDelta(keyId, this.opCode);
         this.deltaIdBytesLength = bytesNeeded(delta);
         this.size += this.deltaIdBytesLength;
         this.opCode += this.deltaIdBytesLength - 1;
