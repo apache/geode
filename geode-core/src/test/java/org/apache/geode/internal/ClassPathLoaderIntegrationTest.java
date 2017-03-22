@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.*;
 
 import java.io.BufferedInputStream;
@@ -24,11 +26,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ClassGen;
+import org.apache.commons.io.FileUtils;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -53,8 +64,9 @@ public class ClassPathLoaderIntegrationTest {
 
   private static final int TEMP_FILE_BYTES_COUNT = 256;
 
-  private volatile File tempFile;
-  private volatile File tempFile2;
+  private File tempFile;
+  private File tempFile2;
+  private File extLibsDir;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -65,8 +77,9 @@ public class ClassPathLoaderIntegrationTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty(ClassPathLoader.EXCLUDE_TCCL_PROPERTY, "false");
-    System.setProperty(ClassPathLoader.EXT_LIB_DIR_PARENT_PROPERTY,
-        this.temporaryFolder.getRoot().getAbsolutePath());
+
+    extLibsDir = new File(this.temporaryFolder.getRoot(), "ext");
+    extLibsDir.mkdirs();
 
     this.tempFile = this.temporaryFolder.newFile("tempFile1.tmp");
     FileOutputStream fos = new FileOutputStream(this.tempFile);
@@ -77,97 +90,247 @@ public class ClassPathLoaderIntegrationTest {
     fos = new FileOutputStream(this.tempFile2);
     fos.write(new byte[TEMP_FILE_BYTES_COUNT]);
     fos.close();
+
+    System.setProperty("user.dir", temporaryFolder.getRoot().getAbsolutePath());
+    ClassPathLoader.setLatestToDefault(temporaryFolder.getRoot());
   }
 
-  /**
-   * Verifies that <tt>getResource</tt> works with custom loader from {@link ClassPathLoader}.
-   */
+
   @Test
-  public void testGetResourceWithCustomLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderTest#testGetResourceWithCustomLoader");
+  public void testDeployFileAndChange() throws IOException, ClassNotFoundException {
+    String jarName = "JarDeployerIntegrationTest.jar";
 
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
+    String classAResource = "integration/parent/ClassA.class";
+    String classBResource = "integration/parent/ClassB.class";
 
-    String resourceToGet = "com/nowhere/testGetResourceWithCustomLoader.rsc";
-    URL url = dcl.getResource(resourceToGet);
-    assertNotNull(url);
+    String classAName = "integration.parent.ClassA";
+    String classBName = "integration.parent.ClassB";
 
-    InputStream is = url != null ? url.openStream() : null;
-    assertNotNull(is);
+    byte[] firstJarBytes = createJarWithClass("ClassA");
 
-    int totalBytesRead = 0;
-    byte[] input = new byte[128];
+    // First deploy of the JAR file
+    File firstDeployedJarFile =
+        ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, firstJarBytes).getFile();
 
-    BufferedInputStream bis = new BufferedInputStream(is);
-    for (int bytesRead = bis.read(input); bytesRead > -1;) {
-      totalBytesRead += bytesRead;
-      bytesRead = bis.read(input);
-    }
-    bis.close();
+    assertThat(firstDeployedJarFile).exists().hasBinaryContent(firstJarBytes);
+    assertThat(firstDeployedJarFile.getName()).contains(".v1.").doesNotContain(".v2.");
 
-    assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
+    assertThatClassCanBeLoaded(classAName);
+    assertThatClassCannotBeLoaded(classBName);
+
+    assertThatResourceCanBeLoaded(classAResource);
+    assertThatResourceCannotBeLoaded(classBResource);
+
+    // Now deploy an updated JAR file and make sure that the next version of the JAR file
+    // was created and the first one is no longer used
+    byte[] secondJarBytes = createJarWithClass("ClassB");
+
+    File secondDeployedJarFile =
+        ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, secondJarBytes).getFile();
+
+    assertThat(secondDeployedJarFile).exists().hasBinaryContent(secondJarBytes);
+    assertThat(secondDeployedJarFile.getName()).contains(".v2.").doesNotContain(".v1.");
+
+    assertThatClassCanBeLoaded(classBName);
+    assertThatClassCannotBeLoaded(classAName);
+
+    assertThatResourceCanBeLoaded(classBResource);
+    assertThatResourceCannotBeLoaded(classAResource);
+
+    // Now undeploy JAR and make sure it gets cleaned up
+    ClassPathLoader.getLatest().getJarDeployer().undeploy(jarName);
+    assertThatClassCannotBeLoaded(classBName);
+    assertThatClassCannotBeLoaded(classAName);
+
+    assertThatResourceCannotBeLoaded(classBResource);
+    assertThatResourceCannotBeLoaded(classAResource);
   }
 
-  /**
-   * Verifies that <tt>getResources</tt> works with custom loader from {@link ClassPathLoader}.
-   */
   @Test
-  public void testGetResourcesWithCustomLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderTest#testGetResourceWithCustomLoader");
+  public void testDeployNoUpdateWhenNoChange() throws IOException, ClassNotFoundException {
+    String jarName = "JarDeployerIntegrationTest.jar";
 
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
+    // First deploy of the JAR file
+    byte[] jarBytes = new ClassBuilder().createJarFromName("JarDeployerDUnitDNUWNC");
+    DeployedJar jarClassLoader =
+        ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarBytes);
+    File deployedJar = new File(jarClassLoader.getFileCanonicalPath());
 
-    String resourceToGet = "com/nowhere/testGetResourceWithCustomLoader.rsc";
-    Enumeration<URL> urls = dcl.getResources(resourceToGet);
-    assertNotNull(urls);
-    assertTrue(urls.hasMoreElements());
+    assertThat(deployedJar).exists();
+    assertThat(deployedJar.getName()).contains(".v1.");
 
-    URL url = urls.nextElement();
-    InputStream is = url != null ? url.openStream() : null;
-    assertNotNull(is);
+    // Re-deploy of the same JAR should do nothing
+    DeployedJar newJarClassLoader =
+        ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarBytes);
+    assertThat(newJarClassLoader).isNull();
+    assertThat(deployedJar).exists();
 
-    int totalBytesRead = 0;
-    byte[] input = new byte[128];
-
-    BufferedInputStream bis = new BufferedInputStream(is);
-    for (int bytesRead = bis.read(input); bytesRead > -1;) {
-      totalBytesRead += bytesRead;
-      bytesRead = bis.read(input);
-    }
-    bis.close();
-
-    assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
   }
 
-  /**
-   * Verifies that <tt>getResourceAsStream</tt> works with custom loader from
-   * {@link ClassPathLoader}.
-   */
   @Test
-  public void testGetResourceAsStreamWithCustomLoader() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderTest#testGetResourceAsStreamWithCustomLoader");
+  public void testDeployWithExistingDependentJars() throws Exception {
+    ClassBuilder classBuilder = new ClassBuilder();
+    final File parentJarFile =
+        new File(temporaryFolder.getRoot(), "JarDeployerDUnitAParent.v1.jar");
+    final File usesJarFile = new File(temporaryFolder.getRoot(), "JarDeployerDUnitUses.v1.jar");
+    final File functionJarFile =
+        new File(temporaryFolder.getRoot(), "JarDeployerDUnitFunction.v1.jar");
 
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
+    // Write out a JAR files.
+    StringBuffer stringBuffer = new StringBuffer();
+    stringBuffer.append("package jddunit.parent;");
+    stringBuffer.append("public class JarDeployerDUnitParent {");
+    stringBuffer.append("public String getValueParent() {");
+    stringBuffer.append("return \"PARENT\";}}");
 
-    String resourceToGet = "com/nowhere/testGetResourceAsStreamWithCustomLoader.rsc";
-    InputStream is = dcl.getResourceAsStream(resourceToGet);
-    assertNotNull(is);
+    byte[] jarBytes = classBuilder.createJarFromClassContent(
+        "jddunit/parent/JarDeployerDUnitParent", stringBuffer.toString());
+    FileOutputStream outStream = new FileOutputStream(parentJarFile);
+    outStream.write(jarBytes);
+    outStream.close();
 
-    int totalBytesRead = 0;
-    byte[] input = new byte[128];
+    stringBuffer = new StringBuffer();
+    stringBuffer.append("package jddunit.uses;");
+    stringBuffer.append("public class JarDeployerDUnitUses {");
+    stringBuffer.append("public String getValueUses() {");
+    stringBuffer.append("return \"USES\";}}");
 
-    BufferedInputStream bis = new BufferedInputStream(is);
-    for (int bytesRead = bis.read(input); bytesRead > -1;) {
-      totalBytesRead += bytesRead;
-      bytesRead = bis.read(input);
-    }
-    bis.close();
+    jarBytes = classBuilder.createJarFromClassContent("jddunit/uses/JarDeployerDUnitUses",
+        stringBuffer.toString());
+    outStream = new FileOutputStream(usesJarFile);
+    outStream.write(jarBytes);
+    outStream.close();
 
-    assertEquals(TEMP_FILE_BYTES_COUNT, totalBytesRead);
+    stringBuffer = new StringBuffer();
+    stringBuffer.append("package jddunit.function;");
+    stringBuffer.append("import jddunit.parent.JarDeployerDUnitParent;");
+    stringBuffer.append("import jddunit.uses.JarDeployerDUnitUses;");
+    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
+    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
+    stringBuffer.append(
+        "public class JarDeployerDUnitFunction  extends JarDeployerDUnitParent implements Function {");
+    stringBuffer.append("private JarDeployerDUnitUses uses = new JarDeployerDUnitUses();");
+    stringBuffer.append("public boolean hasResult() {return true;}");
+    stringBuffer.append(
+        "public void execute(FunctionContext context) {context.getResultSender().lastResult(getValueParent() + \":\" + uses.getValueUses());}");
+    stringBuffer.append("public String getId() {return \"JarDeployerDUnitFunction\";}");
+    stringBuffer.append("public boolean optimizeForWrite() {return false;}");
+    stringBuffer.append("public boolean isHA() {return false;}}");
+
+    ClassBuilder functionClassBuilder = new ClassBuilder();
+    functionClassBuilder.addToClassPath(parentJarFile.getAbsolutePath());
+    functionClassBuilder.addToClassPath(usesJarFile.getAbsolutePath());
+    jarBytes = functionClassBuilder.createJarFromClassContent(
+        "jddunit/function/JarDeployerDUnitFunction", stringBuffer.toString());
+    outStream = new FileOutputStream(functionJarFile);
+    outStream.write(jarBytes);
+    outStream.close();
+
+    Properties properties = new Properties();
+    properties.setProperty("user.dir", temporaryFolder.getRoot().getAbsolutePath());
+    ServerStarterRule serverStarterRule = new ServerStarterRule();
+    serverStarterRule.startServer();
+
+    GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
+    DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
+    Execution execution =
+        FunctionService.onMember(distributedSystem, distributedSystem.getDistributedMember());
+    ResultCollector resultCollector = execution.execute("JarDeployerDUnitFunction");
+    @SuppressWarnings("unchecked")
+    List<String> result = (List<String>) resultCollector.getResult();
+    assertEquals("PARENT:USES", result.get(0));
+
+    serverStarterRule.after();
   }
+
+  @Test
+  public void deployNewVersionOfFunctionOverOldVersion() throws Exception {
+    File jarVersion1 = createVersionOfJar("Version1", "MyFunction", "MyJar.jar");
+    File jarVersion2 = createVersionOfJar("Version2", "MyFunction", "MyJar.jar");
+
+    Properties properties = new Properties();
+    properties.setProperty("user.dir", temporaryFolder.getRoot().getAbsolutePath());
+    ServerStarterRule serverStarterRule = new ServerStarterRule();
+    serverStarterRule.startServer();
+
+    GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
+    DistributedSystem distributedSystem = gemFireCache.getDistributedSystem();
+
+    ClassPathLoader.getLatest().getJarDeployer().deploy("MyJar.jar",
+        FileUtils.readFileToByteArray(jarVersion1));
+
+    assertThatClassCanBeLoaded("jddunit.function.MyFunction");
+    Execution execution =
+        FunctionService.onMember(distributedSystem, distributedSystem.getDistributedMember());
+
+    List<String> result = (List<String>) execution.execute("MyFunction").getResult();
+    assertThat(result.get(0)).isEqualTo("Version1");
+
+
+    ClassPathLoader.getLatest().getJarDeployer().deploy("MyJar.jar",
+        FileUtils.readFileToByteArray(jarVersion2));
+    result = (List<String>) execution.execute("MyFunction").getResult();
+    assertThat(result.get(0)).isEqualTo("Version2");
+
+
+    serverStarterRule.after();
+  }
+
+
+  private File createVersionOfJar(String version, String functionName, String jarName)
+      throws IOException {
+    String classContents =
+        "package jddunit.function;" + "import org.apache.geode.cache.execute.Function;"
+            + "import org.apache.geode.cache.execute.FunctionContext;" + "public class "
+            + functionName + " implements Function {" + "public boolean hasResult() {return true;}"
+            + "public String getId() {return \"" + functionName + "\";}"
+            + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\""
+            + version + "\");}}";
+
+    File jar = new File(this.temporaryFolder.newFolder(version), jarName);
+    ClassBuilder functionClassBuilder = new ClassBuilder();
+    functionClassBuilder.writeJarFromContent("jddunit/function/" + functionName, classContents,
+        jar);
+
+    return jar;
+  }
+
+  private void assertThatClassCanBeLoaded(String className) throws ClassNotFoundException {
+    assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
+  }
+
+  private void assertThatClassCannotBeLoaded(String className) throws ClassNotFoundException {
+    assertThatThrownBy(() -> ClassPathLoader.getLatest().forName(className))
+        .isExactlyInstanceOf(ClassNotFoundException.class);
+  }
+
+  private void assertThatResourceCanBeLoaded(String resourceName) throws IOException {
+    // ClassPathLoader.getResource
+    assertThat(ClassPathLoader.getLatest().getResource(resourceName)).isNotNull();
+
+    // ClassPathLoader.getResources
+    Enumeration<URL> urls = ClassPathLoader.getLatest().getResources(resourceName);
+    assertThat(urls).isNotNull();
+    assertThat(urls.hasMoreElements()).isTrue();
+
+    // ClassPathLoader.getResourceAsStream
+    InputStream is = ClassPathLoader.getLatest().getResourceAsStream(resourceName);
+    assertThat(is).isNotNull();
+  }
+
+  private void assertThatResourceCannotBeLoaded(String resourceName) throws IOException {
+    // ClassPathLoader.getResource
+    assertThat(ClassPathLoader.getLatest().getResource(resourceName)).isNull();
+
+    // ClassPathLoader.getResources
+    Enumeration<URL> urls = ClassPathLoader.getLatest().getResources(resourceName);
+    assertThat(urls.hasMoreElements()).isFalse();
+
+    // ClassPathLoader.getResourceAsStream
+    InputStream is = ClassPathLoader.getLatest().getResourceAsStream(resourceName);
+    assertThat(is).isNull();
+  }
+
 
   /**
    * Verifies that <tt>getResource</tt> works with TCCL from {@link ClassPathLoader}.
@@ -281,154 +444,6 @@ public class ClassPathLoaderIntegrationTest {
     }
   }
 
-  /**
-   * Verifies that JAR files found in the extlib directory will be correctly added to the
-   * {@link ClassPathLoader}.
-   */
-  @Test
-  public void testJarsInExtLib() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderTest#testJarsInExtLib");
-
-    File EXT_LIB_DIR = ClassPathLoader.defineEXT_LIB_DIR();
-    EXT_LIB_DIR.mkdir();
-
-    File subdir = new File(EXT_LIB_DIR, "cplju");
-    subdir.mkdir();
-
-    final ClassBuilder classBuilder = new ClassBuilder();
-
-    writeJarBytesToFile(new File(EXT_LIB_DIR, "ClassPathLoaderJUnit1.jar"),
-        classBuilder.createJarFromClassContent("com/cpljunit1/ClassPathLoaderJUnit1",
-            "package com.cpljunit1; public class ClassPathLoaderJUnit1 {}"));
-    writeJarBytesToFile(new File(subdir, "ClassPathLoaderJUnit2.jar"),
-        classBuilder.createJarFromClassContent("com/cpljunit2/ClassPathLoaderJUnit2",
-            "package com.cpljunit2; public class ClassPathLoaderJUnit2 {}"));
-
-    ClassPathLoader classPathLoader = ClassPathLoader.createWithDefaults(false);
-    try {
-      classPathLoader.forName("com.cpljunit1.ClassPathLoaderJUnit1");
-    } catch (ClassNotFoundException cnfex) {
-      fail("JAR file not correctly added to Classpath");
-    }
-
-    try {
-      classPathLoader.forName("com.cpljunit2.ClassPathLoaderJUnit2");
-    } catch (ClassNotFoundException cnfex) {
-      fail("JAR file not correctly added to Classpath");
-    }
-
-    assertNotNull(classPathLoader.getResource("com/cpljunit2/ClassPathLoaderJUnit2.class"));
-
-    Enumeration<URL> urls = classPathLoader.getResources("com/cpljunit1");
-    if (!urls.hasMoreElements()) {
-      fail("Resources should return one element");
-    }
-  }
-
-  /**
-   * Verifies that the 3rd custom loader will get the resource. Parent cannot find it and TCCL is
-   * broken. This verifies that all custom loaders are checked and that the custom loaders are all
-   * checked before TCCL.
-   */
-  @Test
-  public void testGetResourceAsStreamWithMultipleCustomLoaders() throws Exception {
-    System.out
-        .println("\nStarting ClassPathLoaderTest#testGetResourceAsStreamWithMultipleCustomLoaders");
-
-    // create DCL such that the 3rd loader should find the resource
-    // first custom loader becomes parent which won't find anything
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
-    dcl = dcl.addOrReplace(new SimpleClassLoader(getClass().getClassLoader()));
-    dcl = dcl.addOrReplace(new NullClassLoader());
-
-    String resourceToGet = "com/nowhere/testGetResourceAsStreamWithMultipleCustomLoaders.rsc";
-
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    try {
-      // set TCCL to throw errors which makes sure we find before checking TCCL
-      Thread.currentThread().setContextClassLoader(new BrokenClassLoader());
-
-      InputStream is = dcl.getResourceAsStream(resourceToGet);
-      assertNotNull(is);
-      is.close();
-    } finally {
-      Thread.currentThread().setContextClassLoader(cl);
-    }
-  }
-
-  /**
-   * Verifies that the 3rd custom loader will get the resource. Parent cannot find it and TCCL is
-   * broken. This verifies that all custom loaders are checked and that the custom loaders are all
-   * checked before TCCL.
-   */
-  @Test
-  public void testGetResourceWithMultipleCustomLoaders() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderTest#testGetResourceWithMultipleCustomLoaders");
-
-    // create DCL such that the 3rd loader should find the resource
-    // first custom loader becomes parent which won't find anything
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
-    dcl = dcl.addOrReplace(new SimpleClassLoader(getClass().getClassLoader()));
-    dcl = dcl.addOrReplace(new NullClassLoader());
-
-    String resourceToGet = "com/nowhere/testGetResourceWithMultipleCustomLoaders.rsc";
-
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    try {
-      // set TCCL to throw errors which makes sure we find before checking TCCL
-      Thread.currentThread().setContextClassLoader(new BrokenClassLoader());
-
-      URL url = dcl.getResource(resourceToGet);
-      assertNotNull(url);
-    } finally {
-      Thread.currentThread().setContextClassLoader(cl);
-    }
-  }
-
-  /**
-   * Verifies that the 3rd custom loader will get the resources. Parent cannot find it and TCCL is
-   * broken. This verifies that all custom loaders are checked and that the custom loaders are all
-   * checked before TCCL.
-   */
-  @Test
-  public void testGetResourcesWithMultipleCustomLoaders() throws Exception {
-    System.out.println("\nStarting ClassPathLoaderTest#testGetResourceWithMultipleCustomLoaders");
-
-    // create DCL such that the 3rd loader should find the resource
-    // first custom loader becomes parent which won't find anything
-    ClassPathLoader dcl = ClassPathLoader.createWithDefaults(false);
-    dcl = dcl.addOrReplace(new GeneratingClassLoader());
-    dcl = dcl.addOrReplace(new GeneratingClassLoader2());
-    dcl = dcl.addOrReplace(new SimpleClassLoader(getClass().getClassLoader()));
-    dcl = dcl.addOrReplace(new NullClassLoader());
-
-    String resourceToGet = "com/nowhere/testGetResourceWithMultipleCustomLoaders.rsc";
-
-    ClassLoader cl = Thread.currentThread().getContextClassLoader();
-    try {
-      // set TCCL to throw errors which makes sure we find before checking TCCL
-      Thread.currentThread().setContextClassLoader(new BrokenClassLoader());
-
-      Enumeration<URL> urls = dcl.getResources(resourceToGet);
-      assertNotNull(urls);
-      assertTrue(urls.hasMoreElements());
-
-      URL url = urls.nextElement();
-      assertNotNull(url);
-
-      // Should find two with unique URLs
-      assertTrue("Did not find all resources.", urls.hasMoreElements());
-      URL url2 = urls.nextElement();
-      assertNotNull(url2);
-      assertTrue("Resource URLs should be unique.", !url.equals(url2));
-
-    } finally {
-      Thread.currentThread().setContextClassLoader(cl);
-    }
-  }
-
   private void writeJarBytesToFile(File jarFile, byte[] jarBytes) throws IOException {
     final OutputStream outStream = new FileOutputStream(jarFile);
     outStream.write(jarBytes);
@@ -507,5 +522,12 @@ public class ClassPathLoaderIntegrationTest {
     protected File getTempFile() {
       return tempFile2;
     }
+  }
+
+  private byte[] createJarWithClass(String className) throws IOException {
+    String stringBuilder = "package integration.parent;" + "public class " + className + " {}";
+
+    return new ClassBuilder().createJarFromClassContent("integration/parent/" + className,
+        stringBuilder);
   }
 }

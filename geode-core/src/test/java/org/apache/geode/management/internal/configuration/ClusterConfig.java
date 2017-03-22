@@ -17,6 +17,7 @@
 package org.apache.geode.management.internal.configuration;
 
 
+import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE_SIZE_LIMIT;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,7 +25,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.JarClassLoader;
+import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.lang.StringUtils;
@@ -36,6 +37,8 @@ import org.apache.geode.test.dunit.rules.Server;
 
 import java.io.File;
 import java.io.Serializable;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,6 +48,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ClusterConfig implements Serializable {
   private List<ConfigGroup> groups;
@@ -87,7 +91,7 @@ public class ClusterConfig implements Serializable {
 
   public void verifyLocator(MemberVM<Locator> locatorVM) {
     Set<String> expectedGroupConfigs =
-        this.getGroups().stream().map(ConfigGroup::getName).collect(Collectors.toSet());
+        this.getGroups().stream().map(ConfigGroup::getName).collect(toSet());
 
     // verify info exists in memeory
     locatorVM.invoke(() -> {
@@ -133,11 +137,15 @@ public class ClusterConfig implements Serializable {
 
   public void verifyServer(MemberVM<Server> serverVM) throws ClassNotFoundException {
     // verify files exist in filesystem
-    Set<String> expectedJarNames = this.getJarNames().stream().map(ClusterConfig::getServerJarName)
-        .collect(Collectors.toSet());
-    Set<String> actualJarNames = toSetIgnoringHiddenFiles(
-        serverVM.getWorkingDir().list((dir, filename) -> filename.contains(".jar")));
-    assertThat(actualJarNames).isEqualTo(expectedJarNames);
+    Set<String> expectedJarNames = this.getJarNames().stream().collect(toSet());
+
+    String[] actualJarFiles =
+        serverVM.getWorkingDir().list((dir, filename) -> filename.contains(".jar"));
+    Set<String> actualJarNames = Stream.of(actualJarFiles)
+        .map(jar -> jar.replaceAll("\\.v\\d+\\.jar", ".jar")).collect(toSet());
+
+    // We will end up with extra jars on disk if they are deployed and then undeployed
+    assertThat(expectedJarNames).isSubsetOf(actualJarNames);
 
     // verify config exists in memory
     serverVM.invoke(() -> {
@@ -154,22 +162,22 @@ public class ClusterConfig implements Serializable {
       }
 
       for (String jar : this.getJarNames()) {
-        JarClassLoader jarClassLoader = findJarClassLoader(jar);
-        assertThat(jarClassLoader).isNotNull();
-        assertThat(Class.forName(nameOfClassContainedInJar(jar), true, jarClassLoader)).isNotNull();
+        DeployedJar deployedJar = ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jar);
+        assertThat(deployedJar).isNotNull();
+        assertThat(Class.forName(nameOfClassContainedInJar(jar), true,
+            new URLClassLoader(new URL[] {deployedJar.getFileURL()}))).isNotNull();
+      }
+
+      // If we have extra jars on disk left over from undeploy, make sure they aren't used
+      Set<String> undeployedJarNames = new HashSet<>(actualJarNames);
+      undeployedJarNames.removeAll(expectedJarNames);
+      for (String jar : undeployedJarNames) {
+        System.out.println("Verifying undeployed jar: " + jar);
+        DeployedJar undeployedJar =
+            ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jar);
+        assertThat(undeployedJar).isNull();
       }
     });
-  }
-
-  private static JarClassLoader findJarClassLoader(final String jarName) {
-    Collection<ClassLoader> classLoaders = ClassPathLoader.getLatest().getClassLoaders();
-    for (ClassLoader classLoader : classLoaders) {
-      if (classLoader instanceof JarClassLoader
-          && ((JarClassLoader) classLoader).getJarName().equals(jarName)) {
-        return (JarClassLoader) classLoader;
-      }
-    }
-    return null;
   }
 
 
@@ -178,14 +186,8 @@ public class ClusterConfig implements Serializable {
     if (array == null) {
       return new HashSet<>();
     }
-    return Arrays.stream(array).filter((String name) -> !name.startsWith("."))
-        .collect(Collectors.toSet());
+    return Arrays.stream(array).filter((String name) -> !name.startsWith(".")).collect(toSet());
   }
-
-  private static String getServerJarName(String jarName) {
-    return JarDeployer.JAR_PREFIX + jarName + "#1";
-  }
-
 
   private static String nameOfClassContainedInJar(String jarName) {
     switch (jarName) {

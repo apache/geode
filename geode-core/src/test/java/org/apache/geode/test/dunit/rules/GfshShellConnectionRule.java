@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit.rules;
 
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.internal.lang.StringUtils;
@@ -23,6 +24,7 @@ import org.apache.geode.management.internal.cli.HeadlessGfsh;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.rules.DescribedExternalResource;
 import org.json.JSONArray;
 import org.junit.rules.TemporaryFolder;
@@ -56,6 +58,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   private PortType portType = PortType.jmxManger;
   private HeadlessGfsh gfsh = null;
   private boolean connected = false;
+  private IgnoredException ignoredException;
   private TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   public GfshShellConnectionRule() {}
@@ -70,6 +73,9 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     temporaryFolder.create();
     this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
         temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
+    ignoredException =
+        addIgnoredException("java.rmi.NoSuchObjectException: no such object in table");
+
     // do not auto connect if no port initialized
     if (port < 0) {
       return;
@@ -130,7 +136,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     // can not use Awaitility here because it starts another thead, but the Gfsh instance is in a
     // threadLocal variable, See Gfsh.getExistingInstance()
     CommandResult result = null;
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 100; i++) {
       result = executeCommand(connectCommand.toString());
       if (!gfsh.outputString.contains("no such object in table")) {
         break;
@@ -147,6 +153,10 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
       disconnect();
     }
     close();
+
+    if (ignoredException != null) {
+      ignoredException.remove();
+    }
   }
 
   public void disconnect() throws Exception {

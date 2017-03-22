@@ -4033,7 +4033,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   public static void flushClassCache() {
     if (classCache != null) {
-      // Not locking classCache during clear as doing so causes a deadlock in the JarClassLoader
+      // Not locking classCache during clear as doing so causes a deadlock in the DeployedJar
       classCache.clear();
     }
   }

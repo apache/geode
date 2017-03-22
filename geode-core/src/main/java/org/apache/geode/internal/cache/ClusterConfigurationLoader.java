@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,9 +27,13 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.geode.internal.ClassPathLoader;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.UnmodifiableException;
@@ -35,7 +42,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.JarClassLoader;
+import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -56,45 +63,54 @@ public class ClusterConfigurationLoader {
    * 
    * @param cache Cache of this member
    * @param response {@link ConfigurationResponse} received from the locators
-   * @throws IOException
-   * @throws ClassNotFoundException
    */
   public static void deployJarsReceivedFromClusterConfiguration(Cache cache,
       ConfigurationResponse response) throws IOException, ClassNotFoundException {
-    if (response == null)
+    System.out.println("Requesting cluster config");
+    if (response == null) {
       return;
+    }
 
     String[] jarFileNames = response.getJarNames();
     byte[][] jarBytes = response.getJars();
-
-    final JarDeployer jarDeployer = new JarDeployer(
-        ((GemFireCacheImpl) cache).getDistributedSystem().getConfig().getDeployWorkingDir());
-
-    /******
-     * Un-deploy the existing jars, deployed during cache creation, do not delete anything
-     */
+    System.out.println("Got response with jars: " + Stream.of(jarFileNames).collect(joining(",")));
 
     if (jarFileNames != null && jarBytes != null) {
-      JarClassLoader[] jarClassLoaders = jarDeployer.deploy(jarFileNames, jarBytes);
-      for (int i = 0; i < jarFileNames.length; i++) {
-        if (jarClassLoaders[i] != null) {
-          logger.info("Deployed " + (jarClassLoaders[i].getFileCanonicalPath()));
+      JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
+      jarDeployer.suspendAll();
+      try {
+        List<String> extraJarsOnServer =
+            jarDeployer.findDeployedJars().stream().map(DeployedJar::getJarName)
+                .filter(jarName -> !ArrayUtils.contains(jarFileNames, jarName)).collect(toList());
+
+        for (String extraJar : extraJarsOnServer) {
+          logger.info("Removing jar not present in cluster configuration: " + extraJar);
+          System.out.println("Removing jar not present in cluster configuration: " + extraJar);
+          jarDeployer.deleteAllVersionsOfJar(extraJar);
         }
+
+        List<DeployedJar> deployedJars = jarDeployer.deploy(jarFileNames, jarBytes);
+
+        deployedJars.stream().filter(Objects::nonNull)
+            .forEach((jar) -> logger.info("Deployed " + (jar.getFile().getAbsolutePath())));
+      } finally {
+        jarDeployer.resumeAll();
       }
     }
   }
 
   /***
    * Apply the cache-xml cluster configuration on this member
-   * 
+   *
    * @param cache Cache created for this member
    * @param response {@link ConfigurationResponse} containing the requested {@link Configuration}
    * @param config this member's config.
    */
   public static void applyClusterXmlConfiguration(Cache cache, ConfigurationResponse response,
       DistributionConfig config) {
-    if (response == null || response.getRequestedConfiguration().isEmpty())
+    if (response == null || response.getRequestedConfiguration().isEmpty()) {
       return;
+    }
 
     List<String> groups = getGroups(config);
     Map<String, Configuration> requestedConfiguration = response.getRequestedConfiguration();
@@ -138,15 +154,16 @@ public class ClusterConfigurationLoader {
 
   /***
    * Apply the gemfire properties cluster configuration on this member
-   * 
+   *
    * @param cache Cache created for this member
    * @param response {@link ConfigurationResponse} containing the requested {@link Configuration}
    * @param config this member's config
    */
   public static void applyClusterPropertiesConfiguration(Cache cache,
       ConfigurationResponse response, DistributionConfig config) {
-    if (response == null || response.getRequestedConfiguration().isEmpty())
+    if (response == null || response.getRequestedConfiguration().isEmpty()) {
       return;
+    }
 
     List<String> groups = getGroups(config);
     Map<String, Configuration> requestedConfiguration = response.getRequestedConfiguration();
@@ -189,8 +206,6 @@ public class ClusterConfigurationLoader {
    * 
    * @param config this member's configuration.
    * @return {@link ConfigurationResponse}
-   * @throws ClusterConfigurationNotAvailableException
-   * @throws UnknownHostException
    */
   public static ConfigurationResponse requestConfigurationFromLocators(DistributionConfig config,
       List<String> locatorList)
