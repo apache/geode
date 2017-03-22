@@ -22,7 +22,6 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
 
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -47,8 +46,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
  * @since GemFire version 9.0
  */
 public class GemFireAuthentication extends UsernamePasswordAuthenticationToken {
-
-  private final static PulseLogWriter logger = PulseLogWriter.getLogger();
 
   private JMXConnector jmxc = null;
 

@@ -27,10 +27,11 @@ import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.PulseVersion;
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 import org.apache.geode.tools.pulse.internal.service.PulseService;
 import org.apache.geode.tools.pulse.internal.service.PulseServiceFactory;
 import org.apache.geode.tools.pulse.internal.service.SystemAlertsService;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,7 +54,7 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 public class PulseController {
 
-  private static final PulseLogWriter LOGGER = PulseLogWriter.getLogger();
+  private static final Logger logger = LogManager.getLogger();
 
   // CONSTANTS
   private final String DEFAULT_EXPORT_FILENAME = "DataBrowserQueryResult.json";
@@ -102,15 +103,13 @@ public class PulseController {
           PulseService pulseService = pulseServiceFactory.getPulseServiceInstance(serviceName);
           responseMap.put(serviceName, pulseService.execute(request));
         } catch (Exception serviceException) {
-          LOGGER.warning("serviceException [for service " + serviceName + "] = "
-              + serviceException.getMessage());
+          logger.warn("serviceException [for service {}] = {}", serviceName,
+              serviceException.getMessage());
           responseMap.put(serviceName, EMPTY_JSON);
         }
       }
     } catch (Exception e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occurred : " + e.getMessage());
-      }
+      logger.debug("Exception Occurred : ", e);
     }
 
     // Create Response
@@ -128,9 +127,7 @@ public class PulseController {
       // Send json response
       response.getOutputStream().write(responseJSON.toString().getBytes());
     } catch (Exception e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occurred : " + e.getMessage());
-      }
+      logger.debug("Exception Occurred : ", e);
     }
   }
 
@@ -169,9 +166,7 @@ public class PulseController {
       responseJSON.put("sourceRepository", PulseController.pulseVersion.getPulseSourceRepository());
 
     } catch (Exception e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occured : " + e.getMessage());
-      }
+      logger.debug("Exception Occurred : ", e);
     }
 
     // Send json response
@@ -189,9 +184,7 @@ public class PulseController {
     } catch (NumberFormatException e) {
       // Empty json response
       response.getOutputStream().write(responseJSON.toString().getBytes());
-      if (LOGGER.finerEnabled()) {
-        LOGGER.finer(e.getMessage());
-      }
+      logger.debug(e);
       return;
     }
 
@@ -213,9 +206,7 @@ public class PulseController {
         responseJSON.put("connectedErrorMsg", cluster.getConnectionErrorMsg());
       }
     } catch (Exception e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occurred : " + e.getMessage());
-      }
+      logger.debug("Exception Occurred : ", e);
     }
 
     // Send json response
@@ -233,9 +224,7 @@ public class PulseController {
     } catch (NumberFormatException e) {
       // Empty json response
       response.getOutputStream().write(responseJSON.toString().getBytes());
-      if (LOGGER.finerEnabled()) {
-        LOGGER.finer(e.getMessage());
-      }
+      logger.debug(e);
       return;
     }
 
@@ -247,9 +236,7 @@ public class PulseController {
       cluster.acknowledgeAlert(alertId);
       responseJSON.put("status", "deleted");
     } catch (Exception e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occured : " + e.getMessage());
-      }
+      logger.debug("Exception Occurred : {}", e);
     }
 
     // Send json response
@@ -274,9 +261,7 @@ public class PulseController {
       responseJSON.put("connectedFlag", cluster.isConnectedFlag());
       responseJSON.put("connectedErrorMsg", cluster.getConnectionErrorMsg());
     } catch (Exception e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occured : " + e.getMessage());
-      }
+      logger.debug("Exception Occurred : {}", e);
     }
 
     // Send json response
@@ -340,9 +325,7 @@ public class PulseController {
       limit = Integer.valueOf(request.getParameter("limit"));
     } catch (NumberFormatException e) {
       limit = 0;
-      if (LOGGER.finerEnabled()) {
-        LOGGER.finer(e.getMessage());
-      }
+      logger.debug(e);
     }
 
     ObjectNode queryResult = mapper.createObjectNode();
@@ -364,9 +347,7 @@ public class PulseController {
         }
       }
     } catch (Exception e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occured : " + e.getMessage());
-      }
+      logger.debug("Exception Occurred : ", e);
     }
 
     response.getOutputStream().write(queryResult.toString().getBytes());
@@ -411,9 +392,7 @@ public class PulseController {
       queryResult = cluster.getQueryHistoryByUserId(userName);
       responseJSON.put("queryHistory", queryResult);
     } catch (Exception e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occured : " + e.getMessage());
-      }
+      logger.debug("Exception Occurred : ", e);
     }
     response.getOutputStream().write(responseJSON.toString().getBytes());
 
@@ -433,9 +412,7 @@ public class PulseController {
       limit = Integer.valueOf(request.getParameter("limit"));
     } catch (NumberFormatException e) {
       limit = 0;
-      if (LOGGER.finerEnabled()) {
-        LOGGER.finer(e.getMessage());
-      }
+      logger.debug(e);
     }
 
     ObjectNode queryResult = mapper.createObjectNode();
@@ -457,9 +434,7 @@ public class PulseController {
         }
       }
     } catch (Exception e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occured : " + e.getMessage());
-      }
+      logger.debug("Exception Occurred : ", e);
     }
 
     response.setContentType("application/json");
@@ -505,9 +480,7 @@ public class PulseController {
       // Send json response
       response.getOutputStream().write(responseJSON.toString().getBytes());
     } catch (Exception e) {
-      if (LOGGER.fineEnabled()) {
-        LOGGER.fine("Exception Occured : " + e.getMessage());
-      }
+      logger.debug("Exception Occurred : ", e);
     }
   }
 }

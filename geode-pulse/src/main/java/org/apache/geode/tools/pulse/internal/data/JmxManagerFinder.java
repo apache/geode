@@ -25,7 +25,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 import org.apache.geode.tools.pulse.internal.util.ConnectionUtil;
 
 /**
@@ -40,8 +39,6 @@ import org.apache.geode.tools.pulse.internal.util.ConnectionUtil;
  * 
  */
 public class JmxManagerFinder {
-
-  private final static PulseLogWriter LOGGER = PulseLogWriter.getLogger();
 
   /*
    * public static void main(String[] args) throws IOException { if (args.length != 2) {

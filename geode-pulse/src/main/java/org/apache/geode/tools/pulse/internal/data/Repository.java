@@ -17,7 +17,8 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -35,7 +36,7 @@ import java.util.concurrent.TimeUnit;
  * @since GemFire version 7.0.Beta 2012-09-23
  */
 public class Repository {
-  private PulseLogWriter LOGGER;
+  private static final Logger logger = LogManager.getLogger();
 
   private static Repository instance = new Repository();
   private HashMap<String, Cluster> clusterMap = new HashMap<String, Cluster>();
@@ -179,13 +180,9 @@ public class Repository {
       String key = username;
       Cluster data = this.clusterMap.get(key);
 
-      LOGGER = PulseLogWriter.getLogger();
-
       if (data == null) {
         try {
-          if (LOGGER.infoEnabled()) {
-            LOGGER.info(resourceBundle.getString("LOG_MSG_CREATE_NEW_THREAD") + " : " + key);
-          }
+          logger.info("{} : {}", resourceBundle.getString("LOG_MSG_CREATE_NEW_THREAD"), key);
           data = new Cluster(this.jmxHost, this.jmxPort, username, password);
           // Assign name to thread created
           data.setName(
@@ -196,9 +193,7 @@ public class Repository {
           this.clusterMap.put(key, data);
         } catch (ConnectException | InterruptedException e) {
           data = null;
-          if (LOGGER.fineEnabled()) {
-            LOGGER.fine(e.getMessage());
-          }
+          logger.debug(e);
         }
       } else {
         data.setJmxUserPassword(password);
@@ -223,10 +218,7 @@ public class Repository {
       String clusterKey = entry.getKey();
       c.stopThread();
       iter.remove();
-      if (LOGGER.infoEnabled()) {
-        LOGGER.info(
-            resourceBundle.getString("LOG_MSG_REMOVE_THREAD") + " : " + clusterKey.toString());
-      }
+      logger.info("{} : {}", resourceBundle.getString("LOG_MSG_REMOVE_THREAD"), clusterKey);
     }
   }
 

@@ -25,8 +25,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
 import org.apache.geode.tools.pulse.internal.util.TimeUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -52,6 +53,7 @@ import javax.servlet.http.HttpServletRequest;
 public class ClusterSelectedRegionService implements PulseService {
 
   private final ObjectMapper mapper = new ObjectMapper();
+  private static final Logger logger = LogManager.getLogger();
 
   // String constants used for forming a json response
   private final String ENTRY_SIZE = "entrySize";
@@ -100,7 +102,6 @@ public class ClusterSelectedRegionService implements PulseService {
    * @return ObjectNode Array List
    */
   private ObjectNode getSelectedRegionJson(Cluster cluster, String selectedRegionFullPath) {
-    PulseLogWriter LOGGER = PulseLogWriter.getLogger();
     Long totalHeapSize = cluster.getTotalHeapSize();
     Long totalDiskUsage = cluster.getTotalBytesOnDisk();
 
@@ -218,7 +219,7 @@ public class ClusterSelectedRegionService implements PulseService {
       regionJSON.put("totalDataUsage", totalDiskUsage);
       regionJSON.put("memoryUsage", entrySizeInMB);
 
-      LOGGER.fine("calling getSelectedRegionJson :: regionJSON = " + regionJSON);
+      logger.debug("calling getSelectedRegionJson :: regionJSON = {}", regionJSON);
       return regionJSON;
     } else {
       ObjectNode responseJSON = mapper.createObjectNode();

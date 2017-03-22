@@ -20,10 +20,12 @@ package org.apache.geode.tools.pulse.internal.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.Cluster.RegionOnMember;
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.geode.tools.pulse.internal.log.PulseLogWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -49,6 +51,7 @@ import java.util.List;
 public class ClusterSelectedRegionsMemberService implements PulseService {
 
   private final ObjectMapper mapper = new ObjectMapper();
+  private static final Logger logger = LogManager.getLogger();
 
   // Comparator based upon regions entry count
   private static Comparator<Cluster.RegionOnMember> romEntryCountComparator = (m1, m2) -> {
@@ -65,14 +68,13 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
 
   @Override
   public ObjectNode execute(final HttpServletRequest request) throws Exception {
-    PulseLogWriter LOGGER = PulseLogWriter.getLogger();
     String userName = request.getUserPrincipal().getName();
     String pulseData = request.getParameter("pulseData");
     JsonNode parameterMap = mapper.readTree(pulseData);
     String selectedRegionFullPath =
         parameterMap.get("ClusterSelectedRegionsMember").get("regionFullPath").textValue();
-    LOGGER.finest(
-        "ClusterSelectedRegionsMemberService selectedRegionFullPath = " + selectedRegionFullPath);
+    logger.trace("ClusterSelectedRegionsMemberService selectedRegionFullPath = {}",
+        selectedRegionFullPath);
 
     // get cluster object
     Cluster cluster = Repository.get().getCluster();
@@ -93,7 +95,6 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
    * Create JSON for selected cluster region's all members
    */
   private ObjectNode getSelectedRegionsMembersJson(Cluster cluster, String selectedRegionFullPath) {
-    PulseLogWriter LOGGER = PulseLogWriter.getLogger();
     Cluster.Region reg = cluster.getClusterRegion(selectedRegionFullPath);
 
     if (reg != null) {
@@ -112,37 +113,36 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
         memberJSON.put("entrySize", rom.getEntrySize());
 
         memberJSON.put("accessor", ((rom.getLocalMaxMemory() == 0) ? "True" : "False"));
-        LOGGER.finest("calling getSelectedRegionsMembersJson :: rom.getLocalMaxMemory() = "
-            + rom.getLocalMaxMemory());
+        logger.trace("calling getSelectedRegionsMembersJson :: rom.getLocalMaxMemory() = {}",
+            rom.getLocalMaxMemory());
 
         memberJSON.put("memoryReadsTrend",
             mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(
                 RegionOnMember.REGION_ON_MEMBER_STAT_GETS_PER_SEC_TREND)));
-        LOGGER.finest("memoryReadsTrend = " + rom.getRegionOnMemberStatisticTrend(
+        logger.trace("memoryReadsTrend = {}", rom.getRegionOnMemberStatisticTrend(
             RegionOnMember.REGION_ON_MEMBER_STAT_GETS_PER_SEC_TREND).length);
 
         memberJSON.put("memoryWritesTrend",
             mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(
                 RegionOnMember.REGION_ON_MEMBER_STAT_PUTS_PER_SEC_TREND)));
-        LOGGER.finest("memoryWritesTrend = " + rom.getRegionOnMemberStatisticTrend(
+        logger.trace("memoryWritesTrend = {}", rom.getRegionOnMemberStatisticTrend(
             RegionOnMember.REGION_ON_MEMBER_STAT_PUTS_PER_SEC_TREND).length);
-
         memberJSON.put("diskReadsTrend",
             mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(
                 RegionOnMember.REGION_ON_MEMBER_STAT_DISK_READS_PER_SEC_TREND)));
-        LOGGER.finest("diskReadsTrend = " + rom.getRegionOnMemberStatisticTrend(
+        logger.trace("diskReadsTrend = {}", rom.getRegionOnMemberStatisticTrend(
             RegionOnMember.REGION_ON_MEMBER_STAT_DISK_READS_PER_SEC_TREND).length);
 
         memberJSON.put("diskWritesTrend",
             mapper.<JsonNode>valueToTree(rom.getRegionOnMemberStatisticTrend(
                 RegionOnMember.REGION_ON_MEMBER_STAT_DISK_WRITES_PER_SEC_TREND)));
-        LOGGER.finest("diskWritesTrend = " + rom.getRegionOnMemberStatisticTrend(
+        logger.trace("diskWritesTrend = {}", rom.getRegionOnMemberStatisticTrend(
             RegionOnMember.REGION_ON_MEMBER_STAT_DISK_WRITES_PER_SEC_TREND).length);
 
         regionMemberJSON.put(rom.getMemberName(), memberJSON);
       }
 
-      LOGGER.fine("calling getSelectedRegionsMembersJson :: regionJSON = " + regionMemberJSON);
+      logger.debug("calling getSelectedRegionsMembersJson :: regionJSON = {}", regionMemberJSON);
       return regionMemberJSON;
     } else {
       ObjectNode responseJSON = mapper.createObjectNode();
