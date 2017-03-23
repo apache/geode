@@ -149,14 +149,6 @@ public class PulseController {
     ObjectNode responseJSON = mapper.createObjectNode();
 
     try {
-      // Reference to repository
-      Repository repository = Repository.get();
-      // set pulse web app url
-      String pulseWebAppUrl = request.getScheme() + "://" + request.getServerName() + ":"
-          + request.getServerPort() + request.getContextPath();
-
-      repository.setPulseWebAppUrl(pulseWebAppUrl);
-
       // Response
       responseJSON.put("pulseVersion", PulseController.pulseVersion.getPulseVersion());
       responseJSON.put("buildId", PulseController.pulseVersion.getPulseBuildId());

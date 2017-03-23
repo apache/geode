@@ -22,13 +22,11 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A Singleton instance of the memory cache for clusters.
@@ -41,17 +39,10 @@ public class Repository {
   private static Repository instance = new Repository();
   private HashMap<String, Cluster> clusterMap = new HashMap<String, Cluster>();
   private Boolean jmxUseLocator;
-  private String jmxHost;
-  private String jmxPort;
-  private String jmxUserName;
-  private String jmxUserPassword;
-  private Boolean isEmbeddedMode;
+  private String host;
+  private String port;
   private boolean useSSLLocator = false;
   private boolean useSSLManager = false;
-  private boolean useGemFireCredentials = false;
-
-
-  private String pulseWebAppUrl;
 
   Locale locale =
       new Locale(PulseConstants.APPLICATION_LANGUAGE, PulseConstants.APPLICATION_COUNTRY);
@@ -77,44 +68,20 @@ public class Repository {
     this.jmxUseLocator = jmxUseLocator;
   }
 
-  public String getJmxHost() {
-    return this.jmxHost;
+  public String getHost() {
+    return this.host;
   }
 
-  public void setJmxHost(String jmxHost) {
-    this.jmxHost = jmxHost;
+  public void setHost(String jmxHost) {
+    this.host = jmxHost;
   }
 
-  public String getJmxPort() {
-    return this.jmxPort;
+  public String getPort() {
+    return this.port;
   }
 
-  public void setJmxPort(String jmxPort) {
-    this.jmxPort = jmxPort;
-  }
-
-  public String getJmxUserName() {
-    return this.jmxUserName;
-  }
-
-  public void setJmxUserName(String jmxUserName) {
-    this.jmxUserName = jmxUserName;
-  }
-
-  public String getJmxUserPassword() {
-    return this.jmxUserPassword;
-  }
-
-  public void setJmxUserPassword(String jmxUserPassword) {
-    this.jmxUserPassword = jmxUserPassword;
-  }
-
-  public Boolean getIsEmbeddedMode() {
-    return this.isEmbeddedMode;
-  }
-
-  public void setIsEmbeddedMode(Boolean isEmbeddedMode) {
-    this.isEmbeddedMode = isEmbeddedMode;
+  public void setPort(String jmxPort) {
+    this.port = jmxPort;
   }
 
   public boolean isUseSSLLocator() {
@@ -133,79 +100,42 @@ public class Repository {
     this.useSSLManager = useSSLManager;
   }
 
-  public String getPulseWebAppUrl() {
-    return this.pulseWebAppUrl;
-  }
-
-  public void setPulseWebAppUrl(String pulseWebAppUrl) {
-    this.pulseWebAppUrl = pulseWebAppUrl;
-  }
-
   public PulseConfig getPulseConfig() {
     return this.pulseConfig;
   }
 
-  public void setPulseConfig(PulseConfig pulseConfig) {
-    this.pulseConfig = pulseConfig;
-  }
 
   /**
-   * we're maintaining a 1:1 mapping between webapp and cluster, there is no need for a map of
-   * clusters based on the host and port We are using this clusterMap to maintain cluster for
-   * different users now. For a single-user connection to gemfire JMX, we will use the default
-   * username/password in the pulse.properties (# JMX User Properties ) pulse.jmxUserName=admin
-   * pulse.jmxUserPassword=admin
+   * this will return a cluster already connected to the geode jmx manager for the user in the
+   * request
    *
    * But for multi-user connections to gemfireJMX, i.e pulse that uses gemfire integrated security,
    * we will need to get the username form the context
    */
   public Cluster getCluster() {
-    String username = null;
-    String password = null;
-    if (useGemFireCredentials) {
-      Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-      if (auth != null) {
-        username = auth.getName();
-        password = (String) auth.getCredentials();
-      }
-    } else {
-      username = this.jmxUserName;
-      password = this.jmxUserPassword;
-    }
-    return this.getCluster(username, password);
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    if (auth == null)
+      return null;
+    return getCluster(auth.getName(), null);
   }
 
   public Cluster getCluster(String username, String password) {
     synchronized (this.clusterMap) {
-      String key = username;
-      Cluster data = this.clusterMap.get(key);
-
+      Cluster data = clusterMap.get(username);
       if (data == null) {
-        try {
-          logger.info("{} : {}", resourceBundle.getString("LOG_MSG_CREATE_NEW_THREAD"), key);
-          data = new Cluster(this.jmxHost, this.jmxPort, username, password);
-          // Assign name to thread created
-          data.setName(
-              PulseConstants.APP_NAME + "-" + this.jmxHost + ":" + this.jmxPort + ":" + username);
-          // Start Thread
-          data.start();
-          data.waitForInitialization(15, TimeUnit.SECONDS);
-          this.clusterMap.put(key, data);
-        } catch (ConnectException | InterruptedException e) {
-          data = null;
-          logger.debug(e);
+        logger.info(resourceBundle.getString("LOG_MSG_CREATE_NEW_THREAD") + " : " + username);
+        data = new Cluster(this.host, this.port, username);
+        // Assign name to thread created
+        data.setName(PulseConstants.APP_NAME + "-" + this.host + ":" + this.port + ":" + username);
+        data.connectToGemFire(password);
+        if (data.isConnectedFlag()) {
+          this.clusterMap.put(username, data);
         }
-      } else {
-        data.setJmxUserPassword(password);
-
       }
       return data;
     }
   }
 
-  private String getClusterKey(String host, String port) {
-    return host + ":" + port;
-  }
 
   // This method is used to remove all cluster threads
   public void removeAllClusters() {
@@ -225,15 +155,6 @@ public class Repository {
   public ResourceBundle getResourceBundle() {
     return this.resourceBundle;
   }
-
-  public boolean isUseGemFireCredentials() {
-    return useGemFireCredentials;
-  }
-
-  public void setUseGemFireCredentials(boolean useGemFireCredentials) {
-    this.useGemFireCredentials = useGemFireCredentials;
-  }
-
 
 
 }

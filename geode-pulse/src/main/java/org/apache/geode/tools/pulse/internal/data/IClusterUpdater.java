@@ -19,6 +19,8 @@ package org.apache.geode.tools.pulse.internal.data;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import javax.management.remote.JMXConnector;
+
 /**
  * Interface having updateData() function which is getting Override by both MockDataUpdater and
  * JMXDataUpdater
@@ -30,4 +32,8 @@ public interface IClusterUpdater {
   boolean updateData();
 
   ObjectNode executeQuery(String queryText, String members, int limit);
+
+  default JMXConnector connect(String username, String password) {
+    return null;
+  }
 }

@@ -27,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
 import java.math.BigDecimal;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -49,7 +48,6 @@ import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
-import javax.management.InvalidAttributeValueException;
 import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
@@ -75,7 +73,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
 
   private JMXConnector conn = null;
-  private MBeanServerConnection mbs;
+  private MBeanServerConnection mbs = null;
   private final String serverName;
   private final String port;
   private Boolean isAddedNotiListner = false;
@@ -87,7 +85,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   private ObjectName MBEAN_OBJECT_NAME_MEMBER;
   private ObjectName MBEAN_OBJECT_NAME_MEMBER_MANAGER;
   private ObjectName MBEAN_OBJECT_NAME_STATEMENT_DISTRIBUTED;
-  private ObjectName MBEAN_OBJECT_NAME_TABLE_AGGREGATE;
 
   private Set<ObjectName> systemMBeans = null;
 
@@ -124,10 +121,10 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
   private JmxManagerInfo getManagerInfoFromLocator(Repository repository) {
 
     try {
-      String locatorHost = repository.getJmxHost();
-      int locatorPort = Integer.parseInt(repository.getJmxPort());
+      String locatorHost = repository.getHost();
+      int locatorPort = Integer.parseInt(repository.getPort());
 
-      logger.info("{} : {} & {} : {}", resourceBundle.getString("LOG_MSG_HOST"), locatorHost,
+      logger.info("{}={} & {}={}", resourceBundle.getString("LOG_MSG_HOST"), locatorHost,
           resourceBundle.getString("LOG_MSG_PORT"), locatorPort);
 
       InetAddress inetAddr = InetAddress.getByName(locatorHost);
@@ -135,11 +132,9 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       if ((inetAddr instanceof Inet4Address) || (inetAddr instanceof Inet6Address)) {
 
         if (inetAddr instanceof Inet4Address) {
-          logger.info("{} - {}", resourceBundle.getString("LOG_MSG_LOCATOR_IPV4_ADDRESS"),
-              inetAddr);
+          logger.info("{}: {}", resourceBundle.getString("LOG_MSG_LOCATOR_IPV4_ADDRESS"), inetAddr);
         } else {
-          logger.info("{} - {}", resourceBundle.getString("LOG_MSG_LOCATOR_IPV6_ADDRESS"),
-              inetAddr);
+          logger.info("{}: {}", resourceBundle.getString("LOG_MSG_LOCATOR_IPV6_ADDRESS"), inetAddr);
         }
 
         JmxManagerInfo jmxManagerInfo = JmxManagerFinder.askLocatorForJmxManager(inetAddr,
@@ -168,19 +163,11 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
     return null;
   }
 
-  /**
-   * Default connection is Pulse which uses configured userName and password
-   */
-  public JMXConnector getJMXConnection() {
-    return getJMXConnection(true);
-  }
 
   /**
-   * Get connection for given userName and password. This is used for DataBrowser queries which has
-   * to be fired using credentials provided at pulse login page
+   * Get the jmx connection
    */
-  public JMXConnector getJMXConnection(final boolean registerURL) {
-    JMXConnector connection = null;
+  public JMXConnector connect(String username, String password) {
     // Reference to repository
     Repository repository = Repository.get();
     try {
@@ -196,7 +183,7 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         if (jmxManagerInfo.port == 0) {
           logger.info(resourceBundle.getString("LOG_MSG_LOCATOR_COULD_NOT_FIND_MANAGER"));
         } else {
-          logger.info("{} : {} : {} & {} : {}{}",
+          logger.info("{}: {}={} & {}={}, {}",
               resourceBundle.getString("LOG_MSG_LOCATOR_FOUND_MANAGER"),
               resourceBundle.getString("LOG_MSG_HOST"), jmxManagerInfo.host,
               resourceBundle.getString("LOG_MSG_PORT"), jmxManagerInfo.port,
@@ -207,14 +194,14 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
               formJMXServiceURLString(jmxManagerInfo.host, String.valueOf(jmxManagerInfo.port));
         }
       } else {
-        logger.info("{} : {} & {} : {}", resourceBundle.getString("LOG_MSG_HOST"), this.serverName,
+        logger.info("{}={} & {}={}", resourceBundle.getString("LOG_MSG_HOST"), this.serverName,
             resourceBundle.getString("LOG_MSG_PORT"), this.port);
         jmxSerURL = formJMXServiceURLString(this.serverName, this.port);
       }
 
       if (StringUtils.isNotBlank(jmxSerURL)) {
         JMXServiceURL url = new JMXServiceURL(jmxSerURL);
-        String[] creds = {this.cluster.getJmxUserName(), this.cluster.getJmxUserPassword()};
+        String[] creds = {username, password};
         Map<String, Object> env = new HashMap<String, Object>();
         env.put(JMXConnector.CREDENTIALS, creds);
 
@@ -223,33 +210,24 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
           env.put("com.sun.jndi.rmi.factory.socket", new SslRMIClientSocketFactory());
         }
         logger.info("Connecting to jmxURL : {}", jmxSerURL);
-        connection = JMXConnectorFactory.connect(url, env);
-
-        // Register Pulse URL if not already present in the JMX Manager
-        if (registerURL) {
-          registerPulseUrlToManager(connection);
-        }
+        this.conn = JMXConnectorFactory.connect(url, env);
+        this.mbs = this.conn.getMBeanServerConnection();
+        cluster.setConnectedFlag(true);
       }
     } catch (Exception e) {
-      if (e instanceof UnknownHostException) {
-        cluster
-            .setConnectionErrorMsg(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_UNKNOWN_HOST"));
-      }
-
-      StringWriter swBuffer = new StringWriter();
-      PrintWriter prtWriter = new PrintWriter(swBuffer);
-      e.printStackTrace(prtWriter);
-      logger.fatal("Exception Details : {}\n", swBuffer);
+      cluster.setConnectedFlag(false);
+      cluster.setConnectionErrorMsg(e.getMessage());
+      logger.fatal(e.getMessage(), e);
       if (this.conn != null) {
         try {
           this.conn.close();
         } catch (Exception e1) {
-          logger.fatal("Error closing JMX connection {}\n", swBuffer);
+          logger.fatal(e1.getMessage(), e1);
         }
         this.conn = null;
       }
     }
-    return connection;
+    return this.conn;
   }
 
   private String formJMXServiceURLString(String host, String port) throws UnknownHostException {
@@ -276,92 +254,13 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
     return jmxSerURL;
   }
 
-  // Method registers Pulse URL if not already present in the JMX Manager
-  private void registerPulseUrlToManager(JMXConnector connection)
-      throws IOException, AttributeNotFoundException, InstanceNotFoundException, MBeanException,
-      ReflectionException, MalformedObjectNameException, InvalidAttributeValueException {
-    logger.info(resourceBundle.getString("LOG_MSG_REGISTERING_APP_URL_TO_MANAGER"));
-
-    // Reference to repository
-    Repository repository = Repository.get();
-
-    // Register Pulse URL if not already present in the JMX Manager
-    if (connection != null) {
-      MBeanServerConnection mbsc = connection.getMBeanServerConnection();
-
-      Set<ObjectName> mbeans = mbsc.queryNames(this.MBEAN_OBJECT_NAME_MEMBER_MANAGER, null);
-
-      for (ObjectName mbeanName : mbeans) {
-        String presentUrl =
-            (String) mbsc.getAttribute(mbeanName, PulseConstants.MBEAN_MANAGER_ATTRIBUTE_PULSEURL);
-        String pulseWebAppUrl = repository.getPulseWebAppUrl();
-        if (pulseWebAppUrl != null && (presentUrl == null || !pulseWebAppUrl.equals(presentUrl))) {
-          logger.debug(resourceBundle.getString("LOG_MSG_SETTING_APP_URL_TO_MANAGER"));
-          Attribute pulseUrlAttr =
-              new Attribute(PulseConstants.MBEAN_MANAGER_ATTRIBUTE_PULSEURL, pulseWebAppUrl);
-          mbsc.setAttribute(mbeanName, pulseUrlAttr);
-        } else {
-          logger.debug(resourceBundle.getString("LOG_MSG_APP_URL_ALREADY_PRESENT_IN_MANAGER"));
-        }
-      }
-    }
-  }
-
-  private boolean isConnected() {
-    // Reference to repository
-    Repository repository = Repository.get();
-    if (repository.getIsEmbeddedMode()) {
-      if (this.mbs == null) {
-        this.mbs = ManagementFactory.getPlatformMBeanServer();
-        cluster.setConnectedFlag(true);
-      }
-    } else {
-      try {
-        if (this.conn == null) {
-          cluster.setConnectedFlag(false);
-          cluster.setConnectionErrorMsg(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_NOT_FOUND")
-              + " " + resourceBundle.getString("LOG_MSG_JMX_GETTING_NEW_CONNECTION"));
-          logger.debug("{} {}", resourceBundle.getString("LOG_MSG_JMX_CONNECTION_NOT_FOUND"),
-              resourceBundle.getString("LOG_MSG_JMX_GET_NEW_CONNECTION"));
-          this.conn = getJMXConnection();
-          if (this.conn != null) {
-            this.mbs = this.conn.getMBeanServerConnection();
-            cluster.setConnectedFlag(true);
-          } else {
-            logger.info(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_NOT_FOUND"));
-            return false;
-          }
-        } else {
-          logger.debug(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_IS_AVAILABLE"));
-          cluster.setConnectedFlag(true);
-          if (this.mbs == null) {
-            this.mbs = this.conn.getMBeanServerConnection();
-          }
-        }
-      } catch (Exception e) {
-        this.mbs = null;
-        if (this.conn != null) {
-          try {
-            this.conn.close();
-          } catch (Exception e1) {
-            logger.fatal(e);
-          }
-        }
-        this.conn = null;
-        return false;
-      }
-    }
-
-    return true;
-  }
-
   /**
    * function used for updating Cluster Data.
    */
   @Override
   public boolean updateData() {
     try {
-      if (!this.isConnected()) {
+      if (this.conn == null) {
         return false;
       }
 
@@ -377,9 +276,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         cluster.getDeletedRegions().add(region.getFullPath());
       }
 
-      // try {
-
-      // Cluster
       this.systemMBeans = this.mbs.queryNames(this.MBEAN_OBJECT_NAME_SYSTEM_DISTRIBUTED, null);
       for (ObjectName sysMBean : this.systemMBeans) {
         updateClusterSystem(sysMBean);
@@ -388,9 +284,6 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
       // Cluster Regions/Tables
       Set<ObjectName> regionMBeans =
           this.mbs.queryNames(this.MBEAN_OBJECT_NAME_REGION_DISTRIBUTED, null);
-
-      Set<ObjectName> tableMBeans =
-          this.mbs.queryNames(this.MBEAN_OBJECT_NAME_TABLE_AGGREGATE, null);
 
       // For Gemfire
       for (ObjectName regMBean : regionMBeans) {
@@ -440,19 +333,15 @@ public class JMXDataUpdater implements IClusterUpdater, NotificationListener {
         updateClusterStatement(stmtObjectName);
       }
     } catch (IOException ioe) {
-
-      // write errors
-      StringWriter swBuffer = new StringWriter();
-      PrintWriter prtWriter = new PrintWriter(swBuffer);
-      ioe.printStackTrace(prtWriter);
-      logger.fatal("IOException Details : {}\n", swBuffer);
+      logger.fatal(ioe.getMessage(), ioe);
       this.mbs = null;
       if (this.conn != null) {
         try {
           this.conn.close();
         } catch (IOException e1) {
-          logger.fatal("Error closing JMX connection {}\n", swBuffer);
+          logger.fatal(e1.getMessage(), e1);
         }
+        this.conn = null;
       }
 
       return false;

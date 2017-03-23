@@ -2281,7 +2281,6 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   @CliCommand(value = CliStrings.START_PULSE, help = CliStrings.START_PULSE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,
       CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M})
-  // TODO change url parameter type to URL when I figure out the Converter logic in Gfsh
   public Result startPulse(@CliOption(key = CliStrings.START_PULSE__URL,
       unspecifiedDefaultValue = "http://localhost:7070/pulse",
       help = CliStrings.START_PULSE__URL__HELP) final String url) {

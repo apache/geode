@@ -18,25 +18,13 @@
 package org.apache.geode.tools.pulse.internal;
 
 import org.apache.geode.tools.pulse.internal.controllers.PulseController;
-import org.apache.geode.tools.pulse.internal.data.PulseConfig;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.Level;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.InetAddress;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -56,25 +44,8 @@ public class PulseAppListener implements ServletContextListener {
   private static final Logger logger = LogManager.getLogger();
   private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
 
-  // String object to store all messages which needs to be logged into the log
-  // file before logger gets initialized
-  private String messagesToBeLogged = "";
-
   private Properties pulseProperties;
   private Properties pulseSecurityProperties;
-  private Boolean sysPulseUseLocator;
-  private String sysPulseHost;
-  private String sysPulsePort;
-  private String jmxUserName;
-  private String jmxUserPassword;
-
-  private boolean sysPulseUseSSLLocator;
-  private boolean sysPulseUseSSLManager;
-
-  // This property determines if pulse webApp login is authenticated against
-  // GemFire integrated security or custom spring-security config provided
-  // in pulse-authentication-custom.xml
-  private boolean useGemFireCredentials;
 
   @Override
   public void contextDestroyed(ServletContextEvent event) {
@@ -89,35 +60,15 @@ public class PulseAppListener implements ServletContextListener {
 
   @Override
   public void contextInitialized(ServletContextEvent event) {
-
-    messagesToBeLogged = messagesToBeLogged
-        .concat(formatLogString(resourceBundle.getString("LOG_MSG_CONTEXT_INITIALIZED")));
+    logger.info(resourceBundle.getString("LOG_MSG_CONTEXT_INITIALIZED"));
+    // Load Pulse Properties
+    pulseProperties = loadProperties(PulseConstants.PULSE_PROPERTIES_FILE);
 
     // Load Pulse version details
     loadPulseVersionDetails();
 
-    // Load Pulse Properties
-    pulseProperties = loadProperties(PulseConstants.PULSE_PROPERTIES_FILE);
-
-    if (pulseProperties.isEmpty()) {
-      messagesToBeLogged = messagesToBeLogged
-          .concat(formatLogString(resourceBundle.getString("LOG_MSG_PROPERTIES_NOT_FOUND")));
-    } else {
-      messagesToBeLogged = messagesToBeLogged
-          .concat(formatLogString(resourceBundle.getString("LOG_MSG_PROPERTIES_FOUND")));
-
-      // set Pulse product support into the Pulse controller for access from
-      // client side
-      // to display the appropriate ui depending on which product is supported
-      // in present deployment
-      String pulseProduct =
-          pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_PRODUCTSUPPORT);
-    }
-
+    // load pulse security properties
     pulseSecurityProperties = loadProperties(PulseConstants.PULSE_SECURITY_PROPERTIES_FILE);
-
-    // Initialize logger
-    initializeLogger();
 
     // Reference to repository
     Repository repository = Repository.get();
@@ -127,499 +78,79 @@ public class PulseAppListener implements ServletContextListener {
     boolean sysIsEmbedded = Boolean.getBoolean(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED);
 
     if (sysIsEmbedded) {
-      // Application Pulse is running in Embedded Mode
+      // jmx connection parameters
       logger.info(resourceBundle.getString("LOG_MSG_APP_RUNNING_EMBEDDED_MODE"));
-      repository.setIsEmbeddedMode(true);
+      repository.setJmxUseLocator(false);
+      repository.setHost(PulseConstants.GEMFIRE_DEFAULT_HOST);
+      repository.setPort(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT,
+          PulseConstants.GEMFIRE_DEFAULT_PORT));
 
-      sysPulseUseLocator = Boolean.FALSE;
-      try {
-        // Get host name of machine running pulse in embedded mode
-        sysPulseHost = InetAddress.getLocalHost().getCanonicalHostName();
-      } catch (Exception e) {
-        logger.debug(resourceBundle.getString("LOG_MSG_JMX_CONNECTION_UNKNOWN_HOST"), e);
-        // Set default host name
-        sysPulseHost = PulseConstants.GEMFIRE_DEFAULT_HOST;
-      }
-      sysPulsePort = System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT);
-      if (StringUtils.isBlank(sysPulsePort)) {
-        sysPulsePort = PulseConstants.GEMFIRE_DEFAULT_PORT;
-      }
-
+      // SSL, all the other system properties are already set in the embedded VM
+      repository.setUseSSLManager(
+          Boolean.valueOf(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_MANAGER)));
+      repository.setUseSSLLocator(
+          Boolean.valueOf(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_LOCATOR)));
     } else {
-      // Application Pulse is running in Non-Embedded Mode
+      // jmx connection parameters
       logger.info(resourceBundle.getString("LOG_MSG_APP_RUNNING_NONEMBEDDED_MODE"));
-      repository.setIsEmbeddedMode(false);
-
-      // Load JMX User Details
-      loadJMXUserDetails();
-      // Load locator and/or manager details
-      loadLocatorManagerDetails();
-
-      useGemFireCredentials = areWeUsingGemFireSecurityProfile(event);
-    }
-
-    // Set user details in repository
-    repository.setJmxUserName(jmxUserName);
-    repository.setJmxUserPassword(jmxUserPassword);
-
-    // Set locator/Manager details in repository
-    repository.setJmxUseLocator(sysPulseUseLocator);
-    repository.setJmxHost(sysPulseHost);
-    repository.setJmxPort(sysPulsePort);
-
-    // set SSL info
-    initializeSSL();
-    if (sysIsEmbedded) {
-      sysPulseUseSSLManager = Boolean
-          .parseBoolean(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_MANAGER));
-    }
-    repository.setUseSSLLocator(sysPulseUseSSLLocator);
-    repository.setUseSSLManager(sysPulseUseSSLManager);
-
-    repository.setUseGemFireCredentials(useGemFireCredentials);
-
-  }
-
-  /**
-   * Return true if pulse is configure to authenticate using gemfire integrated security
-   * 
-   * @param event
-   * @return
-   */
-  private boolean areWeUsingGemFireSecurityProfile(ServletContextEvent event) {
-    String profile = null;
-    WebApplicationContext ctx =
-        WebApplicationContextUtils.getWebApplicationContext(event.getServletContext());
-    if (ctx.getEnvironment() != null) {
-      String[] profiles = ctx.getEnvironment().getActiveProfiles();
-      if (profiles != null && profiles.length > 0) {
-        StringBuilder sb = new StringBuilder();
-        for (String p : profiles)
-          sb.append(p).append(",");
-        logger.info("#SpringProfilesConfigured : {}", sb);
-        profile = ctx.getEnvironment().getActiveProfiles()[0];
-        logger.info("#First Profile : {}", profile);
-      } else {
-        logger.info("No SpringProfileConfigured using default spring profile");
-        return false;
-      }
-    }
-    if (PulseConstants.APPLICATION_PROPERTY_PULSE_SEC_PROFILE_GEMFIRE.equals(profile)) {
-      logger.info("Using gemfire integrated security profile");
-      return true;
-    }
-    return false;
-  }
-
-  // Function to load pulse version details from properties file
-  private void loadPulseVersionDetails() {
-
-    // Read version details from version property file
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    InputStream inputStream =
-        classLoader.getResourceAsStream(PulseConstants.PULSE_VERSION_PROPERTIES_FILE);
-
-    if (inputStream != null) {
-      Properties properties = new Properties();
-      try {
-        properties.load(inputStream);
-      } catch (IOException e) {
-        messagesToBeLogged = messagesToBeLogged.concat(
-            formatLogString(resourceBundle.getString("LOG_MSG_EXCEPTION_LOADING_PROPERTIES_FILE")));
-      } finally {
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          messagesToBeLogged = messagesToBeLogged.concat(
-              formatLogString(resourceBundle.getString("LOG_MSG_EXCEPTION_CLOSING_INPUT_STREAM")));
-        }
-      }
-      // Set pulse version details in common object
-      PulseController.pulseVersion
-          .setPulseVersion(properties.getProperty(PulseConstants.PROPERTY_PULSE_VERSION, ""));
-      PulseController.pulseVersion
-          .setPulseBuildId(properties.getProperty(PulseConstants.PROPERTY_BUILD_ID, ""));
-      PulseController.pulseVersion
-          .setPulseBuildDate(properties.getProperty(PulseConstants.PROPERTY_BUILD_DATE, ""));
-      PulseController.pulseVersion
-          .setPulseSourceDate(properties.getProperty(PulseConstants.PROPERTY_SOURCE_DATE, ""));
-      PulseController.pulseVersion.setPulseSourceRevision(
-          properties.getProperty(PulseConstants.PROPERTY_SOURCE_REVISION, ""));
-      PulseController.pulseVersion.setPulseSourceRepository(
-          properties.getProperty(PulseConstants.PROPERTY_SOURCE_REPOSITORY, ""));
-    }
-
-    // Log Pulse Version details into log file
-    messagesToBeLogged = messagesToBeLogged
-        .concat(formatLogString(PulseController.pulseVersion.getPulseVersionLogMessage()));
-  }
-
-  private void initializeLogger() {
-
-    // Override default log configuration by properties which are provided in
-    // properties file.
-    loadLogDetailsFromPropertyFile();
-
-    // Override log configuration by properties which are provided in
-    // through system properties.
-    loadLogDetailsFromSystemProperties();
-
-    // Log messages stored in messagesToBeLogged
-    logger.info(messagesToBeLogged);
-    messagesToBeLogged = "";
-  }
-
-  // Function to load pulse properties from pulse.properties file
-  private Properties loadProperties(String propertyFile) {
-
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-    InputStream inputStream = classLoader.getResourceAsStream(propertyFile);
-    Properties properties = new Properties();
-
-    if (inputStream != null) {
-      messagesToBeLogged = messagesToBeLogged.concat(
-          formatLogString(propertyFile + " " + resourceBundle.getString("LOG_MSG_FILE_FOUND")));
-
-      try {
-        // Load properties from input stream
-        properties.load(inputStream);
-      } catch (IOException e1) {
-        messagesToBeLogged = messagesToBeLogged.concat(
-            formatLogString(resourceBundle.getString("LOG_MSG_EXCEPTION_LOADING_PROPERTIES_FILE")
-                + " " + propertyFile));
-      } finally {
-        // Close input stream
-        try {
-          inputStream.close();
-        } catch (IOException e) {
-          messagesToBeLogged = messagesToBeLogged.concat(
-              formatLogString(resourceBundle.getString("LOG_MSG_EXCEPTION_CLOSING_INPUT_STREAM")
-                  + " " + propertyFile));
-        }
-      }
-
-    } else {
-      messagesToBeLogged = messagesToBeLogged.concat(formatLogString(
-          resourceBundle.getString("LOG_MSG_COULD_NOT_READ_FILE") + " " + propertyFile));
-    }
-    return properties;
-  }
-
-  // Function to load Logging details from properties file
-  private void loadLogDetailsFromPropertyFile() {
-
-    // return, if Pulse Properties are not provided
-    if (pulseProperties.size() == 0) {
-      return;
-    }
-
-    messagesToBeLogged = messagesToBeLogged
-        .concat(formatLogString(resourceBundle.getString("LOG_MSG_CHECK_LOG_PROPERTIES_IN_FILE")));
-
-    HashMap<String, String> logPropertiesHM = new HashMap<String, String>();
-
-    logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILENAME,
-        pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILENAME, ""));
-
-    logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILELOCATION,
-        pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILELOCATION, ""));
-
-    logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILESIZE,
-        pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILESIZE, ""));
-
-    logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILECOUNT,
-        pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILECOUNT, ""));
-
-    logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGDATEPATTERN,
-        pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGDATEPATTERN, ""));
-
-    logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGLEVEL,
-        pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGLEVEL, ""));
-
-    logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGAPPEND,
-        pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGAPPEND, ""));
-
-    if (logPropertiesHM.size() == 0) {
-      messagesToBeLogged = messagesToBeLogged.concat(
-          formatLogString(resourceBundle.getString("LOG_MSG_LOG_PROPERTIES_NOT_FOUND_IN_FILE")));
-    } else {
-      messagesToBeLogged = messagesToBeLogged.concat(
-          formatLogString(resourceBundle.getString("LOG_MSG_LOG_PROPERTIES_FOUND_IN_FILE")));
-    }
-
-    setLogConfigurations(logPropertiesHM);
-  }
-
-  // Function to load Logging details from system properties
-  private void loadLogDetailsFromSystemProperties() {
-
-    messagesToBeLogged = messagesToBeLogged.concat(formatLogString(
-        resourceBundle.getString("LOG_MSG_CHECK_LOG_PROPERTIES_IN_SYSTEM_PROPERTIES")));
-
-    HashMap<String, String> logPropertiesHM = new HashMap<String, String>();
-
-    String sysLogFileName =
-        System.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILENAME);
-    String sysLogFileLocation =
-        System.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILELOCATION);
-    String sysLogFileSize =
-        System.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILESIZE);
-    String sysLogFileCount =
-        System.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILECOUNT);
-    String sysLogDatePattern =
-        System.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGDATEPATTERN);
-    String sysLogLevel = System.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGLEVEL);
-    String sysLogAppend = System.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGAPPEND);
-
-    if (sysLogFileName == null || sysLogFileName.isEmpty()) {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILENAME, "");
-    } else {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILENAME, sysLogFileName);
-    }
-
-    if (sysLogFileLocation == null || sysLogFileLocation.isEmpty()) {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILELOCATION, "");
-    } else {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILELOCATION,
-          sysLogFileLocation);
-    }
-
-    if (sysLogFileSize == null || sysLogFileSize.isEmpty()) {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILESIZE, "");
-    } else {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILESIZE, sysLogFileSize);
-    }
-
-    if (sysLogFileCount == null || sysLogFileCount.isEmpty()) {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILECOUNT, "");
-    } else {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILECOUNT, sysLogFileCount);
-    }
-
-    if (sysLogDatePattern == null || sysLogDatePattern.isEmpty()) {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGDATEPATTERN, "");
-    } else {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGDATEPATTERN,
-          sysLogDatePattern);
-    }
-
-    if (sysLogLevel == null || sysLogLevel.isEmpty()) {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGLEVEL, "");
-    } else {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGLEVEL, sysLogLevel);
-    }
-
-    if (sysLogAppend == null || sysLogAppend.isEmpty()) {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGAPPEND, "");
-    } else {
-      logPropertiesHM.put(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGAPPEND, sysLogAppend);
-    }
-
-    if (logPropertiesHM.size() == 0) {
-      messagesToBeLogged = messagesToBeLogged.concat(formatLogString(
-          resourceBundle.getString("LOG_MSG_LOG_PROPERTIES_NOT_FOUND_IN_SYSTEM_PROPERTIES")));
-    } else {
-      messagesToBeLogged = messagesToBeLogged.concat(formatLogString(
-          resourceBundle.getString("LOG_MSG_LOG_PROPERTIES_FOUND_IN_SYSTEM_PROPERTIES")));
-    }
-
-    setLogConfigurations(logPropertiesHM);
-  }
-
-  private void setLogConfigurations(HashMap<String, String> logPropertiesHM) {
-
-    PulseConfig pulseConfig = Repository.get().getPulseConfig();
-
-    // log file name
-    if (StringUtils
-        .isNotBlank(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILENAME))) {
-      pulseConfig.setLogFileName(
-          logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILENAME));
-    }
-
-    // log file location
-    if (StringUtils.isNotBlank(
-        logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILELOCATION))) {
-      pulseConfig.setLogFileLocation(
-          logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILELOCATION));
-    }
-
-    // log file size
-    if (StringUtils
-        .isNotBlank(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILESIZE))) {
-      pulseConfig.setLogFileSize(Integer
-          .parseInt(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILESIZE)));
-    }
-
-    // log file count
-    if (StringUtils
-        .isNotBlank(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILECOUNT))) {
-      pulseConfig.setLogFileCount(Integer
-          .parseInt(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGFILECOUNT)));
-    }
-
-    // log message date pattern
-    if (StringUtils.isNotBlank(
-        logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGDATEPATTERN))) {
-      pulseConfig.setLogDatePattern(
-          logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGDATEPATTERN));
-    }
-
-    // log level
-    if (StringUtils
-        .isNotBlank(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGLEVEL))) {
-      pulseConfig.setLogLevel(Level.getLevel(
-          logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGLEVEL).toUpperCase()));
-    }
-
-    // log append
-    if (StringUtils
-        .isNotBlank(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGAPPEND))) {
-      pulseConfig.setLogAppend(Boolean
-          .valueOf(logPropertiesHM.get(PulseConstants.APPLICATION_PROPERTY_PULSE_LOGAPPEND)));
-    }
-
-  }
-
-  // Function to load JMX User details from properties
-  private void loadJMXUserDetails() {
-    logger.info(resourceBundle.getString("LOG_MSG_GET_JMX_USER_DETAILS"));
-
-    if (pulseProperties.isEmpty()) {
-      logger.info("{}{}", resourceBundle.getString("LOG_MSG_JMX_USER_DETAILS_NOT_FOUND"),
-          resourceBundle.getString("LOG_MSG_REASON_USER_DETAILS_NOT_FOUND"));
-    } else {
-      jmxUserName =
-          pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_JMXUSERNAME, "");
-      jmxUserPassword =
-          pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_JMXPASSWORD, "");
-
-      if (jmxUserName.isEmpty() || jmxUserPassword.isEmpty()) {
-        logger.info("{}{}", resourceBundle.getString("LOG_MSG_JMX_USER_DETAILS_NOT_FOUND"),
-            resourceBundle.getString("LOG_MSG_REASON_USER_DETAILS_NOT_FOUND"));
-      } else {
-        logger.info(resourceBundle.getString("LOG_MSG_JMX_USER_DETAILS_FOUND"));
-      }
-    }
-  }
-
-  // Function to set SSL VM arguments
-  private void initializeSSL() {
-    logger.info(resourceBundle.getString("LOG_MSG_GET_SSL_DETAILS"));
-
-
-    this.sysPulseUseSSLLocator = Boolean.valueOf(
-        pulseProperties.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_LOCATOR, "false"));
-
-    this.sysPulseUseSSLManager = Boolean.valueOf(
-        pulseProperties.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_MANAGER, "false"));
-
-
-    if ((sysPulseUseSSLLocator || sysPulseUseSSLManager)) {
-      Properties sslProperties = new Properties();
+      repository.setJmxUseLocator(Boolean.valueOf(
+          pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_USELOCATOR)));
+      repository.setHost(pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_HOST,
+          PulseConstants.GEMFIRE_DEFAULT_HOST));
+      repository.setPort(pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_PORT,
+          PulseConstants.GEMFIRE_DEFAULT_PORT));
+
+      // SSL
+      repository.setUseSSLManager(Boolean.valueOf(pulseProperties
+          .getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_MANAGER, "false")));
+      repository.setUseSSLLocator(Boolean.valueOf(pulseProperties
+          .getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_LOCATOR, "false")));
+
+      // set the ssl related properties found in pulsesecurity.properties
       if (!pulseSecurityProperties.isEmpty()) {
         Set entrySet = pulseSecurityProperties.entrySet();
         for (Iterator it = entrySet.iterator(); it.hasNext();) {
           Entry<String, String> entry = (Entry<String, String>) it.next();
           String key = entry.getKey();
           if (key.startsWith("javax.net.ssl.")) {
-
             String val = entry.getValue();
             System.setProperty(key, val);
-            sslProperties.setProperty(key, val);
           }
         }
       }
-      if (sslProperties.isEmpty()) {
-        logger.warn(resourceBundle.getString("LOG_MSG_SSL_NOT_SET"));
-      }
-    }
-
-  }
-
-  // Function to load locator and/or manager details
-  private void loadLocatorManagerDetails() {
-
-    // Get locator details through System Properties
-    logger.info(resourceBundle.getString("LOG_MSG_GET_LOCATOR_DETAILS_1"));
-
-    // Required System properties are
-    // -Dpulse.embedded="false" -Dpulse.useLocator="false"
-    // -Dpulse.host="192.168.2.11" -Dpulse.port="2099"
-    sysPulseUseLocator = Boolean.getBoolean(PulseConstants.SYSTEM_PROPERTY_PULSE_USELOCATOR);
-    sysPulseHost = System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_HOST);
-    sysPulsePort = System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT);
-
-    if (sysPulseHost == null || sysPulseHost.isEmpty() || sysPulsePort == null
-        || sysPulsePort.isEmpty()) {
-      logger.info("{}{}", resourceBundle.getString("LOG_MSG_LOCATOR_DETAILS_NOT_FOUND"),
-          resourceBundle.getString("LOG_MSG_REASON_LOCATOR_DETAILS_NOT_FOUND_1"));
-      logger.info(resourceBundle.getString("LOG_MSG_GET_LOCATOR_DETAILS_2"));
-
-      if (pulseProperties.isEmpty()) {
-        logger.info("{}{}", resourceBundle.getString("LOG_MSG_LOCATOR_DETAILS_NOT_FOUND"),
-            resourceBundle.getString("LOG_MSG_REASON_LOCATOR_DETAILS_NOT_FOUND_2"));
-
-        sysPulseHost = "";
-        sysPulsePort = "";
-      } else {
-        logger.info(resourceBundle.getString("LOG_MSG_LOCATOR_DETAILS_FOUND"));
-
-        sysPulseUseLocator = Boolean.valueOf(
-            pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_USELOCATOR, ""));
-        sysPulseHost =
-            pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_HOST, "");
-        sysPulsePort =
-            pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_PORT, "");
-      }
-    } else {
-      logger.info(resourceBundle.getString("LOG_MSG_LOCATOR_DETAILS_FOUND"));
     }
   }
 
-  private String formatLogString(String logMessage) {
-
-    DateFormat df = new SimpleDateFormat(PulseConstants.LOG_MESSAGE_DATE_PATTERN);
-    // DateFormat df = new
-    // SimpleDateFormat(Repository.get().getPulseConfig().getLogDatePattern());
-    StringWriter sw = new StringWriter();
-    PrintWriter pw = new PrintWriter(sw);
-
-    pw.println();
-    pw.print("[");
-    pw.print("INFO");
-    pw.print(" ");
-    pw.print(df.format(new Date(System.currentTimeMillis())));
-    String threadName = Thread.currentThread().getName();
-    if (threadName != null) {
-      pw.print(" ");
-      pw.print(threadName);
-    }
-    pw.print(" tid=0x");
-    pw.print(Long.toHexString(Thread.currentThread().getId()));
-    pw.print("] ");
-    pw.print("(msgTID=");
-    pw.print("");
-
-    pw.print(" msgSN=");
-    pw.print("");
-
-    pw.print(") ");
-
-    pw.println("[" + PulseConstants.APP_NAME + "]");
-
-    pw.println(Logger.class.getName());
-
-    pw.println(logMessage);
-
-    pw.close();
-    try {
-      sw.close();
-    } catch (IOException ignore) {
-    }
-    String result = sw.toString();
-    return result;
-
+  // Function to load pulse version details from properties file
+  private void loadPulseVersionDetails() {
+    Properties properties = loadProperties(PulseConstants.PULSE_VERSION_PROPERTIES_FILE);
+    // Set pulse version details in common object
+    PulseController.pulseVersion
+        .setPulseVersion(properties.getProperty(PulseConstants.PROPERTY_PULSE_VERSION, ""));
+    PulseController.pulseVersion
+        .setPulseBuildId(properties.getProperty(PulseConstants.PROPERTY_BUILD_ID, ""));
+    PulseController.pulseVersion
+        .setPulseBuildDate(properties.getProperty(PulseConstants.PROPERTY_BUILD_DATE, ""));
+    PulseController.pulseVersion
+        .setPulseSourceDate(properties.getProperty(PulseConstants.PROPERTY_SOURCE_DATE, ""));
+    PulseController.pulseVersion.setPulseSourceRevision(
+        properties.getProperty(PulseConstants.PROPERTY_SOURCE_REVISION, ""));
+    PulseController.pulseVersion.setPulseSourceRepository(
+        properties.getProperty(PulseConstants.PROPERTY_SOURCE_REPOSITORY, ""));
+    logger.info(PulseController.pulseVersion.getPulseVersionLogMessage());
   }
 
+  // Function to load pulse properties from pulse.properties file
+  private Properties loadProperties(String propertyFile) {
+    final Properties properties = new Properties();
+    try (final InputStream stream =
+        Thread.currentThread().getContextClassLoader().getResourceAsStream(propertyFile)) {
+      logger.info(propertyFile + " " + resourceBundle.getString("LOG_MSG_FILE_FOUND"));
+      properties.load(stream);
+    } catch (IOException e) {
+      logger.error(resourceBundle.getString("LOG_MSG_EXCEPTION_LOADING_PROPERTIES_FILE"), e);
+    }
+
+    return properties;
+  }
 }

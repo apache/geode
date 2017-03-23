@@ -14,20 +14,18 @@
  */
 package org.apache.geode.tools.pulse.internal.security;
 
-import java.util.Collection;
-import javax.management.remote.JMXConnector;
-
 import org.apache.geode.tools.pulse.internal.data.Repository;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
+import javax.management.remote.JMXConnector;
 
 /**
  * Spring security AuthenticationProvider for GemFire. It connects to gemfire manager using given
@@ -44,7 +42,6 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
 
   @Override
   public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-
     if (authentication instanceof GemFireAuthentication) {
       GemFireAuthentication gemAuth = (GemFireAuthentication) authentication;
       logger.debug("GemAuthentication is connected? = {}", gemAuth.getJmxc());
@@ -55,21 +52,17 @@ public class GemFireAuthenticationProvider implements AuthenticationProvider {
     String name = authentication.getName();
     String password = authentication.getCredentials().toString();
 
-    try {
-      logger.debug("Connecting to GemFire with user={}", name);
-      JMXConnector jmxc = Repository.get().getCluster(name, password).connectToGemFire();
-      if (jmxc != null) {
-        Collection<GrantedAuthority> list = GemFireAuthentication.populateAuthorities(jmxc);
-        GemFireAuthentication auth = new GemFireAuthentication(authentication.getPrincipal(),
-            authentication.getCredentials(), list, jmxc);
-        logger.debug("For user " + name + " authList={}", list);
-        return auth;
-      } else {
-        throw new AuthenticationServiceException("JMX Connection unavailable");
-      }
-    } catch (Exception e) {
-      throw new BadCredentialsException("Error connecting to GemFire JMX Server", e);
+    logger.debug("Connecting to GemFire with user=" + name);
+    JMXConnector jmxc = Repository.get().getCluster(name, password).getJMXConnector();
+    if (jmxc == null) {
+      throw new BadCredentialsException("Error connecting to GemFire JMX Server");
     }
+
+    Collection<GrantedAuthority> list = GemFireAuthentication.populateAuthorities(jmxc);
+    GemFireAuthentication auth = new GemFireAuthentication(authentication.getPrincipal(),
+        authentication.getCredentials(), list, jmxc);
+    logger.debug("For user " + name + " authList=" + list);
+    return auth;
   }
 
   @Override

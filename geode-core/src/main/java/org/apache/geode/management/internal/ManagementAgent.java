@@ -103,6 +103,7 @@ public class ManagementAgent {
   private static final String PULSE_EMBEDDED_PROP = "pulse.embedded";
   private static final String PULSE_PORT_PROP = "pulse.port";
   private static final String PULSE_USESSL_MANAGER = "pulse.useSSL.manager";
+  private static final String PULSE_USESSL_LOCATOR = "pulse.useSSL.locator";
 
   public ManagementAgent(DistributionConfig config) {
     this.config = config;
@@ -272,9 +273,12 @@ public class ManagementAgent {
           System.setProperty(PULSE_EMBEDDED_PROP, "true");
           System.setProperty(PULSE_PORT_PROP, "" + config.getJmxManagerPort());
 
-          final SocketCreator socketCreator =
+          final SocketCreator jmxSocketCreator =
               SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX);
-          System.setProperty(PULSE_USESSL_MANAGER, socketCreator.useSSL() + "");
+          final SocketCreator locatorSocketCreator = SocketCreatorFactory
+              .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
+          System.setProperty(PULSE_USESSL_MANAGER, jmxSocketCreator.useSSL() + "");
+          System.setProperty(PULSE_USESSL_LOCATOR, locatorSocketCreator.useSSL() + "");
 
           this.httpServer = JettyHelper.startJetty(this.httpServer);
 

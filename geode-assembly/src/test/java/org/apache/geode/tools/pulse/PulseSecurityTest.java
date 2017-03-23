@@ -17,28 +17,34 @@ package org.apache.geode.tools.pulse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.dunit.rules.EmbeddedPulseRule;
 import org.apache.geode.test.dunit.rules.HttpClientRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.http.HttpResponse;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.RuleChain;
 
 
 @Category(IntegrationTest.class)
 public class PulseSecurityTest {
 
-  private LocatorStarterRule locator =
-      new LocatorStarterRule().withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
-
-  private HttpClientRule client = new HttpClientRule(locator::getHttpPort);
+  @ClassRule
+  public static ServerStarterRule server =
+      new ServerStarterRule().withSecurityManager(SimpleTestSecurityManager.class).withJMXManager()
+          .withRegion(RegionShortcut.REPLICATE, "regionA");
 
   @Rule
-  public RuleChain ruleChain = RuleChain.outerRule(locator).around(client);
+  public EmbeddedPulseRule pulse = new EmbeddedPulseRule();
 
+  @Rule
+  public HttpClientRule client = new HttpClientRule(server::getHttpPort);
 
 
   @Test
@@ -86,6 +92,20 @@ public class PulseSecurityTest {
     // accessing data browser will be denied
     response = client.get("/pulse/dataBrowser.html");
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(403);
+  }
+
+  @Test
+  public void queryUsingEmbededPulseWillHaveAuthorizationEnabled() throws Exception {
+    pulse.useJmxPort(server.getJmxPort());
+    // using "cluster" to connect to jmx manager will not get authorized to execute query
+    Cluster cluster = pulse.getRepository().getCluster("cluster", "cluster");
+    ObjectNode result = cluster.executeQuery("select * from /regionA a order by a", null, 0);
+    assertThat(result.toString()).contains("cluster not authorized for DATA:READ");
+
+    // using "data" to connect to jmx manager will succeeed
+    cluster = pulse.getRepository().getCluster("data", "data");
+    result = cluster.executeQuery("select * from /regionA a order by a", null, 0);
+    assertThat(result.toString()).contains("No Data Found");
   }
 
 }

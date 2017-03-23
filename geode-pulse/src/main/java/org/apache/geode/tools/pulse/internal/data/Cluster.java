@@ -34,7 +34,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.ConnectException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -71,9 +70,9 @@ public class Cluster extends Thread {
   private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
 
   private String jmxUserName;
-  private String jmxUserPassword;
   private String serverName;
   private String port;
+  private JMXConnector jmxConnector;
   private int stale = 0;
   private double loadPerSec;
   private CountDownLatch clusterHasBeenInitialized;
@@ -2276,19 +2275,14 @@ public class Cluster extends Thread {
    * @param host host name
    * @param port port
    * @param userName pulse user name
-   * @param userPassword pulse user password
-   * @throws ConnectException
    */
-  public Cluster(String host, String port, String userName, String userPassword)
-      throws ConnectException {
+  public Cluster(String host, String port, String userName) {
     this.serverName = host;
     this.port = port;
     this.jmxUserName = userName;
-    this.jmxUserPassword = userPassword;
 
     this.updater = ClusterDataFactory.getUpdater(this, host, port);
     this.clusterHasBeenInitialized = new CountDownLatch(1);
-    // start();
   }
 
   public void waitForInitialization(long timeout, TimeUnit unit) throws InterruptedException {
@@ -2383,18 +2377,6 @@ public class Cluster extends Thread {
 
   public String getJmxUserName() {
     return this.jmxUserName;
-  }
-
-  public void setJmxUserName(String jmxUserName) {
-    this.jmxUserName = jmxUserName;
-  }
-
-  public String getJmxUserPassword() {
-    return this.jmxUserPassword;
-  }
-
-  public void setJmxUserPassword(String jmxUserPassword) {
-    this.jmxUserPassword = jmxUserPassword;
   }
 
   public String getConnectionErrorMsg() {
@@ -2818,12 +2800,23 @@ public class Cluster extends Thread {
     return this.getDataBrowser().deleteQueryById(userId, queryId);
   }
 
-  public JMXConnector connectToGemFire() {
-    if (this.updater instanceof JMXDataUpdater) {
-      return ((JMXDataUpdater) this.updater).getJMXConnection(false);
-    } else {
-      return null;
+  public void connectToGemFire(String password) {
+    jmxConnector = this.updater.connect(this.getJmxUserName(), password);
+
+    // if connected
+    if (jmxConnector != null) {
+      // Start Thread
+      this.start();
+      try {
+        this.waitForInitialization(15, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
+  }
+
+  public JMXConnector getJMXConnector() {
+    return this.jmxConnector;
   }
 
   /**

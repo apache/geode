@@ -18,20 +18,15 @@ package org.apache.geode.test.dunit.rules;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 import org.junit.rules.ExternalResource;
 
-import java.util.function.Supplier;
-
 /**
  * This is used to test embedded pulse. If your test needs to check pulse's repository object for
  * assertions, use this rules to properly initialize and cleanup the repository
  *
+ *
+ *
  */
 public class EmbeddedPulseRule extends ExternalResource {
-  private Supplier<Integer> portSupplier;
   private Repository repository;
-
-  public EmbeddedPulseRule(Supplier<Integer> portSupplier) {
-    this.portSupplier = portSupplier;
-  }
 
   public Repository getRepository() {
     return repository;
@@ -39,16 +34,42 @@ public class EmbeddedPulseRule extends ExternalResource {
 
   protected void before() throws Throwable {
     repository = Repository.get();
-    repository.setJmxHost("localhost");
-    repository.setJmxPort(portSupplier.get() + "");
+    cleanup();
+    repository.setHost("localhost");
+  }
+
+  public void useJmxPort(int jmxPort) {
     repository.setJmxUseLocator(false);
+    repository.setPort(jmxPort + "");
+  }
+
+  public void useLocatorPort(int locatorPort) {
+    repository.setJmxUseLocator(true);
+    repository.setPort(locatorPort + "");
+  }
+
+  public void setLocatorSSL(boolean locatorSSL) {
+    repository.setUseSSLLocator(locatorSSL);
+  }
+
+  public void setJmxSSL(boolean jmxSSL) {
+    repository.setUseSSLManager(jmxSSL);
   }
 
   /**
    * Override to tear down your specific external resource.
    */
   protected void after() {
+    cleanup();
+  }
+
+  private void cleanup() {
     if (repository != null) {
+      repository.setPort("-1");
+      repository.setHost("");
+      repository.setJmxUseLocator(false);
+      repository.setUseSSLManager(false);
+      repository.setUseSSLManager(false);
       repository.removeAllClusters();
     }
   }

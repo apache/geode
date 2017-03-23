@@ -56,7 +56,6 @@ public class PulseSecurityWithSSLTest {
     securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.JMX);
     securityProps.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
     securityProps.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-    // securityProps.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     securityProps.setProperty(SSL_TRUSTSTORE, jks.getCanonicalPath());
     securityProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     securityProps.setProperty(SSL_PROTOCOLS, "TLSv1.2");

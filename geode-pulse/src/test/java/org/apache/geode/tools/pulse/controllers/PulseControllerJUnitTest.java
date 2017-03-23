@@ -16,7 +16,6 @@ package org.apache.geode.tools.pulse.controllers;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
@@ -29,14 +28,9 @@ import java.io.File;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.UUID;
-import javax.servlet.ServletContextListener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.geode.tools.pulse.internal.PulseAppListener;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.tools.pulse.internal.controllers.PulseController;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.PulseConfig;
