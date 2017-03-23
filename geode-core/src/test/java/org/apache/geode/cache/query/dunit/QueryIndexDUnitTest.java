@@ -70,7 +70,7 @@ public class QueryIndexDUnitTest extends JUnit4CacheTestCase {
   @Override
   public final void postSetUp() throws Exception {
     int hostCount = Host.getHostCount();
-    SerializableRunnable createRegion = new SerializableRunnable("withRegion") {
+    SerializableRunnable createRegion = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("portfolios");

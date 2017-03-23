@@ -22,19 +22,19 @@ import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.nio.file.Path;
-
 import java.io.File;
+import java.nio.file.Path;
 
 @Category(IntegrationTest.class)
 public class ExportLogsIntegrationTest {
 
-  @Rule
-  public LocatorStarterRule locator = new LocatorStarterRule().withJMXManager().startLocator();
+  @ClassRule
+  public static LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();

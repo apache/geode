@@ -638,7 +638,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
 
 
   private void executeQuery_1(Region region, boolean checkReferentialIntegrity) throws Exception {
-    // Region region = CacheUtils.withRegion("pos", Portfolio.class);
+    // Region region = CacheUtils.createRegion("pos", Portfolio.class);
 
     QueryService qs;
     qs = CacheUtils.getQueryService();
@@ -861,7 +861,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
   }
 
   private void executeQuery_2(Region region, boolean checkReferentialIntegrity) throws Exception {
-    // Region region = CacheUtils.withRegion("pos", Portfolio.class);
+    // Region region = CacheUtils.createRegion("pos", Portfolio.class);
 
     QueryService qs;
     qs = CacheUtils.getQueryService();
@@ -1073,7 +1073,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
   }
 
   private void executeQuery_3(Region region, boolean checkReferentialIntegrity) throws Exception {
-    // Region region = CacheUtils.withRegion("pos", Portfolio.class);
+    // Region region = CacheUtils.createRegion("pos", Portfolio.class);
 
     QueryService qs;
     qs = CacheUtils.getQueryService();

@@ -15,14 +15,11 @@
 package org.apache.geode.rest.internal.web;
 
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
@@ -36,10 +33,8 @@ import org.junit.experimental.categories.Category;
 public class SwaggerVerificationTest {
 
   @ClassRule
-  public static LocalServerStarterRule serverStarter = new ServerStarterBuilder()
-      .withSecurityManager(SimpleTestSecurityManager.class).withRestService().buildInThisVM();
-
-  private GeodeRestClient restClient;
+  public static ServerStarterRule serverStarter = new ServerStarterRule()
+      .withSecurityManager(SimpleTestSecurityManager.class).withRestService().withAutoStart();
 
   @Test
   public void isSwaggerRunning() throws Exception {

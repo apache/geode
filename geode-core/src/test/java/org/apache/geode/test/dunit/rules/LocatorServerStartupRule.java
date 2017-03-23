@@ -95,7 +95,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     VM locatorVM = getHost(0).getVM(index);
     Locator locator = locatorVM.invoke(() -> {
       locatorStarter = new LocatorStarterRule(workingDir);
-      return locatorStarter.withProperties(properties).startLocator();
+      locatorStarter.withProperties(properties).withAutoStart();
+      locatorStarter.before();
+      return locatorStarter;
     });
     members[index] = new MemberVM(locator, locatorVM);
     return members[index];
@@ -126,7 +128,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     VM serverVM = getHost(0).getVM(index);
     Server server = serverVM.invoke(() -> {
       serverStarter = new ServerStarterRule(workingDir);
-      return serverStarter.withEmbeddedLocator().withName(name).withJMXManager().startServer();
+      serverStarter.withEmbeddedLocator().withName(name).withJMXManager().withAutoStart();
+      serverStarter.before();
+      return serverStarter;
     });
     members[index] = new MemberVM(server, serverVM);
     return members[index];
@@ -149,8 +153,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     VM serverVM = getHost(0).getVM(index);
     Server server = serverVM.invoke(() -> {
       serverStarter = new ServerStarterRule(workingDir);
-      return serverStarter.withProperties(properties).withConnectionToLocator(locatorPort)
-          .startServer();
+      serverStarter.withProperties(properties).withConnectionToLocator(locatorPort).withAutoStart();
+      serverStarter.before();
+      return serverStarter;
     });
     members[index] = new MemberVM(server, serverVM);
     return members[index];

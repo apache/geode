@@ -25,9 +25,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.security.SecurityManager;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
@@ -36,7 +37,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * A server or locator inside a DUnit {@link VM}.
+ * the abstract class that's used by LocatorStarterRule and ServerStarterRule to avoid code
+ * duplication.
  */
 public abstract class MemberStarterRule<T> extends ExternalResource implements Member {
   protected transient TemporaryFolder temporaryFolder;
@@ -49,6 +51,8 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
 
   protected String name;
   protected Properties properties = new Properties();
+
+  protected boolean autoStart = false;
 
   public MemberStarterRule() {
     this(null);
@@ -98,6 +102,16 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
     return (T) this;
   }
 
+  public T withSecurityManager(Class<? extends SecurityManager> securityManager) {
+    properties.setProperty(SECURITY_MANAGER, securityManager.getName());
+    return (T) this;
+  }
+
+  public T withAutoStart() {
+    this.autoStart = true;
+    return (T) this;
+  }
+
   public T withName(String name) {
     this.name = name;
     properties.setProperty(NAME, name);
@@ -116,16 +130,19 @@ public abstract class MemberStarterRule<T> extends ExternalResource implements M
   /**
    * be able to start JMX manager and admin rest on default ports
    */
-  public T withJMXManager(boolean useDefault) {
-    // the real port numbers will be set after we started the server/locator.
-    this.jmxPort = 0;
-    this.httpPort = 0;
-    if (!useDefault) {
+  public T withJMXManager(boolean useProductDefaultPorts) {
+    if (!useProductDefaultPorts) {
       // do no override these properties if already exists
       properties.putIfAbsent(JMX_MANAGER_PORT,
           AvailablePortHelper.getRandomAvailableTCPPort() + "");
       properties.putIfAbsent(HTTP_SERVICE_PORT,
           AvailablePortHelper.getRandomAvailableTCPPort() + "");
+      this.jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
+      this.httpPort = Integer.parseInt(properties.getProperty(HTTP_SERVICE_PORT));
+    } else {
+      // the real port numbers will be set after we started the server/locator.
+      this.jmxPort = 0;
+      this.httpPort = 0;
     }
     properties.putIfAbsent(JMX_MANAGER, "true");
     properties.putIfAbsent(JMX_MANAGER_START, "true");

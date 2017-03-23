@@ -1205,9 +1205,9 @@ public class LimitClauseJUnitTest {
    * 
    * @Test public void testNotApplyingLimitAtIndexLevelForMultiIndexAndClauseUsageWithOrderBy()
    * throws Exception { //try { Query query; SelectResults result; int limit = 25; Region region =
-   * CacheUtils.withRegion("portfolios1", Portfolio.class); for (int i = 30; i > 0; i--) { Portfolio
-   * p = new Portfolio(i); p.positions.clear(); p.positions.put("IBM", new Position("IBM", i));
-   * region.put("KEY" + i, p); }
+   * CacheUtils.createRegion("portfolios1", Portfolio.class); for (int i = 30; i > 0; i--) {
+   * Portfolio p = new Portfolio(i); p.positions.clear(); p.positions.put("IBM", new Position("IBM",
+   * i)); region.put("KEY" + i, p); }
    * 
    * String queryString =
    * "<trace>SELECT distinct P FROM /portfolios1 P, P.positions.values POS WHERE P.ID > 5 AND POS.secId = 'IBM' ORDER BY P.ID"

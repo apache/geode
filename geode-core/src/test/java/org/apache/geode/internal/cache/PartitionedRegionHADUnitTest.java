@@ -90,7 +90,7 @@ public class PartitionedRegionHADUnitTest extends PartitionedRegionDUnitTestCase
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
-    CacheSerializableRunnable createPR = new CacheSerializableRunnable("withRegion") {
+    CacheSerializableRunnable createPR = new CacheSerializableRunnable("createRegion") {
       public void run2() throws CacheException {
         Cache cache = getCache();
         final CountDownLatch rebalancingFinished = new CountDownLatch(1);

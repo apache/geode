@@ -20,9 +20,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.apache.geode.management.DiskStoreMXBean;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
@@ -37,11 +36,11 @@ public class DiskStoreMXBeanSecurityJUnitTest {
   private DiskStoreMXBean bean;
 
   @ClassRule
-  public static LocalServerStarterRule server = new ServerStarterBuilder().withJMXManager()
+  public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
       .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
       .withProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/cacheServer.json")
-      .buildInThisVM();
+      .withAutoStart();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -50,7 +49,7 @@ public class DiskStoreMXBeanSecurityJUnitTest {
 
   @Rule
   public MBeanServerConnectionRule connectionRule =
-      new MBeanServerConnectionRule(server.getJmxPort());
+      new MBeanServerConnectionRule(server::getJmxPort);
 
   @Before
   public void setUp() throws Exception {

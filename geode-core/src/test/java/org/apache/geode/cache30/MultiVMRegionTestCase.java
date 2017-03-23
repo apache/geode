@@ -160,7 +160,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    */
   @Test
   public void testConcurrentOperations() throws Exception {
-    SerializableRunnable createRegion = new CacheSerializableRunnable("withRegion") {
+    SerializableRunnable createRegion = new CacheSerializableRunnable("createRegion") {
 
       @Override
       public void run2() throws CacheException {
@@ -2696,7 +2696,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     } catch (Exception e) {
       CacheFactory.getInstance(getSystem()).close();
-      getSystem().getLogWriter().fine("testDistributedPut: Caused exception in withRegion");
+      getSystem().getLogWriter().fine("testDistributedPut: Caused exception in createRegion");
       throw e;
     }
 
@@ -2736,7 +2736,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   // new AttributesFactory(getRegionAttributes());
   // factory.setMirrorType(MirrorType.KEYS);
   // try {
-  // withRegion(name, factory.create());
+  // createRegion(name, factory.create());
   // if (persistBackup) fail("Should have thrown an IllegalStateException");
   // }
   // catch (IllegalStateException e) {
@@ -6252,7 +6252,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     } catch (Exception e) {
       CacheFactory.getInstance(getSystem()).close();
-      getSystem().getLogWriter().fine("testTXSimpleOps: Caused exception in withRegion");
+      getSystem().getLogWriter().fine("testTXSimpleOps: Caused exception in createRegion");
       throw e;
     }
 
@@ -6509,7 +6509,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       assertSame(localCmtValue, rgn.getEntry("key").getValue());
     } catch (Exception e) {
       CacheFactory.getInstance(getSystem()).close();
-      getSystem().getLogWriter().fine("testTXUpdateLoadNoConflict: Caused exception in withRegion");
+      getSystem().getLogWriter()
+          .fine("testTXUpdateLoadNoConflict: Caused exception in createRegion");
       throw e;
     }
   }
@@ -7267,7 +7268,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       rgn3.destroyRegion();
     } catch (Exception e) {
       CacheFactory.getInstance(getSystem()).close();
-      getSystem().getLogWriter().fine("testTXMultiRegion: Caused exception in withRegion");
+      getSystem().getLogWriter().fine("testTXMultiRegion: Caused exception in createRegion");
       throw e;
     }
   }
@@ -7405,7 +7406,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // done in a tx is dropped in a remote mirror that does not have the entry.
     } catch (Exception e) {
       CacheFactory.getInstance(getSystem()).close();
-      getSystem().getLogWriter().fine("textTXRmtMirror: Caused exception in withRegion");
+      getSystem().getLogWriter().fine("textTXRmtMirror: Caused exception in createRegion");
       throw e;
     }
   }
@@ -7878,7 +7879,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
     } catch (Exception e) {
       CacheFactory.getInstance(getSystem()).close();
-      getSystem().getLogWriter().fine("testTXAlgebra: Caused exception in withRegion");
+      getSystem().getLogWriter().fine("testTXAlgebra: Caused exception in createRegion");
       throw e;
     }
 

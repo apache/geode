@@ -74,7 +74,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -143,7 +143,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-    SerializableRunnable createPrRegion1 = new SerializableRunnable("withRegion") {
+    SerializableRunnable createPrRegion1 = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         FixedPartitionAttributes fpa1 =
@@ -163,7 +163,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       }
     };
     vm0.invoke(createPrRegion1);
-    SerializableRunnable createPrRegion2 = new SerializableRunnable("withRegion") {
+    SerializableRunnable createPrRegion2 = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         FixedPartitionAttributes fpa1 =
@@ -183,7 +183,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       }
     };
     vm1.invoke(createPrRegion2);
-    SerializableRunnable createPrRegion3 = new SerializableRunnable("withRegion") {
+    SerializableRunnable createPrRegion3 = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         FixedPartitionAttributes fpa1 =
@@ -240,7 +240,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     vm0.invoke(checkAssignment);
 
 
-    SerializableRunnable createPrRegion4 = new SerializableRunnable("withRegion") {
+    SerializableRunnable createPrRegion4 = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -269,7 +269,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     };
     vm3.invoke(createPrRegion4);
 
-    SerializableRunnable checkMembers = new SerializableRunnable("withRegion") {
+    SerializableRunnable checkMembers = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         Region region = cache.getRegion("region1");
@@ -550,7 +550,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    SerializableCallable createPrRegion = new SerializableCallable("withRegion") {
+    SerializableCallable createPrRegion = new SerializableCallable("createRegion") {
       public Object call() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -647,7 +647,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    SerializableCallable createPrRegion = new SerializableCallable("withRegion") {
+    SerializableCallable createPrRegion = new SerializableCallable("createRegion") {
       public Object call() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();

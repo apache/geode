@@ -19,25 +19,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.HttpClientRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterBuilder;
-import org.apache.geode.test.dunit.rules.LocalLocatorStarterRule;
+import org.apache.geode.test.dunit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.http.HttpResponse;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.RuleChain;
 
 
 @Category(IntegrationTest.class)
-public class PulseVerificationTest {
+public class PulseSecurityTest {
 
-  @ClassRule
-  public static LocalLocatorStarterRule locator = new LocatorStarterBuilder()
-      .withSecurityManager(SimpleTestSecurityManager.class).buildInThisVM();
+  private LocatorStarterRule locator =
+      new LocatorStarterRule().withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
+
+  private HttpClientRule client = new HttpClientRule(locator::getHttpPort);
 
   @Rule
-  public HttpClientRule client = new HttpClientRule(locator);
+  public RuleChain ruleChain = RuleChain.outerRule(locator).around(client);
+
+
 
   @Test
   public void loginWithIncorrectPassword() throws Exception {
@@ -85,6 +87,5 @@ public class PulseVerificationTest {
     response = client.get("/pulse/dataBrowser.html");
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(403);
   }
-
 
 }

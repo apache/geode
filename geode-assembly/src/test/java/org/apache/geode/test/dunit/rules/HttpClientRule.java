@@ -27,44 +27,41 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
-import org.junit.Before;
 import org.junit.rules.ExternalResource;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
+/**
+ * this rules simplifies creating a httpClient for verification of pulse behaviors or any http
+ * client behaviors. Usually after you start up a server/locator with http service, you would want
+ * to connect to it through http client and verify some behavior, you would need to use this rule.
+ *
+ * See @PulseSecuriyTest for examples
+ *
+ */
 public class HttpClientRule extends ExternalResource {
   private String hostName;
-  private int port;
+  private Supplier<Integer> portSupplier;
   private HttpHost host;
   private HttpClient httpClient;
-  private HttpContext context;
-  private LocalLocatorStarterRule locatorStarterRule;
 
-  public HttpClientRule(LocalLocatorStarterRule locatorStarterRule) {
-    this.locatorStarterRule = locatorStarterRule;
-  }
 
-  public HttpClientRule(int port) {
-    this("localhost", port);
-  }
-
-  public HttpClientRule(String hostName, int port) {
+  public HttpClientRule(String hostName, Supplier<Integer> portSupplier) {
     this.hostName = hostName;
-    this.port = port;
+    this.portSupplier = portSupplier;
   }
 
-  @Before
+  public HttpClientRule(Supplier<Integer> portSupplier) {
+    this("localhost", portSupplier);
+  }
+
+
+  @Override
   protected void before() {
-    if (locatorStarterRule != null) {
-      this.hostName = "localhost";
-      this.port = locatorStarterRule.getHttpPort();
-    }
-    host = new HttpHost(hostName, port);
+    host = new HttpHost(hostName, portSupplier.get());
     httpClient = HttpClients.createDefault();
-    context = new BasicHttpContext();
   }
 
   public HttpResponse loginToPulse(String username, String password) throws Exception {
@@ -105,7 +102,6 @@ public class HttpClientRule extends ExternalResource {
     }
     return new HttpGet(builder.build());
   }
-
 
 
 }

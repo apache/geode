@@ -30,20 +30,32 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 
 /**
  * This is a rule to start up a server in your current VM. It's useful for your Integration Tests.
  *
+ * This rules allows you to create/start a server using any @ConfigurationProperties, you can chain
+ * the configuration of the rule like this: ServerStarterRule server = new ServerStarterRule()
+ * .withProperty(key, value) .withName(name) .withProperties(properties) .withSecurityManager(class)
+ * .withJmxManager() .withRestService() .withEmbeddedLocator() .withRegion(type, name) etc, etc. If
+ * your rule calls withAutoStart(), the server will be started before your test code.
+ *
+ * In your test code, you can use the rule to access the server's attributes, like the port
+ * information, working dir, name, and the cache and cacheServer it creates.
+ *
  * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
  * use {@link LocatorServerStartupRule}.
  */
 public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> implements Server {
-
   private transient Cache cache;
   private transient CacheServer server;
   private int embeddedLocatorPort = -1;
+
+  private Map<String, RegionShortcut> regions = new HashMap<>();
 
   /**
    * Default constructor, if used, the rule will create a temporary folder as the server's working
@@ -67,6 +79,17 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
 
   public CacheServer getServer() {
     return server;
+  }
+
+  @Override
+  public void before() {
+    normalizeProperties();
+    if (autoStart) {
+      startServer();
+      regions.forEach((regionName, regionType) -> {
+        getCache().createRegionFactory(regionType).create(regionName);
+      });
+    }
   }
 
   @Override
@@ -104,21 +127,21 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     return this;
   }
 
-  public ServerStarterRule startServer() {
-    return startServer(false);
+  public void startServer() {
+    startServer(false);
   }
 
-  public ServerStarterRule createRegion(RegionShortcut type, String name) {
-    cache.createRegionFactory(type).create(name);
+  public ServerStarterRule withRegion(RegionShortcut type, String name) {
+    this.autoStart = true;
+    regions.put(name, type);
     return this;
   }
 
-  public ServerStarterRule startServer(Properties properties, int locatorPort) {
-    return withProperties(properties).withConnectionToLocator(locatorPort).startServer();
+  public void startServer(Properties properties, int locatorPort) {
+    withProperties(properties).withConnectionToLocator(locatorPort).startServer();
   }
 
-  public ServerStarterRule startServer(boolean pdxPersistent) {
-    normalizeProperties();
+  public void startServer(boolean pdxPersistent) {
     CacheFactory cf = new CacheFactory(this.properties);
     cf.setPdxReadSerialized(pdxPersistent);
     cf.setPdxPersistent(pdxPersistent);
@@ -135,7 +158,6 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     memberPort = server.getPort();
     jmxPort = config.getJmxManagerPort();
     httpPort = config.getHttpServicePort();
-    return this;
   }
 
   public int getEmbeddedLocatorPort() {

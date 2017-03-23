@@ -333,7 +333,7 @@ public class PartitionedRegionStatsDUnitTest extends PartitionedRegionDUnitTestC
     final VM vm0 = host.getVM(0);
     final VM vm1 = host.getVM(1);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -379,7 +379,7 @@ public class PartitionedRegionStatsDUnitTest extends PartitionedRegionDUnitTestC
     final VM vm0 = host.getVM(0);
     final VM vm1 = host.getVM(1);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -435,7 +435,7 @@ public class PartitionedRegionStatsDUnitTest extends PartitionedRegionDUnitTestC
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -545,7 +545,7 @@ public class PartitionedRegionStatsDUnitTest extends PartitionedRegionDUnitTestC
     final VM vm0 = host.getVM(0);
     final VM vm1 = host.getVM(1);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();

@@ -1456,12 +1456,12 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   private CacheSerializableRunnable invokeCreateRegion(final String regionName,
       final RegionShortcut shortcut) {
-    return new CacheSerializableRunnable("execute: withRegion") {
+    return new CacheSerializableRunnable("execute: createRegion") {
       public void run2() {
         try {
           createRegion(RollingUpgrade2DUnitTest.cache, regionName, shortcut);
         } catch (Exception e) {
-          fail("Error withRegion", e);
+          fail("Error createRegion", e);
         }
       }
     };

@@ -23,8 +23,6 @@ import org.apache.geode.management.internal.web.domain.Link;
 import org.apache.geode.management.internal.web.domain.LinkIndex;
 import org.apache.geode.management.internal.web.http.HttpMethod;
 import org.apache.geode.management.internal.web.shell.RestHttpOperationInvoker;
-import org.apache.geode.test.dunit.rules.LocalLocatorStarterRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterBuilder;
 import org.apache.geode.test.dunit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
@@ -41,7 +39,7 @@ import javax.management.QueryExp;
 @Category(IntegrationTest.class)
 public class QueryNamesOverHttpDUnitTest {
   @Rule
-  public LocalLocatorStarterRule locatorRule = new LocatorStarterBuilder().buildInThisVM();
+  public LocatorStarterRule locatorRule = new LocatorStarterRule().withAutoStart();
 
   @Test
   public void testQueryNameOverHttp() throws Exception {

@@ -414,7 +414,7 @@ public class PRQueryDUnitHelper implements Serializable {
         attr.setPartitionAttributes(paf.create());
 
         // skip parent region creation
-        // partitionedregion = cache.withRegion(regionName, attr.create());
+        // partitionedregion = cache.createRegion(regionName, attr.create());
 
         // child region
         attr.setValueConstraint(constraint);

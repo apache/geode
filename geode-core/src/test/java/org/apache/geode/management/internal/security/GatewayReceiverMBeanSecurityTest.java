@@ -22,9 +22,8 @@ import org.apache.geode.management.GatewayReceiverMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.AfterClass;
@@ -47,15 +46,15 @@ public class GatewayReceiverMBeanSecurityTest {
   private GatewayReceiverMXBean bean;
 
   @ClassRule
-  public static LocalServerStarterRule server = new ServerStarterBuilder().withJMXManager()
+  public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
       .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
       .withProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/cacheServer.json")
-      .buildInThisVM();
+      .withAutoStart();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =
-      new MBeanServerConnectionRule(server.getJmxPort());
+      new MBeanServerConnectionRule(server::getJmxPort);
 
   @BeforeClass
   public static void beforeClass() throws Exception {

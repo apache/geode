@@ -22,9 +22,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
-import org.junit.Before;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -49,23 +47,18 @@ public class ClientExecuteFunctionAuthDUnitTest extends JUnit4DistributedTestCas
   private final static Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
 
   @Rule
-  public LocalServerStarterRule server =
-      new ServerStarterBuilder().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
           .withProperty(TestSecurityManager.SECURITY_JSON,
               "org/apache/geode/management/internal/security/clientServer.json")
-          .withRegion(RegionShortcut.REPLICATE, REGION_NAME).buildInThisVM();
-
-  @Before
-  public void setup() {
-
-  }
+          .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
   public void testExecuteRegionFunctionWithClientRegistration() {
 
     FunctionService.registerFunction(function);
     client1.invoke("logging in with dataReader", () -> {
-      ClientCache cache = createClientCache("dataReader", "1234567", server.getServerPort());
+      ClientCache cache = createClientCache("dataReader", "1234567", server.getPort());
 
       FunctionService.registerFunction(function);
 
@@ -74,7 +67,7 @@ public class ClientExecuteFunctionAuthDUnitTest extends JUnit4DistributedTestCas
     });
 
     client2.invoke("logging in with super-user", () -> {
-      ClientCache cache = createClientCache("super-user", "1234567", server.getServerPort());
+      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
 
       FunctionService.registerFunction(function);
       ResultCollector rc = FunctionService.onServer(cache.getDefaultPool()).withArgs(Boolean.TRUE)
@@ -88,7 +81,7 @@ public class ClientExecuteFunctionAuthDUnitTest extends JUnit4DistributedTestCas
   public void testExecuteRegionFunctionWithOutClientRegistration() {
     FunctionService.registerFunction(function);
     client1.invoke("logging in with dataReader", () -> {
-      ClientCache cache = createClientCache("dataReader", "1234567", server.getServerPort());
+      ClientCache cache = createClientCache("dataReader", "1234567", server.getPort());
       assertNotAuthorized(() -> FunctionService.onServer(cache.getDefaultPool())
           .withArgs(Boolean.TRUE).execute(function.getId()), "DATA:WRITE");
     });

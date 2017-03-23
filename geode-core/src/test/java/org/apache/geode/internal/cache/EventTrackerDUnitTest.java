@@ -273,7 +273,7 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    SerializableRunnable createRegion = new SerializableRunnable("withRegion") {
+    SerializableRunnable createRegion = new SerializableRunnable("createRegion") {
 
       public void run() {
         Cache cache = getCache();

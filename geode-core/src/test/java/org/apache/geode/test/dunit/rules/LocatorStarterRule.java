@@ -29,10 +29,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * This is a rule to start up a locator in your current VM. It's useful for your Integration Tests.
  *
- * You can create this rule with and without a Property. If the rule is created with a property, the
- * locator will started automatically for you. If not, you can start the locator by using one of the
- * startLocator function. Either way, the rule will handle shutting down the locator properly for
- * you.
+ * This rules allows you to create/start a locator using any @ConfigurationProperties, you can chain
+ * the configuration of the rule like this: LocatorStarterRule locator = new LocatorStarterRule()
+ * .withProperty(key, value) .withName(name) .withProperties(properties) .withSecurityManager(class)
+ * .withJmxManager() etc, etc. If your rule calls withAutoStart(), the locator will be started
+ * before your test code.
+ *
+ * In your test code, you can use the rule to access the locator's attributes, like the port
+ * information, working dir, name, and the InternalLocator it creates.
  *
  * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
  * use {@link LocatorServerStartupRule}.
@@ -59,14 +63,19 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
     }
   }
 
-  public LocatorStarterRule startLocator() {
+  @Override
+  public void before() {
     normalizeProperties();
-    // start locator will start a jmx manager by default, if withJMXManager is not called explicitly
-    // the tests will use random ports by default.
+    // always use a random jmxPort/httpPort when using the rule to start the locator
     if (jmxPort < 0) {
-      withJMXManager();
+      withJMXManager(false);
     }
+    if (autoStart) {
+      startLocator();
+    }
+  }
 
+  public void startLocator() {
     try {
       // this will start a jmx manager and admin rest service by default
       locator = (InternalLocator) startLocatorAndDS(0, null, properties);
@@ -83,6 +92,5 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
       Awaitility.await().atMost(65, TimeUnit.SECONDS)
           .until(() -> assertTrue(locator.isSharedConfigurationRunning()));
     }
-    return this;
   }
 }

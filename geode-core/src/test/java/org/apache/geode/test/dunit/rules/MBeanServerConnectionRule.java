@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import javax.management.JMX;
 import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
@@ -48,7 +49,7 @@ import javax.management.remote.JMXServiceURL;
  */
 public class MBeanServerConnectionRule extends DescribedExternalResource {
 
-  private int jmxServerPort = -1;
+  private Supplier<Integer> portSupplier;
   private JMXConnector jmxConnector;
   private MBeanServerConnection con;
 
@@ -57,10 +58,10 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
   /**
    * Rule constructor
    *
-   * @param port The JMX server port to connect to
+   * @param portSupplier The JMX server port to connect to
    */
-  public MBeanServerConnectionRule(int port) {
-    this.jmxServerPort = port;
+  public MBeanServerConnectionRule(Supplier<Integer> portSupplier) {
+    this.portSupplier = portSupplier;
   }
 
   /**
@@ -115,7 +116,7 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
   @Override
   protected void before(Description description) throws Throwable {
     // do not auto connect if port is not set
-    if (jmxServerPort < 0)
+    if (portSupplier == null)
       return;
 
     // do not auto connect if no ConnectionConfiguration is defined.
@@ -127,7 +128,7 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     String user = config.user();
     String password = config.password();
     env.put(JMXConnector.CREDENTIALS, new String[] {user, password});
-    connect(null, jmxServerPort, env);
+    connect(null, portSupplier.get(), env);
   }
 
   public void connect(int jmxPort) throws Exception {
