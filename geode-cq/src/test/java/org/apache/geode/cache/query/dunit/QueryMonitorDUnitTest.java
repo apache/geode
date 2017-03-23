@@ -304,22 +304,22 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
         () -> configServer(20, "testQueryMonitorClientServer")); // All the queries taking more than
                                                                  // 20ms should be canceled by Query
                                                                  // monitor.
-    server.invoke("withRegion", () -> createRegion());
+    server.invoke("createRegion", () -> createRegion());
 
     // Initialize server regions.
     server.invoke("populatePortfolioRegions", () -> populatePortfolioRegions(numberOfEntries));
 
     // Initialize Client1 and create client regions.
     client1.invoke("Init client", () -> configClient(serverHostName, serverPort));
-    client1.invoke("withRegion", () -> createRegion());
+    client1.invoke("createRegion", () -> createRegion());
 
     // Initialize Client2 and create client regions.
     client2.invoke("Init client", () -> configClient(serverHostName, serverPort));
-    client2.invoke("withRegion", () -> createRegion());
+    client2.invoke("createRegion", () -> createRegion());
 
     // Initialize Client3 and create client regions.
     client3.invoke("Init client", () -> configClient(serverHostName, serverPort));
-    client3.invoke("withRegion", () -> createRegion());
+    client3.invoke("createRegion", () -> createRegion());
 
     // Execute client queries
 
@@ -395,14 +395,14 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
                                                                           // more than 20ms should
                                                                           // be canceled by Query
                                                                           // monitor.
-    server1.invoke("withRegion", () -> createRegion());
+    server1.invoke("createRegion", () -> createRegion());
 
     int serverPort2 = server2.invoke("Create BridgeServer",
         () -> configServer(20, "testQueryMonitorMultiClientMultiServer"));// All the queries taking
                                                                           // more than 20ms should
                                                                           // be canceled by Query
                                                                           // monitor.
-    server2.invoke("withRegion", () -> createRegion());
+    server2.invoke("createRegion", () -> createRegion());
 
     // Initialize server regions.
     server1.invoke("Create Bridge Server", () -> populatePortfolioRegions(numberOfEntries));
@@ -412,11 +412,11 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
     // Initialize Client1 and create client regions.
     client1.invoke("Init client", () -> configClient(serverHostName, serverPort1, serverPort2));
-    client1.invoke("withRegion", () -> createRegion());
+    client1.invoke("createRegion", () -> createRegion());
 
     // Initialize Client2 and create client regions.
     client2.invoke("Init client", () -> configClient(serverHostName, serverPort1, serverPort2));
-    client2.invoke("withRegion", () -> createRegion());
+    client2.invoke("createRegion", () -> createRegion());
 
     // Execute client queries
 
@@ -457,7 +457,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
                                                                                                // by
                                                                                                // Query
                                                                                                // monitor.
-    server1.invoke("withRegion", () -> createRegion());
+    server1.invoke("createRegion", () -> createRegion());
 
     server2.invoke("Create BridgeServer", () -> configServer(20, "testQueryExecutionLocally"));// All
                                                                                                // the
@@ -472,7 +472,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
                                                                                                // by
                                                                                                // Query
                                                                                                // monitor.
-    server2.invoke("withRegion", () -> createRegion());
+    server2.invoke("createRegion", () -> createRegion());
 
     // Initialize server regions.
     server1.invoke("Create Bridge Server", () -> populatePortfolioRegions(numberOfEntries));
@@ -518,7 +518,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
                                                                                                // by
                                                                                                // Query
                                                                                                // monitor.
-    server1.invoke("withRegion", () -> createRegion());
+    server1.invoke("createRegion", () -> createRegion());
 
     server2.invoke("Create BridgeServer", () -> configServer(20, "testQueryExecutionLocally"));// All
                                                                                                // the
@@ -533,7 +533,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
                                                                                                // by
                                                                                                // Query
                                                                                                // monitor.
-    server2.invoke("withRegion", () -> createRegion());
+    server2.invoke("createRegion", () -> createRegion());
 
     // Initialize server regions.
     server1.invoke("populatePortfolioRegions", () -> populatePortfolioRegions(numberOfEntries));
@@ -629,11 +629,11 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
     // Initialize Client1 and create client regions.
     client1.invoke("Init client", () -> configClient(serverHostName, serverPort1));
-    client1.invoke("withRegion", () -> createRegion());
+    client1.invoke("createRegion", () -> createRegion());
 
     // Initialize Client2 and create client regions.
     client2.invoke("Init client", () -> configClient(serverHostName, serverPort2));
-    client2.invoke("withRegion", () -> createRegion());
+    client2.invoke("createRegion", () -> createRegion());
 
     // Execute client queries
 
@@ -729,14 +729,14 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
         () -> configServer(20, "testQueryMonitorRegionWithEviction"));// All the queries taking more
                                                                       // than 20ms should be
                                                                       // canceled by Query monitor.
-    server1.invoke("withRegion",
+    server1.invoke("createRegion",
         () -> createRegion(true, "server1_testQueryMonitorRegionWithEviction"));
 
     int serverPort2 = server2.invoke("Create BridgeServer",
         () -> configServer(20, "testQueryMonitorRegionWithEviction"));// All the queries taking more
                                                                       // than 20ms should be
                                                                       // canceled by Query monitor.
-    server2.invoke("withRegion",
+    server2.invoke("createRegion",
         () -> createRegion(true, "server2_testQueryMonitorRegionWithEviction"));
 
     // Initialize server regions.
@@ -755,11 +755,11 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
     // Initialize Client1 and create client regions.
     client1.invoke("Init client", () -> configClient(serverHostName, serverPort1));
-    client1.invoke("withRegion", () -> createRegion());
+    client1.invoke("createRegion", () -> createRegion());
 
     // Initialize Client2 and create client regions.
     client2.invoke("Init client", () -> configClient(serverHostName, serverPort2));
-    client2.invoke("withRegion", () -> createRegion());
+    client2.invoke("createRegion", () -> createRegion());
 
     // Execute client queries
     client1.invoke("Execute Queries", () -> executeQueriesFromClient(20));
@@ -803,7 +803,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
                                                                                                   // by
                                                                                                   // Query
                                                                                                   // monitor.
-    server1.invoke("withRegion", () -> createRegion());
+    server1.invoke("createRegion", () -> createRegion());
 
     int serverPort2 =
         server2.invoke("configServer", () -> configServer(20, "testQueryMonitorRegionWithIndex"));// All
@@ -819,7 +819,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
                                                                                                   // by
                                                                                                   // Query
                                                                                                   // monitor.
-    server2.invoke("withRegion", () -> createRegion());
+    server2.invoke("createRegion", () -> createRegion());
 
     // pause(1000);
 
@@ -831,11 +831,11 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
 
     // Initialize Client1 and create client regions.
     client1.invoke("Init client", () -> configClient(serverHostName, serverPort1));
-    client1.invoke("withRegion", () -> createRegion());
+    client1.invoke("createRegion", () -> createRegion());
 
     // Initialize Client2 and create client regions.
     client2.invoke("Init client", () -> configClient(serverHostName, serverPort2));
-    client2.invoke("withRegion", () -> createRegion());
+    client2.invoke("createRegion", () -> createRegion());
 
     // Execute client queries
     client1.invoke("executeQueriesFromClient", () -> executeQueriesFromClient(20));

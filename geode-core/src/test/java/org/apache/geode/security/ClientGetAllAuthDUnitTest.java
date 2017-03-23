@@ -26,8 +26,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Rule;
@@ -47,16 +46,16 @@ public class ClientGetAllAuthDUnitTest extends JUnit4DistributedTestCase {
   final VM client2 = host.getVM(2);
 
   @Rule
-  public LocalServerStarterRule server =
-      new ServerStarterBuilder().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
           .withProperty(TestSecurityManager.SECURITY_JSON,
               "org/apache/geode/management/internal/security/clientServer.json")
-          .withRegion(RegionShortcut.REPLICATE, REGION_NAME).buildInThisVM();
+          .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
   public void testGetAll() {
     client1.invoke("logging in Stranger", () -> {
-      ClientCache cache = createClientCache("stranger", "1234567", server.getServerPort());
+      ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
 
       Region region = createProxyRegion(cache, REGION_NAME);
       Map emptyMap = region.getAll(Arrays.asList("key1", "key2", "key3", "key4"));
@@ -64,7 +63,7 @@ public class ClientGetAllAuthDUnitTest extends JUnit4DistributedTestCase {
     });
 
     client2.invoke("logging in authRegionReader", () -> {
-      ClientCache cache = createClientCache("authRegionReader", "1234567", server.getServerPort());
+      ClientCache cache = createClientCache("authRegionReader", "1234567", server.getPort());
 
       Region region = createProxyRegion(cache, REGION_NAME);
       Map filledMap = region.getAll(Arrays.asList("key1", "key2", "key3", "key4"));

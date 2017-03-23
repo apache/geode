@@ -21,8 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.rules.HttpClientRule;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
@@ -35,11 +34,11 @@ import org.junit.experimental.categories.Category;
 public class PulseDataExportTest {
 
   @Rule
-  public LocalServerStarterRule server = new ServerStarterBuilder().withJMXManager()
-      .withRegion(RegionShortcut.REPLICATE, "regionA").buildInThisVM();
+  public ServerStarterRule server =
+      new ServerStarterRule().withJMXManager().withRegion(RegionShortcut.REPLICATE, "regionA");
 
   @Rule
-  public HttpClientRule client = new HttpClientRule(server.getHttpPort());
+  public HttpClientRule client = new HttpClientRule(server::getHttpPort);
 
   @Before
   public void before() throws Exception {

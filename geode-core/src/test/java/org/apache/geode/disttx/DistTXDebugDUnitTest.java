@@ -126,7 +126,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
     attr.setPartitionAttributes(prAttr);
     attr.setConcurrencyChecksEnabled(concurrencyChecks);
     // assertNotNull(basicGetCache());
-    // Region pr = basicGetCache().withRegion(partitionedRegionName,
+    // Region pr = basicGetCache().createRegion(partitionedRegionName,
     // attr.create());
     assertNotNull(basicGetCache());
     Region pr = basicGetCache().createRegion(partitionedRegionName, attr.create());
@@ -163,7 +163,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
     } else {
       af.setDataPolicy(DataPolicy.REPLICATE);
     }
-    // Region rr = basicGetCache().withRegion(replicatedRegionName,
+    // Region rr = basicGetCache().createRegion(replicatedRegionName,
     // af.create());
     Region rr = basicGetCache().createRegion(replicatedRegionName, af.create());
     assertNotNull(rr);

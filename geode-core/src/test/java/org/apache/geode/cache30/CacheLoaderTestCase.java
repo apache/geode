@@ -142,7 +142,7 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
   // };
   //
   // Region region =
-  // withRegion(name);
+  // createRegion(name);
   // loader.wasInvoked();
   //
   // Region.Entry entry = region.getEntry(key);
@@ -170,7 +170,7 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
   //// AttributesFactory factory =
   //// new AttributesFactory(getRegionAttributes());
   //// factory.setCacheLoader(remoteloader);
-  // Region rgn = withRegion(name);
+  // Region rgn = createRegion(name);
   // rgn.put(key, value);
   // flushIfNecessary(rgn);
   // }

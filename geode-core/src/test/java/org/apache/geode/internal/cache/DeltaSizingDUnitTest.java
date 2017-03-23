@@ -146,7 +146,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    SerializableCallable createDataRegion = new SerializableCallable("withRegion") {
+    SerializableCallable createDataRegion = new SerializableCallable("createRegion") {
       public Object call() throws Exception {
         Cache cache = getCache();
         cache.setCopyOnRead(copyOnRead);
@@ -186,7 +186,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
     final Integer port1 = (Integer) vm0.invoke(createDataRegion);
     final Integer port2 = (Integer) vm1.invoke(createDataRegion);
 
-    SerializableRunnable createEmptyRegion = new SerializableRunnable("withRegion") {
+    SerializableRunnable createEmptyRegion = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         cache.setCopyOnRead(copyOnRead);

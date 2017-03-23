@@ -181,7 +181,7 @@ public class Bug39356DUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();

@@ -37,8 +37,7 @@ import org.apache.geode.cache.query.internal.cq.CqListenerImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
@@ -55,11 +54,12 @@ public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
   final VM client2 = host.getVM(2);
 
   @Rule
-  public LocalServerStarterRule server =
-      new ServerStarterBuilder().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
           .withProperty(TestSecurityManager.SECURITY_JSON,
               "org/apache/geode/management/internal/security/clientServer.json")
-          .withProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName()).buildInThisVM();
+          .withProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName())
+          .startAutomatically();
 
   @Before
   public void before() throws Exception {
@@ -74,7 +74,7 @@ public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
   public void testPostProcess() {
     String query = "select * from /AuthRegion";
     client1.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", server.getServerPort());
+      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
 
 
@@ -108,7 +108,7 @@ public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
     });
 
     client2.invoke(() -> {
-      ClientCache cache = createClientCache("authRegionUser", "1234567", server.getServerPort());
+      ClientCache cache = createClientCache("authRegionUser", "1234567", server.getPort());
       Region region = createProxyRegion(cache, REGION_NAME);
       region.put("key6", "value6");
     });

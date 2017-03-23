@@ -87,7 +87,7 @@ public class Bug36829DUnitTest extends JUnit4DistributedTestCase {
 
     // creating Region on the Server
     /*
-     * this.serverVM.invoke(() -> CacheServerTestUtil.withRegion( REGION_NAME )); // should be
+     * this.serverVM.invoke(() -> CacheServerTestUtil.createRegion( REGION_NAME )); // should be
      * successful. this.ClientVM.invoke(() -> Bug36829DUnitTest.registerKeyAfterRegionCreation(
      * "Key1" ));
      */

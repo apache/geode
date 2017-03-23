@@ -28,6 +28,8 @@ import org.json.JSONArray;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.Description;
 
+import java.util.function.Supplier;
+
 /**
  * Class which eases the connection to the locator/jmxManager in Gfsh shell and execute gfsh
  * commands.
@@ -52,7 +54,7 @@ import org.junit.runner.Description;
  */
 public class GfshShellConnectionRule extends DescribedExternalResource {
 
-  private int port = -1;
+  private Supplier<Integer> portSupplier;
   private PortType portType = PortType.jmxManger;
   private HeadlessGfsh gfsh = null;
   private boolean connected = false;
@@ -66,10 +68,10 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     }
   }
 
-  public GfshShellConnectionRule(int port, PortType portType) {
+  public GfshShellConnectionRule(Supplier<Integer> portSupplier, PortType portType) {
     this();
     this.portType = portType;
-    this.port = port;
+    this.portSupplier = portSupplier;
   }
 
   @Override
@@ -77,7 +79,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
     this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
         temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
     // do not auto connect if no port initialized
-    if (port < 0) {
+    if (portSupplier == null) {
       return;
     }
 
@@ -87,7 +89,7 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
       return;
     }
 
-    connect(port, portType, CliStrings.CONNECT__USERNAME, config.user(),
+    connect(portSupplier.get(), portType, CliStrings.CONNECT__USERNAME, config.user(),
         CliStrings.CONNECT__PASSWORD, config.password());
 
   }

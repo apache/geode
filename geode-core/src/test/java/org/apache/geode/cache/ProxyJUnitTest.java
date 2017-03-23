@@ -1031,7 +1031,7 @@ public class ProxyJUnitTest {
     // // on a non-proxy lru
     // {
     // af.setDataPolicy(DataPolicy.NORMAL);
-    // Region r = this.c.withRegion("rLRU", af.create());
+    // Region r = this.c.createRegion("rLRU", af.create());
     // clearCallbackState();
     // assertTrue(clInvokeCount == 0);
     // for (int i=0; i < 10; i++) {
@@ -1048,7 +1048,7 @@ public class ProxyJUnitTest {
         fail("expected IllegalStateException");
       } catch (IllegalStateException expected) {
       }
-      // Region r = this.c.withRegion("rEMPTY", af.create());
+      // Region r = this.c.createRegion("rEMPTY", af.create());
       // clearCallbackState();
       // assertTrue(clInvokeCount == 0);
       // for (int i=0; i < 10; i++) {

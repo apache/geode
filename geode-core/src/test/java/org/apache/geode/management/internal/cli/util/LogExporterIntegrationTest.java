@@ -22,13 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.google.common.collect.Sets;
 
 import org.apache.geode.management.internal.cli.functions.ExportLogsFunctionIntegrationTest;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.Server;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.logging.log4j.Level;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -44,34 +40,27 @@ import java.util.Set;
 
 @Category(IntegrationTest.class)
 public class LogExporterIntegrationTest {
+
+  @Rule
+  public ServerStarterRule server = new ServerStarterRule();
+
   private LogExporter logExporter;
 
   private Properties properties;
 
   private LogFilter filter = new LogFilter(Level.INFO, null, null);
 
-  LocalServerStarterRule serverStarterRule;
-
   @Before
   public void before() throws Exception {
     properties = new Properties();
   }
 
-  @After
-  public void after() {
-    if (serverStarterRule != null) {
-      serverStarterRule.after();
-    }
-  }
-
   @Test
-  public void serverStartedWithWrongSuffix() throws Throwable {
-    serverStarterRule =
-        new ServerStarterBuilder().withProperty(LOG_FILE, new File("test.txt").getAbsolutePath())
-            .withProperty(STATISTIC_ARCHIVE_FILE, "archive.archive").buildInThisVM();
-    serverStarterRule.before();
-
-    File serverWorkingDir = serverStarterRule.getWorkingDir();
+  public void serverStartedWithWrongSuffix() throws Exception {
+    properties.setProperty(LOG_FILE, new File("test.txt").getAbsolutePath());
+    properties.setProperty(STATISTIC_ARCHIVE_FILE, "archive.archive");
+    server.withProperties(properties).startServer();
+    File serverWorkingDir = server.getWorkingDir();
 
     logExporter = new LogExporter(filter, new File(serverWorkingDir, "test.log"),
         new File(serverWorkingDir, "stats.gfs"));
@@ -83,18 +72,15 @@ public class LogExporterIntegrationTest {
   }
 
   @Test
-  @Ignore // This test assume that new File() ends up in the workingDir, which is not true
-  public void serverStartedWithCorrectSuffix() throws Throwable {
-
-    serverStarterRule =
-        new ServerStarterBuilder().withProperty(LOG_FILE, new File("test.log").getAbsolutePath())
-            .withProperty(STATISTIC_ARCHIVE_FILE, "archive.gfs").buildInThisVM();
-    serverStarterRule.before();
-
+  public void serverStartedWithCorrectSuffix() throws Exception {
     // ("relative log file is problematic in the test environment")
-    File serverWorkingDir = serverStarterRule.getWorkingDir();
+    properties.setProperty(LOG_FILE, new File("test.log").getAbsolutePath());
+    properties.setProperty(STATISTIC_ARCHIVE_FILE, "archive.gfs");
+    server.withProperties(properties).startServer();
+    File serverWorkingDir = server.getWorkingDir();
 
-    logExporter = new LogExporter(filter, new File("test.log"), new File("archive.gfs"));
+    logExporter = new LogExporter(filter, new File(serverWorkingDir, "test.log"),
+        new File(serverWorkingDir, "archive.gfs"));
     List<Path> logFiles = logExporter.findLogFiles(serverWorkingDir.toPath());
     assertThat(logFiles).hasSize(1);
     assertThat(logFiles.get(0)).hasFileName("test.log");
@@ -106,12 +92,11 @@ public class LogExporterIntegrationTest {
 
   @Test
   @Ignore("fix .gz suffix")
-  public void serverStartedWithGZSuffix() throws Throwable {
-    serverStarterRule = new ServerStarterBuilder().withProperty(LOG_FILE, "test.log.gz")
-        .withProperty(STATISTIC_ARCHIVE_FILE, "archive.gfs.gz").buildInThisVM();
-    serverStarterRule.before();
-
-    File serverWorkingDir = serverStarterRule.getWorkingDir();
+  public void serverStartedWithGZSuffix() throws Exception {
+    properties.setProperty(LOG_FILE, "test.log.gz");
+    properties.setProperty(STATISTIC_ARCHIVE_FILE, "archive.gfs.gz");
+    server.withProperties(properties).startServer();
+    File serverWorkingDir = server.getWorkingDir();
 
     logExporter = new LogExporter(filter, new File(serverWorkingDir, "test.log"),
         new File(serverWorkingDir, "stats.gfs"));
@@ -125,10 +110,8 @@ public class LogExporterIntegrationTest {
   @Test
   public void testNoStatsFile() throws Throwable {
     Path logsFile = Files.createTempFile("server", ".log");
-
-    serverStarterRule =
-        new ServerStarterBuilder().withProperty(LOG_FILE, logsFile.toString()).buildInThisVM();
-    serverStarterRule.before();
+    properties.setProperty(LOG_FILE, logsFile.toString());
+    server.withProperties(properties).startServer();
 
     ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp();
   }
@@ -136,10 +119,10 @@ public class LogExporterIntegrationTest {
   @Test
   public void testWithRelativeStatsFile() throws Throwable {
     Path logsFile = Files.createTempFile("server", ".log");
-
-    serverStarterRule = new ServerStarterBuilder().withProperty(LOG_FILE, logsFile.toString())
-        .withProperty(STATISTIC_ARCHIVE_FILE, "stats.gfs").buildInThisVM();
-    serverStarterRule.before();
+    // Path statsFile = Files.createTempFile("stats", ".gfs");
+    properties.setProperty(LOG_FILE, logsFile.toString());
+    properties.setProperty(STATISTIC_ARCHIVE_FILE, "stats.gfs");
+    server.withProperties(properties).startServer();
 
     ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp();
   }
@@ -147,25 +130,25 @@ public class LogExporterIntegrationTest {
   @Test
   public void testWithRelativeLogsFile() throws Throwable {
     Path statsFile = Files.createTempFile("stats", ".gfs");
-
-    serverStarterRule = new ServerStarterBuilder().withProperty(LOG_FILE, "sever.log")
-        .withProperty(STATISTIC_ARCHIVE_FILE, statsFile.toString()).buildInThisVM();
-    serverStarterRule.before();
+    properties.setProperty(LOG_FILE, "sever.log");
+    properties.setProperty(STATISTIC_ARCHIVE_FILE, statsFile.toString());
+    server.withProperties(properties).startServer();
 
     ExportLogsFunctionIntegrationTest.verifyExportLogsFunctionDoesNotBlowUp();
   }
 
   @Test
-  public void testWithAbsoluteLogsStatsFile() throws Throwable {
+  public void testWithAbsoluteLogsStatsFile() throws Exception {
     File logsDir = Files.createTempDirectory("logs").toFile();
     File statsDir = Files.createTempDirectory("stats").toFile();
 
     File logFile = new File(logsDir, "server.log");
     File statsFile = new File(statsDir, "stats.gfs");
 
-    serverStarterRule = new ServerStarterBuilder().withProperty(LOG_FILE, logFile.getAbsolutePath())
-        .withProperty(STATISTIC_ARCHIVE_FILE, statsFile.getAbsolutePath()).buildInThisVM();
-    serverStarterRule.before();
+    properties.setProperty(LOG_FILE, logFile.getAbsolutePath());
+    properties.setProperty(STATISTIC_ARCHIVE_FILE, statsFile.getAbsolutePath());
+
+    server.withProperties(properties).startServer();
 
     logExporter = new LogExporter(filter, logFile, statsFile);
     Path exportedZip = logExporter.export();

@@ -21,8 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,8 +32,7 @@ import org.junit.experimental.categories.Category;
 public class GfshMultilineCommandTest {
 
   @Rule
-  public LocalServerStarterRule server =
-      new ServerStarterBuilder().withJMXManager().buildInThisVM();
+  public ServerStarterRule server = new ServerStarterRule().withJMXManager().startAutomatically();
 
 
   @Rule

@@ -272,7 +272,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends PartitionedRegionDUnitT
     // .setLocalProperties(lp)
     // .createPartitionAttributes());
     //
-    // PartitionedRegion p = (PartitionedRegion) cache.withRegion(r, attr.create());
+    // PartitionedRegion p = (PartitionedRegion) cache.createRegion(r, attr.create());
     // assertNotNull(p);
     //
     // final String key1 = "lcKey1"; final String val1 = "lcVal1";

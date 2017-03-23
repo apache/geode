@@ -425,7 +425,7 @@ public class CacheServerManagementDUnitTest extends LocatorTestBase {
   }
 
   protected void assertCacheServerConfig(CacheServerMXBean bean) {
-    // assertIndexDetailsEquals(ServerInfo.getInstance().getServerPort(), bean.getServerPort());
+    // assertIndexDetailsEquals(ServerInfo.getInstance().getServerPort(), bean.getPort());
     assertEquals(CacheServer.DEFAULT_BIND_ADDRESS, bean.getBindAddress());
     assertEquals(CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS, bean.getHostNameForClients());
     assertEquals(CacheServer.DEFAULT_SOCKET_BUFFER_SIZE, bean.getSocketBufferSize());

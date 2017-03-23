@@ -109,7 +109,7 @@ public class PartitionedRegionRedundancyZoneDUnitTest extends JUnit4CacheTestCas
   }
 
   protected DistributedMember createPR(VM vm, int redundancy) throws Exception {
-    SerializableCallable createPrRegion = new SerializableCallable("withRegion") {
+    SerializableCallable createPrRegion = new SerializableCallable("createRegion") {
       public Object call() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
