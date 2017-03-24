@@ -45,6 +45,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.oio.OioServerSocketChannel;
 import io.netty.util.concurrent.Future;
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.*;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.ByteToCommandDecoder;
@@ -132,6 +133,7 @@ import org.apache.geode.internal.net.SocketCreator;
  *
  */
 
+@Experimental
 public class GeodeRedisServer {
 
   /**
