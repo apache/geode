@@ -5299,7 +5299,10 @@ public final class Oplog implements CompactableOplog, Flushable {
         this.bbArray[0] = b1;
         this.bbArray[1] = b2;
         b1.flip();
-        long flushed = olf.channel.write(this.bbArray);
+        long flushed = 0;
+        do {
+          flushed += olf.channel.write(this.bbArray);
+        } while (b2.hasRemaining());
         this.bbArray[0] = null;
         this.bbArray[1] = null;
         // update bytesFlushed after entire writeBuffer is flushed to fix bug 41201

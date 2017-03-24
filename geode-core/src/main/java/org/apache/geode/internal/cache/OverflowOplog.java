@@ -28,7 +28,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.distributed.OplogCancelledException;
@@ -232,7 +231,6 @@ class OverflowOplog implements CompactableOplog, Flushable {
     this.crf.f = f;
     this.crf.raf = new RandomAccessFile(f, "rw");
     this.crf.writeBuf = allocateWriteBuf(previous);
-    this.bbArray[0] = this.crf.writeBuf;
     preblow();
     logger.info(LocalizedMessage.create(LocalizedStrings.Oplog_CREATE_0_1_2,
         new Object[] {toString(), "crf", this.parent.getName()}));
@@ -256,7 +254,6 @@ class OverflowOplog implements CompactableOplog, Flushable {
     synchronized (this.crf) {
       ByteBuffer result = this.crf.writeBuf;
       this.crf.writeBuf = null;
-      this.bbArray[0] = null;
       return result;
     }
   }
@@ -744,6 +741,18 @@ class OverflowOplog implements CompactableOplog, Flushable {
     }
   }
 
+  /**
+   * Method to be used only for testing
+   * 
+   * @param ch Object to replace the channel in the Oplog.crf
+   * @return original channel object
+   */
+  FileChannel testSetCrfChannel(FileChannel ch) {
+    FileChannel chPrev = this.crf.channel;
+    this.crf.channel = ch;
+    return chPrev;
+  }
+
   @Override
   public final void flush(ByteBuffer b1, ByteBuffer b2) throws IOException {
     final OplogFile olf = this.crf;
@@ -752,10 +761,14 @@ class OverflowOplog implements CompactableOplog, Flushable {
         return;
       }
       try {
-        assert b1 == olf.writeBuf;
-        b1.flip();
+        this.bbArray[0] = b1;
         this.bbArray[1] = b2;
-        long flushed = olf.channel.write(this.bbArray);
+        b1.flip();
+        long flushed = 0;
+        do {
+          flushed += olf.channel.write(this.bbArray);
+        } while (b2.hasRemaining());
+        this.bbArray[0] = null;
         this.bbArray[1] = null;
         // update bytesFlushed after entire writeBuffer is flushed to fix bug 41201
         olf.bytesFlushed += flushed;
