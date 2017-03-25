@@ -20,7 +20,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.*;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.WaitUntilGatewaySenderFlushedCoordinator;
-import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +29,7 @@ import java.util.concurrent.*;
 
 public class WaitUntilParallelGatewaySenderFlushedCoordinator
     extends WaitUntilGatewaySenderFlushedCoordinator {
+  final static private int CALLABLES_CHUNK_SIZE = 10;
 
   public WaitUntilParallelGatewaySenderFlushedCoordinator(AbstractGatewaySender sender,
       long timeout, TimeUnit unit, boolean initiator) {
@@ -53,39 +53,35 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
     // Submit local callables for execution
     ExecutorService service = this.sender.getDistributionManager().getWaitingThreadPool();
     List<Future<Boolean>> callableFutures = new ArrayList<>();
-    for (Callable<Boolean> callable : callables) {
-      callableFutures.add(service.submit(callable));
-    }
+    int callableCount = 0;
     if (logger.isDebugEnabled()) {
-      logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Created and submitted "
+      logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Created and being submitted "
           + callables.size() + " callables=" + callables);
     }
-
-    // Process local future results
-    for (Future<Boolean> future : callableFutures) {
-      boolean singleBucketResult = false;
-      try {
-        singleBucketResult = future.get();
-      } catch (ExecutionException e) {
-        exceptionToThrow = e.getCause();
+    for (Callable<Boolean> callable : callables) {
+      callableFutures.add(service.submit(callable));
+      callableCount++;
+      if ((callableCount % CALLABLES_CHUNK_SIZE) == 0 || callableCount == callables.size()) {
+        CallablesChunkResults callablesChunkResults =
+            new CallablesChunkResults(localResult, exceptionToThrow, callableFutures).invoke();
+        localResult = callablesChunkResults.getLocalResult();
+        exceptionToThrow = callablesChunkResults.getExceptionToThrow();
+        if (logger.isDebugEnabled()) {
+          logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Processed local result= "
+              + localResult + "; exceptionToThrow= " + exceptionToThrow);
+        }
+        if (exceptionToThrow != null) {
+          throw exceptionToThrow;
+        }
       }
-      localResult = localResult && singleBucketResult;
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Processed local result="
-          + localResult + "; exceptionToThrow=" + exceptionToThrow);
     }
 
     // Return the full result
-    if (exceptionToThrow == null) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Returning full result="
-            + (localResult));
-      }
-      return localResult;
-    } else {
-      throw exceptionToThrow;
+    if (logger.isDebugEnabled()) {
+      logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Returning full result="
+          + (localResult));
     }
+    return localResult;
   }
 
   protected List<WaitUntilBucketRegionQueueFlushedCallable> buildWaitUntilBucketRegionQueueFlushedCallables(
@@ -178,4 +174,38 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
     }
   }
 
+  private class CallablesChunkResults {
+    private boolean localResult;
+    private Throwable exceptionToThrow;
+    private List<Future<Boolean>> callableFutures;
+
+    public CallablesChunkResults(boolean localResult, Throwable exceptionToThrow,
+        List<Future<Boolean>> callableFutures) {
+      this.localResult = localResult;
+      this.exceptionToThrow = exceptionToThrow;
+      this.callableFutures = callableFutures;
+    }
+
+    public boolean getLocalResult() {
+      return localResult;
+    }
+
+    public Throwable getExceptionToThrow() {
+      return exceptionToThrow;
+    }
+
+    public CallablesChunkResults invoke() throws InterruptedException {
+      for (Future<Boolean> future : callableFutures) {
+        boolean singleBucketResult = false;
+        try {
+          singleBucketResult = future.get();
+        } catch (ExecutionException e) {
+          exceptionToThrow = e.getCause();
+        }
+        localResult = localResult && singleBucketResult;
+      }
+      callableFutures.clear();
+      return this;
+    }
+  }
 }
