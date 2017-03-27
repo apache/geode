@@ -212,12 +212,12 @@ public class QueryUtilsJUnitTest {
 
   /*
    * @Test public void testCutDownAndExpandIndexResultsWithManyFinalIters() { region =
-   * CacheUtils.createRegion("portfolio", Portfolio.class); Portfolio[] po = new Portfolio[] { new
+   * CacheUtils.withRegion("portfolio", Portfolio.class); Portfolio[] po = new Portfolio[] { new
    * Portfolio(0), new Portfolio(1), new Portfolio(2), new Portfolio(3)}; region.put("0", new
    * Portfolio(0)); region.put("1", new Portfolio(1)); region.put("2", new Portfolio(2));
    * region.put("3", new Portfolio(3));
    * 
-   * Region r3 = CacheUtils.createRegion("employees", Employee.class); Set add1 = new HashSet();
+   * Region r3 = CacheUtils.withRegion("employees", Employee.class); Set add1 = new HashSet();
    * add1.add(new Address("411045", "Baner")); add1.add(new Address("411001", "DholePatilRd"));
    * for(int i=0;i<4;i++){ r3.put(i+"", new Employee("empName",(20+i),i,"Mr.",(5000+i),add1)); } //
    * compileFromClause returns a List<CompiledIteratorDef> QCompiler compiler = new

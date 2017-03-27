@@ -23,7 +23,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -51,16 +52,16 @@ public class ClientQueryAuthDUnitTest extends JUnit4DistributedTestCase {
   final VM client3 = host.getVM(3);
 
   @Rule
-  public ServerStarterRule server =
-      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public LocalServerStarterRule server =
+      new ServerStarterBuilder().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
           .withProperty(TestSecurityManager.SECURITY_JSON,
               "org/apache/geode/management/internal/security/clientServer.json")
-          .startServer().createRegion(RegionShortcut.REPLICATE, REGION_NAME);
+          .withRegion(RegionShortcut.REPLICATE, REGION_NAME).buildInThisVM();
 
   @Test
   public void testQuery() {
     client1.invoke(() -> {
-      ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
+      ClientCache cache = createClientCache("stranger", "1234567", server.getServerPort());
       final Region region = createProxyRegion(cache, REGION_NAME);
 
       String query = "select * from /AuthRegion";
@@ -76,7 +77,7 @@ public class ClientQueryAuthDUnitTest extends JUnit4DistributedTestCase {
   public void testCQ() {
     String query = "select * from /AuthRegion";
     client1.invoke(() -> {
-      ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
+      ClientCache cache = createClientCache("stranger", "1234567", server.getServerPort());
       Region region = createProxyRegion(cache, REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
@@ -93,7 +94,7 @@ public class ClientQueryAuthDUnitTest extends JUnit4DistributedTestCase {
     });
 
     client2.invoke(() -> {
-      ClientCache cache = createClientCache("authRegionReader", "1234567", server.getPort());
+      ClientCache cache = createClientCache("authRegionReader", "1234567", server.getServerPort());
       Region region = createProxyRegion(cache, REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();
@@ -108,7 +109,7 @@ public class ClientQueryAuthDUnitTest extends JUnit4DistributedTestCase {
     });
 
     client3.invoke(() -> {
-      ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
+      ClientCache cache = createClientCache("super-user", "1234567", server.getServerPort());
       Region region = createProxyRegion(cache, REGION_NAME);
       Pool pool = PoolManager.find(region);
       QueryService qs = pool.getQueryService();

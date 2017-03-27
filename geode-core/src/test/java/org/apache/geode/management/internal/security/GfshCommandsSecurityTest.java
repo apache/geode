@@ -30,7 +30,8 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.shiro.authz.permission.WildcardPermission;
@@ -45,11 +46,11 @@ import java.util.List;
 @Category({IntegrationTest.class, SecurityTest.class})
 public class GfshCommandsSecurityTest {
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule().withJMXManager()
+  public static LocalServerStarterRule serverStarter = new ServerStarterBuilder().withJMXManager()
       .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
       .withProperty("security-json",
           "org/apache/geode/management/internal/security/cacheServer.json")
-      .startServer();
+      .buildInThisVM();
 
   @Rule
   public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(

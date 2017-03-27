@@ -57,7 +57,7 @@ public class Bug40751DUnitTest extends JUnit4CacheTestCase {
       VM vm0 = host.getVM(1);
       VM vm1 = host.getVM(2);
 
-      SerializableRunnable createDataRegion = new SerializableRunnable("createRegion") {
+      SerializableRunnable createDataRegion = new SerializableRunnable("withRegion") {
         public void run() {
           Cache cache = getCache();
           AttributesFactory attr = new AttributesFactory();
@@ -70,7 +70,7 @@ public class Bug40751DUnitTest extends JUnit4CacheTestCase {
 
       vm0.invoke(createDataRegion);
 
-      SerializableRunnable createEmptyRegion = new SerializableRunnable("createRegion") {
+      SerializableRunnable createEmptyRegion = new SerializableRunnable("withRegion") {
         public void run() {
           Cache cache = getCache();
           AttributesFactory attr = new AttributesFactory();

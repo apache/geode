@@ -154,11 +154,11 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
       vm1.invoke("setSysProps", () -> setSysProps());
 
       // 1. start locator with mcast port
-      vm0.invoke("createRegion", () -> {
+      vm0.invoke("withRegion", () -> {
         createRegion(name, getRegionAttributes());
         return "";
       });
-      vm1.invoke("createRegion", () -> {
+      vm1.invoke("withRegion", () -> {
         createRegion(name, getRegionAttributes());
         return "";
       });

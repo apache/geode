@@ -21,9 +21,11 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -35,14 +37,21 @@ public class ClientAuthDUnitTest extends JUnit4DistributedTestCase {
   final VM client1 = host.getVM(1);
   final VM client2 = host.getVM(2);
 
+  int serverPort;
+
+  @Before
+  public void setup() {
+    serverPort = server.getServerPort();
+  }
+
   @Rule
-  public ServerStarterRule server = new ServerStarterRule()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).startServer();
+  public transient LocalServerStarterRule server = new ServerStarterBuilder()
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).buildInThisVM();
 
   @Test
   public void authWithCorrectPasswordShouldPass() {
     client1.invoke("logging in super-user with correct password", () -> {
-      SecurityTestUtil.createClientCache("test", "test", server.getPort());
+      SecurityTestUtil.createClientCache("test", "test", serverPort);
     });
   }
 
@@ -50,9 +59,8 @@ public class ClientAuthDUnitTest extends JUnit4DistributedTestCase {
   public void authWithIncorrectPasswordShouldFail() {
     IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
     client2.invoke("logging in super-user with wrong password", () -> {
-      assertThatThrownBy(
-          () -> SecurityTestUtil.createClientCache("test", "wrong", server.getPort()))
-              .isInstanceOf(AuthenticationFailedException.class);
+      assertThatThrownBy(() -> SecurityTestUtil.createClientCache("test", "wrong", serverPort))
+          .isInstanceOf(AuthenticationFailedException.class);
     });
   }
 }

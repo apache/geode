@@ -19,7 +19,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
@@ -33,11 +35,11 @@ public class CacheServerMBeanAuthenticationJUnitTest {
   private CacheServerMXBean bean;
 
   @ClassRule
-  public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
+  public static LocalServerStarterRule server = new ServerStarterBuilder().withJMXManager()
       .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
       .withProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/cacheServer.json")
-      .startServer();
+      .buildInThisVM();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =

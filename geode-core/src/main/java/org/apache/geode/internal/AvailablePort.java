@@ -20,6 +20,7 @@ import org.apache.geode.internal.net.SocketCreator;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.Random;
@@ -448,8 +449,8 @@ public class AvailablePort {
    * smaller that can cause bug 46690
    *
    */
-  public static class Keeper {
-    private final ServerSocket ss;
+  public static class Keeper implements Serializable {
+    private transient final ServerSocket ss;
     private final int port;
 
     public Keeper(ServerSocket ss, int port) {

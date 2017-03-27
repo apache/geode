@@ -21,6 +21,8 @@ import static org.junit.Assert.assertThat;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
@@ -34,9 +36,8 @@ import org.junit.experimental.categories.Category;
 public class SwaggerVerificationTest {
 
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withRestService()
-      .startServer();
+  public static LocalServerStarterRule serverStarter = new ServerStarterBuilder()
+      .withSecurityManager(SimpleTestSecurityManager.class).withRestService().buildInThisVM();
 
   private GeodeRestClient restClient;
 

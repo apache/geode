@@ -26,7 +26,8 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
@@ -43,11 +44,11 @@ public class ClientContainsKeyAuthDUnitTest extends JUnit4DistributedTestCase {
   final VM client2 = host.getVM(2);
 
   @Rule
-  public ServerStarterRule server =
-      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public LocalServerStarterRule server =
+      new ServerStarterBuilder().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
           .withProperty(TestSecurityManager.SECURITY_JSON,
               "org/apache/geode/management/internal/security/clientServer.json")
-          .startServer();
+          .buildInThisVM();
 
   @Before
   public void before() throws Exception {
@@ -61,7 +62,7 @@ public class ClientContainsKeyAuthDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testContainsKey() throws Exception {
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
-      ClientCache cache = createClientCache("key1User", "1234567", server.getPort());
+      ClientCache cache = createClientCache("key1User", "1234567", server.getServerPort());
       final Region region = createProxyRegion(cache, REGION_NAME);
       assertTrue(region.containsKeyOnServer("key1"));
       SecurityTestUtil.assertNotAuthorized(() -> region.containsKeyOnServer("key3"),
@@ -69,7 +70,7 @@ public class ClientContainsKeyAuthDUnitTest extends JUnit4DistributedTestCase {
     });
 
     AsyncInvocation ai2 = client2.invokeAsync(() -> {
-      ClientCache cache = createClientCache("authRegionReader", "1234567", server.getPort());
+      ClientCache cache = createClientCache("authRegionReader", "1234567", server.getServerPort());
       final Region region = createProxyRegion(cache, REGION_NAME);
       region.containsKeyOnServer("key3");
       assertTrue(region.containsKeyOnServer("key1"));
