@@ -69,13 +69,13 @@ public class LuceneTestUtilities {
   public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_3 =
       "Cannot create Lucene index index on region /region with analyzer KeywordAnalyzer on field field2 because another member defines the same index with analyzer StandardAnalyzer on that field.";
   public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_NAMES =
-      "Cannot create Region /region with [index2#_region] async event ids because another cache has the same region defined with [index1#_region] async event ids";
+      "Cannot create Lucene index index2 on region /region because it is not defined in another member.";
   public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_1 =
-      "Cannot create Region /region with [] async event ids because another cache has the same region defined with [index#_region] async event ids";
+      "Must create Lucene index index on region /region because it is defined in another member.";
   public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2 =
-      "Cannot create Region /region with [index#_region, index2#_region] async event ids because another cache has the same region defined with [index#_region] async event ids";
+      "Cannot create Lucene index index2 on region /region because it is not defined in another member.";
   public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_3 =
-      "Cannot create Region /region with [index#_region] async event ids because another cache has the same region defined with [] async event ids";
+      "Cannot create Lucene index index on region /region because it is not defined in another member.";
 
   public static String Quarter1 = "Q1";
   public static String Quarter2 = "Q2";

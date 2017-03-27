@@ -36,4 +36,14 @@ public interface CacheServiceProfile {
    * @return A string message of incompatibility or null if the profiles are compatible
    */
   String checkCompatibility(String regionPath, CacheServiceProfile profile);
+
+  /**
+   * Answers the missing profile message to be returned when a profile exists in one member but not
+   * another
+   * 
+   * @param existsInThisMember Whether or not the profile exists in this member
+   * @return the missing profile message to be returned when a profile exists in one member but not
+   *         another
+   */
+  String getMissingProfileMessage(boolean existsInThisMember);
 }

@@ -16,8 +16,10 @@ package org.apache.geode.internal.cache;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.LocalRegion.TestCallable;
@@ -65,6 +67,8 @@ public final class InternalRegionArguments {
   private boolean declarativeIndexCreation;
 
   private Map<String, CacheServiceProfile> cacheServiceProfiles;
+
+  private Set<String> internalAsyncEventQueueIds;
 
   /* methods that set and retrieve internal state used to configure a Region */
 
@@ -302,6 +306,18 @@ public final class InternalRegionArguments {
 
   public Map<String, CacheServiceProfile> getCacheServiceProfiles() {
     return this.cacheServiceProfiles;
+  }
+
+  public InternalRegionArguments addInternalAsyncEventQueueId(String aeqId) {
+    if (this.internalAsyncEventQueueIds == null) {
+      this.internalAsyncEventQueueIds = new HashSet<>();
+    }
+    this.internalAsyncEventQueueIds.add(aeqId);
+    return this;
+  }
+
+  public Set<String> getInternalAsyncEventQueueIds() {
+    return this.internalAsyncEventQueueIds;
   }
 
   public boolean isInternalRegion() {

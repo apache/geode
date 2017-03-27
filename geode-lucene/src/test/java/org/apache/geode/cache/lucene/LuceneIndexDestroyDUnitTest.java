@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.test.TestObject;
@@ -25,7 +26,9 @@ import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.awaitility.Awaitility;
@@ -51,7 +54,9 @@ import static org.junit.Assert.assertTrue;
 @RunWith(JUnitParamsRunner.class)
 public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
 
-  private volatile boolean STOP_PUTS = false;
+  private static volatile boolean STOP_PUTS = false;
+
+  private static int NUM_PUTS_COMPLETED = 0;
 
   protected VM accessor;
 
@@ -125,12 +130,13 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
     }
   }
 
-  @Ignore
-  // Destroying an index while puts are occurring currently fails with a
-  // GatewaySenderConfigurationException.
-  @Parameters(method = "getListOfServerRegionTestTypes")
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
   public void verifyDestroySingleIndexWhileDoingPuts(RegionTestableType regionType)
       throws Exception {
+    // Add ignored exceptions to ignore RegionDestroyExceptions
+    IgnoredException.addIgnoredException(RegionDestroyedException.class.getSimpleName());
+
     // Create index and region
     dataStore1.invoke(() -> initDataStore(createIndex(), regionType));
     dataStore2.invoke(() -> initDataStore(createIndex(), regionType));
@@ -154,7 +160,56 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
 
     // End puts
     dataStore1.invoke(() -> stopPuts());
-    putter.join();
+
+    // Wait for the putter to complete and verify no exception has occurred
+    ThreadUtils.join(putter, 60 * 1000);
+    if (putter.exceptionOccurred()) {
+      fail(putter.getException());
+    }
+
+    // Verify region size
+    dataStore1.invoke(() -> verifyRegionSize());
+  }
+
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void verifyDestroyAllIndexesWhileDoingPuts(RegionTestableType regionType)
+      throws Exception {
+    // Add ignored exceptions to ignore RegionDestroyExceptions
+    IgnoredException.addIgnoredException(RegionDestroyedException.class.getSimpleName());
+
+    // Create indexes and region
+    dataStore1.invoke(() -> initDataStore(createIndexes(), regionType));
+    dataStore2.invoke(() -> initDataStore(createIndexes(), regionType));
+
+    // Verify indexes created
+    dataStore1.invoke(() -> verifyIndexesCreated());
+    dataStore2.invoke(() -> verifyIndexesCreated());
+
+    // Start puts
+    AsyncInvocation putter = dataStore1.invokeAsync(() -> doPutsUntilStopped());
+
+    // Wait until puts have started
+    dataStore1.invoke(() -> waitUntilPutsHaveStarted());
+
+    // Destroy indexes (only needs to be done on one member)
+    dataStore1.invoke(() -> destroyIndexes());
+
+    // Verify indexes destroyed
+    dataStore1.invoke(() -> verifyIndexesDestroyed());
+    dataStore2.invoke(() -> verifyIndexesDestroyed());
+
+    // End puts
+    dataStore1.invoke(() -> stopPuts());
+
+    // Wait for the putter to complete and verify no exception has occurred
+    ThreadUtils.join(putter, 60 * 1000);
+    if (putter.exceptionOccurred()) {
+      fail(putter.getException());
+    }
+
+    // Verify region size
+    dataStore1.invoke(() -> verifyRegionSize());
   }
 
   @Test
@@ -368,16 +423,25 @@ public class LuceneIndexDestroyDUnitTest extends LuceneDUnitTest {
   }
 
   private void doPutsUntilStopped() throws Exception {
+    allowPuts();
     Region region = getCache().getRegion(REGION_NAME);
     int i = 0;
     while (!STOP_PUTS) {
       region.put(i++, new TestObject());
-      // Thread.sleep(50);
+      NUM_PUTS_COMPLETED = i;
     }
   }
 
-  private void stopPuts() {
+  private static void stopPuts() {
     STOP_PUTS = true;
+  }
+
+  private static void allowPuts() {
+    STOP_PUTS = false;
+  }
+
+  private void verifyRegionSize() {
+    assertEquals(NUM_PUTS_COMPLETED, getCache().getRegion(REGION_NAME).size());
   }
 
   private void waitUntilPutsHaveStarted() {
