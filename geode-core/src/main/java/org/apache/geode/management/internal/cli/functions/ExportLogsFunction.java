@@ -168,7 +168,7 @@ public class ExportLogsFunction implements Function, InternalEntity {
       this.endTime = parseTime(endTime);
 
       if (StringUtils.isBlank(logLevel)) {
-        this.logLevel = Level.INFO;
+        this.logLevel = LogLevel.getLevel(ExportLogsCommand.DEFAULT_EXPORT_LOG_LEVEL);
       } else {
         this.logLevel = LogLevel.getLevel(logLevel);
       }

@@ -1391,7 +1391,7 @@ public class CliStrings {
   public static final String EXPORT_LOGS__HELP = "Export the log files for a member or members.";
   public static final String EXPORT_LOGS__DIR = "dir";
   public static final String EXPORT_LOGS__DIR__HELP =
-      "Local directory to which logs will be written. This is used only when you are exporting logs using an http connection. If not specified, logs are written to the location specified by the user.dir system property.";
+      "Directory to which logs will be written.  This refers to a local directory when exporting logs using an http connection, but refers to the filesystem of the manager when connected via JMX. If not specified, logs are written to the location specified by the user.dir system property.";
   public static final String EXPORT_LOGS__MEMBER = "member";
   public static final String EXPORT_LOGS__MEMBER__HELP =
       "Name/Id of the member whose log files will be exported.";
@@ -1401,7 +1401,7 @@ public class CliStrings {
   public static final String EXPORT_LOGS__MSG__CANNOT_EXECUTE = "Cannot execute";
   public static final String EXPORT_LOGS__LOGLEVEL = LOG_LEVEL;
   public static final String EXPORT_LOGS__LOGLEVEL__HELP =
-      "Minimum level of log entries to export. Valid values are: fatal, error, warn, info, debug, trace and all.  The default is \"INFO\".";
+      "Minimum level of log entries to export. Valid values are: fatal, error, warn, info, debug, trace and all.  The default is \"ALL\".";
   public static final String EXPORT_LOGS__UPTO_LOGLEVEL = "only-log-level";
   public static final String EXPORT_LOGS__UPTO_LOGLEVEL__HELP =
       "Whether to only include those entries that exactly match the --log-level specified.";
