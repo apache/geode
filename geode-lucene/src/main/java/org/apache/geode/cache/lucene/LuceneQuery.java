@@ -34,8 +34,7 @@ import org.apache.geode.annotations.Experimental;
  * not reflect the most recent updates to the region.
  * </p>
  * <p>
- * Results are returned in order of their score with respect to this query. See
- * {@link org.apache.lucene.search} for details on how Lucene scores entries.
+ * Results are returned in order of their score with respect to this query.
  * </p>
  */
 @Experimental
