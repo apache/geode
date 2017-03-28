@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionException;
@@ -117,10 +118,10 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     } catch (FunctionException e) {
       if (e.getCause() instanceof LuceneQueryException) {
         throw new LuceneQueryException(e);
-      } else {
-        e.printStackTrace();
-        throw e;
+      } else if (e.getCause() instanceof RuntimeException) {
+        throw (RuntimeException) e.getCause();
       }
+      throw e;
 
     }
     return entries;
