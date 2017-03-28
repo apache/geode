@@ -177,6 +177,13 @@ public class ExportLogsDUnitTest {
   }
 
   @Test
+  public void testExportWithNoOptionsGiven() throws Exception {
+    CommandResult result = gfshConnector.executeAndVerifyCommand("export logs");
+    Set<String> acceptedLogLevels = Stream.of("info", "error", "debug").collect(toSet());
+    verifyZipFileContents(acceptedLogLevels);
+  }
+
+  @Test
   public void testExportWithNoFilters() throws Exception {
     gfshConnector.executeAndVerifyCommand("export logs --log-level=all");
 

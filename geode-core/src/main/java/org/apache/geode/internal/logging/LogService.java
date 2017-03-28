@@ -46,7 +46,6 @@ public class LogService extends LogManager {
   public static final String BASE_LOGGER_NAME = "org.apache.geode";
   public static final String MAIN_LOGGER_NAME = "org.apache.geode";
   public static final String SECURITY_LOGGER_NAME = "org.apache.geode.security";
-  public static final String DEFAULT_LOG_LEVEL = "INFO";
 
   public static final String GEODE_VERBOSE_FILTER = "{GEODE_VERBOSE}";
   public static final String GEMFIRE_VERBOSE_FILTER = "{GEMFIRE_VERBOSE}";

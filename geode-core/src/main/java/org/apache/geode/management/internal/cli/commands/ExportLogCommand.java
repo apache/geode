@@ -54,6 +54,7 @@ public class ExportLogCommand implements CommandMarker {
   public final static String FORMAT = "yyyy/MM/dd/HH/mm/ss/SSS/z";
   public final static String ONLY_DATE_FORMAT = "yyyy/MM/dd";
   private final static Logger logger = LogService.getLogger();
+  public final static String DEFAULT_EXPORT_LOG_LEVEL = "ALL";
 
   @CliCommand(value = CliStrings.EXPORT_LOGS, help = CliStrings.EXPORT_LOGS__HELP)
   @CliMetaData(shellOnly = false, isFileDownloadOverHttp = true,
@@ -73,7 +74,7 @@ public class ExportLogCommand implements CommandMarker {
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
           help = CliStrings.EXPORT_LOGS__MEMBER__HELP) String[] memberIds,
       @CliOption(key = CliStrings.EXPORT_LOGS__LOGLEVEL,
-          unspecifiedDefaultValue = LogService.DEFAULT_LOG_LEVEL,
+          unspecifiedDefaultValue = DEFAULT_EXPORT_LOG_LEVEL,
           optionContext = ConverterHint.LOG_LEVEL,
           help = CliStrings.EXPORT_LOGS__LOGLEVEL__HELP) String logLevel,
       @CliOption(key = CliStrings.EXPORT_LOGS__UPTO_LOGLEVEL, unspecifiedDefaultValue = "false",
