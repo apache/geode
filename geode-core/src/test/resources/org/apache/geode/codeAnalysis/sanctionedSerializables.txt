@@ -565,6 +565,7 @@ org/apache/geode/management/internal/cli/functions/ExportConfigFunction,true,1
 org/apache/geode/management/internal/cli/functions/ExportDataFunction,true,1
 org/apache/geode/management/internal/cli/functions/ExportLogsFunction,true,1
 org/apache/geode/management/internal/cli/functions/ExportLogsFunction$Args,false,endTime:java/time/LocalDateTime,includeLogs:boolean,includeStats:boolean,logLevel:org/apache/logging/log4j/Level,startTime:java/time/LocalDateTime,thisLogLevelOnly:boolean
+org/apache/geode/management/internal/cli/functions/SizeExportLogsFunction,true,1
 org/apache/geode/management/internal/cli/functions/FetchRegionAttributesFunction,true,4366812590788342070
 org/apache/geode/management/internal/cli/functions/FetchRegionAttributesFunction$FetchRegionAttributesFunctionResult,true,-3970828263897978845,cacheListenerClasses:java/lang/String[],cacheLoaderClass:java/lang/String,cacheWriterClass:java/lang/String,regionAttributes:org/apache/geode/cache/RegionAttributes
 org/apache/geode/management/internal/cli/functions/FetchSharedConfigurationStatusFunction,true,1

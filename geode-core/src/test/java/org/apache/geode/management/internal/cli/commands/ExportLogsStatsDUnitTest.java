@@ -19,7 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
-import static org.apache.geode.management.internal.cli.commands.ExportLogCommand.ONLY_DATE_FORMAT;
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.ONLY_DATE_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.Sets;
