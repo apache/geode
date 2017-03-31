@@ -200,7 +200,7 @@ function generateMemberListHTML(membersList) {
   var htmlMemberList = '';
   for ( var i = 0; i < membersList.length; i++) {
     htmlMemberList += '<div class="resultItemFilter">'
-        + '<a href="MemberDetails.html?member=' + membersList[i].memberId
+        + '<a href="memberDetails.html?member=' + membersList[i].memberId
         + '&memberName=' + membersList[i].name + '">' + membersList[i].name
         + '</a></div>';
   }

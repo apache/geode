@@ -1414,7 +1414,7 @@ var applyFilterOnMembersList = function() {
 // the member names list.
 var openMemberDetails = function(divId) {
   var member = divId.split("&");
-  location.href = 'MemberDetails.html?member=' + member[0] + '&memberName='
+  location.href = 'memberDetails.html?member=' + member[0] + '&memberName='
       + member[1];
 };
 

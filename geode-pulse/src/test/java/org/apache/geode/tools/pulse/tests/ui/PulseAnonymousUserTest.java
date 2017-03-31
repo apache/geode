@@ -53,7 +53,7 @@ public class PulseAnonymousUserTest {
 
   @Test
   public void userCanGetToPulseLoginPage() {
-    webDriverRule.getDriver().get(serverRule.getPulseURL() + "Login.html");
+    webDriverRule.getDriver().get(serverRule.getPulseURL() + "login.html");
 
     WebElement userNameElement = webDriverRule.getDriver().findElement(By.id("user_name"));
     WebElement passwordElement = webDriverRule.getDriver().findElement(By.id("user_password"));
