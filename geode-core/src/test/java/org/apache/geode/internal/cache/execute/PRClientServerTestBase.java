@@ -719,7 +719,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
 
     List l = null;
     ResultCollector<Integer, List<Integer>> rc =
-        dataSet.withBucketFilter(bucketFilterSet).<Integer, List<Integer>>execute(function.getId());
+        dataSet.withBucketFilter(bucketFilterSet).execute(function.getId());
     List<Integer> results = rc.getResult();
     assertEquals(bucketFilterSet.size(), results.size());
     for (Integer bucket : results) {
@@ -755,7 +755,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
 
     List l = null;
     ResultCollector<Integer, List<Integer>> rc = dataSet.withBucketFilter(bucketFilterSet)
-        .withFilter(ketFilterSet).<Integer, List<Integer>>execute(function.getId());
+        .withFilter(ketFilterSet).execute(function.getId());
     List<Integer> results = rc.getResult();
     assertEquals(expectedBucketSet.size(), results.size());
     for (Integer bucket : results) {
