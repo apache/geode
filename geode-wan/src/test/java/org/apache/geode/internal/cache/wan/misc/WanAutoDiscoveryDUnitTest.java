@@ -26,7 +26,9 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -607,7 +609,7 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
         .addIgnoredException("could not get remote locator information for remote site");
     try {
       Set<String> remoteLocators = new HashSet();
-      remoteLocators.add("unknown[12345]");
+      addUnknownHost(remoteLocators);
       testRemoteLocators(remoteLocators, false, 0);
     } finally {
       ie.remove();
@@ -618,8 +620,27 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
   public void testValidAndInvalidHostRemoteLocators() {
     Set<String> remoteLocators = new HashSet();
     remoteLocators.add("localhost[12345]");
-    remoteLocators.add("unknown[12345]");
+    addUnknownHost(remoteLocators);
     testRemoteLocators(remoteLocators, true, 1);
+  }
+
+  private void addUnknownHost(Set<String> remoteLocators) {
+    String unknownHostName = "unknown";
+    boolean unknownHostFound = false;
+    int numTries = 10;
+    for (int i = 0; i < numTries; i++) {
+      try {
+        InetAddress.getByName(unknownHostName);
+      } catch (UnknownHostException e) {
+        unknownHostFound = true;
+        break;
+      }
+      unknownHostName = "_" + unknownHostName + "_";
+    }
+    assertTrue("An unknown host name could not be found in " + numTries + " tries",
+        unknownHostFound);
+
+    remoteLocators.add(unknownHostName + "[12345]");
   }
 
   private void testRemoteLocators(Set<String> remoteLocators, boolean poolShouldExist,
