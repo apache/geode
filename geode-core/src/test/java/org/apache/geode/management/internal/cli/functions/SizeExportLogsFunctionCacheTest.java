@@ -21,13 +21,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,6 +60,9 @@ public class SizeExportLogsFunctionCacheTest {
   @Rule
   public TestName testName = new TestName();
 
+  @Rule
+  public ServerStarterRule server = new ServerStarterRule();
+
   @Before
   public void before() throws Throwable {
     name = testName.getMethodName();
@@ -74,24 +76,14 @@ public class SizeExportLogsFunctionCacheTest {
 
   }
 
-  @After
-  public void after() throws Exception {
-    if (this.cache != null) {
-      this.cache.close();
-    }
-    FileUtils.deleteDirectory(dir);
-  }
-
   @Test
   public void withFiles_returnsCombinedSizeResult() throws Throwable {
     Properties config = new Properties();
     config.setProperty(NAME, name);
-    config.setProperty(LOCATORS, "");
-    config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOG_FILE, logFile.getAbsolutePath());
     config.setProperty(STATISTIC_ARCHIVE_FILE, statFile.getAbsolutePath());
 
-    this.cache = new CacheFactory(config).create();
+    server.withProperties(config).startServer();
     TestResultSender resultSender = new TestResultSender();
     FunctionContext context = new FunctionContextImpl("functionId", nonFilteringArgs, resultSender);
 
@@ -107,10 +99,10 @@ public class SizeExportLogsFunctionCacheTest {
   public void noFiles_returnsZeroResult() throws Throwable {
     Properties config = new Properties();
     config.setProperty(NAME, name);
-    config.setProperty(LOCATORS, "");
-    config.setProperty(MCAST_PORT, "0");
+    config.setProperty(LOG_FILE, "");
+    config.setProperty(STATISTIC_ARCHIVE_FILE, "");
 
-    this.cache = new CacheFactory(config).create();
+    server.withProperties(config).startServer();
 
     TestResultSender resultSender = new TestResultSender();
     FunctionContext context = new FunctionContextImpl("functionId", nonFilteringArgs, resultSender);
@@ -132,6 +124,9 @@ public class SizeExportLogsFunctionCacheTest {
     assertThat(results.size()).isEqualTo(1);
     List<?> result = (List<?>) results.get(0);
     assertThat(result).isNotNull();
+    if (minExpected == maxExpected) {
+      assertThat(((ExportedLogsSizeInfo) result.get(0)).getLogsSize()).isEqualTo(minExpected);
+    }
     assertThat(((ExportedLogsSizeInfo) result.get(0)).getLogsSize())
         .isGreaterThanOrEqualTo(minExpected).isLessThanOrEqualTo(maxExpected);
   }
@@ -140,10 +135,8 @@ public class SizeExportLogsFunctionCacheTest {
   public void withFunctionError_shouldThrow() throws Throwable {
     Properties config = new Properties();
     config.setProperty(NAME, name);
-    config.setProperty(LOCATORS, "");
-    config.setProperty(MCAST_PORT, "0");
 
-    this.cache = new CacheFactory().create();
+    server.withProperties(config).startServer();
 
     TestResultSender resultSender = new TestResultSender();
     FunctionContext context = new FunctionContextImpl("functionId", null, resultSender);

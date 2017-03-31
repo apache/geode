@@ -20,8 +20,9 @@ import org.apache.geode.DataSerializer;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Objects;
 
-public class ExportedLogsSizeInfo implements DataSerializable {
+public final class ExportedLogsSizeInfo implements DataSerializable {
   private long logsSize;
   private long diskAvailable;
   private long diskSize;
@@ -74,10 +75,7 @@ public class ExportedLogsSizeInfo implements DataSerializable {
 
   @Override
   public int hashCode() {
-    int result = (int) (logsSize ^ (logsSize >>> 32));
-    result = 31 * result + (int) (diskAvailable ^ (diskAvailable >>> 32));
-    result = 31 * result + (int) (diskSize ^ (diskSize >>> 32));
-    return result;
+    return Objects.hash(logsSize, diskAvailable, diskSize);
   }
 
   @Override

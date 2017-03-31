@@ -262,12 +262,12 @@ public class ExportLogsCommand implements CommandMarker {
     }
     switch (matcher.group(2).toLowerCase()) {
       case "t":
-        return (int) Math.pow(1024, 4);
+        return (int) TERABYTE;
       case "g":
-        return (int) Math.pow(1024, 3);
+        return (int) GIGABYTE;
       case "m":
       default:
-        return (int) Math.pow(1024, 2);
+        return (int) MEGABYTE;
     }
   }
 

@@ -116,9 +116,9 @@ public class ExportedLogsSizeInfoTest {
     assertThat(sizeDetail1.hashCode()).isNotEqualTo(sizeDetail3.hashCode());
     assertThat(sizeDetail2.hashCode()).isNotEqualTo(sizeDetail3.hashCode());
 
-    assertThat(sizeDetail1.hashCode()).isEqualTo(0);
-    assertThat(sizeDetail2.hashCode()).isEqualTo(11304);
-    assertThat(sizeDetail3.hashCode()).isEqualTo(85704);
+    assertThat(sizeDetail1.hashCode()).isEqualTo(29791);
+    assertThat(sizeDetail2.hashCode()).isEqualTo(41095);
+    assertThat(sizeDetail3.hashCode()).isEqualTo(115495);
 
   }
 
