@@ -95,6 +95,9 @@ public class LuceneRegionListener implements RegionListener {
       // Add index creation profile
       internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(this.indexName,
           this.regionPath, this.fields, this.analyzer, this.fieldAnalyzers));
+
+      // Add internal async event id
+      internalRegionArgs.addInternalAsyncEventQueueId(aeqId);
     }
     return updatedRA;
   }

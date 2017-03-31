@@ -128,7 +128,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -244,7 +244,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -289,7 +289,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     // make sure we can tell that the buckets have low redundancy
     vm0.invoke(checkLowRedundancy);
 
-    SerializableRunnable closePrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable closePrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         disconnectFromDS();
         // Cache cache = getCache();
@@ -346,7 +346,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       VM vm0 = host.getVM(0);
       VM vm1 = host.getVM(1);
 
-      SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
         public void run() {
           Cache cache = getCache();
           AttributesFactory attr = new AttributesFactory();
@@ -467,7 +467,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
       setRedundancyZone(vm1, "A");
       final DistributedMember zoneBMember = setRedundancyZone(vm2, "B");
 
-      SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
         public void run() {
           Cache cache = getCache();
           AttributesFactory attr = new AttributesFactory();
@@ -667,7 +667,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
         }
       };
 
-      SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
         public void run() {
           ParallelRecoveryObserver ob =
               (ParallelRecoveryObserver) InternalResourceManager.getResourceObserver();
@@ -958,7 +958,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   private DistributedMember createPrRegion(VM vm, final String region, final int localMaxMemory,
       final String colocatedWith) {
-    SerializableCallable createPrRegion = new SerializableCallable("createRegion") {
+    SerializableCallable createPrRegion = new SerializableCallable("withRegion") {
       public Object call() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -1399,7 +1399,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   }
 
   private DistributedMember createPRRegionWithAsyncQueue(VM vm0, final int localMaxMemory) {
-    SerializableCallable createPrRegion = new SerializableCallable("createRegion") {
+    SerializableCallable createPrRegion = new SerializableCallable("withRegion") {
       public Object call() {
         Cache cache = getCache();
 
@@ -1446,7 +1446,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -1559,7 +1559,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
 
-    final SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    final SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -1669,7 +1669,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -1812,7 +1812,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     EXPECTED_REBALANCED.add("/region0");
     EXPECTED_REBALANCED.add("/region1");
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -1943,7 +1943,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -2058,7 +2058,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -2268,7 +2268,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         Region parent;
         Cache cache = getCache();
@@ -2575,7 +2575,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         Cache cache = getCache();
         AttributesFactory attr = new AttributesFactory();
@@ -2741,7 +2741,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         Cache cache = getCache();
         DiskStoreFactory dsf = cache.createDiskStoreFactory();
@@ -3009,7 +3009,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     LoadProbe oldProbe = setLoadProbe(vm0, new BucketCountLoadProbe());
     try {
-      SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+      SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
         public void run() {
           Cache cache = getCache();
           AttributesFactory attr = new AttributesFactory();
@@ -3131,7 +3131,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
+    SerializableRunnable createPrRegion = new SerializableRunnable("withRegion") {
       public void run() {
         System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "false");
         try {

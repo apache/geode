@@ -45,14 +45,14 @@ public class PRTXJUnitTest extends TXJUnitTest {
   /*
    * (non-Javadoc)
    * 
-   * @see org.apache.geode.TXTest#createRegion()
+   * @see org.apache.geode.TXTest#withRegion()
    */
   @Override
   protected void createRegion() throws Exception {
     AttributesFactory af = new AttributesFactory();
     af.setConcurrencyChecksEnabled(false); // test validation expects this behavior
     af.setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(3).create());
-    // this.region = this.cache.createRegion("PRTXJUnitTest", af.create());
+    // this.region = this.cache.withRegion("PRTXJUnitTest", af.create());
     this.region = new PRWithLocalOps("PRTXJUnitTest", af.create(), null, this.cache,
         new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
             .setSnapshotInputStream(null).setImageTarget(null));

@@ -18,7 +18,8 @@ package org.apache.geode.management.internal.security;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.ClassRule;
@@ -31,8 +32,8 @@ public class JavaRmiServerNameTest {
   private static final String JMX_HOST = "myHostname";
 
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule()
-      .withProperty("jmx-manager-hostname-for-clients", JMX_HOST).withJMXManager().startServer();
+  public static LocalServerStarterRule server = new ServerStarterBuilder()
+      .withProperty("jmx-manager-hostname-for-clients", JMX_HOST).withJMXManager().buildInThisVM();
 
   /**
    * this is for GEODE-1548

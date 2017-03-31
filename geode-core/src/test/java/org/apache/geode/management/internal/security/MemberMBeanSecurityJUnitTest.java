@@ -20,8 +20,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
@@ -34,11 +35,11 @@ public class MemberMBeanSecurityJUnitTest {
   private MemberMXBean bean;
 
   @Rule // do not use a ClassRule since some test will do a shutdownMember
-  public ServerStarterRule server = new ServerStarterRule().withJMXManager()
+  public LocalServerStarterRule server = new ServerStarterBuilder().withJMXManager()
       .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
       .withProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/cacheServer.json")
-      .startServer();
+      .buildInThisVM();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =

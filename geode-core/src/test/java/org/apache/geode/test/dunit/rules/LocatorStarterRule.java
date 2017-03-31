@@ -61,7 +61,7 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
 
   public LocatorStarterRule startLocator() {
     normalizeProperties();
-    // start locator will start a jmx manager by default, if withJmxManager is not called explicitly
+    // start locator will start a jmx manager by default, if withJMXManager is not called explicitly
     // the tests will use random ports by default.
     if (jmxPort < 0) {
       withJMXManager();

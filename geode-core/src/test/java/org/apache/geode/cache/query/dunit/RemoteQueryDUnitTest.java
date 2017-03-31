@@ -521,7 +521,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
      * void run2() throws CacheException { Properties config = new Properties();
      * config.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() +
      * "]"); getSystem(config); AttributesFactory factory = new AttributesFactory();
-     * factory.setScope(Scope.LOCAL); createRegion(name, factory.create()); Wait.pause(1000); try {
+     * factory.setScope(Scope.LOCAL); withRegion(name, factory.create()); Wait.pause(1000); try {
      * startBridgeServer(0, false); } catch (Exception ex) {
      * Assert.fail("While starting CacheServer", ex); } } });
      * 
@@ -602,7 +602,7 @@ public class RemoteQueryDUnitTest extends JUnit4CacheTestCase {
      * Properties config = new Properties(); config.setProperty(MCAST_PORT, "0"); getSystem(config);
      * getCache(); AttributesFactory factory = new AttributesFactory();
      * factory.setScope(Scope.LOCAL); ClientServerTestCase.configureConnectionPool(factory, host0,
-     * port,-1, true, -1, -1, null); createRegion(name, factory.create()); } });
+     * port,-1, true, -1, -1, null); withRegion(name, factory.create()); } });
      * 
      * // Execute client queries vm1.invoke(new CacheSerializableRunnable("Execute queries") {
      * public void run2() throws CacheException { Region region =

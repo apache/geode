@@ -22,8 +22,9 @@ import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
@@ -42,9 +43,9 @@ public class DeployCommandsSecurityTest {
   private MemberMXBean bean;
 
   @ClassRule
-  public static ServerStarterRule server = new ServerStarterRule()
+  public static LocalServerStarterRule server = new ServerStarterBuilder().withJMXManager()
       .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).withJMXManager()
-      .startServer();
+      .buildInThisVM();
 
   @ClassRule
   public static TemporaryFolder temporaryFolder = new TemporaryFolder();

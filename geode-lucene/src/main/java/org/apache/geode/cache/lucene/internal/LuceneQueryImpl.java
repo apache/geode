@@ -117,10 +117,10 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     } catch (FunctionException e) {
       if (e.getCause() instanceof LuceneQueryException) {
         throw new LuceneQueryException(e);
-      } else {
-        e.printStackTrace();
-        throw e;
+      } else if (e.getCause() instanceof RuntimeException) {
+        throw (RuntimeException) e.getCause();
       }
+      throw e;
 
     }
     return entries;

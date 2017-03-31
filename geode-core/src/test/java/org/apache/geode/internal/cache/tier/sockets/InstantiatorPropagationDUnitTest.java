@@ -408,7 +408,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
       assertNotNull(bs);
       bs.start();
     } catch (Exception ex) {
-      fail("while startServer()  " + ex);
+      fail("while buildInThisVM()  " + ex);
     }
   }
 

@@ -144,7 +144,7 @@ public class DiskRegionTestImpl implements Serializable {
     // // set mirror KEYS
     // factory.setMirrorType(MirrorType.KEYS);
     // RegionAttributes attrs2 = factory.create();
-    // Region rgn = DiskRegionTestImpl.this.rtc.createRegion(name, attrs2);
+    // Region rgn = DiskRegionTestImpl.this.rtc.withRegion(name, attrs2);
     // }
     // });
 

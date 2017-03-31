@@ -89,53 +89,57 @@ public class LuceneIndexCreationProfile implements CacheServiceProfile, DataSeri
   public String checkCompatibility(String regionPath, CacheServiceProfile profile) {
     String result = null;
     LuceneIndexCreationProfile remoteProfile = (LuceneIndexCreationProfile) profile;
-    if (remoteProfile == null) {
-      // TODO This can occur if one member defines no indexes but another one does. Currently this
-      // is caught by the async event id checks.
-    } else {
-      // Verify fields are the same
-      if (!Arrays.equals(remoteProfile.getFieldNames(), getFieldNames())) {
+
+    // Verify fields are the same
+    if (!Arrays.equals(remoteProfile.getFieldNames(), getFieldNames())) {
+      return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_FIELDS_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_FIELDS_3
+          .toString(getIndexName(), regionPath, Arrays.toString(getFieldNames()),
+              Arrays.toString(remoteProfile.getFieldNames()));
+    }
+
+    // Verify the analyzer class is the same
+    // Note: This test will currently only fail if per-field analyzers are used in one member but
+    // not another,
+    // This condition will be caught in the tests below so this test is commented out. If we ever
+    // allow the user
+    // to configure a single analyzer for all fields, then this test will be useful again.
+    /*
+     * if (!remoteLuceneIndexProfile.getAnalyzerClass().isInstance(getAnalyzer())) { result =
+     * LocalizedStrings.
+     * LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_3
+     * .toString(indexName, regionPath, remoteLuceneIndexProfile.getAnalyzerClass().getName(),
+     * analyzer.getClass().getName()); }
+     */
+
+    // Iterate the existing analyzers and compare them to the input analyzers
+    // Note: This is currently destructive to the input field analyzers map which should be ok
+    // since its a transient object.
+    if (!getFieldAnalyzers().equals(remoteProfile.getFieldAnalyzers())) {
+      if (getFieldAnalyzers().size() != remoteProfile.getFieldAnalyzers().size()) {
         return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_FIELDS_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_FIELDS_3
-            .toString(getIndexName(), regionPath, Arrays.toString(getFieldNames()),
-                Arrays.toString(remoteProfile.getFieldNames()));
+            .toString(getIndexName(), regionPath,
+                Arrays.toString(getFieldAnalyzers().keySet().toArray()),
+                Arrays.toString(remoteProfile.getFieldAnalyzers().keySet().toArray()));
       }
-
-      // Verify the analyzer class is the same
-      // Note: This test will currently only fail if per-field analyzers are used in one member but
-      // not another,
-      // This condition will be caught in the tests below so this test is commented out. If we ever
-      // allow the user
-      // to configure a single analyzer for all fields, then this test will be useful again.
-      /*
-       * if (!remoteLuceneIndexProfile.getAnalyzerClass().isInstance(getAnalyzer())) { result =
-       * LocalizedStrings.
-       * LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_3
-       * .toString(indexName, regionPath, remoteLuceneIndexProfile.getAnalyzerClass().getName(),
-       * analyzer.getClass().getName()); }
-       */
-
-      // Iterate the existing analyzers and compare them to the input analyzers
-      // Note: This is currently destructive to the input field analyzers map which should be ok
-      // since its a transient object.
-      if (!getFieldAnalyzers().equals(remoteProfile.getFieldAnalyzers())) {
-        if (getFieldAnalyzers().size() != remoteProfile.getFieldAnalyzers().size()) {
-          return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_FIELDS_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_FIELDS_3
-              .toString(getIndexName(), regionPath,
-                  Arrays.toString(getFieldAnalyzers().keySet().toArray()),
-                  Arrays.toString(remoteProfile.getFieldAnalyzers().keySet().toArray()));
-        }
-        // now the 2 maps should have the same size
-        for (String field : getFieldAnalyzers().keySet()) {
-          if (!remoteProfile.getFieldAnalyzers().get(field)
-              .equals(getFieldAnalyzers().get(field))) {
-            return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_4_ON_THAT_FIELD
-                .toString(getIndexName(), regionPath, getFieldAnalyzers().get(field), field,
-                    remoteProfile.getFieldAnalyzers().get(field));
-          }
+      // now the 2 maps should have the same size
+      for (String field : getFieldAnalyzers().keySet()) {
+        if (!remoteProfile.getFieldAnalyzers().get(field).equals(getFieldAnalyzers().get(field))) {
+          return LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_4_ON_THAT_FIELD
+              .toString(getIndexName(), regionPath, getFieldAnalyzers().get(field), field,
+                  remoteProfile.getFieldAnalyzers().get(field));
         }
       }
     }
     return result;
+  }
+
+  @Override
+  public String getMissingProfileMessage(boolean existsInThisMember) {
+    return existsInThisMember
+        ? LocalizedStrings.LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_BECAUSE_IT_IS_NOT_DEFINED_IN_ANOTHER_MEMBER
+            .toString(getIndexName(), regionPath)
+        : LocalizedStrings.LuceneService_MUST_DEFINE_INDEX_0_ON_REGION_1_BECAUSE_IT_IS_DEFINED_IN_ANOTHER_MEMBER
+            .toString(getIndexName(), regionPath);
   }
 
   @Override

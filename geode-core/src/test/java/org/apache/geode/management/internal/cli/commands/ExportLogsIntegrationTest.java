@@ -15,10 +15,13 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.test.dunit.rules.GfshShellConnectionRule.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.dunit.rules.LocatorStarterBuilder;
+import org.apache.geode.test.dunit.rules.LocalLocatorStarterRule;
 import org.apache.geode.test.dunit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Before;
@@ -46,12 +49,14 @@ public class ExportLogsIntegrationTest {
 
   @Test
   public void testInvalidMember() throws Exception {
+    connect();
     gfsh.executeCommand("export logs --member=member1,member2");
     assertThat(gfsh.getGfshOutput()).contains("No Members Found");
   }
 
   @Test
   public void testNothingToExport() throws Exception {
+    connect();
     gfsh.executeCommand("export logs --stats-only");
     assertThat(gfsh.getGfshOutput()).contains("No files to be exported.");
   }

@@ -1005,7 +1005,7 @@ public class IndexMaintenanceJUnitTest {
   //
   // QueryService qs;
   // qs = CacheUtils.getQueryService();
-  // LocalRegion testRgn = (LocalRegion)CacheUtils.createRegion("testRgn", null);
+  // LocalRegion testRgn = (LocalRegion)CacheUtils.withRegion("testRgn", null);
   // int ID = 1;
   // // Add some test data now
   // // Add 5 main objects. 1 will contain key1, 2 will contain key1 & key2

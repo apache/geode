@@ -37,8 +37,7 @@ public interface LuceneResultStruct<K, V> {
 
   /**
    * Return score the score of the entry matching the query. Scores are computed by Lucene based on
-   * how closely documents match the query. See {@link org.apache.lucene.search} for details on how
-   * scores are computed.
+   * how closely documents match the query.
    *
    */
   public float getScore();
