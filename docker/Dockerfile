@@ -18,12 +18,12 @@ FROM centos:7
 MAINTAINER Apache Geode Community <dev@geode.apache.org>
 
 LABEL Vendor="Apache Geode"
-LABEL version=1.1.0
+LABEL version=1.1.1
 
 RUN	yum install -y wget which tar git java-1.8.0-openjdk-devel \
 	&& git clone https://github.com/apache/incubator-geode.git \
 	&& cd incubator-geode \
-	&& git checkout rel/v1.1.0 \
+	&& git checkout rel/v1.1.1 \
 	&& ./gradlew build -Dskip.tests=true -xjavadoc \
 	&& ls /incubator-geode | grep -v geode-assembly | xargs rm -rf \
 	&& rm -rf /root/.gradle/ \
