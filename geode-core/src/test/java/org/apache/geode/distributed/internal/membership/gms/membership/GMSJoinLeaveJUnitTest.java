@@ -20,9 +20,9 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -55,7 +55,6 @@ import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMembe
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.Version;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
@@ -327,16 +326,12 @@ public class GMSJoinLeaveJUnitTest {
     return memberList;
   }
 
-  @Category(FlakyTest.class) // GEODE-2653: flaky due to Thread.sleep
   @Test
   public void testRemoveMember() throws Exception {
     initMocks();
     prepareAndInstallView(mockMembers[0], createMemberList(mockMembers[0], gmsJoinLeaveMemberId));
-    MethodExecuted removeMessageSent = new MethodExecuted();
-    when(messenger.send(any(RemoveMemberMessage.class))).thenAnswer(removeMessageSent);
-    gmsJoinLeave.remove(mockMembers[0], "removing for test");
-    Thread.sleep(ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL * 2);
-    assertTrue(removeMessageSent.methodExecuted);
+    gmsJoinLeave.remove(gmsJoinLeaveMemberId, "removing for test");
+    verify(messenger, timeout(2000).atLeastOnce()).send(isA(RemoveMemberMessage.class));
   }
 
   @Test
