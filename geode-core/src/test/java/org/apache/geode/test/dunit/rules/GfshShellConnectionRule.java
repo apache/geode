@@ -61,8 +61,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   public GfshShellConnectionRule() {
     try {
       temporaryFolder.create();
-      this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
-          temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -76,6 +74,8 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   @Override
   protected void before(Description description) throws Throwable {
+    this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
+        temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
     // do not auto connect if no port initialized
     if (port < 0) {
       return;

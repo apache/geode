@@ -132,6 +132,11 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     return members[index];
   }
 
+  public void stopMember(int index) {
+    MemberVM member = members[index];
+    member.invoke(this::cleanupVm);
+  }
+
   /**
    * Starts a cache server with given properties
    */
