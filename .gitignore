@@ -12,7 +12,8 @@ build/
 .idea/
 build-eclipse/
 /tags
-
+out/
+bin/
 
 
 *.iml
