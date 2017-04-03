@@ -1391,7 +1391,7 @@ public class CliStrings {
   public static final String EXPORT_LOGS__HELP = "Export the log files for a member or members.";
   public static final String EXPORT_LOGS__DIR = "dir";
   public static final String EXPORT_LOGS__DIR__HELP =
-      "Directory to which logs will be written.  This refers to a local directory when exporting logs using an http connection, but refers to the filesystem of the manager when connected via JMX. If not specified, logs are written to the location specified by the user.dir system property.";
+      "Directory to which logs will be written.  This respects the local filesystem when connected via HTTP and the manager's filesystem when connected via JMX.  If not specified, logs are written to the location specified by the user.dir system property.";
   public static final String EXPORT_LOGS__MEMBER = "member";
   public static final String EXPORT_LOGS__MEMBER__HELP =
       "Name/Id of the member whose log files will be exported.";

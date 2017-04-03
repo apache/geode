@@ -170,8 +170,7 @@ public class ExportLogsCommand implements CommandMarker {
 
       Path tempDir = Files.createTempDirectory("exportedLogs");
       // make sure the directory is created, so that even if there is no files unzipped to this dir,
-      // we can
-      // still zip it and send an empty zip file back to the client
+      // we can still zip it and send an empty zip file back to the client
       Path exportedLogsDir = tempDir.resolve("exportedLogs");
       FileUtils.forceMkdir(exportedLogsDir.toFile());
 
@@ -182,9 +181,14 @@ public class ExportLogsCommand implements CommandMarker {
         FileUtils.deleteQuietly(zipFile.toFile());
       }
 
-      Path workingDir = Paths.get(System.getProperty("user.dir"));
-      Path exportedLogsZipFile = workingDir
-          .resolve("exportedLogs_" + System.currentTimeMillis() + ".zip").toAbsolutePath();
+      Path dirPath;
+      if (StringUtils.isBlank(dirName)) {
+        dirPath = Paths.get(System.getProperty("user.dir"));
+      } else {
+        dirPath = Paths.get(dirName);
+      }
+      Path exportedLogsZipFile =
+          dirPath.resolve("exportedLogs_" + System.currentTimeMillis() + ".zip").toAbsolutePath();
 
       logger.info("Zipping into: " + exportedLogsZipFile.toString());
       ZipUtils.zipDirectory(exportedLogsDir, exportedLogsZipFile);
