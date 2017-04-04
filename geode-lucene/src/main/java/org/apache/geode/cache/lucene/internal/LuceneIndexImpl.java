@@ -44,11 +44,12 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected static final Logger logger = LogService.getLogger();
 
   protected final String indexName;
-  protected final String regionPath;
+  protected String regionPath = null;
   protected final Cache cache;
-  protected final LuceneIndexStats indexStats;
+  protected LuceneIndexStats indexStats;
 
   protected boolean hasInitialized = false;
+  protected boolean hasInitializedAEQ = false;
   protected Map<String, Analyzer> fieldAnalyzers;
   protected String[] searchableFieldNames;
   protected RepositoryManager repositoryManager;
@@ -60,6 +61,17 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     this.regionPath = regionPath;
     this.cache = cache;
 
+    final String statsName = indexName + "-" + regionPath;
+    this.indexStats = new LuceneIndexStats(cache.getDistributedSystem(), statsName);
+  }
+
+  protected LuceneIndexImpl(String indexName, Cache cache) {
+    this.indexName = indexName;
+    this.cache = cache;
+  }
+
+  protected void setRegionPathAndIndexStats(String regionPath) {
+    this.regionPath = regionPath;
     final String statsName = indexName + "-" + regionPath;
     this.indexStats = new LuceneIndexStats(cache.getDistributedSystem(), statsName);
   }
@@ -133,21 +145,64 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
       /* create index region */
       dataRegion = getDataRegion();
       // assert dataRegion != null;
-
-      repositoryManager = createRepositoryManager();
+      // repositoryManager = createRepositoryManager();
+      createLuceneListenersAndFileChunkRegions((PartitionedRepositoryManager) repositoryManager);
 
       // create AEQ, AEQ listener and specify the listener to repositoryManager
-      createAEQ(dataRegion);
+      // createAEQ((Region) dataRegion);
 
       addExtension(dataRegion);
       hasInitialized = true;
     }
   }
 
+
+  protected void initializeAEQ(RegionAttributes attributes, String aeqId) {
+    if (!hasInitializedAEQ) {
+      repositoryManager = createJustRepoManager();
+      createAEQ(attributes, aeqId);
+      hasInitializedAEQ = true;
+    }
+  }
+
+  protected abstract RepositoryManager createJustRepoManager();
+
   protected abstract RepositoryManager createRepositoryManager();
+
+  protected abstract void createLuceneListenersAndFileChunkRegions(
+      PartitionedRepositoryManager partitionedRepositoryManager);
 
   protected AsyncEventQueue createAEQ(Region dataRegion) {
     return createAEQ(createAEQFactory(dataRegion));
+  }
+
+  protected AsyncEventQueue createAEQ(RegionAttributes attributes, String aeqId) {
+    return createAEQ(createAEQFactory(attributes), aeqId);
+  }
+
+  private AsyncEventQueueFactoryImpl createAEQFactory(final RegionAttributes attributes) {
+    AsyncEventQueueFactoryImpl factory =
+        (AsyncEventQueueFactoryImpl) cache.createAsyncEventQueueFactory();
+    if (attributes.getPartitionAttributes() != null) {
+
+      if (attributes.getPartitionAttributes().getLocalMaxMemory() == 0) {
+        // accessor will not create AEQ
+        return null;
+      }
+      factory.setParallel(true); // parallel AEQ for PR
+    } else {
+      factory.setParallel(false); // TODO: not sure if serial AEQ working or not
+    }
+    factory.setMaximumQueueMemory(1000);
+    factory.setDispatcherThreads(10);
+    factory.setIsMetaQueue(true);
+    if (attributes.getDataPolicy().withPersistence()) {
+      factory.setPersistent(true);
+    }
+    factory.setDiskStoreName(attributes.getDiskStoreName());
+    factory.setDiskSynchronous(true);
+    factory.setForwardExpirationDestroy(true);
+    return factory;
   }
 
   private AsyncEventQueueFactoryImpl createAEQFactory(final Region dataRegion) {
@@ -182,6 +237,17 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     LuceneEventListener listener = new LuceneEventListener(repositoryManager);
     factory.setGatewayEventSubstitutionListener(new LuceneEventSubstitutionFilter());
     String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), regionPath);
+    AsyncEventQueue indexQueue = factory.create(aeqId, listener);
+    return indexQueue;
+  }
+
+  private AsyncEventQueue createAEQ(AsyncEventQueueFactoryImpl factory, String aeqId) {
+    if (factory == null) {
+      return null;
+    }
+    LuceneEventListener listener = new LuceneEventListener(repositoryManager);
+    factory.setGatewayEventSubstitutionListener(new LuceneEventSubstitutionFilter());
+    // String aeqId = LuceneServiceImpl.getUniqueIndexName(getName(), regionPath);
     AsyncEventQueue indexQueue = factory.create(aeqId, listener);
     return indexQueue;
   }

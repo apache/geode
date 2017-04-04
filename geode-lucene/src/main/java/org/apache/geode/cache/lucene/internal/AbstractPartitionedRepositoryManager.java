@@ -46,16 +46,22 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
       new ConcurrentHashMap<Integer, IndexRepository>();
 
   /** The user region for this index */
-  protected final PartitionedRegion userRegion;
+  protected PartitionedRegion userRegion = null;
   protected final LuceneSerializer serializer;
   protected final LuceneIndexImpl index;
   protected volatile boolean closed;
 
   public AbstractPartitionedRepositoryManager(LuceneIndexImpl index, LuceneSerializer serializer) {
     this.index = index;
-    this.userRegion = (PartitionedRegion) index.getCache().getRegion(index.getRegionPath());
+    if (index.getRegionPath() != null) {
+      this.userRegion = (PartitionedRegion) index.getCache().getRegion(index.getRegionPath());
+    }
     this.serializer = serializer;
     this.closed = false;
+  }
+
+  public void setUserRegionForRepositoryManager() {
+    this.userRegion = (PartitionedRegion) index.getCache().getRegion(index.getRegionPath());
   }
 
   @Override

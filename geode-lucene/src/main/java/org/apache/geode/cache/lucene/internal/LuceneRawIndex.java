@@ -26,9 +26,20 @@ public class LuceneRawIndex extends LuceneIndexImpl {
   }
 
   @Override
+  protected RepositoryManager createJustRepoManager() {
+    return null;
+  }
+
+  @Override
   protected RepositoryManager createRepositoryManager() {
     HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
     return new RawLuceneRepositoryManager(this, mapper);
+  }
+
+  @Override
+  protected void createLuceneListenersAndFileChunkRegions(
+      PartitionedRepositoryManager partitionedRepositoryManager) {
+    return;
   }
 
   @Override

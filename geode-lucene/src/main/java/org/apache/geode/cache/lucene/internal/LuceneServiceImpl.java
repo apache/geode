@@ -76,6 +76,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
   private final HashMap<String, LuceneIndex> indexMap = new HashMap<String, LuceneIndex>();
   private final HashMap<String, LuceneIndexCreationProfile> definedIndexMap = new HashMap<>();
   private IndexListener managementListener;
+  // private LuceneIndexImpl index;
 
   public LuceneServiceImpl() {
 
@@ -169,18 +170,45 @@ public class LuceneServiceImpl implements InternalLuceneService {
    * 
    * Public because this is called by the Xml parsing code
    */
-  public void afterDataRegionCreated(final String indexName, final Analyzer analyzer,
-      final String dataRegionPath, final Map<String, Analyzer> fieldAnalyzers,
-      final String... fields) {
-    LuceneIndexImpl index = createIndexRegions(indexName, dataRegionPath);
-    index.setSearchableFields(fields);
-    index.setAnalyzer(analyzer);
-    index.setFieldAnalyzers(fieldAnalyzers);
+  public void afterDataRegionCreated(final String dataRegionPath, LuceneIndexImpl index) {
+    // LuceneIndexImpl index = createIndexRegions(indexName, dataRegionPath);
+    // index.setSearchableFields(fields);
+    // index.setAnalyzer(analyzer);
+    // index.setFieldAnalyzers(fieldAnalyzers);
+    // index.initialize();
+    // registerIndex(index);
+    // if (this.managementListener != null) {
+    // this.managementListener.afterIndexCreated(index);
+    // }
+    Region dataregion = this.cache.getRegion(dataRegionPath);
+    if (dataregion == null) {
+      logger.info("Data region " + dataRegionPath + " not found");
+      return;
+    }
+    // Convert the region name into a canonical form
+    String regionPath = dataregion.getFullPath();
+    ((LuceneIndexForPartitionedRegion) index).setFileSystemStats(regionPath);
     index.initialize();
+    System.out.println("NABA: registering index = " + index);
     registerIndex(index);
     if (this.managementListener != null) {
       this.managementListener.afterIndexCreated(index);
     }
+
+  }
+
+  public LuceneIndexImpl beforeDataRegionCreated(final String indexName,
+      RegionAttributes attributes, final Analyzer analyzer,
+      final Map<String, Analyzer> fieldAnalyzers, String aeqId, final String... fields) {
+    LuceneIndexImpl index = createIndexRegions(indexName);
+    index.setSearchableFields(fields);
+    index.setSearchableFields(fields);
+    index.setAnalyzer(analyzer);
+    index.setFieldAnalyzers(fieldAnalyzers);
+    index.initializeAEQ(attributes, aeqId);
+    // registerIndex(index);
+    return index;
+
   }
 
   private LuceneIndexImpl createIndexRegions(String indexName, String regionPath) {
@@ -194,6 +222,10 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return luceneIndexFactory.create(indexName, regionPath, cache);
   }
 
+  private LuceneIndexImpl createIndexRegions(String indexName) {
+    return luceneIndexFactory.create(indexName, cache);
+  }
+
   private void registerDefinedIndex(final String regionAndIndex,
       final LuceneIndexCreationProfile luceneIndexCreationProfile) {
     if (definedIndexMap.containsKey(regionAndIndex) || indexMap.containsKey(regionAndIndex))
@@ -205,7 +237,14 @@ public class LuceneServiceImpl implements InternalLuceneService {
   public LuceneIndex getIndex(String indexName, String regionPath) {
     Region region = cache.getRegion(regionPath);
     if (region == null) {
+      System.out.println("NABA: returning from here, also here is the region path " + regionPath);
       return null;
+    }
+    System.out.println(
+        "NABA: returning from here, also here is the region path " + regionPath + " region = "
+            + region + "index name " + indexName + "region full path = " + region.getFullPath());
+    if (null == indexMap.get(getUniqueIndexName(indexName, region.getFullPath()))) {
+      System.out.println("NABA : null value from the index map");
     }
     return indexMap.get(getUniqueIndexName(indexName, region.getFullPath()));
   }
