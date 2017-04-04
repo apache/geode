@@ -21,6 +21,8 @@ import java.util.Collection;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
+import org.apache.geode.cache.lucene.LuceneIndexNotFoundException;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
 import org.apache.geode.internal.cache.PrimaryBucketException;
@@ -75,6 +77,9 @@ public class LuceneQueryFunction implements Function, InternalEntity {
     }
 
     LuceneIndexImpl index = getLuceneIndex(region, searchContext);
+    if (index == null) {
+      throw new LuceneIndexNotFoundException(searchContext.getIndexName(), region.getFullPath());
+    }
     RepositoryManager repoManager = index.getRepositoryManager();
     LuceneIndexStats stats = index.getIndexStats();
 
@@ -130,10 +135,6 @@ public class LuceneQueryFunction implements Function, InternalEntity {
     } catch (CacheClosedException e) {
       throw new InternalFunctionInvocationTargetException(
           "Cache is closed when attempting to retrieve index:" + region.getFullPath(), e);
-    }
-    if (index == null) {
-      throw new InternalFunctionInvocationTargetException(
-          "Index for Region:" + region.getFullPath() + " was not found");
     }
     return index;
   }

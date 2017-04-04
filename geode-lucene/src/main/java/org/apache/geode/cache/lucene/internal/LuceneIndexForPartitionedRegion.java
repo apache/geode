@@ -188,22 +188,22 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
           + "; initiator=" + initiator);
     }
 
-    // Invoke super destroy to remove the extension
+    // Invoke super destroy to remove the extension and async event queue
     super.destroy(initiator);
-
-    // Destroy the file region (colocated with the application region)
-    // localDestroyRegion can't be used because locally destroying regions is not supported on
-    // colocated regions
-    if (!fileAndChunkRegion.isDestroyed()) {
-      fileAndChunkRegion.destroyRegion();
-      if (logger.isDebugEnabled()) {
-        logger.debug("Destroyed fileAndChunkRegion=" + fileAndChunkRegion.getName());
-      }
-    }
 
     // Destroy index on remote members if necessary
     if (initiator) {
       destroyOnRemoteMembers();
+    }
+
+    // Destroy the file region (colocated with the application region) if necessary
+    // localDestroyRegion can't be used because locally destroying regions is not supported on
+    // colocated regions
+    if (initiator) {
+      fileAndChunkRegion.destroyRegion();
+      if (logger.isDebugEnabled()) {
+        logger.debug("Destroyed fileAndChunkRegion=" + fileAndChunkRegion.getName());
+      }
     }
 
     if (logger.isDebugEnabled()) {

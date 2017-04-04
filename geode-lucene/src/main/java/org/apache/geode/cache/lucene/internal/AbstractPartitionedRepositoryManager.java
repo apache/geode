@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
@@ -96,9 +97,11 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
   protected IndexRepository computeRepository(Integer bucketId) {
     IndexRepository repo = indexRepositories.compute(bucketId, (key, oldRepository) -> {
       try {
-        if (closed && oldRepository != null) {
-          oldRepository.cleanup();
-          return null;
+        if (closed) {
+          if (oldRepository != null) {
+            oldRepository.cleanup();
+          }
+          throw new LuceneIndexDestroyedException(index.getName(), index.getRegionPath());
         }
         return computeRepository(bucketId, serializer, index, userRegion, oldRepository);
       } catch (IOException e) {
@@ -130,7 +133,10 @@ public abstract class AbstractPartitionedRepositoryManager implements Repository
   public void close() {
     this.closed = true;
     for (Integer bucketId : indexRepositories.keySet()) {
-      computeRepository(bucketId);
+      try {
+        computeRepository(bucketId);
+      } catch (LuceneIndexDestroyedException e) {
+        /* expected exception */}
     }
   }
 }
