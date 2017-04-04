@@ -243,11 +243,6 @@ public class PartitionedRegion extends LocalRegion
   /** Number of initial buckets */
   private final int totalNumberOfBuckets;
 
-  /**
-   * To check if local cache is enabled.
-   */
-  private static final boolean localCacheEnabled = false;
-
   // private static final boolean throwIfNoNodesLeft = true;
 
   public static final int DEFAULT_RETRY_ITERATIONS = 3;
@@ -3923,15 +3918,7 @@ public class PartitionedRegion extends LocalRegion
           obj = this.dataStore.getLocally(bucketId, key, aCallbackArgument, disableCopyOnRead,
               preferCD, requestingClient, clientEvent, returnTombstones, false);
         } else {
-          if (localCacheEnabled && null != (obj = localCacheGet(key))) { // OFFHEAP: copy into heap
-                                                                         // cd; TODO optimize for
-                                                                         // preferCD case
-            if (logger.isTraceEnabled()) {
-              logger.trace("getFromBucket: Getting key {} ({}) from local cache", key,
-                  key.hashCode());
-            }
-            return obj;
-          } else if (this.haveCacheLoader) {
+          if (this.haveCacheLoader) {
             // If the region has a cache loader,
             // the target node is the primary server of the bucket. But, if the
             // value can be found in a local bucket, we should first try there.
@@ -4877,19 +4864,6 @@ public class PartitionedRegion extends LocalRegion
     if (logger.isDebugEnabled()) {
       logger.debug("getRemotely: got value {} for key {}", value, key);
     }
-
-    // Here even if we can not cache the value, it should return value to
-    // user.
-    try {
-      if (localCacheEnabled && value != null) {
-        super.put(key, value);
-      }
-    } catch (Exception e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("getRemotely: Can not cache value = {} for key = {} in local cache", value,
-            key, e);
-      }
-    }
     return value;
   }
 
@@ -5390,22 +5364,6 @@ public class PartitionedRegion extends LocalRegion
             setNetworkHopType(bucketId, currentTarget);
           }
           destroyRemotely(currentTarget, bucketId, event, expectedOldValue);
-          if (localCacheEnabled) {
-            try {
-              // only destroy in local cache if successfully destroyed remotely
-              final boolean cacheWrite = true;
-              super.basicDestroy(event, cacheWrite, null); // pass null as expectedOldValue,
-                                                           // since if successfully destroyed
-                                                           // remotely we always want to succeed
-                                                           // locally
-            } catch (EntryNotFoundException enf) {
-              if (logger.isDebugEnabled()) {
-                logger.debug(
-                    "destroyInBucket: Failed to invalidate from local cache because of EntryNotFoundException.",
-                    enf);
-              }
-            }
-          }
         }
         return;
 
@@ -5901,17 +5859,6 @@ public class PartitionedRegion extends LocalRegion
           this.dataStore.invalidateLocally(bucketId, event);
         } else {
           invalidateRemotely(retryNode, bucketId, event);
-          if (localCacheEnabled) {
-            try {
-              super.basicInvalidate(event);
-            } catch (EntryNotFoundException enf) {
-              if (isDebugEnabled) {
-                logger.debug(
-                    "invalidateInBucket: Failed to invalidate from local cache because of EntryNotFoundException.",
-                    enf);
-              }
-            }
-          }
         }
         return;
       } catch (ConcurrentCacheModificationException e) {
@@ -10248,17 +10195,6 @@ public class PartitionedRegion extends LocalRegion
           this.dataStore.updateEntryVersionLocally(bucketId, event);
         } else {
           updateEntryVersionRemotely(retryNode, bucketId, event);
-          if (localCacheEnabled) {
-            try {
-              super.basicUpdateEntryVersion(event);
-            } catch (EntryNotFoundException enf) {
-              if (isDebugEnabled) {
-                logger.debug(
-                    "updateEntryVersionInBucket: Failed to update entry version timestamp from local cache because of EntryNotFoundException.",
-                    enf);
-              }
-            }
-          }
         }
         return;
       } catch (ConcurrentCacheModificationException e) {
