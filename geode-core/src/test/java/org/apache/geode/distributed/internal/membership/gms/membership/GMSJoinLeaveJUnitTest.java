@@ -369,8 +369,6 @@ public class GMSJoinLeaveJUnitTest {
         .until(() -> gmsJoinLeave.getView() != null);
 
     NetView oldView = gmsJoinLeave.getView();
-    assertTrue(oldView != null); // it should have become coordinator and installed a view
-
 
     NetView newView = new NetView(oldView, oldView.getViewId() + 1);
     newView.add(mockMembers[1]);
