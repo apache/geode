@@ -62,6 +62,7 @@ rat {
     '.idea/**',
     'geode-spark-connector/.idea/**',
     '**/tags',
+    '**/out/**',
 
     // text files
     '**/*.fig',

@@ -1036,7 +1036,7 @@ public class HARQueueNewImplDUnitTest extends JUnit4DistributedTestCase {
         server.start();
       }
     } catch (Exception e) {
-      fail("failed in startServer()" + e);
+      fail("failed in buildInThisVM()" + e);
     }
   }
 

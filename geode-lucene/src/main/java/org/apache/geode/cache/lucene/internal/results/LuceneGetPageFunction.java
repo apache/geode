@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.lucene.internal.results;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -22,7 +23,9 @@ import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
@@ -41,19 +44,22 @@ public class LuceneGetPageFunction implements Function, InternalEntity {
 
   @Override
   public void execute(FunctionContext context) {
-    RegionFunctionContext ctx = (RegionFunctionContext) context;
-    Region region = PartitionRegionHelper.getLocalDataForContext(ctx);
-    Set<?> keys = ctx.getFilter();
-
-    List<PageEntry> results = new PageResults(keys.size());
-
-    for (Object key : keys) {
-      PageEntry entry = getEntry(region, key);
-      if (entry != null) {
-        results.add(entry);
+    try {
+      RegionFunctionContext ctx = (RegionFunctionContext) context;
+      Region region = PartitionRegionHelper.getLocalDataForContext(ctx);
+      Set<?> keys = ctx.getFilter();
+      List<PageEntry> results = new PageResults(keys.size());
+      for (Object key : keys) {
+        PageEntry entry = getEntry(region, key);
+        if (entry != null) {
+          results.add(entry);
+        }
       }
+      ctx.getResultSender().lastResult(results);
+    } catch (CacheClosedException | PrimaryBucketException e) {
+      logger.debug("Exception during lucene query function", e);
+      throw new InternalFunctionInvocationTargetException(e);
     }
-    ctx.getResultSender().lastResult(results);
   }
 
   protected PageEntry getEntry(final Region region, final Object key) {

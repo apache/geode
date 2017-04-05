@@ -28,6 +28,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.lucene.LuceneIndexNotFoundException;
 import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
@@ -210,7 +211,7 @@ public class LuceneQueryFunctionJUnitTest {
     function.execute(mockContext);
   }
 
-  @Test(expected = InternalFunctionInvocationTargetException.class)
+  @Test(expected = LuceneIndexNotFoundException.class)
   public void whenServiceReturnsNullIndexDuringQueryExecutionFunctionExceptionShouldBeThrown()
       throws Exception {
     when(mockContext.getDataSet()).thenReturn(mockRegion);

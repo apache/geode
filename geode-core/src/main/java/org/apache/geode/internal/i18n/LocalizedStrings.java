@@ -7679,6 +7679,13 @@ public class LocalizedStrings {
 
   public static final StringId LuceneService_NO_INDEXES_WERE_FOUND_IN_REGION_0 =
       new StringId(6654, "No Lucene indexes were found in region {0}");
+
+  public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_BECAUSE_IT_IS_NOT_DEFINED_IN_ANOTHER_MEMBER =
+      new StringId(6655,
+          "Cannot create Lucene index {0} on region {1} because it is not defined in another member.");
+  public static final StringId LuceneService_MUST_DEFINE_INDEX_0_ON_REGION_1_BECAUSE_IT_IS_DEFINED_IN_ANOTHER_MEMBER =
+      new StringId(6656,
+          "Must create Lucene index {0} on region {1} because it is defined in another member.");
   /** Testing strings, messageId 90000-99999 **/
 
   /**

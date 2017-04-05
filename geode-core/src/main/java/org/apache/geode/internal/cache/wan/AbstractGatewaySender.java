@@ -514,6 +514,10 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
    */
   @Override
   public void destroy() {
+    destroy(true);
+  }
+
+  public void destroy(boolean initiator) {
     try {
       this.getLifeCycleLock().writeLock().lock();
       // first, check if this sender is attached to any region. If so, throw
@@ -542,33 +546,35 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
       ((GemFireCacheImpl) this.cache).removeGatewaySender(this);
 
       // destroy the region underneath the sender's queue
-      Set<RegionQueue> regionQueues = getQueues();
-      if (regionQueues != null) {
-        for (RegionQueue regionQueue : regionQueues) {
-          try {
-            if (regionQueue instanceof ConcurrentParallelGatewaySenderQueue) {
-              Set<PartitionedRegion> queueRegions =
-                  ((ConcurrentParallelGatewaySenderQueue) regionQueue).getRegions();
-              for (PartitionedRegion queueRegion : queueRegions) {
-                queueRegion.destroyRegion();
+      if (initiator) {
+        Set<RegionQueue> regionQueues = getQueues();
+        if (regionQueues != null) {
+          for (RegionQueue regionQueue : regionQueues) {
+            try {
+              if (regionQueue instanceof ConcurrentParallelGatewaySenderQueue) {
+                Set<PartitionedRegion> queueRegions =
+                    ((ConcurrentParallelGatewaySenderQueue) regionQueue).getRegions();
+                for (PartitionedRegion queueRegion : queueRegions) {
+                  queueRegion.destroyRegion();
+                }
+              } else {// For SerialGatewaySenderQueue, do local destroy
+                regionQueue.getRegion().localDestroyRegion();
               }
-            } else {// For SerialGatewaySenderQueue, do local destroy
-              regionQueue.getRegion().localDestroyRegion();
+            }
+            // Can occur in case of ParallelGatewaySenderQueue, when the region is
+            // being destroyed
+            // by several nodes simultaneously
+            catch (RegionDestroyedException e) {
+              // the region might have already been destroyed by other node. Just
+              // log
+              // the exception.
+              this.logger.info(LocalizedMessage.create(
+                  LocalizedStrings.AbstractGatewaySender_REGION_0_UNDERLYING_GATEWAYSENDER_1_IS_ALREADY_DESTROYED,
+                  new Object[] {e.getRegionFullPath(), this}));
             }
           }
-          // Can occur in case of ParallelGatewaySenderQueue, when the region is
-          // being destroyed
-          // by several nodes simultaneously
-          catch (RegionDestroyedException e) {
-            // the region might have already been destroyed by other node. Just
-            // log
-            // the exception.
-            this.logger.info(LocalizedMessage.create(
-                LocalizedStrings.AbstractGatewaySender_REGION_0_UNDERLYING_GATEWAYSENDER_1_IS_ALREADY_DESTROYED,
-                new Object[] {e.getRegionFullPath(), this}));
-          }
-        }
-      } // END if (regionQueues != null)
+        } // END if (regionQueues != null)
+      }
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }

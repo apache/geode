@@ -157,6 +157,11 @@ public class SocketCreator {
   public static volatile boolean resolve_dns = true;
 
   /**
+   * set this to false to use an inet_addr in a client's ID
+   */
+  public static volatile boolean use_client_host_name = true;
+
+  /**
    * True if this SocketCreator has been initialized and is ready to use
    */
   private boolean ready = false;

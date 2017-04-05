@@ -213,7 +213,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     }
 
     // Destroy the async event queue
-    destroyAsyncEventQueue();
+    destroyAsyncEventQueue(initiator);
 
     // Close the repository manager
     repositoryManager.close();
@@ -238,7 +238,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     }
   }
 
-  private void destroyAsyncEventQueue() {
+  private void destroyAsyncEventQueue(boolean initiator) {
     String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
 
     // Get the AsyncEventQueue
@@ -260,7 +260,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
     // Destroy the aeq (this also removes it from the GemFireCacheImpl)
     // The AsyncEventQueue can be null in an accessor member
     if (aeq != null) {
-      aeq.destroy();
+      aeq.destroy(initiator);
     }
     if (logger.isDebugEnabled()) {
       logger.debug("Destroyed aeqId=" + aeqId);

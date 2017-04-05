@@ -19,8 +19,8 @@ package org.apache.geode.management.internal.cli.commands;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.geode.management.internal.cli.commands.ExportLogCommand.FORMAT;
-import static org.apache.geode.management.internal.cli.commands.ExportLogCommand.ONLY_DATE_FORMAT;
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.FORMAT;
+import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.ONLY_DATE_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.commons.io.FileUtils;

@@ -199,8 +199,12 @@ public class AsyncEventQueueImpl implements AsyncEventQueue {
   }
 
   public void destroy() {
+    destroy(true);
+  }
+
+  public void destroy(boolean initiator) {
     GemFireCacheImpl gfci = (GemFireCacheImpl) ((AbstractGatewaySender) this.sender).getCache();
-    this.sender.destroy();
+    ((AbstractGatewaySender) this.sender).destroy(initiator);
     gfci.removeAsyncEventQueue(this);
   }
 

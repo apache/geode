@@ -41,7 +41,7 @@ public class LogLevelInterceptorTest {
 
   @Before
   public void before() {
-    interceptors.add(new ExportLogCommand.ExportLogsInterceptor());
+    interceptors.add(new ExportLogsInterceptor());
     interceptors.add(new ConfigCommands.AlterRuntimeInterceptor());
     interceptors.add(new MiscellaneousCommands.ChangeLogLevelInterceptor());
 

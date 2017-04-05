@@ -21,7 +21,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,11 +44,11 @@ public class ClientDestroyInvalidateAuthDUnitTest extends JUnit4DistributedTestC
   final VM client2 = host.getVM(2);
 
   @Rule
-  public ServerStarterRule server =
-      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public LocalServerStarterRule server =
+      new ServerStarterBuilder().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
           .withProperty(TestSecurityManager.SECURITY_JSON,
               "org/apache/geode/management/internal/security/clientServer.json")
-          .startServer();
+          .buildInThisVM();
 
   @Before
   public void before() throws Exception {
@@ -64,7 +65,7 @@ public class ClientDestroyInvalidateAuthDUnitTest extends JUnit4DistributedTestC
     // Delete one key and invalidate another key with an authorized user.
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
       ClientCache cache =
-          SecurityTestUtil.createClientCache("dataUser", "1234567", server.getPort());
+          SecurityTestUtil.createClientCache("dataUser", "1234567", server.getServerPort());
 
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
@@ -84,7 +85,7 @@ public class ClientDestroyInvalidateAuthDUnitTest extends JUnit4DistributedTestC
     // Delete one key and invalidate another key with an unauthorized user.
     AsyncInvocation ai2 = client2.invokeAsync(() -> {
       ClientCache cache =
-          SecurityTestUtil.createClientCache("authRegionReader", "1234567", server.getPort());
+          SecurityTestUtil.createClientCache("authRegionReader", "1234567", server.getServerPort());
 
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);

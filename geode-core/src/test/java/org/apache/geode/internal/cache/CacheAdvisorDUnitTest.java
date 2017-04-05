@@ -99,7 +99,7 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
     final String rgnName = getUniqueName();
     for (int i = 0; i < vms.length; i++) {
       vms[i].invoke(
-          new CacheSerializableRunnable("CacheAdvisorDUnitTest.testGenericAdvice;createRegion") {
+          new CacheSerializableRunnable("CacheAdvisorDUnitTest.testGenericAdvice;withRegion") {
             public void run2() throws CacheException {
               createRegion(rgnName, attrs);
             }
@@ -189,7 +189,7 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
     DistributedRegion rgn = (DistributedRegion) createRegion(rgnName, attrs);
 
     Invoke.invokeInEveryVM(new CacheSerializableRunnable(
-        "CachAdvisorTest.testNetLoadAdviceWithAttributesMutator;createRegion") {
+        "CachAdvisorTest.testNetLoadAdviceWithAttributesMutator;withRegion") {
       public void run2() throws CacheException {
         AttributesFactory f = new AttributesFactory();
         f.setScope(Scope.DISTRIBUTED_ACK);
@@ -233,7 +233,7 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
     final String rgnName = getUniqueName();
     for (int i = 0; i < vms.length; i++) {
       vms[i].invoke(
-          new CacheSerializableRunnable("CacheAdvisorDUnitTest.basicTestClose; createRegion") {
+          new CacheSerializableRunnable("CacheAdvisorDUnitTest.basicTestClose; withRegion") {
             public void run2() throws CacheException {
               createRegion(rgnName, attrs);
             }

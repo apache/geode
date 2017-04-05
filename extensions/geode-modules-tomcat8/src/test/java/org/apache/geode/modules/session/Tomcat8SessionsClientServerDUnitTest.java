@@ -15,7 +15,6 @@
 package org.apache.geode.modules.session;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.cache.CacheServerLauncher.serverPort;
 
 import java.util.List;
 import java.util.Properties;

@@ -2175,7 +2175,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     profile.requiresOldValueInEvents = this.dataPolicy.withReplication()
         && this.filterProfile != null && this.filterProfile.hasCQs();
     profile.gatewaySenderIds = getGatewaySenderIds();
-    profile.asyncEventQueueIds = getAsyncEventQueueIds();
+    profile.asyncEventQueueIds = getVisibleAsyncEventQueueIds();
     profile.isOffHeap = getOffHeap();
   }
 
@@ -2724,8 +2724,8 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
                   new Object[] {this.getName(), senderIds.get(0), senderIds.get(1)}));
     }
 
-    List asycnQueueIds =
-        this.getCacheDistributionAdvisor().adviseSameAsyncEventQueueIds(getAsyncEventQueueIds());
+    List asycnQueueIds = this.getCacheDistributionAdvisor()
+        .adviseSameAsyncEventQueueIds(getVisibleAsyncEventQueueIds());
     if (!asycnQueueIds.isEmpty()) {
       throw new GatewaySenderConfigurationException(
           LocalizedStrings.Region_REGION_0_HAS_1_ASYNC_EVENT_QUEUE_IDS_ANOTHER_CACHE_HAS_THE_SAME_REGION_WITH_2_ASYNC_EVENT_QUEUE_IDS_FOR_REGION_ACROSS_ALL_MEMBERS_IN_DS_ASYNC_EVENT_QUEUE_IDS_SHOULD_BE_SAME

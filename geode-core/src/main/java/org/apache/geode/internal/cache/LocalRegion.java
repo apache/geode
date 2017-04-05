@@ -10714,6 +10714,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return this.cacheServiceProfiles.get(id);
   }
 
+  public Map<String, CacheServiceProfile> getCacheServiceProfiles() {
+    return Collections.unmodifiableMap(this.cacheServiceProfiles);
+  }
+
   public LoaderHelper createLoaderHelper(Object key, Object callbackArgument,
       boolean netSearchAllowed, boolean netLoadAllowed, SearchLoadAndWriteProcessor searcher) {
     return new LoaderHelperImpl(this, key, callbackArgument, netSearchAllowed, netLoadAllowed,

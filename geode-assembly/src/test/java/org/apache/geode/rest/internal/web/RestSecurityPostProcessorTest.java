@@ -28,6 +28,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.rest.internal.web.controllers.Customer;
 import org.apache.geode.rest.internal.web.controllers.RedactingPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -47,12 +49,12 @@ import java.net.URLEncoder;
 public class RestSecurityPostProcessorTest {
 
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule()
-      .withProperty(TestSecurityManager.SECURITY_JSON,
-          "org/apache/geode/management/internal/security/clientServer.json")
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty(SECURITY_POST_PROCESSOR, RedactingPostProcessor.class.getName())
-      .withRestService().startServer();
+  public static LocalServerStarterRule serverStarter =
+      new ServerStarterBuilder().withSecurityManager(TestSecurityManager.class)
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .withProperty(SECURITY_POST_PROCESSOR, RedactingPostProcessor.class.getName())
+          .withRestService().buildInThisVM();
 
   private final GeodeRestClient restClient =
       new GeodeRestClient("localhost", serverStarter.getHttpPort());

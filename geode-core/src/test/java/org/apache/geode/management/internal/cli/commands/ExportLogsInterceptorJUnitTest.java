@@ -31,14 +31,14 @@ import java.util.Map;
 
 @Category(UnitTest.class)
 public class ExportLogsInterceptorJUnitTest {
-  private ExportLogCommand.ExportLogsInterceptor interceptor;
+  private ExportLogsInterceptor interceptor;
   private GfshParseResult parseResult;
   private Map<String, String> arguments;
   private Result result;
 
   @Before
   public void before() {
-    interceptor = new ExportLogCommand.ExportLogsInterceptor();
+    interceptor = new ExportLogsInterceptor();
     parseResult = Mockito.mock(GfshParseResult.class);
     arguments = new HashMap<>();
     arguments.put("log-level", "info");

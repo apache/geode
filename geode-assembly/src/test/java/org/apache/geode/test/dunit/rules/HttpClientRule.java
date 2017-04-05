@@ -41,6 +41,11 @@ public class HttpClientRule extends ExternalResource {
   private HttpHost host;
   private HttpClient httpClient;
   private HttpContext context;
+  private LocalLocatorStarterRule locatorStarterRule;
+
+  public HttpClientRule(LocalLocatorStarterRule locatorStarterRule) {
+    this.locatorStarterRule = locatorStarterRule;
+  }
 
   public HttpClientRule(int port) {
     this("localhost", port);
@@ -53,6 +58,10 @@ public class HttpClientRule extends ExternalResource {
 
   @Before
   protected void before() {
+    if (locatorStarterRule != null) {
+      this.hostName = "localhost";
+      this.port = locatorStarterRule.getHttpPort();
+    }
     host = new HttpHost(hostName, port);
     httpClient = HttpClients.createDefault();
     context = new BasicHttpContext();

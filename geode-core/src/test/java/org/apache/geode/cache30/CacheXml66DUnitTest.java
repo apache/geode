@@ -3766,7 +3766,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   // factory.setScope(Scope.LOCAL);
   // factory.setCapacityController(new HeapLRUCapacityController(42, 32,
   // LRUAlgorithm.OVERFLOW_TO_DISK));
-  // createRegion(name, factory.create());
+  // withRegion(name, factory.create());
   // finishCacheXml(getUniqueName());
   //
   // Region r = getRootRegion().getSubregion(name);
@@ -3795,7 +3795,7 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     // CacheCreation cache = new CacheCreation();
     // RegionAttributesCreation attrs = new RegionAttributesCreation(cache);
     // attrs.setPublisher(true);
-    // cache.createRegion("root", attrs);
+    // cache.withRegion("root", attrs);
     // testXml(cache);
     // assertIndexDetailsEquals(true, cache.getRegion("root").getAttributes().getPublisher());
   }

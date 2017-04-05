@@ -5040,7 +5040,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   // vm0.invoke(new CacheSerializableRunnable("Create Cache Server") {
   // public void run2() throws CacheException {
   // AttributesFactory factory = getBridgeServerRegionAttributes(null,null);
-  // Region region = createRegion(name, factory.create());
+  // Region region = withRegion(name, factory.create());
   // pause(1000);
   // try {
   // startBridgeServer(0);
@@ -5064,7 +5064,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
   // ClientServerTestCase.configureConnectionPool(factory,host0,port,-1,true,-1,-1, null);
 
-  // createRegion(name, factory.create());
+  // withRegion(name, factory.create());
   // }
   // };
 

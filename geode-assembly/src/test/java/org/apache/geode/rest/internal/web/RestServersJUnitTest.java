@@ -17,6 +17,8 @@ package org.apache.geode.rest.internal.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
@@ -31,14 +33,13 @@ import org.junit.experimental.categories.Category;
 public class RestServersJUnitTest {
 
   @ClassRule
-  public static ServerStarterRule serverStarter =
-      new ServerStarterRule().withRestService(true).startServer();
+  public static LocalServerStarterRule serverStarter =
+      new ServerStarterBuilder().withRestService().buildInThisVM();
 
   private static GeodeRestClient restClient;
 
   @BeforeClass
   public static void before() throws Exception {
-    assertThat(serverStarter.getHttpPort()).isEqualTo(7070);
     restClient = new GeodeRestClient("localhost", serverStarter.getHttpPort());
   }
 
@@ -53,6 +54,6 @@ public class RestServersJUnitTest {
     HttpResponse response = restClient.doGet("/servers", null, null);
     JSONArray body = GeodeRestClient.getJsonArray(response);
     assertThat(body.length()).isEqualTo(1);
-    assertThat(body.getString(0)).isEqualTo("http://localhost:7070");
+    assertThat(body.getString(0)).isEqualTo("http://localhost:" + serverStarter.getHttpPort());
   }
 }

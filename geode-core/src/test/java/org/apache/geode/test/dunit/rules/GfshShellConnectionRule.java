@@ -61,8 +61,6 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
   public GfshShellConnectionRule() {
     try {
       temporaryFolder.create();
-      this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
-          temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
     } catch (Exception e) {
       throw new RuntimeException(e.getMessage(), e);
     }
@@ -76,6 +74,8 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   @Override
   protected void before(Description description) throws Throwable {
+    this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
+        temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
     // do not auto connect if no port initialized
     if (port < 0) {
       return;
@@ -92,11 +92,11 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   }
 
-  public void connect(Member locator, String... options) throws Exception {
+  public void connect(MemberVM locator, String... options) throws Exception {
     connect(locator.getPort(), PortType.locator, options);
   }
 
-  public void connectAndVerify(Member locator, String... options) throws Exception {
+  public void connectAndVerify(MemberVM locator, String... options) throws Exception {
     connect(locator.getPort(), PortType.locator, options);
     assertThat(this.connected).isTrue();
   }
@@ -121,6 +121,10 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   public void connect(int port, PortType type, String... options) throws Exception {
     CliUtil.isGfshVM = true;
+    if (gfsh == null) {
+      this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
+          temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
+    }
     final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
     String endpoint;
     if (type == PortType.locator) {

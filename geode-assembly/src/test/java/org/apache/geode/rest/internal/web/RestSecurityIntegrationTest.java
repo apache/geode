@@ -14,7 +14,6 @@
  */
 package org.apache.geode.rest.internal.web;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -22,7 +21,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.dunit.rules.ServerStarterRule;
+import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
+import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.http.HttpResponse;
@@ -41,11 +41,12 @@ public class RestSecurityIntegrationTest {
   protected static final String REGION_NAME = "AuthRegion";
 
   @ClassRule
-  public static ServerStarterRule serverStarter = new ServerStarterRule()
-      .withProperty(TestSecurityManager.SECURITY_JSON,
-          "org/apache/geode/management/internal/security/clientServer.json")
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName()).withRestService()
-      .startServer();
+  public static LocalServerStarterRule serverStarter =
+      new ServerStarterBuilder().withSecurityManager(TestSecurityManager.class)
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/clientServer.json")
+          .withRestService().buildInThisVM();
+
   private final GeodeRestClient restClient =
       new GeodeRestClient("localhost", serverStarter.getHttpPort());
 

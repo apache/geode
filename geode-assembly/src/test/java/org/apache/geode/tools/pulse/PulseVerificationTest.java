@@ -15,12 +15,12 @@
 
 package org.apache.geode.tools.pulse;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.HttpClientRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.dunit.rules.LocatorStarterBuilder;
+import org.apache.geode.test.dunit.rules.LocalLocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.http.HttpResponse;
 import org.junit.ClassRule;
@@ -33,11 +33,11 @@ import org.junit.experimental.categories.Category;
 public class PulseVerificationTest {
 
   @ClassRule
-  public static LocatorStarterRule locator = new LocatorStarterRule()
-      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName()).startLocator();
+  public static LocalLocatorStarterRule locator = new LocatorStarterBuilder()
+      .withSecurityManager(SimpleTestSecurityManager.class).buildInThisVM();
 
   @Rule
-  public HttpClientRule client = new HttpClientRule(locator.getHttpPort());
+  public HttpClientRule client = new HttpClientRule(locator);
 
   @Test
   public void loginWithIncorrectPassword() throws Exception {

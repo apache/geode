@@ -28,7 +28,7 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.commands.ExportLogCommand;
+import org.apache.geode.management.internal.cli.commands.ExportLogsCommand;
 import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
 import org.apache.geode.management.internal.cli.util.LogExporter;
 import org.apache.geode.management.internal.cli.util.LogFilter;
@@ -76,6 +76,7 @@ public class ExportLogsFunction implements Function, InternalEntity {
       Args args = (Args) context.getArguments();
       File baseLogFile = null;
       File baseStatsFile = null;
+
       if (args.isIncludeLogs() && !config.getLogFile().toString().isEmpty()) {
         baseLogFile = config.getLogFile().getAbsoluteFile();
       }
@@ -208,11 +209,11 @@ public class ExportLogsFunction implements Function, InternalEntity {
     }
 
     try {
-      SimpleDateFormat df = new SimpleDateFormat(ExportLogCommand.FORMAT);
+      SimpleDateFormat df = new SimpleDateFormat(ExportLogsCommand.FORMAT);
       return df.parse(dateString).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     } catch (ParseException e) {
       try {
-        SimpleDateFormat df = new SimpleDateFormat(ExportLogCommand.ONLY_DATE_FORMAT);
+        SimpleDateFormat df = new SimpleDateFormat(ExportLogsCommand.ONLY_DATE_FORMAT);
         return df.parse(dateString).toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
       } catch (ParseException e1) {
         return null;

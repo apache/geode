@@ -15,10 +15,12 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.test.dunit.rules.GfshShellConnectionRule.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterRule;
+import org.apache.geode.test.dunit.rules.LocatorStarterBuilder;
+import org.apache.geode.test.dunit.rules.LocalLocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -29,14 +31,13 @@ import org.junit.experimental.categories.Category;
 public class ExportLogsIntegrationTest {
 
   @ClassRule
-  public static LocatorStarterRule locator =
-      new LocatorStarterRule().withJMXManager().startLocator();
+  public static LocalLocatorStarterRule locator = new LocatorStarterBuilder().buildInThisVM();
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
 
   protected void connect() throws Exception {
-    gfsh.connectAndVerify(locator);
+    gfsh.connectAndVerify(locator.getLocatorPort(), PortType.locator);
   }
 
   @Test

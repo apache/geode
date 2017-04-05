@@ -564,7 +564,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         }
       }
 
-      Set<String> otherAsynEventQueueIds = ((LocalRegion) rgn).getAsyncEventQueueIds();
+      Set<String> otherAsynEventQueueIds = ((LocalRegion) rgn).getVisibleAsyncEventQueueIds();
       Set<String> myAsyncEventQueueIds = profile.asyncEventQueueIds;
       if (!isLocalOrRemoteAccessor(rgn, profile)
           && !otherAsynEventQueueIds.equals(myAsyncEventQueueIds)) {
@@ -610,22 +610,43 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
       }
 
       String cspResult = null;
-      // TODO Compares set sizes and equivalent entries.
-      if (profile.cacheServiceProfiles != null) {
-        for (CacheServiceProfile remoteProfile : profile.cacheServiceProfiles) {
-          CacheServiceProfile localProfile =
-              ((LocalRegion) rgn).getCacheServiceProfile(remoteProfile.getId());
+      Map<String, CacheServiceProfile> myProfiles = ((LocalRegion) rgn).getCacheServiceProfiles();
+      // Iterate and compare the remote CacheServiceProfiles to the local ones
+      for (CacheServiceProfile remoteProfile : profile.cacheServiceProfiles) {
+        CacheServiceProfile localProfile = myProfiles.get(remoteProfile.getId());
+        if (localProfile == null) {
+          cspResult = remoteProfile.getMissingProfileMessage(true);
+        } else {
           cspResult = remoteProfile.checkCompatibility(rgn.getFullPath(), localProfile);
-          if (cspResult != null) {
-            break;
-          }
         }
-        // Don't overwrite result with null in case it has already been set in a previous
-        // compatibility check.
         if (cspResult != null) {
-          result = cspResult;
+          break;
         }
       }
+
+      // If the comparison result is null, compare the local profiles to the remote ones. If there
+      // are more local profiles than remote ones (meaning there are ones defined locally that are
+      // not defined remotely), then compare those. This should produce an informative error message
+      // (as opposed to returning something like 'the profiles don't match').
+      if (cspResult == null) {
+        if (myProfiles.size() > profile.cacheServiceProfiles.size()) {
+          for (CacheServiceProfile localProfile : myProfiles.values()) {
+            if (!profile.cacheServiceProfiles.stream()
+                .anyMatch(remoteProfile -> remoteProfile.getId().equals(localProfile.getId()))) {
+              cspResult = localProfile.getMissingProfileMessage(false);
+              break;
+            }
+          }
+        }
+      }
+
+      // If the comparison result is not null, set the final result.
+      // Note: Be careful not to overwrite the final result with null in case it has already been
+      // set in a previous compatibility check.
+      if (cspResult != null) {
+        result = cspResult;
+      }
+
       if (logger.isDebugEnabled()) {
         logger.debug("CreateRegionProcessor.checkCompatibility: this={}; other={}; result={}", rgn,
             profile, result);
