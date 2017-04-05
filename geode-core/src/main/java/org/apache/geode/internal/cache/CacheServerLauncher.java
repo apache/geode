@@ -565,28 +565,43 @@ public class CacheServerLauncher {
     }
   }
 
-  public static ThreadLocal<Integer> serverPort = new ThreadLocal<Integer>();
+  private static Integer serverPort;
 
-  public static ThreadLocal<String> serverBindAddress = new ThreadLocal<String>();
+  private static String serverBindAddress;
+
+  public static void setServerPort(Integer serverPort) {
+    CacheServerLauncher.serverPort = serverPort;
+  }
+
+  public static void setServerBindAddress(String serverBindAddress) {
+    CacheServerLauncher.serverBindAddress = serverBindAddress;
+  }
+
+  public static void setDisableDefaultServer(Boolean disableDefaultServer) {
+    CacheServerLauncher.disableDefaultServer = disableDefaultServer;
+  }
+
+  public static Boolean disableDefaultServer;
+
+
 
   public static Integer getServerPort() {
-    return serverPort.get();
+    return serverPort;
   }
 
   public static String getServerBindAddress() {
-    return serverBindAddress.get();
+    return serverBindAddress;
   }
-
-  public static ThreadLocal<Boolean> disableDefaultServer = new ThreadLocal<Boolean>();
 
   public static Boolean getDisableDefaultServer() {
-    return disableDefaultServer.get();
+    return disableDefaultServer;
   }
 
+
   public static void clearStatics() {
-    disableDefaultServer.set(null);
-    serverPort.set(null);
-    serverBindAddress.set(null);
+    disableDefaultServer = null;
+    serverPort = null;
+    serverBindAddress = null;
   }
 
 
@@ -616,11 +631,11 @@ public class CacheServerLauncher {
     final String serverPortString = (String) options.get(SERVER_PORT);
 
     if (serverPortString != null) {
-      serverPort.set(Integer.parseInt(serverPortString));
+      serverPort = Integer.parseInt(serverPortString);
     }
 
-    serverBindAddress.set((String) options.get(SERVER_BIND_ADDRESS_NAME));
-    disableDefaultServer.set((Boolean) options.get(DISABLE_DEFAULT_SERVER));
+    serverBindAddress = (String) options.get(SERVER_BIND_ADDRESS_NAME);
+    disableDefaultServer = (Boolean) options.get(DISABLE_DEFAULT_SERVER);
     workingDir = new File(System.getProperty("user.dir"));
 
     // Say that we're starting...
@@ -835,7 +850,7 @@ public class CacheServerLauncher {
     // Create and start a default cache server
     // If (disableDefaultServer is not set or it is set but false) AND (the number of cacheservers
     // is 0)
-    Boolean disable = disableDefaultServer.get();
+    Boolean disable = disableDefaultServer;
     if ((disable == null || !disable) && cache.getCacheServers().size() == 0) {
       // Create and add a cache server
       CacheServer server = cache.addCacheServer();

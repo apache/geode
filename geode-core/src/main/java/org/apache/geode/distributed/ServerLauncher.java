@@ -274,7 +274,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     this.assignBuckets = Boolean.TRUE.equals(builder.getAssignBuckets());
     setDebug(Boolean.TRUE.equals(builder.getDebug()));
     this.disableDefaultServer = Boolean.TRUE.equals(builder.getDisableDefaultServer());
-    CacheServerLauncher.disableDefaultServer.set(this.disableDefaultServer);
+    CacheServerLauncher.setDisableDefaultServer(this.disableDefaultServer);
     this.distributedSystemProperties = builder.getDistributedSystemProperties();
     this.force = Boolean.TRUE.equals(builder.getForce());
     this.help = Boolean.TRUE.equals(builder.getHelp());
@@ -286,11 +286,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
     this.redirectOutput = Boolean.TRUE.equals(builder.getRedirectOutput());
     this.serverBindAddress = builder.getServerBindAddress();
     if (builder.isServerBindAddressSetByUser() && this.serverBindAddress != null) {
-      CacheServerLauncher.serverBindAddress.set(this.serverBindAddress.getHostAddress());
+      CacheServerLauncher.setServerBindAddress(this.serverBindAddress.getHostAddress());
     }
     this.serverPort = builder.getServerPort();
     if (builder.isServerPortSetByUser() && this.serverPort != null) {
-      CacheServerLauncher.serverPort.set(this.serverPort);
+      CacheServerLauncher.setServerPort(this.serverPort);
     }
     this.springXmlLocation = builder.getSpringXmlLocation();
     this.workingDirectory = builder.getWorkingDirectory();
@@ -954,8 +954,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
       final String serverBindAddress =
           (getServerBindAddress() == null ? null : getServerBindAddress().getHostAddress());
       final Integer serverPort = getServerPort();
-      CacheServerLauncher.serverBindAddress.set(serverBindAddress);
-      CacheServerLauncher.serverPort.set(serverPort);
+      CacheServerLauncher.setServerBindAddress(serverBindAddress);
+      CacheServerLauncher.setServerPort(serverPort);
       final CacheServer cacheServer = cache.addCacheServer();
       cacheServer.setBindAddress(serverBindAddress);
       cacheServer.setPort(serverPort);

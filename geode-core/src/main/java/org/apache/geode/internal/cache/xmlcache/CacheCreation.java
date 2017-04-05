@@ -503,7 +503,7 @@ public class CacheCreation implements InternalCache {
 
     Integer serverPort = CacheServerLauncher.getServerPort();
     String serverBindAdd = CacheServerLauncher.getServerBindAddress();
-    Boolean disableDefaultServer = CacheServerLauncher.disableDefaultServer.get();
+    Boolean disableDefaultServer = CacheServerLauncher.getDisableDefaultServer();
     startCacheServers(this.getCacheServers(), cache, serverPort, serverBindAdd,
         disableDefaultServer);
 

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache30;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.experimental.categories.Category;
 import org.junit.Test;
 
@@ -32,7 +34,7 @@ import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipMan
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, MembershipTest.class, ClientServerTest.class})
 public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {
 
   public ReconnectedCacheServerDUnitTest() {
