@@ -26,6 +26,8 @@ import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.CacheServerLauncher;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -38,6 +40,11 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * This test exercises auto-reconnect functionality when there is a cache-server that was started by
+ * gfsh but was configured both by gfsh and a cache.xml file. The JIRA ticket for this is
+ * GEODE-2732.
+ */
 @Category({DistributedTest.class, MembershipTest.class, ClientServerTest.class})
 public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
 
@@ -96,6 +103,18 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
     MembershipManagerHelper.crashDistributedSystem(cache.getDistributedSystem());
     assertTrue(membershipFailed.get());
 
+    WaitCriterion wc = new WaitCriterion() {
+      @Override
+      public boolean done() {
+        return cache.getReconnectedCache() != null;
+      }
+
+      @Override
+      public String description() {
+        return "waiting for cache to reconnect";
+      }
+    };
+    Wait.waitForCriterion(wc, 60000, 5000, true);
     await().atMost(60, TimeUnit.SECONDS).until(() -> cache.getReconnectedCache() != null);
 
     Cache newCache = cache.getReconnectedCache();
