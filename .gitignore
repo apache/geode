@@ -13,7 +13,6 @@ build/
 build-eclipse/
 /tags
 out/
-bin/
 
 
 *.iml
