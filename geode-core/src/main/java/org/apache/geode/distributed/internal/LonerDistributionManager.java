@@ -1173,7 +1173,9 @@ public class LonerDistributionManager implements DM {
 
       String name = this.system.getName();
 
-      host = SocketCreator.getLocalHost().getCanonicalHostName();
+      InetAddress hostAddr = SocketCreator.getLocalHost();
+      host = SocketCreator.use_client_host_name ? hostAddr.getCanonicalHostName()
+          : hostAddr.getHostAddress();
       DistributionConfig config = system.getConfig();
       DurableClientAttributes dac = null;
       if (config.getDurableClientId() != null) {
