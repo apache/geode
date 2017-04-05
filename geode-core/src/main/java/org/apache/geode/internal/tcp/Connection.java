@@ -3939,9 +3939,9 @@ public class Connection implements Runnable {
       nioInputBuffer = Buffers.acquireReceiveBuffer(allocSize, stats);
 
       if (oldBuffer != null) {
-        int oldByteCount = oldBuffer.remaining(); // needed to workaround JRockit 1.4.2.04 bug
+        int oldByteCount = oldBuffer.remaining();
         nioInputBuffer.put(oldBuffer);
-        nioInputBuffer.position(oldByteCount); // workaround JRockit 1.4.2.04 bug
+        nioInputBuffer.position(oldByteCount);
         Buffers.releaseReceiveBuffer(oldBuffer, stats);
       }
     } else {
