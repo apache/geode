@@ -1970,7 +1970,9 @@ public class CacheClientProxy implements ClientSession {
          */
         Object task = _durableExpirationTask.getAndSet(null);
         if (task != null) {
-          ((SystemTimerTask) task).cancel();
+          if (((SystemTimerTask) task).cancel()) {
+            _cache.purgeCCPTimer();
+          }
         }
       }
 
@@ -1988,7 +1990,9 @@ public class CacheClientProxy implements ClientSession {
             LocalizedStrings.CacheClientProxy_0_CANCELLING_EXPIRATION_TASK_SINCE_THE_CLIENT_HAS_RECONNECTED,
             this));
       }
-      task.cancel();
+      if (task.cancel()) {
+        _cache.purgeCCPTimer();
+      }
     }
   }
 

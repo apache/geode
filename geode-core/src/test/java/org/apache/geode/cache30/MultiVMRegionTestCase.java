@@ -6345,7 +6345,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         TXStateProxy tx = ((TXManagerImpl) txMgr).internalSuspend();
         assertTrue(rgn.containsKey("key"));
         assertEquals("LV 1", rgn.getEntry("key").getValue());
-        ((TXManagerImpl) txMgr).resume(tx);
+        ((TXManagerImpl) txMgr).internalResume(tx);
       }
       // make sure transactional view is still correct
       assertEquals("txValue", rgn.getEntry("key").getValue());
@@ -6394,7 +6394,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         // do a get outside of the transaction to force a net load
         Object v3 = rgn.get("key3");
         assertEquals("LV 3", v3);
-        ((TXManagerImpl) txMgr).resume(tx);
+        ((TXManagerImpl) txMgr).internalResume(tx);
       }
       // make sure transactional view is still correct
       assertEquals("txValue3", rgn.getEntry("key3").getValue());
@@ -6452,7 +6452,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
         // do a get outside of the transaction to force a netsearch
         assertEquals("txValue", rgn.get("key")); // does a netsearch
         assertEquals("txValue", rgn.getEntry("key").getValue());
-        ((TXManagerImpl) txMgr).resume(tx);
+        ((TXManagerImpl) txMgr).internalResume(tx);
       }
       // make sure transactional view is still correct
       assertEquals("new txValue", rgn.getEntry("key").getValue());

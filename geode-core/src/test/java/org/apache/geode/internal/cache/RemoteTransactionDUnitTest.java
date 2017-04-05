@@ -555,7 +555,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         TXStateProxy tx = mgr.internalSuspend();
         assertNotNull(tx);
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         if (commit) {
           mgr.commit();
         } else {
@@ -662,7 +662,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertTrue(cust.containsKey(new CustId(8)));
         TXStateProxy tx = ((TXManagerImpl) mgr).internalSuspend();
         assertFalse(cust.containsKey(new CustId(8)));
-        ((TXManagerImpl) mgr).resume(tx);
+        ((TXManagerImpl) mgr).internalResume(tx);
         mgr.commit();
         Customer s2 = (Customer) cust.get(new CustId(8));
         Customer ex = new Customer("sup dawg", "add");
@@ -935,7 +935,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXStateProxy tx = mgr.internalSuspend();
         assertNull(cust.get(newCustId));
         assertNull(rr.get(newCustId));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         cust.put(oldCustId, new Customer("foo", "bar"));
         rr.put(oldCustId, new Customer("foo", "bar"));
         return mgr.getTransactionId();
@@ -980,7 +980,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         cust.putIfAbsent(conflictCust, new Customer("name11", "address11"));
         TXStateProxy tx = mgr.internalSuspend();
         cust.put(conflictCust, new Customer("foo", "bar"));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         try {
           mgr.commit();
           fail("expected exception not thrown");
@@ -1020,7 +1020,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXStateProxy tx = mgr.internalSuspend();
         assertNotNull(cust.get(custId));
         assertNotNull(ref.get(custId));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         return mgr.getTransactionId();
       }
     });
@@ -1060,7 +1060,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertTrue(cust.remove(conflictCust, customer));
         TXStateProxy tx = mgr.internalSuspend();
         cust.put(conflictCust, new Customer("foo", "bar"));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         try {
           mgr.commit();
           fail("expected exception not thrown");
@@ -1096,7 +1096,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXStateProxy tx = mgr.internalSuspend();
         assertNotNull(cust.get(custId1));
         assertNotNull(ref.get(custId2));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         return mgr.getTransactionId();
       }
     });
@@ -1141,7 +1141,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         cust.put(custId20, new Customer("foo", "bar"));
         assertNotNull(cust.get(custId20));
         cust.put(custId4, new Customer("foo", "bar"));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         try {
           mgr.commit();
           fail("expected exception not thrown");
@@ -1158,7 +1158,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         cust.removeAll(Arrays.asList(custId2, custId3));
         tx = mgr.internalSuspend();
         cust.put(custId2, new Customer("foo", "bar"));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         assertNotNull(cust.get(custId2));
         assertNull(cust.get(custId3));
@@ -1286,7 +1286,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXStateProxy tx = mgr.internalSuspend();
         assertEquals(cust.get(custId), customer);
         assertEquals(ref.get(custId), customer);
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         return mgr.getTransactionId();
       }
     });
@@ -1326,7 +1326,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertTrue(cust.replace(conflictCust, customer, new Customer("conflict", "conflict")));
         TXStateProxy tx = mgr.internalSuspend();
         cust.put(conflictCust, new Customer("foo", "bar"));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         try {
           mgr.commit();
           fail("expected exception not thrown");
@@ -2209,7 +2209,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(getCustIdSet(5), rr.keySet());
         assertEquals(5, rr.keySet().size());
         assertNull(rr.get(custId));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         return null;
       }
@@ -2259,7 +2259,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(getCustomerSet(5), rr.values());
         assertEquals(5, rr.values().size());
         assertNull(rr.get(custId));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         return null;
       }
@@ -2309,7 +2309,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         // assertIndexDetailsEquals(getCustIdSet(5), rr.entrySet());
         assertEquals(5, rr.entrySet().size());
         assertNull(rr.get(custId));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         return null;
       }
@@ -2525,7 +2525,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXStateProxy tx = mgr.internalSuspend();
         GemFireCacheImpl.getInstance().getLogger().warning("TX SUSPENDO:" + tx);
         assertNull(custRegion.get(expectedCustId));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         return null;
       }
     });
@@ -2570,7 +2570,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         }
         TXStateProxy tx = mgr.internalSuspend();
         custRegion.put(expectedCustId, new Customer("Cust6", "updated6"));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         try {
           mgr.commit();
           fail("expected commit conflict not thrown");
@@ -2719,7 +2719,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         getGemfireCache().getLogger().fine("SWAP:callingget");
         assertNull("expected null but was:" + custRegion.get(expectedCustId),
             custRegion.get(expectedCustId));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         assertEquals(expectedCustomer, custRegion.get(expectedCustId));
         return null;
@@ -2746,7 +2746,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         }).getResult();
         TXStateProxy tx = mgr.internalSuspend();
         assertEquals(custRegion.get(expectedCustId), expectedCustomer);
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         assertNull(custRegion.get(expectedCustId));
         return null;
@@ -2789,7 +2789,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(expectedCustomer, custRegion.get(expectedCustId));
         TXStateProxy tx = mgr.internalSuspend();
         assertNull(custRegion.get(expectedCustId));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         return null;
       }
     });
@@ -2841,7 +2841,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(expectedCustomer, pr.get(expectedCustId));
         TXStateProxy tx = mgr.internalSuspend();
         assertNull(pr.get(expectedCustId));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         return null;
       }
     });
@@ -2880,7 +2880,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertEquals(expectedCustomer, pr.get(expectedCustId));
         TXStateProxy tx = mgr.internalSuspend();
         assertNull(pr.get(expectedCustId));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         return null;
       }
     };
@@ -3094,7 +3094,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         TXStateProxy tx = mgr.internalSuspend();
         assertNotNull(tx);
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         return null;
       }
@@ -3107,7 +3107,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         TXStateProxy tx = mgr.internalSuspend();
         assertNotNull(tx);
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         return null;
       }
@@ -3121,7 +3121,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         TXStateProxy tx = mgr.internalSuspend();
         assertNotNull(tx);
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         return null;
       }
@@ -3165,7 +3165,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         TXStateProxy tx = mgr.internalSuspend();
         assertNotNull(tx);
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         return null;
       }

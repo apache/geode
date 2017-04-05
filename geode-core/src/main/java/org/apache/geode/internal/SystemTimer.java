@@ -43,7 +43,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  *      TODO -- with Java 1.5, this will be a template type so that the swarm's class can be
  *      specified.
  */
-public final class SystemTimer {
+public class SystemTimer {
   private static final Logger logger = LogService.getLogger();
 
   final static private boolean isIBM =

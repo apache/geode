@@ -367,7 +367,7 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
         assertEquals("updatedName", pr.get(cust1).getName());
         TXStateProxy tx = mgr.internalSuspend();
         assertEquals("name1", pr.get(cust1).getName());
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         assertTrue(c.isToDeltaCalled());
         assertEquals(c, pr.get(cust1));

@@ -599,7 +599,7 @@ public class DefaultQuery implements Query {
       updateStatistics(endTime - startTime);
       pdxClassToFieldsMap.remove();
       pdxClassToMethodsMap.remove();
-      ((TXManagerImpl) this.cache.getCacheTransactionManager()).resume(tx);
+      ((TXManagerImpl) this.cache.getCacheTransactionManager()).internalResume(tx);
     }
   }
 

@@ -738,7 +738,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
             assertNull(pr.get(new CustId(i)));
           }
           org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("resuming transaction");
-          mgr.resume(tx);
+          mgr.internalResume(tx);
         }
         assertEquals("r sized should be " + MAX_ENTRIES + " but it is:" + r.size(), MAX_ENTRIES,
             r.size());
@@ -839,7 +839,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         TXStateProxy tx = mgr.internalSuspend();
         assertNotNull(tx);
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         if (commit) {
           mgr.commit();
         } else {
@@ -1622,7 +1622,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         TXStateProxy txState = mgr.internalSuspend();
         assertNull(pr.get(custId));
         assertNull(r.get(10));
-        mgr.resume(txState);
+        mgr.internalResume(txState);
         mgr.commit();
         return null;
       }
@@ -2373,7 +2373,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertEquals(new Customer("oldname1", "oldaddress1"), pr.get(new CustId(1)));
         assertNull(pr.get(new CustId(10)));
         assertNull(r.get(new CustId(10)));
-        mgr.resume(tx);
+        mgr.internalResume(tx);
         mgr.commit();
         assertEquals(new Customer("name0", "address0"), pr.get(new CustId(0)));
         assertEquals(new Customer("name1", "address1"), pr.get(new CustId(1)));
@@ -2440,7 +2440,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         final CountDownLatch latch = new CountDownLatch(1);
         Thread t = new Thread(new Runnable() {
           public void run() {
-            mgr.resume(txState);
+            mgr.internalResume(txState);
             mgr.commit();
             latch.countDown();
           }
@@ -2927,7 +2927,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
                 }
               }
             });
-            mgr.resume(tx);
+            mgr.internalResume(tx);
             mgr.commit();
           }
         });
