@@ -66,7 +66,7 @@ public class RedisLockServiceTest {
 
     // start thread with locking
     t1.start();
-    Thread.sleep(5);
+    Thread.sleep(1000);
 
 
     // test current thread cannot lock y key

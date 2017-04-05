@@ -1,0 +1,2 @@
+org.apache.geode.internal.cache.xmlcache.PivotalEntityResolver
+org.apache.geode.internal.cache.xmlcache.GeodeEntityResolver
