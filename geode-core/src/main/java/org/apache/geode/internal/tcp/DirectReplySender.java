@@ -56,7 +56,7 @@ class DirectReplySender implements ReplySender {
     // mutates the list when it has exceptions.
 
     // fix for bug #42199 - cancellation check
-    this.conn.owner.getDM().getCancelCriterion().checkCancelInProgress(null);
+    this.conn.getConduit().getDM().getCancelCriterion().checkCancelInProgress(null);
 
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "Sending a direct reply {} to {}", msg, conn.getRemoteAddress());

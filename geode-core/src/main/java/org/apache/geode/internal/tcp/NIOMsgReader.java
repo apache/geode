@@ -79,7 +79,7 @@ public class NIOMsgReader extends MsgReader {
     if (nioInputBuffer == null) {
       int allocSize = conn.getReceiveBufferSize();
       if (allocSize == -1) {
-        allocSize = conn.owner.getConduit().tcpBufferSize;
+        allocSize = conn.getConduit().tcpBufferSize;
       }
       if (allocSize > bufferSize) {
         bufferSize = allocSize;

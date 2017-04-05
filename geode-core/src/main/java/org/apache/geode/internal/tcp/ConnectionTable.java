@@ -64,16 +64,8 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * 
  * @since GemFire 2.1
  */
-/*
- * Note: We no longer use InputMultiplexer If InputMux is reinstated then the manager needs to be
- * initialized and all lines that have a NOMUX preface should be uncommented
- * 
- */
 public class ConnectionTable {
   private static final Logger logger = LogService.getLogger();
-
-  /** a random number generator for secondary connection selection */
-  // static java.util.Random random = new java.util.Random();
 
   /** warning when descriptor limit reached */
   private static boolean ulimitWarningIssued;
@@ -82,6 +74,7 @@ public class ConnectionTable {
    * true if the current thread wants non-shared resources
    */
   private static ThreadLocal threadWantsOwnResources = new ThreadLocal();
+
   /**
    * Used for messages whose order must be preserved Only connections used for sending messages, and
    * receiving acks, will be put in this map.
@@ -132,9 +125,7 @@ public class ConnectionTable {
   /**
    * the conduit for this table
    */
-  protected final TCPConduit owner;
-  // ARB: temp making this protected to provide access to Connection.
-  // private final TCPConduit owner;
+  private final TCPConduit owner;
 
   /**
    * true if this table is no longer in use
@@ -205,17 +196,10 @@ public class ConnectionTable {
     return (Boolean) threadWantsOwnResources.get();
   }
 
-  // public static void setThreadOwnsResourcesRegistration(
-  // Boolean newValue) {
-  // threadWantsOwnResources.set(newValue);
-  // }
-  // private Map connections = new HashMap();
-  /* NOMUX: private InputMuxManager inputMuxManager; */
-  // private int lowWater;
-  // private int highWater;
+  public TCPConduit getOwner() {
+    return owner;
+  }
 
-  // private static boolean TRACK_SERVER_CONNECTIONS =
-  // System.getProperty("p2p.bidirectional", "true").equals("true");
 
   private ConnectionTable(TCPConduit c) throws IOException {
     this.owner = c;
@@ -226,10 +210,6 @@ public class ConnectionTable {
     this.threadConnectionMap = new ConcurrentHashMap();
     this.p2pReaderThreadPool = createThreadPoolForIO(c.getDM().getSystem().isShareSockets());
     this.socketCloser = new SocketCloser();
-    /*
-     * NOMUX: if (TCPConduit.useNIO) { inputMuxManager = new InputMuxManager(this);
-     * inputMuxManager.start(c.logger); }
-     */
   }
 
   private Executor createThreadPoolForIO(boolean conserveSockets) {
@@ -306,7 +286,6 @@ public class ConnectionTable {
       }
     }
 
-    // Stub id = conn.getRemoteId();
     if (conn != null) {
       synchronized (this.receivers) {
         this.owner.stats.incReceivers();
@@ -322,21 +301,8 @@ public class ConnectionTable {
             conn.remoteAddr);
       }
     }
-    // cleanupHighWater();
   }
 
-
-  // /** returns the connection associated with the given key, or null if
-  // no such connection exists */
-  // protected Connection basicGet(Serializable id) {
-  // synchronized (this.orderedConnectionMap) {
-  // return (Connection) this.orderedConnectionMap.get(id);
-  // }
-  // }
-
-  // protected Connection get(Serializable id) throws java.io.IOException {
-  // return get(id, false);
-  // }
 
 
   /**
@@ -432,10 +398,10 @@ public class ConnectionTable {
   }
 
   /**
-   * unordered or conserve-sockets note that unordered connections are currently always shared
+   * unordered or conserve-sockets=true note that unordered connections are currently always shared
    * 
    * @param id the DistributedMember on which we are creating a connection
-   * @param threadOwnsResources whether unordered conn is owned by the current thread
+   * @param scheduleTimeout whether unordered connection should time out
    * @param preserveOrder whether to preserve order
    * @param startTime the ms clock start time for the operation
    * @param ackTimeout the ms ack-wait-threshold, or zero
@@ -444,9 +410,9 @@ public class ConnectionTable {
    * @throws IOException if unable to create the connection
    * @throws DistributedSystemDisconnectedException
    */
-  private Connection getUnorderedOrConserveSockets(DistributedMember id,
-      boolean threadOwnsResources, boolean preserveOrder, long startTime, long ackTimeout,
-      long ackSATimeout) throws IOException, DistributedSystemDisconnectedException {
+  private Connection getSharedConnection(DistributedMember id, boolean scheduleTimeout,
+      boolean preserveOrder, long startTime, long ackTimeout, long ackSATimeout)
+      throws IOException, DistributedSystemDisconnectedException {
     Connection result = null;
 
     final Map m = preserveOrder ? this.orderedConnectionMap : this.unorderedConnectionMap;
@@ -472,7 +438,7 @@ public class ConnectionTable {
     if (pc != null) {
       result = handleNewPendingConnection(id, true /* fixes bug 43386 */, preserveOrder, m, pc,
           startTime, ackTimeout, ackSATimeout);
-      if (!preserveOrder && threadOwnsResources) {
+      if (!preserveOrder && scheduleTimeout) {
         scheduleIdleTimeout(result);
       }
     } else { // we have existing connection
@@ -487,10 +453,10 @@ public class ConnectionTable {
             startTime, ackTimeout, ackSATimeout);
         if (logger.isDebugEnabled()) {
           if (result != null) {
-            logger.debug("getUnorderedOrConserveSockets {} myAddr={} theirAddr={}", result,
+            logger.debug("getSharedConnection {} myAddr={} theirAddr={}", result,
                 getConduit().getMemberId(), result.remoteAddr);
           } else {
-            logger.debug("getUnorderedOrConserveSockets: Connect failed");
+            logger.debug("getSharedConnection: Connect failed");
           }
         }
       } else {
@@ -512,7 +478,7 @@ public class ConnectionTable {
    * @throws IOException if the connection could not be created
    * @throws DistributedSystemDisconnectedException
    */
-  Connection getOrderedAndOwned(DistributedMember id, long startTime, long ackTimeout,
+  Connection getThreadOwnedConnection(DistributedMember id, long startTime, long ackTimeout,
       long ackSATimeout) throws IOException, DistributedSystemDisconnectedException {
     Connection result = null;
 
@@ -658,10 +624,10 @@ public class ConnectionTable {
     Connection result = null;
     boolean threadOwnsResources = threadOwnsResources();
     if (!preserveOrder || !threadOwnsResources) {
-      result = getUnorderedOrConserveSockets(id, threadOwnsResources, preserveOrder, startTime,
-          ackTimeout, ackSATimeout);
+      result = getSharedConnection(id, threadOwnsResources, preserveOrder, startTime, ackTimeout,
+          ackSATimeout);
     } else {
-      result = getOrderedAndOwned(id, startTime, ackTimeout, ackSATimeout);
+      result = getThreadOwnedConnection(id, startTime, ackTimeout, ackSATimeout);
     }
     if (result != null) {
       Assert.assertTrue(result.preserveOrder == preserveOrder);
