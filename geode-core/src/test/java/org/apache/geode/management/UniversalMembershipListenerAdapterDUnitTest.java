@@ -18,6 +18,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.test.dunit.Assert.*;
 import static org.apache.geode.test.dunit.LogWriterUtils.*;
 
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.test.dunit.Invoke;
 import org.awaitility.Awaitility;
 
 import java.io.IOException;
@@ -29,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -92,6 +95,16 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   private static final int SYNC_ASYNC_EVENT_WAIT_MILLIS = 2000;
   /** Millis to wait for all three event listeners to be notified */
   private static final int ASYNC_EVENT_WAIT_MILLIS = 30000; // use Integer.MAX_VALUE for debugging
+
+  @Before
+  public void setTestToUseIpAddresses() {
+    SocketCreator.resolve_dns = false;
+    SocketCreator.use_client_host_name = false;
+    Invoke.invokeInEveryVM(() -> {
+      SocketCreator.resolve_dns = false;
+      SocketCreator.use_client_host_name = false;
+    });
+  }
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
@@ -503,6 +516,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     assertTrue(firedAdapter[JOINED]);
     assertEquals(clientMember, memberAdapter[JOINED]);
+    assertFalse(SocketCreator.resolve_dns);
     assertEquals(clientMemberId, memberIdAdapter[JOINED]);
     assertTrue(isClientAdapter[JOINED]);
     assertFalse(firedAdapter[LEFT]);
@@ -1852,7 +1866,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     config.put(MCAST_PORT, "0");
     config.put(LOCATORS, "");
     // config.put(LOG_LEVEL, "fine");
-    // config.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    config.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     getSystem(config);
 
     System.out.println("[testServerEventsInLonerClient] create system bridge client");
