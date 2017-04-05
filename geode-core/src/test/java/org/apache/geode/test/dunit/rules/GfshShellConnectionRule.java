@@ -121,6 +121,10 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   public void connect(int port, PortType type, String... options) throws Exception {
     CliUtil.isGfshVM = true;
+    if(gfsh == null){
+      this.gfsh = new HeadlessGfsh(getClass().getName(), 30,
+          temporaryFolder.newFolder("gfsh_files").getAbsolutePath());
+    }
     final CommandStringBuilder connectCommand = new CommandStringBuilder(CliStrings.CONNECT);
     String endpoint;
     if (type == PortType.locator) {
