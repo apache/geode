@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.internal.logging.log4j.LogLevel;
-import org.apache.geode.management.internal.cli.commands.ExportLogCommand;
+import org.apache.geode.management.internal.cli.commands.ExportLogsCommand;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.apache.logging.log4j.Level;
@@ -30,8 +30,8 @@ import org.junit.experimental.categories.Category;
 public class ExportLogsFunctionTest {
   @Test
   public void defaultExportLogLevelShouldBeAll() throws Exception {
-    assertTrue(ExportLogCommand.DEFAULT_EXPORT_LOG_LEVEL.equals("ALL"));
-    assertEquals(LogLevel.getLevel(ExportLogCommand.DEFAULT_EXPORT_LOG_LEVEL), Level.ALL);
+    assertTrue(ExportLogsCommand.DEFAULT_EXPORT_LOG_LEVEL.equals("ALL"));
+    assertEquals(LogLevel.getLevel(ExportLogsCommand.DEFAULT_EXPORT_LOG_LEVEL), Level.ALL);
   }
 
   @Test
