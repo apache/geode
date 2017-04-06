@@ -16,23 +16,33 @@ package org.apache.geode.management.internal.web.controllers.support;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.UnitTest;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.util.Map;
+import java.util.Properties;
 
 @Category(UnitTest.class)
 public class LoginHandlerInterceptorRequestHeaderJUnitTest {
 
+  SecurityService securityService;
+  LoginHandlerInterceptor interceptor;
+
   @Before
   public void before() {
     LoginHandlerInterceptor.getEnvironment().clear();
+    securityService = Mockito.mock(SecurityService.class);
+    interceptor = new LoginHandlerInterceptor();
+    interceptor.setSecurityService(securityService);
   }
 
   @After
@@ -42,21 +52,23 @@ public class LoginHandlerInterceptorRequestHeaderJUnitTest {
 
   @Test
   public void testCaseInsensitive() throws Exception {
-    LoginHandlerInterceptor interceptor = new LoginHandlerInterceptor();
     MockHttpServletRequest mockRequest = new MockHttpServletRequest();
     mockRequest.addHeader("Security-Username", "John");
     mockRequest.addHeader("Security-Password", "Password");
     mockRequest.addHeader("security-something", "anything");
     mockRequest.addHeader("Content-Type", "application/json");
 
-    interceptor.preHandle(mockRequest, null, null);
-    Map<String, String> env = interceptor.getEnvironment();
 
-    // make sure only security-* are put in the environment variable
-    assertThat(env).hasSize(3);
-    assertThat(env.get("security-username")).isEqualTo("John");
-    assertThat(env.get("security-password")).isEqualTo("Password");
-    assertThat(env.get("security-something")).isEqualTo("anything");
+    interceptor.preHandle(mockRequest, null, null);
+
+    ArgumentCaptor<Properties> props = ArgumentCaptor.forClass(Properties.class);
+    verify(securityService).login(props.capture());
+    assertThat(props.getValue().getProperty("security-username")).isEqualTo("John");
+    assertThat(props.getValue().getProperty("security-password")).isEqualTo("Password");
+
+    Map<String, String> env = interceptor.getEnvironment();
+    // make sure security-* are not put in the environment variable
+    assertThat(env).hasSize(0);
   }
 
 }
