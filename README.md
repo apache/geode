@@ -6,13 +6,13 @@
 ## Contents
 1. [Overview](#overview)
 2. [How to Get Apache Geode](#obtaining)
-2. [Main Concepts and Components](#concepts)
-3. [Location of Directions for Building from Source](#building)
-4. [Geode in 5 minutes](#started)
-5. [Application Development](#development)
-6. [Documentation](http://geode.apache.org/docs/)
-7. [Wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)
-8. [Export Control](#export)8. [Export Control](#export)8. [Export Control](#export)8. [Export Control](#export)8. [Export Control](#export)8. [Export Control](#export)8. [Export Control](#export)8. [Export Control](#export)8. [Export Control](#export)
+3. [Main Concepts and Components](#concepts)
+4. [Location of Directions for Building from Source](#building)
+5. [Geode in 5 minutes](#started)
+6. [Application Development](#development)
+7. [Documentation](http://geode.apache.org/docs/)
+8. [Wiki](https://cwiki.apache.org/confluence/display/GEODE/Index)
+9. [Export Control](#export)
 
 ## <a name="overview"></a>Overview
 
