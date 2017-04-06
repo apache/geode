@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
@@ -143,6 +144,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
     serverProps.setProperty(GROUPS, "group2");
     MemberVM server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
     serverProps.setProperty(GROUPS, "group1,group2");
+    serverProps.setProperty(LOG_LEVEL, "info");
     MemberVM server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
 
     ConfigGroup cluster = new ConfigGroup("cluster");
@@ -177,6 +179,80 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
 
     // test undeploy cluster
     gfshConnector.executeAndVerifyCommand("undeploy --jar=cluster.jar");
+
+
+    cluster = cluster.removeJar("cluster.jar");
+    server3Config.verify(locator);
+    server1Config.verify(server1);
+    server2Config.verify(server2);
+    server3Config.verify(server3);
+
+    gfshConnector.executeAndVerifyCommand("undeploy --jar=group1.jar --group=group1");
+
+    group1 = group1.removeJar("group1.jar");
+    /*
+     * TODO: This is the current (weird) behavior If you started server4 with group1,group2 after
+     * this undeploy command, it would have group1.jar (brought from
+     * cluster_config/group2/group1.jar on locator) whereas server3 (also in group1,group2) does not
+     * have this jar.
+     */
+    ClusterConfig weirdServer3Config =
+        new ClusterConfig(cluster, group1, new ConfigGroup(group2).removeJar("group1.jar"));
+
+    server3Config.verify(locator);
+    server1Config.verify(server1);
+    server2Config.verify(server2);
+    weirdServer3Config.verify(server3);
+  }
+
+  @Test
+  public void testUndeployWithServerBounce() throws Exception {
+    // set up the locator/servers
+    MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
+    serverProps.setProperty(GROUPS, "group1");
+    MemberVM server1 = lsRule.startServerVM(1, serverProps, locator.getPort());
+    serverProps.setProperty(GROUPS, "group2");
+    MemberVM server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
+    serverProps.setProperty(GROUPS, "group1,group2");
+    serverProps.setProperty(LOG_LEVEL, "info");
+    MemberVM server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
+
+    ConfigGroup cluster = new ConfigGroup("cluster");
+    ConfigGroup group1 = new ConfigGroup("group1");
+    ConfigGroup group2 = new ConfigGroup("group2");
+    ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
+    ClusterConfig server1Config = new ClusterConfig(cluster, group1);
+    ClusterConfig server2Config = new ClusterConfig(cluster, group2);
+    ClusterConfig server3Config = new ClusterConfig(cluster, group1, group2);
+
+    gfshConnector.connect(locator);
+    assertThat(gfshConnector.isConnected()).isTrue();
+
+    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJar);
+
+    // deploy cluster.jar to the cluster
+    cluster.addJar("cluster.jar");
+    expectedClusterConfig.verify(locator);
+    expectedClusterConfig.verify(server1);
+    expectedClusterConfig.verify(server2);
+    expectedClusterConfig.verify(server3);
+
+    // deploy group1.jar to both group1 and group2
+    gfshConnector.executeAndVerifyCommand("deploy --jar=" + group1Jar + " --group=group1,group2");
+
+    group1.addJar("group1.jar");
+    group2.addJar("group1.jar");
+    server3Config.verify(locator);
+    server1Config.verify(server1);
+    server2Config.verify(server2);
+    server3Config.verify(server3);
+
+    server3.getVM().bounce();
+
+    // test undeploy cluster
+    gfshConnector.executeAndVerifyCommand("undeploy --jar=cluster.jar");
+    server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
+
 
     cluster = cluster.removeJar("cluster.jar");
     server3Config.verify(locator);

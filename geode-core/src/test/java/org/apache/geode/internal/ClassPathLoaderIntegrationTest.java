@@ -91,7 +91,7 @@ public class ClassPathLoaderIntegrationTest {
     fos.write(new byte[TEMP_FILE_BYTES_COUNT]);
     fos.close();
 
-    System.setProperty("user.dir", temporaryFolder.getRoot().getAbsolutePath());
+    // System.setProperty("user.dir", temporaryFolder.getRoot().getAbsolutePath());
     ClassPathLoader.setLatestToDefault(temporaryFolder.getRoot());
   }
 
@@ -226,9 +226,7 @@ public class ClassPathLoaderIntegrationTest {
     outStream.write(jarBytes);
     outStream.close();
 
-    Properties properties = new Properties();
-    properties.setProperty("user.dir", temporaryFolder.getRoot().getAbsolutePath());
-    ServerStarterRule serverStarterRule = new ServerStarterRule();
+    ServerStarterRule serverStarterRule = new ServerStarterRule(temporaryFolder.getRoot());
     serverStarterRule.startServer();
 
     GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
@@ -248,9 +246,7 @@ public class ClassPathLoaderIntegrationTest {
     File jarVersion1 = createVersionOfJar("Version1", "MyFunction", "MyJar.jar");
     File jarVersion2 = createVersionOfJar("Version2", "MyFunction", "MyJar.jar");
 
-    Properties properties = new Properties();
-    properties.setProperty("user.dir", temporaryFolder.getRoot().getAbsolutePath());
-    ServerStarterRule serverStarterRule = new ServerStarterRule();
+    ServerStarterRule serverStarterRule = new ServerStarterRule(temporaryFolder.getRoot());
     serverStarterRule.startServer();
 
     GemFireCacheImpl gemFireCache = GemFireCacheImpl.getInstance();
