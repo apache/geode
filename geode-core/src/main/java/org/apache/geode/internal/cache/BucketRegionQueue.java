@@ -464,21 +464,25 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     this.latestAcknowledgedKey.set(key);
   }
 
-  public boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException {
+  public long getLatestQueuedKey() {
+    return this.latestQueuedKey.get();
+  }
+
+  public boolean waitUntilFlushed(long latestQueuedKey, long timeout, TimeUnit unit)
+      throws InterruptedException {
     long then = System.currentTimeMillis();
     if (logger.isDebugEnabled()) {
-      logger.debug("BucketRegionQueue: waitUntilFlushed bucket=" + getId() + "; timeout=" + timeout
-          + "; unit=" + unit);
+      logger.debug("BucketRegionQueue: waitUntilFlushed bucket=" + getId() + "; latestQueuedKey="
+          + latestQueuedKey + "; timeout=" + timeout + "; unit=" + unit);
     }
     boolean result = false;
     // Wait until latestAcknowledgedKey > latestQueuedKey or the queue is empty
     if (this.initialized) {
-      long latestQueuedKeyToCheck = this.latestQueuedKey.get();
       long nanosRemaining = unit.toNanos(timeout);
       long endTime = System.nanoTime() + nanosRemaining;
       while (nanosRemaining > 0) {
         try {
-          if (latestAcknowledgedKey.get() > latestQueuedKeyToCheck || isEmpty()) {
+          if (latestAcknowledgedKey.get() > latestQueuedKey || isEmpty()) {
             result = true;
             break;
           }
