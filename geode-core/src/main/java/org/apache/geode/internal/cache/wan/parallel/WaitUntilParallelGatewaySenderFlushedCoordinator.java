@@ -100,6 +100,8 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
 
     private BucketRegionQueue brq;
 
+    private long latestQueuedKey;
+
     private long timeout;
 
     private TimeUnit unit;
@@ -107,13 +109,14 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
     public WaitUntilBucketRegionQueueFlushedCallable(BucketRegionQueue brq, long timeout,
         TimeUnit unit) {
       this.brq = brq;
+      this.latestQueuedKey = brq.getLatestQueuedKey();
       this.timeout = timeout;
       this.unit = unit;
     }
 
     @Override
     public Boolean call() throws Exception {
-      return this.brq.waitUntilFlushed(this.timeout, this.unit);
+      return this.brq.waitUntilFlushed(this.latestQueuedKey, this.timeout, this.unit);
     }
 
     @Override
