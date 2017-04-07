@@ -2126,7 +2126,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     return this.distAdvisor;
   }
 
-  public final CacheDistributionAdvisor getCacheDistributionAdvisor() {
+  public CacheDistributionAdvisor getCacheDistributionAdvisor() {
     return this.distAdvisor;
   }
 

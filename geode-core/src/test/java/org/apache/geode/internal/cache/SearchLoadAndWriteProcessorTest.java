@@ -14,15 +14,29 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.awaitility.Awaitility;
 
 @Category(UnitTest.class)
 public class SearchLoadAndWriteProcessorTest {
@@ -60,6 +74,92 @@ public class SearchLoadAndWriteProcessorTest {
     } finally {
       processor.release();
     }
+  }
+
+  InternalDistributedMember departedMember;
+
+  @Test
+  public void verifyNoProcessingReplyFromADepartedMember() {
+    SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+    DistributedRegion lr = mock(DistributedRegion.class);
+    RegionAttributes attrs = mock(RegionAttributes.class);
+    GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
+    InternalDistributedSystem ds = mock(InternalDistributedSystem.class);
+    DM dm = mock(DM.class);
+    CacheDistributionAdvisor advisor = mock(CacheDistributionAdvisor.class);
+    CachePerfStats stats = mock(CachePerfStats.class);
+    ExpirationAttributes expirationAttrs = mock(ExpirationAttributes.class);
+    InternalDistributedMember m1 = mock(InternalDistributedMember.class);
+    InternalDistributedMember m2 = mock(InternalDistributedMember.class);
+    Set<InternalDistributedMember> replicates = new HashSet<InternalDistributedMember>();;
+    replicates.add(m1);
+    replicates.add(m2);
+
+    when(lr.getAttributes()).thenReturn(attrs);
+    when(lr.getSystem()).thenReturn(ds);
+    when(lr.getCache()).thenReturn(cache);
+    when(lr.getCacheDistributionAdvisor()).thenReturn(advisor);
+    when(lr.getDistributionManager()).thenReturn(dm);
+    when(lr.getCachePerfStats()).thenReturn(stats);
+    when(lr.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
+    when(lr.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(cache.getDistributedSystem()).thenReturn(ds);
+    when(cache.getSearchTimeout()).thenReturn(30);
+    when(attrs.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
+    when(attrs.getDataPolicy()).thenReturn(DataPolicy.EMPTY);
+    when(attrs.getEntryTimeToLive()).thenReturn(expirationAttrs);
+    when(attrs.getEntryIdleTimeout()).thenReturn(expirationAttrs);
+    when(advisor.adviseInitializedReplicates()).thenReturn(replicates);
+
+    Object key = "k1";
+    byte[] v1 = "v1".getBytes();
+    byte[] v2 = "v2".getBytes();
+    EntryEventImpl event = EntryEventImpl.create(lr, Operation.GET, key, null, null, false, null);
+
+
+    Thread t1 = new Thread(new Runnable() {
+      public void run() {
+        Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
+            .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+            .until(() -> processor.getSelectedNode() != null);
+        departedMember = processor.getSelectedNode();
+        // Simulate member departed event
+        processor.memberDeparted(departedMember, true);
+      }
+    });
+    t1.start();
+
+    Thread t2 = new Thread(new Runnable() {
+      public void run() {
+        Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
+            .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+            .until(() -> departedMember != null && processor.getSelectedNode() != null
+                && departedMember != processor.getSelectedNode());
+
+        // Handle search result from the departed member
+        processor.incomingNetSearchReply(v1, System.currentTimeMillis(), false, false, true,
+            mock(VersionTag.class), departedMember);
+      }
+    });
+    t2.start();
+
+    Thread t3 = new Thread(new Runnable() {
+      public void run() {
+        Awaitility.await().pollInterval(10, TimeUnit.MILLISECONDS)
+            .pollDelay(10, TimeUnit.MILLISECONDS).atMost(30, TimeUnit.SECONDS)
+            .until(() -> departedMember != null && processor.getSelectedNode() != null
+                && departedMember != processor.getSelectedNode());
+        // Handle search result from a new member
+        processor.incomingNetSearchReply(v2, System.currentTimeMillis(), false, false, true,
+            mock(VersionTag.class), processor.getSelectedNode());
+      }
+    });
+    t3.start();
+
+    processor.initialize(lr, key, null);
+    processor.doSearchAndLoad(event, null, null);
+
+    assertTrue(Arrays.equals((byte[]) event.getNewValue(), v2));
   }
 
 }

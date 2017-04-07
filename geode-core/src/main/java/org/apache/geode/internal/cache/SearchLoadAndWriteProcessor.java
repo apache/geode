@@ -67,7 +67,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "search-retry-interval", 2000).longValue();
 
 
-  private InternalDistributedMember selectedNode;
+  private volatile InternalDistributedMember selectedNode;
   private boolean selectedNodeDead = false;
   private int timeout;
   private boolean netSearchDone = false;
@@ -107,6 +107,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   private boolean netWrite = false;
 
   private final Object membersLock = new Object();
+
+  private ArrayList<InternalDistributedMember> departedMembers;
 
   private Lock lock = null; // if non-null, then needs to be unlocked in release
 
@@ -221,6 +223,10 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     }
     synchronized (this) {
       if (id.equals(selectedNode) && (this.requestInProgress) && (this.remoteGetInProgress)) {
+        if (departedMembers == null) {
+          departedMembers = new ArrayList<InternalDistributedMember>();
+        }
+        departedMembers.add(id);
         selectedNode = null;
         selectedNodeDead = true;
         computeRemainingTimeout();
@@ -231,8 +237,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         notifyAll(); // signal the waiter; we are not done; but we need the waiter to call
                      // sendNetSearchRequest
       }
-      if (responseQueue != null)
+      if (responseQueue != null) {
         responseQueue.remove(id);
+      }
       checkIfDone();
     }
   }
@@ -378,6 +385,10 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   /************** Package Methods **********************/
 
+  InternalDistributedMember getSelectedNode() {
+    return this.selectedNode;
+  }
+
   /************** Private Methods **********************/
   /**
    * Even though SearchLoadAndWriteProcessor may be in invoked in the context of a local region,
@@ -495,25 +506,28 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         synchronized (this.pendingResponders) {
           this.pendingResponders.clear();
         }
-        this.requestInProgress = true;
-        this.remoteGetInProgress = true;
+
         synchronized (this) {
+          this.requestInProgress = true;
+          this.remoteGetInProgress = true;
           setSelectedNode(replicate);
           this.lastNotifySpot = 0;
-        }
-        sendValueRequest(replicate);
-        waitForObject2(this.remainingTimeout);
-        if (this.authorative) {
-          if (this.result != null) {
-            this.netSearch = true;
+
+          sendValueRequest(replicate);
+          waitForObject2(this.remainingTimeout);
+
+          if (this.authorative) {
+            if (this.result != null) {
+              this.netSearch = true;
+            }
+            return;
+          } else {
+            // clear anything that might have been set by our query.
+            this.selectedNode = null;
+            this.selectedNodeDead = false;
+            this.lastNotifySpot = 0;
+            this.result = null;
           }
-          return;
-        } else {
-          // clear anything that might have been set by our query.
-          this.selectedNode = null;
-          this.selectedNodeDead = false;
-          this.lastNotifySpot = 0;
-          this.result = null;
         }
       }
       synchronized (membersLock) {
@@ -1055,8 +1069,15 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   @SuppressWarnings("hiding")
   protected synchronized void incomingNetSearchReply(byte[] value, long lastModifiedTime,
-      boolean serialized, boolean requestorTimedOut, boolean authorative, VersionTag versionTag) {
+      boolean serialized, boolean requestorTimedOut, boolean authorative, VersionTag versionTag,
+      InternalDistributedMember responder) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
+    if (departedMembers != null && departedMembers.contains(responder)) {
+      if (isDebugEnabled) {
+        logger.debug("ignore the reply received from a departed member");
+      }
+      return;
+    }
 
     if (this.requestInProgress) {
       if (requestorTimedOut) {
@@ -1163,7 +1184,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   private synchronized void waitForObject2(final int timeoutMs) throws TimeoutException {
     if (this.requestInProgress) {
       try {
-        final DM dm = this.region.cache.getDistributedSystem().getDistributionManager();
+        final DM dm = this.region.getCache().getDistributedSystem().getDistributionManager();
         long waitTimeMs = timeoutMs;
         final long endTime = System.currentTimeMillis() + waitTimeMs;
         for (;;) {
@@ -2018,7 +2039,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         this.versionTag.replaceNullIDs(getSender());
       }
       processor.incomingNetSearchReply(this.value, lastModifiedSystemTime, this.isSerialized,
-          this.requestorTimedOut, this.authoritative, this.versionTag);
+          this.requestorTimedOut, this.authoritative, this.versionTag, getSender());
     }
 
     public int getDSFID() {
