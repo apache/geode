@@ -113,7 +113,7 @@ public class ClientServerMisc2DUnitTest extends JUnit4CacheTestCase {
   }
 
   private RegionShortcut[] regionShortcut() {
-    return new RegionShortcut[]{RegionShortcut.PARTITION, RegionShortcut.REPLICATE};
+    return new RegionShortcut[] {RegionShortcut.PARTITION, RegionShortcut.REPLICATE};
   }
 
   private int initServerCache(boolean notifyBySub) {
@@ -121,16 +121,14 @@ public class ClientServerMisc2DUnitTest extends JUnit4CacheTestCase {
         .intValue();
   }
 
-  public static Integer createServerCache()
-      throws Exception {
+  public static Integer createServerCache() throws Exception {
     Cache cache = new ClientServerMisc2DUnitTest().createCacheV(new Properties());
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     logger.info("Starting server on port " + port);
     server.setPort(port);
     server.start();
-    logger
-        .info("Started server on port " + server.getPort());
+    logger.info("Started server on port " + server.getPort());
     return new Integer(server.getPort());
 
   }
