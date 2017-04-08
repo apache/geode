@@ -437,6 +437,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
         distribute = false;
       }
       if (distribute) {
+        // before distribute: DR's put, it has notified gateway sender earlier
         UpdateOperation op = new UpdateOperation(event, lastModified);
         if (logger.isTraceEnabled()) {
           logger.trace("distributing operation for event : {} : for region : {}", event,
@@ -1657,6 +1658,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
           event.getRemoveAllOperation().addEntry(event, true);
         }
         if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          // before distribute: DR.destroy, hasSeenEvent. no to notifyGateway
           distributeDestroy(event, expectedOldValue);
           event.invokeCallbacks(this, true, false);
         }
@@ -1676,6 +1678,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     if (event.isDistributed() && !event.isOriginRemote() && !event.isBulkOpInProgress()) {
       boolean distribute = !event.getInhibitDistribution();
       if (distribute) {
+        // before distribute: DR.destroy, it has notifiedGatewaySender ealier
         DestroyOperation op = new DestroyOperation(event);
         op.distribute();
       }
@@ -1858,6 +1861,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       if (event.isDistributed() && !event.isOriginRemote()) {
         boolean distribute = !event.getInhibitDistribution();
         if (distribute) {
+          // before distribute: DR.invalidate, it has triggered callback earlier
           InvalidateOperation op = new InvalidateOperation(event);
           op.distribute();
         }
@@ -1890,6 +1894,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     if (!this.regionInvalid && event.isDistributed() && !event.isOriginRemote()
         && !isTX() /* only distribute if non-tx */) {
       if (event.isDistributed() && !event.isOriginRemote()) {
+        // before distribute: DR has sent callback earlier
         UpdateEntryVersionOperation op = new UpdateEntryVersionOperation(event);
         op.distribute();
       }
@@ -3339,28 +3344,33 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   /**
    * Distribute the PutAllOp. This implementation distributes it to peers.
    * 
+   * @return token >0 means startOperation finished distribution
    * @since GemFire 5.7
    */
   @Override
-  public void postPutAllSend(DistributedPutAllOperation putAllOp,
+  public long postPutAllSend(DistributedPutAllOperation putAllOp,
       VersionedObjectList successfulPuts) {
+    long token = -1;
     if (putAllOp.putAllDataSize > 0) {
-      putAllOp.distribute();
+      token = putAllOp.startOperation();
     } else {
       if (logger.isDebugEnabled()) {
         logger.debug("DR.postPutAll: no data to distribute");
       }
     }
+    return token;
   }
 
   @Override
-  public void postRemoveAllSend(DistributedRemoveAllOperation op,
+  public long postRemoveAllSend(DistributedRemoveAllOperation op,
       VersionedObjectList successfulOps) {
+    long token = -1;
     if (op.removeAllDataSize > 0) {
-      op.distribute();
+      token = op.startOperation();
     } else {
       getCache().getLoggerI18n().fine("DR.postRemoveAll: no data to distribute");
     }
+    return token;
   }
 
   @Override

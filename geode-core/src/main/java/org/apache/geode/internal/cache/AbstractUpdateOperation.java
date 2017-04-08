@@ -40,8 +40,6 @@ import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationExcep
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.util.DelayedAction;
 
 /**
  * Common code for both UpdateOperation and DistributedPutAllOperation.
@@ -55,29 +53,12 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
       value = "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD",
       justification = "test hook that is unset normally")
-  public static volatile DelayedAction test_InvalidVersionAction;
 
   private final long lastModifiedTime;
 
   public AbstractUpdateOperation(CacheEvent event, long lastModifiedTime) {
     super(event);
     this.lastModifiedTime = lastModifiedTime;
-  }
-
-  @Override
-  public void distribute() {
-    try {
-      super.distribute();
-    } catch (InvalidVersionException e) {
-      if (logger.isDebugEnabled()) {
-        logger.trace(LogMarker.DM, "PutAll failed since versions were missing; retrying again", e);
-      }
-
-      if (test_InvalidVersionAction != null) {
-        test_InvalidVersionAction.run();
-      }
-      super.distribute();
-    }
   }
 
   @Override

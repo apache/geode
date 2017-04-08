@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.InvalidVersionException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheFactory;
@@ -78,6 +79,7 @@ import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.util.DelayedAction;
 
 /**
  * 
@@ -240,11 +242,74 @@ public abstract class DistributedCacheOperation {
     return true;
   }
 
+  public static volatile DelayedAction test_InvalidVersionAction;
+
+  /**
+   * region's distribution advisor marked that a distribution is about to start, then distribute. It
+   * returns a token, which is view version. Return -1 means the method did not succeed. This method
+   * must be invoked before toDistribute(). This method should pair with endOperation() in
+   * try/finally block.
+   */
+  public long startOperation() {
+    DistributedRegion region = getRegion();
+    long viewVersion = -1;
+    if (this.containsRegionContentChange()) {
+      viewVersion = region.getDistributionAdvisor().startOperation();
+    }
+    if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
+      logger.trace(LogMarker.STATE_FLUSH_OP, "dispatching operation in view version {}",
+          viewVersion);
+    }
+    try {
+      _distribute();
+    } catch (InvalidVersionException e) {
+      if (logger.isDebugEnabled()) {
+        logger.trace(LogMarker.DM, "PutAll failed since versions were missing; retrying again", e);
+      }
+
+      if (test_InvalidVersionAction != null) {
+        test_InvalidVersionAction.run();
+      }
+      _distribute();
+    }
+    return viewVersion;
+  }
+
+  /**
+   * region's distribution advisor marked that a distribution is ended. This method should pair with
+   * startOperation in try/finally block.
+   */
+  public void endOperation(long viewVersion) {
+    DistributedRegion region = getRegion();
+    if (viewVersion != -1) {
+      region.getDistributionAdvisor().endOperation(viewVersion);
+      if (logger.isDebugEnabled()) {
+        logger.trace(LogMarker.STATE_FLUSH_OP, "done dispatching operation in view version {}",
+            viewVersion);
+      }
+    }
+  }
+
   /**
    * Distribute a cache operation to other members of the distributed system. This method determines
    * who the recipients are and handles careful delivery of the operation to those members.
    */
   public void distribute() {
+    long token = -1;
+    try {
+      token = startOperation();
+    } finally {
+      endOperation(token);
+    }
+  }
+
+  /**
+   * About to distribute a cache operation to other members of the distributed system. This method
+   * determines who the recipients are and handles careful delivery of the operation to those
+   * members. This method should wrapped by startOperation() and endOperation() in try/finally
+   * block.
+   */
+  private void _distribute() {
     DistributedRegion region = getRegion();
     DM mgr = region.getDistributionManager();
     boolean reliableOp = isOperationReliable() && region.requiresReliabilityCheck();
@@ -260,15 +325,6 @@ public abstract class DistributedCacheOperation {
 
     boolean isPutAll = (this instanceof DistributedPutAllOperation);
     boolean isRemoveAll = (this instanceof DistributedRemoveAllOperation);
-
-    long viewVersion = -1;
-    if (this.containsRegionContentChange()) {
-      viewVersion = region.getDistributionAdvisor().startOperation();
-    }
-    if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-      logger.trace(LogMarker.STATE_FLUSH_OP, "dispatching operation in view version {}",
-          viewVersion);
-    }
 
     try {
       // Recipients with CacheOp
@@ -596,11 +652,6 @@ public abstract class DistributedCacheOperation {
           }
         }
 
-        if (viewVersion > 0) {
-          region.getDistributionAdvisor().endOperation(viewVersion);
-          viewVersion = -1;
-        }
-
         /** compute local client routing before waiting for an ack only for a bucket */
         if (region.isUsedForPartitionedRegionBucket()) {
           FilterInfo filterInfo = getLocalFilterRouting(filterRouting);
@@ -639,13 +690,6 @@ public abstract class DistributedCacheOperation {
       throw e;
     } finally {
       ReplyProcessor21.setShortSevereAlertProcessing(false);
-      if (viewVersion != -1) {
-        if (logger.isDebugEnabled()) {
-          logger.trace(LogMarker.STATE_FLUSH_OP, "done dispatching operation in view version {}",
-              viewVersion);
-        }
-        region.getDistributionAdvisor().endOperation(viewVersion);
-      }
     }
   }
 
