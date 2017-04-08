@@ -240,6 +240,31 @@ public abstract class DistributedCacheOperation {
     return true;
   }
 
+  public long startOperation() {
+    DistributedRegion region = getRegion();
+    long viewVersion = -1;
+    if (this.containsRegionContentChange()) {
+      viewVersion = region.getDistributionAdvisor().startOperation();
+    }
+    if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
+      logger.trace(LogMarker.STATE_FLUSH_OP, "dispatching operation in view version {}",
+          viewVersion);
+    }
+    return viewVersion;
+  }
+
+  public void endOperation(long viewVersion) {
+    DistributedRegion region = getRegion();
+    if (viewVersion > 0) {
+      region.getDistributionAdvisor().endOperation(viewVersion);
+      viewVersion = -1;
+      if (logger.isDebugEnabled()) {
+        logger.trace(LogMarker.STATE_FLUSH_OP, "done dispatching operation in view version {}",
+            viewVersion);
+      }
+    }
+  }
+
   /**
    * Distribute a cache operation to other members of the distributed system. This method determines
    * who the recipients are and handles careful delivery of the operation to those members.
@@ -260,15 +285,6 @@ public abstract class DistributedCacheOperation {
 
     boolean isPutAll = (this instanceof DistributedPutAllOperation);
     boolean isRemoveAll = (this instanceof DistributedRemoveAllOperation);
-
-    long viewVersion = -1;
-    if (this.containsRegionContentChange()) {
-      viewVersion = region.getDistributionAdvisor().startOperation();
-    }
-    if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
-      logger.trace(LogMarker.STATE_FLUSH_OP, "dispatching operation in view version {}",
-          viewVersion);
-    }
 
     try {
       // Recipients with CacheOp
@@ -596,11 +612,6 @@ public abstract class DistributedCacheOperation {
           }
         }
 
-        if (viewVersion > 0) {
-          region.getDistributionAdvisor().endOperation(viewVersion);
-          viewVersion = -1;
-        }
-
         /** compute local client routing before waiting for an ack only for a bucket */
         if (region.isUsedForPartitionedRegionBucket()) {
           FilterInfo filterInfo = getLocalFilterRouting(filterRouting);
@@ -639,13 +650,6 @@ public abstract class DistributedCacheOperation {
       throw e;
     } finally {
       ReplyProcessor21.setShortSevereAlertProcessing(false);
-      if (viewVersion != -1) {
-        if (logger.isDebugEnabled()) {
-          logger.trace(LogMarker.STATE_FLUSH_OP, "done dispatching operation in view version {}",
-              viewVersion);
-        }
-        region.getDistributionAdvisor().endOperation(viewVersion);
-      }
     }
   }
 

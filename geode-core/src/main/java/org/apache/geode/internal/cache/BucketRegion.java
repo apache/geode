@@ -577,21 +577,33 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   protected void distributeUpdateOperation(EntryEventImpl event, long lastModified) {
-    if (!event.isOriginRemote() && !event.isNetSearch() && getBucketAdvisor().isPrimary()) {
-      if (event.isBulkOpInProgress()) {
-        // consolidate the UpdateOperation for each entry into a PutAllMessage
-        // since we did not call basicPutPart3(), so we have to explicitly addEntry here
-        event.getPutAllOperation().addEntry(event, this.getId());
-      } else {
-        new UpdateOperation(event, lastModified).distribute();
-        if (logger.isDebugEnabled()) {
-          logger.debug("sent update operation : for region  : {}: with event: {}", this.getName(),
-              event);
+    long viewVersion = -1;
+    UpdateOperation op = null;
+
+    try {
+      if (!event.isOriginRemote() && !event.isNetSearch() && getBucketAdvisor().isPrimary()) {
+        if (event.isBulkOpInProgress()) {
+          // consolidate the UpdateOperation for each entry into a PutAllMessage
+          // since we did not call basicPutPart3(), so we have to explicitly addEntry here
+          event.getPutAllOperation().addEntry(event, this.getId());
+        } else {
+          // BR's put
+          op = new UpdateOperation(event, lastModified);
+          viewVersion = op.startOperation();
+          op.distribute();
+          if (logger.isDebugEnabled()) {
+            logger.debug("sent update operation : for region  : {}: with event: {}", this.getName(),
+                event);
+          }
         }
       }
-    }
-    if (!event.getOperation().isPutAll()) { // putAll will invoke listeners later
-      event.invokeCallbacks(this, true, true);
+      if (!event.getOperation().isPutAll()) { // putAll will invoke listeners later
+        event.invokeCallbacks(this, true, true);
+      }
+    } finally {
+      if (op != null) {
+        op.endOperation(viewVersion);
+      }
     }
   }
 
@@ -607,40 +619,55 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     // timestamp returned from basicPutPart2, but as a bucket we want to do
     // distribution *before* we do basicPutPart2.
     final long modifiedTime = event.getEventTime(lastModified);
-    // Update the get stats if necessary.
-    if (this.partitionedRegion.getDataStore().hasClientInterest(event)) {
-      updateStatsForGet(entry, true);
-    }
-    if (!event.isOriginRemote()) {
-      if (event.getVersionTag() == null || event.getVersionTag().isGatewayTag()) {
-        boolean eventHasDelta = event.getDeltaBytes() != null;
-        VersionTag v = entry.generateVersionTag(null, eventHasDelta, this, event);
-        if (v != null) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("generated version tag {} in region {}", v, this.getName());
+
+    long viewVersion = -1;
+    UpdateOperation op = null;
+
+    try {
+      // Update the get stats if necessary.
+      if (this.partitionedRegion.getDataStore().hasClientInterest(event)) {
+        updateStatsForGet(entry, true);
+      }
+      if (!event.isOriginRemote()) {
+        if (event.getVersionTag() == null || event.getVersionTag().isGatewayTag()) {
+          boolean eventHasDelta = event.getDeltaBytes() != null;
+          VersionTag v = entry.generateVersionTag(null, eventHasDelta, this, event);
+          if (v != null) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("generated version tag {} in region {}", v, this.getName());
+            }
           }
         }
+
+        // This code assumes it is safe ignore token mode (GII in progress)
+        // because it assumes when the origin of the event is local,
+        // the GII has completed and the region is initialized and open for local
+        // ops
+
+        if (!event.isBulkOpInProgress()) {
+          long start = this.partitionedRegion.getPrStats().startSendReplication();
+          try {
+            // PR's put PR
+            op = new UpdateOperation(event, modifiedTime);
+            viewVersion = op.startOperation();
+            op.distribute();
+          } finally {
+            this.partitionedRegion.getPrStats().endSendReplication(start);
+          }
+        } else {
+          // consolidate the UpdateOperation for each entry into a PutAllMessage
+          // basicPutPart3 takes care of this
+        }
       }
 
-      // This code assumes it is safe ignore token mode (GII in progress)
-      // because it assumes when the origin of the event is local,
-      // the GII has completed and the region is initialized and open for local
-      // ops
-      if (!event.isBulkOpInProgress()) {
-        long start = this.partitionedRegion.getPrStats().startSendReplication();
-        try {
-          UpdateOperation op = new UpdateOperation(event, modifiedTime);
-          op.distribute();
-        } finally {
-          this.partitionedRegion.getPrStats().endSendReplication(start);
-        }
-      } else {
-        // consolidate the UpdateOperation for each entry into a PutAllMessage
-        // basicPutPart3 takes care of this
+      long lastModifiedTime =
+          super.basicPutPart2(event, entry, isInitialized, lastModified, clearConflict);
+      return lastModifiedTime;
+    } finally {
+      if (op != null) {
+        op.endOperation(viewVersion);
       }
     }
-
-    return super.basicPutPart2(event, entry, isInitialized, lastModified, clearConflict);
   }
 
   protected void notifyGatewaySender(EnumListenerEvent operation, EntryEventImpl event) {
@@ -883,39 +910,61 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   protected void distributeInvalidateOperation(EntryEventImpl event) {
-    if (!event.isOriginRemote() && getBucketAdvisor().isPrimary()) {
-      // This cache has processed the event, forward operation
-      // and event messages to backup buckets
-      new InvalidateOperation(event).distribute();
+    InvalidateOperation op = null;
+    long viewVersion = -1;
+    try {
+      if (!event.isOriginRemote() && getBucketAdvisor().isPrimary()) {
+        // This cache has processed the event, forward operation
+        // and event messages to backup buckets
+        // BR.invalidate hasSeenEvent
+        op = new InvalidateOperation(event);
+        viewVersion = op.startOperation();
+        op.distribute();
+      }
+      event.invokeCallbacks(this, true, false);
+    } finally {
+      if (op != null) {
+        op.endOperation(viewVersion);
+      }
     }
-    event.invokeCallbacks(this, true, false);
   }
 
   @Override
   void basicInvalidatePart2(final RegionEntry re, final EntryEventImpl event, boolean clearConflict,
       boolean invokeCallbacks) {
     // Assumed this is called with the entry synchronized
-    if (!event.isOriginRemote()) {
-      if (event.getVersionTag() == null || event.getVersionTag().isGatewayTag()) {
-        VersionTag v = re.generateVersionTag(null, false, this, event);
-        if (logger.isDebugEnabled() && v != null) {
-          logger.debug("generated version tag {} in region {}", v, this.getName());
+    long viewVersion = -1;
+    InvalidateOperation op = null;
+
+    try {
+      if (!event.isOriginRemote()) {
+        if (event.getVersionTag() == null || event.getVersionTag().isGatewayTag()) {
+          VersionTag v = re.generateVersionTag(null, false, this, event);
+          if (logger.isDebugEnabled() && v != null) {
+            logger.debug("generated version tag {} in region {}", v, this.getName());
+          }
+          event.setVersionTag(v);
         }
-        event.setVersionTag(v);
+
+        // This code assumes it is safe ignore token mode (GII in progress)
+        // because it assumes when the origin of the event is local,
+        // the GII has completed and the region is initialized and open for local
+        // ops
+
+        // This code assumes that this bucket is primary
+        // distribute op to bucket secondaries and event to other listeners
+        // BR's invalidate
+        op = new InvalidateOperation(event);
+        viewVersion = op.startOperation();
+        op.distribute();
       }
-
-      // This code assumes it is safe ignore token mode (GII in progress)
-      // because it assumes when the origin of the event is local,
-      // the GII has completed and the region is initialized and open for local
-      // ops
-
-      // This code assumes that this bucket is primary
-      // distribute op to bucket secondaries and event to other listeners
-      InvalidateOperation op = new InvalidateOperation(event);
-      op.distribute();
+      super.basicInvalidatePart2(re, event, clearConflict /* Clear conflict occurred */,
+          invokeCallbacks);
+    } finally {
+      if (op != null) {
+        op.endOperation(viewVersion);
+      }
     }
-    super.basicInvalidatePart2(re, event, clearConflict /* Clear conflict occurred */,
-        invokeCallbacks);
   }
 
   @Override
@@ -1131,49 +1180,72 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   protected void distributeDestroyOperation(EntryEventImpl event) {
-    if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "BR.basicDestroy: this cache has already seen this event {}",
-          event);
-    }
-    if (!event.isOriginRemote() && getBucketAdvisor().isPrimary()) {
-      if (event.isBulkOpInProgress()) {
-        // consolidate the DestroyOperation for each entry into a RemoveAllMessage
-        event.getRemoveAllOperation().addEntry(event, this.getId());
-      } else {
-        // This cache has processed the event, forward operation
-        // and event messages to backup buckets
-        event.setOldValueFromRegion();
-        new DestroyOperation(event).distribute();
-      }
-    }
+    long viewVersion = -1;
+    DestroyOperation op = null;
 
-    if (!event.getOperation().isRemoveAll()) { // removeAll will invoke listeners later
-      event.invokeCallbacks(this, true, false);
+    try {
+      if (logger.isTraceEnabled(LogMarker.DM)) {
+        logger.trace(LogMarker.DM, "BR.basicDestroy: this cache has already seen this event {}",
+            event);
+      }
+      if (!event.isOriginRemote() && getBucketAdvisor().isPrimary()) {
+        if (event.isBulkOpInProgress()) {
+          // consolidate the DestroyOperation for each entry into a RemoveAllMessage
+          event.getRemoveAllOperation().addEntry(event, this.getId());
+        } else {
+          // This cache has processed the event, forward operation
+          // and event messages to backup buckets
+          // BR's destroy, not to trigger callback here
+          event.setOldValueFromRegion();
+          op = new DestroyOperation(event);
+          viewVersion = op.startOperation();
+          op.distribute();
+        }
+      }
+
+      if (!event.getOperation().isRemoveAll()) { // removeAll will invoke listeners later
+        event.invokeCallbacks(this, true, false);
+      }
+    } finally {
+      if (op != null) {
+        op.endOperation(viewVersion);
+      }
     }
   }
 
   @Override
   protected void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
-    // Assumed this is called with entry synchrony
-    if (!event.isOriginRemote() && !event.isBulkOpInProgress() && !event.getOperation().isLocal()
-        && !Operation.EVICT_DESTROY.equals(event.getOperation())
-        && !(event.isExpiration() && isEntryEvictDestroyEnabled())) {
+    long viewVersion = -1;
+    DestroyOperation op = null;
+    try {
+      // Assumed this is called with entry synchrony
+      if (!event.isOriginRemote() && !event.isBulkOpInProgress() && !event.getOperation().isLocal()
+          && !Operation.EVICT_DESTROY.equals(event.getOperation())
+          && !(event.isExpiration() && isEntryEvictDestroyEnabled())) {
 
-      if (event.getVersionTag() == null || event.getVersionTag().isGatewayTag()) {
-        VersionTag v = entry.generateVersionTag(null, false, this, event);
-        if (logger.isDebugEnabled() && v != null) {
-          logger.debug("generated version tag {} in region {}", v, this.getName());
+        if (event.getVersionTag() == null || event.getVersionTag().isGatewayTag()) {
+          VersionTag v = entry.generateVersionTag(null, false, this, event);
+          if (logger.isDebugEnabled() && v != null) {
+            logger.debug("generated version tag {} in region {}", v, this.getName());
+          }
         }
+
+        // This code assumes it is safe ignore token mode (GII in progress)
+        // because it assume when the origin of the event is local,
+        // then GII has completed (the region has been completely initialized)
+
+        // This code assumes that this bucket is primary
+        // BR.destroy for retain
+        op = new DestroyOperation(event);
+        viewVersion = op.startOperation();
+        op.distribute();
       }
-
-      // This code assumes it is safe ignore token mode (GII in progress)
-      // because it assume when the origin of the event is local,
-      // then GII has completed (the region has been completely initialized)
-
-      // This code assumes that this bucket is primary
-      new DestroyOperation(event).distribute();
+      super.basicDestroyBeforeRemoval(entry, event);
+    } finally {
+      if (op != null) {
+        op.endOperation(viewVersion);
+      }
     }
-    super.basicDestroyBeforeRemoval(entry, event);
   }
 
   @Override
@@ -1261,7 +1333,13 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   protected void distributeUpdateEntryVersionOperation(EntryEventImpl event) {
-    new UpdateEntryVersionOperation(event).distribute();
+    UpdateEntryVersionOperation op = new UpdateEntryVersionOperation(event);
+    long viewVersion = op.startOperation();
+    try {
+      op.distribute();
+    } finally {
+      op.endOperation(viewVersion);
+    }
   }
 
   public int getRedundancyLevel() {

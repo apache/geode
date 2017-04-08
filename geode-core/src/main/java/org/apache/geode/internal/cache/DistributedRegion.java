@@ -437,12 +437,18 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
         distribute = false;
       }
       if (distribute) {
+        // DR's put, it has notified gateway sender earlier
         UpdateOperation op = new UpdateOperation(event, lastModified);
+        long viewVersion = op.startOperation();
         if (logger.isTraceEnabled()) {
           logger.trace("distributing operation for event : {} : for region : {}", event,
               this.getName());
         }
-        op.distribute();
+        try {
+          op.distribute();
+        } finally {
+          op.endOperation(viewVersion);
+        }
       }
     }
   }
@@ -1657,6 +1663,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
           event.getRemoveAllOperation().addEntry(event, true);
         }
         if (!getConcurrencyChecksEnabled() || event.hasValidVersionTag()) {
+          // DR.destroy, hasSeenEvent. no to notifyGateway
           distributeDestroy(event, expectedOldValue);
           event.invokeCallbacks(this, true, false);
         }
@@ -1676,8 +1683,14 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     if (event.isDistributed() && !event.isOriginRemote() && !event.isBulkOpInProgress()) {
       boolean distribute = !event.getInhibitDistribution();
       if (distribute) {
+        // DR.destroy, it has notifiedGatewaySender ealier
         DestroyOperation op = new DestroyOperation(event);
-        op.distribute();
+        long viewVersion = op.startOperation();
+        try {
+          op.distribute();
+        } finally {
+          op.endOperation(viewVersion);
+        }
       }
     }
   }
@@ -1732,7 +1745,13 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
    * @since GemFire 5.7
    */
   protected void distributeInvalidateRegion(RegionEventImpl event) {
-    new InvalidateRegionOperation(event).distribute();
+    InvalidateRegionOperation op = new InvalidateRegionOperation(event);
+    long viewVersion = op.startOperation();
+    try {
+      op.distribute();
+    } finally {
+      op.endOperation(viewVersion);
+    }
   }
 
   /**
@@ -1781,7 +1800,13 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     if (persistenceAdvisor != null) {
       persistenceAdvisor.releaseTieLock();
     }
-    new DestroyRegionOperation(event, notifyOfRegionDeparture).distribute();
+    DestroyRegionOperation op = new DestroyRegionOperation(event, notifyOfRegionDeparture);
+    long viewVersion = op.startOperation();
+    try {
+      op.distribute();
+    } finally {
+      op.endOperation(viewVersion);
+    }
   }
 
   /**
@@ -1858,8 +1883,14 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       if (event.isDistributed() && !event.isOriginRemote()) {
         boolean distribute = !event.getInhibitDistribution();
         if (distribute) {
+          // DR.invalidate, it has triggered callback earlier
           InvalidateOperation op = new InvalidateOperation(event);
-          op.distribute();
+          long viewVersion = op.startOperation();
+          try {
+            op.distribute();
+          } finally {
+            op.endOperation(viewVersion);
+          }
         }
       }
     }
@@ -1890,8 +1921,14 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     if (!this.regionInvalid && event.isDistributed() && !event.isOriginRemote()
         && !isTX() /* only distribute if non-tx */) {
       if (event.isDistributed() && !event.isOriginRemote()) {
+        // DR has sent callback earlier
         UpdateEntryVersionOperation op = new UpdateEntryVersionOperation(event);
-        op.distribute();
+        long viewVersion = op.startOperation();
+        try {
+          op.distribute();
+        } finally {
+          op.endOperation(viewVersion);
+        }
       }
     }
   }

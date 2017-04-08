@@ -311,8 +311,14 @@ public class LocalRegionDataView implements InternalDataView {
       successfulPuts.clear();
       putallOp.fillVersionedObjectList(successfulPuts);
     }
-    region.postPutAllSend(putallOp, successfulPuts);
-    region.postPutAllFireEvents(putallOp, successfulPuts);
+    // BR & DR's putAll
+    long viewVersion = putallOp.startOperation();
+    try {
+      region.postPutAllSend(putallOp, successfulPuts);
+      region.postPutAllFireEvents(putallOp, successfulPuts);
+    } finally {
+      putallOp.endOperation(viewVersion);
+    }
   }
 
   @Override
@@ -325,7 +331,13 @@ public class LocalRegionDataView implements InternalDataView {
       successfulOps.clear();
       op.fillVersionedObjectList(successfulOps);
     }
-    region.postRemoveAllSend(op, successfulOps);
-    region.postRemoveAllFireEvents(op, successfulOps);
+    // BR, DR's removeAll
+    long viewVersion = op.startOperation();
+    try {
+      region.postRemoveAllSend(op, successfulOps);
+      region.postRemoveAllFireEvents(op, successfulOps);
+    } finally {
+      op.endOperation(viewVersion);
+    }
   }
 }
