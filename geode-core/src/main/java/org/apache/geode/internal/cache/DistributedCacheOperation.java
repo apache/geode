@@ -250,18 +250,27 @@ public abstract class DistributedCacheOperation {
       logger.trace(LogMarker.STATE_FLUSH_OP, "dispatching operation in view version {}",
           viewVersion);
     }
+    // logger.info("GGG:startOp:" + viewVersion + ":" + region.getFullPath() + ":"
+    // + region.getDistributionAdvisor().currentVersionOpCount + ":"
+    // + region.getDistributionAdvisor().previousVersionOpCount, new Exception());
     return viewVersion;
   }
 
   public void endOperation(long viewVersion) {
     DistributedRegion region = getRegion();
-    if (viewVersion > 0) {
+    if (viewVersion != -1) {
       region.getDistributionAdvisor().endOperation(viewVersion);
-      viewVersion = -1;
       if (logger.isDebugEnabled()) {
         logger.trace(LogMarker.STATE_FLUSH_OP, "done dispatching operation in view version {}",
             viewVersion);
       }
+      // logger.info("GGG:endOp:" + viewVersion + ":" + region.getFullPath() + ":"
+      // + region.getDistributionAdvisor().currentVersionOpCount + ":"
+      // + region.getDistributionAdvisor().previousVersionOpCount, new Exception());
+    } else {
+      // logger.info("GGG:ENDOP:" + viewVersion + ":" + region.getFullPath()
+      // + region.getDistributionAdvisor().currentVersionOpCount + ":"
+      // + region.getDistributionAdvisor().previousVersionOpCount, new Exception());
     }
   }
 
@@ -271,6 +280,7 @@ public abstract class DistributedCacheOperation {
    */
   public void distribute() {
     DistributedRegion region = getRegion();
+    // logger.info("GGG:" + region);
     DM mgr = region.getDistributionManager();
     boolean reliableOp = isOperationReliable() && region.requiresReliabilityCheck();
 

@@ -1577,7 +1577,13 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
         Region subregion = getCache().getRegion("root/" + regionName);
         DistributedTombstoneOperation gc = DistributedTombstoneOperation
             .gc((DistributedRegion) subregion, new EventID(getCache().getDistributedSystem()));
-        gc.distribute();
+        long viewVersion = -1;
+        try {
+          viewVersion = gc.startOperation();
+          gc.distribute();
+        } finally {
+          gc.endOperation(viewVersion);
+        }
       }
     };
     server.invoke(task);

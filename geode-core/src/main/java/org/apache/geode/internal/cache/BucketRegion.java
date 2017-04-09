@@ -1334,8 +1334,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   protected void distributeUpdateEntryVersionOperation(EntryEventImpl event) {
     UpdateEntryVersionOperation op = new UpdateEntryVersionOperation(event);
-    long viewVersion = op.startOperation();
+    long viewVersion = -1;
     try {
+      viewVersion = op.startOperation();
       op.distribute();
     } finally {
       op.endOperation(viewVersion);
@@ -1574,7 +1575,14 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       }
 
       // Send out the destroy op to peers
-      new DestroyRegionOperation(event, true).distribute();
+      DestroyRegionOperation dro = new DestroyRegionOperation(event, true);
+      long viewVersion = -1;
+      try {
+        viewVersion = dro.startOperation();
+        dro.distribute();
+      } finally {
+        dro.endOperation(viewVersion);
+      }
     }
   }
 

@@ -1684,9 +1684,10 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       boolean distribute = !event.getInhibitDistribution();
       if (distribute) {
         // DR.destroy, it has notifiedGatewaySender ealier
+        long viewVersion = -1;
         DestroyOperation op = new DestroyOperation(event);
-        long viewVersion = op.startOperation();
         try {
+          viewVersion = op.startOperation();
           op.distribute();
         } finally {
           op.endOperation(viewVersion);
@@ -1746,8 +1747,9 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
    */
   protected void distributeInvalidateRegion(RegionEventImpl event) {
     InvalidateRegionOperation op = new InvalidateRegionOperation(event);
-    long viewVersion = op.startOperation();
+    long viewVersion = -1;
     try {
+      viewVersion = op.startOperation();
       op.distribute();
     } finally {
       op.endOperation(viewVersion);
@@ -1800,9 +1802,10 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     if (persistenceAdvisor != null) {
       persistenceAdvisor.releaseTieLock();
     }
+    long viewVersion = -1;
     DestroyRegionOperation op = new DestroyRegionOperation(event, notifyOfRegionDeparture);
-    long viewVersion = op.startOperation();
     try {
+      viewVersion = op.startOperation();
       op.distribute();
     } finally {
       op.endOperation(viewVersion);
@@ -1884,9 +1887,10 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
         boolean distribute = !event.getInhibitDistribution();
         if (distribute) {
           // DR.invalidate, it has triggered callback earlier
+          long viewVersion = -1;
           InvalidateOperation op = new InvalidateOperation(event);
-          long viewVersion = op.startOperation();
           try {
+            viewVersion = op.startOperation();
             op.distribute();
           } finally {
             op.endOperation(viewVersion);
@@ -1923,8 +1927,9 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       if (event.isDistributed() && !event.isOriginRemote()) {
         // DR has sent callback earlier
         UpdateEntryVersionOperation op = new UpdateEntryVersionOperation(event);
-        long viewVersion = op.startOperation();
+        long viewVersion = -1;
         try {
+          viewVersion = op.startOperation();
           op.distribute();
         } finally {
           op.endOperation(viewVersion);
@@ -2133,7 +2138,13 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     this.getCachePerfStats().incTombstoneGCCount();
     EventID eventId = new EventID(getSystem());
     DistributedTombstoneOperation gc = DistributedTombstoneOperation.gc(this, eventId);
-    gc.distribute();
+    long viewVersion = -1;
+    try {
+      viewVersion = gc.startOperation();
+      gc.distribute();
+    } finally {
+      gc.endOperation(viewVersion);
+    }
     notifyClientsOfTombstoneGC(getVersionVector().getTombstoneGCVector(), keysRemoved, eventId,
         null);
     return eventId;

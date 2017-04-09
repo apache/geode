@@ -67,8 +67,15 @@ public class DistributedClearOperation extends DistributedCacheOperation {
    **/
   public static void clear(RegionEventImpl regionEvent, RegionVersionVector rvv,
       Set<InternalDistributedMember> recipients) {
-    new DistributedClearOperation(DistributedClearOperation.OperationType.OP_CLEAR, regionEvent,
-        rvv, recipients).distribute();
+    long viewVersion = -1;
+    DistributedClearOperation op = new DistributedClearOperation(
+        DistributedClearOperation.OperationType.OP_CLEAR, regionEvent, rvv, recipients);
+    try {
+      viewVersion = op.startOperation();
+      op.distribute();
+    } finally {
+      op.endOperation(viewVersion);
+    }
   }
 
   /**
@@ -81,7 +88,13 @@ public class DistributedClearOperation extends DistributedCacheOperation {
       Set<InternalDistributedMember> recipients) {
     DistributedClearOperation dco = new DistributedClearOperation(
         DistributedClearOperation.OperationType.OP_LOCK_FOR_CLEAR, regionEvent, null, recipients);
-    dco.distribute();
+    long viewVersion = -1;
+    try {
+      viewVersion = dco.startOperation();
+      dco.distribute();
+    } finally {
+      dco.endOperation(viewVersion);
+    }
   }
 
   @Override
