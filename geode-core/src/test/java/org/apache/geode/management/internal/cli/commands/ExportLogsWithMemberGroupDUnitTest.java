@@ -127,7 +127,8 @@ public class ExportLogsWithMemberGroupDUnitTest {
   @Test
   public void testExportLogsWithGroupAndMemberName() throws Exception {
     connectIfNeeded();
-    CommandResult results = connector.executeCommand("export logs --group=group1 --member=server-1");
+    CommandResult results =
+        connector.executeCommand("export logs --group=group1 --member=server-1");
     assertThat(results.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(connector.getGfshOutput()).contains("Can't specify both group and member");
   }
