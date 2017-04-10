@@ -58,10 +58,10 @@ public class Server {
   private JMXConnectorServer cs;
   private String propFile = null;
 
-  public Server(int port, String properties, String jsonAuthFile) throws Exception {
+  public Server(int jmxPort, String properties, String jsonAuthFile) throws Exception {
     this.propFile = properties;
     mbs = ManagementFactory.getPlatformMBeanServer();
-    url = new JMXServiceURL(formJMXServiceURLString(DEFAULT_HOST, port));
+    url = new JMXServiceURL(formJMXServiceURLString(DEFAULT_HOST, jmxPort));
 
     // Load the beans first, otherwise we get access denied
     loadMBeans();
@@ -98,7 +98,7 @@ public class Server {
     }
 
     try {
-      java.rmi.registry.LocateRegistry.createRegistry(port);
+      java.rmi.registry.LocateRegistry.createRegistry(jmxPort);
       System.out.println("RMI registry ready.");
     } catch (Exception e) {
       System.out.println("Exception starting RMI registry:");
@@ -108,16 +108,17 @@ public class Server {
     cs.start();
   }
 
-  private String formJMXServiceURLString(String host, int port) throws UnknownHostException {
+  private String formJMXServiceURLString(String host, int jmxPort) throws UnknownHostException {
     String jmxSerURL = "";
 
     InetAddress inetAddr = InetAddress.getByName(host);
     if (inetAddr instanceof Inet4Address) {
       // Create jmx service url for IPv4 address
-      jmxSerURL = "service:jmx:rmi://" + host + "/jndi/rmi://" + host + ":" + port + "/jmxrmi";
+      jmxSerURL = "service:jmx:rmi://" + host + "/jndi/rmi://" + host + ":" + jmxPort + "/jmxrmi";
     } else if (inetAddr instanceof Inet6Address) {
       // Create jmx service url for IPv6 address
-      jmxSerURL = "service:jmx:rmi://[" + host + "]/jndi/rmi://[" + host + "]:" + port + "/jmxrmi";
+      jmxSerURL =
+          "service:jmx:rmi://[" + host + "]/jndi/rmi://[" + host + "]:" + jmxPort + "/jmxrmi";
     }
 
     return jmxSerURL;
@@ -223,10 +224,10 @@ public class Server {
     return propVal.split(" ");
   }
 
-  public static Server createServer(int port, String properties, String jsonAuthFile) {
+  public static Server createServer(int jmxPort, String properties, String jsonAuthFile) {
     Server s = null;
     try {
-      s = new Server(port, properties, jsonAuthFile);
+      s = new Server(jmxPort, properties, jsonAuthFile);
     } catch (Exception e) {
       e.printStackTrace();
       return null;
