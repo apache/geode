@@ -75,6 +75,9 @@ import java.text.MessageFormat;
  */
 public class CliStrings {
 
+  private static final String LOG_LEVEL_VALUES =
+      "Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.";
+
   /*-*************************************************************************
    *************                  T O P I C S                  ***************
    ***************************************************************************/
@@ -408,7 +411,7 @@ public class CliStrings {
           + DistributionConfig.MAX_LOG_DISK_SPACE_LIMIT + ".";
   public static final String ALTER_RUNTIME_CONFIG__LOG__LEVEL = LOG_LEVEL;
   public static final String ALTER_RUNTIME_CONFIG__LOG__LEVEL__HELP =
-      "Log level. Valid values are: none, error, info, config , warning, severe, fine, finer and finest.";
+      "Log level. " + LOG_LEVEL_VALUES;
   public static final String ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED =
       "enable-statistics";
   public static final String ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLING__ENABLED__HELP =
@@ -1401,7 +1404,7 @@ public class CliStrings {
   public static final String EXPORT_LOGS__MSG__CANNOT_EXECUTE = "Cannot execute";
   public static final String EXPORT_LOGS__LOGLEVEL = LOG_LEVEL;
   public static final String EXPORT_LOGS__LOGLEVEL__HELP =
-      "Minimum level of log entries to export. Valid values are: fatal, error, warn, info, debug, trace and all.  The default is \"ALL\".";
+      "Minimum level of log entries to export.  " + LOG_LEVEL_VALUES + "  The default is ALL.";
   public static final String EXPORT_LOGS__UPTO_LOGLEVEL = "only-log-level";
   public static final String EXPORT_LOGS__UPTO_LOGLEVEL__HELP =
       "Whether to only include those entries that exactly match the --log-level specified.";
@@ -2371,7 +2374,7 @@ public class CliStrings {
       "Sets the list of Locators used by this Locator to join the appropriate Geode cluster.";
   public static final String START_LOCATOR__LOG_LEVEL = LOG_LEVEL;
   public static final String START_LOCATOR__LOG_LEVEL__HELP =
-      "Sets the level of output logged to the Locator log file.  Possible values for log-level include: finest, finer, fine, config, info, warning, severe, none.";
+      "Sets the level of output logged to the Locator log file.  " + LOG_LEVEL_VALUES;
   public static final String START_LOCATOR__MCAST_ADDRESS = MCAST_ADDRESS;
   public static final String START_LOCATOR__MCAST_ADDRESS__HELP =
       "The IP address or hostname used to bind the UPD socket for multi-cast networking so the Locator can communicate with other members in the Geode cluster using a common multicast address and port.  If mcast-port is zero, then mcast-address is ignored.";
@@ -2525,7 +2528,7 @@ public class CliStrings {
       "Sets the number of seconds the server will wait for a locator to become available during startup before giving up.";
   public static final String START_SERVER__LOG_LEVEL = LOG_LEVEL;
   public static final String START_SERVER__LOG_LEVEL__HELP =
-      "Sets the level of output logged to the Cache Server log file.  Possible values for log-level include: finest, finer, fine, config, info, warning, severe, none.";
+      "Sets the level of output logged to the Cache Server log file.  " + LOG_LEVEL_VALUES;
   public static final String START_SERVER__MAXHEAP = "max-heap";
   public static final String START_SERVER__MAXHEAP__HELP =
       "Maximum size of the heap in the same format as the JVM -Xmx parameter.";
