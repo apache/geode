@@ -140,7 +140,10 @@ public class PulseAppListener implements ServletContextListener {
         // Set default host name
         sysPulseHost = PulseConstants.GEMFIRE_DEFAULT_HOST;
       }
-      sysPulsePort = PulseConstants.GEMFIRE_DEFAULT_PORT;
+      sysPulsePort = System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT);
+      if (StringUtils.isBlank(sysPulsePort)) {
+        sysPulsePort = PulseConstants.GEMFIRE_DEFAULT_PORT;
+      }
 
     } else {
       // Application Pulse is running in Non-Embedded Mode

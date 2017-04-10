@@ -53,7 +53,7 @@ public class PulseVerificationTest {
   public void loginWithDataOnly() throws Exception {
     client.loginToPulseAndVerify("data", "data");
 
-    // this would requiest cluster permission
+    // this would request cluster permission
     HttpResponse response = client.get("/pulse/clusterDetail.html");
     assertThat(response.getStatusLine().getStatusCode()).isEqualTo(403);
 
