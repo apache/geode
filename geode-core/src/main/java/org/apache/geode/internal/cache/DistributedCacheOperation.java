@@ -250,9 +250,6 @@ public abstract class DistributedCacheOperation {
       logger.trace(LogMarker.STATE_FLUSH_OP, "dispatching operation in view version {}",
           viewVersion);
     }
-    // logger.info("GGG:startOp:" + viewVersion + ":" + region.getFullPath() + ":"
-    // + region.getDistributionAdvisor().currentVersionOpCount + ":"
-    // + region.getDistributionAdvisor().previousVersionOpCount, new Exception());
     return viewVersion;
   }
 
@@ -264,13 +261,6 @@ public abstract class DistributedCacheOperation {
         logger.trace(LogMarker.STATE_FLUSH_OP, "done dispatching operation in view version {}",
             viewVersion);
       }
-      // logger.info("GGG:endOp:" + viewVersion + ":" + region.getFullPath() + ":"
-      // + region.getDistributionAdvisor().currentVersionOpCount + ":"
-      // + region.getDistributionAdvisor().previousVersionOpCount, new Exception());
-    } else {
-      // logger.info("GGG:ENDOP:" + viewVersion + ":" + region.getFullPath()
-      // + region.getDistributionAdvisor().currentVersionOpCount + ":"
-      // + region.getDistributionAdvisor().previousVersionOpCount, new Exception());
     }
   }
 

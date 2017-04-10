@@ -159,13 +159,13 @@ public class DistributionAdvisor {
    * the number of operations in-progress for previous versions of the profile set. Guarded by
    * opCountLock
    */
-  public long previousVersionOpCount;
+  private long previousVersionOpCount;
 
   /**
    * the number of operations in-progress for the current version of the profile set. Guarded by
    * opCountLock
    */
-  public long currentVersionOpCount;
+  private long currentVersionOpCount;
 
   /**
    * Hold onto removed profiles to compare to late-processed profiles. Fix for bug 36881. Protected
@@ -740,7 +740,6 @@ public class DistributionAdvisor {
     }
     synchronized (this.opCountLock) {
       currentVersionOpCount++;
-      // logger.info("GGG:startOp:"+this.currentVersionOpCount, new Exception());
       if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
         logger.trace(LogMarker.STATE_FLUSH_OP, "StateFlush current opcount incremented: {}",
             currentVersionOpCount);
@@ -760,14 +759,12 @@ public class DistributionAdvisor {
     synchronized (this.opCountLock) {
       if (version == membershipVersion) {
         currentVersionOpCount--;
-        // logger.info("GGG:endOp:"+this.currentVersionOpCount, new Exception());
         if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
           logger.trace(LogMarker.STATE_FLUSH_OP, "StateFlush current opcount deccremented: {}",
               currentVersionOpCount);
         }
       } else {
         previousVersionOpCount--;
-        // logger.info("GGG:endOp2:" + this.previousVersionOpCount, new Exception());
         if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
           logger.trace(LogMarker.STATE_FLUSH_OP, "StateFlush previous opcount incremented: {}",
               previousVersionOpCount);
