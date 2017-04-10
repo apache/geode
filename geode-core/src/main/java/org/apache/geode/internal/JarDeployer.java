@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -89,6 +90,7 @@ public class JarDeployer implements Serializable {
     try {
       boolean shouldDeployNewVersion = shouldDeployNewVersion(jarName, jarBytes);
       if (!shouldDeployNewVersion) {
+        logger.debug("No need to deploy a new version of {}", jarName);
         return null;
       }
 
@@ -145,6 +147,8 @@ public class JarDeployer implements Serializable {
       int nextVersion = extractVersionFromFilename(latestVersionedJarName) + 1;
       nextVersionedJarName = removeJarExtension(unversionedJarName) + ".v" + nextVersion + ".jar";
     }
+
+    logger.debug("Next versioned jar name for {} is {}", unversionedJarName, nextVersionedJarName);
 
     return new File(deployDirectory, nextVersionedJarName);
   }
@@ -274,6 +278,7 @@ public class JarDeployer implements Serializable {
    * @return Sorted array of files that are older versions of the given JAR
    */
   protected File[] findSortedOldVersionsOfJar(final String unversionedJarName) {
+    logger.debug("Finding sorted old versions of {}", unversionedJarName);
     // Find all matching files
     final Pattern pattern = Pattern.compile(
         JAR_PREFIX_FOR_REGEX + removeJarExtension(unversionedJarName) + "\\.v\\d++\\.jar$");
@@ -287,6 +292,8 @@ public class JarDeployer implements Serializable {
       return file2Version - file1Version;
     });
 
+    logger.debug("Found [{}]",
+        Arrays.stream(oldJarFiles).map(File::getAbsolutePath).collect(joining(",")));
     return oldJarFiles;
   }
 
@@ -458,7 +465,7 @@ public class JarDeployer implements Serializable {
     try {
       for (DeployedJar deployedJar : deployedJars) {
         if (deployedJar != null) {
-          logger.info("Registering new version of jar: {}", deployedJar.toString());
+          logger.info("Registering new version of jar: {}", deployedJar);
           DeployedJar oldJar = this.deployedJars.put(deployedJar.getJarName(), deployedJar);
           if (oldJar != null) {
             oldJar.cleanUp();
