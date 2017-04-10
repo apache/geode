@@ -77,6 +77,7 @@ public class ExportLogsDUnitTest {
 
   private Map<MemberVM, List<LogLine>> expectedMessages;
 
+
   @Before
   public void setup() throws Exception {
     Properties properties = new Properties();
@@ -127,7 +128,6 @@ public class ExportLogsDUnitTest {
   }
 
   @Test
-  @Category(FlakyTest.class) // time sensitive
   public void testExportWithStartAndEndDateTimeFiltering() throws Exception {
     ZonedDateTime cutoffTime = LocalDateTime.now().atZone(ZoneId.systemDefault());
 
