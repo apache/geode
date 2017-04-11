@@ -59,12 +59,12 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   private TemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
   private MemberVM[] members;
 
-  public LocatorServerStartupRule() {
-    DUnitLauncher.launchIfNeeded();
-  }
+  public LocatorServerStartupRule() {}
 
   @Override
   protected void before() throws Throwable {
+    DUnitLauncher.launchIfNeeded();
+
     restoreSystemProperties.before();
     temporaryFolder.create();
     members = new MemberVM[4];
