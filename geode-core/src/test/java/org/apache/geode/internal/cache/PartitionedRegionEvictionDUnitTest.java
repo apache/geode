@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -42,7 +43,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.cache.util.ObjectSizerImpl;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.OSProcess;
@@ -348,8 +348,8 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
                   new PartitionAttributesFactory().setRedundantCopies(redundantCopies)
                       .setLocalMaxMemory(localMaxMem).setTotalNumBuckets(maxBuckets).create());
 
-              factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(
-                  new ObjectSizerImpl(), EvictionAction.OVERFLOW_TO_DISK));
+              factory.setEvictionAttributes(EvictionAttributes
+                  .createLRUMemoryAttributes(ObjectSizer.DEFAULT, EvictionAction.OVERFLOW_TO_DISK));
               factory.setDiskSynchronous(true);
               DiskStoreFactory dsf = getCache().createDiskStoreFactory();
               final File[] diskDirs = new File[1];
@@ -451,7 +451,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
             new PartitionAttributesFactory().setRedundantCopies(redundantCopies)
                 .setLocalMaxMemory(16).setTotalNumBuckets(maxBuckets).create());
         factory.setEvictionAttributes(EvictionAttributes
-            .createLRUMemoryAttributes(new ObjectSizerImpl(), EvictionAction.LOCAL_DESTROY));
+            .createLRUMemoryAttributes(ObjectSizer.DEFAULT, EvictionAction.LOCAL_DESTROY));
         final PartitionedRegion pr = (PartitionedRegion) createRootRegion(name, factory.create());
         assertNotNull(pr);
       }
