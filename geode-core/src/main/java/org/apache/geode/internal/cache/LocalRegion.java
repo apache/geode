@@ -10458,14 +10458,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  public void postPutAllSend(DistributedPutAllOperation putallOp,
+  public long postPutAllSend(DistributedPutAllOperation putallOp,
       VersionedObjectList successfulPuts) {
     /* No-op for local region of course */
+    return -1;
   }
 
-  public void postRemoveAllSend(DistributedRemoveAllOperation op,
+  public long postRemoveAllSend(DistributedRemoveAllOperation op,
       VersionedObjectList successfulOps) {
     /* No-op for local region of course */
+    return -1;
   }
 
 

@@ -2077,7 +2077,7 @@ public class PartitionedRegion extends LocalRegion
    * @param successfulPuts not used in PartitionedRegion.
    */
   @Override
-  public void postPutAllSend(DistributedPutAllOperation putallO,
+  public long postPutAllSend(DistributedPutAllOperation putallO,
       VersionedObjectList successfulPuts) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -2174,10 +2174,11 @@ public class PartitionedRegion extends LocalRegion
        * != null) { e.release(); } } }
        */
     }
+    return -1;
   }
 
   @Override
-  public void postRemoveAllSend(DistributedRemoveAllOperation op,
+  public long postRemoveAllSend(DistributedRemoveAllOperation op,
       VersionedObjectList successfulOps) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -2264,6 +2265,7 @@ public class PartitionedRegion extends LocalRegion
         }
       }
     }
+    return -1;
   }
 
   /*

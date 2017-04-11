@@ -587,7 +587,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           // since we did not call basicPutPart3(), so we have to explicitly addEntry here
           event.getPutAllOperation().addEntry(event, this.getId());
         } else {
-          // BR's put
+          // before distribute: BR's put
           op = new UpdateOperation(event, lastModified);
           token = op.startOperation();
           if (logger.isDebugEnabled()) {
@@ -646,7 +646,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         if (!event.isBulkOpInProgress()) {
           long start = this.partitionedRegion.getPrStats().startSendReplication();
           try {
-            // PR's put PR
+            // before distribute: PR's put PR
             op = new UpdateOperation(event, modifiedTime);
             token = op.startOperation();
           } finally {
@@ -914,7 +914,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       if (!event.isOriginRemote() && getBucketAdvisor().isPrimary()) {
         // This cache has processed the event, forward operation
         // and event messages to backup buckets
-        // BR.invalidate hasSeenEvent
+        // before distribute: BR.invalidate hasSeenEvent
         op = new InvalidateOperation(event);
         token = op.startOperation();
       }
@@ -950,7 +950,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
         // This code assumes that this bucket is primary
         // distribute op to bucket secondaries and event to other listeners
-        // BR's invalidate
+        // before distribute: BR's invalidate
         op = new InvalidateOperation(event);
         token = op.startOperation();
       }
@@ -1191,7 +1191,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         } else {
           // This cache has processed the event, forward operation
           // and event messages to backup buckets
-          // BR's destroy, not to trigger callback here
+          // before distribute: BR's destroy, not to trigger callback here
           event.setOldValueFromRegion();
           op = new DestroyOperation(event);
           token = op.startOperation();
@@ -1230,7 +1230,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         // then GII has completed (the region has been completely initialized)
 
         // This code assumes that this bucket is primary
-        // BR.destroy for retain
+        // before distribute: BR.destroy for retain
         op = new DestroyOperation(event);
         token = op.startOperation();
       }
