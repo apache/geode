@@ -32,7 +32,7 @@ import org.apache.geode.lang.Identifiable;
  * @see FunctionAdapter
  * @see FunctionService
  *
- * @param T type of FunctionContext
+ * @param T type of FunctionContext's arguments of this Function
  *
  * @since GemFire 6.0
  */
