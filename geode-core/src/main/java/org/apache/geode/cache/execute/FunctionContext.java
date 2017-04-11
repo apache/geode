@@ -25,7 +25,7 @@ package org.apache.geode.cache.execute;
  * This interface is implemented by GemFire. Instances of it will be passed in to
  * {@link Function#execute(FunctionContext)}.
  * 
- * @param T Arguments
+ * @param T type of Arguments
  *
  * @since GemFire 6.0
  *
