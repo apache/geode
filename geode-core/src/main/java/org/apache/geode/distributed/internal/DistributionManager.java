@@ -2342,6 +2342,10 @@ public class DistributionManager implements DM {
     return false;
   }
 
+  public boolean isShutdownStarted() {
+    return closeInProgress;
+  }
+
   private void handleViewInstalledEvent(ViewInstalledEvent ev) {
     synchronized (this.membershipViewIdGuard) {
       this.membershipViewIdAcknowledged = ev.getViewId();

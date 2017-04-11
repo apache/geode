@@ -100,9 +100,16 @@ public interface Manager extends Service, MessageHandler {
   Throwable getShutdownCause();
 
   /**
-   * Returns true if a shutdown is in progress or has been completed
+   * Returns true if a shutdown is in progress or has been completed . When it returns true,
+   * shutdown message is already sent.
    */
   boolean shutdownInProgress();
+
+  /**
+   * Returns true if a distributed system close is started. And shutdown msg has not sent yet,its in
+   * progress.
+   */
+  boolean isShutdownStarted();
 
   // /**
   // * similar to forceDisconnect but is used solely by Messenger
