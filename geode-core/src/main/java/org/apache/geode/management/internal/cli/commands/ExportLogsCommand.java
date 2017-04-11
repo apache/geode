@@ -53,6 +53,7 @@ import java.util.regex.Pattern;
 public class ExportLogsCommand implements CommandMarker {
 
   private static final Logger logger = LogService.getLogger();
+  public final static String DEFAULT_EXPORT_LOG_LEVEL = "ALL";
 
   public static final String FORMAT = "yyyy/MM/dd/HH/mm/ss/SSS/z";
   public static final String ONLY_DATE_FORMAT = "yyyy/MM/dd";
