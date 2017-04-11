@@ -240,6 +240,12 @@ public abstract class DistributedCacheOperation {
     return true;
   }
 
+  /**
+   * region's distribution advisor marked that a distribution is about to start, then distribute. It
+   * returns a token, which is view version. Return -1 means the method did not succeed. This method
+   * must be invoked before toDistribute(). This method should pair with endOperation() in
+   * try/finally block.
+   */
   public long startOperation() {
     DistributedRegion region = getRegion();
     long viewVersion = -1;
@@ -250,9 +256,14 @@ public abstract class DistributedCacheOperation {
       logger.trace(LogMarker.STATE_FLUSH_OP, "dispatching operation in view version {}",
           viewVersion);
     }
+    _distribute();
     return viewVersion;
   }
 
+  /**
+   * region's distribution advisor marked that a distribution is ended. This method should pair with
+   * startOperation in try/finally block.
+   */
   public void endOperation(long viewVersion) {
     DistributedRegion region = getRegion();
     if (viewVersion != -1) {
@@ -269,8 +280,22 @@ public abstract class DistributedCacheOperation {
    * who the recipients are and handles careful delivery of the operation to those members.
    */
   public void distribute() {
+    long token = -1;
+    try {
+      token = startOperation();
+    } finally {
+      endOperation(token);
+    }
+  }
+
+  /**
+   * About to distribute a cache operation to other members of the distributed system. This method
+   * determines who the recipients are and handles careful delivery of the operation to those
+   * members. This method should wrapped by startOperation() and endOperation() in try/finally
+   * block.
+   */
+  private void _distribute() {
     DistributedRegion region = getRegion();
-    // logger.info("GGG:" + region);
     DM mgr = region.getDistributionManager();
     boolean reliableOp = isOperationReliable() && region.requiresReliabilityCheck();
 

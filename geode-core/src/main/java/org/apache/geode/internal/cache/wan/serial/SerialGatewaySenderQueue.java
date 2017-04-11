@@ -1142,13 +1142,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
             event.setTailKey(temp);
 
             BatchDestroyOperation op = new BatchDestroyOperation(event);
-            long viewVersion = -1;
-            try {
-              viewVersion = op.startOperation();
-              op.distribute();
-            } finally {
-              op.endOperation(viewVersion);
-            }
+            op.distribute();
             if (logger.isDebugEnabled()) {
               logger.debug("BatchRemovalThread completed destroy of keys from {} to {}",
                   lastDestroyedKey, temp);

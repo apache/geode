@@ -439,16 +439,11 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       if (distribute) {
         // DR's put, it has notified gateway sender earlier
         UpdateOperation op = new UpdateOperation(event, lastModified);
-        long viewVersion = op.startOperation();
         if (logger.isTraceEnabled()) {
           logger.trace("distributing operation for event : {} : for region : {}", event,
               this.getName());
         }
-        try {
-          op.distribute();
-        } finally {
-          op.endOperation(viewVersion);
-        }
+        op.distribute();
       }
     }
   }
@@ -1684,14 +1679,8 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       boolean distribute = !event.getInhibitDistribution();
       if (distribute) {
         // DR.destroy, it has notifiedGatewaySender ealier
-        long viewVersion = -1;
         DestroyOperation op = new DestroyOperation(event);
-        try {
-          viewVersion = op.startOperation();
-          op.distribute();
-        } finally {
-          op.endOperation(viewVersion);
-        }
+        op.distribute();
       }
     }
   }
@@ -1746,14 +1735,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
    * @since GemFire 5.7
    */
   protected void distributeInvalidateRegion(RegionEventImpl event) {
-    InvalidateRegionOperation op = new InvalidateRegionOperation(event);
-    long viewVersion = -1;
-    try {
-      viewVersion = op.startOperation();
-      op.distribute();
-    } finally {
-      op.endOperation(viewVersion);
-    }
+    new InvalidateRegionOperation(event).distribute();
   }
 
   /**
@@ -1802,14 +1784,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     if (persistenceAdvisor != null) {
       persistenceAdvisor.releaseTieLock();
     }
-    long viewVersion = -1;
-    DestroyRegionOperation op = new DestroyRegionOperation(event, notifyOfRegionDeparture);
-    try {
-      viewVersion = op.startOperation();
-      op.distribute();
-    } finally {
-      op.endOperation(viewVersion);
-    }
+    new DestroyRegionOperation(event, notifyOfRegionDeparture).distribute();
   }
 
   /**
@@ -1887,14 +1862,8 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
         boolean distribute = !event.getInhibitDistribution();
         if (distribute) {
           // DR.invalidate, it has triggered callback earlier
-          long viewVersion = -1;
           InvalidateOperation op = new InvalidateOperation(event);
-          try {
-            viewVersion = op.startOperation();
-            op.distribute();
-          } finally {
-            op.endOperation(viewVersion);
-          }
+          op.distribute();
         }
       }
     }
@@ -1927,13 +1896,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       if (event.isDistributed() && !event.isOriginRemote()) {
         // DR has sent callback earlier
         UpdateEntryVersionOperation op = new UpdateEntryVersionOperation(event);
-        long viewVersion = -1;
-        try {
-          viewVersion = op.startOperation();
-          op.distribute();
-        } finally {
-          op.endOperation(viewVersion);
-        }
+        op.distribute();
       }
     }
   }
@@ -2138,13 +2101,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     this.getCachePerfStats().incTombstoneGCCount();
     EventID eventId = new EventID(getSystem());
     DistributedTombstoneOperation gc = DistributedTombstoneOperation.gc(this, eventId);
-    long viewVersion = -1;
-    try {
-      viewVersion = gc.startOperation();
-      gc.distribute();
-    } finally {
-      gc.endOperation(viewVersion);
-    }
+    gc.distribute();
     notifyClientsOfTombstoneGC(getVersionVector().getTombstoneGCVector(), keysRemoved, eventId,
         null);
     return eventId;
@@ -3393,7 +3350,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   public void postPutAllSend(DistributedPutAllOperation putAllOp,
       VersionedObjectList successfulPuts) {
     if (putAllOp.putAllDataSize > 0) {
-      putAllOp.distribute();
+      putAllOp.startOperation();
     } else {
       if (logger.isDebugEnabled()) {
         logger.debug("DR.postPutAll: no data to distribute");
@@ -3405,7 +3362,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
   public void postRemoveAllSend(DistributedRemoveAllOperation op,
       VersionedObjectList successfulOps) {
     if (op.removeAllDataSize > 0) {
-      op.distribute();
+      op.startOperation();
     } else {
       getCache().getLoggerI18n().fine("DR.postRemoveAll: no data to distribute");
     }

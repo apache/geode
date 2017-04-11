@@ -254,13 +254,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
         // this should update the controller's cache with the updated value but leave this cache
         // alone
         DistributedCacheOperation op = new UpdateOperation(event, tag.getVersionTimeStamp());
-        long viewVersion = -1;
-        try {
-          viewVersion = op.startOperation();
-          op.distribute();
-        } finally {
-          op.endOperation(viewVersion);
-        }
+        op.distribute();
         event.release();
       }
     });

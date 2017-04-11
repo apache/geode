@@ -577,7 +577,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   protected void distributeUpdateOperation(EntryEventImpl event, long lastModified) {
-    long viewVersion = -1;
+    long token = -1;
     UpdateOperation op = null;
 
     try {
@@ -589,8 +589,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         } else {
           // BR's put
           op = new UpdateOperation(event, lastModified);
-          viewVersion = op.startOperation();
-          op.distribute();
+          token = op.startOperation();
           if (logger.isDebugEnabled()) {
             logger.debug("sent update operation : for region  : {}: with event: {}", this.getName(),
                 event);
@@ -602,7 +601,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       }
     } finally {
       if (op != null) {
-        op.endOperation(viewVersion);
+        op.endOperation(token);
       }
     }
   }
@@ -620,7 +619,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     // distribution *before* we do basicPutPart2.
     final long modifiedTime = event.getEventTime(lastModified);
 
-    long viewVersion = -1;
+    long token = -1;
     UpdateOperation op = null;
 
     try {
@@ -649,8 +648,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           try {
             // PR's put PR
             op = new UpdateOperation(event, modifiedTime);
-            viewVersion = op.startOperation();
-            op.distribute();
+            token = op.startOperation();
           } finally {
             this.partitionedRegion.getPrStats().endSendReplication(start);
           }
@@ -665,7 +663,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       return lastModifiedTime;
     } finally {
       if (op != null) {
-        op.endOperation(viewVersion);
+        op.endOperation(token);
       }
     }
   }
@@ -911,20 +909,19 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
   protected void distributeInvalidateOperation(EntryEventImpl event) {
     InvalidateOperation op = null;
-    long viewVersion = -1;
+    long token = -1;
     try {
       if (!event.isOriginRemote() && getBucketAdvisor().isPrimary()) {
         // This cache has processed the event, forward operation
         // and event messages to backup buckets
         // BR.invalidate hasSeenEvent
         op = new InvalidateOperation(event);
-        viewVersion = op.startOperation();
-        op.distribute();
+        token = op.startOperation();
       }
       event.invokeCallbacks(this, true, false);
     } finally {
       if (op != null) {
-        op.endOperation(viewVersion);
+        op.endOperation(token);
       }
     }
   }
@@ -933,7 +930,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   void basicInvalidatePart2(final RegionEntry re, final EntryEventImpl event, boolean clearConflict,
       boolean invokeCallbacks) {
     // Assumed this is called with the entry synchronized
-    long viewVersion = -1;
+    long token = -1;
     InvalidateOperation op = null;
 
     try {
@@ -955,14 +952,13 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         // distribute op to bucket secondaries and event to other listeners
         // BR's invalidate
         op = new InvalidateOperation(event);
-        viewVersion = op.startOperation();
-        op.distribute();
+        token = op.startOperation();
       }
       super.basicInvalidatePart2(re, event, clearConflict /* Clear conflict occurred */,
           invokeCallbacks);
     } finally {
       if (op != null) {
-        op.endOperation(viewVersion);
+        op.endOperation(token);
       }
     }
   }
@@ -1180,7 +1176,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   protected void distributeDestroyOperation(EntryEventImpl event) {
-    long viewVersion = -1;
+    long token = -1;
     DestroyOperation op = null;
 
     try {
@@ -1198,8 +1194,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           // BR's destroy, not to trigger callback here
           event.setOldValueFromRegion();
           op = new DestroyOperation(event);
-          viewVersion = op.startOperation();
-          op.distribute();
+          token = op.startOperation();
         }
       }
 
@@ -1208,14 +1203,14 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       }
     } finally {
       if (op != null) {
-        op.endOperation(viewVersion);
+        op.endOperation(token);
       }
     }
   }
 
   @Override
   protected void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
-    long viewVersion = -1;
+    long token = -1;
     DestroyOperation op = null;
     try {
       // Assumed this is called with entry synchrony
@@ -1237,13 +1232,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         // This code assumes that this bucket is primary
         // BR.destroy for retain
         op = new DestroyOperation(event);
-        viewVersion = op.startOperation();
-        op.distribute();
+        token = op.startOperation();
       }
       super.basicDestroyBeforeRemoval(entry, event);
     } finally {
       if (op != null) {
-        op.endOperation(viewVersion);
+        op.endOperation(token);
       }
     }
   }
@@ -1333,14 +1327,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   protected void distributeUpdateEntryVersionOperation(EntryEventImpl event) {
-    UpdateEntryVersionOperation op = new UpdateEntryVersionOperation(event);
-    long viewVersion = -1;
-    try {
-      viewVersion = op.startOperation();
-      op.distribute();
-    } finally {
-      op.endOperation(viewVersion);
-    }
+    new UpdateEntryVersionOperation(event).distribute();
   }
 
   public int getRedundancyLevel() {
@@ -1575,14 +1562,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       }
 
       // Send out the destroy op to peers
-      DestroyRegionOperation dro = new DestroyRegionOperation(event, true);
-      long viewVersion = -1;
-      try {
-        viewVersion = dro.startOperation();
-        dro.distribute();
-      } finally {
-        dro.endOperation(viewVersion);
-      }
+      new DestroyRegionOperation(event, true).distribute();
     }
   }
 

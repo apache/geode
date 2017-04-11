@@ -312,16 +312,16 @@ public class LocalRegionDataView implements InternalDataView {
       putallOp.fillVersionedObjectList(successfulPuts);
     }
     // BR & DR's putAll
-    long viewVersion = -1;
+    long token = -1;
     try {
       if (region instanceof DistributedRegion) {
-        viewVersion = putallOp.startOperation();
+        token = putallOp.startOperation();
       }
       region.postPutAllSend(putallOp, successfulPuts);
       region.postPutAllFireEvents(putallOp, successfulPuts);
     } finally {
       if (region instanceof DistributedRegion) {
-        putallOp.endOperation(viewVersion);
+        putallOp.endOperation(token);
       }
     }
   }
@@ -337,16 +337,16 @@ public class LocalRegionDataView implements InternalDataView {
       op.fillVersionedObjectList(successfulOps);
     }
     // BR, DR's removeAll
-    long viewVersion = -1;
+    long token = -1;
     try {
       if (region instanceof DistributedRegion) {
-        viewVersion = op.startOperation();
+        token = op.startOperation();
       }
       region.postRemoveAllSend(op, successfulOps);
       region.postRemoveAllFireEvents(op, successfulOps);
     } finally {
       if (region instanceof DistributedRegion) {
-        op.endOperation(viewVersion);
+        op.endOperation(token);
       }
     }
   }
