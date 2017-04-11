@@ -2232,6 +2232,8 @@ public class GemFireCacheImpl
 
           stopRedisServer();
 
+          stopRestAgentServer();
+
           // no need to track PR instances since we won't create any more
           // cacheServers or gatewayHubs
           if (this.partitionedRegions != null) {
@@ -2459,7 +2461,6 @@ public class GemFireCacheImpl
         CacheLifecycleListener listener = (CacheLifecycleListener) iter.next();
         listener.cacheClosed(this);
       }
-      stopRestAgentServer();
       // Fix for #49856
       SequenceLoggerImpl.signalCacheClose();
       SystemFailure.signalCacheClose();
