@@ -25,14 +25,14 @@ package org.apache.geode.cache.execute;
  * This interface is implemented by GemFire. Instances of it will be passed in to
  * {@link Function#execute(FunctionContext)}.
  * 
- * @param T type of Arguments
+ * @param T1 type of Arguments
  *
  * @since GemFire 6.0
  *
  * @see RegionFunctionContext
  *
  */
-public interface FunctionContext<T> {
+public interface FunctionContext<T1> {
   /**
    * Returns the arguments provided to this function execution. These are the arguments specified by
    * the caller using {@link Execution#withArgs(Object)}
@@ -40,7 +40,7 @@ public interface FunctionContext<T> {
    * @return the arguments or null if there are no arguments
    * @since GemFire 6.0
    */
-  public T getArguments();
+  public T1 getArguments();
 
   /**
    * Returns the identifier of the function.
@@ -63,7 +63,7 @@ public interface FunctionContext<T> {
    * @since GemFire 6.0
    */
 
-  public <T> ResultSender<T> getResultSender();
+  public <T2> ResultSender<T2> getResultSender();
 
   /**
    * Returns a boolean to identify whether this is a re-execute. Returns true if it is a re-execute

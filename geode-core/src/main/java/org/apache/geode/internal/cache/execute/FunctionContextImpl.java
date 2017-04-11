@@ -89,7 +89,7 @@ public class FunctionContextImpl implements FunctionContext {
     return buf.toString();
   }
 
-  public <T> ResultSender<T> getResultSender() {
+  public ResultSender getResultSender() {
     return this.resultSender;
   }
 
