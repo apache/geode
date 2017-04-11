@@ -58,7 +58,7 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
       PartitionedRegion pr = (PartitionedRegion) localRegion;
       return pr.nonTXGetEntry(keyInfo, false, allowTombstones);
     } finally {
-      localRegion.cache.getTXMgr().resume(tx);
+      localRegion.cache.getTXMgr().internalResume(tx);
     }
   }
 
@@ -72,7 +72,7 @@ public class PartitionedRegionDataView extends LocalRegionDataView {
       return r.findObjectInSystem(key, isCreate, tx, generateCallbacks, value, disableCopyOnRead,
           preferCD, requestingClient, clientEvent, returnTombstones);
     } finally {
-      r.cache.getTXMgr().resume(tx);
+      r.cache.getTXMgr().internalResume(tx);
     }
   }
 

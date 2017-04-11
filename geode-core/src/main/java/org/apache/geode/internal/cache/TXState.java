@@ -1679,11 +1679,11 @@ public class TXState implements TXStateInterface {
       if (!pr.getBucketPrimary(curr.getBucketId()).equals(pr.cache.getMyId())) {
         // to fix bug 47893 suspend the tx before calling nonTXGetEntry
         final TXManagerImpl txmgr = pr.getGemFireCache().getTXMgr();
-        TransactionId tid = txmgr.suspend();
+        final TXStateProxy tx = txmgr.internalSuspend();
         try {
           return pr.nonTXGetEntry(curr, false, allowTombstones);
         } finally {
-          txmgr.resume(tid);
+          txmgr.internalResume(tx);
         }
       }
     }

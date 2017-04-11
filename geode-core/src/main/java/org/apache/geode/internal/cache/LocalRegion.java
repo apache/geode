@@ -6556,7 +6556,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         }
       }
     } finally {
-      this.cache.getTXMgr().resume(tx);
+      this.cache.getTXMgr().internalResume(tx);
     }
   }
 
@@ -7180,7 +7180,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         dispatchListenerEvent(EnumListenerEvent.AFTER_REGION_INVALIDATE, event);
       }
     } finally {
-      this.cache.getTXMgr().resume(tx);
+      this.cache.getTXMgr().internalResume(tx);
     }
   }
 
@@ -9572,7 +9572,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
                       key);
                 }
               } finally {
-                this.cache.getTXMgr().resume(tx);
+                this.cache.getTXMgr().internalResume(tx);
               }
               getCachePerfStats().endPut(startPut, event.isOriginRemote());
             }

@@ -200,7 +200,7 @@ public class TXExpiryJUnitTest {
           final TXManagerImpl txMgrImpl = (TXManagerImpl) this.txMgr;
           TXStateProxy tx = txMgrImpl.internalSuspend();
           exprReg.put("key0", checkVal);
-          txMgrImpl.resume(tx);
+          txMgrImpl.internalResume(tx);
           try {
             this.txMgr.commit();
             fail("Expected CommitConflictException!");

@@ -27,12 +27,39 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class GemFireCacheImplTest {
+
+  @Test
+  public void checkPurgeCCPTimer() {
+    InternalDistributedSystem ds = Fakes.distributedSystem();
+    CacheConfig cc = new CacheConfig();
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
+    SystemTimer ccpTimer = mock(SystemTimer.class);
+    GemFireCacheImpl gfc = GemFireCacheImpl.createWithAsyncEventListeners(ds, cc, typeRegistry);
+    try {
+      gfc.setCCPTimer(ccpTimer);
+      for (int i = 1; i < GemFireCacheImpl.PURGE_INTERVAL; i++) {
+        gfc.purgeCCPTimer();
+        verify(ccpTimer, times(0)).timerPurge();
+      }
+      gfc.purgeCCPTimer();
+      verify(ccpTimer, times(1)).timerPurge();
+      for (int i = 1; i < GemFireCacheImpl.PURGE_INTERVAL; i++) {
+        gfc.purgeCCPTimer();
+        verify(ccpTimer, times(1)).timerPurge();
+      }
+      gfc.purgeCCPTimer();
+      verify(ccpTimer, times(2)).timerPurge();
+    } finally {
+      gfc.close();
+    }
+  }
 
   @Test
   public void checkThatAsyncEventListenersUseAllThreadsInPool() {

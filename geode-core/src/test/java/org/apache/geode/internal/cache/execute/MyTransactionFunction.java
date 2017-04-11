@@ -420,7 +420,7 @@ public class MyTransactionFunction implements Function {
     Assert.assertTrue(lr instanceof BucketRegion);
     TXRegionState txRegion = txState.readRegion(lr);
     TXEntryState txEntry = txRegion.readEntry(txRegion.getEntryKeys().iterator().next());
-    mImp.resume(txState);
+    mImp.internalResume(txState);
     orderPR.put(vOrderId, new Order("foo"));
     txState = mImp.internalSuspend();
     // since both puts were on same key, verify that
@@ -436,7 +436,7 @@ public class MyTransactionFunction implements Function {
     orderPR.put(vOrderId, new Order("foobar"));
     mImp.commit();
     // now begin the first
-    mImp.resume(txState);
+    mImp.internalResume(txState);
     boolean caughtException = false;
     try {
       mImp.commit();
@@ -462,7 +462,7 @@ public class MyTransactionFunction implements Function {
     Assert.assertTrue(cust.equals(custPR.get(custId)));
     TXStateProxy txState = mImp.internalSuspend();
     Assert.assertTrue(custPR.get(custId) == null);
-    mImp.resume(txState);
+    mImp.internalResume(txState);
     mImp.commit();
     // change value
     mImp.begin();
@@ -471,7 +471,7 @@ public class MyTransactionFunction implements Function {
     txState = mImp.internalSuspend();
     Customer newCust = new Customer("fooNew", "barNew");
     custPR.put(custId, newCust);
-    mImp.resume(txState);
+    mImp.internalResume(txState);
     Assert.assertTrue(oldCust.equals(custPR.get(custId)));
     mImp.commit();
   }
