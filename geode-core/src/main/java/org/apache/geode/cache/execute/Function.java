@@ -32,11 +32,12 @@ import org.apache.geode.lang.Identifiable;
  * @see FunctionAdapter
  * @see FunctionService
  *
+ * @param T type of FunctionContext's arguments of this Function
  *
  * @since GemFire 6.0
  */
 @FunctionalInterface
-public interface Function extends Identifiable<String> {
+public interface Function<T> extends Identifiable<String> {
 
   /**
    * Specifies whether the function sends results while executing. The method returns false if no
@@ -67,7 +68,7 @@ public interface Function extends Identifiable<String> {
    * @param context as created by {@link Execution}
    * @since GemFire 6.0
    */
-  public void execute(FunctionContext context);
+  public void execute(FunctionContext<T> context);
 
   /**
    * Return a unique function identifier, used to register the function with {@link FunctionService}
