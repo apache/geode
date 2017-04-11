@@ -642,7 +642,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   private void resumeTX(TXStateProxy state) {
     if (state != null) {
       TXManagerImpl txManager = state.getTxMgr();
-      txManager.internalResume(state);
+      txManager.resume(state);
     }
   }
 

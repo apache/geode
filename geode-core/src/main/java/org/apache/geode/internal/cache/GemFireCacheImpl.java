@@ -2437,7 +2437,7 @@ public class GemFireCacheImpl
         }
         ((DynamicRegionFactoryImpl) DynamicRegionFactory.get()).close();
         if (this.txMgr != null) {
-          this.txMgr.internalResume(tx);
+          this.txMgr.resume(tx);
         }
         TXCommitMessage.getTracker().clearForCacheClose();
       }
@@ -3933,32 +3933,6 @@ public class GemFireCacheImpl
         ccpTimer.cancel(); // poison it, don't throw.
       }
       return ccpTimer;
-    }
-  }
-
-  /**
-   * For use by unit tests to inject a mocked ccpTimer
-   */
-  void setCCPTimer(SystemTimer ccpTimer) {
-    this.ccpTimer = ccpTimer;
-  }
-
-  static final int PURGE_INTERVAL = 1000;
-  private int cancelCount = 0;
-
-  /**
-   * Does a periodic purge of the CCPTimer to prevent a large number of cancelled tasks from
-   * building up in it. See GEODE-2485.
-   */
-  public void purgeCCPTimer() {
-    synchronized (ccpTimerMutex) {
-      if (ccpTimer != null) {
-        cancelCount++;
-        if (cancelCount == PURGE_INTERVAL) {
-          cancelCount = 0;
-          ccpTimer.timerPurge();
-        }
-      }
     }
   }
 

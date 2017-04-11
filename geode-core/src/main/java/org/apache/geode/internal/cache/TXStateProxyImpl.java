@@ -677,7 +677,7 @@ public class TXStateProxyImpl implements TXStateProxy {
       return getRealDeal(null, localRegion).entryCount(localRegion);
     } finally {
       if (resetTXState) {
-        getTxMgr().internalResume(txp);
+        getTxMgr().resume(txp);
       } else if (txUnlocked) {
         getLock().lock();
       }
@@ -742,7 +742,7 @@ public class TXStateProxyImpl implements TXStateProxy {
           allowTombstones);
     } finally {
       if (resetTxState) {
-        getTxMgr().internalResume(txp);
+        getTxMgr().resume(txp);
       }
     }
 
@@ -770,7 +770,7 @@ public class TXStateProxyImpl implements TXStateProxy {
           allowTombstones);
     } finally {
       if (resetTxState) {
-        getTxMgr().internalResume(txp);
+        getTxMgr().resume(txp);
       }
     }
   }
@@ -940,7 +940,7 @@ public class TXStateProxyImpl implements TXStateProxy {
       return getRealDeal(null, localRegion).getBucketKeys(localRegion, bucketId, false);
     } finally {
       if (resetTxState) {
-        getTxMgr().internalResume(txp);
+        getTxMgr().resume(txp);
       }
     }
   }

@@ -675,7 +675,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @param tx the transaction to activate.
    * @throws IllegalStateException if this thread already has an active transaction
    */
-  public void internalResume(TXStateProxy tx) {
+  public final void resume(TXStateProxy tx) {
     if (tx != null) {
       TransactionId tid = getTransactionId();
       if (tid != null) {
@@ -683,16 +683,16 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
             LocalizedStrings.TXManagerImpl_TRANSACTION_0_ALREADY_IN_PROGRESS
                 .toLocalizedString(tid));
       }
+      if (tx instanceof TXState) {
+        throw new java.lang.IllegalStateException("Found instance of TXState: " + tx);
+      }
       setTXState(tx);
       tx.resume();
+      SystemTimerTask task = this.expiryTasks.remove(tx.getTransactionId());
+      if (task != null) {
+        task.cancel();
+      }
     }
-  }
-
-  /**
-   * @deprecated use internalResume instead
-   */
-  public final void resume(TXStateProxy tx) {
-    internalResume(tx);
   }
 
   public final boolean isClosed() {
@@ -1265,7 +1265,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       throw new IllegalStateException(
           LocalizedStrings.TXManagerImpl_UNKNOWN_TRANSACTION_OR_RESUMED.toLocalizedString());
     }
-    resumeProxy(txProxy);
+    resume(txProxy);
   }
 
   public boolean isSuspended(TransactionId transactionId) {
@@ -1278,22 +1278,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
     TXStateProxy txProxy = this.suspendedTXs.remove(transactionId);
     if (txProxy != null) {
-      resumeProxy(txProxy);
+      resume(txProxy);
       return true;
     }
     return false;
-  }
-
-  private void resumeProxy(TXStateProxy txProxy) {
-    assert txProxy != null;
-    internalResume(txProxy);
-    SystemTimerTask task = this.expiryTasks.remove(txProxy.getTransactionId());
-    if (task != null) {
-      if (task.cancel()) {
-        GemFireCacheImpl cache = (GemFireCacheImpl) this.cache;
-        cache.purgeCCPTimer();
-      }
-    }
   }
 
   /**
