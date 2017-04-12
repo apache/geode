@@ -64,9 +64,9 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
 
     accessor.invoke(() -> {
+      Cache cache = getCache();
+      cache.getCacheTransactionManager().begin();
       try {
-        Cache cache = getCache();
-        cache.getCacheTransactionManager().begin();
         Region<Object, Object> region = cache.getRegion(REGION_NAME);
 
         LuceneService service = LuceneServiceProvider.get(cache);
@@ -83,13 +83,13 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
         }
 
         assertEquals(new HashMap(region), data);
-        cache.getCacheTransactionManager().commit();
         fail();
       } catch (LuceneQueryException e) {
         if (!e.getMessage()
             .equals(LuceneQueryImpl.LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION)) {
           fail();
         }
+        cache.getCacheTransactionManager().rollback();
       }
     });
 
