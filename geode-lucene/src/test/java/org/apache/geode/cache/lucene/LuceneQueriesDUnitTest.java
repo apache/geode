@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.internal.LuceneQueryImpl;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
@@ -30,6 +31,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 
@@ -43,6 +47,42 @@ import junitparams.Parameters;
 public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
 
   private static final long serialVersionUID = 1L;
+
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
+  public void transactionWithLuceneQueriesShouldThrowException(RegionTestableType regionTestType) {
+    SerializableRunnableIF createIndex = () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
+    };
+    dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
+    dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
+    accessor.invoke(() -> initAccessor(createIndex, regionTestType));
+
+    putDataInRegion(accessor);
+    assertTrue(waitForFlushBeforeExecuteTextSearch(accessor, 60000));
+    assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore1, 60000));
+
+    accessor.invoke(() -> {
+      Cache cache = getCache();
+      try {
+        LuceneService service = LuceneServiceProvider.get(cache);
+        LuceneQuery<Integer, TestObject> query;
+        query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world",
+            DEFAULT_FIELD);
+        cache.getCacheTransactionManager().begin();
+        PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
+        fail();
+      } catch (LuceneQueryException e) {
+        if (!e.getMessage()
+            .equals(LuceneQueryImpl.LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION)) {
+          fail();
+        }
+      } finally {
+        cache.getCacheTransactionManager().rollback();
+      }
+    });
+  }
 
   @Test
   @Parameters(method = "getListOfRegionTestTypes")

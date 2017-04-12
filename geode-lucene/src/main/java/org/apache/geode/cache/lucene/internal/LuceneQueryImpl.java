@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
@@ -42,6 +43,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 
 public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
+  public static final String LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION =
+      "Lucene Query cannot be executed within a transaction";
   Logger logger = LogService.getLogger();
 
   private int limit = LuceneQueryFactory.DEFAULT_LIMIT;
@@ -116,12 +119,18 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     } catch (FunctionException e) {
       if (e.getCause() instanceof LuceneQueryException) {
         throw new LuceneQueryException(e);
+      } else if (e.getCause() instanceof TransactionException) {
+        // When run from client with single hop disabled
+        throw new LuceneQueryException(LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION);
       } else if (e.getCause() instanceof RuntimeException) {
         throw (RuntimeException) e.getCause();
       }
       throw e;
-
+    } catch (TransactionException e) {
+      // When function execution is run from server
+      throw new LuceneQueryException(LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION);
     }
+
     return entries;
   }
 
