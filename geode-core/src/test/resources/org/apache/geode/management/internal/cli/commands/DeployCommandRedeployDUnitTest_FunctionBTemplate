@@ -1,0 +1,26 @@
+package PACKAGE_B;
+
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+
+public class FUNCTION_B implements Function {
+  public boolean hasResult() {
+    return true;
+  }
+
+  public void execute(FunctionContext context) {
+    context.getResultSender().lastResult("VERSION");
+  }
+
+  public String getId() {
+    return "FUNCTION_B";
+  }
+
+  public boolean optimizeForWrite() {
+    return false;
+  }
+
+  public boolean isHA() {
+    return false;
+  }
+}

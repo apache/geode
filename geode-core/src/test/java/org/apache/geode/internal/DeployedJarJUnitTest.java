@@ -14,12 +14,9 @@
  */
 package org.apache.geode.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -27,6 +24,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,17 +41,12 @@ import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Random;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-/**
- * TODO: Need to fix this testDeclarableFunctionsWithParms and testClassOnClasspath on Windows:
- */
 @Category(IntegrationTest.class)
 public class DeployedJarJUnitTest {
   @Rule
@@ -62,13 +55,13 @@ public class DeployedJarJUnitTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
-  private final ClassBuilder classBuilder = new ClassBuilder();
+  private ClassBuilder classBuilder;
 
   @Before
   public void setup() throws Exception {
     File workingDir = temporaryFolder.newFolder();
-
     ClassPathLoader.setLatestToDefault(workingDir);
+    classBuilder = new ClassBuilder();
   }
 
   @After
@@ -82,13 +75,14 @@ public class DeployedJarJUnitTest {
 
   @Test
   public void testIsValidJarContent() throws IOException {
-    assertTrue(
-        DeployedJar.isValidJarContent(this.classBuilder.createJarFromName("JarClassLoaderJUnitA")));
+    assertThat(
+        DeployedJar.hasValidJarContent(this.classBuilder.createJarFromName("JarClassLoaderJUnitA")))
+            .isTrue();
   }
 
   @Test
   public void testIsInvalidJarContent() {
-    assertFalse(DeployedJar.isValidJarContent("INVALID JAR CONTENT".getBytes()));
+    assertThat(DeployedJar.hasValidJarContent("INVALID JAR CONTENT".getBytes())).isFalse();
   }
 
   @Test
@@ -99,11 +93,7 @@ public class DeployedJarJUnitTest {
             "package com.jcljunit; public class JarClassLoaderJUnitA {}");
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnit.jar", jarBytes);
 
-    try {
-      ClassPathLoader.getLatest().forName("com.jcljunit.JarClassLoaderJUnitA");
-    } catch (ClassNotFoundException cnfex) {
-      fail("JAR file not correctly added to Classpath");
-    }
+    ClassPathLoader.getLatest().forName("com.jcljunit.JarClassLoaderJUnitA");
 
     // Update the JAR file and make sure the first class is no longer on the Classpath
     // and the second one is.
@@ -111,54 +101,36 @@ public class DeployedJarJUnitTest {
         "package com.jcljunit; public class JarClassLoaderJUnitB {}");
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnit.jar", jarBytes);
 
-    try {
-      ClassPathLoader.getLatest().forName("com.jcljunit.JarClassLoaderJUnitB");
-    } catch (ClassNotFoundException cnfex) {
-      fail("JAR file not correctly added to Classpath");
-    }
-
-    try {
-      ClassPathLoader.getLatest().forName("com.jcljunit.JarClassLoaderJUnitA");
-      fail("Class should not be found on Classpath");
-    } catch (ClassNotFoundException expected) { // expected
-    }
-
+    ClassPathLoader.getLatest().forName("com.jcljunit.JarClassLoaderJUnitB");
+    assertThatThrownBy(
+        () -> ClassPathLoader.getLatest().forName("com.jcljunit.JarClassLoaderJUnitA"))
+            .isInstanceOf(ClassNotFoundException.class);
   }
 
   @Test
   public void testFailingCompilation() throws Exception {
-    StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append("import org.apache.geode.cache.Declarable;");
-    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
-    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
-    stringBuffer.append("public class JarClassLoaderJUnitFunction implements Function {}");
-    String functionString = stringBuffer.toString();
+    String functionString = "import org.apache.geode.cache.Declarable;"
+        + "import org.apache.geode.cache.execute.Function;"
+        + "import org.apache.geode.cache.execute.FunctionContext;"
+        + "public class JarClassLoaderJUnitFunction implements Function {}";
 
-    try {
-      this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitFunction", functionString);
-      fail("This code should have failed to compile and thrown an exception");
-    } catch (Exception ex) {
-      // All good
-    }
+    assertThatThrownBy(() -> this.classBuilder
+        .createJarFromClassContent("JarClassLoaderJUnitFunction", functionString)).isNotNull();
   }
 
   @Test
-  public void testFunctions() throws IOException, ClassNotFoundException {
+  public void testFunctions() throws Exception {
     // Test creating a JAR file with a function
-    StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append("import java.util.Properties;");
-    stringBuffer.append("import org.apache.geode.cache.Declarable;");
-    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
-    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
-    stringBuffer.append("public class JarClassLoaderJUnitFunction implements Function {");
-    stringBuffer.append("public void init(Properties props) {}");
-    stringBuffer.append("public boolean hasResult() {return true;}");
-    stringBuffer.append(
-        "public void execute(FunctionContext context) {context.getResultSender().lastResult(\"GOODv1\");}");
-    stringBuffer.append("public String getId() {return \"JarClassLoaderJUnitFunction\";}");
-    stringBuffer.append("public boolean optimizeForWrite() {return false;}");
-    stringBuffer.append("public boolean isHA() {return false;}}");
-    String functionString = stringBuffer.toString();
+    String functionString =
+        "import java.util.Properties;" + "import org.apache.geode.cache.Declarable;"
+            + "import org.apache.geode.cache.execute.Function;"
+            + "import org.apache.geode.cache.execute.FunctionContext;"
+            + "public class JarClassLoaderJUnitFunction implements Function {"
+            + "public void init(Properties props) {}" + "public boolean hasResult() {return true;}"
+            + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\"GOODv1\");}"
+            + "public String getId() {return \"JarClassLoaderJUnitFunction\";}"
+            + "public boolean optimizeForWrite() {return false;}"
+            + "public boolean isHA() {return false;}}";
 
     byte[] jarBytes =
         this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitFunction", functionString);
@@ -166,11 +138,11 @@ public class DeployedJarJUnitTest {
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnit.jar", jarBytes);
 
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
-    assertNotNull(function);
+    assertThat(function).isNotNull();
     TestResultSender resultSender = new TestResultSender();
     FunctionContext functionContext = new FunctionContextImpl(function.getId(), null, resultSender);
     function.execute(functionContext);
-    assertEquals("GOODv1", (String) resultSender.getResults());
+    assertThat(resultSender.getResults()).isEqualTo("GOODv1");
 
     // Test updating the function with a new JAR file
     functionString = functionString.replace("v1", "v2");
@@ -179,11 +151,11 @@ public class DeployedJarJUnitTest {
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnit.jar", jarBytes);
 
     function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
-    assertNotNull(function);
+    assertThat(function).isNotNull();
     resultSender = new TestResultSender();
     functionContext = new FunctionContextImpl(function.getId(), null, resultSender);
     function.execute(functionContext);
-    assertEquals("GOODv2", (String) resultSender.getResults());
+    assertThat(resultSender.getResults()).isEqualTo("GOODv2");
 
     // Test returning null for the Id
     String functionNullIdString =
@@ -192,87 +164,70 @@ public class DeployedJarJUnitTest {
         functionNullIdString);
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnit.jar", jarBytes);
 
-    assertNull(FunctionService.getFunction("JarClassLoaderJUnitFunction"));
+    assertThat(FunctionService.getFunction("JarClassLoaderJUnitFunction")).isNull();
 
     // Test removing the JAR
     ClassPathLoader.getLatest().getJarDeployer().undeploy("JarClassLoaderJUnit.jar");
-    assertNull(FunctionService.getFunction("JarClassLoaderJUnitFunction"));
+    assertThat(FunctionService.getFunction("JarClassLoaderJUnitFunction")).isNull();
   }
 
   /**
    * Ensure that abstract functions aren't added to the Function Service.
    */
   @Test
-  public void testAbstractFunction() throws IOException, ClassNotFoundException {
+  public void testAbstractFunction() throws Exception {
     // Add an abstract Function to the Classpath
-    StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
-    stringBuffer.append("public abstract class JarClassLoaderJUnitFunction implements Function {");
-    stringBuffer.append("public String getId() {return \"JarClassLoaderJUnitFunction\";}}");
-    String functionString = stringBuffer.toString();
+    String functionString = "import org.apache.geode.cache.execute.Function;"
+        + "public abstract class JarClassLoaderJUnitFunction implements Function {"
+        + "public String getId() {return \"JarClassLoaderJUnitFunction\";}}";
 
     byte[] jarBytes =
         this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitFunction", functionString);
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitFunction.jar",
         jarBytes);
 
-    try {
-      ClassPathLoader.getLatest().forName("JarClassLoaderJUnitFunction");
-    } catch (ClassNotFoundException cnfex) {
-      fail("JAR file not correctly added to Classpath");
-    }
+    ClassPathLoader.getLatest().forName("JarClassLoaderJUnitFunction");
 
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
-    assertNull(function);
+    assertThat(function).isNull();
   }
 
   @Test
   public void testDeclarableFunctionsWithNoCacheXml() throws Exception {
-
     final String jarName = "JarClassLoaderJUnitNoXml.jar";
 
     // Add a Declarable Function without parameters for the class to the Classpath
-    StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append("import java.util.Properties;");
-    stringBuffer.append("import org.apache.geode.cache.Declarable;");
-    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
-    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
-    stringBuffer
-        .append("public class JarClassLoaderJUnitFunctionNoXml implements Function, Declarable {");
-    stringBuffer.append("public String getId() {return \"JarClassLoaderJUnitFunctionNoXml\";}");
-    stringBuffer.append("public void init(Properties props) {}");
-    stringBuffer.append(
-        "public void execute(FunctionContext context) {context.getResultSender().lastResult(\"NOPARMSv1\");}");
-    stringBuffer.append("public boolean hasResult() {return true;}");
-    stringBuffer.append("public boolean optimizeForWrite() {return false;}");
-    stringBuffer.append("public boolean isHA() {return false;}}");
-    String functionString = stringBuffer.toString();
+    String functionString =
+        "import java.util.Properties;" + "import org.apache.geode.cache.Declarable;"
+            + "import org.apache.geode.cache.execute.Function;"
+            + "import org.apache.geode.cache.execute.FunctionContext;"
+            + "public class JarClassLoaderJUnitFunctionNoXml implements Function, Declarable {"
+            + "public String getId() {return \"JarClassLoaderJUnitFunctionNoXml\";}"
+            + "public void init(Properties props) {}"
+            + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\"NOPARMSv1\");}"
+            + "public boolean hasResult() {return true;}"
+            + "public boolean optimizeForWrite() {return false;}"
+            + "public boolean isHA() {return false;}}";
 
     byte[] jarBytes = this.classBuilder
         .createJarFromClassContent("JarClassLoaderJUnitFunctionNoXml", functionString);
 
     ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarBytes);
 
-    try {
-      ClassPathLoader.getLatest().forName("JarClassLoaderJUnitFunctionNoXml");
-    } catch (ClassNotFoundException cnfex) {
-      fail("JAR file not correctly added to Classpath");
-    }
+    ClassPathLoader.getLatest().forName("JarClassLoaderJUnitFunctionNoXml");
 
     // Check to see if the function without parameters executes correctly
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunctionNoXml");
-    assertNotNull(function);
+    assertThat(function).isNotNull();
     TestResultSender resultSender = new TestResultSender();
     function.execute(new FunctionContextImpl(function.getId(), null, resultSender));
-    assertEquals("NOPARMSv1", (String) resultSender.getResults());
+    assertThat((String) resultSender.getResults()).isEqualTo("NOPARMSv1");
   }
 
   @Test
-  public void testDependencyBetweenJars() throws IOException, ClassNotFoundException {
+  public void testDependencyBetweenJars() throws Exception {
     final File parentJarFile = temporaryFolder.newFile("JarClassLoaderJUnitParent.jar");
     final File usesJarFile = temporaryFolder.newFile("JarClassLoaderJUnitUses.jar");
-
-    JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
 
     // Write out a JAR files.
     StringBuffer stringBuffer = new StringBuffer();
@@ -319,17 +274,15 @@ public class DeployedJarJUnitTest {
     jarBytes = functionClassBuilder.createJarFromClassContent(
         "jcljunit/function/JarClassLoaderJUnitFunction", stringBuffer.toString());
 
-
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitFunction.jar",
         jarBytes);
 
-
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunction");
-    assertNotNull(function);
+    assertThat(function).isNotNull();
     TestResultSender resultSender = new TestResultSender();
     FunctionContext functionContext = new FunctionContextImpl(function.getId(), null, resultSender);
     function.execute(functionContext);
-    assertEquals("PARENT:USES", (String) resultSender.getResults());
+    assertThat((String) resultSender.getResults()).isEqualTo("PARENT:USES");
   }
 
   @Test
@@ -342,39 +295,26 @@ public class DeployedJarJUnitTest {
         jarBytes);
 
     InputStream inputStream = ClassPathLoader.getLatest().getResourceAsStream(fileName);
-    assertNotNull(inputStream);
+    assertThat(inputStream).isNotNull();
 
     final byte[] fileBytes = new byte[fileContent.length()];
     inputStream.read(fileBytes);
     inputStream.close();
-    assertTrue(fileContent.equals(new String(fileBytes)));
+    assertThat(fileContent).isEqualTo(new String(fileBytes));
   }
 
   @Test
-  public void testUpdateClassInJar() throws IOException, ClassNotFoundException {
+  public void testUpdateClassInJar() throws Exception {
     // First use of the JAR file
     byte[] jarBytes = this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
         "public class JarClassLoaderJUnitTestClass { public Integer getValue5() { return new Integer(5); } }");
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitUpdate.jar", jarBytes);
 
-    try {
-      Class<?> clazz = ClassPathLoader.getLatest().forName("JarClassLoaderJUnitTestClass");
-      Object object = clazz.newInstance();
-      Method getValue5Method = clazz.getMethod("getValue5", new Class[] {});
-      Integer value = (Integer) getValue5Method.invoke(object, new Object[] {});
-      assertEquals(value.intValue(), 5);
-
-    } catch (InvocationTargetException itex) {
-      fail("JAR file not correctly added to Classpath" + itex);
-    } catch (NoSuchMethodException nsmex) {
-      fail("JAR file not correctly added to Classpath" + nsmex);
-    } catch (InstantiationException iex) {
-      fail("JAR file not correctly added to Classpath" + iex);
-    } catch (IllegalAccessException iaex) {
-      fail("JAR file not correctly added to Classpath" + iaex);
-    } catch (ClassNotFoundException cnfex) {
-      fail("JAR file not correctly added to Classpath" + cnfex);
-    }
+    Class<?> clazz = ClassPathLoader.getLatest().forName("JarClassLoaderJUnitTestClass");
+    Object object = clazz.newInstance();
+    Method getValue5Method = clazz.getMethod("getValue5");
+    Integer value = (Integer) getValue5Method.invoke(object);
+    assertThat(value).isEqualTo(5);
 
     // Now create an updated JAR file and make sure that the method from the new
     // class is available.
@@ -382,29 +322,15 @@ public class DeployedJarJUnitTest {
         "public class JarClassLoaderJUnitTestClass { public Integer getValue10() { return new Integer(10); } }");
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitUpdate.jar", jarBytes);
 
-
-    try {
-      Class<?> clazz = ClassPathLoader.getLatest().forName("JarClassLoaderJUnitTestClass");
-      Object object = clazz.newInstance();
-      Method getValue10Method = clazz.getMethod("getValue10", new Class[] {});
-      Integer value = (Integer) getValue10Method.invoke(object, new Object[] {});
-      assertEquals(value.intValue(), 10);
-
-    } catch (InvocationTargetException itex) {
-      fail("JAR file not correctly added to Classpath" + itex);
-    } catch (NoSuchMethodException nsmex) {
-      fail("JAR file not correctly added to Classpath" + nsmex);
-    } catch (InstantiationException iex) {
-      fail("JAR file not correctly added to Classpath" + iex);
-    } catch (IllegalAccessException iaex) {
-      fail("JAR file not correctly added to Classpath" + iaex);
-    } catch (ClassNotFoundException cnfex) {
-      fail("JAR file not correctly added to Classpath" + cnfex);
-    }
+    clazz = ClassPathLoader.getLatest().forName("JarClassLoaderJUnitTestClass");
+    object = clazz.newInstance();
+    Method getValue10Method = clazz.getMethod("getValue10");
+    value = (Integer) getValue10Method.invoke(object);
+    assertThat(value).isEqualTo(10);
   }
 
   @Test
-  public void testMultiThread() throws IOException, ClassNotFoundException {
+  public void testMultiThreadingDoesNotCauseDeadlock() throws Exception {
     // Add two JARs to the classpath
     byte[] jarBytes = this.classBuilder.createJarFromName("JarClassLoaderJUnitA");
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarClassLoaderJUnitA.jar", jarBytes);
@@ -416,53 +342,31 @@ public class DeployedJarJUnitTest {
     String[] classNames = new String[] {"JarClassLoaderJUnitA", "com.jcljunit.JarClassLoaderJUnitB",
         "NON-EXISTENT CLASS"};
 
-    // Spawn some threads which try to instantiate these classes
     final int threadCount = 10;
-    final int numLoops = 1000;
-    final CyclicBarrier cyclicBarrier = new CyclicBarrier(threadCount + 1);
+    ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
     for (int i = 0; i < threadCount; i++) {
-      new ForNameExerciser(cyclicBarrier, numLoops, classNames).start();
+      executorService.submit(new ForNameExerciser(classNames));
     }
 
-    // Wait for all of the threads to be ready
-    try {
-      cyclicBarrier.await();
-    } catch (InterruptedException iex) {
-      fail("Interrupted while waiting for barrier");
-    } catch (BrokenBarrierException bbex) {
-      fail("Broken barrier while waiting");
-    }
+    executorService.shutdown();
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(executorService::isTerminated);
 
-    // Loop while each thread tries N times to instantiate a non-existent class
-    for (int i = 0; i < numLoops; i++) {
-      try {
-        cyclicBarrier.await(5, TimeUnit.SECONDS);
-      } catch (InterruptedException iex) {
-        fail("Interrupted while waiting for barrier");
-      } catch (TimeoutException tex) {
-        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        long[] threadIds = threadMXBean.findDeadlockedThreads();
+    ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+    long[] threadIds = threadMXBean.findDeadlockedThreads();
 
-        if (threadIds != null) {
-          StringBuffer deadLockTrace = new StringBuffer();
-          for (long threadId : threadIds) {
-            ThreadInfo threadInfo = threadMXBean.getThreadInfo(threadId, 100);
-            deadLockTrace.append(threadInfo.getThreadName()).append("\n");
-            for (StackTraceElement stackTraceElem : threadInfo.getStackTrace()) {
-              deadLockTrace.append("\t").append(stackTraceElem).append("\n");
-            }
-          }
-
-          fail("Deadlock with trace:\n" + deadLockTrace.toString());
+    if (threadIds != null) {
+      StringBuilder deadLockTrace = new StringBuilder();
+      for (long threadId : threadIds) {
+        ThreadInfo threadInfo = threadMXBean.getThreadInfo(threadId, 100);
+        deadLockTrace.append(threadInfo.getThreadName()).append("\n");
+        for (StackTraceElement stackTraceElem : threadInfo.getStackTrace()) {
+          deadLockTrace.append("\t").append(stackTraceElem).append("\n");
         }
-
-        fail("Timeout while waiting for barrier - no deadlock detected");
-      } catch (BrokenBarrierException bbex) {
-        fail("Broken barrier while waiting");
       }
+      System.out.println(deadLockTrace);
     }
+    assertThat(threadIds).isNull();
   }
-
 
   private void writeJarBytesToFile(File jarFile, byte[] jarBytes) throws IOException {
     final OutputStream outStream = new FileOutputStream(jarFile);
@@ -497,40 +401,24 @@ public class DeployedJarJUnitTest {
 
   static final Random random = new Random();
 
-  private class ForNameExerciser extends Thread {
-    private final CyclicBarrier cyclicBarrier;
-    private final int numLoops;
+  private class ForNameExerciser implements Runnable {
+    private final int numLoops = 1000;
     private final String[] classNames;
 
-    ForNameExerciser(final CyclicBarrier cyclicBarrier, final int numLoops,
-        final String[] classNames) {
-      this.cyclicBarrier = cyclicBarrier;
-      this.numLoops = numLoops;
+    ForNameExerciser(final String[] classNames) {
       this.classNames = classNames;
     }
 
     @Override
     public void run() {
-      try {
-        this.cyclicBarrier.await();
-      } catch (InterruptedException iex) {
-        fail("Interrupted while waiting for latch");
-      } catch (BrokenBarrierException bbex) {
-        fail("Broken barrier while waiting");
-      }
       for (int i = 0; i < this.numLoops; i++) {
         try {
           // Random select a name from the list of class names and try to load it
           String className = this.classNames[random.nextInt(this.classNames.length)];
           ClassPathLoader.getLatest().forName(className);
         } catch (ClassNotFoundException expected) { // expected
-        }
-        try {
-          this.cyclicBarrier.await();
-        } catch (InterruptedException iex) {
-          fail("Interrupted while waiting for barrrier");
-        } catch (BrokenBarrierException bbex) {
-          fail("Broken barrier while waiting");
+        } catch (Exception e) {
+          throw new RuntimeException(e);
         }
       }
     }

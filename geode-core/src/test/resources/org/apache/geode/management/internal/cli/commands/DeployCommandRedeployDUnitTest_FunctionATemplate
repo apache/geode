@@ -1,0 +1,30 @@
+import java.util.Properties;
+
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
+
+public class FUNCTION_A implements Function, Declarable {
+  public String getId() {
+    return "FUNCTION_A";
+  }
+
+  public void init(Properties props) {
+  }
+
+  public void execute(FunctionContext context) {
+    context.getResultSender().lastResult("VERSION");
+  }
+
+  public boolean hasResult() {
+    return true;
+  }
+
+  public boolean optimizeForWrite() {
+    return false;
+  }
+
+  public boolean isHA() {
+    return false;
+  }
+}

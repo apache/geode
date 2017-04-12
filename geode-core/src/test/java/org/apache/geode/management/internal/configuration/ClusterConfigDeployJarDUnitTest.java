@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.configuration;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
@@ -29,7 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
-public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
+public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
   @Rule
   public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
 
@@ -37,7 +38,6 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
 
   @Before
   public void before() throws Exception {
-    super.before();
     clusterJar = createJarFileWithClass("Cluster", "cluster.jar", lsRule.getTempFolder().getRoot());
     group1Jar = createJarFileWithClass("Group1", "group1.jar", lsRule.getTempFolder().getRoot());
     group2Jar = createJarFileWithClass("Group2", "group2.jar", lsRule.getTempFolder().getRoot());
@@ -180,7 +180,6 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
     // test undeploy cluster
     gfshConnector.executeAndVerifyCommand("undeploy --jar=cluster.jar");
 
-
     cluster = cluster.removeJar("cluster.jar");
     server3Config.verify(locator);
     server1Config.verify(server1);
@@ -253,7 +252,6 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
     gfshConnector.executeAndVerifyCommand("undeploy --jar=cluster.jar");
     server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
 
-
     cluster = cluster.removeJar("cluster.jar");
     server3Config.verify(locator);
     server1Config.verify(server1);
@@ -264,8 +262,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigBaseTest {
 
     group1 = group1.removeJar("group1.jar");
     /*
-     * TODO: This is the current (weird) behavior If you started server4 with group1,group2 after
-     * this undeploy command, it would have group1.jar (brought from
+     * TODO: GEODE-2779 This is the current (weird) behavior If you started server4 with
+     * group1,group2 after this undeploy command, it would have group1.jar (brought from
      * cluster_config/group2/group1.jar on locator) whereas server3 (also in group1,group2) does not
      * have this jar.
      */

@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,6 +35,7 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -94,8 +96,6 @@ public class JarDeployerIntegrationTest {
     alternateDir.delete();
 
     final JarDeployer jarDeployer = new JarDeployer(alternateDir);
-
-    final CyclicBarrier barrier = new CyclicBarrier(2);
     final byte[] jarBytes = this.classBuilder.createJarFromName("JarDeployerDUnitDTID");
 
     // Test to verify that deployment fails if the directory doesn't exist.
@@ -106,16 +106,20 @@ public class JarDeployerIntegrationTest {
     // Test to verify that deployment succeeds if the directory doesn't
     // initially exist, but is then created while the JarDeployer is looping
     // looking for a valid directory.
-    Future<Boolean> done = Executors.newSingleThreadExecutor().submit(() -> {
+    final AtomicBoolean isDeployed = new AtomicBoolean(false);
+    final CyclicBarrier barrier = new CyclicBarrier(2);
+
+    Executors.newSingleThreadExecutor().submit(() -> {
       barrier.await();
       jarDeployer.deployWithoutRegistering("JarDeployerIntegrationTest.jar", jarBytes);
+      isDeployed.set(true);
       return true;
     });
 
     barrier.await();
-    Thread.sleep(500);
-    alternateDir.mkdir();
-    assertThat(done.get(2, TimeUnit.MINUTES)).isTrue();
+    alternateDir.mkdirs();
+    Awaitility.await().atMost(1, TimeUnit.MINUTES)
+        .until(() -> assertThat(isDeployed.get()).isTrue());
   }
 
   @Test
@@ -137,7 +141,7 @@ public class JarDeployerIntegrationTest {
   @Test
   public void testVersionNumberMatcher() throws IOException {
     int version =
-        jarDeployer.extractVersionFromFilename(temporaryFolder.newFile("MyJar.v1.jar").getName());
+        JarDeployer.extractVersionFromFilename(temporaryFolder.newFile("MyJar.v1.jar").getName());
 
     assertThat(version).isEqualTo(1);
   }

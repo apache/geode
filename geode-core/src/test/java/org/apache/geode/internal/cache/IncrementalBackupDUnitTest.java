@@ -1103,7 +1103,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    assert (deployedJarFile.exists());
+    assertTrue(deployedJarFile.exists());
     /*
      * Perform backup. Make sure it is successful.
      */
@@ -1138,7 +1138,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Cleanup "dummy" jar from file system.
      */
-    Pattern pattern = Pattern.compile("^" + JarDeployer.JAR_PREFIX + jarName + ".*#\\d++$");
+    Pattern pattern = Pattern.compile("^" + jarName + ".*#\\d++$");
     deleteMatching(new File("."), pattern);
 
     // Execute the restore
@@ -1179,7 +1179,7 @@ public class IncrementalBackupDUnitTest extends JUnit4CacheTestCase {
     /*
      * Cleanup "dummy" jar from file system.
      */
-    pattern = Pattern.compile("^" + JarDeployer.JAR_PREFIX + jarName + ".*#\\d++$");
+    pattern = Pattern.compile("^" + jarName + ".*#\\d++$");
     deleteMatching(new File(vmDir), pattern);
   }
 

@@ -21,9 +21,12 @@ import org.apache.geode.internal.JarDeployerIntegrationTest;
 import org.apache.geode.management.internal.cli.commands.DeployCommandRedeployDUnitTest;
 import org.apache.geode.management.internal.cli.commands.DeployCommandsDUnitTest;
 import org.apache.geode.management.internal.configuration.ClusterConfigDeployJarDUnitTest;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+
+@Ignore
 @RunWith(Suite.class)
 @Suite.SuiteClasses({DeployedJarJUnitTest.class, DeployCommandsDUnitTest.class,
     JarDeployerIntegrationTest.class, ClassPathLoaderIntegrationTest.class,

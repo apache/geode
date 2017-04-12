@@ -32,7 +32,7 @@ configurations {
 
 dependencies {
    // Source Dependencies
-  // External 
+  // External
   provided files("${System.getProperty('java.home')}/../lib/tools.jar")
   compile 'com.github.stephenc.findbugs:findbugs-annotations:' + project.'stephenc-findbugs.version'
   compile 'org.jgroups:jgroups:' + project.'jgroups.version'
@@ -104,17 +104,22 @@ dependencies {
   }
   compile ('org.iq80.snappy:snappy:' + project.'snappy-java.version') {
     ext.optional = true
-  } 
+  }
 
   compile 'org.apache.shiro:shiro-core:' + project.'shiro.version'
   // This is only added since shiro is using an old version of beanutils and we want
   // to use a standard version. Once shiro deps are updated, remove this explicit dependency
   // in favor of a transitive dependency on beanutils.
   compile 'commons-beanutils:commons-beanutils:' + project.'commons-beanutils.version'
-  
+
+  // https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner
+    compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
+
+
+
   compile project(':geode-common')
   compile project(':geode-json')
-  
+
   jcaCompile sourceSets.main.output
 
   testCompile project(':geode-junit')
@@ -181,7 +186,7 @@ jar {
 
   from sourceSets.main.output
   from sourceSets.jca.output
-  
+
   exclude 'org/apache/geode/management/internal/web/**'
   exclude 'org/apache/geode/internal/i18n/StringIdResourceBundle_ja.txt'
   exclude 'org/apache/geode/admin/doc-files/ds4_0.dtd'

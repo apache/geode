@@ -26,7 +26,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -35,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -51,7 +49,6 @@ import java.util.stream.Stream;
 public class JarDeployer implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Logger logger = LogService.getLogger();
-  public static final String JAR_PREFIX = "";
   public static final String JAR_PREFIX_FOR_REGEX = "";
   private static final Lock lock = new ReentrantLock();
 
@@ -438,7 +435,7 @@ public class JarDeployer implements Serializable {
     Optional<File> latestValidDeployedJarOptional =
         Arrays.stream(jarFiles).filter(Objects::nonNull).filter(jarFile -> {
           try {
-            return DeployedJar.isValidJarContent(FileUtils.readFileToByteArray(jarFile));
+            return DeployedJar.hasValidJarContent(FileUtils.readFileToByteArray(jarFile));
           } catch (IOException e) {
             return false;
           }
@@ -501,7 +498,7 @@ public class JarDeployer implements Serializable {
     DeployedJar[] deployedJars = new DeployedJar[jarNames.length];
 
     for (int i = 0; i < jarNames.length; i++) {
-      if (!DeployedJar.isValidJarContent(jarBytes[i])) {
+      if (!DeployedJar.hasValidJarContent(jarBytes[i])) {
         throw new IllegalArgumentException(
             "File does not contain valid JAR content: " + jarNames[i]);
       }

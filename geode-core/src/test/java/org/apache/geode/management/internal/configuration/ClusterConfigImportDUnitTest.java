@@ -42,7 +42,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 @Category(DistributedTest.class)
-public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
+public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   @Rule
   public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
 
@@ -52,7 +52,6 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigBaseTest {
 
   @Before
   public void before() throws Exception {
-    super.before();
     locatorVM = lsRule.startLocatorVM(0, locatorProps);
     INITIAL_CONFIG.verify(locatorVM);
 

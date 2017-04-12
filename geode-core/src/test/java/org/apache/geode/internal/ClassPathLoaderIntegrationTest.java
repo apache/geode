@@ -66,7 +66,6 @@ public class ClassPathLoaderIntegrationTest {
 
   private File tempFile;
   private File tempFile2;
-  private File extLibsDir;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -77,9 +76,6 @@ public class ClassPathLoaderIntegrationTest {
   @Before
   public void setUp() throws Exception {
     System.setProperty(ClassPathLoader.EXCLUDE_TCCL_PROPERTY, "false");
-
-    extLibsDir = new File(this.temporaryFolder.getRoot(), "ext");
-    extLibsDir.mkdirs();
 
     this.tempFile = this.temporaryFolder.newFile("tempFile1.tmp");
     FileOutputStream fos = new FileOutputStream(this.tempFile);

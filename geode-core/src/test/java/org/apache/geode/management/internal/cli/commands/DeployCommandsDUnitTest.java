@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertNotNull;
@@ -39,7 +40,7 @@ import java.util.Properties;
 
 /**
  * Unit tests for the DeployCommands class
- *
+ * 
  * @since GemFire 7.0
  */
 @SuppressWarnings("serial")
@@ -76,6 +77,9 @@ public class DeployCommandsDUnitTest implements Serializable {
 
   @Before
   public void setup() throws Exception {
+    getHost(0).getVM(1).bounce();
+    getHost(0).getVM(2).bounce();
+
     ClassBuilder classBuilder = new ClassBuilder();
     File jarsDir = lsRule.getTempFolder().newFolder();
     jar1 = new File(jarsDir, jarName1);
@@ -108,7 +112,7 @@ public class DeployCommandsDUnitTest implements Serializable {
     // Deploy a jar to a single group
     CommandResult cmdResult =
         gfshConnector.executeAndVerifyCommand("deploy --jar=" + jar2 + " --group=" + GROUP1);
-    String resultString = commandResultToString(cmdResult);
+    String resultString = gfshConnector.getGfshOutput();
 
     assertThat(resultString).contains(server1.getName());
     assertThat(resultString).doesNotContain(server2.getName());
@@ -121,9 +125,9 @@ public class DeployCommandsDUnitTest implements Serializable {
   @Test
   public void deployMultipleJarsToOneGroup() throws Exception {
     // Deploy of multiple JARs to a single group
-    CommandResult cmdResult = gfshConnector.executeAndVerifyCommand(
+    gfshConnector.executeAndVerifyCommand(
         "deploy --group=" + GROUP1 + " --dir=" + subdirWithJars3and4.getCanonicalPath());
-    String resultString = commandResultToString(cmdResult);
+    String resultString = gfshConnector.getGfshOutput();
 
     assertThat(resultString).describedAs(resultString).contains(server1.getName());
     assertThat(resultString).doesNotContain(server2.getName());
@@ -138,7 +142,6 @@ public class DeployCommandsDUnitTest implements Serializable {
       assertThatCannotLoad(jarName3, class3);
       assertThatCannotLoad(jarName4, class4);
     });
-
 
     // Undeploy of multiple jars by specifying group
     gfshConnector.executeAndVerifyCommand("undeploy --group=" + GROUP1);
@@ -155,9 +158,9 @@ public class DeployCommandsDUnitTest implements Serializable {
   @Test
   public void deployJarToAllServers() throws Exception {
     // Deploy a jar to all servers
-    CommandResult cmdResult = gfshConnector.executeAndVerifyCommand("deploy --jar=" + jar1);
+    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jar1);
+    String resultString = gfshConnector.getGfshOutput();
 
-    String resultString = commandResultToString(cmdResult);
     assertThat(resultString).contains(server1.getName());
     assertThat(resultString).contains(server2.getName());
     assertThat(resultString).contains(jarName1);
@@ -242,16 +245,16 @@ public class DeployCommandsDUnitTest implements Serializable {
         "deploy jar --group=" + GROUP2 + " --jar=" + jar2.getCanonicalPath());
 
     // List for all members
-    CommandResult commandResult = gfshConnector.executeAndVerifyCommand("list deployed");
-    String resultString = commandResultToString(commandResult);
+    gfshConnector.executeAndVerifyCommand("list deployed");
+    String resultString = gfshConnector.getGfshOutput();
     assertThat(resultString).contains(server1.getName());
     assertThat(resultString).contains(server2.getName());
     assertThat(resultString).contains(jarName1);
     assertThat(resultString).contains(jarName2);
 
     // List for members in Group1
-    commandResult = gfshConnector.executeAndVerifyCommand("list deployed --group=" + GROUP1);
-    resultString = commandResultToString(commandResult);
+    gfshConnector.executeAndVerifyCommand("list deployed --group=" + GROUP1);
+    resultString = gfshConnector.getGfshOutput();
     assertThat(resultString).contains(server1.getName());
     assertThat(resultString).doesNotContain(server2.getName());
 
@@ -259,23 +262,12 @@ public class DeployCommandsDUnitTest implements Serializable {
     assertThat(resultString).doesNotContain(jarName2);
 
     // List for members in Group2
-    commandResult = gfshConnector.executeAndVerifyCommand("list deployed --group=" + GROUP2);
-    resultString = commandResultToString(commandResult);
+    gfshConnector.executeAndVerifyCommand("list deployed --group=" + GROUP2);
+    resultString = gfshConnector.getGfshOutput();
     assertThat(resultString).doesNotContain(server1.getName());
     assertThat(resultString).contains(server2.getName());
 
     assertThat(resultString).doesNotContain(jarName1);
     assertThat(resultString).contains(jarName2);
-  }
-
-  protected static String commandResultToString(final CommandResult commandResult) {
-    assertNotNull(commandResult);
-    commandResult.resetToFirstLine();
-    StringBuilder buffer = new StringBuilder(commandResult.getHeader());
-    while (commandResult.hasNextLine()) {
-      buffer.append(commandResult.nextLine());
-    }
-    buffer.append(commandResult.getFooter());
-    return buffer.toString();
   }
 }

@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
@@ -23,10 +24,8 @@ import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,8 +33,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.List;
 
 @Category(DistributedTest.class)
@@ -43,15 +42,15 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
   private static final String VERSION1 = "Version1";
   private static final String VERSION2 = "Version2";
 
-  private static final String jarNameA = "DeployCommandRedeployDUnitTestA.jar";
-  private static final String functionA = "DeployCommandRedeployDUnitFunctionA";
+  private static final String JAR_NAME_A = "DeployCommandRedeployDUnitTestA.jar";
+  private static final String FUNCTION_A = "DeployCommandRedeployDUnitFunctionA";
   private File jarAVersion1;
   private File jarAVersion2;
 
-  private static final String jarNameB = "DeployCommandRedeployDUnitTestB.jar";
-  private static final String functionB = "DeployCommandRedeployDUnitFunctionB";
-  private static final String packageB = "jddunit.function";
-  private static final String fullyQualifiedFunctionB = packageB + "." + functionB;
+  private static final String JAR_NAME_B = "DeployCommandRedeployDUnitTestB.jar";
+  private static final String FUNCTION_B = "DeployCommandRedeployDUnitFunctionB";
+  private static final String PACKAGE_B = "jddunit.function";
+  private static final String FULLY_QUALIFIED_FUNCTION_B = PACKAGE_B + "." + FUNCTION_B;
   private File jarBVersion1;
   private File jarBVersion2;
 
@@ -59,7 +58,7 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
   private MemberVM server;
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule(true);
 
   @Rule
   public transient GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
@@ -81,64 +80,60 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
   @Test
   public void redeployJarsWithNewVersionsOfFunctions() throws Exception {
     gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarAVersion1.getCanonicalPath());
-    server.invoke(() -> assertThatCanLoad(jarNameA, functionA));
-    server.invoke(() -> assertThatFunctionHasVersion(functionA, VERSION1));
-
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
 
     gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarBVersion1.getCanonicalPath());
-    server.invoke(() -> assertThatCanLoad(jarNameA, functionA));
-    server.invoke(() -> assertThatCanLoad(jarNameB, fullyQualifiedFunctionB));
-    server.invoke(() -> assertThatFunctionHasVersion(functionA, VERSION1));
-    server.invoke(() -> assertThatFunctionHasVersion(functionB, VERSION1));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION1));
 
     gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarBVersion2.getCanonicalPath());
-    server.invoke(() -> assertThatCanLoad(jarNameA, functionA));
-    server.invoke(() -> assertThatCanLoad(jarNameB, fullyQualifiedFunctionB));
-    server.invoke(() -> assertThatFunctionHasVersion(functionA, VERSION1));
-    server.invoke(() -> assertThatFunctionHasVersion(functionB, VERSION2));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION1));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION2));
 
     gfshConnector.executeAndVerifyCommand("deploy --jar=" + jarAVersion2.getCanonicalPath());
-    server.invoke(() -> assertThatCanLoad(jarNameA, functionA));
-    server.invoke(() -> assertThatCanLoad(jarNameB, fullyQualifiedFunctionB));
-    server.invoke(() -> assertThatFunctionHasVersion(functionA, VERSION2));
-    server.invoke(() -> assertThatFunctionHasVersion(functionB, VERSION2));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
+    server.invoke(() -> assertThatCanLoad(JAR_NAME_B, FULLY_QUALIFIED_FUNCTION_B));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
+    server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_B, VERSION2));
   }
 
   // Note that jar A is a Declarable Function, while jar B is only a Function.
   // Also, the function for jar A resides in the default package, whereas jar B specifies a package.
   // This ensures that this test has identical coverage to some tests that it replaced.
   private File createJarWithFunctionA(String version) throws Exception {
-    String classContents =
-        "import java.util.Properties;" + "import org.apache.geode.cache.Declarable;"
-            + "import org.apache.geode.cache.execute.Function;"
-            + "import org.apache.geode.cache.execute.FunctionContext;" + "public class " + functionA
-            + " implements Function, Declarable {" + "public String getId() {return \"" + functionA
-            + "\";}" + "public void init(Properties props) {}"
-            + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\""
-            + version + "\");}" + "public boolean hasResult() {return true;}"
-            + "public boolean optimizeForWrite() {return false;}"
-            + "public boolean isHA() {return false;}}";
+    URL classTemplateUrl = DeployCommandRedeployDUnitTest.class
+        .getResource("DeployCommandRedeployDUnitTest_FunctionATemplate");
+    assertThat(classTemplateUrl).isNotNull();
 
-    File jar = new File(lsRule.getTempFolder().newFolder(jarNameA + version), this.jarNameA);
+    String classContents = FileUtils.readFileToString(new File(classTemplateUrl.toURI()), "UTF-8");
+    classContents = classContents.replaceAll("FUNCTION_A", FUNCTION_A);
+    classContents = classContents.replaceAll("VERSION", version);
+
+    File jar = new File(lsRule.getTempFolder().newFolder(JAR_NAME_A + version), this.JAR_NAME_A);
     ClassBuilder functionClassBuilder = new ClassBuilder();
-    functionClassBuilder.writeJarFromContent(functionA, classContents, jar);
+    functionClassBuilder.writeJarFromContent(FUNCTION_A, classContents, jar);
 
     return jar;
   }
 
-  private File createJarWithFunctionB(String version) throws IOException {
-    String classContents =
-        "package " + packageB + ";" + "import org.apache.geode.cache.execute.Function;"
-            + "import org.apache.geode.cache.execute.FunctionContext;" + "public class " + functionB
-            + " implements Function {" + "public boolean hasResult() {return true;}"
-            + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\""
-            + version + "\");}" + "public String getId() {return \"" + functionB + "\";}"
-            + "public boolean optimizeForWrite() {return false;}"
-            + "public boolean isHA() {return false;}}";
+  private File createJarWithFunctionB(String version) throws Exception {
+    URL classTemplateUrl = DeployCommandRedeployDUnitTest.class
+        .getResource("DeployCommandRedeployDUnitTest_FunctionATemplate");
+    assertThat(classTemplateUrl).isNotNull();
 
-    File jar = new File(lsRule.getTempFolder().newFolder(jarNameB + version), this.jarNameB);
+    String classContents = FileUtils.readFileToString(new File(classTemplateUrl.toURI()), "UTF-8");
+    classContents = classContents.replaceAll("PACKAGE_B", PACKAGE_B);
+    classContents = classContents.replaceAll("FUNCTION_B", FUNCTION_B);
+    classContents = classContents.replaceAll("VERSION", version);
+
+    File jar = new File(lsRule.getTempFolder().newFolder(JAR_NAME_B + version), this.JAR_NAME_B);
     ClassBuilder functionClassBuilder = new ClassBuilder();
-    functionClassBuilder.writeJarFromContent("jddunit/function/" + functionB, classContents, jar);
+    functionClassBuilder.writeJarFromContent("jddunit/function/" + FUNCTION_B, classContents, jar);
 
     return jar;
   }

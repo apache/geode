@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal;
 
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -25,7 +28,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.nio.channels.FileLock;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -37,7 +40,6 @@ import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
-import org.apache.geode.cache.Cache;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
@@ -48,7 +50,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.pdx.internal.TypeRegistry;
-import sun.nio.ch.ChannelInputStream;
 
 /**
  * ClassLoader for a single JAR file.
@@ -103,7 +104,7 @@ public class DeployedJar {
           + ", was modified prior to obtaining a lock: " + jarName);
     }
 
-    if (!isValidJarContent(getJarContent())) {
+    if (!hasValidJarContent(getJarContent())) {
       throw new IllegalArgumentException(
           "File does not contain valid JAR content: " + versionedJarFile.getAbsolutePath());
     }
@@ -147,23 +148,10 @@ public class DeployedJar {
    * @param jarBytes Bytes of data to be validated.
    * @return True if the data has JAR content, false otherwise
    */
-  public static boolean isValidJarContent(final byte[] jarBytes) {
+  public static boolean hasValidJarContent(final byte[] jarBytes) {
     return hasValidJarContent(new ByteArrayInputStream(jarBytes));
   }
 
-  /**
-   * Peek into the JAR data and make sure that it is valid JAR content.
-   * 
-   * @param jarFile File whose contents should be validated.
-   * @return True if the data has JAR content, false otherwise
-   */
-  public static boolean hasValidJarContent(final File jarFile) {
-    try {
-      return hasValidJarContent(new FileInputStream(jarFile));
-    } catch (IOException ioex) {
-      return false;
-    }
-  }
 
   /**
    * Scan the JAR file and attempt to load all classes and register any function classes found.
@@ -184,37 +172,42 @@ public class DeployedJar {
 
     JarInputStream jarInputStream = null;
     try {
+      List<String> functionClasses = findFunctionsInThisJar();
+
       jarInputStream = new JarInputStream(byteArrayInputStream);
       JarEntry jarEntry = jarInputStream.getNextJarEntry();
 
       while (jarEntry != null) {
         if (jarEntry.getName().endsWith(".class")) {
-          if (isDebugEnabled) {
-            logger.debug("Attempting to load class: {}, from JAR file: {}", jarEntry.getName(),
-                this.file.getAbsolutePath());
-          }
-
           final String className = jarEntry.getName().replaceAll("/", "\\.").substring(0,
               (jarEntry.getName().length() - 6));
-          try {
-            Class<?> clazz = ClassPathLoader.getLatest().forName(className);
-            Collection<Function> registerableFunctions = getRegisterableFunctionsFromClass(clazz);
-            for (Function function : registerableFunctions) {
-              FunctionService.registerFunction(function);
-              if (isDebugEnabled) {
-                logger.debug("Registering function class: {}, from JAR file: {}", className,
-                    this.file.getAbsolutePath());
-              }
-              this.registeredFunctions.add(function);
+
+          if (functionClasses.contains(className)) {
+            if (isDebugEnabled) {
+              logger.debug("Attempting to load class: {}, from JAR file: {}", jarEntry.getName(),
+                  this.file.getAbsolutePath());
             }
-          } catch (ClassNotFoundException cnfex) {
-            logger.error("Unable to load all classes from JAR file: {}",
-                this.file.getAbsolutePath(), cnfex);
-            throw cnfex;
-          } catch (NoClassDefFoundError ncdfex) {
-            logger.error("Unable to load all classes from JAR file: {}",
-                this.file.getAbsolutePath(), ncdfex);
-            throw ncdfex;
+            try {
+              Class<?> clazz = ClassPathLoader.getLatest().forName(className);
+              Collection<Function> registerableFunctions = getRegisterableFunctionsFromClass(clazz);
+              for (Function function : registerableFunctions) {
+                FunctionService.registerFunction(function);
+                if (isDebugEnabled) {
+                  logger.debug("Registering function class: {}, from JAR file: {}", className,
+                      this.file.getAbsolutePath());
+                }
+                this.registeredFunctions.add(function);
+              }
+            } catch (ClassNotFoundException | NoClassDefFoundError cnfex) {
+              logger.error("Unable to load all classes from JAR file: {}",
+                  this.file.getAbsolutePath(), cnfex);
+              throw cnfex;
+            }
+          } else {
+            if (isDebugEnabled) {
+              logger.debug("No functions found in class: {}, from JAR file: {}", jarEntry.getName(),
+                  this.file.getAbsolutePath());
+            }
           }
         }
         jarEntry = jarInputStream.getNextJarEntry();
@@ -327,6 +320,15 @@ public class DeployedJar {
     return registerableFunctions;
   }
 
+  private List<String> findFunctionsInThisJar() throws IOException {
+    URLClassLoader urlClassLoader =
+        new URLClassLoader(new URL[] {this.getFile().getCanonicalFile().toURL()});
+    FastClasspathScanner fastClasspathScanner = new FastClasspathScanner()
+        .removeTemporaryFilesAfterScan(true).overrideClassLoaders(urlClassLoader);
+    ScanResult scanResult = fastClasspathScanner.scan();
+    return scanResult.getNamesOfClassesImplementing(Function.class);
+  }
+
   private Function newFunction(final Class<Function> clazz, final boolean errorOnNoSuchMethod) {
     try {
       final Constructor<Function> constructor = clazz.getConstructor();
@@ -342,20 +344,11 @@ public class DeployedJar {
               clazz.getName());
         }
       }
-    } catch (SecurityException sex) {
-      logger.error("Zero-arg constructor of function not accessible for class: {}", clazz.getName(),
-          sex);
-    } catch (IllegalAccessException iae) {
-      logger.error("Zero-arg constructor of function not accessible for class: {}", clazz.getName(),
-          iae);
-    } catch (InvocationTargetException ite) {
+    } catch (Exception ex) {
       logger.error("Error when attempting constructor for function for class: {}", clazz.getName(),
-          ite);
-    } catch (InstantiationException ie) {
-      logger.error("Unable to instantiate function for class: {}", clazz.getName(), ie);
-    } catch (ExceptionInInitializerError eiiex) {
-      logger.error("Error during function initialization for class: {}", clazz.getName(), eiiex);
+          ex);
     }
+
     return null;
   }
 

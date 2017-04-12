@@ -57,9 +57,18 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   private TemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
   private MemberVM[] members;
+  private final boolean bounceVms;
 
   public LocatorServerStartupRule() {
+    this(false);
+  }
+
+  /**
+   * If your DUnit tests fail due to insufficient cleanup, try setting bounceVms=true.
+   */
+  public LocatorServerStartupRule(boolean bounceVms) {
     DUnitLauncher.launchIfNeeded();
+    this.bounceVms = bounceVms;
   }
 
   @Override
@@ -67,6 +76,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     restoreSystemProperties.before();
     temporaryFolder.create();
     Invoke.invokeInEveryVM("Stop each VM", this::cleanupVm);
+    if (bounceVms) {
+      getHost(0).getAllVMs().forEach(VM::bounce);
+    }
     members = new MemberVM[4];
   }
 

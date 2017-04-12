@@ -33,12 +33,11 @@ import java.io.File;
 import java.util.Properties;
 
 @Category(DistributedTest.class)
-public class ClusterConfigStartMemberDUnitTest extends ClusterConfigBaseTest {
+public class ClusterConfigStartMemberDUnitTest extends ClusterConfigTestBase {
   protected MemberVM locator;
 
   @Before
   public void before() throws Exception {
-    super.before();
     locator = startLocatorWithLoadCCFromDir();
   }
 
