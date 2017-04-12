@@ -33,8 +33,10 @@ import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
+import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.StringQueryProvider;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
@@ -214,6 +216,22 @@ public class LuceneQueryFunctionJUnitTest {
   @Test(expected = LuceneIndexNotFoundException.class)
   public void whenServiceReturnsNullIndexDuringQueryExecutionFunctionExceptionShouldBeThrown()
       throws Exception {
+    when(mockContext.getDataSet()).thenReturn(mockRegion);
+    when(mockContext.getArguments()).thenReturn(searchArgs);
+
+    LuceneQueryFunction function = new LuceneQueryFunction();
+    when(mockService.getIndex(eq("indexName"), eq(regionPath))).thenReturn(null);
+    function.execute(mockContext);
+  }
+
+  @Test(expected = InternalFunctionInvocationTargetException.class)
+  public void whenServiceReturnsNullIndexButHasDefinedLuceneIndexDuringQueryExecutionInternalFunctionExceptionShouldBeThrown()
+      throws Exception {
+    LuceneServiceImpl mockServiceImpl = mock(LuceneServiceImpl.class);
+    when(mockCache.getService(any())).thenReturn(mockServiceImpl);
+    when(mockServiceImpl.getIndex(eq("indexName"), eq(regionPath))).thenReturn(null);
+    when(mockServiceImpl.getDefinedIndex(eq("indexName"), eq(regionPath)))
+        .thenReturn(mock(LuceneIndexCreationProfile.class));
     when(mockContext.getDataSet()).thenReturn(mockRegion);
     when(mockContext.getArguments()).thenReturn(searchArgs);
 

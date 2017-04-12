@@ -25,6 +25,7 @@ import org.apache.geode.cache.lucene.LuceneIndexDestroyedException;
 import org.apache.geode.cache.lucene.LuceneIndexNotFoundException;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.logging.log4j.Logger;
@@ -132,6 +133,25 @@ public class LuceneQueryFunction implements Function, InternalEntity {
     try {
       index =
           (LuceneIndexImpl) service.getIndex(searchContext.getIndexName(), region.getFullPath());
+      if (index == null && service instanceof LuceneServiceImpl) {
+        if (((LuceneServiceImpl) service).getDefinedIndex(searchContext.getIndexName(),
+            region.getFullPath()) != null) {
+          // The node may be in the process of recovering, where we have the index defined but yet
+          // to be recovered
+          // If we retry fast enough, we could get a stack overflow based on the way function
+          // execution is currently written
+          // Instead we will add an artificial sleep to slow down the retry at this point
+          // Hopefully in the future, the function execution would retry without adding to the stack
+          // and this can be removed
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+          throw new InternalFunctionInvocationTargetException(
+              "Defined Lucene Index has not been created");
+        }
+      }
     } catch (CacheClosedException e) {
       throw new InternalFunctionInvocationTargetException(
           "Cache is closed when attempting to retrieve index:" + region.getFullPath(), e);
