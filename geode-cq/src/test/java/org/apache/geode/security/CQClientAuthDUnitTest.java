@@ -37,8 +37,7 @@ import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Before;
@@ -56,11 +55,12 @@ public class CQClientAuthDUnitTest extends JUnit4DistributedTestCase {
   final VM client1 = host.getVM(1);
 
   @Rule
-  public LocalServerStarterRule server =
-      new ServerStarterBuilder().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
           .withProperty(TestSecurityManager.SECURITY_JSON,
               "org/apache/geode/management/internal/security/clientServer.json")
-          .withProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName()).buildInThisVM();
+          .withProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName())
+          .startAutomatically();
 
   @Before
   public void before() throws Exception {
@@ -82,7 +82,7 @@ public class CQClientAuthDUnitTest extends JUnit4DistributedTestCase {
           UserPasswordAuthInit.class.getName() + ".create");
       ClientCacheFactory factory = new ClientCacheFactory(props);
 
-      factory.addPoolServer("localhost", server.getServerPort());
+      factory.addPoolServer("localhost", server.getPort());
       factory.setPoolThreadLocalConnections(false);
       factory.setPoolMinConnections(5);
       factory.setPoolSubscriptionEnabled(true);

@@ -26,8 +26,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Rule;
@@ -44,11 +43,11 @@ public class ClientRegionClearAuthDUnitTest extends JUnit4DistributedTestCase {
   final VM client2 = host.getVM(2);
 
   @Rule
-  public LocalServerStarterRule server =
-      new ServerStarterBuilder().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
           .withProperty(TestSecurityManager.SECURITY_JSON,
               "org/apache/geode/management/internal/security/clientServer.json")
-          .withRegion(RegionShortcut.REPLICATE, REGION_NAME).buildInThisVM();
+          .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
   public void testRegionClear() throws InterruptedException {
@@ -56,7 +55,7 @@ public class ClientRegionClearAuthDUnitTest extends JUnit4DistributedTestCase {
     SerializableRunnable clearUnauthorized = new SerializableRunnable() {
       @Override
       public void run() {
-        ClientCache cache = createClientCache("stranger", "1234567", server.getServerPort());
+        ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
         Region region = createProxyRegion(cache, REGION_NAME);
         assertNotAuthorized(() -> region.clear(), "DATA:WRITE:AuthRegion");
       }
@@ -67,7 +66,7 @@ public class ClientRegionClearAuthDUnitTest extends JUnit4DistributedTestCase {
     SerializableRunnable clearAuthorized = new SerializableRunnable() {
       @Override
       public void run() {
-        ClientCache cache = createClientCache("authRegionUser", "1234567", server.getServerPort());
+        ClientCache cache = createClientCache("authRegionUser", "1234567", server.getPort());
         Region region = createProxyRegion(cache, REGION_NAME);
         region.clear();
       }

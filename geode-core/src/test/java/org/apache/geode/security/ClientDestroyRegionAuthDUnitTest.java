@@ -24,11 +24,9 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,7 +34,6 @@ import org.junit.experimental.categories.Category;
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClientDestroyRegionAuthDUnitTest extends JUnit4DistributedTestCase {
   private static String REGION_NAME = "testRegion";
-  private int serverPort;
 
   final Host host = Host.getHost(0);
   final VM client1 = host.getVM(1);
@@ -44,22 +41,17 @@ public class ClientDestroyRegionAuthDUnitTest extends JUnit4DistributedTestCase 
   final VM client3 = host.getVM(3);
 
   @Rule
-  public LocalServerStarterRule server =
-      new ServerStarterBuilder().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
           .withProperty(TestSecurityManager.SECURITY_JSON,
               "org/apache/geode/management/internal/security/clientServer.json")
-          .withRegion(RegionShortcut.REPLICATE, REGION_NAME).buildInThisVM();
-
-  @Before
-  public void setup() {
-    serverPort = server.getServerPort();
-  }
+          .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
   public void testDestroyRegion() throws InterruptedException {
     client1.invoke(() -> {
       ClientCache cache =
-          SecurityTestUtil.createClientCache("dataWriter", "1234567", server.getServerPort());
+          SecurityTestUtil.createClientCache("dataWriter", "1234567", server.getPort());
 
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
@@ -67,8 +59,8 @@ public class ClientDestroyRegionAuthDUnitTest extends JUnit4DistributedTestCase 
     });
 
     client2.invoke(() -> {
-      ClientCache cache = SecurityTestUtil.createClientCache("authRegionManager", "1234567",
-          server.getServerPort());
+      ClientCache cache =
+          SecurityTestUtil.createClientCache("authRegionManager", "1234567", server.getPort());
 
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
@@ -77,7 +69,7 @@ public class ClientDestroyRegionAuthDUnitTest extends JUnit4DistributedTestCase 
 
     client3.invoke(() -> {
       ClientCache cache =
-          SecurityTestUtil.createClientCache("super-user", "1234567", server.getServerPort());
+          SecurityTestUtil.createClientCache("super-user", "1234567", server.getPort());
 
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);

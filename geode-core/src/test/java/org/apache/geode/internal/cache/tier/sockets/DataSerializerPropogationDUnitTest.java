@@ -366,7 +366,7 @@ public class DataSerializerPropogationDUnitTest extends JUnit4DistributedTestCas
       assertNotNull(bs);
       bs.start();
     } catch (Exception ex) {
-      fail("while buildInThisVM()  " + ex);
+      fail("while startServer()  " + ex);
     }
   }
 

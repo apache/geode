@@ -2477,7 +2477,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   // Region region = null;
   // System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY", "true");
   // try {
-  // region = withRegion(name, attrs);
+  // region = createRegion(name, attrs);
   // } finally {
   // System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
   // }
@@ -3197,7 +3197,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   // Region region = null;
   // System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
   // try {
-  // region = withRegion(name, attrs);
+  // region = createRegion(name, attrs);
   // } finally {
   // System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
   // }

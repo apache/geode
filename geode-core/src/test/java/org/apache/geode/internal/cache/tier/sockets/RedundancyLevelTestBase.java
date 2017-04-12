@@ -478,7 +478,7 @@ public class RedundancyLevelTestBase extends JUnit4DistributedTestCase {
       assertNotNull(bs);
       bs.start();
     } catch (Exception ex) {
-      Assert.fail("while buildInThisVM()", ex);
+      Assert.fail("while startServer()", ex);
     }
   }
 

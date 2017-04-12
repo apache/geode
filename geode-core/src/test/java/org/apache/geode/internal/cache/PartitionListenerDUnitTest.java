@@ -162,7 +162,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
 
   protected DistributedMember createPR(VM vm, final String regionName, final boolean isAccessor)
       throws Throwable {
-    SerializableCallable createPrRegion = new SerializableCallable("withRegion") {
+    SerializableCallable createPrRegion = new SerializableCallable("createRegion") {
 
       public Object call() {
         Cache cache = getCache();

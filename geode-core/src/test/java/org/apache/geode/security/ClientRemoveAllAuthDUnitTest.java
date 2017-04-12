@@ -27,8 +27,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.Rule;
@@ -47,17 +46,17 @@ public class ClientRemoveAllAuthDUnitTest extends JUnit4DistributedTestCase {
   final VM client2 = host.getVM(2);
 
   @Rule
-  public LocalServerStarterRule server =
-      new ServerStarterBuilder().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+  public ServerStarterRule server =
+      new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
           .withProperty(TestSecurityManager.SECURITY_JSON,
               "org/apache/geode/management/internal/security/clientServer.json")
-          .withRegion(RegionShortcut.REPLICATE, REGION_NAME).buildInThisVM();
+          .withRegion(RegionShortcut.REPLICATE, REGION_NAME);
 
   @Test
   public void testRemoveAll() throws Exception {
 
     AsyncInvocation ai1 = client1.invokeAsync(() -> {
-      ClientCache cache = createClientCache("authRegionReader", "1234567", server.getServerPort());
+      ClientCache cache = createClientCache("authRegionReader", "1234567", server.getPort());
 
       Region region = createProxyRegion(cache, REGION_NAME);
       assertNotAuthorized(() -> region.removeAll(Arrays.asList("key1", "key2", "key3", "key4")),
@@ -65,7 +64,7 @@ public class ClientRemoveAllAuthDUnitTest extends JUnit4DistributedTestCase {
     });
 
     AsyncInvocation ai2 = client2.invokeAsync(() -> {
-      ClientCache cache = createClientCache("authRegionWriter", "1234567", server.getServerPort());
+      ClientCache cache = createClientCache("authRegionWriter", "1234567", server.getPort());
 
       Region region = createProxyRegion(cache, REGION_NAME);
       region.removeAll(Arrays.asList("key1", "key2", "key3", "key4"));

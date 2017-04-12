@@ -1473,7 +1473,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
   // DiskStoreFactory dsf = getCache().createDiskStoreFactory();
   // factory.setDiskSynchronous(true);
   // factory.setDiskWriteAttributes(dwaf.create());
-  // Region rgn = withRegion(name, factory.create());
+  // Region rgn = createRegion(name, factory.create());
   // for (int i = 0; i < NB1_NUM_ENTRIES; i++) {
   // rgn.put(new Integer(i), values[i]);
   // }
@@ -1481,7 +1481,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
   // //close and create to ensure that all data will go to htree
   // //TODO: Mitul : remove this later to fine tune test to also take oplogs recovery into account
   // rgn.close();
-  // rgn = withRegion(name, factory.createRegionAttributes());
+  // rgn = createRegion(name, factory.createRegionAttributes());
   // closeCache();
   // getCache();
   // getLogWriter().info("DEBUG nbput: finished phase one");
@@ -1498,7 +1498,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
   // factory.setScope(Scope.DISTRIBUTED_ACK);
   // factory.setEarlyAck(false);
   // factory.setPersistBackup(false);
-  // Region region = withRegion(name, factory.create());
+  // Region region = createRegion(name, factory.create());
   // // keep putting until told to stop
   // getLogWriter().info("DEBUG nbput: started async putter");
   // int putCount = 0;
@@ -1557,7 +1557,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
   // DiskRegion.recoverDelay = 10; // artificially slow down recovery
   // getLogWriter().info("DEBUG nbput: started recovery");
   // try {
-  // withRegion(name, factory.create());
+  // createRegion(name, factory.create());
   // }
   // finally {
   // DiskRegion.recoverDelay = 0;

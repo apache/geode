@@ -19,9 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -36,12 +34,12 @@ public class CacheServerMBeanShiroJUnitTest {
   private CacheServerMXBean bean;
 
   @ClassRule
-  public static LocalServerStarterRule server = new ServerStarterBuilder().withJMXManager()
-      .withProperty(SECURITY_SHIRO_INIT, "shiro.ini").withJMXManager().buildInThisVM();
+  public static ServerStarterRule server = new ServerStarterRule()
+      .withProperty(SECURITY_SHIRO_INIT, "shiro.ini").withJMXManager().startAutomatically();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =
-      new MBeanServerConnectionRule(server.getJmxPort());
+      new MBeanServerConnectionRule(server::getJmxPort);
 
   @Before
   public void setUp() throws Exception {

@@ -23,8 +23,7 @@ import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.BeforeClass;
@@ -37,20 +36,21 @@ import org.junit.experimental.categories.Category;
 public class GfshCommandsPostProcessorTest {
 
   @ClassRule
-  public static LocalServerStarterRule server = new ServerStarterBuilder().withJMXManager()
-      .withProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName())
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty("security-json",
-          "org/apache/geode/management/internal/security/cacheServer.json")
-      .buildInThisVM();
+  public static ServerStarterRule serverStarter =
+      new ServerStarterRule().withJMXManager()
+          .withProperty(SECURITY_POST_PROCESSOR, TestPostProcessor.class.getName())
+          .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty("security-json",
+              "org/apache/geode/management/internal/security/cacheServer.json")
+          .startAutomatically();
 
   @Rule
-  public GfshShellConnectionRule gfshConnection =
-      new GfshShellConnectionRule(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManger);
+  public GfshShellConnectionRule gfshConnection = new GfshShellConnectionRule(
+      serverStarter::getJmxPort, GfshShellConnectionRule.PortType.jmxManger);
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    server.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("region1");
+    serverStarter.getCache().createRegionFactory(RegionShortcut.REPLICATE).create("region1");
   }
 
   @Test

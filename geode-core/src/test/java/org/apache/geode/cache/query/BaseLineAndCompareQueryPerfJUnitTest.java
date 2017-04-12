@@ -318,7 +318,7 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
       /*
        * ds = DistributedSystem.connect(props); cache = CacheFactory.create(ds); AttributesFactory
        * factory = new AttributesFactory(); factory.setScope(Scope.DISTRIBUTED_ACK);
-       * factory.setValueConstraint(Country.class); region = cache.withRegion("Countries",
+       * factory.setValueConstraint(Country.class); region = cache.createRegion("Countries",
        * factory.create());
        */
       region = CacheUtils.createRegion("Countries", Country.class);
@@ -331,7 +331,7 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
       e.printStackTrace();
     }
 
-  }// end of withRegion
+  }// end of createRegion
 
   public static void populateData() throws Exception {
     /*

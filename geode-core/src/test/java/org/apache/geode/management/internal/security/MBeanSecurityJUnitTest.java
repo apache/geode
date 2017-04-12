@@ -25,9 +25,8 @@ import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.rules.ConnectionConfiguration;
-import org.apache.geode.test.dunit.rules.LocalServerStarterRule;
 import org.apache.geode.test.dunit.rules.MBeanServerConnectionRule;
-import org.apache.geode.test.dunit.rules.ServerStarterBuilder;
+import org.apache.geode.test.dunit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.junit.ClassRule;
@@ -48,15 +47,16 @@ import javax.management.ReflectionException;
 @Category({IntegrationTest.class, SecurityTest.class})
 public class MBeanSecurityJUnitTest {
   @ClassRule
-  public static LocalServerStarterRule server = new ServerStarterBuilder().withJMXManager()
-      .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty(TestSecurityManager.SECURITY_JSON,
-          "org/apache/geode/management/internal/security/cacheServer.json")
-      .buildInThisVM();
+  public static ServerStarterRule server =
+      new ServerStarterRule().withJMXManager()
+          .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
+          .withProperty(TestSecurityManager.SECURITY_JSON,
+              "org/apache/geode/management/internal/security/cacheServer.json")
+          .startAutomatically();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =
-      new MBeanServerConnectionRule(server.getJmxPort());
+      new MBeanServerConnectionRule(server::getJmxPort);
 
   /**
    * No user can call createBean or unregisterBean of GemFire Domain

@@ -325,7 +325,7 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
     };
     vm0.invoke(createRegion);
     vm1.invoke(createRegion);
-    // vm2.invoke(withRegion);
+    // vm2.invoke(createRegion);
     vm1.invoke(new SerializableRunnable("Create local tombstone and adjust time") {
       public void run() {
         // make the entry for cckey0 a tombstone in this VM and set its modification time to be
