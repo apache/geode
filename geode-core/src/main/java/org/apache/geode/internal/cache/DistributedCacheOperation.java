@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InvalidDeltaException;
+import org.apache.geode.InvalidVersionException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheFactory;
@@ -78,6 +79,7 @@ import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.util.DelayedAction;
 
 /**
  * 
@@ -240,6 +242,8 @@ public abstract class DistributedCacheOperation {
     return true;
   }
 
+  public static volatile DelayedAction test_InvalidVersionAction;
+
   /**
    * region's distribution advisor marked that a distribution is about to start, then distribute. It
    * returns a token, which is view version. Return -1 means the method did not succeed. This method
@@ -256,7 +260,18 @@ public abstract class DistributedCacheOperation {
       logger.trace(LogMarker.STATE_FLUSH_OP, "dispatching operation in view version {}",
           viewVersion);
     }
-    _distribute();
+    try {
+      _distribute();
+    } catch (InvalidVersionException e) {
+      if (logger.isDebugEnabled()) {
+        logger.trace(LogMarker.DM, "PutAll failed since versions were missing; retrying again", e);
+      }
+
+      if (test_InvalidVersionAction != null) {
+        test_InvalidVersionAction.run();
+      }
+      _distribute();
+    }
     return viewVersion;
   }
 

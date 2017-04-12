@@ -63,13 +63,13 @@ public class Bug45934DUnitTest extends JUnit4CacheTestCase {
     Region<Integer, Integer> region = rf.create(name);
 
     // 3. reset the error flag after initial failure
-    AbstractUpdateOperation.test_InvalidVersionAction = new DelayedAction(new Runnable() {
+    DistributedCacheOperation.test_InvalidVersionAction = new DelayedAction(new Runnable() {
       @Override
       public void run() {
         unsetRemoteFlag(remote);
       }
     });
-    AbstractUpdateOperation.test_InvalidVersionAction.allowToProceed();
+    DistributedCacheOperation.test_InvalidVersionAction.allowToProceed();
 
     // 3. put data
     Map<Integer, Integer> values = new HashMap<Integer, Integer>();
