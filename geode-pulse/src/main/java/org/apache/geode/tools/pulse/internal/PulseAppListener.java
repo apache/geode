@@ -169,6 +169,10 @@ public class PulseAppListener implements ServletContextListener {
 
     // set SSL info
     initializeSSL();
+    if (sysIsEmbedded) {
+      sysPulseUseSSLManager = Boolean
+          .parseBoolean(System.getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_MANAGER));
+    }
     repository.setUseSSLLocator(sysPulseUseSSLLocator);
     repository.setUseSSLManager(sysPulseUseSSLManager);
 

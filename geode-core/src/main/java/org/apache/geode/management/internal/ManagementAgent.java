@@ -100,6 +100,7 @@ public class ManagementAgent {
    */
   private static final String PULSE_EMBEDDED_PROP = "pulse.embedded";
   private static final String PULSE_PORT_PROP = "pulse.port";
+  private static final String PULSE_USESSL_MANAGER = "pulse.useSSL.manager";
 
   public ManagementAgent(DistributionConfig config) {
     this.config = config;
@@ -268,6 +269,10 @@ public class ManagementAgent {
 
           System.setProperty(PULSE_EMBEDDED_PROP, "true");
           System.setProperty(PULSE_PORT_PROP, "" + config.getJmxManagerPort());
+
+          final SocketCreator socketCreator =
+              SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX);
+          System.setProperty(PULSE_USESSL_MANAGER, socketCreator.useSSL() + "");
 
           this.httpServer = JettyHelper.startJetty(this.httpServer);
 
@@ -504,14 +509,9 @@ public class ManagementAgent {
       if (names.isEmpty()) {
         try {
           platformMBeanServer.registerMBean(acc, accessControlMBeanON);
-          logger.info("Registered AccessContorlMBean on " + accessControlMBeanON);
-        } catch (InstanceAlreadyExistsException e) {
-          throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource",
-              e);
-        } catch (MBeanRegistrationException e) {
-          throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource",
-              e);
-        } catch (NotCompliantMBeanException e) {
+          logger.info("Registered AccessControlMBean on " + accessControlMBeanON);
+        } catch (InstanceAlreadyExistsException | MBeanRegistrationException
+            | NotCompliantMBeanException e) {
           throw new GemFireConfigException("Error while configuring accesscontrol for jmx resource",
               e);
         }
