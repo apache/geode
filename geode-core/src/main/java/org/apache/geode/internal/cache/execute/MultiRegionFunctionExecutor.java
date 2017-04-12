@@ -151,7 +151,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
     return new MultiRegionFunctionExecutor(this, args);
   }
 
-  public Execution withCollector(ResultCollector<?, ?> rc) {
+  public Execution withCollector(ResultCollector rc) {
     if (rc == null) {
       throw new IllegalArgumentException(
           LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
@@ -160,7 +160,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
     return new MultiRegionFunctionExecutor(this, rc);
   }
 
-  public Execution withFilter(Set<?> filter) {
+  public Execution withFilter(Set filter) {
     throw new FunctionException(
         LocalizedStrings.ExecuteFunction_CANNOT_SPECIFY_0_FOR_ONREGIONS_FUNCTION
             .toLocalizedString("filter"));
