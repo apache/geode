@@ -119,7 +119,6 @@ public class ExportLogsDUnitTest {
     commandStringBuilder.addOption("start-time", dateTimeFormatter.format(yesterday));
     commandStringBuilder.addOption("end-time", dateTimeFormatter.format(tomorrow));
     commandStringBuilder.addOption("log-level", "debug");
-    commandStringBuilder.addOption("dir", "someDir");
 
     gfshConnector.executeAndVerifyCommand(commandStringBuilder.toString());
 
@@ -146,7 +145,6 @@ public class ExportLogsDUnitTest {
     commandStringBuilder.addOption("start-time", dateTimeFormatter.format(cutoffTime.minusDays(1)));
     commandStringBuilder.addOption("end-time", cutoffTimeString);
     commandStringBuilder.addOption("log-level", "debug");
-    commandStringBuilder.addOption("dir", "someDir");
 
     gfshConnector.executeAndVerifyCommand(commandStringBuilder.toString());
 

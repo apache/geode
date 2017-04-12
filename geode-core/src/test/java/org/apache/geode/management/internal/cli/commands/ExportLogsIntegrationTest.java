@@ -15,42 +15,82 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.test.dunit.rules.GfshShellConnectionRule.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorStarterBuilder;
-import org.apache.geode.test.dunit.rules.LocalLocatorStarterRule;
+import org.apache.geode.test.dunit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.ClassRule;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.nio.file.Path;
+
+import java.io.File;
+
 @Category(IntegrationTest.class)
 public class ExportLogsIntegrationTest {
 
-  @ClassRule
-  public static LocalLocatorStarterRule locator = new LocatorStarterBuilder().buildInThisVM();
+  @Rule
+  public LocatorStarterRule locator = new LocatorStarterRule().withJMXManager().startLocator();
 
   @Rule
   public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
 
-  protected void connect() throws Exception {
-    gfsh.connectAndVerify(locator.getLocatorPort(), PortType.locator);
+  @Before
+  public void connect() throws Exception {
+    gfsh.connectAndVerify(locator);
+  }
+
+  public File getWorkingDirectory() throws Exception {
+    return locator.getWorkingDir();
   }
 
   @Test
   public void testInvalidMember() throws Exception {
-    connect();
     gfsh.executeCommand("export logs --member=member1,member2");
     assertThat(gfsh.getGfshOutput()).contains("No Members Found");
   }
 
   @Test
   public void testNothingToExport() throws Exception {
-    connect();
     gfsh.executeCommand("export logs --stats-only");
     assertThat(gfsh.getGfshOutput()).contains("No files to be exported.");
+  }
+
+  @Test
+  public void withFiles_savedToLocatorWorkingDir() throws Exception {
+    String[] extensions = {"zip"};
+    // Expects locator to produce file in own working directory when connected via JMX
+    gfsh.executeCommand("export logs");
+    assertThat(FileUtils.listFiles(getWorkingDirectory(), extensions, false)).isNotEmpty();
+  }
+
+  @Test
+  public void withFiles_savedToLocatorSpecifiedRelativeDir() throws Exception {
+    String[] extensions = {"zip"};
+    Path workingDirPath = getWorkingDirectory().toPath();
+    Path subdirPath = workingDirPath.resolve("some").resolve("test").resolve("directory");
+    Path relativeDir = workingDirPath.relativize(subdirPath);
+    // Expects locator to produce file in own working directory when connected via JMX
+    gfsh.executeCommand("export logs --dir=" + relativeDir.toString());
+    assertThat(FileUtils.listFiles(getWorkingDirectory(), extensions, false)).isEmpty();
+    assertThat(FileUtils.listFiles(getWorkingDirectory(), extensions, true)).isNotEmpty();
+    assertThat(FileUtils.listFiles(subdirPath.toFile(), extensions, false)).isNotEmpty();
+  }
+
+  @Test
+  public void withFiles_savedToLocatorSpecifiedAbsoluteDir() throws Exception {
+    String[] extensions = {"zip"};
+    Path workingDirPath = getWorkingDirectory().toPath();
+    Path absoluteDirPath =
+        workingDirPath.resolve("some").resolve("test").resolve("directory").toAbsolutePath();
+    // Expects locator to produce file in own working directory when connected via JMX
+    gfsh.executeCommand("export logs --dir=" + absoluteDirPath.toString());
+    assertThat(FileUtils.listFiles(getWorkingDirectory(), extensions, false)).isEmpty();
+    assertThat(FileUtils.listFiles(getWorkingDirectory(), extensions, true)).isNotEmpty();
+    assertThat(FileUtils.listFiles(absoluteDirPath.toFile(), extensions, false)).isNotEmpty();
   }
 }

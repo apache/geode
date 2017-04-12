@@ -85,9 +85,9 @@ public class ExportLogsInterceptor extends AbstractCliAroundInterceptor {
       Path dirPath;
       String dirName = parseResult.getParamValueStrings().get("dir");
       if (StringUtils.isBlank(dirName)) {
-        dirPath = Paths.get(System.getProperty("user.dir"));
+        dirPath = Paths.get(System.getProperty("user.dir")).toAbsolutePath();
       } else {
-        dirPath = Paths.get(dirName);
+        dirPath = Paths.get(dirName).toAbsolutePath();
       }
       String fileName = "exportedLogs_" + System.currentTimeMillis() + ".zip";
       File exportedLogFile = dirPath.resolve(fileName).toFile();

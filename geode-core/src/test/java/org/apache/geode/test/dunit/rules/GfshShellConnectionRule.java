@@ -92,6 +92,17 @@ public class GfshShellConnectionRule extends DescribedExternalResource {
 
   }
 
+  // connect and connectAndVerify(Member, ...) required for ExportLogsCommand testing until
+  // LocalLocatorStarterRule has working directory functionality.
+  public void connect(Member locator, String... options) throws Exception {
+    connect(locator.getPort(), PortType.locator, options);
+  }
+
+  public void connectAndVerify(Member locator, String... options) throws Exception {
+    connect(locator.getPort(), PortType.locator, options);
+    assertThat(this.connected).isTrue();
+  }
+
   public void connect(MemberVM locator, String... options) throws Exception {
     connect(locator.getPort(), PortType.locator, options);
   }
