@@ -852,6 +852,72 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
+   * P, R has key1 unchanged, make certain unfinished operations on R to trigger full gii.
+   */
+  @Test
+  public void testRecoveredFromDiskBitAfterFullGII() {
+    prepareForEachTest();
+    getMemberID(P);
+    final DiskStoreID memberR = getMemberID(R);
+    assertEquals(0, DistributedCacheOperation.SLOW_DISTRIBUTION_MS);
+
+    verifyRecoveredFromDiskBitAfterGII(memberR, true);
+  }
+
+  /**
+   * P, R has key1 unchanged, make one unfinished operation on R to trigger delta gii.
+   */
+  @Test
+  public void testRecoveredFromDiskBitAfterDeltaGII() {
+    prepareForEachTest();
+    getMemberID(P);
+    final DiskStoreID memberR = getMemberID(R);
+    assertEquals(0, DistributedCacheOperation.SLOW_DISTRIBUTION_MS);
+
+    verifyRecoveredFromDiskBitAfterGII(memberR, false);
+  }
+
+  private void verifyRecoveredFromDiskBitAfterGII(final DiskStoreID memberR, boolean isFullGII) {
+    final long[] exceptionlist = {3, 4};
+    doOnePut(R, 1, "key1");
+    doOnePut(R, 2, "key2");
+
+    R.invoke(() -> GIIDeltaDUnitTest.slowGII(exceptionlist));
+    doOnePutAsync(R, 3, "key2");
+    waitForToVerifyRVV(R, memberR, 3, null, 0); // R's rvv=r3, gc=0
+
+    if (isFullGII) {
+      doOnePutAsync(R, 4, "key2");
+      waitForToVerifyRVV(R, memberR, 4, null, 0); // R's rvv=r4, gc=0
+    }
+
+    closeCache(R);
+
+    doOnePut(P, 1, "key2");
+
+    // restart R
+    createDistributedRegion(R);
+
+    R.invoke(() -> verifyRecoveredFromDiskBit("key2", isFullGII, true));
+    R.invoke(() -> verifyRecoveredFromDiskBit("key1", isFullGII, false));
+  }
+
+  private void verifyRecoveredFromDiskBit(String key, boolean isFullGII,
+      boolean versionTagBeenChanged) {
+    LocalRegion lr = (LocalRegion) getCache().getRegion(REGION_NAME);
+    DiskEntry re = (DiskEntry) lr.getRegionEntry(key);
+    DiskId id = re.getDiskId();
+
+    byte usebits = id.getUserBits();
+    if (!versionTagBeenChanged && !isFullGII) {
+      // in delta gii, versionTag not changed entry should kept the recoveredFromDisk bit
+      assertTrue(EntryBits.isRecoveredFromDisk(usebits));
+    } else {
+      assertFalse(EntryBits.isRecoveredFromDisk(usebits));
+    }
+  }
+
+  /**
    * P1, P2, P3 R does GII but wait at BeforeSavedReceivedRVV, so R's RVV=P3R0 P4, P5 R goes on to
    * save received RVV. R's new RVV=P5(3-6)R0
    *
