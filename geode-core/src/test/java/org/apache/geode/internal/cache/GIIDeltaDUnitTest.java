@@ -2543,13 +2543,15 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   }
 
   private SerializableRunnable onePutOp(final String key, final String value,
-      final long regionVersionForThisOp, final DiskStoreID memberID) {
+      final long regionVersionForThisOp, final DiskStoreID memberID, final boolean syncInvocation) {
     SerializableRunnable putOp = new SerializableRunnable("put " + key) {
       public void run() {
         LocalRegion lr = (LocalRegion) getCache().getRegion(REGION_NAME);
         lr.put(key, value);
         long region_version = getRegionVersionForMember(lr.getVersionVector(), memberID, false);
-        assertEquals(regionVersionForThisOp, region_version);
+        if (syncInvocation) {
+          assertEquals(regionVersionForThisOp, region_version);
+        }
       }
     };
     return putOp;
@@ -2557,14 +2559,14 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
   private void doOnePut(final VM vm, final long regionVersionForThisOp, final String key) {
     SerializableRunnable putOp =
-        onePutOp(key, generateValue(vm), regionVersionForThisOp, getMemberID(vm));
+        onePutOp(key, generateValue(vm), regionVersionForThisOp, getMemberID(vm), true);
     vm.invoke(putOp);
   }
 
   private AsyncInvocation doOnePutAsync(final VM vm, final long regionVersionForThisOp,
       final String key) {
     SerializableRunnable putOp =
-        onePutOp(key, generateValue(vm), regionVersionForThisOp, getMemberID(vm));
+        onePutOp(key, generateValue(vm), regionVersionForThisOp, getMemberID(vm), false);
     AsyncInvocation async = vm.invokeAsync(putOp);
     return async;
   }
@@ -2574,13 +2576,15 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   }
 
   private SerializableRunnable oneDestroyOp(final String key, final String value,
-      final long regionVersionForThisOp, final DiskStoreID memberID) {
+      final long regionVersionForThisOp, final DiskStoreID memberID, final boolean syncInvocation) {
     SerializableRunnable destroyOp = new SerializableRunnable("destroy " + key) {
       public void run() {
         LocalRegion lr = (LocalRegion) getCache().getRegion(REGION_NAME);
         lr.destroy(key);
         long region_version = getRegionVersionForMember(lr.getVersionVector(), memberID, false);
-        assertEquals(regionVersionForThisOp, region_version);
+        if (syncInvocation) {
+          assertEquals(regionVersionForThisOp, region_version);
+        }
       }
     };
     return destroyOp;
@@ -2588,14 +2592,14 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
 
   private void doOneDestroy(final VM vm, final long regionVersionForThisOp, final String key) {
     SerializableRunnable destroyOp =
-        oneDestroyOp(key, generateValue(vm), regionVersionForThisOp, getMemberID(vm));
+        oneDestroyOp(key, generateValue(vm), regionVersionForThisOp, getMemberID(vm), true);
     vm.invoke(destroyOp);
   }
 
   private AsyncInvocation doOneDestroyAsync(final VM vm, final long regionVersionForThisOp,
       final String key) {
     SerializableRunnable destroyOp =
-        oneDestroyOp(key, generateValue(vm), regionVersionForThisOp, getMemberID(vm));
+        oneDestroyOp(key, generateValue(vm), regionVersionForThisOp, getMemberID(vm), false);
     AsyncInvocation async = vm.invokeAsync(destroyOp);
     return async;
   }
