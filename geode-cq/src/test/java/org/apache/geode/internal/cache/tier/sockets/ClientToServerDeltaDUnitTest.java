@@ -659,7 +659,7 @@ public class ClientToServerDeltaDUnitTest extends JUnit4DistributedTestCase {
     DistributedSystem ds = getSystem(props);
     cache = CacheFactory.create(ds);
     assertNotNull(cache);
-    logger = cache.getLoggerI18n();
+    logger = cache.getLogger().convertToLogWriterI18n();
   }
 
   // to validate updates in listener

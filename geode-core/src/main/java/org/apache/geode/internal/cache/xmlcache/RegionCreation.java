@@ -259,7 +259,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
       setMutableAttributes(root);
     } catch (RegionDestroyedException ex) {
       // Region was concurrently destroyed.
-      cache.getLoggerI18n().warning(
+      cache.getLogger().convertToLogWriterI18n().warning(
           LocalizedStrings.RegionCreation_REGION_DESTROYED_DURING_INITIALIZATION, this.name);
       // do nothing
     }
@@ -387,7 +387,7 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
         && attrs.getEvictionAttributes().getAlgorithm().isLRUMemory()
         && attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && attrs.getEvictionAttributes()
             .getMaximum() != attrs.getPartitionAttributes().getLocalMaxMemory()) {
-      getCache().getLoggerI18n().warning(LocalizedStrings.Mem_LRU_Eviction_Attribute_Reset,
+      getCache().getLogger().convertToLogWriterI18n().warning(LocalizedStrings.Mem_LRU_Eviction_Attribute_Reset,
           new Object[] {this.getName(), attrs.getEvictionAttributes().getMaximum(),
               attrs.getPartitionAttributes().getLocalMaxMemory()});
       this.attrs.setEvictionAttributes(attrs.getEvictionAttributes().createLRUMemoryAttributes(

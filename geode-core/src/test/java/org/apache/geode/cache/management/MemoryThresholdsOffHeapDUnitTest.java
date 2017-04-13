@@ -291,14 +291,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   private void setUsageAboveCriticalThreshold(final VM vm, final String regionName) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedExString);
         Region region = getRootRegion().getSubregion(regionName);
         if (!region.containsKey("oh1")) {
           region.put("oh5", new byte[954204]);
         } else {
           region.put("oh5", new byte[122880]);
         }
-        getCache().getLoggerI18n().fine(removeExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedExString);
         return null;
       }
     });
@@ -307,13 +307,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   private void setUsageAboveEvictionThreshold(final VM vm, final String regionName) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
         Region region = getRootRegion().getSubregion(regionName);
         region.put("oh1", new byte[245760]);
         region.put("oh2", new byte[184320]);
         region.put("oh3", new byte[33488]);
         region.put("oh4", new byte[378160]);
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
         return null;
       }
     });
@@ -322,14 +322,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   private void setUsageBelowEviction(final VM vm, final String regionName) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
         Region region = getRootRegion().getSubregion(regionName);
         region.remove("oh1");
         region.remove("oh2");
         region.remove("oh3");
         region.remove("oh4");
         region.remove("oh5");
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
         return null;
       }
     });
@@ -727,16 +727,16 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
   private SerializableRunnable addExpectedException = new SerializableRunnable("addExpectedEx") {
     public void run() {
-      getCache().getLoggerI18n().fine(addExpectedExString);
-      getCache().getLoggerI18n().fine(addExpectedBelow);
+      getCache().getLogger().convertToLogWriterI18n().fine(addExpectedExString);
+      getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
     };
   };
 
   private SerializableRunnable removeExpectedException =
       new SerializableRunnable("removeExpectedException") {
         public void run() {
-          getCache().getLoggerI18n().fine(removeExpectedExString);
-          getCache().getLoggerI18n().fine(removeExpectedBelow);
+          getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
         };
       };
 
@@ -1235,10 +1235,10 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         r.getAll(createRanges(10, 12));
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
 
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedExString);
         r.put("oh1", new byte[838860]);
         r.put("oh3", new byte[157287]);
-        getCache().getLoggerI18n().fine(removeExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedExString);
         WaitCriterion wc = new WaitCriterion() {
           public String description() {
             return "expected region " + r + " to set memoryThresholdReached";
@@ -1259,9 +1259,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         r.getAll(createRanges(13, 15));
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
 
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
         r.destroy("oh3");
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
         wc = new WaitCriterion() {
           public String description() {
             return "expected region " + r + " to unset memoryThresholdReached";
@@ -1453,7 +1453,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getResourceManager();
         final OffHeapMemoryMonitor ohm = irm.getOffHeapMonitor();
         assertTrue(ohm.getState().isNormal());
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedExString);
         final LocalRegion r = (LocalRegion) getRootRegion().getSubregion(regionName);
         final long bytesUsedAfterSmallKey;
         {
@@ -1528,7 +1528,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           };
         }
         Wait.waitForCriterion(wc, 30000, 9, true);
-        getCache().getLoggerI18n().fine(removeExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedExString);
         return bytesUsedAfterSmallKey;
       }
     });

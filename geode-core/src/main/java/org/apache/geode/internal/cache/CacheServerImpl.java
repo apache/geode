@@ -330,7 +330,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     if (cache instanceof GemFireCacheImpl) {
       ClientHealthMonitoringRegion.getInstance((GemFireCacheImpl) cache);
     }
-    this.cache.getLoggerI18n()
+    this.cache.getLogger().convertToLogWriterI18n()
         .config(LocalizedStrings.CacheServerImpl_CACHESERVER_CONFIGURATION___0, getConfig());
 
     /*
@@ -406,7 +406,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.loadMonitor.stop();
       }
     } catch (RuntimeException e) {
-      cache.getLoggerI18n()
+      cache.getLogger().convertToLogWriterI18n()
           .warning(LocalizedStrings.CacheServerImpl_CACHESERVER_ERROR_CLOSING_LOAD_MONITOR, e);
       firstException = e;
     }
@@ -416,7 +416,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
         this.advisor.close();
       }
     } catch (RuntimeException e) {
-      cache.getLoggerI18n()
+      cache.getLogger().convertToLogWriterI18n()
           .warning(LocalizedStrings.CacheServerImpl_CACHESERVER_ERROR_CLOSING_ADVISOR, e);
       firstException = e;
     }

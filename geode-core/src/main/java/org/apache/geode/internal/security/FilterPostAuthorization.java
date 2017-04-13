@@ -78,7 +78,7 @@ public class FilterPostAuthorization implements AccessControl {
       throws NotAuthorizedException {
 
     this.principalName = (principal == null ? "" : principal.getName());
-    this.logger = cache.getSecurityLoggerI18n();
+    this.logger = cache.getSecurityLogger().convertToLogWriterI18n();
   }
 
   private byte[] checkObjectAuth(byte[] serializedObj, boolean isObject) {

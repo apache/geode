@@ -149,28 +149,6 @@ public interface Cache extends GemFireCache {
   public <K, V> RegionFactory<K, V> createRegionFactory(RegionAttributes<K, V> regionAttributes);
 
   /**
-   * Internal GemStone method for accessing the internationalized logging object for GemFire, use
-   * {@link #getLogger()} instead. This method does not throw <code>CacheClosedException</code> if
-   * the cache is closed.
-   * 
-   * @return the logging object
-   * @deprecated as of 6.5 use getLogger().convertToLogWriterI18n() instead
-   */
-  @Deprecated
-  public LogWriterI18n getLoggerI18n();
-
-  /**
-   * Internal GemStone method for accessing the internationalized logging object for GemFire, use
-   * {@link #getSecurityLogger()} instead. This method does not throw
-   * <code>CacheClosedException</code> if the cache is closed.
-   * 
-   * @return the security logging object
-   * @deprecated as of 6.5 use getSecurityLogger().convertToLogWriterI18n() instead
-   */
-  @Deprecated
-  public LogWriterI18n getSecurityLoggerI18n();
-
-  /**
    * Gets the number of seconds a cache operation will wait to obtain a distributed lock lease. This
    * method does not throw <code>CacheClosedException</code> if the cache is closed.
    */
