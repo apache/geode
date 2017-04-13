@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.cache.util.ObjectSizer;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -35,7 +36,6 @@ import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.util.ObjectSizerImpl;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -232,7 +232,7 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
     final AttributesFactory factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.NORMAL);
     factory.setEvictionAttributes(EvictionAttributes
-        .createLRUMemoryAttributes(new ObjectSizerImpl(), EvictionAction.LOCAL_DESTROY));
+        .createLRUMemoryAttributes(ObjectSizer.DEFAULT, EvictionAction.LOCAL_DESTROY));
     DistributedRegion distRegion = (DistributedRegion) cache.createRegion("DR1", factory.create());
     assertNotNull(distRegion);
 
@@ -330,7 +330,7 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
       } else if (evictionAlgorithm.isLRUMemory()) {
 
         factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(
-            new ObjectSizerImpl(),
+            ObjectSizer.DEFAULT,
             evictionAction == 1 ? EvictionAction.LOCAL_DESTROY : EvictionAction.OVERFLOW_TO_DISK));
       } else {
         factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(maxEnteries,
