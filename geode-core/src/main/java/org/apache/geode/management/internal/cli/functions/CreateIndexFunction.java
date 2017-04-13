@@ -25,7 +25,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -69,9 +68,8 @@ public class CreateIndexFunction extends FunctionAdapter implements InternalEnti
           queryService.createIndex(indexName, indexedExpression, fromClause);
       }
 
-      XmlEntity xmlEntity =
-          new XmlEntity(CacheXml.REGION, "name", cache.getRegion(regionPath).getName());
-      context.getResultSender().lastResult(new CliFunctionResult(memberId, xmlEntity));
+      regionPath = getValidRegionName(cache, regionPath);
+      setResultInSender(context, indexInfo, memberId, cache, regionPath);
     } catch (IndexExistsException e) {
       String message =
           CliStrings.format(CliStrings.CREATE_INDEX__INDEX__EXISTS, indexInfo.getIndexName());
@@ -91,6 +89,31 @@ public class CreateIndexFunction extends FunctionAdapter implements InternalEnti
           e.getClass().getName(), e.getMessage());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, e.getMessage()));
     }
+  }
+
+  private void setResultInSender(FunctionContext context, IndexInfo indexInfo, String memberId,
+      Cache cache, String regionPath) {
+    if (regionPath == null) {
+      String message = CliStrings.format(CliStrings.CREATE_INDEX__INVALID__REGIONPATH,
+          indexInfo.getRegionPath());
+      context.getResultSender().lastResult(new CliFunctionResult(memberId, false, message));
+    } else {
+      XmlEntity xmlEntity =
+          new XmlEntity(CacheXml.REGION, "name", cache.getRegion(regionPath).getName());
+      context.getResultSender().lastResult(new CliFunctionResult(memberId, xmlEntity));
+    }
+  }
+
+  private String getValidRegionName(Cache cache, String regionPath) {
+    while (regionPath != null && cache.getRegion(regionPath) == null) {
+      int dotPosition;
+      if (regionPath.contains(".") && ((dotPosition = regionPath.lastIndexOf('.')) != -1)) {
+        regionPath = regionPath.substring(0, dotPosition);
+      } else {
+        regionPath = null;
+      }
+    }
+    return regionPath;
   }
 
   @Override
