@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -96,12 +95,14 @@ public class ArrayUtilsTest {
 
   @Test
   public void getFirst_null_returnsNull() {
-    assertThat(getFirst((Object[]) null)).isNull();
+    Object nullObject = null;
+    assertThat(getFirst(nullObject)).isNull();
   }
 
   @Test
   public void getFirst_empty_returnsNull() {
-    assertThat(getFirst(new Object[0])).isNull();
+    Object[] emptyArray = new Object[0];
+    assertThat((Object[]) getFirst(emptyArray)).isNull();
   }
 
   @Test
