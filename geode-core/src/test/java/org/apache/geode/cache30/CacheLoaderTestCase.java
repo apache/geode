@@ -225,10 +225,10 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
       public void beforeCreate2(EntryEvent event) throws CacheWriterException {
 
         assertEquals(oldValue, event.getNewValue());
-        assertTrue(event.isLoad());
-        assertTrue(event.isLocalLoad());
-        assertFalse(event.isNetLoad());
-        assertFalse(event.isNetSearch());
+        assertTrue(event.getOperation().isLoad());
+        assertTrue(event.getOperation().isLocalLoad());
+        assertFalse(event.getOperation().isNetLoad());
+        assertFalse(event.getOperation().isNetSearch());
       }
     };
 
@@ -247,10 +247,10 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
 
         assertEquals(oldValue, event.getOldValue());
         assertEquals(newValue, event.getNewValue());
-        assertFalse(event.isLoad());
-        assertFalse(event.isLocalLoad());
-        assertFalse(event.isNetLoad());
-        assertFalse(event.isNetSearch());
+        assertFalse(event.getOperation().isLoad());
+        assertFalse(event.getOperation().isLocalLoad());
+        assertFalse(event.getOperation().isNetLoad());
+        assertFalse(event.getOperation().isNetSearch());
       }
     };
 
@@ -281,10 +281,10 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
     TestCacheListener listener = new TestCacheListener() {
       public void afterCreate2(EntryEvent event) {
         assertEquals(oldValue, event.getNewValue());
-        assertTrue(event.isLoad());
-        assertTrue(event.isLocalLoad());
-        assertFalse(event.isNetLoad());
-        assertFalse(event.isNetSearch());
+        assertTrue(event.getOperation().isLoad());
+        assertTrue(event.getOperation().isLocalLoad());
+        assertFalse(event.getOperation().isNetLoad());
+        assertFalse(event.getOperation().isNetSearch());
       }
     };
 
@@ -303,10 +303,10 @@ public abstract class CacheLoaderTestCase extends CacheWriterTestCase {
       public void afterUpdate2(EntryEvent event) {
         assertEquals(oldValue, event.getOldValue());
         assertEquals(newValue, event.getNewValue());
-        assertFalse(event.isLoad());
-        assertFalse(event.isLocalLoad());
-        assertFalse(event.isNetLoad());
-        assertFalse(event.isNetSearch());
+        assertFalse(event.getOperation().isLoad());
+        assertFalse(event.getOperation().isLocalLoad());
+        assertFalse(event.getOperation().isNetLoad());
+        assertFalse(event.getOperation().isNetSearch());
       }
     };
 

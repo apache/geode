@@ -2789,10 +2789,10 @@ public class TXJUnitTest {
       assertEquals("Expected Call Count Assertion!", this.expectedCallCount, cnt);
 
       assertTrue(!event.getOperation().isExpiration());
-      assertTrue(!event.isNetLoad());
-      assertEquals("isLoad Assertion!", this.isLoad(), event.isLoad());
-      assertEquals("isLocalLoad Assertion!", this.isLoad(), event.isLocalLoad());
-      assertTrue(!event.isNetSearch());
+      assertTrue(!event.getOperation().isNetLoad());
+      assertEquals("isLoad Assertion!", this.isLoad(), event.getOperation().isLoad());
+      assertEquals("isLocalLoad Assertion!", this.isLoad(), event.getOperation().isLocalLoad());
+      assertTrue(!event.getOperation().isNetSearch());
       assertTrue(!event.isOriginRemote());
       assertNotNull(event.getRegion());
       assertNotNull(event.getRegion().getCache());
@@ -6742,10 +6742,10 @@ public class TXJUnitTest {
   }
 
   private void assertEvent(final EntryEvent ev) {
-    assertTrue(!ev.isLocalLoad());
-    assertTrue(!ev.isNetLoad());
-    assertTrue(!ev.isLoad());
-    assertTrue(!ev.isNetSearch());
+    assertTrue(!ev.getOperation().isLocalLoad());
+    assertTrue(!ev.getOperation().isNetLoad());
+    assertTrue(!ev.getOperation().isLoad());
+    assertTrue(!ev.getOperation().isNetSearch());
     assertEquals(null, ev.getCallbackArgument());
     assertEquals(true, ev.isCallbackArgumentAvailable());
     assertTrue(!ev.isOriginRemote());

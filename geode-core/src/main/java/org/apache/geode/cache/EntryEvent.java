@@ -93,51 +93,6 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
   // Flag query methods
 
   /**
-   * Returns true if this event resulted from a loader running in this cache. Note that this will be
-   * true even if the local loader called <code>netSearch</code>.
-   *
-   * If this event is for a Partitioned Region, then true will be returned if the loader ran in the
-   * same VM as where the data is hosted. If true is returned, and {@link CacheEvent#isOriginRemote}
-   * is true, it means the data is not hosted locally, but the loader was run local to the data.
-   * 
-   * @return true if this event resulted from local loader execution
-   * @deprecated as of GemFire 5.0, use {@link Operation#isLocalLoad} instead.
-   */
-  @Deprecated
-  public boolean isLocalLoad();
-
-  /**
-   * Returns true if this event resulted from a loader running that was remote from the cache that
-   * requested it, i.e., a netLoad. Note that the cache that requested the netLoad may not be this
-   * cache in which case <code>isOriginRemote</code> will also return true.
-   * 
-   * @return true if this event resulted from a netLoad
-   * @deprecated as of GemFire 5.0, use {@link Operation#isNetLoad} instead.
-   */
-  @Deprecated
-  public boolean isNetLoad();
-
-  /**
-   * Returns true if this event resulted from a loader.
-   * 
-   * @return true if isLocalLoad or isNetLoad
-   * @deprecated as of GemFire 5.0, use {@link Operation#isLoad} instead.
-   */
-  @Deprecated
-  public boolean isLoad();
-
-  /**
-   * Returns true if this event resulted from a <code>netSearch</code>. If the
-   * <code>netSearch</code> was invoked by a loader however, this will return false and
-   * <code>isLocalLoad()</code> or <code>isNetLoad()</code> will return true instead.
-   *
-   * @return true if this event resulted from a netSearch
-   * @deprecated as of GemFire 5.0, use {@link Operation#isNetSearch} instead.
-   */
-  @Deprecated
-  public boolean isNetSearch();
-
-  /**
    * Gets the TransactionId for this EntryEvent.
    * 
    * @return the ID of the transaction that performed the operation that generated this event; null
@@ -145,16 +100,6 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    * @since GemFire 4.0
    */
   public TransactionId getTransactionId();
-
-  /**
-   * Returns true if this event originated on a client.
-   * 
-   * @since GemFire 5.1
-   * @return true if this event originated on a client.
-   * @deprecated as of 5.7 use {@link #hasClientOrigin} instead.
-   */
-  @Deprecated
-  public boolean isBridgeEvent();
 
   /**
    * Returns true if this event originated on a client.
