@@ -73,13 +73,8 @@ public class ClientHealthStatsDUnitTest implements Serializable {
       ClientHealthStatsDUnitTest.class.getSimpleName() + "_Region";
 
   // client1VM and client2VM VM fields
-  private static ClientCache clientCache;
-
-  // TODO: assert following values in each client VM
-  private static int numOfCreates;
-  private static int numOfUpdates;
-  private static int numOfInvalidates;
-  private static boolean lastKeyReceived;
+  private static volatile ClientCache clientCache;
+  private static volatile boolean lastKeyReceived;
 
   private VM managerVM;
   private VM serverVM;
@@ -107,9 +102,6 @@ public class ClientHealthStatsDUnitTest implements Serializable {
   public void after() throws Exception {
     invokeInEveryVM(() -> {
       lastKeyReceived = false;
-      numOfCreates = 0;
-      numOfUpdates = 0;
-      numOfInvalidates = 0;
       clientCache = null;
     });
   }
@@ -123,9 +115,6 @@ public class ClientHealthStatsDUnitTest implements Serializable {
 
     this.client1VM.invoke(() -> createClientCache(this.hostName, port, 1, true));
     this.client2VM.invoke(() -> createClientCache(this.hostName, port, 2, true));
-
-    this.client1VM.invoke(() -> put());
-    this.client2VM.invoke(() -> put());
 
     DistributedMember serverMember = this.managementTestRule.getDistributedMember(this.serverVM);
     this.managerVM.invoke(() -> verifyClientStats(serverMember, port, 2));
@@ -143,9 +132,6 @@ public class ClientHealthStatsDUnitTest implements Serializable {
     this.client1VM.invoke(() -> createClientCache(this.hostName, port, 1, false));
     this.client2VM.invoke(() -> createClientCache(this.hostName, port, 2, false));
 
-    this.client1VM.invoke(() -> put());
-    this.client2VM.invoke(() -> put());
-
     DistributedMember serverMember = this.managementTestRule.getDistributedMember(this.serverVM);
     this.managerVM.invoke(() -> verifyClientStats(serverMember, port, 0));
     this.managementTestRule.stopManager(this.managerVM);
@@ -160,9 +146,6 @@ public class ClientHealthStatsDUnitTest implements Serializable {
 
     this.client1VM.invoke(() -> createClientCache(this.hostName, port, 1, true));
     this.client2VM.invoke(() -> createClientCache(this.hostName, port, 2, true));
-
-    this.client1VM.invoke(() -> put());
-    this.client2VM.invoke(() -> put());
 
     this.client1VM.invoke(() -> clientCache.close(true));
     this.client2VM.invoke(() -> clientCache.close(true));
@@ -206,9 +189,6 @@ public class ClientHealthStatsDUnitTest implements Serializable {
    */
   private boolean cacheClientProxyHasBeenPause() {
     CacheClientNotifier clientNotifier = CacheClientNotifier.getInstance();
-    // TODO: CacheClientNotifier clientNotifier =
-    // ((CacheServerImpl)this.managementTestRule.getCache().getCacheServers().get(0)).getAcceptor().getCacheClientNotifier();
-
     Collection<CacheClientProxy> clientProxies = clientNotifier.getClientProxies();
 
     for (CacheClientProxy clientProxy : clientProxies) {
@@ -263,21 +243,10 @@ public class ClientHealthStatsDUnitTest implements Serializable {
 
     regionFactory.addCacheListener(new CacheListenerAdapter<String, String>() {
       @Override
-      public void afterInvalidate(final EntryEvent<String, String> event) {
-        numOfInvalidates++;
-      }
-
-      @Override
       public void afterCreate(final EntryEvent<String, String> event) {
         if ("last_key".equals(event.getKey())) {
           lastKeyReceived = true;
         }
-        numOfCreates++;
-      }
-
-      @Override
-      public void afterUpdate(final EntryEvent<String, String> event) {
-        numOfUpdates++;
       }
     });
 
@@ -356,30 +325,6 @@ public class ClientHealthStatsDUnitTest implements Serializable {
     DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
     assertThat(dsBean.getNumClients()).isEqualTo(2);
     assertThat(dsBean.getNumSubscriptions()).isEqualTo(numSubscriptions);
-  }
-
-  /**
-   * Invoked in client1VM and client2VM
-   */
-  private void put() {
-    Cache cache = (Cache) clientCache;
-    Region<String, String> region = cache.getRegion(Region.SEPARATOR + REGION_NAME);
-
-    region.put(KEY1, VALUE1);
-    assertThat(region.getEntry(KEY1).getValue()).isEqualTo(VALUE1);
-
-    region.put(KEY2, VALUE2);
-    assertThat(region.getEntry(KEY2).getValue()).isEqualTo(VALUE2);
-
-    region.clear();
-
-    region.put(KEY1, VALUE1);
-    assertThat(region.getEntry(KEY1).getValue()).isEqualTo(VALUE1);
-
-    region.put(KEY2, VALUE2);
-    assertThat(region.getEntry(KEY2).getValue()).isEqualTo(VALUE2);
-
-    region.clear();
   }
 
   /**
