@@ -15,8 +15,6 @@
 
 package org.apache.geode.rest.internal.web;
 
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
@@ -25,10 +23,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
 import static org.junit.Assert.assertEquals;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
@@ -40,36 +36,26 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.net.URL;
-import java.util.Properties;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class RestSecurityWithSSLTest {
+  private static URL KEYSTORE_URL =
+      RestSecurityWithSSLTest.class.getClassLoader().getResource("ssl/trusted.keystore");
 
-  private static int restPort = AvailablePortHelper.getRandomAvailableTCPPort();
   @Rule
-  public ServerStarterRule serverStarter = new ServerStarterRule();
+  public ServerStarterRule serverStarter = new ServerStarterRule().withRestService()
+      .withProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName())
+      .withProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant())
+      .withProperty(SSL_KEYSTORE, KEYSTORE_URL.getPath())
+      .withProperty(SSL_KEYSTORE_PASSWORD, "password").withProperty(SSL_KEYSTORE_TYPE, "JKS")
+      .withProperty(SSL_TRUSTSTORE, KEYSTORE_URL.getPath())
+      .withProperty(SSL_TRUSTSTORE_PASSWORD, "password")
+      .withProperty(SSL_PROTOCOLS, "TLSv1.2,TLSv1.1").withAutoStart();
 
   @Test
   public void testRestSecurityWithSSL() throws Exception {
-    URL keystoreUrl =
-        RestSecurityWithSSLTest.class.getClassLoader().getResource("ssl/trusted.keystore");
-
-    Properties properties = new Properties();
-    properties.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
-    properties.setProperty(START_DEV_REST_API, "true");
-    properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
-    properties.setProperty(HTTP_SERVICE_PORT, restPort + "");
-    properties.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
-    properties.setProperty(SSL_KEYSTORE, keystoreUrl.getPath());
-    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_TRUSTSTORE, keystoreUrl.getPath());
-    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.setProperty(SSL_PROTOCOLS, "TLSv1.2,TLSv1.1");
-
-    serverStarter.withProperties(properties).startServer();
-
-    GeodeRestClient restClient = new GeodeRestClient("localhost", restPort, true);
+    GeodeRestClient restClient =
+        new GeodeRestClient("localhost", serverStarter.getHttpPort(), true);
     HttpResponse response = restClient.doGet("/servers", "cluster", "cluster");
 
     assertEquals(200, GeodeRestClient.getCode(response));

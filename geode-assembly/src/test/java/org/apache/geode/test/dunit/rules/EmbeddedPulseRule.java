@@ -48,6 +48,8 @@ public class EmbeddedPulseRule extends ExternalResource {
    * Override to tear down your specific external resource.
    */
   protected void after() {
-    repository.removeAllClusters();
+    if (repository != null) {
+      repository.removeAllClusters();
+    }
   }
 }

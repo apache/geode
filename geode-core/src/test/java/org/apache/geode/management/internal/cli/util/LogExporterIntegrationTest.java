@@ -91,7 +91,7 @@ public class LogExporterIntegrationTest {
   }
 
   @Test
-  @Ignore("fix .gz suffix")
+  @Ignore("GEODE-2574: fix .gz suffix")
   public void serverStartedWithGZSuffix() throws Exception {
     properties.setProperty(LOG_FILE, "test.log.gz");
     properties.setProperty(STATISTIC_ARCHIVE_FILE, "archive.gfs.gz");
