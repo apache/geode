@@ -92,7 +92,8 @@ public abstract class CqQueryImpl implements InternalCqQuery {
       boolean isDurable) {
     this.cqName = cqName;
     this.queryString = queryString;
-    this.securityLogWriter = (InternalLogWriter) cqService.getCache().getSecurityLogger().convertToLogWriterI18n();
+    this.securityLogWriter =
+        (InternalLogWriter) cqService.getCache().getSecurityLogger().convertToLogWriterI18n();
     this.cqService = cqService;
     this.isDurable = isDurable;
   }

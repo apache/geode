@@ -231,8 +231,8 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
   public static void createDistRegionWithMemEvictionAttr() {
     final AttributesFactory factory = new AttributesFactory();
     factory.setDataPolicy(DataPolicy.NORMAL);
-    factory.setEvictionAttributes(EvictionAttributes
-        .createLRUMemoryAttributes(ObjectSizer.DEFAULT, EvictionAction.LOCAL_DESTROY));
+    factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(ObjectSizer.DEFAULT,
+        EvictionAction.LOCAL_DESTROY));
     DistributedRegion distRegion = (DistributedRegion) cache.createRegion("DR1", factory.create());
     assertNotNull(distRegion);
 

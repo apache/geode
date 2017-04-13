@@ -1127,7 +1127,8 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
               try {
                 getCache().getLogger().convertToLogWriterI18n().fine(addExpectedFunctionExString);
                 e.withFilter(s).withArgs((Serializable) s).execute(function);
-                getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedFunctionExString);
+                getCache().getLogger().convertToLogWriterI18n()
+                    .fine(removeExpectedFunctionExString);
                 fail("expected LowMemoryExcception was not thrown");
               } catch (LowMemoryException ex) {
                 // expected

@@ -268,8 +268,19 @@ public class ServerConnection implements Runnable {
     this.stats = stats;
     this.acceptor = (AcceptorImpl) acceptor;
     this.crHelper = helper;
-    this.logWriter = (InternalLogWriter) c.getLogger().convertToLogWriterI18n();
-    this.securityLogWriter = (InternalLogWriter) c.getSecurityLogger().convertToLogWriterI18n();
+
+    if (c.getLogger() != null) {
+      this.logWriter = (InternalLogWriter) c.getLogger().convertToLogWriterI18n();
+    } else {
+      // This happens only when Cache class is mocked during test ( ServerConnectionTest )
+      this.logWriter = null;
+    }
+    if (c.getSecurityLogger() != null) {
+      this.securityLogWriter = (InternalLogWriter) c.getSecurityLogger().convertToLogWriterI18n();
+    } else {
+      // This happens only when Cache class is mocked during test ( ServerConnectionTest )
+      this.securityLogWriter = null;
+    }
     this.communicationModeStr = communicationModeStr;
     this.communicationMode = communicationMode;
     this.principal = null;

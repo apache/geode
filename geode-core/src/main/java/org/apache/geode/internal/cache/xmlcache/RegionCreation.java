@@ -387,7 +387,8 @@ public class RegionCreation implements Region, Extensible<Region<?, ?>> {
         && attrs.getEvictionAttributes().getAlgorithm().isLRUMemory()
         && attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && attrs.getEvictionAttributes()
             .getMaximum() != attrs.getPartitionAttributes().getLocalMaxMemory()) {
-      getCache().getLogger().convertToLogWriterI18n().warning(LocalizedStrings.Mem_LRU_Eviction_Attribute_Reset,
+      getCache().getLogger().convertToLogWriterI18n().warning(
+          LocalizedStrings.Mem_LRU_Eviction_Attribute_Reset,
           new Object[] {this.getName(), attrs.getEvictionAttributes().getMaximum(),
               attrs.getPartitionAttributes().getLocalMaxMemory()});
       this.attrs.setEvictionAttributes(attrs.getEvictionAttributes().createLRUMemoryAttributes(

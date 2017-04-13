@@ -437,15 +437,18 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
         @SuppressWarnings("synthetic-access")
         public void afterUpdate(EntryEvent event) {
           numOfUpdates++;
-          cache.getLogger().convertToLogWriterI18n().fine("afterUpdate(): numOfUpdates = " + numOfUpdates);
-          cache.getLogger().convertToLogWriterI18n().fine("(key, val): " + event.getKey() + ", " + event.getNewValue());
+          cache.getLogger().convertToLogWriterI18n()
+              .fine("afterUpdate(): numOfUpdates = " + numOfUpdates);
+          cache.getLogger().convertToLogWriterI18n()
+              .fine("(key, val): " + event.getKey() + ", " + event.getNewValue());
           if (event.getOldValue() != null) {
             if (event.getOldValue() == event.getNewValue()) {
               check = Boolean.TRUE;
             }
           }
           if (((EntryEventImpl) event).getDeltaBytes() != null) {
-            cache.getLogger().convertToLogWriterI18n().fine("delta bytes received. " + hasDeltaBytes);
+            cache.getLogger().convertToLogWriterI18n()
+                .fine("delta bytes received. " + hasDeltaBytes);
             assertTrue("No full value received for event " + event,
                 ((EntryEventImpl) event).getNewValue() != null);
             hasDeltaBytes++;

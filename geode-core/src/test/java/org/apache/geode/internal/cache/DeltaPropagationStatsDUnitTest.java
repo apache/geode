@@ -428,7 +428,8 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
         } catch (InvalidDeltaException ide) {
           assertTrue("InvalidDeltaException not expected.",
               delta.getIntVar() == DeltaTestImpl.ERRONEOUS_INT_FOR_TO_DELTA);
-          cache.getLogger().convertToLogWriterI18n().fine("Recieved InvalidDeltaException as expected.");
+          cache.getLogger().convertToLogWriterI18n()
+              .fine("Recieved InvalidDeltaException as expected.");
         }
       }
     }

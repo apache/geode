@@ -348,8 +348,8 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
                   new PartitionAttributesFactory().setRedundantCopies(redundantCopies)
                       .setLocalMaxMemory(localMaxMem).setTotalNumBuckets(maxBuckets).create());
 
-              factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(
-                  ObjectSizer.DEFAULT, EvictionAction.OVERFLOW_TO_DISK));
+              factory.setEvictionAttributes(EvictionAttributes
+                  .createLRUMemoryAttributes(ObjectSizer.DEFAULT, EvictionAction.OVERFLOW_TO_DISK));
               factory.setDiskSynchronous(true);
               DiskStoreFactory dsf = getCache().createDiskStoreFactory();
               final File[] diskDirs = new File[1];
