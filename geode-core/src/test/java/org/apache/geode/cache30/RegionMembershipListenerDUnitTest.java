@@ -240,7 +240,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
       assertEquals(this.otherId, e.getDistributedMember());
       assertEquals(Operation.REGION_CREATE, e.getOperation());
       assertEquals(true, e.isOriginRemote());
-      assertEquals(false, e.isDistributed());
+      assertEquals(false, e.getOperation().isDistributed());
       assertEquals(this.r, e.getRegion());
       // the test now uses a hook to get the member's DistributionAdvisor profile in the callback
       // argument
@@ -253,7 +253,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
       assertEquals(this.otherId, e.getDistributedMember());
       assertEquals(Operation.REGION_CREATE, e.getOperation());
       assertEquals(true, e.isOriginRemote());
-      assertEquals(false, e.isDistributed());
+      assertEquals(false, e.getOperation().isDistributed());
       assertEquals(this.sr, e.getRegion());
       // the test now uses a hook to get the member's DistributionAdvisor profile in the callback
       // argument
@@ -300,7 +300,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
     assertEquals(em, e.getDistributedMember());
     assertEquals(Operation.REGION_CLOSE, e.getOperation());
     assertEquals(true, e.isOriginRemote());
-    assertEquals(false, e.isDistributed());
+    assertEquals(false, e.getOperation().isDistributed());
     assertEquals(er, e.getRegion());
     assertEquals(null, e.getCallbackArgument());
   }

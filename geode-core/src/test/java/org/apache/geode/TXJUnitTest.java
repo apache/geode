@@ -421,16 +421,7 @@ public class TXJUnitTest {
           assertEquals("key2", ev.getKey());
           assertEquals("value2", ev.getNewValue());
         }
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -438,6 +429,7 @@ public class TXJUnitTest {
 
     reg2.localDestroyRegion();
   }
+
 
   @Test
   public void testTxEvent() throws CacheException {
@@ -489,16 +481,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value1", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
 
@@ -526,15 +509,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals("value1", ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -561,16 +536,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value0", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
 
@@ -598,15 +564,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -635,16 +593,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        if (!isPR())
-          assertTrue(!ev.isDistributed());
+        assertEntryEvent3(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -673,15 +622,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -710,20 +651,12 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        if (!isPR())
-          assertTrue(!ev.isDistributed());
+        assertEntryEvent3(ev);
       }
     }
     reg1.localDestroy("key1");
   }
+
 
   private static class CountingCallBackValidator {
     ArrayList asserts;
@@ -968,7 +901,7 @@ public class TXJUnitTest {
       }
 
       public void afterDestroy(EntryEvent e) {
-        if (e.isDistributed()) {
+        if (e.getOperation().isDistributed()) {
           ++this.aDestroyCalls;
         } else {
           ++this.aLocalDestroyCalls;
@@ -1092,16 +1025,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value2", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1137,16 +1061,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1208,16 +1123,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1263,16 +1169,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value2", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1398,16 +1295,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value3", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1443,16 +1331,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value3", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1497,15 +1376,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals("value3", ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1543,15 +1414,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1588,15 +1451,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
 
@@ -1633,15 +1488,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(!ev.isDistributed());
+        assertEntryEvent4(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1688,15 +1535,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals("value2", ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1735,15 +1574,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(!ev.isDistributed());
+        assertEntryEvent4(ev);
       }
     }
 
@@ -1780,15 +1611,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
 
@@ -1824,15 +1647,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(!ev.isDistributed());
+        assertEntryEvent4(ev);
       }
     }
 
@@ -1895,16 +1710,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value3", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1941,16 +1747,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value3", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -1992,15 +1789,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals("value2", ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -2035,15 +1824,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
 
@@ -2078,15 +1859,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(!ev.isDistributed());
+        assertEntryEvent4(ev);
       }
     }
 
@@ -2152,16 +1925,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value3", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -2200,16 +1964,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value3", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -2252,15 +2007,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals("value2", ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -2296,15 +2043,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
 
@@ -2339,15 +2078,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertEquals(null, ev.getNewValue());
         assertEquals("value0", ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(!ev.isDistributed());
+        assertEntryEvent4(ev);
       }
     }
 
@@ -2413,16 +2144,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value3", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -2461,16 +2183,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value3", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -2512,15 +2225,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertNull(ev.getNewValue());
         assertNull(ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent2(ev);
       }
     }
 
@@ -2560,15 +2265,7 @@ public class TXJUnitTest {
         assertEquals("key1", ev.getKey());
         assertNull(ev.getNewValue());
         assertNull(ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(!ev.isDistributed());
+        assertEntryEvent4(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -2604,16 +2301,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value1", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -2649,16 +2337,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value1", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -2694,16 +2373,7 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value1", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
@@ -2739,20 +2409,13 @@ public class TXJUnitTest {
         assertTrue(ev.getRegion() == reg1);
         assertEquals("key1", ev.getKey());
         assertEquals("value1", ev.getNewValue());
-        assertEquals(null, ev.getOldValue());
-        assertTrue(!ev.isLocalLoad());
-        assertTrue(!ev.isNetLoad());
-        assertTrue(!ev.isLoad());
-        assertTrue(!ev.isNetSearch());
-        assertEquals(null, ev.getCallbackArgument());
-        assertEquals(true, ev.isCallbackArgumentAvailable());
-        assertTrue(!ev.isOriginRemote());
-        assertTrue(!ev.isExpiration());
-        assertTrue(ev.isDistributed());
+        assertEntryEvent1(ev);
       }
     }
     reg1.localDestroy("key1");
   }
+
+
 
   private void doNonTxInvalidateRegionOp(CachePerfStats stats) throws Exception {
     int txRollbackChanges = stats.getTxRollbackChanges();
@@ -3125,7 +2788,7 @@ public class TXJUnitTest {
       this.passedValidation = false;
       assertEquals("Expected Call Count Assertion!", this.expectedCallCount, cnt);
 
-      assertTrue(!event.isExpiration());
+      assertTrue(!event.getOperation().isExpiration());
       assertTrue(!event.isNetLoad());
       assertEquals("isLoad Assertion!", this.isLoad(), event.isLoad());
       assertEquals("isLocalLoad Assertion!", this.isLoad(), event.isLocalLoad());
@@ -3138,7 +2801,7 @@ public class TXJUnitTest {
       // assertIndexDetailsEquals(event.getTransactionId(),
       // event.getRegion().getCache().getCacheTransactionManager().getTransactionId(), );
       if (!isPR())
-        assertEquals("IsDistributed Assertion!", this.isDistributed(), event.isDistributed());
+        assertEquals("IsDistributed Assertion!", this.isDistributed(), event.getOperation().isDistributed());
       assertEquals(this.getKey(), event.getKey());
       assertSame(this.getCallBackArg(), event.getCallbackArgument());
       if (newValIdentCheck) {
@@ -7076,5 +6739,39 @@ public class TXJUnitTest {
         exceptionOccurred = true;
       }
     }
+  }
+
+  private void assertEvent(final EntryEvent ev) {
+    assertTrue(!ev.isLocalLoad());
+    assertTrue(!ev.isNetLoad());
+    assertTrue(!ev.isLoad());
+    assertTrue(!ev.isNetSearch());
+    assertEquals(null, ev.getCallbackArgument());
+    assertEquals(true, ev.isCallbackArgumentAvailable());
+    assertTrue(!ev.isOriginRemote());
+  }
+
+  private void assertEntryEvent1(final EntryEvent ev) {
+    assertEquals(null, ev.getOldValue());
+    assertEvent(ev);
+    assertTrue(!ev.getOperation().isExpiration());
+    assertTrue(ev.getOperation().isDistributed());
+  }
+
+  private void assertEntryEvent2(final EntryEvent ev) {
+    assertEvent(ev);
+    assertTrue(!ev.getOperation().isExpiration());
+    assertTrue(ev.getOperation().isDistributed());
+  }
+  private void assertEntryEvent3(final EntryEvent ev) {
+    assertEvent(ev);
+    assertTrue(!ev.getOperation().isExpiration());
+    if (!isPR())
+      assertTrue(!ev.getOperation().isDistributed());
+  }
+  private void assertEntryEvent4(final EntryEvent ev) {
+    assertEvent(ev);
+    assertTrue(!ev.getOperation().isExpiration());
+    assertTrue(!ev.getOperation().isDistributed());
   }
 }

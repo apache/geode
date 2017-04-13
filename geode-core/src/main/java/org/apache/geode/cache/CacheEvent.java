@@ -90,26 +90,4 @@ public interface CacheEvent<K, V> {
    */
   public DistributedMember getDistributedMember();
 
-  /**
-   * Answer true if this event resulted from expiration.
-   * 
-   * @return true if this event resulted from expiration
-   * @deprecated as of GemFire 5.0, use {@link Operation#isExpiration} instead.
-   *
-   */
-  @Deprecated
-  public boolean isExpiration();
-
-  /**
-   * Answers true if this event resulted from a distributed operation; false if a local operation.
-   * 
-   * This is useful to distinguish between invalidate and localInvalidate, and destroy and
-   * localDestroy.
-   *
-   * @return true if this event resulted from a distributed operation
-   * @deprecated as of GemFire 5.0, use {@link Operation#isDistributed} instead.
-   *
-   */
-  @Deprecated
-  public boolean isDistributed();
 }

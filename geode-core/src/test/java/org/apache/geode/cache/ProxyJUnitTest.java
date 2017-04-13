@@ -144,8 +144,8 @@ public class ProxyJUnitTest {
       assertEquals(getCallbackArgument(), other.getCallbackArgument());
       assertEquals(isOriginRemote(), other.isOriginRemote());
       assertEquals(getDistributedMember(), other.getDistributedMember());
-      assertEquals(isExpiration(), other.isExpiration());
-      assertEquals(isDistributed(), other.isDistributed());
+      assertEquals(isExpiration(), other.getOperation().isExpiration());
+      assertEquals(isDistributed(), other.getOperation().isDistributed());
     }
 
     public Region getRegion() {
