@@ -50,7 +50,7 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
 
   @Test
   @Parameters(method = "getListOfRegionTestTypes")
-  public void transactionWithLuceneQueries(RegionTestableType regionTestType) {
+  public void transactionWithLuceneQueriesShouldThrowException(RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
       luceneService.createIndexFactory().addField("text").create(INDEX_NAME, REGION_NAME);
@@ -65,34 +65,24 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
 
     accessor.invoke(() -> {
       Cache cache = getCache();
-      cache.getCacheTransactionManager().begin();
       try {
-        Region<Object, Object> region = cache.getRegion(REGION_NAME);
-
         LuceneService service = LuceneServiceProvider.get(cache);
         LuceneQuery<Integer, TestObject> query;
         query = service.createLuceneQueryFactory().create(INDEX_NAME, REGION_NAME, "text:world",
             DEFAULT_FIELD);
+        cache.getCacheTransactionManager().begin();
         PageableLuceneQueryResults<Integer, TestObject> results = query.findPages();
-        assertEquals(3, results.size());
-        List<LuceneResultStruct<Integer, TestObject>> page = results.next();
-
-        Map<Integer, TestObject> data = new HashMap<Integer, TestObject>();
-        for (LuceneResultStruct<Integer, TestObject> row : page) {
-          data.put(row.getKey(), row.getValue());
-        }
-
-        assertEquals(new HashMap(region), data);
         fail();
       } catch (LuceneQueryException e) {
         if (!e.getMessage()
             .equals(LuceneQueryImpl.LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION)) {
           fail();
         }
+      }
+      finally {
         cache.getCacheTransactionManager().rollback();
       }
     });
-
   }
 
   @Test

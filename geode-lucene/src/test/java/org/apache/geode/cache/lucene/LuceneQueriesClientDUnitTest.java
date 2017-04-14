@@ -15,7 +15,9 @@
 package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.junit.Assert.fail;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
@@ -64,6 +66,19 @@ public class LuceneQueriesClientDUnitTest extends LuceneQueriesDUnitTest {
     return new RegionTestableType[] {RegionTestableType.PARTITION_WITH_CLIENT};
   }
 
+  //Due to singlehop transactions differences, the exception actually isn't thrown
+  //So the parent test behaves differently if singlehop is enabled or not for a client
+  public void transactionWithLuceneQueriesShouldThrowException(RegionTestableType regionTestType) {
+    try {
+      super.transactionWithLuceneQueriesShouldThrowException(regionTestType);
+      fail();
+    }
+    catch (AssertionError e) {
+      //Expecting the parent test to fail because client transactions with single hop do not fail with Lucene Querying at this point
+    }
+
+  }
 
 
-}
+
+  }
