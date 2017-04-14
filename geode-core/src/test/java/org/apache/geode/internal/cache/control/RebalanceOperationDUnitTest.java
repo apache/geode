@@ -1089,7 +1089,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
           }
         }
 
-        ResourceManagerStats stats = cache.getResourceManager().getStats();
+        ResourceManagerStats stats = cache.getInternalResourceManager().getStats();
 
         assertEquals(0, stats.getRebalancesInProgress());
         assertEquals(1, stats.getRebalancesCompleted());
@@ -1499,7 +1499,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        InternalResourceManager manager = cache.getResourceManager();
+        InternalResourceManager manager = cache.getInternalResourceManager();
         final CountDownLatch rebalancingCancelled = new CountDownLatch(1);
         final CountDownLatch rebalancingFinished = new CountDownLatch(1);
         InternalResourceManager.setResourceObserver(new ResourceObserverAdapter() {
@@ -1600,7 +1600,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        InternalResourceManager manager = cache.getResourceManager();
+        InternalResourceManager manager = cache.getInternalResourceManager();
         final CountDownLatch rebalancingStarted = new CountDownLatch(1);
         final CountDownLatch memberAdded = new CountDownLatch(1);
         InternalResourceManager.setResourceObserver(new ResourceObserverAdapter() {
@@ -3113,7 +3113,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
       public Object call() {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        InternalResourceManager mgr = cache.getResourceManager();
+        InternalResourceManager mgr = cache.getInternalResourceManager();
         return mgr.setLoadProbe(probe);
       }
     });

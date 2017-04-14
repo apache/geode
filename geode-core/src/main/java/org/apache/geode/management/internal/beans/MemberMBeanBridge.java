@@ -391,7 +391,7 @@ public class MemberMBeanBridge {
     QueryDataFunction qDataFunction = new QueryDataFunction();
     FunctionService.registerFunction(qDataFunction);
 
-    this.resourceManagerStats = cache.getResourceManager().getStats();
+    this.resourceManagerStats = cache.getInternalResourceManager().getStats();
   }
 
 

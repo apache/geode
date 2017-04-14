@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.xmlcache;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,15 +32,18 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
+import javax.transaction.TransactionManager;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Declarable;
@@ -59,6 +63,7 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.query.CqAttributes;
@@ -85,24 +90,42 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.DiskStoreFactoryImpl;
 import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.ExpirationScheduler;
+import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TombstoneService;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
+import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
@@ -111,6 +134,7 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.PdxSerializer;
@@ -1262,6 +1286,16 @@ public class CacheCreation implements InternalCache {
     return Collections.unmodifiableList(this.backups);
   }
 
+  @Override
+  public LocalRegion getRegionByPath(final String path) {
+    return null;
+  }
+
+  @Override
+  public boolean isClient() {
+    return false;
+  }
+
   public GatewaySenderFactory createGatewaySenderFactory() {
     return WANServiceProvider.createGatewaySenderFactory(this);
   }
@@ -1410,11 +1444,6 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public DistributedMember getMyId() {
-    return null;
-  }
-
-  @Override
-  public Collection<DiskStoreImpl> listDiskStoresIncludingDefault() {
     return null;
   }
 
@@ -1656,5 +1685,240 @@ public class CacheCreation implements InternalCache {
   @Override
   public <T extends CacheService> T getService(Class<T> clazz) {
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public SystemTimer getCCPTimer() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void cleanupForClient(final CacheClientNotifier ccn,
+      final ClientProxyMembershipID client) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void purgeCCPTimer() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public FilterProfile getFilterProfile(final String regionName) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public Region getRegion(final String path, final boolean returnDestroyedRegion) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public MemoryAllocator getOffHeapStore() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public <K, V> Region<K, V> createVMRegion(final String name, final RegionAttributes<K, V> p_attrs,
+      final InternalRegionArguments internalRegionArgs)
+      throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public DistributedLockService getPartitionedRegionLockService() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public PersistentMemberManager getPersistentMemberManager() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public Set<GatewaySender> getAllGatewaySenders() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public CachePerfStats getCachePerfStats() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public DM getDistributionManager() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void regionReinitialized(final Region region) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void setRegionByPath(final String path, final LocalRegion r) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public InternalResourceManager getInternalResourceManager() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public ResourceAdvisor getResourceAdvisor() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public boolean isCacheAtShutdownAll() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public boolean requiresNotificationFromPR(final PartitionedRegion r) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public RegionAttributes invokeRegionBefore(final LocalRegion parent, final String name,
+      final RegionAttributes attrs, final InternalRegionArguments internalRegionArgs) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void invokeRegionAfter(final LocalRegion region) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public TXManagerImpl getTXMgr() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public boolean forcedDisconnect() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public InternalResourceManager getInternalResourceManager(
+      final boolean checkCancellationInProgress) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public boolean isCopyOnRead() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public TombstoneService getTombstoneService() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public QueryService getLocalQueryService() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void registerInterestStarted() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void registerInterestCompleted() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void regionReinitializing(final String fullPath) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void unregisterReinitializingRegion(final String fullPath) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public boolean removeRoot(final LocalRegion rootRgn) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public Executor getEventThreadPool() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public LocalRegion getReinitializingRegion(final String fullPath) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public boolean keepDurableSubscriptionsAlive() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public CacheClosedException getCacheClosedException(final String reason, final Throwable cause) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public TypeRegistry getPdxRegistry() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public DiskStoreImpl getOrCreateDefaultDiskStore() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public ExpirationScheduler getExpirationScheduler() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public TransactionManager getJTATransactionManager() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public TXManagerImpl getTxManager() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void beginDestroy(final String path, final DistributedRegion region) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void endDestroy(final String path, final DistributedRegion region) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public ClientMetadataService getClientMetadataService() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public long cacheTimeMillis() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void clearBackupManager() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public URL getCacheXmlURL() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 }

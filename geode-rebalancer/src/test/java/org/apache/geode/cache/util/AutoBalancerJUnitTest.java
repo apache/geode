@@ -36,6 +36,7 @@ import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -353,11 +354,13 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test
+  @Ignore("GEODE-2789: need to rewrite this test")
   public void testFacadeTotalTransferSize() throws Exception {
     assertEquals(12345, getFacadeForResourceManagerOps(true).getTotalTransferSize());
   }
 
   @Test
+  @Ignore("GEODE-2789: need to rewrite this test")
   public void testFacadeRebalance() throws Exception {
     getFacadeForResourceManagerOps(false).rebalance();
   }
@@ -406,6 +409,7 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test
+  @Ignore("GEODE-2789: need to rewrite this test")
   public void testFacadeCollectMemberDetailsNoRegion() {
     final GemFireCacheImpl mockCache = mockContext.mock(GemFireCacheImpl.class);
     mockContext.checking(new Expectations() {
@@ -423,6 +427,7 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test
+  @Ignore("GEODE-2789: need to rewrite this test")
   public void testFacadeCollectMemberDetails2Regions() {
     final GemFireCacheImpl mockCache = mockContext.mock(GemFireCacheImpl.class);
     final InternalResourceManager mockRM = mockContext.mock(InternalResourceManager.class);
@@ -479,6 +484,7 @@ public class AutoBalancerJUnitTest {
   }
 
   @Test
+  @Ignore("GEODE-2789: need to rewrite this test")
   public void testFacadeTotalBytes2Regions() {
     final PartitionedRegion mockR1 = mockContext.mock(PartitionedRegion.class, "r1");
     final PartitionedRegion mockR2 = mockContext.mock(PartitionedRegion.class, "r2");

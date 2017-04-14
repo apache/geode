@@ -60,7 +60,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
   }
 
   public void start() {
-    final InternalResourceManager manager = this.cache.getResourceManager();
+    final InternalResourceManager manager = this.cache.getInternalResourceManager();
     synchronized (this.futureLock) {
       manager.addInProgressRebalance(this);
       this.scheduleRebalance();
@@ -68,7 +68,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
   }
 
   private void scheduleRebalance() {
-    ResourceManagerStats stats = cache.getResourceManager().getStats();
+    ResourceManagerStats stats = cache.getInternalResourceManager().getStats();
 
     long start = stats.startRebalance();
     try {
@@ -111,7 +111,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
 
   private Future<RebalanceResults> submitRebalanceTask(
       final PartitionedRegionRebalanceOp rebalanceOp, final long rebalanceStartTime) {
-    final InternalResourceManager manager = this.cache.getResourceManager();
+    final InternalResourceManager manager = this.cache.getInternalResourceManager();
     ScheduledExecutorService ex = manager.getExecutor();
 
     synchronized (futureLock) {
@@ -173,7 +173,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
         }
       }
       if (pendingTasks == 0) {
-        cache.getResourceManager().removeInProgressRebalance(this);
+        cache.getInternalResourceManager().removeInProgressRebalance(this);
       }
     }
 

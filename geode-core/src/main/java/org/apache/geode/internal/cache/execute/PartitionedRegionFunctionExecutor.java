@@ -355,8 +355,8 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
         }
       }
     }
-    if (function.optimizeForWrite()
-        && cache.getResourceManager().getHeapMonitor().containsHeapCriticalMembers(targetMembers)
+    if (function.optimizeForWrite() && cache.getInternalResourceManager().getHeapMonitor()
+        .containsHeapCriticalMembers(targetMembers)
         && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
       Set<InternalDistributedMember> hcm = cache.getResourceAdvisor().adviseCritialMembers();
       Set<DistributedMember> sm = SetUtils.intersection(hcm, targetMembers);

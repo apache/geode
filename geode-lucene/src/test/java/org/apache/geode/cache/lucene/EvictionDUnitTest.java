@@ -137,7 +137,7 @@ public class EvictionDUnitTest extends LuceneQueriesAccessorBase {
     getCache().getResourceManager()
         .setEvictionHeapPercentage(EVICTION_HEAP_PERCENTAGE_FAKE_NOTIFICATION);
     HeapMemoryMonitor heapMemoryMonitor =
-        ((GemFireCacheImpl) getCache()).getResourceManager().getHeapMonitor();
+        ((GemFireCacheImpl) getCache()).getInternalResourceManager().getHeapMonitor();
     heapMemoryMonitor.setTestMaxMemoryBytes(TEST_MAX_MEMORY);
 
     heapMemoryMonitor.updateStateAndSendEvent(MEMORY_USED_FAKE_NOTIFICATION);

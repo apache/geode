@@ -97,7 +97,7 @@ public class MemoryMonitorJUnitTest {
    */
   @Test
   public void testInvokeListeners() throws Exception {
-    InternalResourceManager internalManager = this.cache.getResourceManager();
+    InternalResourceManager internalManager = this.cache.getInternalResourceManager();
     HeapMemoryMonitor heapMonitor = internalManager.getHeapMonitor();
 
     heapMonitor.setTestMaxMemoryBytes(1000);
@@ -158,7 +158,7 @@ public class MemoryMonitorJUnitTest {
   // TODO: write a converse of this test when default values are enabled
   @Test
   public void testDefaultThresholds() throws Exception {
-    final InternalResourceManager irm = this.cache.getResourceManager();
+    final InternalResourceManager irm = this.cache.getInternalResourceManager();
     final HeapMemoryMonitor hmm = irm.getHeapMonitor();
     TestMemoryThresholdListener listener = new TestMemoryThresholdListener();
     irm.addResourceListener(ResourceType.HEAP_MEMORY, listener);
@@ -212,29 +212,29 @@ public class MemoryMonitorJUnitTest {
     Region parent = cache.createRegion("parent", factory.create());
     parent.createSubregion("sub", factory.create());
     parent.close();
-    assertEquals(0 + SYSTEM_LISTENERS,
-        cache.getResourceManager(false).getResourceListeners(ResourceType.HEAP_MEMORY).size());
+    assertEquals(0 + SYSTEM_LISTENERS, cache.getInternalResourceManager(false)
+        .getResourceListeners(ResourceType.HEAP_MEMORY).size());
 
     // test nested local region
     parent = cache.createRegion("parent2", factory.create());
     parent.createSubregion("sub", factory.create()).createSubregion("subsub", factory.create());
     parent.close();
-    assertEquals(0 + SYSTEM_LISTENERS,
-        cache.getResourceManager(false).getResourceListeners(ResourceType.HEAP_MEMORY).size());
+    assertEquals(0 + SYSTEM_LISTENERS, cache.getInternalResourceManager(false)
+        .getResourceListeners(ResourceType.HEAP_MEMORY).size());
 
     // test distributed sub region
     factory.setScope(Scope.DISTRIBUTED_ACK);
     parent = cache.createRegion("parent3", factory.create());
     parent.createSubregion("sub", factory.create());
     parent.close();
-    assertEquals(0 + SYSTEM_LISTENERS,
-        cache.getResourceManager(false).getResourceListeners(ResourceType.HEAP_MEMORY).size());
+    assertEquals(0 + SYSTEM_LISTENERS, cache.getInternalResourceManager(false)
+        .getResourceListeners(ResourceType.HEAP_MEMORY).size());
     // test nested distributed region
     parent = cache.createRegion("parent4", factory.create());
     parent.createSubregion("sub", factory.create()).createSubregion("subsub", factory.create());
     parent.close();
-    assertEquals(0 + SYSTEM_LISTENERS,
-        cache.getResourceManager(false).getResourceListeners(ResourceType.HEAP_MEMORY).size());
+    assertEquals(0 + SYSTEM_LISTENERS, cache.getInternalResourceManager(false)
+        .getResourceListeners(ResourceType.HEAP_MEMORY).size());
   }
 
   /**
@@ -248,8 +248,8 @@ public class MemoryMonitorJUnitTest {
     Region region = cache.createRegion("DistributedRegion", attr.create());
     checkOpRejection(region, false, true);
     region.close();
-    assertEquals(0 + SYSTEM_LISTENERS,
-        cache.getResourceManager(false).getResourceListeners(ResourceType.HEAP_MEMORY).size());
+    assertEquals(0 + SYSTEM_LISTENERS, cache.getInternalResourceManager(false)
+        .getResourceListeners(ResourceType.HEAP_MEMORY).size());
   }
 
   @Test
@@ -259,8 +259,8 @@ public class MemoryMonitorJUnitTest {
     Region region = cache.createRegion("DistributedRegion", attr.create());
     checkOpRejection(region, true, true);
     region.close();
-    assertEquals(0 + SYSTEM_LISTENERS,
-        cache.getResourceManager(false).getResourceListeners(ResourceType.HEAP_MEMORY).size());
+    assertEquals(0 + SYSTEM_LISTENERS, cache.getInternalResourceManager(false)
+        .getResourceListeners(ResourceType.HEAP_MEMORY).size());
   }
 
   @Test
@@ -270,8 +270,8 @@ public class MemoryMonitorJUnitTest {
     Region region = cache.createRegion("localRegion", attr.create());
     checkOpRejection(region, false, true);
     region.close();
-    assertEquals(0 + SYSTEM_LISTENERS,
-        cache.getResourceManager(false).getResourceListeners(ResourceType.HEAP_MEMORY).size());
+    assertEquals(0 + SYSTEM_LISTENERS, cache.getInternalResourceManager(false)
+        .getResourceListeners(ResourceType.HEAP_MEMORY).size());
   }
 
   @Test
@@ -281,8 +281,8 @@ public class MemoryMonitorJUnitTest {
     Region region = cache.createRegion("localRegion", attr.create());
     checkOpRejection(region, true, true);
     region.close();
-    assertEquals(0 + SYSTEM_LISTENERS,
-        cache.getResourceManager(false).getResourceListeners(ResourceType.HEAP_MEMORY).size());
+    assertEquals(0 + SYSTEM_LISTENERS, cache.getInternalResourceManager(false)
+        .getResourceListeners(ResourceType.HEAP_MEMORY).size());
   }
 
   @Test
@@ -293,12 +293,10 @@ public class MemoryMonitorJUnitTest {
         cache.createRegion("local1", factory.create()).createSubregion("sub1", factory.create());
     checkOpRejection(subRegion, false, true);
     subRegion.close();
-    assertEquals(1 + SYSTEM_LISTENERS,
-        cache.getResourceManager(false).getResourceListeners(ResourceType.HEAP_MEMORY).size()); // root
-                                                                                                // region
-                                                                                                // is
-                                                                                                // still
-                                                                                                // present
+
+    // root region is still present
+    assertEquals(1 + SYSTEM_LISTENERS, cache.getInternalResourceManager(false)
+        .getResourceListeners(ResourceType.HEAP_MEMORY).size());
   }
 
   @Test
@@ -309,12 +307,10 @@ public class MemoryMonitorJUnitTest {
         cache.createRegion("local1", factory.create()).createSubregion("sub1", factory.create());
     checkOpRejection(subRegion, true, true);
     subRegion.close();
-    assertEquals(1 + SYSTEM_LISTENERS,
-        cache.getResourceManager(false).getResourceListeners(ResourceType.HEAP_MEMORY).size()); // root
-                                                                                                // region
-                                                                                                // is
-                                                                                                // still
-                                                                                                // present
+
+    // root region is still present
+    assertEquals(1 + SYSTEM_LISTENERS, cache.getInternalResourceManager(false)
+        .getResourceListeners(ResourceType.HEAP_MEMORY).size());
   }
 
   @Test
@@ -324,8 +320,8 @@ public class MemoryMonitorJUnitTest {
     Region region = new RegionFactory().setPartitionAttributes(pa).create("parReg");
     checkOpRejection(region, false, true);
     region.close();
-    assertEquals(0 + SYSTEM_LISTENERS,
-        cache.getResourceManager(false).getResourceListeners(ResourceType.HEAP_MEMORY).size());
+    assertEquals(0 + SYSTEM_LISTENERS, cache.getInternalResourceManager(false)
+        .getResourceListeners(ResourceType.HEAP_MEMORY).size());
   }
 
   private void checkOpRejection(Region region, boolean useTransaction, boolean expectLowMemEx)
@@ -339,7 +335,7 @@ public class MemoryMonitorJUnitTest {
       addSubregion++;
     }
 
-    InternalResourceManager internalManager = cache.getResourceManager();
+    InternalResourceManager internalManager = cache.getInternalResourceManager();
     HeapMemoryMonitor heapMonitor = internalManager.getHeapMonitor();
     TestMemoryThresholdListener listener = new TestMemoryThresholdListener();
     internalManager.addResourceListener(ResourceType.HEAP_MEMORY, listener);
@@ -450,7 +446,7 @@ public class MemoryMonitorJUnitTest {
 
   @Test
   public void testHandleNotification() throws Exception {
-    final InternalResourceManager irm = this.cache.getResourceManager();
+    final InternalResourceManager irm = this.cache.getInternalResourceManager();
     final HeapMemoryMonitor hmm = irm.getHeapMonitor();
 
     hmm.setTestMaxMemoryBytes(100);
@@ -587,7 +583,7 @@ public class MemoryMonitorJUnitTest {
 
   @Test
   public void testDisabledThresholds() {
-    final InternalResourceManager irm = this.cache.getResourceManager();
+    final InternalResourceManager irm = this.cache.getInternalResourceManager();
     final HeapMemoryMonitor hmm = irm.getHeapMonitor();
     hmm.setTestMaxMemoryBytes(100);
     HeapMemoryMonitor.setTestBytesUsedForThresholdSet(50);
@@ -753,7 +749,7 @@ public class MemoryMonitorJUnitTest {
 
   @Test
   public void testAddListeners() {
-    final InternalResourceManager internalManager = this.cache.getResourceManager();
+    final InternalResourceManager internalManager = this.cache.getInternalResourceManager();
     ResourceListener<MemoryEvent> memoryListener = new ResourceListener<MemoryEvent>() {
       public void onEvent(MemoryEvent event) {
         cache.getLogger().info("Received MemoryEvent");

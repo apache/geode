@@ -367,7 +367,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
           GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
           for (PartitionedRegion pr : cache.getPartitionedRegions()) {
             InternalPRInfo info = pr.getRedundancyProvider().buildPartitionedRegionInfo(true,
-                cache.getResourceManager().getLoadProbe());
+                cache.getInternalResourceManager().getLoadProbe());
             detailsSet.add(info);
           }
           if (vm == 0) {

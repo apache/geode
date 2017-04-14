@@ -388,7 +388,7 @@ public class PartitionedRegionRebalanceOp {
   }
 
   private Map<PartitionedRegion, InternalPRInfo> fetchDetails(GemFireCacheImpl cache) {
-    LoadProbe probe = cache.getResourceManager().getLoadProbe();
+    LoadProbe probe = cache.getInternalResourceManager().getLoadProbe();
     Map<PartitionedRegion, InternalPRInfo> detailsMap =
         new LinkedHashMap<PartitionedRegion, InternalPRInfo>(colocatedRegions.size());
     for (PartitionedRegion colocatedRegion : colocatedRegions) {

@@ -126,7 +126,8 @@ public class PRHARedundancyProvider {
    */
   public PRHARedundancyProvider(final PartitionedRegion region) {
     this.prRegion = region;
-    final InternalResourceManager resourceManager = region.getGemFireCache().getResourceManager();
+    final InternalResourceManager resourceManager =
+        region.getGemFireCache().getInternalResourceManager();
     recoveryExecutor = new OneTaskOnlyExecutor(resourceManager.getExecutor(),
         new OneTaskOnlyExecutor.ConflatedTaskListener() {
           public void taskDropped() {
@@ -1800,7 +1801,7 @@ public class PRHARedundancyProvider {
         && ColocationHelper.isColocationComplete(this.prRegion)) {
       Runnable task = new CreateMissingBucketsTask(this);
       final InternalResourceManager resourceManager =
-          this.prRegion.getGemFireCache().getResourceManager();
+          this.prRegion.getGemFireCache().getInternalResourceManager();
       resourceManager.getExecutor().execute(task);
     }
   }

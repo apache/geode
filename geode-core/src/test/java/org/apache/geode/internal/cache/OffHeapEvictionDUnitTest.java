@@ -79,7 +79,8 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
       LogWriterUtils.getLogWriter().info("cache= " + cache);
       LogWriterUtils.getLogWriter().info("cache closed= " + cache.isClosed());
       cache.getResourceManager().setEvictionOffHeapPercentage(85);
-      ((GemFireCacheImpl) cache).getResourceManager().getOffHeapMonitor().stopMonitoring(true);
+      ((GemFireCacheImpl) cache).getInternalResourceManager().getOffHeapMonitor()
+          .stopMonitoring(true);
       LogWriterUtils.getLogWriter()
           .info("eviction= " + cache.getResourceManager().getEvictionOffHeapPercentage());
       LogWriterUtils.getLogWriter()
@@ -97,7 +98,7 @@ public class OffHeapEvictionDUnitTest extends EvictionDUnitTest {
         final LocalRegion region = (LocalRegion) cache.getRegion(prName);
         getEvictor().testAbortAfterLoopCount = 1;
 
-        ((GemFireCacheImpl) cache).getResourceManager().getOffHeapMonitor()
+        ((GemFireCacheImpl) cache).getInternalResourceManager().getOffHeapMonitor()
             .updateStateAndSendEvent(188743680);
 
         WaitCriterion wc = new WaitCriterion() {

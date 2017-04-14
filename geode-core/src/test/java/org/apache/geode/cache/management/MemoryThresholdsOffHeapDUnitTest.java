@@ -126,7 +126,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
   private SerializableCallable resetResourceManager = new SerializableCallable() {
     public Object call() throws Exception {
-      InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getResourceManager();
+      InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
       Set<ResourceListener> listeners = irm.getResourceListeners(ResourceType.OFFHEAP_MEMORY);
       Iterator<ResourceListener> it = listeners.iterator();
       while (it.hasNext()) {
@@ -278,7 +278,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     // verify that stats on server2 are not changed by events on server1
     server2.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getResourceManager();
+        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
         assertEquals(0, irm.getStats().getOffHeapEvictionStartEvents());
         assertEquals(0, irm.getStats().getOffHeapCriticalEvents());
         assertEquals(0, irm.getStats().getOffHeapCriticalThreshold());
@@ -1450,7 +1450,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final long bytesUsedAfterSmallKey = (long) server.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getResourceManager();
+        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
         final OffHeapMemoryMonitor ohm = irm.getOffHeapMonitor();
         assertTrue(ohm.getState().isNormal());
         getCache().getLoggerI18n().fine(addExpectedExString);
@@ -1541,7 +1541,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     // make the region healthy in the server
     server.invoke(new SerializableRunnable() {
       public void run() {
-        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getResourceManager();
+        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
         final OffHeapMemoryMonitor ohm = irm.getOffHeapMonitor();
         assertTrue(ohm.getState().isCritical());
         getCache().getLogger().fine(MemoryThresholdsOffHeapDUnitTest.this.addExpectedBelow);
@@ -1658,7 +1658,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         TestMemoryThresholdListener listener = new TestMemoryThresholdListener();
-        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getResourceManager();
+        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
         irm.addResourceListener(ResourceType.OFFHEAP_MEMORY, listener);
         assertTrue(irm.getResourceListeners(ResourceType.OFFHEAP_MEMORY).contains(listener));
         return null;
@@ -1675,7 +1675,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         getSystem(getOffHeapProperties());
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
 
-        InternalResourceManager irm = cache.getResourceManager();
+        InternalResourceManager irm = cache.getInternalResourceManager();
         irm.setEvictionOffHeapPercentage(evictionThreshold);
         irm.setCriticalOffHeapPercentage(criticalThreshold);
 
@@ -1744,7 +1744,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         WaitCriterion wc = null;
-        Set<ResourceListener> listeners = getGemfireCache().getResourceManager()
+        Set<ResourceListener> listeners = getGemfireCache().getInternalResourceManager()
             .getResourceListeners(ResourceType.OFFHEAP_MEMORY);
         TestMemoryThresholdListener tmp_listener = null;
         Iterator<ResourceListener> it = listeners.iterator();
@@ -1856,7 +1856,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   private void verifyProfiles(VM vm, final int numberOfProfiles) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getResourceManager();
+        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
         final ResourceAdvisor ra = irm.getResourceAdvisor();
         WaitCriterion wc = new WaitCriterion() {
           public String description() {

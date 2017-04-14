@@ -175,7 +175,7 @@ public final class PartitionRegionHelper {
       PartitionedRegion pr = isPartitionedCheck(region);
       GemFireCacheImpl cache = (GemFireCacheImpl) region.getCache();
       return pr.getRedundancyProvider().buildPartitionedRegionInfo(false,
-          cache.getResourceManager().getLoadProbe()); // may return null
+          cache.getInternalResourceManager().getLoadProbe()); // may return null
     } catch (ClassCastException e) {
       // not a PR so return null
     }
@@ -192,7 +192,7 @@ public final class PartitionRegionHelper {
     for (Iterator<PartitionedRegion> iter = prSet.iterator(); iter.hasNext();) {
       PartitionedRegion pr = iter.next();
       PartitionRegionInfo prDetails = pr.getRedundancyProvider()
-          .buildPartitionedRegionInfo(internal, cache.getResourceManager().getLoadProbe());
+          .buildPartitionedRegionInfo(internal, cache.getInternalResourceManager().getLoadProbe());
       if (prDetails != null) {
         prDetailsSet.add(prDetails);
       }

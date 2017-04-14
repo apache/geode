@@ -196,7 +196,8 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", "0");
 
     setEvictionPercentage(85);
-    HeapMemoryMonitor hmm = ((GemFireCacheImpl) getCache()).getResourceManager().getHeapMonitor();
+    HeapMemoryMonitor hmm =
+        ((GemFireCacheImpl) getCache()).getInternalResourceManager().getHeapMonitor();
     hmm.setTestMaxMemoryBytes(100);
 
     hmm.updateStateAndSendEvent(90);

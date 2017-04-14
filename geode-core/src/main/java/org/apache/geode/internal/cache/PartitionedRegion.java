@@ -910,7 +910,7 @@ public class PartitionedRegion extends LocalRegion
 
     if (!this.isDestroyed && !this.isLocallyDestroyed) {
       // Register at this point so that other members are known
-      this.cache.getResourceManager().addResourceListener(ResourceType.MEMORY, this);
+      this.cache.getInternalResourceManager().addResourceListener(ResourceType.MEMORY, this);
     }
 
     // Create OQL indexes before starting GII.
@@ -3722,7 +3722,7 @@ public class PartitionedRegion extends LocalRegion
 
     Set<InternalDistributedMember> dest = memberToBuckets.keySet();
     if (function.optimizeForWrite()
-        && cache.getResourceManager().getHeapMonitor().containsHeapCriticalMembers(dest)
+        && cache.getInternalResourceManager().getHeapMonitor().containsHeapCriticalMembers(dest)
         && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
       Set<InternalDistributedMember> hcm = cache.getResourceAdvisor().adviseCritialMembers();
       Set<DistributedMember> sm = SetUtils.intersection(hcm, dest);
@@ -5653,7 +5653,7 @@ public class PartitionedRegion extends LocalRegion
     // destroy region message.
     this.redundancyProvider.waitForPersistentBucketRecovery();
     this.cache.removePartitionedRegion(this);
-    this.cache.getResourceManager(false).removeResourceListener(this);
+    this.cache.getInternalResourceManager(false).removeResourceListener(this);
     this.redundancyProvider.shutdown(); // see bug 41094
     int serials[] = getRegionAdvisor().getBucketSerials();
     RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_CLOSE, null, false,
@@ -7779,7 +7779,7 @@ public class PartitionedRegion extends LocalRegion
     } finally {
       this.getRegionAdvisor().close();
       getPrStats().close();
-      this.cache.getResourceManager(false).removeResourceListener(this);
+      this.cache.getInternalResourceManager(false).removeResourceListener(this);
       this.locallyDestroyingThread = null;
       if (logger.isDebugEnabled()) {
         logger.debug("destroyPartitionedRegionLocally: Ending destroy for PR = {}", this);
@@ -7815,7 +7815,7 @@ public class PartitionedRegion extends LocalRegion
     this.redundancyProvider.waitForPersistentBucketRecovery();
     // fix #39196 OOME caused by leak in GemFireCache.partitionedRegions
     this.cache.removePartitionedRegion(this);
-    this.cache.getResourceManager(false).removeResourceListener(this);
+    this.cache.getInternalResourceManager(false).removeResourceListener(this);
 
     final Operation op = event.getOperation();
     stopMissingColocatedRegionLogger();

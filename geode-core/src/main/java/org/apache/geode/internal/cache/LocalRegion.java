@@ -963,16 +963,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         // register the region with resource manager to get memory events
         if (!newRegion.isInternalRegion()) {
           if (!newRegion.isDestroyed) {
-            cache.getResourceManager().addResourceListener(ResourceType.MEMORY, newRegion);
+            cache.getInternalResourceManager().addResourceListener(ResourceType.MEMORY, newRegion);
 
             if (!newRegion.getOffHeap()) {
               newRegion.initialCriticalMembers(
-                  cache.getResourceManager().getHeapMonitor().getState().isCritical(),
+                  cache.getInternalResourceManager().getHeapMonitor().getState().isCritical(),
                   cache.getResourceAdvisor().adviseCritialMembers());
             } else {
-              newRegion.initialCriticalMembers(
-                  cache.getResourceManager().getHeapMonitor().getState().isCritical()
-                      || cache.getResourceManager().getOffHeapMonitor().getState().isCritical(),
+              newRegion.initialCriticalMembers(cache.getInternalResourceManager().getHeapMonitor()
+                  .getState().isCritical()
+                  || cache.getInternalResourceManager().getOffHeapMonitor().getState().isCritical(),
                   cache.getResourceAdvisor().adviseCritialMembers());
             }
 
@@ -999,7 +999,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         if (!success) {
           this.cache.setRegionByPath(newRegion.getFullPath(), null);
           initializationFailed(newRegion);
-          cache.getResourceManager(false).removeResourceListener(newRegion);
+          cache.getInternalResourceManager(false).removeResourceListener(newRegion);
         }
       }
 
@@ -2348,7 +2348,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // Subclasses may have already called this method, but this is
       // acceptable because addResourceListener won't add it twice
       if (!this.isDestroyed) {
-        cache.getResourceManager().addResourceListener(ResourceType.MEMORY, this);
+        cache.getInternalResourceManager().addResourceListener(ResourceType.MEMORY, this);
       }
     }
 
@@ -2633,7 +2633,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (!isInternalRegion()) {
       getCachePerfStats().incRegions(-1);
     }
-    cache.getResourceManager(false).removeResourceListener(this);
+    cache.getInternalResourceManager(false).removeResourceListener(this);
     if (getMembershipAttributes().hasRequiredRoles()) {
       if (!isInternalRegion()) {
         getCachePerfStats().incReliableRegions(-1);
@@ -2734,7 +2734,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
       this.isDestroyed = true;
       // after isDestroyed is set to true call removeResourceListener to fix bug 49555
-      this.cache.getResourceManager(false).removeResourceListener(this);
+      this.cache.getInternalResourceManager(false).removeResourceListener(this);
       closeEntries();
       if (logger.isDebugEnabled()) {
         logger.debug("recursiveDestroyRegion: Region Destroyed: {}", getFullPath());
@@ -6581,7 +6581,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       float evictionPercentage = DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE;
       // This is new to 6.5. If a heap lru region is created
       // we make sure that the eviction percentage is enabled.
-      InternalResourceManager rm = this.cache.getResourceManager();
+      InternalResourceManager rm = this.cache.getInternalResourceManager();
       if (!getOffHeap()) {
         if (!rm.getHeapMonitor().hasEvictionThreshold()) {
           float criticalPercentage = rm.getCriticalHeapPercentage();
@@ -7342,7 +7342,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // mark as destroyed fixes 49555.
     this.isDestroyed = true;
     // after isDestroyed is set to true call removeResourceListener to fix bug 49555
-    this.cache.getResourceManager(false).removeResourceListener(this);
+    this.cache.getInternalResourceManager(false).removeResourceListener(this);
     closeEntries(); // fixes bug 41333
     this.destroyedSubregionSerialNumbers = collectSubregionSerialNumbers();
     try {

@@ -359,7 +359,7 @@ public class AutoBalancer implements Declarable {
       GemFireCacheImpl cache = getCache();
       Map<PartitionedRegion, InternalPRInfo> detailsMap = new HashMap<>();
       for (PartitionedRegion region : cache.getPartitionedRegions()) {
-        LoadProbe probe = cache.getResourceManager().getLoadProbe();
+        LoadProbe probe = cache.getInternalResourceManager().getLoadProbe();
         InternalPRInfo info =
             region.getRedundancyProvider().buildPartitionedRegionInfo(true, probe);
         detailsMap.put(region, info);
@@ -413,7 +413,7 @@ public class AutoBalancer implements Declarable {
     public void incrementAttemptCounter() {
       GemFireCacheImpl cache = getCache();
       try {
-        cache.getResourceManager().getStats().incAutoRebalanceAttempts();
+        cache.getInternalResourceManager().getStats().incAutoRebalanceAttempts();
       } catch (Exception e) {
         logger.warn("Failed to increment AutoBalanceAttempts counter");
       }

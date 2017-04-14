@@ -367,9 +367,9 @@ public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {
   public void testCacheBasedStats() throws Exception {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     ManagementService service = ManagementService.getExistingManagementService(cache);
-    long start = cache.getResourceManager().getStats().startRebalance();
+    long start = cache.getInternalResourceManager().getStats().startRebalance();
     assertEquals(1, service.getMemberMXBean().getRebalancesInProgress());
-    cache.getResourceManager().getStats().endRebalance(start);
+    cache.getInternalResourceManager().getStats().endRebalance(start);
     assertEquals(0, service.getMemberMXBean().getRebalancesInProgress());
   }
 

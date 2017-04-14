@@ -1193,7 +1193,7 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     // remote members
     if (!isInternalRegion()) {
       if (!this.isDestroyed) {
-        cache.getResourceManager().addResourceListener(ResourceType.MEMORY, this);
+        cache.getInternalResourceManager().addResourceListener(ResourceType.MEMORY, this);
       }
     }
 

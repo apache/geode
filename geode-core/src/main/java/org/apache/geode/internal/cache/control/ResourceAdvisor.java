@@ -26,7 +26,6 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.distributed.internal.DM;
@@ -36,9 +35,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
@@ -98,7 +95,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
       try {
         final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
         if (cache != null && !cache.isClosed()) {
-          final ResourceAdvisor ra = cache.getResourceManager().getResourceAdvisor();
+          final ResourceAdvisor ra = cache.getInternalResourceManager().getResourceAdvisor();
           if (this.profiles != null) {
             // Early reply to avoid waiting for the following putProfile call
             // to fire (remote) listeners so that the origin member can proceed with
@@ -238,7 +235,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
   }
 
   private InternalResourceManager getResourceManager() {
-    return ((GemFireCacheImpl) getAdvisee()).getResourceManager(false);
+    return ((GemFireCacheImpl) getAdvisee()).getInternalResourceManager(false);
   }
 
   @SuppressWarnings("synthetic-access")

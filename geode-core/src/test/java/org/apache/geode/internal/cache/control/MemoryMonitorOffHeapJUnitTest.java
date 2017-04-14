@@ -80,7 +80,7 @@ public class MemoryMonitorOffHeapJUnitTest {
 
   @Test
   public void testGeneratingEvents() throws Exception {
-    InternalResourceManager internalManager = this.cache.getResourceManager();
+    InternalResourceManager internalManager = this.cache.getInternalResourceManager();
     OffHeapMemoryMonitor monitor = internalManager.getOffHeapMonitor();
 
     monitor.setEvictionThreshold(50.0f);
@@ -144,15 +144,15 @@ public class MemoryMonitorOffHeapJUnitTest {
   private void setThenTestListenersAndStats(final long memUsed, final int evictionStop,
       final int evictionStart, final int safe, final int critical, final int evictionEvents,
       final int criticalEvents, final int normalEvents) {
-    this.cache.getResourceManager().getOffHeapMonitor().updateStateAndSendEvent(memUsed);
-    ResourceManagerStats stats = this.cache.getResourceManager().getStats();
+    this.cache.getInternalResourceManager().getOffHeapMonitor().updateStateAndSendEvent(memUsed);
+    ResourceManagerStats stats = this.cache.getInternalResourceManager().getStats();
 
     assertEquals(evictionStop, stats.getOffHeapEvictionStopEvents());
     assertEquals(evictionStart, stats.getOffHeapEvictionStartEvents());
     assertEquals(critical, stats.getOffHeapCriticalEvents());
     assertEquals(safe, stats.getOffHeapSafeEvents());
 
-    for (ResourceListener listener : this.cache.getResourceManager()
+    for (ResourceListener listener : this.cache.getInternalResourceManager()
         .getResourceListeners(ResourceType.OFFHEAP_MEMORY)) {
       if (listener instanceof TestMemoryThresholdListener) {
         assertEquals(evictionEvents,
@@ -166,7 +166,7 @@ public class MemoryMonitorOffHeapJUnitTest {
 
   @Test
   public void testDisabledThresholds() throws Exception {
-    final InternalResourceManager irm = this.cache.getResourceManager();
+    final InternalResourceManager irm = this.cache.getInternalResourceManager();
     final OffHeapMemoryMonitor monitor = irm.getOffHeapMonitor();
 
     final RegionFactory regionFactory = this.cache.createRegionFactory(RegionShortcut.LOCAL);
@@ -220,7 +220,8 @@ public class MemoryMonitorOffHeapJUnitTest {
 
   @Test
   public void testAllowedThreholds() {
-    final OffHeapMemoryMonitor monitor = this.cache.getResourceManager().getOffHeapMonitor();
+    final OffHeapMemoryMonitor monitor =
+        this.cache.getInternalResourceManager().getOffHeapMonitor();
 
     // Test eviction bounds
     try {
@@ -289,7 +290,8 @@ public class MemoryMonitorOffHeapJUnitTest {
 
   @Test
   public void testMonitorRunning() {
-    final OffHeapMemoryMonitor monitor = this.cache.getResourceManager().getOffHeapMonitor();
+    final OffHeapMemoryMonitor monitor =
+        this.cache.getInternalResourceManager().getOffHeapMonitor();
 
     assertFalse("Off-heap monitor is not running", monitor.started);
 
@@ -314,7 +316,8 @@ public class MemoryMonitorOffHeapJUnitTest {
 
   @Test
   public void testGettersAndSetters() {
-    final OffHeapMemoryMonitor monitor = this.cache.getResourceManager().getOffHeapMonitor();
+    final OffHeapMemoryMonitor monitor =
+        this.cache.getInternalResourceManager().getOffHeapMonitor();
 
     assertEquals(0f, monitor.getEvictionThreshold(), 0.01);
     assertEquals(0f, monitor.getCriticalThreshold(), 0.01);

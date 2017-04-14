@@ -104,7 +104,7 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
 
         RegionEvictorTask.TEST_EVICTION_BURST_PAUSE_TIME_MILLIS = 0;
 
-        InternalResourceManager irm = ((GemFireCacheImpl) cache).getResourceManager();
+        InternalResourceManager irm = ((GemFireCacheImpl) cache).getInternalResourceManager();
         HeapMemoryMonitor hmm = irm.getHeapMonitor();
         hmm.setTestMaxMemoryBytes(100);
         hmm.updateStateAndSendEvent(90);

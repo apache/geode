@@ -108,7 +108,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private SerializableCallable resetResourceManager = new SerializableCallable() {
     public Object call() throws Exception {
-      InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getResourceManager();
+      InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
       // Reset CRITICAL_UP by informing all that heap usage is now 1 byte (0 would disable).
       irm.getHeapMonitor().updateStateAndSendEvent(NORMAL_HEAP_USED);
       Set<ResourceListener> listeners = irm.getResourceListeners(ResourceType.HEAP_MEMORY);

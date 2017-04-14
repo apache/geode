@@ -207,7 +207,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
     }
     final GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (function.optimizeForWrite() && cache != null
-        && cache.getResourceManager().getHeapMonitor().containsHeapCriticalMembers(dest)
+        && cache.getInternalResourceManager().getHeapMonitor().containsHeapCriticalMembers(dest)
         && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
       Set<InternalDistributedMember> hcm = cache.getResourceAdvisor().adviseCritialMembers();
       Set<DistributedMember> sm = SetUtils.intersection(hcm, dest);
@@ -384,8 +384,8 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
         }
       }
     }
-    if (function.optimizeForWrite()
-        && cache.getResourceManager().getHeapMonitor().containsHeapCriticalMembers(targetMembers)
+    if (function.optimizeForWrite() && cache.getInternalResourceManager().getHeapMonitor()
+        .containsHeapCriticalMembers(targetMembers)
         && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
       Set<InternalDistributedMember> hcm = cache.getResourceAdvisor().adviseCritialMembers();
       Set<DistributedMember> sm = SetUtils.intersection(hcm, targetMembers);

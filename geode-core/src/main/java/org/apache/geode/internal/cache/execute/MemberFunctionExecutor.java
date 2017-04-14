@@ -182,7 +182,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
       }
     }
     if (function.optimizeForWrite() && cache != null
-        && cache.getResourceManager().getHeapMonitor().containsHeapCriticalMembers(dest)
+        && cache.getInternalResourceManager().getHeapMonitor().containsHeapCriticalMembers(dest)
         && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
       Set<InternalDistributedMember> hcm = cache.getResourceAdvisor().adviseCritialMembers();
       Set<DistributedMember> sm = SetUtils.intersection(hcm, dest);

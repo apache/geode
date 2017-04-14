@@ -83,26 +83,26 @@ public class AutoBalancerIntegrationJUnitTest {
 
   @Test
   public void testAutoRebalaceStatsOnLockSuccess() throws InterruptedException {
-    assertEquals(0, cache.getResourceManager().getStats().getAutoRebalanceAttempts());
+    assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
     AutoBalancer balancer = new AutoBalancer();
     balancer.getOOBAuditor().execute();
-    assertEquals(1, cache.getResourceManager().getStats().getAutoRebalanceAttempts());
+    assertEquals(1, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
   }
 
   @Test
   public void testAutoRebalaceStatsOnLockFailure() throws InterruptedException {
     acquireLockInDifferentThread(1);
-    assertEquals(0, cache.getResourceManager().getStats().getAutoRebalanceAttempts());
+    assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
     AutoBalancer balancer = new AutoBalancer();
     balancer.getOOBAuditor().execute();
-    assertEquals(0, cache.getResourceManager().getStats().getAutoRebalanceAttempts());
+    assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
   }
 
   @Test
   public void testAutoBalanceStatUpdate() {
-    assertEquals(0, cache.getResourceManager().getStats().getAutoRebalanceAttempts());
+    assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
     new GeodeCacheFacade().incrementAttemptCounter();
-    assertEquals(1, cache.getResourceManager().getStats().getAutoRebalanceAttempts());
+    assertEquals(1, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
   }
 
   @Test
