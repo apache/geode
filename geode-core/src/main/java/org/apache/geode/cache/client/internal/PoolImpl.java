@@ -35,7 +35,6 @@ import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.*;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -63,9 +62,6 @@ public class PoolImpl implements InternalPool {
 
   private static final Logger logger = LogService.getLogger();
 
-  public static final int HANDSHAKE_TIMEOUT =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.HANDSHAKE_TIMEOUT",
-          AcceptorImpl.DEFAULT_HANDSHAKE_TIMEOUT_MS).intValue();
   public static final long SHUTDOWN_TIMEOUT = Long
       .getLong(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.SHUTDOWN_TIMEOUT", 30000).longValue();
   public static final int BACKGROUND_TASK_POOL_SIZE = Integer
@@ -104,6 +100,7 @@ public class PoolImpl implements InternalPool {
   private final int statisticInterval;
   private final boolean multiuserSecureModeEnabled;
 
+  private final int connectTimeout;
   private final ConnectionSource source;
   private final ConnectionManager manager;
   private QueueManager queueManager;
@@ -211,6 +208,7 @@ public class PoolImpl implements InternalPool {
     } else {
       this.proxyId = ClientProxyMembershipID.getNewProxyMembership(ds);
     }
+    this.connectTimeout = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.HANDSHAKE_TIMEOUT", ds.getConfig().getConnectTimeout()).intValue();
     StatisticsFactory statFactory = null;
     if (this.gatewaySender != null) {
       statFactory = new DummyStatisticsFactory();
@@ -225,7 +223,7 @@ public class PoolImpl implements InternalPool {
     source = getSourceImpl(((PoolFactoryImpl.PoolAttributes) attributes).locatorCallback);
     endpointManager = new EndpointManagerImpl(name, ds, this.cancelCriterion, this.stats);
     connectionFactory = new ConnectionFactoryImpl(source, endpointManager, ds, socketBufferSize,
-        HANDSHAKE_TIMEOUT, readTimeout, proxyId, this.cancelCriterion, usedByGateway, gatewaySender,
+        connectTimeout, readTimeout, proxyId, this.cancelCriterion, usedByGateway, gatewaySender,
         pingInterval, multiuserSecureModeEnabled, this);
     if (subscriptionEnabled) {
       queueManager = new QueueManagerImpl(this, endpointManager, source, connectionFactory,
@@ -615,7 +613,7 @@ public class PoolImpl implements InternalPool {
       return new ExplicitConnectionSourceImpl(getServers());
     } else {
       AutoConnectionSourceImpl source =
-          new AutoConnectionSourceImpl(locators, getServerGroup(), HANDSHAKE_TIMEOUT);
+          new AutoConnectionSourceImpl(locators, getServerGroup(), connectTimeout);
       if (locatorDiscoveryCallback != null) {
         source.setLocatorDiscoveryCallback(locatorDiscoveryCallback);
       }
