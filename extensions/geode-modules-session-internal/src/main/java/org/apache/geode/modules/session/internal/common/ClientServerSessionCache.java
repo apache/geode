@@ -132,7 +132,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     RegionConfiguration configuration = createRegionConfiguration();
 
     // Send it to the server tier
-    Execution execution = FunctionService.onServer(this.cache).withArgs(configuration);
+    Execution execution = FunctionService.onServer(this.cache).setArguments(configuration);
     ResultCollector collector = execution.execute(CreateRegionFunction.ID);
 
     // Verify the region was successfully created on the servers

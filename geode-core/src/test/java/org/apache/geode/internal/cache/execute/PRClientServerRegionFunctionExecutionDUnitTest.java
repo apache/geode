@@ -606,7 +606,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       Integer val = new Integer(j++);
       region.put(i.next(), val);
     }
-    List list = (List) FunctionService.onRegion(region).withArgs(Boolean.TRUE)
+    List list = (List) FunctionService.onRegion(region).setArguments(Boolean.TRUE)
         .execute(new FunctionAdapter() {
           @Override
           public void execute(FunctionContext context) {
@@ -672,7 +672,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     Execution dataSet = FunctionService.onRegion(region);
     try {
       ResultCollector rc1 =
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
       List l = ((List) rc1.getResult());
       LogWriterUtils.getLogWriter().info("Result size : " + l.size());
       assertEquals(3, l.size());
@@ -696,7 +696,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
     ResultCollector rc1 =
-        dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
     List l = ((List) rc1.getResult());
     LogWriterUtils.getLogWriter().info("Result size : " + l.size());
     return l;
@@ -993,7 +993,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       }
       List l = null;
       ResultCollector rc1 =
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
             @Override
             public void execute(FunctionContext context) {
               if (context.getArguments() instanceof String) {
@@ -1045,28 +1045,29 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
     ResultCollector rc1 = null;
     try {
-      rc1 = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
-        @Override
-        public void execute(FunctionContext context) {
-          if (((RegionFunctionContext) context).isPossibleDuplicate()) {
-            context.getResultSender().lastResult(new Integer(retryCount));
-            return;
-          }
-          if (context.getArguments() instanceof Boolean) {
-            throw new FunctionInvocationTargetException("I have been thrown from TestFunction");
-          }
-        }
+      rc1 =
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+            @Override
+            public void execute(FunctionContext context) {
+              if (((RegionFunctionContext) context).isPossibleDuplicate()) {
+                context.getResultSender().lastResult(new Integer(retryCount));
+                return;
+              }
+              if (context.getArguments() instanceof Boolean) {
+                throw new FunctionInvocationTargetException("I have been thrown from TestFunction");
+              }
+            }
 
-        @Override
-        public String getId() {
-          return getClass().getName();
-        }
+            @Override
+            public String getId() {
+              return getClass().getName();
+            }
 
-        @Override
-        public boolean hasResult() {
-          return true;
-        }
-      });
+            @Override
+            public boolean hasResult() {
+              return true;
+            }
+          });
 
       List list = (ArrayList) rc1.getResult();
       assertEquals(list.get(0), 0);
@@ -1120,7 +1121,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     }
     Function function = new TestFunction(false, TEST_FUNCTION2);
     Execution dataSet = FunctionService.onRegion(region);
-    dataSet.withArgs(Boolean.TRUE).execute(function);
+    dataSet.setArguments(Boolean.TRUE).execute(function);
     region.put(new Integer(2), "KB_2");
     assertEquals("KB_2", region.get(new Integer(2)));
   }
@@ -1130,7 +1131,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     assertNotNull(region);
     Function function = new TestFunction(false, TEST_FUNCTION2);
     Execution dataSet = FunctionService.onServer(pool);
-    dataSet.withArgs(Boolean.TRUE).execute(function);
+    dataSet.setArguments(Boolean.TRUE).execute(function);
     region.put(new Integer(1), "KB_1");
     assertEquals("KB_1", region.get(new Integer(1)));
   }
@@ -1190,14 +1191,14 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     Execution dataSet = FunctionService.onRegion(region);
     region.put(testKey, new Integer(1));
     ((AbstractExecution) dataSet).removeFunctionAttributes(TestFunction.TEST_FUNCTION2);
-    ResultCollector rs =
-        dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(TestFunction.TEST_FUNCTION2);
+    ResultCollector rs = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE)
+        .execute(TestFunction.TEST_FUNCTION2);
     assertEquals(Boolean.TRUE, ((List) rs.getResult()).get(0));
     byte[] functionAttributes =
         ((AbstractExecution) dataSet).getFunctionAttributes(TestFunction.TEST_FUNCTION2);
     assertNotNull(functionAttributes);
 
-    rs = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE)
+    rs = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE)
         .execute(TestFunction.TEST_FUNCTION2);
     assertEquals(Boolean.TRUE, ((List) rs.getResult()).get(0));
     assertNotNull(functionAttributes);
@@ -1371,7 +1372,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
           .info("<ExpectedException action=add>" + "No target node found for KEY = "
               + "|Server could not send the reply" + "|Unexpected exception during"
               + "</ExpectedException>");
-      dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+      dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
         @Override
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
@@ -1406,7 +1407,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     region.put(testKey, new Integer(1));
 
     ResultCollector rs =
-        dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
           @Override
           public void execute(FunctionContext context) {
             if (context.getArguments() instanceof String) {
@@ -1429,7 +1430,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     assertEquals("Failure", ((List) rs.getResult()).get(0));
 
     ResultCollector rs2 =
-        dataSet.withFilter(testKeysSet).withArgs(testKey).execute(new FunctionAdapter() {
+        dataSet.withFilter(testKeysSet).setArguments(testKey).execute(new FunctionAdapter() {
           @Override
           public void execute(FunctionContext context) {
             if (context.getArguments() instanceof String) {
@@ -1483,7 +1484,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
           .info("<ExpectedException action=add>"
               + "Could not create an instance of  org.apache.geode.internal.cache.execute.PRClientServerRegionFunctionExecutionDUnitTest$UnDeserializable"
               + "</ExpectedException>");
-      dataSet.withFilter(testKeysSet).withArgs(new UnDeserializable())
+      dataSet.withFilter(testKeysSet).setArguments(new UnDeserializable())
           .execute(new FunctionAdapter() {
             @Override
             public void execute(FunctionContext context) {
@@ -1519,9 +1520,9 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
   private static ResultCollector execute(Execution dataSet, Set testKeysSet, Serializable args,
       Function function, Boolean isByName) throws Exception {
     if (isByName.booleanValue()) {// by name
-      return dataSet.withFilter(testKeysSet).withArgs(args).execute(function.getId());
+      return dataSet.withFilter(testKeysSet).setArguments(args).execute(function.getId());
     } else { // By Instance
-      return dataSet.withFilter(testKeysSet).withArgs(args).execute(function);
+      return dataSet.withFilter(testKeysSet).setArguments(args).execute(function);
     }
   }
 

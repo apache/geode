@@ -92,7 +92,7 @@ public class UserFunctionExecution implements Function, InternalEntity {
               }
 
               if (functionArgs != null && functionArgs.length > 0) {
-                execution = execution.withArgs(functionArgs);
+                execution = execution.setArguments(functionArgs);
               }
               if (filters != null && filters.size() > 0) {
                 execution = execution.withFilter(filters);

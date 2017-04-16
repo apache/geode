@@ -960,7 +960,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
 
 
   public static void executeInlineFunction() {
-    List list = (List) FunctionService.onRegion(region).withArgs(Boolean.TRUE)
+    List list = (List) FunctionService.onRegion(region).setArguments(Boolean.TRUE)
         .execute(new FunctionAdapter() {
           @Override
           public void execute(FunctionContext context) {
@@ -1067,12 +1067,12 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
     for (int i = 100; i < 120; i++) {
       filter.add("execKey-" + i);
     }
-    ResultCollector rs = FunctionService.onRegion(region).withFilter(filter).withArgs(Boolean.TRUE)
-        .execute(function);
+    ResultCollector rs = FunctionService.onRegion(region).withFilter(filter)
+        .setArguments(Boolean.TRUE).execute(function);
     List list = (List) rs.getResult();
     assertTrue(list.get(0) instanceof MyFunctionExecutionException);
 
-    rs = FunctionService.onRegion(region).withFilter(filter).withArgs((Serializable) filter)
+    rs = FunctionService.onRegion(region).withFilter(filter).setArguments((Serializable) filter)
         .execute(function);
     List resultList = (List) rs.getResult();
     assertEquals((filter.size() + 1), resultList.size());
@@ -1115,7 +1115,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
 
   public static void executeFunctionFunctionInvocationTargetException() {
     try {
-      ResultCollector rc1 = FunctionService.onRegion(region).withArgs(Boolean.TRUE)
+      ResultCollector rc1 = FunctionService.onRegion(region).setArguments(Boolean.TRUE)
           .execute("DistribuedRegionFunctionFunctionInvocationException");
       List list = (ArrayList) rc1.getResult();
       assertEquals(5, list.get(0));
@@ -1127,7 +1127,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
 
   public static void executeFunctionFunctionInvocationTargetExceptionWithoutHA() {
     try {
-      ResultCollector rc1 = FunctionService.onRegion(region).withArgs(Boolean.TRUE)
+      ResultCollector rc1 = FunctionService.onRegion(region).setArguments(Boolean.TRUE)
           .execute("DistribuedRegionFunctionFunctionInvocationException", true, false);
       rc1.getResult();
       fail("Function Invocation Target Exception should be thrown");
@@ -1141,7 +1141,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
 
   public static void executeFunctionFunctionInvocationTargetException_ClientServer() {
     try {
-      List list = (ArrayList) FunctionService.onRegion(region).withArgs(Boolean.TRUE)
+      List list = (ArrayList) FunctionService.onRegion(region).setArguments(Boolean.TRUE)
           .execute("DistribuedRegionFunctionFunctionInvocationException").getResult();
       assertEquals(1, list.size());
       assertEquals(5, list.get(0));
@@ -1153,7 +1153,7 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
 
   public static void executeFunctionFunctionInvocationTargetException_ClientServer_WithoutHA() {
     try {
-      FunctionService.onRegion(region).withArgs(Boolean.TRUE)
+      FunctionService.onRegion(region).setArguments(Boolean.TRUE)
           .execute("DistribuedRegionFunctionFunctionInvocationException", true, false).getResult();
       fail("Function Invocation Target Exception should be thrown");
     } catch (Exception e) {
@@ -1185,8 +1185,8 @@ public class DistributedRegionFunctionExecutionDUnitTest extends JUnit4Distribut
     }
     // dummy argument Boolean.TRUE indicates that cache should be closed
     // in the function body itself on the first try
-    List list = (List) FunctionService.onRegion(region).withFilter(filter).withArgs(Boolean.TRUE)
-        .execute(function).getResult();
+    List list = (List) FunctionService.onRegion(region).withFilter(filter)
+        .setArguments(Boolean.TRUE).execute(function).getResult();
     return list;
   }
 

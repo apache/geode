@@ -217,8 +217,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
                 origVals.add(val);
                 region.put(i.next(), val);
               }
-              ResultCollector rc =
-                  dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+              ResultCollector rc = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE)
+                  .execute(function.getId());
               int resultSize = ((List) rc.getResult()).size();
               resultReceived_Aggregate += resultSize;
               resultReceived_TESTFUNCTION2 += resultSize;
@@ -227,7 +227,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
               noOfExecutionsCompleted_Aggregate++;
               noOfExecutionsCompleted_TESTFUNCTION2++;
 
-              rc = dataSet.withFilter(testKeysSet).withArgs(testKeysSet).execute(function.getId());
+              rc = dataSet.withFilter(testKeysSet).setArguments(testKeysSet)
+                  .execute(function.getId());
               resultSize = ((List) rc.getResult()).size();
               resultReceived_Aggregate += resultSize;
               resultReceived_TESTFUNCTION2 += resultSize;
@@ -238,7 +239,8 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
 
               function = new TestFunction(true, TestFunction.TEST_FUNCTION3);
               FunctionService.registerFunction(function);
-              rc = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+              rc = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE)
+                  .execute(function.getId());
               resultSize = ((List) rc.getResult()).size();
               resultReceived_Aggregate += resultSize;
               resultReceived_TESTFUNCTION3 += resultSize;
@@ -548,7 +550,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         Execution member = FunctionService.onServers(pool);
 
         try {
-          ResultCollector rs = member.withArgs(Boolean.TRUE).execute(function.getId());
+          ResultCollector rs = member.setArguments(Boolean.TRUE).execute(function.getId());
           int size = ((List) rs.getResult()).size();
           resultReceived_Aggregate += size;
           noOfExecutionCalls_Aggregate++;
@@ -568,7 +570,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
           for (int i = 0; i < 20; i++) {
             testKeysSet.add("execKey-" + i);
           }
-          ResultCollector rs = member.withArgs("Success").execute(function.getId());
+          ResultCollector rs = member.setArguments("Success").execute(function.getId());
           int size = ((List) rs.getResult()).size();
           resultReceived_Aggregate += size;
           noOfExecutionCalls_Aggregate++;
@@ -771,19 +773,19 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION2);
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.withArgs(Boolean.TRUE).execute(function);
+        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(function);
         int size = ((List) rc1.getResult()).size();
         resultReceived_Aggregate += size;
         resultReceived_TESTFUNCTION2 += size;
 
-        rc1 = dataSet.withArgs(testKeys).execute(function);
+        rc1 = dataSet.setArguments(testKeys).execute(function);
         size = ((List) rc1.getResult()).size();
         resultReceived_Aggregate += size;
         resultReceived_TESTFUNCTION2 += size;
 
         function = new TestFunction(true, TestFunction.TEST_FUNCTION3);
         FunctionService.registerFunction(function);
-        rc1 = dataSet.withArgs(Boolean.TRUE).execute(function);
+        rc1 = dataSet.setArguments(Boolean.TRUE).execute(function);
         size = ((List) rc1.getResult()).size();
         resultReceived_Aggregate += size;
         resultReceived_TESTFUNCTION3 += size;
@@ -942,7 +944,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
           public Object call() throws Exception {
             Region region = getCache().getRegion(rName);
             try {
-              List list = (List) FunctionService.onRegion(region).withArgs(Boolean.TRUE)
+              List list = (List) FunctionService.onRegion(region).setArguments(Boolean.TRUE)
                   .execute(TestFunction.TEST_FUNCTION2).getResult();
               // this is the Distributed Region with Empty Data policy.
               // therefore no function execution takes place here. it only receives the results.
@@ -1057,7 +1059,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         DistributedMember localmember = ds.getDistributedMember();
         memberExecution = FunctionService.onMember(ds, localmember);
 
-        memberExecution.withArgs("Key");
+        memberExecution.setArguments("Key");
         try {
           ResultCollector rc = memberExecution.execute(inlineFunction);
           int size = ((List) rc.getResult()).size();
@@ -1198,7 +1200,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
           Function function = new TestFunction(true, "TestFunctionException");
           FunctionService.registerFunction(function);
           Execution dataSet = FunctionService.onRegion(pr);
-          ResultCollector rc = dataSet.withArgs(Boolean.TRUE).execute(function.getId());
+          ResultCollector rc = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
           // Wait Criterion is added to make sure that the function execution
           // happens on all nodes and all nodes get the FunctionException so that the stats will get
           // incremented,

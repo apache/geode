@@ -316,7 +316,7 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
 
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        FunctionService.onRegion(getGemfireCache().getRegion(CUSTOMER)).withArgs(type)
+        FunctionService.onRegion(getGemfireCache().getRegion(CUSTOMER)).setArguments(type)
             .execute(IteratorFunction.id).getResult();
         return null;
       }

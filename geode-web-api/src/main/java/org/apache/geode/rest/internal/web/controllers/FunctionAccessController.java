@@ -203,9 +203,9 @@ public class FunctionAccessController extends AbstractBaseController {
 
         // execute function with specified arguments
         if (args.length == 1) {
-          results = function.withArgs(args[0]).execute(functionId);
+          results = function.setArguments(args[0]).execute(functionId);
         } else {
-          results = function.withArgs(args).execute(functionId);
+          results = function.setArguments(args).execute(functionId);
         }
       } else {
         // execute function with no args

@@ -78,7 +78,7 @@ public class RollbackFunction implements Function {
       txId = (TXId) context.getArguments();
     } catch (ClassCastException e) {
       logger.info(
-          "RollbackFunction should be invoked with a TransactionId as an argument i.e. withArgs(txId).execute(function)");
+          "RollbackFunction should be invoked with a TransactionId as an argument i.e. setArguments(txId).execute(function)");
       throw e;
     }
     DistributedMember member = txId.getMemberId();
@@ -100,7 +100,8 @@ public class RollbackFunction implements Function {
       ArrayList args = new ArrayList();
       args.add(txId);
       args.add(NestedTransactionFunction.ROLLBACK);
-      Execution ex = FunctionService.onMember(cache.getDistributedSystem(), member).withArgs(args);
+      Execution ex =
+          FunctionService.onMember(cache.getDistributedSystem(), member).setArguments(args);
       if (isDebugEnabled) {
         logger.debug(
             "RollbackFunction: for transaction: {} executing NestedTransactionFunction on member: {}",

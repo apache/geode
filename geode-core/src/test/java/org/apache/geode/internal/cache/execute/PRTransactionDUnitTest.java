@@ -184,7 +184,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         args.add(order);
         filter.add(custId);
         try {
-          e.withFilter(filter).withArgs(args).execute(txFunction.getId()).getResult();
+          e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
           fail("Expected exception was not thrown");
         } catch (FunctionException fe) {
           LogWriterUtils.getLogWriter().info("Caught Expected exception");
@@ -201,7 +201,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         LogWriterUtils.getLogWriter().info("VERIFY_TX");
         orderpr.put(orderId, order);
         assertNotNull(orderpr.get(orderId));
-        e.withFilter(filter).withArgs(args).execute(txFunction.getId()).getResult();
+        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         assertTrue("Unexpected customer value after commit", newCus.equals(pr.get(custId)));
         Order commitedOrder = (Order) orderpr.get(orderId);
         assertTrue(
@@ -209,19 +209,19 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
             order.equals(commitedOrder));
         // verify conflict detection
         args.set(0, new Integer(VERIFY_TXSTATE_CONFLICT));
-        e.withFilter(filter).withArgs(args).execute(txFunction.getId()).getResult();
+        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         // verify that the transaction is rolled back
         args.set(0, new Integer(VERIFY_ROLLBACK));
         LogWriterUtils.getLogWriter().info("VERIFY_ROLLBACK");
-        e.withFilter(filter).withArgs(args).execute(txFunction.getId()).getResult();
+        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         // verify destroy
         args.set(0, new Integer(VERIFY_DESTROY));
         LogWriterUtils.getLogWriter().info("VERIFY_DESTROY");
-        e.withFilter(filter).withArgs(args).execute(txFunction.getId()).getResult();
+        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         // verify invalidate
         args.set(0, new Integer(VERIFY_INVALIDATE));
         LogWriterUtils.getLogWriter().info("VERIFY_INVALIDATE");
-        e.withFilter(filter).withArgs(args).execute(txFunction.getId()).getResult();
+        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         return Boolean.TRUE;
       }
     });
@@ -933,7 +933,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         args.add(order);
         filter.add(custId);
         caughtException = false;
-        e.withFilter(filter).withArgs(args).execute(txFunction.getId()).getResult();
+        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
         return null;
       }
     });
@@ -979,7 +979,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
         args.add(orderId);
         args.add(order);
         filter.add(custId);
-        e.withFilter(filter).withArgs(args).execute(txFunction.getId()).getResult();
+        e.withFilter(filter).setArguments(args).execute(txFunction.getId()).getResult();
 
         return null;
       }
@@ -1036,7 +1036,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
           if (iterations > warmupIterations) {
             startTime = NanoTimer.getTime();
           }
-          e.withFilter(filter).withArgs(args).execute("perfFunction").getResult();
+          e.withFilter(filter).setArguments(args).execute("perfFunction").getResult();
           if (startTime > 0) {
             perfTime += NanoTimer.getTime() - startTime;
           }
@@ -1074,7 +1074,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
           if (iterations > warmupIterations) {
             startTime = NanoTimer.getTime();
           }
-          e.withFilter(filter).withArgs(args).execute("perfTxFunction").getResult();
+          e.withFilter(filter).setArguments(args).execute("perfTxFunction").getResult();
           if (startTime > 0) {
             perfTime += NanoTimer.getTime() - startTime;
           }

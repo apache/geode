@@ -120,7 +120,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         } catch (Exception expected) {
           // No data should cause exec to throw
           assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
@@ -132,16 +132,16 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
         testKeysSet.add(testKey + "4");
 
         ResultCollector rs1 =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         assertEquals(Boolean.TRUE, ((List) rs1.getResult()).get(0));
-        ResultCollector rs2 = dataSet.withFilter(testKeysSet).withArgs((Serializable) testKeysSet)
-            .execute(function.getId());
+        ResultCollector rs2 = dataSet.withFilter(testKeysSet)
+            .setArguments((Serializable) testKeysSet).execute(function.getId());
 
         HashMap putData = new HashMap();
         putData.put(testKey + "1", new Integer(2));
         putData.put(testKey + "2", new Integer(3));
         ResultCollector rs3 =
-            dataSet.withFilter(testKeysSet).withArgs(putData).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(putData).execute(function.getId());
         assertEquals(Boolean.TRUE, ((List) rs3.getResult()).get(0));
 
         assertEquals(new Integer(2), pr.get(testKey + "1"));
@@ -209,7 +209,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
         testKeysSet.add(testKey + "4");
 
         ResultCollector rs1 =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         try {
           assertEquals(Boolean.TRUE, ((List) rs1.getResult()).get(0));
           fail("Expected FunctionException : Function did not send last result");
@@ -279,7 +279,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
         Execution dataSet = FunctionService.onRegion(pr);
 
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         } catch (Exception expected) {
           assertTrue(expected.getMessage().contains("No target node found for KEY = "));
         }
@@ -292,7 +292,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
           pr.put(i.next(), val);
         }
         ResultCollector rs =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rs.getResult());
 
         assertEquals(3, l.size());
@@ -302,7 +302,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
         }
 
         ResultCollector rc2 =
-            dataSet.withFilter(testKeysSet).withArgs(testKeysSet).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(testKeysSet).execute(function.getId());
         List l2 = ((List) rc2.getResult());
         assertEquals(pr.getTotalNumberOfBuckets() * 2 * 3, l2.size());
 
@@ -341,7 +341,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
         final HashSet testKeysSet = new HashSet();
         testKeysSet.add(testKey);
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         } catch (Exception expected) {
           // No data should cause exec to throw
           assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
@@ -361,7 +361,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
         }
 
         ResultCollector rc1 =
-            dataSet.withFilter(testKeys).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeys).setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rc1.getResult());
         assertEquals(1, l.size());
         for (Iterator i = l.iterator(); i.hasNext();) {
@@ -369,7 +369,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
         }
 
         ResultCollector rc2 =
-            dataSet.withFilter(testKeys).withArgs(testKeys).execute(function.getId());
+            dataSet.withFilter(testKeys).setArguments(testKeys).execute(function.getId());
         List l2 = ((List) rc2.getResult());
         assertEquals(226, l2.size());
 
@@ -419,7 +419,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
         }
 
         ResultCollector rc1 =
-            dataSet.withFilter(testKeys).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeys).setArguments(Boolean.TRUE).execute(function.getId());
         try {
           assertEquals(Boolean.TRUE, ((List) rc1.getResult()).get(0));
           fail("Expected FunctionException : Function did not send last result");
@@ -489,7 +489,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_NO_LASTRESULT);
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.withArgs(Boolean.TRUE).execute(function.getId());
+        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
         try {
           assertEquals(Boolean.TRUE, ((List) rc1.getResult()).get(0));
           fail("Expected FunctionException : Function did not send last result");
@@ -552,7 +552,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION9);
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.withArgs(Boolean.TRUE).execute(function.getId());
+        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rc1.getResult());
         LogWriterUtils.getLogWriter()
             .info("PRFunctionExecutionDUnitTest#testExecutionOnAllNodes_byName : Result size :"
@@ -613,7 +613,7 @@ public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedReg
 
         Execution dataSet = FunctionService.onRegion(region);
         try {
-          ResultCollector rc = dataSet.withArgs(Boolean.TRUE).execute(function.getId());
+          ResultCollector rc = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
           Object o = rc.getResult();
           fail("Expected Function Exception");
         } catch (Exception expected) {

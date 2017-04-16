@@ -235,19 +235,19 @@ public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServe
     if (isByName.booleanValue()) {// by name
       if (toRegister.booleanValue()) {
         LogWriterUtils.getLogWriter().info("The function name to execute : " + function.getId());
-        Execution me = member.withArgs(args);
+        Execution me = member.setArguments(args);
         LogWriterUtils.getLogWriter().info("The args passed  : " + args);
         return me.execute(function.getId());
       } else {
         LogWriterUtils.getLogWriter()
             .info("The function name to execute : (without Register) " + function.getId());
-        Execution me = member.withArgs(args);
+        Execution me = member.setArguments(args);
         LogWriterUtils.getLogWriter().info("The args passed  : " + args);
         return me.execute(function.getId(), function.hasResult(), function.isHA(),
             function.optimizeForWrite());
       }
     } else { // By Instance
-      return member.withArgs(args).execute(function);
+      return member.setArguments(args).execute(function);
     }
   }
 }

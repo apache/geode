@@ -73,7 +73,7 @@ limitations under the License.
     Function multiGetFunction;
     Object args;
     ResultCollector rc = FunctionService.onRegion(region)
-                                        .withArgs(args)
+                                        .setArguments(args)
                                         .withFilter(keySet)
                                         .withCollector(new MyCustomResultCollector())
                                         .execute(multiGetFunction.getId());
@@ -96,7 +96,7 @@ limitations under the License.
     Function multiGetFunction;
     Object args;
     ResultCollector rc = FunctionService.onRegions(s)
-                                        .withArgs(args)
+                                        .setArguments(args)
                                         .withCollector(new MyCustomResultCollector())
                                         .execute(multiGetFunction.getId());
     // Application can get the handle of all the regions at the node it is executing on.
@@ -114,7 +114,7 @@ limitations under the License.
     Function memberSetupFunction;
     Object args;
     ResultCollector rc = FunctionService.onMembers(ds)
-                                        .withArgs(args)
+                                        .setArguments(args)
                                         .execute(memberSetupFunction.getId());
     //Application can do something else here before retrieving the result
     Object functionResult = rc.getResult();

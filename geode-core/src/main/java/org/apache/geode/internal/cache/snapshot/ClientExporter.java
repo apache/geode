@@ -69,7 +69,7 @@ public class ClientExporter<K, V> implements Exporter<K, V> {
           : FunctionService.onServer(pool);
 
       ResultCollector<?, ?> rc =
-          exec.withArgs(args).withCollector(results).execute(new ProxyExportFunction<K, V>());
+          exec.setArguments(args).withCollector(results).execute(new ProxyExportFunction<K, V>());
 
       // Our custom result collector is writing the data, but this will
       // check for errors.

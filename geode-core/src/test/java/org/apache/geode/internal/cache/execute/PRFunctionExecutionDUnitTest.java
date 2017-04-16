@@ -139,7 +139,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
 
         Execution dataSet = FunctionService.onRegion(pr);
         ResultCollector result =
-            dataSet.withArgs(Boolean.TRUE).withFilter(testKeysSet).execute(function);
+            dataSet.setArguments(Boolean.TRUE).withFilter(testKeysSet).execute(function);
         System.out.println("KBKBKB : Result I got : " + result.getResult());
         return Boolean.TRUE;
       }
@@ -179,7 +179,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
 
         try {
           Execution dataSet = FunctionService.onRegion(pr);
-          dataSet.withFilter(testKeysSet).withArgs(testKey).execute(function);
+          dataSet.withFilter(testKeysSet).setArguments(testKey).execute(function);
           fail("It should have failed with Function attributes don't match");
         } catch (Exception expected) {
           expected.printStackTrace();
@@ -239,24 +239,24 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         } catch (Exception expected) {
           // No data should cause exec to throw
           assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
         }
         pr.put(testKey, new Integer(1));
         ResultCollector rs1 =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         assertEquals(Boolean.TRUE, ((List) rs1.getResult()).get(0));
         ResultCollector rs2 =
-            dataSet.withFilter(testKeysSet).withArgs(testKey).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(testKey).execute(function.getId());
         assertEquals(new Integer(1), ((List) rs2.getResult()).get(0));
 
         HashMap putData = new HashMap();
         putData.put(testKey + "1", new Integer(2));
         putData.put(testKey + "2", new Integer(3));
         ResultCollector rs3 =
-            dataSet.withFilter(testKeysSet).withArgs(putData).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(putData).execute(function.getId());
         assertEquals(Boolean.TRUE, ((List) rs3.getResult()).get(0));
 
         assertEquals(new Integer(2), pr.get(testKey + "1"));
@@ -299,7 +299,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         pr.put(testKey, new Integer(1));
         try {
           ResultCollector rs1 =
-              dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+              dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
           List list = (ArrayList) rs1.getResult();
           assertEquals(list.get(0), 5);
         } catch (Throwable e) {
@@ -364,7 +364,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         pr.put(testKey, new Integer(1));
         try {
           ResultCollector rs1 =
-              dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+              dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
           List list = (ArrayList) rs1.getResult();
           assertEquals(list.get(0), 5);
         } catch (Throwable e) {
@@ -425,7 +425,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         Execution dataSet = FunctionService.onRegion(pr); // withCollector(rs);
 
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function);
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
 
         } catch (Exception expected) {
           // No data should cause exec to throw
@@ -434,15 +434,17 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
 
         pr.put(testKey, new Integer(1));
         ResultCollector rs1 =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function);
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
         assertEquals(Boolean.TRUE, ((List) rs1.getResult()).get(0));
-        ResultCollector rs2 = dataSet.withFilter(testKeysSet).withArgs(testKey).execute(function);
+        ResultCollector rs2 =
+            dataSet.withFilter(testKeysSet).setArguments(testKey).execute(function);
         assertEquals(new Integer(1), ((List) rs2.getResult()).get(0));
 
         HashMap putData = new HashMap();
         putData.put(testKey + "1", new Integer(2));
         putData.put(testKey + "2", new Integer(3));
-        ResultCollector rs3 = dataSet.withFilter(testKeysSet).withArgs(putData).execute(function);
+        ResultCollector rs3 =
+            dataSet.withFilter(testKeysSet).setArguments(putData).execute(function);
         assertEquals(Boolean.TRUE, ((List) rs3.getResult()).get(0));
 
         assertEquals(new Integer(2), pr.get(testKey + "1"));
@@ -496,8 +498,8 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         DistributedSystem.setThreadsSocketPolicy(false);
         Execution dataSet = FunctionService.onRegion(pr);
         pr.put(testKey, new Integer(1));
-        ResultCollector rs1 =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+        ResultCollector rs1 = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE)
+            .execute(new FunctionAdapter() {
               @Override
               public void execute(FunctionContext context) {
                 if (context.getArguments() instanceof String) {
@@ -577,7 +579,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         Execution dataSet = FunctionService.onRegion(pr);
 
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         } catch (Exception expected) {
           assertTrue(expected.getMessage(),
               expected.getMessage().contains("No target node found for KEY"));
@@ -591,7 +593,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
           pr.put(i.next(), val);
         }
         ResultCollector rs =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rs.getResult());
         assertEquals(3, l.size());
 
@@ -601,7 +603,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
 
         // DefaultResultCollector rc2 = new DefaultResultCollector();
         ResultCollector rc2 =
-            dataSet.withFilter(testKeysSet).withArgs(testKeysSet).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(testKeysSet).execute(function.getId());
         List l2 = ((List) rc2.getResult());
         assertEquals(3, l2.size());
         HashSet foundVals = new HashSet();
@@ -688,7 +690,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_LASTRESULT);
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc2 = dataSet.withArgs(Boolean.TRUE).execute(function.getId());
+        ResultCollector rc2 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rc2.getResult());
         return l;
       }
@@ -749,7 +751,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_LASTRESULT);
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc2 = dataSet.withArgs(Boolean.TRUE).execute(function.getId());
+        ResultCollector rc2 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rc2.getResult());
         return l;
       }
@@ -825,7 +827,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         }
         try {
           ResultCollector rs =
-              dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+              dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
           List list = (ArrayList) rs.getResult();
           assertEquals(list.get(0), 5);
         } catch (Throwable e) {
@@ -1036,7 +1038,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(pr);
     ResultCollector rs =
-        dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
     List l = ((List) rs.getResult());
     return l;
   }
@@ -1095,8 +1097,8 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
           origVals.add(val);
           pr.put(i.next(), val);
         }
-        ResultCollector rs =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+        ResultCollector rs = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE)
+            .execute(new FunctionAdapter() {
               @Override
               public void execute(FunctionContext context) {
                 if (context.getArguments() instanceof String) {
@@ -1184,7 +1186,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
           pr.put(i.next(), val);
         }
         ResultCollector rs =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rs.getResult());
         assertEquals(3, l.size());
 
@@ -1256,7 +1258,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         }
         ResultCollector rs;
         try {
-          rs = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          rs = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
           rs.getResult();
         } catch (Exception expected) {
           expected.printStackTrace();
@@ -1332,8 +1334,8 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
           pr.put(i.next(), val);
         }
         // long startTime = System.currentTimeMillis();
-        ResultCollector rs =
-            dataSet.withFilter(testKeysSet).withArgs("TestingTimeOut").execute(function.getId());
+        ResultCollector rs = dataSet.withFilter(testKeysSet).setArguments("TestingTimeOut")
+            .execute(function.getId());
         // long endTime = System.currentTimeMillis();
         List l = ((List) rs.getResult(10000, TimeUnit.MILLISECONDS));
         assertEquals(3, l.size()); // this test may fail..but rarely
@@ -1404,7 +1406,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         }
         ResultCollector rs;
         try {
-          rs = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          rs = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
           rs.getResult();
         } catch (Exception expected) {
           assertTrue(expected.getMessage()
@@ -1470,7 +1472,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function);
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
         } catch (Exception expected) {
           // No data should cause exec to throw
           LogWriterUtils.getLogWriter().warning("Exception Occured : " + expected.getMessage());
@@ -1488,7 +1490,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         }
         // DefaultResultCollector rc1 = new DefaultResultCollector();
         ResultCollector rc1 =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function);
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
         List l = ((List) rc1.getResult());
         assertEquals(3, l.size());
 
@@ -1498,7 +1500,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
 
         // DefaultResultCollector rc2 = new DefaultResultCollector();
         ResultCollector rc2 =
-            dataSet.withFilter(testKeysSet).withArgs(testKeysSet).execute(function);
+            dataSet.withFilter(testKeysSet).setArguments(testKeysSet).execute(function);
         List l2 = ((List) rc2.getResult());
         // assertIndexDetailsEquals(pr.getTotalNumberOfBuckets(), l2.size());
         assertEquals(3, l2.size());
@@ -1753,7 +1755,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         final HashSet testKeysSet = new HashSet();
         testKeysSet.add(testKey);
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         } catch (Exception expected) {
           // No data should cause exec to throw
           assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
@@ -1773,7 +1775,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         }
 
         ResultCollector rc1 =
-            dataSet.withFilter(testKeys).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeys).setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rc1.getResult());
         // assertIndexDetailsEquals(pr.getTotalNumberOfBuckets(), l.size());
         assertEquals(1, l.size());
@@ -1783,7 +1785,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
 
         // DefaultResultCollector rc2 = new DefaultResultCollector();
         ResultCollector rc2 =
-            dataSet.withFilter(testKeys).withArgs(testKeys).execute(function.getId());
+            dataSet.withFilter(testKeys).setArguments(testKeys).execute(function.getId());
         List l2 = ((List) rc2.getResult());
         assertEquals(1, l2.size());
 
@@ -1829,7 +1831,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         final HashSet testKeysSet = new HashSet();
         testKeysSet.add(testKey);
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function);
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
         } catch (Exception expected) {
           // No data should cause exec to throw
           assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
@@ -1849,7 +1851,8 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         }
 
         // DefaultResultCollector rc1 = new DefaultResultCollector();
-        ResultCollector rc1 = dataSet.withFilter(testKeys).withArgs(Boolean.TRUE).execute(function);
+        ResultCollector rc1 =
+            dataSet.withFilter(testKeys).setArguments(Boolean.TRUE).execute(function);
         List l = ((List) rc1.getResult());
         assertEquals(1, l.size());
         for (Iterator i = l.iterator(); i.hasNext();) {
@@ -1857,7 +1860,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         }
 
         // DefaultResultCollector rc2 = new DefaultResultCollector();
-        ResultCollector rc2 = dataSet.withFilter(testKeys).withArgs(testKeys).execute(function);
+        ResultCollector rc2 = dataSet.withFilter(testKeys).setArguments(testKeys).execute(function);
         List l2 = ((List) rc2.getResult());
         assertEquals(1, l2.size());
 
@@ -1932,14 +1935,14 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
           FunctionService.registerFunction(function);
           Execution dataSet = FunctionService.onRegion(pr);
           ResultCollector rc1 =
-              dataSet.withFilter(singleKeySet).withArgs(Boolean.TRUE).execute(function.getId());
+              dataSet.withFilter(singleKeySet).setArguments(Boolean.TRUE).execute(function.getId());
           List l = ((List) rc1.getResult());
           assertEquals(1, l.size());
           assertEquals(Boolean.TRUE, l.iterator().next());
 
           // DefaultResultCollector rc2 = new DefaultResultCollector();
-          ResultCollector rc2 = dataSet.withFilter(singleKeySet).withArgs(new HashSet(singleKeySet))
-              .execute(function.getId());
+          ResultCollector rc2 = dataSet.withFilter(singleKeySet)
+              .setArguments(new HashSet(singleKeySet)).execute(function.getId());
           List l2 = ((List) rc2.getResult());
 
           assertEquals(1, l2.size());
@@ -2009,14 +2012,14 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
           FunctionService.registerFunction(function);
           Execution dataSet = FunctionService.onRegion(pr);
           ResultCollector rc1 =
-              dataSet.withFilter(singleKeySet).withArgs(Boolean.TRUE).execute(function);
+              dataSet.withFilter(singleKeySet).setArguments(Boolean.TRUE).execute(function);
           List l = ((List) rc1.getResult());
           assertEquals(1, l.size());
           assertEquals(Boolean.TRUE, l.iterator().next());
 
           // DefaultResultCollector rc2 = new DefaultResultCollector();
-          ResultCollector rc2 = dataSet.withFilter(singleKeySet).withArgs(new HashSet(singleKeySet))
-              .execute(function);
+          ResultCollector rc2 = dataSet.withFilter(singleKeySet)
+              .setArguments(new HashSet(singleKeySet)).execute(function);
           List l2 = ((List) rc2.getResult());
 
           assertEquals(1, l2.size());
@@ -2083,7 +2086,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION2);
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.withArgs(Boolean.TRUE).execute(function.getId());
+        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rc1.getResult());
         LogWriterUtils.getLogWriter()
             .info("PRFunctionExecutionDUnitTest#testExecutionOnAllNodes_byName : Result size :"
@@ -2166,7 +2169,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION2);
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.withArgs(Boolean.TRUE).execute(function);
+        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(function);
 
         List l = ((List) rc1.getResult());
         assertEquals(3, l.size());
@@ -2228,7 +2231,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
           assertTrue(pr.getBucketKeys(bid).size() > 0);
         }
         Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
           @Override
           public void execute(FunctionContext context) {
             if (context.getArguments() instanceof String) {
@@ -2328,7 +2331,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
           assertTrue(pr.getBucketKeys(bid).size() > 0);
         }
         Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
           @Override
           public void execute(FunctionContext context) {
             if (context.getArguments() instanceof String) {
@@ -2425,7 +2428,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
         Function function = new TestFunction(true, TestFunction.TEST_FUNCTION3);
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.withArgs(testKeys).execute(function.getId());
+        ResultCollector rc1 = dataSet.setArguments(testKeys).execute(function.getId());
 
         List l = ((List) rc1.getResult());
         assertEquals(4, l.size());
@@ -2824,7 +2827,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
     keysForGet.add("KEY_7");
     try {
       Execution execution =
-          FunctionService.onRegion(region).withFilter(keysForGet).withArgs(Boolean.TRUE);
+          FunctionService.onRegion(region).withFilter(keysForGet).setArguments(Boolean.TRUE);
       ResultCollector rc = execution.execute(new FunctionAdapter() {
         @Override
         public void execute(FunctionContext fc) {

@@ -63,15 +63,15 @@ public class ClientExecuteFunctionAuthDUnitTest extends JUnit4DistributedTestCas
       FunctionService.registerFunction(function);
 
       assertNotAuthorized(() -> FunctionService.onServer(cache.getDefaultPool())
-          .withArgs(Boolean.TRUE).execute(function.getId()), "DATA:WRITE");
+          .setArguments(Boolean.TRUE).execute(function.getId()), "DATA:WRITE");
     });
 
     client2.invoke("logging in with super-user", () -> {
       ClientCache cache = createClientCache("super-user", "1234567", server.getPort());
 
       FunctionService.registerFunction(function);
-      ResultCollector rc = FunctionService.onServer(cache.getDefaultPool()).withArgs(Boolean.TRUE)
-          .execute(function.getId());
+      ResultCollector rc = FunctionService.onServer(cache.getDefaultPool())
+          .setArguments(Boolean.TRUE).execute(function.getId());
       rc.getResult();
     });
   }
@@ -83,7 +83,7 @@ public class ClientExecuteFunctionAuthDUnitTest extends JUnit4DistributedTestCas
     client1.invoke("logging in with dataReader", () -> {
       ClientCache cache = createClientCache("dataReader", "1234567", server.getPort());
       assertNotAuthorized(() -> FunctionService.onServer(cache.getDefaultPool())
-          .withArgs(Boolean.TRUE).execute(function.getId()), "DATA:WRITE");
+          .setArguments(Boolean.TRUE).execute(function.getId()), "DATA:WRITE");
     });
   }
 }

@@ -278,13 +278,18 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
     return this.sender;
   }
 
-  public Execution withArgs(Object args) {
+  @Override
+  public Execution setArguments(Object args) {
     if (args == null) {
       throw new FunctionException(
           LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
               .toLocalizedString("args"));
     }
     return new PartitionedRegionFunctionExecutor(this, args);
+  }
+
+  public Execution withArgs(Object args) {
+    return setArguments(args);
   }
 
   public Execution withCollector(ResultCollector rs) {

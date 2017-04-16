@@ -1198,7 +1198,8 @@ public class DataCommands implements CommandMarker {
 
     if (members.size() == 1) {
       DistributedMember member = members.iterator().next();
-      ResultCollector collector = FunctionService.onMember(member).withArgs(request).execute(putfn);
+      ResultCollector collector =
+          FunctionService.onMember(member).setArguments(request).execute(putfn);
       List list = (List) collector.getResult();
       Object object = list.get(0);
       if (object instanceof Throwable) {
@@ -1213,7 +1214,7 @@ public class DataCommands implements CommandMarker {
       return result;
     } else {
       ResultCollector collector =
-          FunctionService.onMembers(members).withArgs(request).execute(putfn);
+          FunctionService.onMembers(members).setArguments(request).execute(putfn);
       List list = (List) collector.getResult();
       DataCommandResult result = null;
       for (int i = 0; i < list.size(); i++) {

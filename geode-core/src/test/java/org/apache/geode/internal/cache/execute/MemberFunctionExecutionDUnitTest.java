@@ -379,7 +379,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     DistributedMember localmember = ds.getDistributedMember();
     Execution memberExcution = null;
     memberExcution = FunctionService.onMember(ds, localmember);
-    Execution executor = memberExcution.withArgs("Key");
+    Execution executor = memberExcution.setArguments("Key");
     try {
       ResultCollector rc = executor.execute(new FunctionAdapter() {
         @Override
@@ -492,7 +492,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
       memberExcution = (InternalExecution) FunctionService.onMembers(ds, memberSet);
     }
     try {
-      ResultCollector rc = memberExcution.withArgs(Boolean.TRUE).execute(function);
+      ResultCollector rc = memberExcution.setArguments(Boolean.TRUE).execute(function);
       List li = (ArrayList) rc.getResult();
       LogWriterUtils.getLogWriter()
           .info("MemberFunctionExecutionDUnitTest#excuteOnMembers: Result : " + li);
@@ -569,7 +569,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
       memberSet.remove(localVM);
       memberExcution = FunctionService.onMembers(ds, memberSet);
     }
-    Execution executor = memberExcution.withArgs("Key");
+    Execution executor = memberExcution.setArguments("Key");
     try {
       ResultCollector rc = executor.execute(new FunctionAdapter() {
         @Override
@@ -612,7 +612,7 @@ public class MemberFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(ds);
     Function function = new TestFunction(false, TEST_FUNCTION6);
     Execution memberExcution = FunctionService.onMembers(ds);
-    Execution executor = memberExcution.withArgs("Key");
+    Execution executor = memberExcution.setArguments("Key");
     try {
       ResultCollector rc = executor.execute(function.getId());
       rc.getResult();

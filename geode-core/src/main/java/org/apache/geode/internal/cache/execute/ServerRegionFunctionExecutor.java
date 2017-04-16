@@ -308,13 +308,18 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
         .append("]").toString();
   }
 
-  public Execution withArgs(Object params) {
-    if (params == null) {
+  @Override
+  public Execution setArguments(Object args) {
+    if (args == null) {
       throw new FunctionException(
           LocalizedStrings.ExecuteRegionFunction_THE_INPUT_0_FOR_THE_EXECUTE_FUNCTION_REQUEST_IS_NULL
               .toLocalizedString("args"));
     }
-    return new ServerRegionFunctionExecutor(this, params);
+    return new ServerRegionFunctionExecutor(this, args);
+  }
+
+  public Execution withArgs(Object params) {
+    return setArguments(args);
   }
 
   public Execution withCollector(ResultCollector rs) {

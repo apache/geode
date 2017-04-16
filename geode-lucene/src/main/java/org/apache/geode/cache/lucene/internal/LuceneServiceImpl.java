@@ -406,7 +406,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     WaitUntilFlushedFunctionContext context =
         new WaitUntilFlushedFunctionContext(indexName, timeout, unit);
     Execution execution = FunctionService.onRegion(dataRegion);
-    ResultCollector rs = execution.withArgs(context).execute(WaitUntilFlushedFunction.ID);
+    ResultCollector rs = execution.setArguments(context).execute(WaitUntilFlushedFunction.ID);
     List<Boolean> results = (List<Boolean>) rs.getResult();
     for (Boolean oneResult : results) {
       if (oneResult == false) {

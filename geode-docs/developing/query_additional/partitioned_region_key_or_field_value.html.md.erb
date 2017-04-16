@@ -53,7 +53,7 @@ The following is an example how to optimize a query that will be run on data par
           //for ID=1 and query will execute on that bucket.
           rcollector = FunctionService
               .onRegion(region)
-              .withArgs(qStr)
+              .setArguments(qStr)
               .withFilter(filter)
               .execute(func);
 
