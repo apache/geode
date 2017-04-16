@@ -177,7 +177,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   @Override
   public void dumpFiles(final String directory) {
     ResultCollector results = FunctionService.onRegion(getDataRegion())
-        .withArgs(new String[] {directory, indexName}).execute(DumpDirectoryFiles.ID);
+        .setArguments(new String[] {directory, indexName}).execute(DumpDirectoryFiles.ID);
     results.getResult();
   }
 

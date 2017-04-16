@@ -180,7 +180,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
   private void snapshotInParallel(ParallelArgs<K, V> args, Function fn) throws IOException {
     try {
 
-      ResultCollector rc = FunctionService.onRegion(region).withArgs(args).execute(fn);
+      ResultCollector rc = FunctionService.onRegion(region).setArguments(args).execute(fn);
       List result = (List) rc.getResult();
       for (Object obj : result) {
         if (obj instanceof Exception) {

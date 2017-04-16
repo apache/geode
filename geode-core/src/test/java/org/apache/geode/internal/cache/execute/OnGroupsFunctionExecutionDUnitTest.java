@@ -237,7 +237,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         Execution e = FunctionService.onMembers("gm");
         ArrayList<String> args = new ArrayList<String>();
         args.add("gm");
-        e = e.withArgs(args);
+        e = e.setArguments(args);
         if (registerFunction) {
           e.execute(OnGroupsFunction.Id).getResult();
         } else {
@@ -258,7 +258,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         Execution e = FunctionService.onMembers("g0");
         ArrayList<String> args = new ArrayList<String>();
         args.add("g0");
-        e = e.withArgs(args);
+        e = e.setArguments(args);
         if (registerFunction) {
           e.execute(OnGroupsFunction.Id).getResult();
         } else {
@@ -278,7 +278,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         Execution e = FunctionService.onMembers("g1");
         ArrayList<String> args = new ArrayList<String>();
         args.add("g1");
-        e = e.withArgs(args);
+        e = e.setArguments(args);
         if (registerFunction) {
           e.execute(OnGroupsFunction.Id).getResult();
         } else {
@@ -300,7 +300,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<String> args = new ArrayList<String>();
         args.add("g0");
         args.add("g1");
-        e = e.withArgs(args);
+        e = e.setArguments(args);
         if (registerFunction) {
           e.execute(OnGroupsFunction.Id).getResult();
         } else {
@@ -511,7 +511,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         Execution e = FunctionService.onMembers("mg");
         ArrayList<String> args = new ArrayList<String>();
         args.add("runtime");
-        e = e.withArgs(args);
+        e = e.setArguments(args);
         try {
           e.execute(new OnGroupsExceptionFunction()).getResult();
           fail("expected exception not thrown");
@@ -520,7 +520,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         }
 
         Execution e1 = FunctionService.onMembers("g1");
-        e1 = e1.withArgs(args);
+        e1 = e1.setArguments(args);
         try {
           e1.execute(new OnGroupsExceptionFunction()).getResult();
           fail("expected exception not thrown");
@@ -531,7 +531,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         // fail on only one member
         Execution e2 = FunctionService.onMembers("g1");
         args.add("g2");
-        e2 = e2.withArgs(args);
+        e2 = e2.setArguments(args);
         try {
           e2.execute(new OnGroupsExceptionFunction()).getResult();
           fail("expected exception not thrown");
@@ -562,7 +562,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         Execution e1 = FunctionService.onMembers("g1");
         ArrayList<String> args = new ArrayList<String>();
         args.add("shutdown");
-        e1 = e1.withArgs(args);
+        e1 = e1.setArguments(args);
         try {
           e1.execute(new OnGroupsExceptionFunction()).getResult();
           fail("expected exception not thrown");
@@ -594,7 +594,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<String> args = new ArrayList<String>();
         args.add("shutdown");
         args.add("g2");
-        e1 = e1.withArgs(args);
+        e1 = e1.setArguments(args);
         try {
           e1.execute(new OnGroupsExceptionFunction()).getResult();
           fail("expected exception not thrown");
@@ -626,7 +626,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<String> args = new ArrayList<String>();
         args.add("shutdown");
         args.add("g2");
-        e1 = e1.withArgs(args);
+        e1 = e1.setArguments(args);
         ((AbstractExecution) e1).setIgnoreDepartedMembers(true);
         ArrayList l = (ArrayList) e1.execute(new OnGroupsExceptionFunction()).getResult();
         assertEquals(2, l.size());
@@ -705,7 +705,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         if (withArgs) {
           ArrayList<String> args = new ArrayList<String>();
           args.add("g0");
-          e = e.withArgs(args);
+          e = e.setArguments(args);
         }
         if (register) {
           e.execute(OnGroupsFunction.Id).getResult();
@@ -728,7 +728,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         if (withArgs) {
           ArrayList<String> args = new ArrayList<String>();
           args.add("mg");
-          e = e.withArgs(args);
+          e = e.setArguments(args);
         }
         if (register) {
           e.execute(OnGroupsFunction.Id).getResult();
@@ -752,7 +752,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
           ArrayList<String> args = new ArrayList<String>();
           args.add("g0");
           args.add("g1");
-          e = e.withArgs(args);
+          e = e.setArguments(args);
         }
         if (register) {
           e.execute(OnGroupsFunction.Id).getResult();
@@ -977,7 +977,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         Execution e = InternalFunctionService.onServers(c, "mg");
         ArrayList<String> args = new ArrayList<String>();
         args.add("runtime");
-        e = e.withArgs(args);
+        e = e.setArguments(args);
         try {
           e.execute(new OnGroupsExceptionFunction()).getResult();
           fail("expected exception not thrown");
@@ -986,7 +986,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         }
 
         Execution e1 = InternalFunctionService.onServers(c, "g1");
-        e1 = e1.withArgs(args);
+        e1 = e1.setArguments(args);
         try {
           e1.execute(new OnGroupsExceptionFunction()).getResult();
           fail("expected exception not thrown");
@@ -997,7 +997,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         // only one member
         Execution e2 = InternalFunctionService.onServers(c, "g1");
         args.add("g2");
-        e2 = e2.withArgs(args);
+        e2 = e2.setArguments(args);
         try {
           e2.execute(new OnGroupsExceptionFunction()).getResult();
           fail("expected exception not thrown");
@@ -1045,7 +1045,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         Execution e = InternalFunctionService.onServers(c, "g1");
         ArrayList<String> args = new ArrayList<String>();
         args.add("disconnect");
-        e = e.withArgs(args);
+        e = e.setArguments(args);
 
         IgnoredException.addIgnoredException("FunctionInvocationTargetException");
         try {
@@ -1096,7 +1096,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<String> args = new ArrayList<String>();
         args.add("disconnect");
         args.add("g2");
-        e = e.withArgs(args);
+        e = e.setArguments(args);
         IgnoredException.addIgnoredException("FunctionInvocationTargetException");
         try {
           e.execute(new OnGroupsExceptionFunction()).getResult();
@@ -1146,7 +1146,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<String> args = new ArrayList<String>();
         args.add("disconnect");
         args.add("g2");
-        e = e.withArgs(args);
+        e = e.setArguments(args);
         ((AbstractExecution) e).setIgnoreDepartedMembers(true);
         ArrayList l = (ArrayList) e.execute(new OnGroupsExceptionFunction()).getResult();
         LogWriterUtils.getLogWriter().info("SWAP:result:" + l);

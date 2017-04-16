@@ -257,7 +257,7 @@ public class FunctionCommands implements CommandMarker {
               execution = execution.withFilter(filters);
             }
             if (arguments != null && arguments.length > 0) {
-              execution = execution.withArgs(arguments);
+              execution = execution.setArguments(arguments);
             }
 
             try {
@@ -389,7 +389,7 @@ public class FunctionCommands implements CommandMarker {
       }
       args[4] = onRegion;
 
-      Execution execution = FunctionService.onMember(member).withArgs(args);
+      Execution execution = FunctionService.onMember(member).setArguments(args);
       if (execution != null) {
         List<Object> results = (List<Object>) execution.execute(function).getResult();
         if (results != null) {
@@ -522,7 +522,7 @@ public class FunctionCommands implements CommandMarker {
     Object[] obj = new Object[1];
     obj[0] = functionId;
 
-    Execution execution = FunctionService.onMembers(DsMembers).withArgs(obj);
+    Execution execution = FunctionService.onMembers(DsMembers).setArguments(obj);
 
     if (execution == null) {
       cache.getLogger().error("executeUnregister execution is null");

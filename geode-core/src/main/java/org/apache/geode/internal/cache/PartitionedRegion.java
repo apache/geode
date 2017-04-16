@@ -3347,20 +3347,20 @@ public class PartitionedRegion extends LocalRegion
       switch (execution.getFilter().size()) {
         case 0:
           if (logger.isDebugEnabled()) {
-            logger.debug("Executing Function: {} withArgs={} on all buckets.", function.getId(),
+            logger.debug("Executing Function: {} setArguments={} on all buckets.", function.getId(),
                 execution.getArguments());
           }
           return executeOnAllBuckets(function, execution, rc, false);
         case 1:
           if (logger.isDebugEnabled()) {
-            logger.debug("Executing Function: {} withArgs={} on single node.", function.getId(),
+            logger.debug("Executing Function: {} setArguments={} on single node.", function.getId(),
                 execution.getArguments());
           }
           return executeOnSingleNode(function, execution, rc, false, executeOnBucketSet);
         default:
           if (logger.isDebugEnabled()) {
-            logger.debug("Executing Function: {} withArgs={} on multiple nodes.", function.getId(),
-                execution.getArguments());
+            logger.debug("Executing Function: {} setArguments={} on multiple nodes.",
+                function.getId(), execution.getArguments());
           }
           return executeOnMultipleNodes(function, execution, rc, false, executeOnBucketSet);
       }
@@ -3576,7 +3576,7 @@ public class PartitionedRegion extends LocalRegion
     }
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Executing Function: {} withArgs={} on {}", function.getId(),
+      logger.debug("Executing Function: {} setArguments={} on {}", function.getId(),
           execution.getArguments(), targetNode);
     }
     while (!execution.getFailedNodes().isEmpty()) {
@@ -6445,7 +6445,7 @@ public class PartitionedRegion extends LocalRegion
 
     ResultCollector rc = null;
     try {
-      rc = FunctionService.onRegion(this).withArgs((Serializable) value)
+      rc = FunctionService.onRegion(this).setArguments((Serializable) value)
           .execute(PRContainsValueFunction.class.getName());
       List<Boolean> results = ((List<Boolean>) rc.getResult());
       for (Boolean r : results) {

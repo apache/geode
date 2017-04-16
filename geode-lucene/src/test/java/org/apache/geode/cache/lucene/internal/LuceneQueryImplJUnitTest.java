@@ -66,7 +66,7 @@ public class LuceneQueryImplJUnitTest {
     collector = mock(ResultCollector.class);
     provider = mock(LuceneQueryProvider.class);
 
-    when(execution.withArgs(any())).thenReturn(execution);
+    when(execution.setArguments(any())).thenReturn(execution);
     when(execution.withCollector(any())).thenReturn(execution);
     when(execution.execute(anyString())).thenReturn((ResultCollector) collector);
     results = mock(PageableLuceneQueryResults.class);
@@ -145,7 +145,7 @@ public class LuceneQueryImplJUnitTest {
     verify(execution).execute(eq(LuceneQueryFunction.ID));
     ArgumentCaptor<LuceneFunctionContext> captor =
         ArgumentCaptor.forClass(LuceneFunctionContext.class);
-    verify(execution).withArgs(captor.capture());
+    verify(execution).setArguments(captor.capture());
     LuceneFunctionContext context = captor.getValue();
     assertEquals(LIMIT, context.getLimit());
     assertEquals(provider, context.getQueryProvider());

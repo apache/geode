@@ -483,7 +483,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
 
   public static Object executeFunction() {
     Execution execute = FunctionService.onRegion(region);
-    ResultCollector rc = execute.withArgs(Boolean.TRUE)
+    ResultCollector rc = execute.setArguments(Boolean.TRUE)
         .execute(new TestFunction(true, TestFunction.TEST_FUNCTION_LASTRESULT));
     LogWriterUtils.getLogWriter().info("Exeuction Result :" + rc.getResult());
     List l = ((List) rc.getResult());

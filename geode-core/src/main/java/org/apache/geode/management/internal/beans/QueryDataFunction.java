@@ -174,8 +174,8 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
             results = selectResults;
           }
         } else {
-          rcollector = FunctionService.onRegion(cache.getRegion(regionName)).withArgs(queryString)
-              .execute(loclQueryFunc);
+          rcollector = FunctionService.onRegion(cache.getRegion(regionName))
+              .setArguments(queryString).execute(loclQueryFunc);
           results = rcollector.getResult();
         }
       }
@@ -250,7 +250,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
     try {
       if (members.size() == 1) {
         DistributedMember member = members.iterator().next();
-        ResultCollector collector = FunctionService.onMember(member).withArgs(functionArgs)
+        ResultCollector collector = FunctionService.onMember(member).setArguments(functionArgs)
             .execute(ManagementConstants.QUERY_DATA_FUNCTION);
         List list = (List) collector.getResult();
         Object object = null;
@@ -280,7 +280,7 @@ public class QueryDataFunction extends FunctionAdapter implements InternalEntity
         }
 
       } else { // More than 1 Member
-        ResultCollector coll = FunctionService.onMembers(members).withArgs(functionArgs)
+        ResultCollector coll = FunctionService.onMembers(members).setArguments(functionArgs)
             .execute(ManagementConstants.QUERY_DATA_FUNCTION);
 
         List list = (List) coll.getResult();

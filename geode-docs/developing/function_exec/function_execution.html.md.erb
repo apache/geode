@@ -185,7 +185,7 @@ See [Function Execution Commands](../../tools_modules/gfsh/quick_ref_commands_by
 1.  Use one of the `FunctionService` `on*` methods to create an `Execute` object. The `on*` methods, `onRegion`, `onMembers`, etc., define the highest level where the function is run. For colocated partitioned regions, use `onRegion` and specify any one of the colocated regions. The function run using `onRegion` is referred to as a data dependent function - the others as data-independent functions.
 2.  Use the `Execution` object as needed for additional function configuration. You can:
     -   Provide a key `Set` to `withFilters` to narrow the execution scope for `onRegion` `Execution` objects. You can retrieve the key set in your `Function` `execute` method through `RegionFunctionContext.getFilter`.
-    -   Provide function arguments to `withArgs`. You can retrieve these in your `Function` `execute` method through `FunctionContext.getArguments`.
+    -   Provide function arguments to `setArguments`. You can retrieve these in your `Function` `execute` method through `FunctionContext.getArguments`.
     -   Define a custom `ResultCollector`
 
 3.  Call the `Execution` object to `execute` method to run the function.
@@ -209,7 +209,7 @@ keysForGet.add("KEY_7");
 
 Execution execution = FunctionService.onRegion(exampleRegion)
     .withFilter(keysForGet)
-    .withArgs(Boolean.TRUE)
+    .setArguments(Boolean.TRUE)
     .withCollector(new MyArrayListResultCollector());
 
 ResultCollector rc = execution.execute(function);
@@ -245,7 +245,7 @@ To customize results collecting:
     ``` pre
     Execution execution = FunctionService.onRegion(exampleRegion)
         .withFilter(keysForGet)
-        .withArgs(Boolean.TRUE)
+        .setArguments(Boolean.TRUE)
         .withCollector(new MyArrayListResultCollector());
     ```
 

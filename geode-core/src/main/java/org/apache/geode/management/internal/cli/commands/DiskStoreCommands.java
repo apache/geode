@@ -911,7 +911,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
                                                                         // MemberNotFoundException
 
     final ResultCollector<?, ?> resultCollector =
-        getMembersFunctionExecutor(Collections.singleton(member)).withArgs(diskStoreName)
+        getMembersFunctionExecutor(Collections.singleton(member)).setArguments(diskStoreName)
             .execute(new DescribeDiskStoreFunction());
 
     final Object result = ((List<?>) resultCollector.getResult()).get(0);

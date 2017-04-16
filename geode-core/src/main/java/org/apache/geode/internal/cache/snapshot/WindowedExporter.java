@@ -77,8 +77,8 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
       // to keep the reference to the ResultsCollector returned from execute().
       // Normally discarding the reference can cause issues if GC causes the
       // weak ref in ProcessorKeeper21 to be collected!!
-      InternalExecution exec = (InternalExecution) FunctionService.onRegion(region).withArgs(args)
-          .withCollector(results);
+      InternalExecution exec = (InternalExecution) FunctionService.onRegion(region)
+          .setArguments(args).withCollector(results);
 
       // Ensure that our collector gets all exceptions so we can shut down the
       // queue properly.

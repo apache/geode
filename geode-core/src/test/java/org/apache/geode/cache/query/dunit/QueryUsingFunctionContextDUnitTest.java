@@ -198,7 +198,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
             rcollector =
                 FunctionService.onRegion(CacheFactory.getAnyInstance().getRegion(repRegionName))
-                    .withArgs(queriesForRR[i]).execute(function);
+                    .setArguments(queriesForRR[i]).execute(function);
 
             // Should not come here, an exception is expected from above function call.
             fail("Function call did not fail for query with function context");
@@ -438,7 +438,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
             rcollector = FunctionService
                 .onRegion(CacheFactory.getAnyInstance().getRegion(PartitionedRegionName1))
-                .withArgs(queries[i]).withFilter(filter).execute(function);
+                .setArguments(queries[i]).withFilter(filter).execute(function);
 
             // Should not come here, an exception is expected from above function call.
             fail("Function call did not fail for query with function context");
@@ -509,7 +509,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
             rcollector = FunctionService
                 .onRegion(CacheFactory.getAnyInstance().getRegion(PartitionedRegionName1))
-                .withArgs(queries[i]).withFilter(filter).execute(function);
+                .setArguments(queries[i]).withFilter(filter).execute(function);
 
             // Should not come here, an exception is expected from above function call.
             fail("Function call did not fail for query with function context");
@@ -930,10 +930,10 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
     // Filter can not be set as null if withFilter() is called.
     if (filter != null) {
       rcollector = FunctionService.onRegion(CacheFactory.getAnyInstance().getRegion(regionName))
-          .withArgs(query).withFilter(filter).execute(func);
+          .setArguments(query).withFilter(filter).execute(func);
     } else {
       rcollector = FunctionService.onRegion(CacheFactory.getAnyInstance().getRegion(regionName))
-          .withArgs(query).execute(func);
+          .setArguments(query).execute(func);
     }
     Object result = rcollector.getResult();
     assertTrue(result instanceof ArrayList);
@@ -968,7 +968,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
 
     // Filter can not be set as null if withFilter() is called.
     rcollector = FunctionService.onServer(ClientCacheFactory.getAnyInstance())
-        .withArgs(new Object[] {query, filter}).execute(func);
+        .setArguments(new Object[] {query, filter}).execute(func);
     Object result = rcollector.getResult();
     assertTrue(result instanceof ArrayList);
 

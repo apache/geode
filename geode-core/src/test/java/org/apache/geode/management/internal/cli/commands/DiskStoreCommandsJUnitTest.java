@@ -118,7 +118,7 @@ public class DiskStoreCommandsJUnitTest {
         will(returnValue(null));
         oneOf(mockMember).getId();
         will(returnValue(memberId));
-        oneOf(mockFunctionExecutor).withArgs(with(equal(diskStoreName)));
+        oneOf(mockFunctionExecutor).setArguments(with(equal(diskStoreName)));
         will(returnValue(mockFunctionExecutor));
         oneOf(mockFunctionExecutor).execute(with(aNonNull(DescribeDiskStoreFunction.class)));
         will(returnValue(mockResultCollector));
@@ -185,7 +185,7 @@ public class DiskStoreCommandsJUnitTest {
         will(returnValue(null));
         oneOf(mockMember).getId();
         will(returnValue(memberId));
-        oneOf(mockFunctionExecutor).withArgs(with(equal(diskStoreName)));
+        oneOf(mockFunctionExecutor).setArguments(with(equal(diskStoreName)));
         will(returnValue(mockFunctionExecutor));
         oneOf(mockFunctionExecutor).execute(with(aNonNull(DescribeDiskStoreFunction.class)));
         will(throwException(new DiskStoreNotFoundException("expected")));
@@ -221,7 +221,7 @@ public class DiskStoreCommandsJUnitTest {
         will(returnValue(null));
         oneOf(mockMember).getId();
         will(returnValue(memberId));
-        oneOf(mockFunctionExecutor).withArgs(with(equal(diskStoreName)));
+        oneOf(mockFunctionExecutor).setArguments(with(equal(diskStoreName)));
         will(returnValue(mockFunctionExecutor));
         oneOf(mockFunctionExecutor).execute(with(aNonNull(DescribeDiskStoreFunction.class)));
         will(throwException(new RuntimeException("expected")));
@@ -260,7 +260,7 @@ public class DiskStoreCommandsJUnitTest {
         will(returnValue(null));
         oneOf(mockMember).getId();
         will(returnValue(memberId));
-        oneOf(mockFunctionExecutor).withArgs(with(equal(diskStoreName)));
+        oneOf(mockFunctionExecutor).setArguments(with(equal(diskStoreName)));
         will(returnValue(mockFunctionExecutor));
         oneOf(mockFunctionExecutor).execute(with(aNonNull(DescribeDiskStoreFunction.class)));
         will(returnValue(mockResultCollector));

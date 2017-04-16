@@ -67,7 +67,7 @@ public class NestedTransactionFunction implements Function {
       action = (Integer) args.get(1);
     } catch (ClassCastException e) {
       logger.info(
-          "CommitFunction should be invoked with a TransactionId as an argument i.e. withArgs(txId).execute(function)");
+          "CommitFunction should be invoked with a TransactionId as an argument i.e. setArguments(txId).execute(function)");
       throw e;
     }
     CacheTransactionManager txMgr = cache.getCacheTransactionManager();

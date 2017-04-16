@@ -1126,7 +1126,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
               Execution e = FunctionService.onRegion(pr);
               try {
                 getCache().getLoggerI18n().fine(addExpectedFunctionExString);
-                e.withFilter(s).withArgs((Serializable) s).execute(function);
+                e.withFilter(s).setArguments((Serializable) s).execute(function);
                 getCache().getLoggerI18n().fine(removeExpectedFunctionExString);
                 fail("expected LowMemoryExcception was not thrown");
               } catch (LowMemoryException ex) {
@@ -1140,7 +1140,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
               s.add(sickKey2);
               Execution e = FunctionService.onRegion(pr);
               try {
-                e.withFilter(s).withArgs((Serializable) s).execute(function);
+                e.withFilter(s).setArguments((Serializable) s).execute(function);
                 fail("expected LowMemoryExcception was not thrown");
               } catch (LowMemoryException ex) {
                 // expected
@@ -1152,7 +1152,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
             Set s = new HashSet();
             s.add(healthyKey);
             Execution e = FunctionService.onRegion(pr);
-            e.withFilter(s).withArgs((Serializable) s).execute(function);
+            e.withFilter(s).setArguments((Serializable) s).execute(function);
           }
           if (sickKey1 != null && sickKey2 != null && healthyKey != null) {
             break;

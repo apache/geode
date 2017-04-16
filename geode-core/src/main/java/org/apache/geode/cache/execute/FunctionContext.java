@@ -35,7 +35,7 @@ package org.apache.geode.cache.execute;
 public interface FunctionContext<T1> {
   /**
    * Returns the arguments provided to this function execution. These are the arguments specified by
-   * the caller using {@link Execution#withArgs(Object)}
+   * the caller using {@link Execution#setArguments(Object)}
    * 
    * @return the arguments or null if there are no arguments
    * @since GemFire 6.0

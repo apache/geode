@@ -100,7 +100,7 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
 
       String regionName = "R1";
       Execution dataSet = FunctionService.onServers(pool1);
-      dataSet.withArgs(regionName).execute(function);
+      dataSet.setArguments(regionName).execute(function);
 
       // Using Awatility, if the condition is not met during the timeout, a
       // ConditionTimeoutException will be thrown. This makes analyzing the failure much simpler
@@ -119,7 +119,7 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
       await().atMost(60, SECONDS)
           .until(() -> Assert.assertEquals(1, pool.getCurrentServers().size()));
       dataSet = FunctionService.onServers(pool1);
-      dataSet.withArgs(regionName).execute(function);
+      dataSet.setArguments(regionName).execute(function);
 
       await().atMost(60, SECONDS)
           .until(() -> Assert.assertEquals(2, pool.getCurrentServers().size()));
@@ -140,7 +140,7 @@ public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase 
       // Step 9. Execute the same function to put DistributedMemberID into above created replicated
       // region.
       dataSet = FunctionService.onServers(pool1);
-      dataSet.withArgs(regionName).execute(function);
+      dataSet.setArguments(regionName).execute(function);
 
       await().atMost(60, SECONDS)
           .until(() -> Assert.assertEquals(1, pool.getCurrentServers().size()));

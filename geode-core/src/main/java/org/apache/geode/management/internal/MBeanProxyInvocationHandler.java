@@ -281,7 +281,7 @@ public class MBeanProxyInvocationHandler implements InvocationHandler {
     List<Object> result = null;
     try {
 
-      ResultCollector rc = FunctionService.onMember(member).withArgs(functionArgs)
+      ResultCollector rc = FunctionService.onMember(member).setArguments(functionArgs)
           .execute(ManagementConstants.MGMT_FUNCTION_ID);
       result = (List<Object>) rc.getResult();
       // Exceptions of ManagementFunctions

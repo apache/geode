@@ -37,7 +37,7 @@ import org.apache.geode.distributed.DistributedMember;
  *  Function multiGetFunction ;
  *  Object args ;
  *  ResultCollector rc = FunctionService.onRegion(region)
- *                                      .withArgs(args)
+ *                                      .setArguments(args)
  *                                      .withFilter(keySet)
  *                                      .withCollector(new MyCustomResultCollector())
  *                                      .execute(multiGetFunction.getId());

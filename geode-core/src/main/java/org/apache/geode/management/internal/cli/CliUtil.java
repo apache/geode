@@ -614,7 +614,7 @@ public class CliUtil {
     Execution execution = null;
 
     if (args != null) {
-      execution = FunctionService.onMembers(targetMembers).withArgs(args);
+      execution = FunctionService.onMembers(targetMembers).setArguments(args);
     } else {
       execution = FunctionService.onMembers(targetMembers);
     }
@@ -637,7 +637,7 @@ public class CliUtil {
     Execution execution = null;
 
     if (args != null) {
-      execution = FunctionService.onMember(targetMember).withArgs(args);
+      execution = FunctionService.onMember(targetMember).setArguments(args);
     } else {
       execution = FunctionService.onMember(targetMember);
     }
