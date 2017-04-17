@@ -1859,6 +1859,32 @@ public interface DistributionConfig extends Config, LogConfig {
    */
   @ConfigAttributeSetter(name = CONFLATE_EVENTS)
   void setClientConflation(String clientConflation);
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#CONNECT_TIMEOUT} property.
+   */
+  @ConfigAttributeGetter(name = CONNECT_TIMEOUT)
+  int getConnectTimeout();
+
+  /**
+   * Sets the value of the {@link ConfigurationProperties#CONNECT_TIMEOUT} property.
+   */
+  @ConfigAttributeSetter(name = CONNECT_TIMEOUT)
+  void setConnectTimeout(int connectTimeout);
+
+  /**
+   * The name of the {@link ConfigurationProperties#CONNECT_TIMEOUT} property
+   */
+  @ConfigAttribute(type = Integer.class)
+  String CONNECT_TIMEOUT_NAME = CONNECT_TIMEOUT;
+
+  /**
+   * The default {@link ConfigurationProperties#CONNECT_TIMEOUT} in seconds.
+   * <p>
+   * Actual value of this constant is <code>"59000"</code>.
+   */
+  int DEFAULT_CONNECT_TIMEOUT = 59000;
+
   // -------------------------------------------------------------------------
 
   /**
