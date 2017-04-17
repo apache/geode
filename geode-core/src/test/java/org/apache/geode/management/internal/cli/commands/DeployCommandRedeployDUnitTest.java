@@ -123,7 +123,7 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
 
   private File createJarWithFunctionB(String version) throws Exception {
     URL classTemplateUrl = DeployCommandRedeployDUnitTest.class
-        .getResource("DeployCommandRedeployDUnitTest_FunctionATemplate");
+        .getResource("DeployCommandRedeployDUnitTest_FunctionBTemplate");
     assertThat(classTemplateUrl).isNotNull();
 
     String classContents = FileUtils.readFileToString(new File(classTemplateUrl.toURI()), "UTF-8");
