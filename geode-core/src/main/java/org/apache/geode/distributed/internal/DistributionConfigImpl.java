@@ -263,6 +263,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   private int asyncMaxQueueSize = DEFAULT_ASYNC_MAX_QUEUE_SIZE;
 
   /**
+   * The socket timeout value when the client connects to the servers/locators.
+   */
+  private int connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+
+  /**
    * @since GemFire 5.7
    */
   private String clientConflation = CLIENT_CONFLATION_PROP_VALUE_DEFAULT;
@@ -654,6 +659,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.membershipPortRange = other.getMembershipPortRange();
     this.maxWaitTimeForReconnect = other.getMaxWaitTimeForReconnect();
     this.maxNumReconnectTries = other.getMaxNumReconnectTries();
+    this.connectTimeout = other.getConnectTimeout();
     this.clientConflation = other.getClientConflation();
     this.durableClientId = other.getDurableClientId();
     this.durableClientTimeout = other.getDurableClientTimeout();
@@ -2160,6 +2166,14 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     this.clientConflation = (String) value;
   }
 
+  public int getConnectTimeout() {
+    return connectTimeout;
+  }
+
+  public void setConnectTimeout(int value) {
+    connectTimeout = value;
+  }
+
   public String getDurableClientId() {
     return durableClientId;
   }
@@ -2887,6 +2901,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(clusterSSLAlias, that.clusterSSLAlias)
         .append(mcastFlowControl, that.mcastFlowControl)
         .append(membershipPortRange, that.membershipPortRange)
+        .append(connectTimeout, that.connectTimeout)
         .append(clientConflation, that.clientConflation)
         .append(durableClientId, that.durableClientId)
         .append(securityClientAuthInit, that.securityClientAuthInit)
@@ -2984,6 +2999,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(enableTimeStatistics).append(memberTimeout).append(membershipPortRange)
         .append(maxWaitTimeForReconnect).append(maxNumReconnectTries)
         .append(asyncDistributionTimeout).append(asyncQueueTimeout).append(asyncMaxQueueSize)
+        .append(connectTimeout)
         .append(clientConflation).append(durableClientId).append(durableClientTimeout)
         .append(securityClientAuthInit).append(securityClientAuthenticator).append(securityManager)
         .append(postProcessor).append(securityClientDHAlgo).append(securityPeerAuthInit)
