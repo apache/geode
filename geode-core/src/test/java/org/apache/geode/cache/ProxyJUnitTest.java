@@ -144,8 +144,8 @@ public class ProxyJUnitTest {
       assertEquals(getCallbackArgument(), other.getCallbackArgument());
       assertEquals(isOriginRemote(), other.isOriginRemote());
       assertEquals(getDistributedMember(), other.getDistributedMember());
-      assertEquals(isExpiration(), other.isExpiration());
-      assertEquals(isDistributed(), other.isDistributed());
+      assertEquals(isExpiration(), other.getOperation().isExpiration());
+      assertEquals(isDistributed(), other.getOperation().isDistributed());
     }
 
     public Region getRegion() {
@@ -189,10 +189,10 @@ public class ProxyJUnitTest {
       assertEquals(getKey(), other.getKey());
       assertEquals(getOldValue(), other.getOldValue());
       assertEquals(getNewValue(), other.getNewValue());
-      assertEquals(isLocalLoad(), other.isLocalLoad());
-      assertEquals(isNetLoad(), other.isNetLoad());
-      assertEquals(isLoad(), other.isLoad());
-      assertEquals(isNetSearch(), other.isNetSearch());
+      assertEquals(isLocalLoad(), other.getOperation().isLocalLoad());
+      assertEquals(isNetLoad(), other.getOperation().isNetLoad());
+      assertEquals(isLoad(), other.getOperation().isLoad());
+      assertEquals(isNetSearch(), other.getOperation().isNetSearch());
       assertEquals(getTransactionId(), other.getTransactionId());
     }
 

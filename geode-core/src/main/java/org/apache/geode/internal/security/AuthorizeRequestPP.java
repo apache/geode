@@ -63,7 +63,7 @@ public class AuthorizeRequestPP {
     } else {
       this.isPrincipalSerializable = false;
     }
-    this.logger = cache.getSecurityLoggerI18n();
+    this.logger = cache.getSecurityLogger().convertToLogWriterI18n();
     Method postAuthzMethod = ClassLoadUtil.methodFromName(postAuthzFactoryName);
     this.postAuthzCallback = (AccessControl) postAuthzMethod.invoke(null, (Object[]) null);
     this.postAuthzCallback.init(principal, id.getDistributedMember(), cache);

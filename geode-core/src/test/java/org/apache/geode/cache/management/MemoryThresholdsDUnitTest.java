@@ -184,10 +184,10 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         InternalResourceManager irm = (InternalResourceManager) getCache().getResourceManager();
         irm.setCriticalHeapPercentage(90f);
 
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedExString);
         HeapMemoryMonitor.setTestBytesUsedForThresholdSet(950);
         irm.getHeapMonitor().updateStateAndSendEvent();
-        getCache().getLoggerI18n().fine(removeExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedExString);
         return null;
       }
     });
@@ -441,9 +441,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     server2.invoke(new SerializableCallable("NORMAL->CRITICAL") {
       public Object call() throws Exception {
         GemFireCacheImpl gfCache = (GemFireCacheImpl) getCache();
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedExString);
         gfCache.getResourceManager().getHeapMonitor().updateStateAndSendEvent(950);
-        getCache().getLoggerI18n().fine(removeExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedExString);
         return null;
       }
     });
@@ -460,9 +460,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     server2.invoke(new SerializableCallable("CRITICAL->EVICTION") {
       public Object call() throws Exception {
         GemFireCacheImpl gfCache = (GemFireCacheImpl) getCache();
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
         gfCache.getResourceManager().getHeapMonitor().updateStateAndSendEvent(850);
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
         return null;
       }
     });
@@ -928,9 +928,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     server1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         try {
-          getCache().getLoggerI18n().fine(addExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(addExpectedFunctionExString);
           FunctionService.onRegion(getRootRegion().getSubregion(regionName)).execute(function);
-          getCache().getLoggerI18n().fine(removeExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedFunctionExString);
           fail("expected low memory exception was not thrown");
         } catch (LowMemoryException e) {
           // expected
@@ -943,9 +943,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     server1.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         try {
-          getCache().getLoggerI18n().fine(addExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(addExpectedFunctionExString);
           FunctionService.onMembers(getSystem()).execute(function);
-          getCache().getLoggerI18n().fine(removeExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedFunctionExString);
           fail("expected low memory exception was not thrown");
         } catch (LowMemoryException e) {
           // expected
@@ -957,9 +957,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     client.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         try {
-          getCache().getLoggerI18n().fine(addExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(addExpectedFunctionExString);
           FunctionService.onRegion(getRootRegion().getSubregion(regionName)).execute(function);
-          getCache().getLoggerI18n().fine(removeExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedFunctionExString);
           fail("expected low memory exception was not thrown");
         } catch (FunctionException e) {
           if (!(e.getCause().getCause() instanceof LowMemoryException)) {
@@ -1051,9 +1051,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         try {
-          getCache().getLoggerI18n().fine(addExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(addExpectedFunctionExString);
           FunctionService.onRegion(getRootRegion().getSubregion(regionName)).execute(function);
-          getCache().getLoggerI18n().fine(removeExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedFunctionExString);
           fail("expected low memory exception was not thrown");
         } catch (LowMemoryException e) {
           // expected
@@ -1066,9 +1066,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         try {
-          getCache().getLoggerI18n().fine(addExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(addExpectedFunctionExString);
           FunctionService.onMembers(getSystem()).execute(function);
-          getCache().getLoggerI18n().fine(removeExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedFunctionExString);
           fail("expected low memory exception was not thrown");
         } catch (LowMemoryException e) {
           // expected
@@ -1125,9 +1125,10 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
               s.add(sickKey1);
               Execution e = FunctionService.onRegion(pr);
               try {
-                getCache().getLoggerI18n().fine(addExpectedFunctionExString);
+                getCache().getLogger().convertToLogWriterI18n().fine(addExpectedFunctionExString);
                 e.withFilter(s).withArgs((Serializable) s).execute(function);
-                getCache().getLoggerI18n().fine(removeExpectedFunctionExString);
+                getCache().getLogger().convertToLogWriterI18n()
+                    .fine(removeExpectedFunctionExString);
                 fail("expected LowMemoryExcception was not thrown");
               } catch (LowMemoryException ex) {
                 // expected
@@ -1410,11 +1411,11 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   private void setUsageAboveCriticalThreshold(VM vm) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedExString);
         ((GemFireCacheImpl) getCache()).getResourceManager().getHeapMonitor()
             .updateStateAndSendEvent(950);
         HeapMemoryMonitor.setTestBytesUsedForThresholdSet(950);
-        getCache().getLoggerI18n().fine(removeExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedExString);
         return null;
       }
     });
@@ -1423,11 +1424,11 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   private void setUsageAboveEvictionThreshold(VM vm) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
         HeapMemoryMonitor.setTestBytesUsedForThresholdSet(850);
         ((GemFireCacheImpl) getCache()).getResourceManager().getHeapMonitor()
             .updateStateAndSendEvent(850);
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
         return null;
       }
     });
@@ -1436,10 +1437,10 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   private void setUsageBelowEviction(VM vm) {
     vm.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
         ((GemFireCacheImpl) getCache()).getResourceManager().getHeapMonitor()
             .updateStateAndSendEvent(750);
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
         return null;
       }
     });
@@ -1827,14 +1828,14 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         r.getAll(createRanges(10, 12));
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
 
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedExString);
         fakeHeapUsage = Math.round(fakeHeapMaxSize * (criticalHeapThresh + 0.1f)); // usage above
                                                                                    // critical by
                                                                                    // 10%
         assertTrue(fakeHeapUsage > 0);
         assertTrue(fakeHeapUsage <= fakeHeapMaxSize);
         hmm.updateStateAndSendEvent(fakeHeapUsage);
-        getCache().getLoggerI18n().fine(removeExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedExString);
 
         assertTrue(hmm.getState().isCritical());
         {
@@ -1850,9 +1851,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         fakeHeapUsage = Math.round(fakeHeapMaxSize * (criticalHeapThresh - 0.3f)); // below critical
                                                                                    // by 30%
         assertTrue(fakeHeapMaxSize > 0);
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
         hmm.updateStateAndSendEvent(fakeHeapUsage);
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
         assertFalse(hmm.getState().isCritical());
         {
           Integer k = new Integer(3);
@@ -2009,9 +2010,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                           // critical
                                                                                           // by 30%
             assertTrue(fakeHeapMaxSize > 0);
-            getCache().getLoggerI18n().fine(addExpectedBelow);
+            getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
             hmm.updateStateAndSendEvent(newfakeHeapUsage);
-            getCache().getLoggerI18n().fine(removeExpectedBelow);
+            getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
             assertFalse(hmm.getState().isCritical());
             {
               Integer k = new Integer(3);
@@ -2075,9 +2076,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                       // critical by
                                                                                       // 30%
         assertTrue(fakeHeapMaxSize > 0);
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
         hmm.updateStateAndSendEvent(newfakeHeapUsage);
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
         assertFalse(hmm.getState().isCritical());
         {
           Integer k = new Integer(6);
@@ -2243,9 +2244,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                               // by
                                                                                               // 30%
             assertTrue(fakeHeapMaxSize > 0);
-            getCache().getLoggerI18n().fine(addExpectedBelow);
+            getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
             hmm.updateStateAndSendEvent(newfakeHeapUsage);
-            getCache().getLoggerI18n().fine(removeExpectedBelow);
+            getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
             assertFalse(hmm.getState().isCritical());
             Integer k = new Integer(3); // same key as previously used, this time is should stick
             Integer expectedInvocations8 = new Integer(expectedInvocations.incrementAndGet());
@@ -2271,7 +2272,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         assertEquals(k.toString(), r.get(k, expectedInvocations9)); // no load
 
         // Go critical in accessor
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedExString);
         long newfakeHeapUsage = Math.round(fakeHeapMaxSize * (criticalHeapThresh + 0.1f)); // usage
                                                                                            // above
                                                                                            // critical
@@ -2279,7 +2280,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         assertTrue(newfakeHeapUsage > 0);
         assertTrue(newfakeHeapUsage <= fakeHeapMaxSize);
         hmm.updateStateAndSendEvent(newfakeHeapUsage);
-        getCache().getLoggerI18n().fine(removeExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedExString);
         assertTrue(hmm.getState().isCritical());
         k = new Integer(5);
         Integer expectedInvocations10 = new Integer(expectedInvocations.incrementAndGet());
@@ -2292,9 +2293,9 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
                                                                                       // critical by
                                                                                       // 30%
         assertTrue(fakeHeapMaxSize > 0);
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
         hmm.updateStateAndSendEvent(newfakeHeapUsage);
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
         assertFalse(hmm.getState().isCritical());
         return expectedInvocations10;
       }
@@ -2353,28 +2354,28 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
   private SerializableRunnable addExpectedException = new SerializableRunnable("addExpectedEx") {
     public void run() {
-      getCache().getLoggerI18n().fine(addExpectedExString);
+      getCache().getLogger().convertToLogWriterI18n().fine(addExpectedExString);
     };
   };
 
   private SerializableRunnable removeExpectedException =
       new SerializableRunnable("removeExpectedException") {
         public void run() {
-          getCache().getLoggerI18n().fine(removeExpectedExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedExString);
         };
       };
 
   private SerializableRunnable addExpectedFunctionException =
       new SerializableRunnable("addExpectedFunctionException") {
         public void run() {
-          getCache().getLoggerI18n().fine(addExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(addExpectedFunctionExString);
         };
       };
 
   private SerializableRunnable removeExpectedFunctionException =
       new SerializableRunnable("removeExpectedFunctionException") {
         public void run() {
-          getCache().getLoggerI18n().fine(removeExpectedFunctionExString);
+          getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedFunctionExString);
         };
       };
 
@@ -2396,13 +2397,13 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
           hmm.updateStateAndSendEvent(96);
           assertFalse(hmm.getState().isCritical());
         }
-        getCache().getLoggerI18n().fine(addExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedExString);
         hmm.updateStateAndSendEvent(96);
         assertTrue(hmm.getState().isCritical());
-        getCache().getLoggerI18n().fine(removeExpectedExString);
-        getCache().getLoggerI18n().fine(addExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedExString);
+        getCache().getLogger().convertToLogWriterI18n().fine(addExpectedBelow);
         hmm.updateStateAndSendEvent(92);
-        getCache().getLoggerI18n().fine(removeExpectedBelow);
+        getCache().getLogger().convertToLogWriterI18n().fine(removeExpectedBelow);
         assertFalse(hmm.getState().isCritical());
         HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
         return null;

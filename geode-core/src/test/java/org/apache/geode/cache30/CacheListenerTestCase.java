@@ -67,10 +67,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
         assertEquals(key, event.getKey());
         assertEquals(value, event.getNewValue());
         assertNull(event.getOldValue());
-        assertFalse(event.isLoad());
-        assertFalse(event.isLocalLoad());
-        assertFalse(event.isNetLoad());
-        assertFalse(event.isNetSearch());
+        assertEventLoadProperties(event);
       }
 
       public void afterDestroy2(EntryEvent event) {
@@ -128,10 +125,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
         assertEquals(key, event.getKey());
         assertEquals(newValue, event.getNewValue());
         assertEquals(oldValue, event.getOldValue());
-        assertFalse(event.isLoad());
-        assertFalse(event.isLocalLoad());
-        assertFalse(event.isNetLoad());
-        assertFalse(event.isNetSearch());
+        assertEventLoadProperties(event);
       }
     };
 
@@ -189,10 +183,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
         assertEquals(key, event.getKey());
         assertEquals(value, event.getOldValue());
         assertNull(event.getNewValue());
-        assertFalse(event.isLoad());
-        assertFalse(event.isLocalLoad());
-        assertFalse(event.isNetLoad());
-        assertFalse(event.isNetSearch());
+        assertEventLoadProperties(event);
       }
     };
 
@@ -231,10 +222,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
         assertEquals(key, event.getKey());
         assertEquals(value, event.getOldValue());
         assertNull(event.getNewValue());
-        assertFalse(event.isLoad());
-        assertFalse(event.isLocalLoad());
-        assertFalse(event.isNetLoad());
-        assertFalse(event.isNetSearch());
+        assertEventLoadProperties(event);
       }
     };
 
@@ -284,10 +272,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
             assertNull(event.getOldValue());
           }
           assertNull(event.getNewValue());
-          assertFalse(event.isLoad());
-          assertFalse(event.isLocalLoad());
-          assertFalse(event.isNetLoad());
-          assertFalse(event.isNetSearch());
+          assertEventLoadProperties(event);
         }
       };
 
@@ -348,7 +333,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
         assertEquals(name, event.getRegion().getName());
         // this should be a distributed destroy unless the region
         // is local scope
-        assertFalse(event.isExpiration());
+        assertFalse(event.getOperation().isExpiration());
         assertFalse(event.isOriginRemote());
 
         this.destroyed = true;
@@ -403,7 +388,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
 
       public void afterRegionInvalidate2(RegionEvent event) {
         assertEquals(name, event.getRegion().getName());
-        assertFalse(event.isExpiration());
+        assertFalse(event.getOperation().isExpiration());
         assertFalse(event.isOriginRemote());
 
         this.invalidated = true;
@@ -420,6 +405,13 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
     Wait.pause(500);
     assertTrue(listener.wasInvoked());
     assertEquals(0, region.values().size());
+  }
+
+  private void assertEventLoadProperties(EntryEvent event) {
+    assertFalse(event.getOperation().isLoad());
+    assertFalse(event.getOperation().isLocalLoad());
+    assertFalse(event.getOperation().isNetLoad());
+    assertFalse(event.getOperation().isNetSearch());
   }
 
 }

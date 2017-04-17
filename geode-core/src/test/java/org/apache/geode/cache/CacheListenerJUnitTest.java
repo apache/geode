@@ -204,8 +204,8 @@ public class CacheListenerJUnitTest {
     assertEquals(Operation.REGION_CREATE, e.getOperation());
     assertEquals(false, ((RegionEvent) e).isReinitializing());
     assertEquals(false, e.isOriginRemote());
-    assertEquals(false, e.isExpiration());
-    assertEquals(false, e.isDistributed());
+    assertEquals(false, e.getOperation().isExpiration());
+    assertEquals(false, e.getOperation().isDistributed());
   }
 
   @Test

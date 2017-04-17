@@ -190,11 +190,11 @@ public class DefaultQueryService implements QueryService {
         parIndex = (PartitionedIndex) ((PartitionedRegion) region).createIndex(false, indexType,
             indexName, indexedExpression, fromClause, imports, loadEntries);
       } catch (ForceReattemptException ex) {
-        region.getCache().getLoggerI18n().info(
+        region.getCache().getLogger().convertToLogWriterI18n().info(
             LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR,
             ex);
       } catch (IndexCreationException exx) {
-        region.getCache().getLoggerI18n().info(
+        region.getCache().getLogger().convertToLogWriterI18n().info(
             LocalizedStrings.DefaultQueryService_EXCEPTION_WHILE_CREATING_INDEX_ON_PR_DEFAULT_QUERY_PROCESSOR,
             exx);
       }
