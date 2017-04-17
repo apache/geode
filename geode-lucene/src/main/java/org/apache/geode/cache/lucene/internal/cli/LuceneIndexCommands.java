@@ -250,7 +250,6 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   @SuppressWarnings("unchecked")
   protected List<LuceneIndexDetails> getIndexDetails(LuceneIndexInfo indexInfo) throws Exception {
-    this.securityService.authorizeRegionManage(indexInfo.getRegionPath());
     final ResultCollector<?, ?> rc =
         executeFunctionOnRegion(describeIndexFunction, indexInfo, true);
     final List<LuceneIndexDetails> funcResults = (List<LuceneIndexDetails>) rc.getResult();
@@ -262,7 +261,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__HELP)
   @CliMetaData(shellOnly = false,
       relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
-  @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
+  @ResourceOperation(resource = Resource.DATA, operation = Operation.WRITE)
   public Result searchIndex(@CliOption(key = LuceneCliStrings.LUCENE__INDEX_NAME, mandatory = true,
       help = LuceneCliStrings.LUCENE_SEARCH_INDEX__NAME__HELP) final String indexName,
 
@@ -531,8 +530,6 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   private List<LuceneSearchResults> getSearchResults(final LuceneQueryInfo queryInfo)
       throws Exception {
-    securityService.authorizeRegionManage(queryInfo.getRegionPath());
-
     final String[] groups = {};
     final ResultCollector<?, ?> rc = this.executeSearch(queryInfo);
     final List<Set<LuceneSearchResults>> functionResults =
@@ -588,7 +585,7 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
 
   @CliAvailabilityIndicator({LuceneCliStrings.LUCENE_SEARCH_INDEX,
       LuceneCliStrings.LUCENE_CREATE_INDEX, LuceneCliStrings.LUCENE_DESCRIBE_INDEX,
-      LuceneCliStrings.LUCENE_LIST_INDEX})
+      LuceneCliStrings.LUCENE_LIST_INDEX, LuceneCliStrings.LUCENE_DESTROY_INDEX})
   public boolean indexCommandsAvailable() {
     return (!CliUtil.isGfshVM() || (getGfsh() != null && getGfsh().isConnectedAndReady()));
   }
