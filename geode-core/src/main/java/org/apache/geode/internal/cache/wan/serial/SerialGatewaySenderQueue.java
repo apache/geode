@@ -1089,7 +1089,7 @@ public class SerialGatewaySenderQueue implements RegionQueue {
 
     @Override
     public void run() {
-      InternalDistributedSystem ids = cache.getDistributedSystem();
+      InternalDistributedSystem ids = cache.getInternalDistributedSystem();
 
       try { // ensure exit message is printed
         // Long waitTime = Long.getLong(QUEUE_REMOVAL_WAIT_TIME, 1000);

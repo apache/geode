@@ -14,7 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import org.apache.geode.cache.Cache;
+import java.io.IOException;
+import java.net.ConnectException;
+import java.util.Iterator;
+import java.util.StringTokenizer;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.locator.wan.RemoteLocatorRequest;
@@ -23,31 +29,21 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.net.ConnectException;
-import java.util.Iterator;
-import java.util.StringTokenizer;
 
 public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender {
   private static final Logger logger = LogService.getLogger();
 
-  public AbstractRemoteGatewaySender() {
-
-  }
-
-  public AbstractRemoteGatewaySender(Cache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
-  }
-
   /** used to reduce warning logs in case remote locator is down (#47634) */
   protected int proxyFailureTries = 0;
+
+  public AbstractRemoteGatewaySender(InternalCache cache, GatewaySenderAttributes attrs) {
+    super(cache, attrs);
+  }
 
   public synchronized void initProxy() {
     // return if it is being used for WBCL or proxy is already created
@@ -68,8 +64,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
     pf.setServerGroup(GatewayReceiver.RECEIVER_GROUP);
     RemoteLocatorRequest request =
         new RemoteLocatorRequest(this.remoteDSId, pf.getPoolAttributes().getServerGroup());
-    String locators =
-        ((GemFireCacheImpl) this.cache).getDistributedSystem().getConfig().getLocators();
+    String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
     if (logger.isDebugEnabled()) {
       logger
           .debug("Gateway Sender is attempting to configure pool with remote locator information");
@@ -96,7 +91,6 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
             logger.debug("Received the remote site {} location information:", this.remoteDSId,
                 response.getLocators());
           }
-          StringBuffer strBuffer = new StringBuffer();
           Iterator<String> itr = response.getLocators().iterator();
           while (itr.hasNext()) {
             String remoteLocator = itr.next();

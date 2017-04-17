@@ -15,16 +15,16 @@
 package org.apache.geode.cache.lucene.internal;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.*;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
-import org.apache.geode.internal.cache.BucketNotFoundException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import java.util.function.Consumer;
+
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
-import java.util.function.Consumer;
+import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
+import org.apache.geode.internal.cache.BucketNotFoundException;
+import org.apache.geode.internal.cache.InternalCache;
 
 public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
 
@@ -38,12 +38,11 @@ public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
     LuceneServiceImpl.luceneIndexFactory = new LuceneIndexImplFactory();
   }
 
-
   private Consumer<Object> getRepositoryConsumer = key -> {
   };
 
   @Override
-  public LuceneIndexImpl create(String indexName, String regionPath, GemFireCacheImpl cache) {
+  public LuceneIndexImpl create(String indexName, String regionPath, InternalCache cache) {
     LuceneIndexForPartitionedRegion index =
         Mockito.spy(new ExtendedLuceneIndexForPartitionedRegion(indexName, regionPath, cache));
     return index;
@@ -54,10 +53,9 @@ public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
     this.getRepositoryConsumer = getRepositoryConsumer;
   }
 
-
   private class ExtendedLuceneIndexForPartitionedRegion extends LuceneIndexForPartitionedRegion {
     public ExtendedLuceneIndexForPartitionedRegion(final String indexName, final String regionPath,
-        final Cache cache) {
+        final InternalCache cache) {
       super(indexName, regionPath, cache);
     }
 
@@ -77,4 +75,3 @@ public class LuceneIndexFactorySpy extends LuceneIndexImplFactory {
     }
   }
 }
-

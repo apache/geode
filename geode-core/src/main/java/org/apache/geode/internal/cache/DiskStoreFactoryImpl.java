@@ -14,9 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.geode.GemFireIOException;
@@ -24,7 +22,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.distributed.internal.ResourceEvent;
-import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.persistence.BackupManager;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
@@ -145,7 +142,8 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
           DiskStoreImpl dsi = new DiskStoreImpl(gfc, this.attrs);
           result = dsi;
           /** Added for M&M **/
-          gfc.getDistributedSystem().handleResourceEvent(ResourceEvent.DISKSTORE_CREATE, dsi);
+          gfc.getInternalDistributedSystem().handleResourceEvent(ResourceEvent.DISKSTORE_CREATE,
+              dsi);
           dsi.doInitialRecovery();
           gfc.addDiskStore(dsi);
           if (registry != null) {

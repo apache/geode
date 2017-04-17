@@ -108,7 +108,7 @@ public class LonerTypeRegistration implements TypeRegistration {
    * @return true if this member is a loner and we can't determine what type of registry they want.
    */
   public static boolean isIndeterminateLoner(GemFireCacheImpl cache) {
-    boolean isLoner = cache.getDistributedSystem().isLoner();
+    boolean isLoner = cache.getInternalDistributedSystem().isLoner();
     boolean pdxConfigured = cache.getPdxPersistent();
     return isLoner && !pdxConfigured/* && !hasGateways */;
   }

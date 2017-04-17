@@ -1320,7 +1320,8 @@ public class CacheClientProxy implements ClientSession {
       if (r instanceof PartitionedRegion) {
         // need to flush all buckets. SFO should be changed to target buckets
         // belonging to a particular PR, but it doesn't have that option right now
-        sfo = new StateFlushOperation(this._cache.getDistributedSystem().getDistributionManager());
+        sfo = new StateFlushOperation(
+            this._cache.getInternalDistributedSystem().getDistributionManager());
       } else {
         sfo = new StateFlushOperation((DistributedRegion) r);
       }

@@ -467,7 +467,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       // Use cache.cacheTimeMillis here. See bug 52267.
-      InternalDistributedSystem ids = cache.getDistributedSystem();
+      InternalDistributedSystem ids = cache.getInternalDistributedSystem();
       if (ids != null) {
         return ids.getClock().cacheTimeMillis();
       }

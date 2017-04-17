@@ -220,7 +220,7 @@ public class LocalManager extends Manager {
         managementTask.run();
         // All local resources are created for the ManagementTask
         // Now Management tasks can proceed.
-        int updateRate = cache.getDistributedSystem().getConfig().getJmxManagerUpdateRate();
+        int updateRate = cache.getInternalDistributedSystem().getConfig().getJmxManagerUpdateRate();
         singleThreadFederationScheduler.scheduleAtFixedRate(managementTask, updateRate, updateRate,
             TimeUnit.MILLISECONDS);
 

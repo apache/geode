@@ -2504,7 +2504,8 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     }
     // Fix for #48066 - make sure that region operations are completely
     // distributed to peers before destroying the region.
-    long timeout = 1000L * getCache().getDistributedSystem().getConfig().getAckWaitThreshold();
+    long timeout =
+        1000L * getCache().getInternalDistributedSystem().getConfig().getAckWaitThreshold();
     Boolean flushOnClose =
         !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "no-flush-on-close"); // test hook
     if (!this.cache.forcedDisconnect() && flushOnClose

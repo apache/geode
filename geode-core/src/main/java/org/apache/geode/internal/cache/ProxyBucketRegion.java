@@ -194,7 +194,7 @@ public final class ProxyBucketRegion implements Bucket {
   }
 
   public InternalDistributedSystem getSystem() {
-    return this.partitionedRegion.getCache().getDistributedSystem();
+    return this.partitionedRegion.getCache().getInternalDistributedSystem();
   }
 
   public String getName() {

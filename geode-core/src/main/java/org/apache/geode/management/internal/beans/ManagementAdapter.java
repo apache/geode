@@ -185,9 +185,9 @@ public class ManagementAdapter {
       }
 
 
-      if (cache.getDistributedSystem().getConfig().getJmxManager()) {
+      if (cache.getInternalDistributedSystem().getConfig().getJmxManager()) {
         this.service.createManager();
-        if (cache.getDistributedSystem().getConfig().getJmxManagerStart()) {
+        if (cache.getInternalDistributedSystem().getConfig().getJmxManagerStart()) {
           this.service.startManager();
         }
       }
@@ -1036,7 +1036,8 @@ public class ManagementAdapter {
       return;
     }
     // Don't register the CacheServices in the Locator
-    InternalDistributedMember member = cacheImpl.getDistributedSystem().getDistributedMember();
+    InternalDistributedMember member =
+        cacheImpl.getInternalDistributedSystem().getDistributedMember();
     if (member.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
       return;
     }

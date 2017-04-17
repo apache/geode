@@ -123,9 +123,9 @@ public class ManagementAgent {
   }
 
   private boolean isServerNode(GemFireCacheImpl cache) {
-    return (cache.getDistributedSystem().getDistributedMember()
+    return (cache.getInternalDistributedSystem().getDistributedMember()
         .getVmKind() != DistributionManager.LOCATOR_DM_TYPE
-        && cache.getDistributedSystem().getDistributedMember()
+        && cache.getInternalDistributedSystem().getDistributedMember()
             .getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE
         && !cache.isClient());
   }

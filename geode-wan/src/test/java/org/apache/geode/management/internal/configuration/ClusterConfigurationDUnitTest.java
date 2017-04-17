@@ -493,7 +493,7 @@ public class ClusterConfigurationDUnitTest extends CliCommandTestBase {
     VM locatorAndMgr = getHost(0).getVM(3);
     locatorAndMgr.invoke(() -> {
       GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
-      ShutdownAllRequest.send(cache.getDistributedSystem().getDistributionManager(), -1);
+      ShutdownAllRequest.send(cache.getInternalDistributedSystem().getDistributionManager(), -1);
       return null;
     });
 

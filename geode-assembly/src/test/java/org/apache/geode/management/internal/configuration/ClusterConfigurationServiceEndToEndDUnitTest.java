@@ -416,7 +416,7 @@ public class ClusterConfigurationServiceEndToEndDUnitTest extends CliCommandTest
       @Override
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) CacheFactory.getAnyInstance();
-        ShutdownAllRequest.send(cache.getDistributedSystem().getDistributionManager(), -1);
+        ShutdownAllRequest.send(cache.getInternalDistributedSystem().getDistributionManager(), -1);
         return null;
       }
     });

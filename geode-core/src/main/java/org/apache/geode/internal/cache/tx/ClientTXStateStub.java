@@ -166,7 +166,7 @@ public class ClientTXStateStub extends TXStateStub {
       return;
     }
     cache.getCancelCriterion().checkCancelInProgress(null);
-    InternalDistributedSystem ds = cache.getDistributedSystem();
+    InternalDistributedSystem ds = cache.getInternalDistributedSystem();
     DM dm = ds.getDistributionManager();
 
     txcm.setDM(dm);

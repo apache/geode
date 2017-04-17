@@ -14,12 +14,13 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 
 public class LuceneIndexImplFactory {
+
   public LuceneIndexImplFactory() {}
 
-  public LuceneIndexImpl create(String indexName, String regionPath, GemFireCacheImpl cache) {
+  public LuceneIndexImpl create(String indexName, String regionPath, InternalCache cache) {
     return new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);
   }
 }

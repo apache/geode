@@ -299,8 +299,8 @@ public class MemberMBeanBridge {
 
     if (dm instanceof DistributionManager) {
       DistributionManager distManager = (DistributionManager) system.getDistributionManager();
-      this.redundancyZone =
-          distManager.getRedundancyZone(cache.getDistributedSystem().getDistributedMember());
+      this.redundancyZone = distManager
+          .getRedundancyZone(cache.getInternalDistributedSystem().getDistributedMember());
     }
 
 
@@ -1038,7 +1038,7 @@ public class MemberMBeanBridge {
 
       try {
         BackupManager manager =
-            cache.startBackup(cache.getDistributedSystem().getDistributedMember());
+            cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
         boolean abort = true;
         Set<PersistentID> existingDataStores;
         Set<PersistentID> successfulDataStores;

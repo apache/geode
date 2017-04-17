@@ -17,11 +17,11 @@ package org.apache.geode.internal.cache.wan;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
 
 public class WANServiceProvider {
@@ -38,7 +38,7 @@ public class WANServiceProvider {
     }
   }
 
-  public static GatewaySenderFactory createGatewaySenderFactory(Cache cache) {
+  public static GatewaySenderFactory createGatewaySenderFactory(InternalCache cache) {
     if (factory == null) {
       throw new IllegalStateException("WAN service is not available.");
     }
@@ -46,7 +46,7 @@ public class WANServiceProvider {
 
   }
 
-  public static GatewayReceiverFactory createGatewayReceiverFactory(Cache cache) {
+  public static GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache) {
     if (factory == null) {
       throw new IllegalStateException("WAN service is not available.");
     }
@@ -67,7 +67,5 @@ public class WANServiceProvider {
     return factory.createLocatorMembershipListener();
   }
 
-  private WANServiceProvider() {
-
-  }
+  private WANServiceProvider() {}
 }

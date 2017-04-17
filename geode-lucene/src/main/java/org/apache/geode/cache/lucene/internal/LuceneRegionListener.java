@@ -14,23 +14,24 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
+import java.util.Map;
+
+import org.apache.lucene.analysis.Analyzer;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.RegionListener;
-import org.apache.lucene.analysis.Analyzer;
-
-import java.util.Map;
 
 public class LuceneRegionListener implements RegionListener {
 
   private final LuceneServiceImpl service;
 
-  private final GemFireCacheImpl cache;
+  private final InternalCache cache;
 
   private final String indexName;
 
@@ -42,7 +43,7 @@ public class LuceneRegionListener implements RegionListener {
 
   private final String[] fields;
 
-  public LuceneRegionListener(LuceneServiceImpl service, GemFireCacheImpl cache, String indexName,
+  public LuceneRegionListener(LuceneServiceImpl service, InternalCache cache, String indexName,
       String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers) {
     this.service = service;
     this.cache = cache;

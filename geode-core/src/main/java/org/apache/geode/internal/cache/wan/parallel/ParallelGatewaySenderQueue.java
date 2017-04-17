@@ -1664,7 +1664,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     @Override
     public void run() {
       try {
-        InternalDistributedSystem ids = cache.getDistributedSystem();
+        InternalDistributedSystem ids = cache.getInternalDistributedSystem();
         DM dm = ids.getDistributionManager();
         for (;;) {
           try { // be somewhat tolerant of failures

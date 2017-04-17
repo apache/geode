@@ -393,7 +393,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
   public boolean verifyDistributedRegionMbean(Cache cache, String regionName) {
     GemFireCacheImpl gemfireCache = (GemFireCacheImpl) cache;
     int federationInterval =
-        gemfireCache.getDistributedSystem().getConfig().getJmxManagerUpdateRate();
+        gemfireCache.getInternalDistributedSystem().getConfig().getJmxManagerUpdateRate();
     long timeEnd = System.currentTimeMillis() + federationInterval + 50;
 
     for (; System.currentTimeMillis() <= timeEnd;) {

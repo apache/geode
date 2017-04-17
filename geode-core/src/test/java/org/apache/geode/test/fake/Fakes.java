@@ -14,6 +14,12 @@
  */
 package org.apache.geode.test.fake;
 
+import static org.mockito.Mockito.*;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
 import org.apache.geode.Statistics;
@@ -28,13 +34,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-
-import java.io.File;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.mockito.Mockito.*;
 
 /**
  * Factory methods for fake objects for use in test.
@@ -74,6 +73,7 @@ public class Fakes {
     when(config.getDeployWorkingDir()).thenReturn(new File("."));
 
     when(cache.getDistributedSystem()).thenReturn(system);
+    when(cache.getInternalDistributedSystem()).thenReturn(system);
     when(cache.getSystem()).thenReturn(system);
     when(cache.getMyId()).thenReturn(member);
     when(cache.getDistributionManager()).thenReturn(distributionManager);
@@ -102,7 +102,7 @@ public class Fakes {
    * A fake distributed system, which contains a fake distribution manager.
    */
   public static InternalDistributedSystem distributedSystem() {
-    return cache().getDistributedSystem();
+    return cache().getInternalDistributedSystem();
   }
 
   /**
@@ -134,5 +134,4 @@ public class Fakes {
   }
 
   private Fakes() {}
-
 }

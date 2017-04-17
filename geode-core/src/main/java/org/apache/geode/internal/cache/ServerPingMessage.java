@@ -58,7 +58,7 @@ public class ServerPingMessage extends PooledDistributionMessage {
    */
   public static boolean send(GemFireCacheImpl cache, Set<InternalDistributedMember> recipients) {
 
-    InternalDistributedSystem ids = cache.getDistributedSystem();
+    InternalDistributedSystem ids = cache.getInternalDistributedSystem();
     DM dm = ids.getDistributionManager();
     Set<InternalDistributedMember> filteredRecipients = new HashSet<InternalDistributedMember>();
 

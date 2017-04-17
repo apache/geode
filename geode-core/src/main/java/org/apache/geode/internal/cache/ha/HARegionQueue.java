@@ -2783,7 +2783,7 @@ public class HARegionQueue implements RegionQueue {
      */
     @Override
     public void run() {
-      InternalDistributedSystem ids = cache.getDistributedSystem();
+      InternalDistributedSystem ids = cache.getInternalDistributedSystem();
       DM dm = ids.getDistributionManager();
 
       try { // ensure exit message is printed

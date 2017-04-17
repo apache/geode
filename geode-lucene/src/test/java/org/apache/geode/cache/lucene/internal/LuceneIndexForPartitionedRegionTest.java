@@ -33,13 +33,13 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.test.fake.Fakes;
@@ -55,7 +55,7 @@ public class LuceneIndexForPartitionedRegionTest {
   public void getIndexNameReturnsCorrectName() {
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     assertEquals(name, index.getName());
@@ -65,7 +65,7 @@ public class LuceneIndexForPartitionedRegionTest {
   public void getRegionPathReturnsPath() {
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     assertEquals(regionPath, index.getRegionPath());
@@ -75,7 +75,7 @@ public class LuceneIndexForPartitionedRegionTest {
   public void fileRegionExistsWhenFileRegionExistsShouldReturnTrue() {
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     PartitionedRegion region = mock(PartitionedRegion.class);
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
@@ -89,7 +89,7 @@ public class LuceneIndexForPartitionedRegionTest {
   public void fileRegionExistsWhenFileRegionDoesNotExistShouldReturnFalse() {
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
     String fileRegionName = index.createFileRegionName();
@@ -102,7 +102,7 @@ public class LuceneIndexForPartitionedRegionTest {
   public void createAEQWithPersistenceCallsCreateOnAEQFactory() {
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     final Region region = Fakes.region(regionPath, cache);
     RegionAttributes attributes = region.getAttributes();
     when(attributes.getDataPolicy()).thenReturn(DataPolicy.PERSISTENT_PARTITION);
@@ -121,7 +121,7 @@ public class LuceneIndexForPartitionedRegionTest {
   public void createAEQCallsCreateOnAEQFactory() {
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     final Region region = Fakes.region(regionPath, cache);
     AsyncEventQueueFactoryImpl aeqFactory = mock(AsyncEventQueueFactoryImpl.class);
     when(cache.createAsyncEventQueueFactory()).thenReturn(aeqFactory);
@@ -190,7 +190,7 @@ public class LuceneIndexForPartitionedRegionTest {
     boolean withPersistence = false;
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     Region region = initializeScenario(withPersistence, regionPath, cache, 0);
     LuceneIndexForPartitionedRegion index =
         new LuceneIndexForPartitionedRegion(name, regionPath, cache);
@@ -203,7 +203,7 @@ public class LuceneIndexForPartitionedRegionTest {
     boolean withPersistence = false;
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     Region region = initializeScenario(withPersistence, regionPath, cache);
 
     LuceneIndexForPartitionedRegion index =
@@ -228,7 +228,7 @@ public class LuceneIndexForPartitionedRegionTest {
     boolean withPersistence = false;
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     Region region = initializeScenario(withPersistence, regionPath, cache);
 
     LuceneIndexForPartitionedRegion index =
@@ -264,7 +264,7 @@ public class LuceneIndexForPartitionedRegionTest {
     boolean withPersistence = true;
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     initializeScenario(withPersistence, regionPath, cache);
 
     LuceneIndexForPartitionedRegion index =
@@ -284,7 +284,7 @@ public class LuceneIndexForPartitionedRegionTest {
     boolean withPersistence = true;
     String name = "indexName";
     String regionPath = "regionName";
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     initializeScenario(withPersistence, regionPath, cache);
 
     LuceneIndexForPartitionedRegion index =
@@ -306,7 +306,7 @@ public class LuceneIndexForPartitionedRegionTest {
     String name = "indexName";
     String regionPath = "regionName";
     String[] fields = new String[] {"field1", "field2"};
-    Cache cache = Fakes.cache();
+    InternalCache cache = Fakes.cache();
     initializeScenario(withPersistence, regionPath, cache);
 
     AsyncEventQueue aeq = mock(AsyncEventQueue.class);

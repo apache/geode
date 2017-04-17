@@ -211,7 +211,7 @@ public class DiskStoreMonitor {
     File log = null;
     GemFireCacheImpl gci = GemFireCacheImpl.getInstance();
     if (gci != null) {
-      InternalDistributedSystem ds = gci.getDistributedSystem();
+      InternalDistributedSystem ds = gci.getInternalDistributedSystem();
       if (ds != null) {
         DistributionConfig conf = ds.getConfig();
         if (conf != null) {

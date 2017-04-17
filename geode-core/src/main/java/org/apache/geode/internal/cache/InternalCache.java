@@ -38,6 +38,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
@@ -167,4 +168,16 @@ public interface InternalCache extends Cache, Extensible<Cache> {
   LocalRegion getRegionByPath(String path);
 
   boolean isClient();
+
+  InternalDistributedSystem getInternalDistributedSystem();
+
+  Set<PartitionedRegion> getPartitionedRegions();
+
+  void addRegionListener(RegionListener l);
+
+  void removeRegionListener(RegionListener l);
+
+  Set<RegionListener> getRegionListeners();
+
+  CacheConfig getCacheConfig();
 }

@@ -185,7 +185,7 @@ public class GatewayReceiverImpl implements GatewayReceiver {
     logger
         .info(LocalizedMessage.create(LocalizedStrings.GatewayReceiver_STARTED_ON_PORT, this.port));
 
-    InternalDistributedSystem system = this.cache.getDistributedSystem();
+    InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_START, this);
 
   }

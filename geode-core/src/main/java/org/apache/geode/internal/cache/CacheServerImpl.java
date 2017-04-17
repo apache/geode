@@ -355,7 +355,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     }
 
     if (!isGatewayReceiver) {
-      InternalDistributedSystem system = ((GemFireCacheImpl) this.cache).getDistributedSystem();
+      InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.CACHE_SERVER_START, this);
     }
 
@@ -451,7 +451,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     txMgr.removeHostedTXStatesForClients();
 
     if (!isGatewayReceiver) {
-      InternalDistributedSystem system = ((GemFireCacheImpl) this.cache).getDistributedSystem();
+      InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.CACHE_SERVER_STOP, this);
     }
 

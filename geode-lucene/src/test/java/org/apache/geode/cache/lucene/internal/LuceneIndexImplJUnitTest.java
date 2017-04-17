@@ -19,18 +19,20 @@ import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LuceneIndexImplJUnitTest {
+
   public static final String REGION = "region";
   public static final String INDEX = "index";
   public static final int MAX_WAIT = 30000;
-  private Cache cache;
-  LuceneIndex index;
+
+  private InternalCache cache;
+  private LuceneIndex index;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();

@@ -2019,8 +2019,8 @@ public class GemFireCacheImpl
         try {
           this.prLockService =
               DLockService.create(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME,
-                  getDistributedSystem(), true /* distributed */, true /* destroyOnDisconnect */,
-                  true /* automateFreeResources */);
+                  getInternalDistributedSystem(), true /* distributed */,
+                  true /* destroyOnDisconnect */, true /* automateFreeResources */);
         } catch (IllegalArgumentException e) {
           this.prLockService = DistributedLockService
               .getServiceNamed(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME);
@@ -2045,8 +2045,8 @@ public class GemFireCacheImpl
         if (this.gatewayLockService == null) {
           try {
             this.gatewayLockService = DLockService.create(AbstractGatewaySender.LOCK_SERVICE_NAME,
-                getDistributedSystem(), true /* distributed */, true /* destroyOnDisconnect */,
-                true /* automateFreeResources */);
+                getInternalDistributedSystem(), true /* distributed */,
+                true /* destroyOnDisconnect */, true /* automateFreeResources */);
           } catch (IllegalArgumentException e) {
             this.gatewayLockService =
                 DistributedLockService.getServiceNamed(AbstractGatewaySender.LOCK_SERVICE_NAME);
@@ -2858,7 +2858,12 @@ public class GemFireCacheImpl
   }
 
   @Override
-  public InternalDistributedSystem getDistributedSystem() {
+  public DistributedSystem getDistributedSystem() {
+    return this.system;
+  }
+
+  @Override
+  public InternalDistributedSystem getInternalDistributedSystem() {
     return this.system;
   }
 
@@ -4836,7 +4841,7 @@ public class GemFireCacheImpl
   }
 
   private void sendAddCacheServerProfileMessage() {
-    DM dm = this.getDistributedSystem().getDistributionManager();
+    DM dm = getInternalDistributedSystem().getDistributionManager();
     Set otherMembers = dm.getOtherDistributionManagerIds();
     AddCacheServerProfileMessage msg = new AddCacheServerProfileMessage();
     msg.operateOnLocalCache(this);

@@ -625,7 +625,7 @@ public class PartitionedRegion extends LocalRegion
     // up upon
     // distributed system disconnect even this (or other) PRs are destroyed
     // (which prevents pridmap cleanup).
-    cache.getDistributedSystem().addDisconnectListener(dsPRIdCleanUpListener);
+    cache.getInternalDistributedSystem().addDisconnectListener(dsPRIdCleanUpListener);
 
     // this.userScope = ra.getScope();
     this.partitionAttributes = ra.getPartitionAttributes();
@@ -6892,7 +6892,7 @@ public class PartitionedRegion extends LocalRegion
         ReplyProcessor21.forceSevereAlertProcessing();
       }
       try {
-        DM dm = cache.getDistributedSystem().getDistributionManager();
+        DM dm = cache.getInternalDistributedSystem().getDistributionManager();
 
         long ackWaitThreshold = 0;
         long ackSAThreshold = dm.getConfig().getAckSevereAlertThreshold() * 1000;
@@ -6971,7 +6971,7 @@ public class PartitionedRegion extends LocalRegion
 
       final Object key = this.lockName;
 
-      final DM dm = cache.getDistributedSystem().getDistributionManager();
+      final DM dm = cache.getInternalDistributedSystem().getDistributionManager();
 
       long start = System.currentTimeMillis();
       long end;
@@ -6984,7 +6984,7 @@ public class PartitionedRegion extends LocalRegion
       }
 
       long ackSAThreshold =
-          cache.getDistributedSystem().getConfig().getAckSevereAlertThreshold() * 1000;
+          cache.getInternalDistributedSystem().getConfig().getAckSevereAlertThreshold() * 1000;
       boolean suspected = false;
       boolean severeAlertIssued = false;
       DistributedMember lockHolder = null;
@@ -6993,7 +6993,8 @@ public class PartitionedRegion extends LocalRegion
       long ackWaitThreshold;
 
       if (ackSAThreshold > 0) {
-        ackWaitThreshold = cache.getDistributedSystem().getConfig().getAckWaitThreshold() * 1000;
+        ackWaitThreshold =
+            cache.getInternalDistributedSystem().getConfig().getAckWaitThreshold() * 1000;
         waitInterval = ackWaitThreshold;
         start = System.currentTimeMillis();
       } else {
