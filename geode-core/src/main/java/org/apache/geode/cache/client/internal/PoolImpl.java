@@ -208,7 +208,9 @@ public class PoolImpl implements InternalPool {
     } else {
       this.proxyId = ClientProxyMembershipID.getNewProxyMembership(ds);
     }
-    this.connectTimeout = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.HANDSHAKE_TIMEOUT", ds.getConfig().getConnectTimeout()).intValue();
+    this.connectTimeout =
+        Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "PoolImpl.HANDSHAKE_TIMEOUT",
+            ds.getConfig().getConnectTimeout()).intValue();
     StatisticsFactory statFactory = null;
     if (this.gatewaySender != null) {
       statFactory = new DummyStatisticsFactory();

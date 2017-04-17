@@ -929,7 +929,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         LocalizedStrings.AbstractDistributionConfig_START_LOCATOR_NAME.toLocalizedString());
 
     m.put(CONNECT_TIMEOUT, LocalizedStrings.AbstractDistributionConfig_CONNECT_TIMEOUT_NAME_0
-            .toLocalizedString(DEFAULT_CONNECT_TIMEOUT));
+        .toLocalizedString(DEFAULT_CONNECT_TIMEOUT));
 
     m.put(DURABLE_CLIENT_ID, LocalizedStrings.AbstractDistributionConfig_DURABLE_CLIENT_ID_NAME_0
         .toLocalizedString(DEFAULT_DURABLE_CLIENT_ID));

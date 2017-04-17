@@ -5449,9 +5449,9 @@ public class LocalizedStrings {
   public static final StringId AbstractDistributionConfig_SERVER_BIND_ADDRESS_NAME_0 = new StringId(
       4246,
       "The address server sockets in a client-server topology will listen on. An empty string causes the server socket to listen on all local addresses. Defaults to \"{0}\".");
-  public static final StringId AbstractDistributionConfig_CONNECT_TIMEOUT_NAME_0 =
-	      new StringId(4247,
-	          "The value (in milli seconds) used by the socket timeout when the client connects to the servers/locators. Defaults to \"{0}\".");
+  public static final StringId AbstractDistributionConfig_CONNECT_TIMEOUT_NAME_0 = new StringId(
+      4247,
+      "The value (in milli seconds) used by the socket timeout when the client connects to the servers/locators. Defaults to \"{0}\".");
   public static final StringId AbstractDistributionConfig_STATISTIC_ARCHIVE_FILE_NAME_0 =
       new StringId(4248,
           "The file a running system will write statistic samples to.  Defaults to \"{0}\".");
