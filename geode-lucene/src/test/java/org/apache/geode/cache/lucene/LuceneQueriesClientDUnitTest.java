@@ -18,14 +18,11 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIE
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
-import org.apache.geode.cache.lucene.internal.LuceneQueryImpl;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
@@ -36,6 +33,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.runner.RunWith;
 
 import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -72,6 +70,8 @@ public class LuceneQueriesClientDUnitTest extends LuceneQueriesDUnitTest {
 
   // Due to singlehop transactions differences, the exception actually isn't thrown
   // So the parent test behaves differently if singlehop is enabled or not for a client
+  @Test
+  @Parameters(method = "getListOfRegionTestTypes")
   public void transactionWithLuceneQueriesShouldThrowException(RegionTestableType regionTestType) {
     SerializableRunnableIF createIndex = () -> {
       LuceneService luceneService = LuceneServiceProvider.get(getCache());
