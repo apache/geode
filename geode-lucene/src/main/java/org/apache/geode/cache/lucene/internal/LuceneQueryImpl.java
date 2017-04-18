@@ -120,14 +120,14 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
       if (e.getCause() instanceof LuceneQueryException) {
         throw new LuceneQueryException(e);
       } else if (e.getCause() instanceof TransactionException) {
-        //When run from client with single hop disabled
+        // When run from client with single hop disabled
         throw new LuceneQueryException(LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION);
       } else if (e.getCause() instanceof RuntimeException) {
         throw (RuntimeException) e.getCause();
       }
       throw e;
     } catch (TransactionException e) {
-      //When function execution is run from server
+      // When function execution is run from server
       throw new LuceneQueryException(LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION);
     }
 

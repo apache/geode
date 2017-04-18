@@ -78,8 +78,7 @@ public class LuceneQueriesDUnitTest extends LuceneQueriesAccessorBase {
             .equals(LuceneQueryImpl.LUCENE_QUERY_CANNOT_BE_EXECUTED_WITHIN_A_TRANSACTION)) {
           fail();
         }
-      }
-      finally {
+      } finally {
         cache.getCacheTransactionManager().rollback();
       }
     });
