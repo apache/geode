@@ -42,6 +42,8 @@ public class LuceneRegionListener implements RegionListener {
 
   private final String[] fields;
 
+  private LuceneIndexImpl luceneIndex;
+
   public LuceneRegionListener(LuceneServiceImpl service, GemFireCacheImpl cache, String indexName,
       String regionPath, String[] fields, Analyzer analyzer, Map<String, Analyzer> fieldAnalyzers) {
     this.service = service;
@@ -92,9 +94,14 @@ public class LuceneRegionListener implements RegionListener {
         updatedRA = af.create();
       }
 
+
+
       // Add index creation profile
       internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(this.indexName,
           this.regionPath, this.fields, this.analyzer, this.fieldAnalyzers));
+
+      luceneIndex = this.service.beforeDataRegionCreated(this.indexName, attrs, this.analyzer,
+          this.fieldAnalyzers, aeqId, this.fields);
 
       // Add internal async event id
       internalRegionArgs.addInternalAsyncEventQueueId(aeqId);
@@ -105,8 +112,7 @@ public class LuceneRegionListener implements RegionListener {
   @Override
   public void afterCreate(Region region) {
     if (region.getFullPath().equals(this.regionPath)) {
-      this.service.afterDataRegionCreated(this.indexName, this.analyzer, this.regionPath,
-          this.fieldAnalyzers, this.fields);
+      this.service.afterDataRegionCreated(this.regionPath, this.luceneIndex);
       this.cache.removeRegionListener(this);
     }
   }

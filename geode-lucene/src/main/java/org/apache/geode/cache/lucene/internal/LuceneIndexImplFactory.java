@@ -22,4 +22,8 @@ public class LuceneIndexImplFactory {
   public LuceneIndexImpl create(String indexName, String regionPath, GemFireCacheImpl cache) {
     return new LuceneIndexForPartitionedRegion(indexName, regionPath, cache);
   }
+
+  public LuceneIndexImpl create(String indexName, GemFireCacheImpl cache) {
+    return new LuceneIndexForPartitionedRegion(indexName, cache);
+  }
 }

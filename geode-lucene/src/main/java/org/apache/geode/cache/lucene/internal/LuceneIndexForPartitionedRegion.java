@@ -48,13 +48,23 @@ import java.util.Set;
 /* wrapper of IndexWriter */
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
   protected Region fileAndChunkRegion;
-  protected final FileSystemStats fileSystemStats;
+  protected FileSystemStats fileSystemStats;
 
   public static final String FILES_REGION_SUFFIX = ".files";
 
   public LuceneIndexForPartitionedRegion(String indexName, String regionPath, Cache cache) {
     super(indexName, regionPath, cache);
 
+    final String statsName = indexName + "-" + regionPath;
+    this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
+  }
+
+  public LuceneIndexForPartitionedRegion(String indexName, Cache cache) {
+    super(indexName, cache);
+  }
+
+  public void setFileSystemStats(String regionPath) {
+    setRegionPathAndIndexStats(regionPath);
     final String statsName = indexName + "-" + regionPath;
     this.fileSystemStats = new FileSystemStats(cache.getDistributedSystem(), statsName);
   }
@@ -102,6 +112,45 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
         .setBytesSupplier(() -> getFileAndChunkRegion().getPrStats().getDataStoreBytesInUse());
 
     return partitionedRepositoryManager;
+  }
+
+  protected RepositoryManager createJustRepoManager() {
+    HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
+    PartitionedRepositoryManager partitionedRepositoryManager =
+        new PartitionedRepositoryManager(this, mapper);
+    return partitionedRepositoryManager;
+  }
+
+  protected void createLuceneListenersAndFileChunkRegions(
+      PartitionedRepositoryManager partitionedRepositoryManager) {
+    ((AbstractPartitionedRepositoryManager) partitionedRepositoryManager)
+        .setUserRegionForRepositoryManager();
+    RegionShortcut regionShortCut;
+    final boolean withPersistence = withPersistence();
+    RegionAttributes regionAttributes = dataRegion.getAttributes();
+    final boolean withStorage = regionAttributes.getPartitionAttributes().getLocalMaxMemory() > 0;
+    if (!withStorage) {
+      regionShortCut = RegionShortcut.PARTITION_PROXY;
+    } else if (withPersistence) {
+      // TODO: add PartitionedRegionAttributes instead
+      regionShortCut = RegionShortcut.PARTITION_PERSISTENT;
+    } else {
+      regionShortCut = RegionShortcut.PARTITION;
+    }
+    final String fileRegionName = createFileRegionName();
+    PartitionAttributes partitionAttributes = dataRegion.getPartitionAttributes();
+    DM dm = ((GemFireCacheImpl) getCache()).getDistributedSystem().getDistributionManager();
+    LuceneBucketListener lucenePrimaryBucketListener =
+        new LuceneBucketListener(partitionedRepositoryManager, dm);
+
+    if (!fileRegionExists(fileRegionName)) {
+      fileAndChunkRegion = createFileRegion(regionShortCut, fileRegionName, partitionAttributes,
+          regionAttributes, lucenePrimaryBucketListener);
+    }
+
+    fileSystemStats
+        .setBytesSupplier(() -> getFileAndChunkRegion().getPrStats().getDataStoreBytesInUse());
+
   }
 
   public PartitionedRegion getFileAndChunkRegion() {
