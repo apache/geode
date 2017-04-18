@@ -15,6 +15,7 @@
 
 package org.apache.geode.test.dunit.rules;
 
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 
@@ -39,6 +40,10 @@ public class MemberVM<T extends Member> implements Member {
 
   public void invoke(final SerializableRunnableIF runnable) {
     vm.invoke(runnable);
+  }
+
+  public AsyncInvocation invokeAsync(final SerializableRunnableIF runnable) {
+    return vm.invokeAsync(runnable);
   }
 
   public T getMember() {

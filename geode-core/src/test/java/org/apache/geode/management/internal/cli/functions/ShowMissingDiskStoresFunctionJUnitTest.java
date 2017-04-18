@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
@@ -107,16 +108,16 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     GemFireCacheImpl.setInstanceForTests(oldCacheInstance);
   }
 
-  private class TestSPRFFunc1 extends ShowMissingDiskStoresFunction {
+  private class TestSMDSFFunc1 extends ShowMissingDiskStoresFunction {
     @Override
-    protected Cache getCache() {
+    protected InternalCache getCache() {
       return null;
     }
   }
 
-  private class TestSPRFFunc2 extends ShowMissingDiskStoresFunction {
+  private class TestSMDSFFunc2 extends ShowMissingDiskStoresFunction {
     @Override
-    protected Cache getCache() {
+    protected InternalCache getCache() {
       return cache;
     }
   }
@@ -127,22 +128,21 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
    */
   @Test
   public final void testGetCache() {
-    ShowMissingDiskStoresFunction rff = new ShowMissingDiskStoresFunction();
-    assertTrue(rff.getCache() instanceof Cache);
+    ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
+    assertTrue(smdsFunc.getCache() instanceof Cache);
   }
 
   /**
-   * Test method for
-   * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
+   * Test method for {@link ShowMissingDiskStoresFunction#execute(FunctionContext)}.
    */
   @Test
   public final void testExecute() {
-    ShowMissingDiskStoresFunction rff = new ShowMissingDiskStoresFunction();
+    ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
     List<?> results = null;
 
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
 
-    rff.execute(context);
+    smdsFunc.execute(context);
     try {
       results = resultSender.getResults();
     } catch (Throwable e) {
@@ -160,8 +160,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
   public final void testExecuteWithNullContextThrowsRuntimeException() {
     expectedException.expect(RuntimeException.class);
 
-    ShowMissingDiskStoresFunction rff = new ShowMissingDiskStoresFunction();
-    rff.execute(null);
+    ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
+    smdsFunc.execute(null);
     fail("Missing expected RuntimeException");
   }
 
@@ -170,17 +170,12 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
    * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
-  public final void testExecuteWithNullCacheInstanceHasEmptyResults() {
-    TestSPRFFunc1 rff = new TestSPRFFunc1();
+  public final void testExecuteWithNullCacheInstanceHasEmptyResults() throws Throwable {
+    TestSMDSFFunc1 testSMDSFunc = new TestSMDSFFunc1();
     List<?> results = null;
 
-    rff.execute(context);
-    try {
-      results = resultSender.getResults();
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Unexpected exception");
-    }
+    testSMDSFunc.execute(context);
+    results = resultSender.getResults();
     assertNotNull(results);
     assertEquals(1, results.size());
     assertNull(results.get(0));
@@ -191,20 +186,15 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
    * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
-  public final void testExecuteWithNullGFCIResultValueIsNull() {
-    TestSPRFFunc2 rff = new TestSPRFFunc2();
+  public final void testExecuteWithNullGFCIResultValueIsNull() throws Throwable {
+    TestSMDSFFunc2 testSMDSFunc = new TestSMDSFFunc2();
     List<?> results = null;
 
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
     GemFireCacheImpl.setInstanceForTests(null);
 
-    rff.execute(context);
-    try {
-      results = resultSender.getResults();
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Unexpected exception");
-    }
+    testSMDSFunc.execute(context);
+    results = resultSender.getResults();
     assertNotNull(results);
     assertEquals(1, results.size());
     assertNull(results.get(0));
@@ -215,19 +205,14 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
    * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
-  public final void testExecuteWhenGFCIClosedResultValueIsNull() {
-    TestSPRFFunc2 rff = new TestSPRFFunc2();
+  public final void testExecuteWhenGFCIClosedResultValueIsNull() throws Throwable {
+    TestSMDSFFunc2 testSMDSFunc = new TestSMDSFFunc2();
     List<?> results = null;
 
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
     when(((GemFireCacheImpl) cache).isClosed()).thenReturn(true);
-    rff.execute(context);
-    try {
-      results = resultSender.getResults();
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Unexpected exception");
-    }
+    testSMDSFunc.execute(context);
+    results = resultSender.getResults();
     assertNotNull(results);
   }
 
@@ -238,8 +223,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
    * @throws UnknownHostException
    */
   @Test
-  public final void testExecuteReturnsMissingDiskStores() throws UnknownHostException {
-    ShowMissingDiskStoresFunction rff = new ShowMissingDiskStoresFunction();
+  public final void testExecuteReturnsMissingDiskStores() throws Throwable {
+    ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
     List<?> results = null;
 
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
@@ -255,13 +240,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     mapMember1.put("member1", regions1);
     when(memberManager.getWaitingRegions()).thenReturn(mapMember1);
 
-    rff.execute(context);
-    try {
-      results = resultSender.getResults();
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Unexpected exception");
-    }
+    smdsFunc.execute(context);
+    results = resultSender.getResults();
     assertNotNull(results);
     assertEquals(1, results.size());
     Set<?> detailSet = (Set<?>) results.get(0);
@@ -286,8 +266,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
    * {@link org.apache.geode.management.internal.cli.functions.ShowMissingDiskStoresFunction#execute(org.apache.geode.cache.execute.FunctionContext)}.
    */
   @Test
-  public final void testExecuteReturnsMissingColocatedRegions() {
-    ShowMissingDiskStoresFunction rff = new ShowMissingDiskStoresFunction();
+  public final void testExecuteReturnsMissingColocatedRegions() throws Throwable {
+    ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
     List<?> results = null;
 
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
@@ -301,13 +281,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     when(pr1.getMissingColocatedChildren()).thenReturn(missing1);
     when(pr1.getFullPath()).thenReturn("/pr1");
 
-    rff.execute(context);
-    try {
-      results = resultSender.getResults();
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Unexpected exception");
-    }
+    smdsFunc.execute(context);
+    results = resultSender.getResults();
     assertEquals(1, results.size());
     Set<?> detailSet = (Set<?>) results.get(0);
     assertEquals(2, detailSet.toArray().length);
@@ -332,8 +307,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
    * @throws UnknownHostException
    */
   @Test
-  public final void testExecuteReturnsMissingStoresAndRegions() throws UnknownHostException {
-    ShowMissingDiskStoresFunction rff = new ShowMissingDiskStoresFunction();
+  public final void testExecuteReturnsMissingStoresAndRegions() throws Throwable {
+    ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
     List<?> results = null;
 
     when(cache.getPersistentMemberManager()).thenReturn(memberManager);
@@ -358,13 +333,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     when(pr1.getMissingColocatedChildren()).thenReturn(missing1);
     when(pr1.getFullPath()).thenReturn("/pr1");
 
-    rff.execute(context);
-    try {
-      results = resultSender.getResults();
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Unexpected exception");
-    }
+    smdsFunc.execute(context);
+    results = resultSender.getResults();
     assertEquals(2, results.size());
     for (Object result : results) {
       Set<?> detailSet = (Set<?>) result;
@@ -412,11 +382,11 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
   public final void testExecuteCatchesExceptions() throws Throwable {
     expectedException.expect(RuntimeException.class);
 
-    ShowMissingDiskStoresFunction rff = new ShowMissingDiskStoresFunction();
+    ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
 
     when(cache.getPersistentMemberManager()).thenThrow(new RuntimeException());
 
-    rff.execute(context);
+    smdsFunc.execute(context);
     List<?> results = resultSender.getResults();
     fail("Failed to catch expected RuntimeException");
   }
@@ -428,8 +398,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
    */
   @Test
   public final void testGetId() {
-    ShowMissingDiskStoresFunction rff = new ShowMissingDiskStoresFunction();
-    assertEquals(ShowMissingDiskStoresFunction.class.getName(), rff.getId());
+    ShowMissingDiskStoresFunction smdsFunc = new ShowMissingDiskStoresFunction();
+    assertEquals(ShowMissingDiskStoresFunction.class.getName(), smdsFunc.getId());
   }
 
   private static class TestResultSender implements ResultSender {

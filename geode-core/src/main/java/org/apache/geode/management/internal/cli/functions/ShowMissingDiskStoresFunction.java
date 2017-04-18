@@ -35,8 +35,8 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 
 public class ShowMissingDiskStoresFunction extends FunctionAdapter implements InternalEntity {
 
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
+  protected InternalCache getCache() {
+    return GemFireCacheImpl.getInstance();
   }
 
   @Override
@@ -48,34 +48,28 @@ public class ShowMissingDiskStoresFunction extends FunctionAdapter implements In
       throw new RuntimeException();
     }
     try {
-      final Cache cache = getCache();
+      final InternalCache cache = getCache();
 
-      if (cache instanceof InternalCache) {
-        final InternalCache gemfireCache = (InternalCache) cache;
+      if (cache != null && !cache.isClosed()) {
+        final DistributedMember member = cache.getMyId();
 
-        final DistributedMember member = gemfireCache.getMyId();
-
-        GemFireCacheImpl gfci = GemFireCacheImpl.getInstance();
-        if (gfci != null && !gfci.isClosed()) {
-          // Missing DiskStores
-          PersistentMemberManager mm = gfci.getPersistentMemberManager();
-          Map<String, Set<PersistentMemberID>> waitingRegions = mm.getWaitingRegions();
-          for (Map.Entry<String, Set<PersistentMemberID>> entry : waitingRegions.entrySet()) {
-            for (PersistentMemberID id : entry.getValue()) {
-              memberMissingIDs.add(new PersistentMemberPattern(id));
-            }
-          }
-          // Missing colocated regions
-          Set<PartitionedRegion> prs = gfci.getPartitionedRegions();
-          for (PartitionedRegion pr : prs) {
-            List<String> missingChildRegions = pr.getMissingColocatedChildren();
-            for (String child : missingChildRegions) {
-              missingColocatedRegions.add(new ColocatedRegionDetails(member.getHost(),
-                  member.getName(), pr.getFullPath(), child));
-            }
+        // Missing DiskStores
+        PersistentMemberManager mm = cache.getPersistentMemberManager();
+        Map<String, Set<PersistentMemberID>> waitingRegions = mm.getWaitingRegions();
+        for (Set<PersistentMemberID> entry : waitingRegions.values()) {
+          for (PersistentMemberID id : entry) {
+            memberMissingIDs.add(new PersistentMemberPattern(id));
           }
         }
-
+        // Missing colocated regions
+        Set<PartitionedRegion> prs = ((GemFireCacheImpl) cache).getPartitionedRegions();
+        for (PartitionedRegion pr : prs) {
+          List<String> missingChildRegions = pr.getMissingColocatedChildren();
+          for (String child : missingChildRegions) {
+            missingColocatedRegions.add(new ColocatedRegionDetails(member.getHost(),
+                member.getName(), pr.getFullPath(), child));
+          }
+        }
       }
 
       if (memberMissingIDs.isEmpty() && missingColocatedRegions.isEmpty()) {
