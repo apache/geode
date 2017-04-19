@@ -3000,14 +3000,6 @@ public abstract class DataSerializer {
     return InternalDataSerializer.register(c, true);
   }
 
-  /**
-   * @deprecated as of 5.7 use {@link #register(Class)} instead
-   */
-  @Deprecated
-  public static final DataSerializer register(Class<?> c, byte b) {
-    return register(c);
-  }
-
   /////////////////////// Constructors ///////////////////////
 
   /**
