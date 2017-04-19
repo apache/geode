@@ -14,21 +14,16 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.distributed.*;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.util.Collection;
+import java.util.Properties;
 
-import java.util.*;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.CqException;
-import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqServiceStatistics;
 import org.apache.geode.cache.query.CqStatistics;
 import org.apache.geode.cache.query.QueryService;
@@ -41,7 +36,8 @@ import org.apache.geode.cache.query.internal.cq.CqServiceImpl;
 import org.apache.geode.cache.query.internal.cq.CqServiceVsdStats;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.cache30.CacheTestCase;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -49,20 +45,18 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * This class tests the ContiunousQuery mechanism in GemFire. This includes the test with different
+ * This class tests the ContinuousQuery mechanism in GemFire. This includes the test with different
  * data activities.
- *
  */
 @Category(DistributedTest.class)
 public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
+  // TODO: delete this use of CqQueryUsingPoolDUnitTest
   private CqQueryUsingPoolDUnitTest cqDUnitTest = new CqQueryUsingPoolDUnitTest();
-
-  public CqStatsUsingPoolDUnitTest() {
-    super();
-  }
 
   @Override
   public Properties getDistributedSystemProperties() {
@@ -77,6 +71,7 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
     // system before creating pool
     getSystem();
     Invoke.invokeInEveryVM(new SerializableRunnable("getSystem") {
+      @Override
       public void run() {
         getSystem();
       }
@@ -89,6 +84,7 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
   private void validateCQStats(VM vm, final String cqName, final int creates, final int updates,
       final int deletes, final int totalEvents, final int cqListenerInvocations) {
     vm.invoke(new CacheSerializableRunnable("Validate CQs") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Validating CQ Stats. ### " + cqName);
         // Get CQ Service.
@@ -169,6 +165,7 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
       final int stopped, final int closed, final int cqsOnClient, final int cqsOnRegion,
       final int clientsWithCqs) {
     vm.invoke(new CacheSerializableRunnable("Validate CQ Service Stats") {
+      @Override
       public void run2() throws CacheException {
         LogWriterUtils.getLogWriter().info("### Validating CQ Service Stats. ### ");
         // Get CQ Service.
@@ -184,7 +181,7 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
         CqServiceVsdStats cqServiceVsdStats = null;
         try {
           cqServiceVsdStats =
-              ((CqServiceImpl) ((DefaultQueryService) qService).getCqService()).stats;
+              ((CqServiceImpl) ((DefaultQueryService) qService).getCqService()).stats();
         } catch (CqException e) {
           // TODO Auto-generated catch block
           e.printStackTrace();
@@ -193,12 +190,14 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
           fail("Failed to get CQ Service Stats");
         }
 
-        getCache().getLogger().info("#### CQ Service stats: " + " CQs created: "
-            + cqServiceStats.numCqsCreated() + " CQs active: " + cqServiceStats.numCqsActive()
-            + " CQs stopped: " + cqServiceStats.numCqsStopped() + " CQs closed: "
-            + cqServiceStats.numCqsClosed() + " CQs on Client: " + cqServiceStats.numCqsOnClient()
-            + " CQs on region /root/regionA : " + cqServiceVsdStats.numCqsOnRegion("/root/regionA")
-            + " Clients with CQs: " + cqServiceVsdStats.getNumClientsWithCqs());
+        getCache().getLogger()
+            .info("#### CQ Service stats: " + " CQs created: " + cqServiceStats.numCqsCreated()
+                + " CQs active: " + cqServiceStats.numCqsActive() + " CQs stopped: "
+                + cqServiceStats.numCqsStopped() + " CQs closed: " + cqServiceStats.numCqsClosed()
+                + " CQs on Client: " + cqServiceStats.numCqsOnClient()
+                + " CQs on region /root/regionA : "
+                + cqServiceVsdStats.numCqsOnRegion(GemFireCacheImpl.getInstance(), "/root/regionA")
+                + " Clients with CQs: " + cqServiceVsdStats.getNumClientsWithCqs());
 
 
         // Check for created count.
@@ -231,7 +230,7 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
         // Check for CQs on region.
         if (cqsOnRegion != CqQueryUsingPoolDUnitTest.noTest) {
           assertEquals("Number of CQs on region /root/regionA mismatch", cqsOnRegion,
-              cqServiceVsdStats.numCqsOnRegion("/root/regionA"));
+              cqServiceVsdStats.numCqsOnRegion(GemFireCacheImpl.getInstance(), "/root/regionA"));
         }
 
         // Check for clients with CQs count.

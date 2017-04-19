@@ -28,7 +28,6 @@ import org.apache.geode.cache.query.internal.cq.CqServiceImpl;
 import org.apache.geode.cache.query.internal.cq.CqServiceProvider;
 import org.apache.geode.cache.query.internal.cq.ServerCQImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -111,8 +110,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
     ServerCQImpl cqQuery = null;
 
     try {
-      qService =
-          (DefaultQueryService) ((GemFireCacheImpl) crHelper.getCache()).getLocalQueryService();
+      qService = (DefaultQueryService) crHelper.getCache().getLocalQueryService();
 
       // Authorization check
       AuthorizeRequest authzRequest = servConn.getAuthzRequest();

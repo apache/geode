@@ -15,10 +15,8 @@
 
 package org.apache.geode.cache.lucene.internal.distributed;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
@@ -27,7 +25,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -44,16 +42,15 @@ import org.apache.geode.internal.logging.LogService;
  */
 public class TopEntriesFunctionCollector
     implements ResultCollector<TopEntriesCollector, TopEntries> {
-  // Use this instance to perform reduce operation
-  final CollectorManager<TopEntriesCollector> manager;
-
-  final String id;
-
-  // Instance of gemfire cache to check status and other utility methods
-  final private GemFireCacheImpl cache;
   private static final Logger logger = LogService.getLogger();
 
+  // Use this instance to perform reduce operation
+  private final CollectorManager<TopEntriesCollector> manager;
+
+  private final String id;
+
   private final Collection<TopEntriesCollector> subResults = new ArrayList<>();
+
   private TopEntriesCollector mergedResults;
 
   public TopEntriesFunctionCollector() {
@@ -65,8 +62,7 @@ public class TopEntriesFunctionCollector
   }
 
   public TopEntriesFunctionCollector(LuceneFunctionContext<TopEntriesCollector> context,
-      GemFireCacheImpl cache) {
-    this.cache = cache;
+      InternalCache cache) {
     id = cache == null ? String.valueOf(this.hashCode()) : cache.getName();
 
     int limit = context == null ? 0 : context.getLimit();
@@ -114,5 +110,9 @@ public class TopEntriesFunctionCollector
     synchronized (subResults) {
       subResults.add(resultOfSingleExecution);
     }
+  }
+
+  String id() {
+    return this.id;
   }
 }

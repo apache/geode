@@ -22,7 +22,6 @@ import java.util.List;
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.cache.query.internal.cq.CqService;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -64,8 +63,7 @@ public class GetDurableCQs extends BaseCQCommand {
     CqService cqServiceForExec = null;
 
     try {
-      qService =
-          (DefaultQueryService) ((GemFireCacheImpl) crHelper.getCache()).getLocalQueryService();
+      qService = (DefaultQueryService) crHelper.getCache().getLocalQueryService();
 
       this.securityService.authorizeClusterRead();
 

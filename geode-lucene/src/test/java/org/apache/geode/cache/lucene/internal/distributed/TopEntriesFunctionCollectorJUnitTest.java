@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.lucene.internal.distributed;
 
 import static org.junit.Assert.*;
@@ -20,9 +19,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 import java.util.Collection;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,25 +28,26 @@ import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mockito;
 
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class TopEntriesFunctionCollectorJUnitTest {
-  EntryScore<String> r1_1;
-  EntryScore<String> r1_2;
-  EntryScore<String> r2_1;
-  EntryScore<String> r2_2;
-  TopEntriesCollector result1, result2;
+
+  private EntryScore<String> r1_1;
+  private EntryScore<String> r1_2;
+  private EntryScore<String> r2_1;
+  private EntryScore<String> r2_2;
+  private TopEntriesCollector result1;
+  private TopEntriesCollector result2;
 
   @Before
   public void initializeCommonObjects() {
-    r1_1 = new EntryScore<String>("3", .9f);
-    r1_2 = new EntryScore<String>("1", .8f);
-    r2_1 = new EntryScore<String>("2", 0.85f);
-    r2_2 = new EntryScore<String>("4", 0.1f);
+    r1_1 = new EntryScore<>("3", .9f);
+    r1_2 = new EntryScore<>("1", .8f);
+    r2_1 = new EntryScore<>("2", 0.85f);
+    r2_2 = new EntryScore<>("4", 0.1f);
 
     result1 = new TopEntriesCollector(null);
     result1.collect(r1_1);
@@ -73,13 +71,9 @@ public class TopEntriesFunctionCollectorJUnitTest {
     collector.addResult(null, result1);
     collector.addResult(null, result2);
 
-    final CountDownLatch insideThread = new CountDownLatch(1);
-    final CountDownLatch resultReceived = new CountDownLatch(1);
-
-    final AtomicReference<TopEntries> result = new AtomicReference<>();
     TopEntries merged = collector.getResult(1, TimeUnit.SECONDS);
     assertEquals(4, merged.size());
-    TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
+    LuceneTestUtilities.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
   }
 
   @Test
@@ -95,7 +89,7 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntries merged = collector.getResult();
     Assert.assertNotNull(merged);
     assertEquals(3, merged.size());
-    TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2);
+    LuceneTestUtilities.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2);
   }
 
   @Test
@@ -108,7 +102,7 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntries merged = collector.getResult();
     Assert.assertNotNull(merged);
     assertEquals(4, merged.size());
-    TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
+    LuceneTestUtilities.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
   }
 
   @Test
@@ -121,12 +115,12 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntries merged = collector.getResult();
     Assert.assertNotNull(merged);
     assertEquals(4, merged.size());
-    TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
+    LuceneTestUtilities.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
 
     merged = collector.getResult();
     Assert.assertNotNull(merged);
     assertEquals(4, merged.size());
-    TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
+    LuceneTestUtilities.verifyResultOrder(merged.getHits(), r1_1, r2_1, r1_2, r2_2);
   }
 
   @Test
@@ -167,7 +161,7 @@ public class TopEntriesFunctionCollectorJUnitTest {
     TopEntries merged = collector.getResult();
     Assert.assertNotNull(merged);
     assertEquals(2, merged.size());
-    TopEntriesJUnitTest.verifyResultOrder(merged.getHits(), r2_1, r2_2);
+    LuceneTestUtilities.verifyResultOrder(merged.getHits(), r2_1, r2_2);
   }
 
   @Test(expected = RuntimeException.class)
@@ -184,10 +178,10 @@ public class TopEntriesFunctionCollectorJUnitTest {
 
   @Test
   public void testCollectorName() {
-    GemFireCacheImpl mockCache = mock(GemFireCacheImpl.class);
+    InternalCache mockCache = mock(InternalCache.class);
     Mockito.doReturn("server").when(mockCache).getName();
 
     TopEntriesFunctionCollector function = new TopEntriesFunctionCollector(null, mockCache);
-    assertEquals("server", function.id);
+    assertEquals("server", function.id());
   }
 }

@@ -19,16 +19,16 @@ import java.io.IOException;
 
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 
 public interface CqServiceFactory {
 
-  public void initialize();
+  void initialize();
 
   /**
    * Create a new CqService for the given cache
    */
-  public CqService create(GemFireCacheImpl cache);
+  CqService create(InternalCache cache);
 
-  public ServerCQ readCqQuery(DataInput in) throws ClassNotFoundException, IOException;
+  ServerCQ readCqQuery(DataInput in) throws ClassNotFoundException, IOException;
 }

@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.lucene.internal.distributed;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
@@ -41,6 +40,7 @@ import org.apache.geode.cache.lucene.internal.StringQueryProvider;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
@@ -58,30 +58,30 @@ import org.mockito.Mockito;
 @Category(UnitTest.class)
 public class LuceneQueryFunctionJUnitTest {
 
-  String regionPath = "/region";
-  String indexName = "index";
-  final EntryScore<String> r1_1 = new EntryScore<String>("key-1-1", .5f);
-  final EntryScore<String> r1_2 = new EntryScore<String>("key-1-2", .4f);
-  final EntryScore<String> r1_3 = new EntryScore<String>("key-1-3", .3f);
-  final EntryScore<String> r2_1 = new EntryScore<String>("key-2-1", .45f);
-  final EntryScore<String> r2_2 = new EntryScore<String>("key-2-2", .35f);
+  private String regionPath = "/region";
 
-  InternalRegionFunctionContext mockContext;
-  ResultSender<TopEntriesCollector> mockResultSender;
-  Region<Object, Object> mockRegion;
+  private final EntryScore<String> r1_1 = new EntryScore<>("key-1-1", .5f);
+  private final EntryScore<String> r1_2 = new EntryScore<>("key-1-2", .4f);
+  private final EntryScore<String> r1_3 = new EntryScore<>("key-1-3", .3f);
+  private final EntryScore<String> r2_1 = new EntryScore<>("key-2-1", .45f);
+  private final EntryScore<String> r2_2 = new EntryScore<>("key-2-2", .35f);
 
-  RepositoryManager mockRepoManager;
-  IndexRepository mockRepository1;
-  IndexRepository mockRepository2;
-  IndexResultCollector mockCollector;
-  InternalLuceneService mockService;
-  LuceneIndexImpl mockIndex;
-  LuceneIndexStats mockStats;
+  private InternalRegionFunctionContext mockContext;
+  private ResultSender<TopEntriesCollector> mockResultSender;
+  private Region<Object, Object> mockRegion;
 
-  ArrayList<IndexRepository> repos;
-  LuceneFunctionContext<IndexResultCollector> searchArgs;
-  LuceneQueryProvider queryProvider;
-  Query query;
+  private RepositoryManager mockRepoManager;
+  private IndexRepository mockRepository1;
+  private IndexRepository mockRepository2;
+  private IndexResultCollector mockCollector;
+  private InternalLuceneService mockService;
+  private LuceneIndexImpl mockIndex;
+  private LuceneIndexStats mockStats;
+
+  private ArrayList<IndexRepository> repos;
+  private LuceneFunctionContext<IndexResultCollector> searchArgs;
+  private LuceneQueryProvider queryProvider;
+  private Query query;
 
   private InternalCache mockCache;
 
@@ -120,7 +120,7 @@ public class LuceneQueryFunctionJUnitTest {
 
     List<EntryScore> hits = result.getEntries().getHits();
     assertEquals(5, hits.size());
-    TopEntriesJUnitTest.verifyResultOrder(result.getEntries().getHits(), r1_1, r2_1, r1_2, r2_2,
+    LuceneTestUtilities.verifyResultOrder(result.getEntries().getHits(), r1_1, r2_1, r1_2, r2_2,
         r1_3);
   }
 
@@ -161,7 +161,7 @@ public class LuceneQueryFunctionJUnitTest {
 
     List<EntryScore> hits = result.getEntries().getHits();
     assertEquals(3, hits.size());
-    TopEntriesJUnitTest.verifyResultOrder(result.getEntries().getHits(), r1_1, r2_1, r1_2);
+    LuceneTestUtilities.verifyResultOrder(result.getEntries().getHits(), r1_1, r2_1, r1_2);
   }
 
   @Test
