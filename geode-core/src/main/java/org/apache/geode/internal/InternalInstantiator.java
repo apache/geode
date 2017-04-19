@@ -378,8 +378,9 @@ public class InternalInstantiator {
             InternalDataSerializer.getCachedClass(holder.getInstantiatedClassName());
       } catch (ClassNotFoundException cnfe) {
         GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-        if (cache != null && cache.getLoggerI18n() != null && cache.getLoggerI18n().infoEnabled()) {
-          cache.getLoggerI18n().info(
+        if (cache != null && cache.getLogger().convertToLogWriterI18n() != null
+            && cache.getLogger().convertToLogWriterI18n().infoEnabled()) {
+          cache.getLogger().convertToLogWriterI18n().info(
               LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATOR_CLASS_0,
               new Object[] {cnfe.getMessage()});
         }
@@ -555,9 +556,9 @@ public class InternalInstantiator {
           }
         } catch (ClassNotFoundException cnfe) {
           GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-          if (cache != null && cache.getLoggerI18n() != null
-              && cache.getLoggerI18n().infoEnabled()) {
-            cache.getLoggerI18n().info(
+          if (cache != null && cache.getLogger().convertToLogWriterI18n() != null
+              && cache.getLogger().convertToLogWriterI18n().infoEnabled()) {
+            cache.getLogger().convertToLogWriterI18n().info(
                 LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATOR_CLASS_0,
                 new Object[] {cnfe.getMessage()});
           }
@@ -681,9 +682,9 @@ public class InternalInstantiator {
           }
         } catch (ClassNotFoundException cnfe) {
           GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-          if (cache != null && cache.getLoggerI18n() != null
-              && cache.getLoggerI18n().infoEnabled()) {
-            cache.getLoggerI18n().info(
+          if (cache != null && cache.getLogger().convertToLogWriterI18n() != null
+              && cache.getLogger().convertToLogWriterI18n().infoEnabled()) {
+            cache.getLogger().convertToLogWriterI18n().info(
                 LocalizedStrings.InternalInstantiator_COULD_NOT_LOAD_INSTANTIATOR_CLASS_0,
                 new Object[] {cnfe.getMessage()});
           }

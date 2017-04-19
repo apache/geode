@@ -85,7 +85,7 @@ public class ClientHealthMonitoringRegion {
 
       currentInstance = cache.createVMRegion(ADMIN_REGION_NAME, regionAttrs, internalArgs);
     } catch (Exception ex) {
-      cache.getLoggerI18n().error(
+      cache.getLogger().convertToLogWriterI18n().error(
           LocalizedStrings.ClientHealthMonitoringRegion_ERROR_WHILE_CREATING_AN_ADMIN_REGION, ex);
     }
   }

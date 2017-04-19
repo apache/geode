@@ -103,7 +103,7 @@ public class OplogRVVJUnitTest {
     context.checking(new Expectations() {
       {
         ignoring(logger);
-        allowing(cache).getLoggerI18n();
+        allowing(cache).getLogger().convertToLogWriterI18n();
         will(returnValue(logger));
         allowing(cache).cacheTimeMillis();
         will(returnValue(System.currentTimeMillis()));

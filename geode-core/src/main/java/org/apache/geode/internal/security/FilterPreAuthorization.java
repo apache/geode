@@ -71,7 +71,7 @@ public class FilterPreAuthorization implements AccessControl {
   public void init(Principal principal, DistributedMember remoteMember, Cache cache)
       throws NotAuthorizedException {
 
-    this.logger = cache.getSecurityLoggerI18n();
+    this.logger = cache.getLogger().convertToLogWriterI18n();
   }
 
   public boolean authorizeOperation(String regionName, OperationContext context) {

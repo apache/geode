@@ -479,7 +479,7 @@ public class CacheCreation implements InternalCache {
           factory.create(senderCreation.getId(), senderCreation.getRemoteDSId());
       // Start the sender if it is not set to manually start
       if (gatewaySender.isManualStart()) {
-        cache.getLoggerI18n().info(
+        cache.getLogger().convertToLogWriterI18n().info(
             LocalizedStrings.CacheCreation_0_IS_NOT_BEING_STARTED_SINCE_IT_IS_CONFIGURED_FOR_MANUAL_START,
             gatewaySender);
       }
@@ -545,7 +545,7 @@ public class CacheCreation implements InternalCache {
       factory.setHostnameForSenders(receiverCreation.getHost());
       GatewayReceiver receiver = factory.create();
       if (receiver.isManualStart()) {
-        cache.getLoggerI18n().info(
+        cache.getLogger().convertToLogWriterI18n().info(
             LocalizedStrings.CacheCreation_0_IS_NOT_BEING_STARTED_SINCE_IT_IS_CONFIGURED_FOR_MANUAL_START,
             receiver);
       }

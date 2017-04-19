@@ -3368,7 +3368,8 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
     if (op.removeAllDataSize > 0) {
       token = op.startOperation();
     } else {
-      getCache().getLoggerI18n().fine("DR.postRemoveAll: no data to distribute");
+      getCache().getLogger().convertToLogWriterI18n()
+          .fine("DR.postRemoveAll: no data to distribute");
     }
     return token;
   }

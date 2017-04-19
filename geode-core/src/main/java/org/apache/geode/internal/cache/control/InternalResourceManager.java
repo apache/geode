@@ -228,13 +228,13 @@ public class InternalResourceManager implements ResourceManager {
   public void deliverEventFromRemote(final ResourceEvent event) {
     assert !event.isLocal();
 
-    if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n()
+    if (this.cache.getLogger().convertToLogWriterI18n().fineEnabled()) {
+      this.cache.getLogger().convertToLogWriterI18n()
           .fine("New remote event to deliver for member " + event.getMember() + ": event=" + event);
     }
 
-    if (this.cache.getLoggerI18n().fineEnabled()) {
-      this.cache.getLoggerI18n()
+    if (this.cache.getLogger().convertToLogWriterI18n().fineEnabled()) {
+      this.cache.getLogger().convertToLogWriterI18n()
           .fine("Remote event to deliver for member " + event.getMember() + ":" + event);
     }
 
@@ -283,7 +283,7 @@ public class InternalResourceManager implements ResourceManager {
       this.notifyExecutor.execute(runnable);
     } catch (RejectedExecutionException e) {
       if (!isClosed()) {
-        this.cache.getLoggerI18n()
+        this.cache.getLogger().convertToLogWriterI18n()
             .warning(LocalizedStrings.ResourceManager_REJECTED_EXECUTION_CAUSE_NOHEAP_EVENTS);
       }
     }

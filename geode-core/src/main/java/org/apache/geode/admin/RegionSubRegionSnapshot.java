@@ -54,7 +54,7 @@ public class RegionSubRegionSnapshot implements DataSerializable {
     } else {
       this.entryCount = reg.entrySet().size();
     }
-    final LogWriterI18n logger = reg.getCache().getLoggerI18n();
+    final LogWriterI18n logger = reg.getCache().getLogger().convertToLogWriterI18n();
     if ((logger != null) && logger.fineEnabled()) {
       logger.fine("RegionSubRegionSnapshot Region entry count =" + this.entryCount + " for region ="
           + this.name);

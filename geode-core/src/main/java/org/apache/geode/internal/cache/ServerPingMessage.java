@@ -77,8 +77,9 @@ public class ServerPingMessage extends PooledDistributionMessage {
     spm.setRecipients(filteredRecipients);
     Set failedServers = null;
     try {
-      if (cache.getLoggerI18n().fineEnabled())
-        cache.getLoggerI18n().fine("Pinging following servers " + filteredRecipients);
+      if (cache.getLogger().convertToLogWriterI18n().fineEnabled())
+        cache.getLogger().convertToLogWriterI18n()
+            .fine("Pinging following servers " + filteredRecipients);
       failedServers = dm.putOutgoing(spm);
 
       // wait for the replies for timeout msecs
@@ -88,18 +89,21 @@ public class ServerPingMessage extends PooledDistributionMessage {
 
       // If the reply is not received in the stipulated time, throw an exception
       if (!receivedReplies) {
-        cache.getLoggerI18n().error(LocalizedStrings.Server_Ping_Failure, filteredRecipients);
+        cache.getLogger().convertToLogWriterI18n().error(LocalizedStrings.Server_Ping_Failure,
+            filteredRecipients);
         return false;
       }
     } catch (Throwable e) {
-      cache.getLoggerI18n().error(LocalizedStrings.Server_Ping_Failure, filteredRecipients, e);
+      cache.getLogger().convertToLogWriterI18n().error(LocalizedStrings.Server_Ping_Failure,
+          filteredRecipients, e);
       return false;
     }
 
     if (failedServers == null || failedServers.size() == 0)
       return true;
 
-    cache.getLoggerI18n().info(LocalizedStrings.Server_Ping_Failure, failedServers);
+    cache.getLogger().convertToLogWriterI18n().info(LocalizedStrings.Server_Ping_Failure,
+        failedServers);
 
     return false;
   }

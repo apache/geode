@@ -1680,7 +1680,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
   public static void verifyReceivedMarkerAck(final CacheClientProxy proxy) {
     WaitCriterion ev = new WaitCriterion() {
       public boolean done() {
-        GemFireCacheImpl.getInstance().getLoggerI18n()
+        GemFireCacheImpl.getInstance().getLogger().convertToLogWriterI18n()
             .fine("DurableClientDUnitTest->WaitCriterion :: done called");
         return checkForAck(proxy);
       }

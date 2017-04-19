@@ -70,7 +70,7 @@ public class AuthorizeRequest {
       this.isPrincipalSerializable = false;
     }
 
-    this.logger = cache.getSecurityLoggerI18n();
+    this.logger = cache.getSecurityLogger().convertToLogWriterI18n();
     Method authzMethod = ClassLoadUtil.methodFromName(authzFactoryName);
     this.authzCallback = (AccessControl) authzMethod.invoke(null, (Object[]) null);
     this.authzCallback.init(principal, dm, cache);

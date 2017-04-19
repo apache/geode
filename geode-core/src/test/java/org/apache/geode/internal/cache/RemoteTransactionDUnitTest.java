@@ -271,7 +271,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           Map orders = new HashMap();
           orders.put(orderId2, expectedOrder2);
           orders.put(orderId3, expectedOrder3);
-          getGemfireCache().getLoggerI18n().fine("SWAP:doingPutAll");
+          getGemfireCache().getLogger().convertToLogWriterI18n().fine("SWAP:doingPutAll");
           // orderRegion.putAll(orders);
           refRegion.put(custId, expectedCust);
           Set<OrderId> ordersSet = new HashSet<OrderId>();
@@ -329,7 +329,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     boolean rContainsKC = custRegion.containsKey(custId);
     boolean rContainsKO = containsKey;
     for (OrderId o : ordersSet) {
-      getGemfireCache().getLoggerI18n()
+      getGemfireCache().getLogger().convertToLogWriterI18n()
           .fine("SWAP:rContainsKO:" + rContainsKO + " containsKey:" + orderRegion.containsKey(o));
       rContainsKO = rContainsKO && orderRegion.containsKey(o);
     }
@@ -914,7 +914,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         Region<CustId, Customer> cust = getGemfireCache().getRegion(CUSTOMER);
         Region<CustId, Customer> rr = getGemfireCache().getRegion(D_REFERENCE);
         Customer expectedCust = new Customer("customer" + 1, "address" + 1);
-        getGemfireCache().getLoggerI18n().fine("SWAP:doingPutIfAbsent");
+        getGemfireCache().getLogger().convertToLogWriterI18n().fine("SWAP:doingPutIfAbsent");
         CustId oldCustId = new CustId(1);
         Customer old = cust.putIfAbsent(oldCustId, updateCust);
         assertTrue("expected:" + expectedCust + " but was " + old, expectedCust.equals(old));
@@ -1056,7 +1056,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.begin();
         CustId conflictCust = new CustId(2);
         Customer customer = new Customer("customer2", "address2");
-        getGemfireCache().getLoggerI18n().fine("SWAP:removeConflict");
+        getGemfireCache().getLogger().convertToLogWriterI18n().fine("SWAP:removeConflict");
         assertTrue(cust.remove(conflictCust, customer));
         TXStateProxy tx = mgr.internalSuspend();
         cust.put(conflictCust, new Customer("foo", "bar"));
@@ -1134,7 +1134,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.begin();
         CustId custId3 = new CustId(3);
         CustId custId4 = new CustId(4);
-        getGemfireCache().getLoggerI18n().fine("SWAP:removeConflict");
+        getGemfireCache().getLogger().convertToLogWriterI18n().fine("SWAP:removeConflict");
         cust.removeAll(Arrays.asList(custId3, custId20, custId4));
         TXStateProxy tx = mgr.internalSuspend();
         // cust.put(custId3, new Customer("foo", "bar"));
@@ -1154,7 +1154,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         // Test a removeall an already missing key.
         // custId2 has already been removed
         mgr.begin();
-        getGemfireCache().getLoggerI18n().fine("SWAP:removeConflict");
+        getGemfireCache().getLogger().convertToLogWriterI18n().fine("SWAP:removeConflict");
         cust.removeAll(Arrays.asList(custId2, custId3));
         tx = mgr.internalSuspend();
         cust.put(custId2, new Customer("foo", "bar"));
@@ -1322,7 +1322,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.begin();
         CustId conflictCust = new CustId(2);
         Customer customer = new Customer("customer2", "address2");
-        getGemfireCache().getLoggerI18n().fine("SWAP:removeConflict");
+        getGemfireCache().getLogger().convertToLogWriterI18n().fine("SWAP:removeConflict");
         assertTrue(cust.replace(conflictCust, customer, new Customer("conflict", "conflict")));
         TXStateProxy tx = mgr.internalSuspend();
         cust.put(conflictCust, new Customer("foo", "bar"));
@@ -3061,7 +3061,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       }
 
       public void beforeDestroy(EntryEvent event) throws CacheWriterException {
-        getGemfireCache().getLoggerI18n().fine("SWAP:writer:createEvent:" + event);
+        getGemfireCache().getLogger().convertToLogWriterI18n()
+            .fine("SWAP:writer:createEvent:" + event);
         if (!event.isOriginRemote()) {
           throw new CacheWriterException("SUP?? This DESTROY is supposed to be isOriginRemote");
         }

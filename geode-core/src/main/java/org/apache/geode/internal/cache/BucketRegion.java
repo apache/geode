@@ -2423,8 +2423,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         this.partitionedRegion.getRegionAdvisor().getBucketOwners(this.getId());
     hostingservers.remove(cache.getDistributedSystem().getDistributedMember());
 
-    if (cache.getLoggerI18n().fineEnabled())
-      cache.getLoggerI18n()
+    if (cache.getLogger().convertToLogWriterI18n().fineEnabled())
+      cache.getLogger().convertToLogWriterI18n()
           .fine("Pinging secondaries of bucket " + this.getId() + " on servers " + hostingservers);
 
     if (hostingservers.size() == 0)

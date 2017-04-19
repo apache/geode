@@ -268,8 +268,16 @@ public class ServerConnection implements Runnable {
     this.stats = stats;
     this.acceptor = (AcceptorImpl) acceptor;
     this.crHelper = helper;
-    this.logWriter = (InternalLogWriter) c.getLoggerI18n();
-    this.securityLogWriter = (InternalLogWriter) c.getSecurityLoggerI18n();
+    if (c.getLogger() != null) {
+      this.logWriter = (InternalLogWriter) c.getLogger().convertToLogWriterI18n();
+    } else {
+      this.logWriter = null;
+    }
+    if (c.getSecurityLogger() != null) {
+      this.securityLogWriter = (InternalLogWriter) c.getSecurityLogger().convertToLogWriterI18n();
+    } else {
+      this.securityLogWriter = null;
+    }
     this.communicationModeStr = communicationModeStr;
     this.communicationMode = communicationMode;
     this.principal = null;

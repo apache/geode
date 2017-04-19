@@ -185,7 +185,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
   public void printResults(SelectResults results, String message) {
     Object r;
     Struct s;
-    LogWriterI18n logger = GemFireCacheImpl.getInstance().getLoggerI18n();
+    LogWriterI18n logger = GemFireCacheImpl.getInstance().getLogger().convertToLogWriterI18n();
     logger.fine(message);
     int row = 0;
     for (Iterator iter = results.iterator(); iter.hasNext();) {
@@ -337,7 +337,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     public boolean equals(Object o) {
       org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
           .info("In TestObject2.equals() this: " + this + " other :" + o);
-      GemFireCacheImpl.getInstance().getLoggerI18n()
+      GemFireCacheImpl.getInstance().getLogger().convertToLogWriterI18n()
           .fine("In TestObject2.equals() this: " + this + " other :" + o);
       TestObject2 other = (TestObject2) o;
       if (_id == other._id) {
@@ -350,7 +350,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
 
     @Override
     public int hashCode() {
-      GemFireCacheImpl.getInstance().getLoggerI18n()
+      GemFireCacheImpl.getInstance().getLogger().convertToLogWriterI18n()
           .fine("In TestObject2.hashCode() : " + this._id);
       return this._id;
     }
@@ -463,7 +463,8 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
 
     @Override
     public int hashCode() {
-      GemFireCacheImpl.getInstance().getLoggerI18n().fine("In TestObject.hashCode() : " + this.id);
+      GemFireCacheImpl.getInstance().getLogger().convertToLogWriterI18n()
+          .fine("In TestObject.hashCode() : " + this.id);
       return this.id;
     }
 

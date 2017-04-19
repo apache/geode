@@ -1055,16 +1055,18 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
     @Override
     public void afterCreate(EntryEvent event) {
       // Make sure we deserialize the new value
-      event.getRegion().getCache().getLoggerI18n().fine("invoked afterCreate with " + event);
-      event.getRegion().getCache().getLoggerI18n().info(LocalizedStrings.DEBUG,
+      event.getRegion().getCache().getLogger().convertToLogWriterI18n()
+          .fine("invoked afterCreate with " + event);
+      event.getRegion().getCache().getLogger().convertToLogWriterI18n().info(LocalizedStrings.DEBUG,
           "value is " + event.getNewValue());
     }
 
     @Override
     public void afterUpdate(EntryEvent event) {
       // Make sure we deserialize the new value
-      event.getRegion().getCache().getLoggerI18n().fine("invoked afterUpdate with ");
-      event.getRegion().getCache().getLoggerI18n().info(LocalizedStrings.DEBUG,
+      event.getRegion().getCache().getLogger().convertToLogWriterI18n()
+          .fine("invoked afterUpdate with ");
+      event.getRegion().getCache().getLogger().convertToLogWriterI18n().info(LocalizedStrings.DEBUG,
           "value is " + event.getNewValue());
     }
 

@@ -1333,11 +1333,11 @@ public class GemFireCacheImpl
       String bindAddress = system.getConfig().getRedisBindAddress();
       assert bindAddress != null;
       if (bindAddress.equals(DistributionConfig.DEFAULT_REDIS_BIND_ADDRESS)) {
-        getLoggerI18n().info(
+        getLogger().convertToLogWriterI18n().info(
             LocalizedStrings.GemFireCacheImpl_STARTING_GEMFIRE_REDIS_SERVER_ON_PORT_0,
             new Object[] {port});
       } else {
-        getLoggerI18n().info(
+        getLogger().convertToLogWriterI18n().info(
             LocalizedStrings.GemFireCacheImpl_STARTING_GEMFIRE_REDIS_SERVER_ON_BIND_ADDRESS_0_PORT_1,
             new Object[] {bindAddress, port});
       }
@@ -2926,16 +2926,6 @@ public class GemFireCacheImpl
     return this.system.getSecurityLogWriter();
   }
 
-  @Override
-  public LogWriterI18n getLoggerI18n() {
-    return this.system.getInternalLogWriter();
-  }
-
-  @Override
-  public LogWriterI18n getSecurityLoggerI18n() {
-    return this.system.getSecurityInternalLogWriter();
-  }
-
   public InternalLogWriter getInternalLogWriter() {
     return this.system.getInternalLogWriter();
   }
@@ -3554,7 +3544,7 @@ public class GemFireCacheImpl
 
     String[] pathParts = parsePath(path);
     LocalRegion root;
-    LogWriterI18n logger = getLoggerI18n();
+    LogWriterI18n logger = getLogger().convertToLogWriterI18n();
     synchronized (this.rootRegions) {
       root = (LocalRegion) this.rootRegions.get(pathParts[0]);
       if (root == null) {

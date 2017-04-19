@@ -852,9 +852,9 @@ public class CacheClientProxy implements ClientSession {
         }
       }
     } catch (Exception ex) {
-      if (this._cache.getSecurityLoggerI18n().warningEnabled()) {
-        this._cache.getSecurityLoggerI18n().warning(LocalizedStrings.TWO_ARG_COLON,
-            new Object[] {this, ex});
+      if (this._cache.getSecurityLogger().convertToLogWriterI18n().warningEnabled()) {
+        this._cache.getSecurityLogger().convertToLogWriterI18n()
+            .warning(LocalizedStrings.TWO_ARG_COLON, new Object[] {this, ex});
       }
     }
     // Notify the caller whether to keep this proxy. If the proxy is durable

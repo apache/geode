@@ -204,7 +204,7 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
 
     crf.addCacheListener(new CacheListenerAdapter<String, String>() {
       public void afterInvalidate(EntryEvent<String, String> event) {
-        cache.getLoggerI18n()
+        cache.getLogger().convertToLogWriterI18n()
             .fine("Invalidate Event: " + event.getKey() + ", " + event.getNewValue());
         numOfInvalidates++;
       }
@@ -213,12 +213,14 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
         if (((String) event.getKey()).equals("last_key")) {
           lastKeyReceived = true;
         }
-        cache.getLoggerI18n().fine("Create Event: " + event.getKey() + ", " + event.getNewValue());
+        cache.getLogger().convertToLogWriterI18n()
+            .fine("Create Event: " + event.getKey() + ", " + event.getNewValue());
         numOfCreates++;
       }
 
       public void afterUpdate(EntryEvent<String, String> event) {
-        cache.getLoggerI18n().fine("Update Event: " + event.getKey() + ", " + event.getNewValue());
+        cache.getLogger().convertToLogWriterI18n()
+            .fine("Update Event: " + event.getKey() + ", " + event.getNewValue());
         numOfUpdates++;
       }
     });
@@ -287,16 +289,17 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
   public static void verifyStats() throws Exception {
     CacheClientNotifier ccn = CacheClientNotifier.getInstance();
     CacheClientProxy ccp = ccn.getClientProxies().iterator().next();
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG, "getQueueSize() " + ccp.getQueueSize());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+    cache.getLogger().convertToLogWriterI18n().info(LocalizedStrings.DEBUG,
+        "getQueueSize() " + ccp.getQueueSize());
+    cache.getLogger().convertToLogWriterI18n().info(LocalizedStrings.DEBUG,
         "getQueueSizeStat() " + ccp.getQueueSizeStat());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+    cache.getLogger().convertToLogWriterI18n().info(LocalizedStrings.DEBUG,
         "getEventsEnqued() " + ccp.getHARegionQueue().getStatistics().getEventsEnqued());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+    cache.getLogger().convertToLogWriterI18n().info(LocalizedStrings.DEBUG,
         "getEventsDispatched() " + ccp.getHARegionQueue().getStatistics().getEventsDispatched());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+    cache.getLogger().convertToLogWriterI18n().info(LocalizedStrings.DEBUG,
         "getEventsRemoved() " + ccp.getHARegionQueue().getStatistics().getEventsRemoved());
-    cache.getLoggerI18n().info(LocalizedStrings.DEBUG,
+    cache.getLogger().convertToLogWriterI18n().info(LocalizedStrings.DEBUG,
         "getNumVoidRemovals() " + ccp.getHARegionQueue().getStatistics().getNumVoidRemovals());
     assertEquals(ccp.getQueueSize(), ccp.getQueueSizeStat());
   }

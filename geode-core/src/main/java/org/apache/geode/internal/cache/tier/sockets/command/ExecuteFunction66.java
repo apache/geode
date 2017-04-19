@@ -341,9 +341,10 @@ public class ExecuteFunction66 extends BaseCommand {
             if (txState != null) {
               cache = GemFireCacheImpl.getExisting("executing function");
               cache.getTxManager().masqueradeAs(txState);
-              if (cache.getLoggerI18n().warningEnabled() && !ASYNC_TX_WARNING_ISSUED) {
+              if (cache.getLogger().convertToLogWriterI18n().warningEnabled()
+                  && !ASYNC_TX_WARNING_ISSUED) {
                 ASYNC_TX_WARNING_ISSUED = true;
-                cache.getLoggerI18n().warning(
+                cache.getLogger().convertToLogWriterI18n().warning(
                     LocalizedStrings.ExecuteFunction66_TRANSACTIONAL_FUNCTION_WITHOUT_RESULT);
               }
             }

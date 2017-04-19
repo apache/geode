@@ -353,7 +353,7 @@ public class Bug43684DUnitTest extends JUnit4DistributedTestCase {
     LocalRegion r = (LocalRegion) cache.getRegion(REGION_NAME);
     for (int i = 0; i < numBuckets; i++) {
       RegionEntry e = r.getRegionEntry("KEY_" + i);
-      cache.getLoggerI18n().info(LocalizedStrings.DEBUG, e._getValue());
+      cache.getLogger().convertToLogWriterI18n().info(LocalizedStrings.DEBUG, e._getValue());
     }
   }
 }

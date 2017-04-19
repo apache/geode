@@ -195,8 +195,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
 
   private void trackBucketForTx(KeyInfo keyInfo) {
-    if (region.getCache().getLoggerI18n().fineEnabled()) {
-      region.getCache().getLoggerI18n()
+    if (region.getCache().getLogger().convertToLogWriterI18n().fineEnabled()) {
+      region.getCache().getLogger().convertToLogWriterI18n()
           .fine("adding bucket:" + keyInfo.getBucketId() + " for tx:" + state.getTransactionId());
     }
     if (keyInfo.getBucketId() >= 0) {
@@ -441,7 +441,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     pr.prStats.endPutAll(startTime);
 
     if (partialKeys.hasFailure()) {
-      pr.getCache().getLoggerI18n().info(LocalizedStrings.Region_PutAll_Applied_PartialKeys_0_1,
+      pr.getCache().getLogger().convertToLogWriterI18n().info(
+          LocalizedStrings.Region_PutAll_Applied_PartialKeys_0_1,
           new Object[] {pr.getFullPath(), partialKeys});
       if (putallO.isBridgeOperation()) {
         if (partialKeys.getFailure() instanceof CancelException) {
@@ -501,7 +502,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     pr.prStats.endRemoveAll(startTime);
 
     if (partialKeys.hasFailure()) {
-      pr.getCache().getLoggerI18n().info(LocalizedStrings.Region_RemoveAll_Applied_PartialKeys_0_1,
+      pr.getCache().getLogger().convertToLogWriterI18n().info(
+          LocalizedStrings.Region_RemoveAll_Applied_PartialKeys_0_1,
           new Object[] {pr.getFullPath(), partialKeys});
       if (op.isBridgeOperation()) {
         if (partialKeys.getFailure() instanceof CancelException) {

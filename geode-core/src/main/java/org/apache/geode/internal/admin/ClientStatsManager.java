@@ -70,7 +70,7 @@ public class ClientStatsManager {
     if (!initializeStatistics(currentCache)) {
       return; // handles null case too
     }
-    LogWriterI18n logger = currentCache.getLoggerI18n();
+    LogWriterI18n logger = currentCache.getLogger().convertToLogWriterI18n();
     if (logger.fineEnabled())
       logger.fine("Entering ClientStatsManager#publishClientStats...");
 
@@ -126,7 +126,7 @@ public class ClientStatsManager {
     if (currentCache == null) {
       return false;
     }
-    LogWriterI18n logger = currentCache.getLoggerI18n();
+    LogWriterI18n logger = currentCache.getLogger().convertToLogWriterI18n();
     InternalDistributedSystem ds = (InternalDistributedSystem) currentCache.getDistributedSystem();
     if (currentCache.isClosed()) {
       return false;
@@ -192,7 +192,7 @@ public class ClientStatsManager {
       return null;
     }
     ClientHealthStats stats = new ClientHealthStats();
-    LogWriterI18n logger = currentCache.getLoggerI18n();
+    LogWriterI18n logger = currentCache.getLogger().convertToLogWriterI18n();
     {
       int gets = -1;
       int puts = -1;

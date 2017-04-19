@@ -225,7 +225,7 @@ public class RemoteCQTransactionDUnitTest extends JUnit4CacheTestCase {
     boolean rContainsKC = custRegion.containsKey(custId);
     boolean rContainsKO = containsKey;
     for (OrderId o : ordersSet) {
-      getGemfireCache().getLoggerI18n()
+      getGemfireCache().getLogger().convertToLogWriterI18n()
           .fine("SWAP:rContainsKO:" + rContainsKO + " containsKey:" + orderRegion.containsKey(o));
       rContainsKO = rContainsKO && orderRegion.containsKey(o);
     }
