@@ -14,16 +14,14 @@
  */
 package org.apache.geode.rest.internal.web.controllers;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
-import org.apache.geode.rest.internal.web.controllers.support.RegionData;
-import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
-import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.rest.internal.web.util.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -38,19 +36,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
+import org.apache.geode.rest.internal.web.controllers.support.RegionData;
+import org.apache.geode.rest.internal.web.controllers.support.RegionEntryData;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.rest.internal.web.util.ArrayUtils;
 
 /**
  * The PdxBasedCrudController class serving REST Requests related to the REST CRUD operation on
  * region
- * <p/>
- * 
+ *
  * @see org.springframework.stereotype.Controller
  * @since GemFire 8.0
  */
-
 @Controller("pdxCrudController")
 @Api(value = "region", description = "region CRUD operations")
 @RequestMapping(PdxBasedCrudController.REST_API_VERSION)
@@ -59,9 +58,9 @@ public class PdxBasedCrudController extends CommonCrudController {
 
   private static final Logger logger = LogService.getLogger();
 
-  protected static final String REST_API_VERSION = "/v1";
+  static final String REST_API_VERSION = "/v1";
 
-  protected static final String DEFAULT_GETALL_RESULT_LIMIT = "50";
+  private static final String DEFAULT_GETALL_RESULT_LIMIT = "50";
 
   @Override
   protected String getRestApiVersion() {
@@ -76,7 +75,6 @@ public class PdxBasedCrudController extends CommonCrudController {
    * @param json JSON document that is stored against the key
    * @return JSON document
    */
-
   @RequestMapping(method = RequestMethod.POST, value = "/{region}",
       consumes = MediaType.APPLICATION_JSON_VALUE, produces = {MediaType.APPLICATION_JSON_VALUE})
   @ApiOperation(value = "create entry", notes = "Create (put-if-absent) data in region",

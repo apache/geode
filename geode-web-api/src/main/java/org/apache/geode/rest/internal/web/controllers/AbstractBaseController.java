@@ -12,45 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.rest.internal.web.controllers;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+
+import javax.annotation.PostConstruct;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.geode.SerializationException;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheLoaderException;
-import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.LowMemoryException;
-import org.apache.geode.cache.PartitionedRegionStorageException;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.cache.query.Query;
-import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.LeaseExpiredException;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.JSONFormatterException;
-import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
-import org.apache.geode.rest.internal.web.controllers.support.UpdateOp;
-import org.apache.geode.rest.internal.web.exception.DataTypeNotSupportedException;
-import org.apache.geode.rest.internal.web.exception.GemfireRestException;
-import org.apache.geode.rest.internal.web.exception.MalformedJsonException;
-import org.apache.geode.rest.internal.web.exception.RegionNotFoundException;
-import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.rest.internal.web.security.RestSecurityService;
-import org.apache.geode.rest.internal.web.util.ArrayUtils;
-import org.apache.geode.rest.internal.web.util.IdentifiableUtils;
-import org.apache.geode.rest.internal.web.util.JSONUtils;
-import org.apache.geode.rest.internal.web.util.NumberUtils;
-import org.apache.geode.rest.internal.web.util.ValidationUtils;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,64 +49,81 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-import javax.annotation.PostConstruct;
-
+import org.apache.geode.SerializationException;
+import org.apache.geode.cache.CacheLoaderException;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.LowMemoryException;
+import org.apache.geode.cache.PartitionedRegionStorageException;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.LeaseExpiredException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.JSONFormatterException;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.rest.internal.web.controllers.support.CacheProvider;
+import org.apache.geode.rest.internal.web.controllers.support.JSONTypes;
+import org.apache.geode.rest.internal.web.controllers.support.UpdateOp;
+import org.apache.geode.rest.internal.web.exception.DataTypeNotSupportedException;
+import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.rest.internal.web.exception.MalformedJsonException;
+import org.apache.geode.rest.internal.web.exception.RegionNotFoundException;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.rest.internal.web.security.RestSecurityService;
+import org.apache.geode.rest.internal.web.util.ArrayUtils;
+import org.apache.geode.rest.internal.web.util.IdentifiableUtils;
+import org.apache.geode.rest.internal.web.util.JSONUtils;
+import org.apache.geode.rest.internal.web.util.NumberUtils;
+import org.apache.geode.rest.internal.web.util.ValidationUtils;
 
 /**
  * AbstractBaseController class contains common functionalities required for other controllers.
  * 
  * @since GemFire 8.0
  */
-
 @SuppressWarnings("unused")
 public abstract class AbstractBaseController {
 
-  protected static final String NEW_META_DATA_PROPERTY = "@new";
-  protected static final String OLD_META_DATA_PROPERTY = "@old";
-  protected static final String TYPE_META_DATA_PROPERTY = "@type";
-  protected static final String UTF_8 = "UTF-8";
-  protected static final String DEFAULT_ENCODING = UTF_8;
+  private static final String NEW_META_DATA_PROPERTY = "@new";
+  private static final String OLD_META_DATA_PROPERTY = "@old";
+  private static final String TYPE_META_DATA_PROPERTY = "@type";
+  private static final String UTF_8 = "UTF-8";
+  private static final String DEFAULT_ENCODING = UTF_8;
   private static final Logger logger = LogService.getLogger();
   private static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
 
-  // private Cache cache = GemFireCacheImpl.getExisting(null);
   @Autowired
-  protected RestSecurityService securityService;
+  private RestSecurityService securityService;
   @Autowired
   private ObjectMapper objectMapper;
+  @Autowired
+  private CacheProvider cacheProvider;
 
   @PostConstruct
   private void init() {
     JSONUtils.setObjectMapper(objectMapper);
   }
 
-  protected Cache getCache() {
-    Cache cache = GemFireCacheImpl.getExisting();
+  protected InternalCache getCache() {
+    InternalCache cache = cacheProvider.getInternalCache();
     Assert.state(cache != null, "The Gemfire Cache reference was not properly initialized");
     return cache;
   }
 
-  protected URI toUri(final String... pathSegments) {
+  URI toUri(final String... pathSegments) {
     return ServletUriComponentsBuilder.fromCurrentContextPath().path(getRestApiVersion())
         .pathSegment(pathSegments).build().toUri();
   }
 
   protected abstract String getRestApiVersion();
 
-  protected String validateQuery(String queryInUrl, String queryInBody) {
+  String validateQuery(String queryInUrl, String queryInBody) {
 
     if (!(StringUtils.hasText(queryInUrl) || StringUtils.hasText(queryInBody))) {
       throw new GemfireRestException("could not process null value specified in query String");
@@ -131,7 +131,7 @@ public abstract class AbstractBaseController {
     return (StringUtils.hasText(queryInUrl) ? decode(queryInUrl) : queryInBody);
   }
 
-  protected String decode(final String value) {
+  String decode(final String value) {
     if (value == null) {
       throw new GemfireRestException("could not process null value specified in query String");
     }
@@ -175,7 +175,7 @@ public abstract class AbstractBaseController {
   }
 
   @SuppressWarnings("unchecked")
-  protected <T> T casValue(String regionNamePath, String key, String jsonData) {
+  private <T> T casValue(String regionNamePath, String key, String jsonData) {
     JSONObject jsonObject;
     try {
       jsonObject = new JSONObject(jsonData);
@@ -189,7 +189,7 @@ public abstract class AbstractBaseController {
     }
   }
 
-  public ResponseEntity<String> processQueryResponse(Query query, Object args[], Object queryResult)
+  ResponseEntity<String> processQueryResponse(Query query, Object args[], Object queryResult)
       throws JSONException {
     if (queryResult instanceof Collection<?>) {
       Collection processedResults = new ArrayList(((Collection) queryResult).size());
@@ -207,7 +207,7 @@ public abstract class AbstractBaseController {
     }
   }
 
-  protected Collection<PdxInstance> convertJsonArrayIntoPdxCollection(final String jsonArray) {
+  Collection<PdxInstance> convertJsonArrayIntoPdxCollection(final String jsonArray) {
     JSONArray jsonArr = null;
     try {
       jsonArr = new JSONArray(jsonArray);
@@ -229,18 +229,7 @@ public abstract class AbstractBaseController {
     }
   }
 
-
-  /*
-   * protected PdxInstance convertJsonIntoPdxCollection(final String jsonArray) { JSONArray jsonArr
-   * = null;
-   * 
-   * PdxInstance pi = convert(jsonArray);
-   * System.out.println("Successfully converted into PdxInstance..!!"); return pi;
-   * 
-   * }
-   */
-
-  protected Object casValue(final String regionNamePath, final Object key, final Object oldValue,
+  private Object casValue(final String regionNamePath, final Object key, final Object oldValue,
       final Object newValue) {
     final Region<Object, Object> region = getRegion(regionNamePath);
     try {
@@ -281,7 +270,7 @@ public abstract class AbstractBaseController {
     }
   }
 
-  protected void replaceValue(final String regionNamePath, final Object key,
+  private void replaceValue(final String regionNamePath, final Object key,
       final PdxInstance value) {
     try {
       if (getRegion(regionNamePath).replace(key, value) == null) {
@@ -367,7 +356,7 @@ public abstract class AbstractBaseController {
     }
   }
 
-  protected void putValue(final String regionNamePath, final Object key, final Object value) {
+  private void putValue(final String regionNamePath, final Object key, final Object value) {
     try {
       getRegion(regionNamePath).put(key, value);
     } catch (NullPointerException npe) {
@@ -397,23 +386,23 @@ public abstract class AbstractBaseController {
     }
   }
 
-  protected void deleteQueryId(final String regionNamePath, final String key) {
+  private void deleteQueryId(final String regionNamePath, final String key) {
     getQueryStore(regionNamePath).remove(key);
   }
 
-  protected void deleteNamedQuery(final String regionNamePath, final String key) {
+  void deleteNamedQuery(final String regionNamePath, final String key) {
     // Check whether query ID exist in region or not
     checkForQueryIdExist(regionNamePath, key);
     deleteQueryId(regionNamePath, key);
   }
 
-  protected void checkForQueryIdExist(String region, String key) {
+  void checkForQueryIdExist(String region, String key) {
     if (!getQueryStore(region).containsKey(key)) {
       throw new ResourceNotFoundException(String.format("Named query (%1$s) does not exist!", key));
     }
   }
 
-  protected Region<String, String> getQueryStore(final String namePath) {
+  Region<String, String> getQueryStore(final String namePath) {
     return ValidationUtils.returnValueThrowOnNull(getCache().<String, String>getRegion(namePath),
         new GemfireRestException(String.format("Query store does not exist!", namePath)));
   }
@@ -436,8 +425,7 @@ public abstract class AbstractBaseController {
     }
   }
 
-  protected void updateNamedQuery(final String regionNamePath, final String key,
-      final String value) {
+  void updateNamedQuery(final String regionNamePath, final String key, final String value) {
     try {
       getQueryStore(regionNamePath).put(key, value);
     } catch (NullPointerException npe) {
@@ -457,8 +445,7 @@ public abstract class AbstractBaseController {
   }
 
   @SuppressWarnings("unchecked")
-  protected <T> T createNamedQuery(final String regionNamePath, final String key,
-      final String value) {
+  <T> T createNamedQuery(final String regionNamePath, final String key, final String value) {
     try {
       return (T) getQueryStore(regionNamePath).putIfAbsent(key, value);
     } catch (UnsupportedOperationException use) {
@@ -482,7 +469,7 @@ public abstract class AbstractBaseController {
     }
   }
 
-  protected void putPdxValues(final String regionNamePath, final Map<Object, PdxInstance> map) {
+  private void putPdxValues(final String regionNamePath, final Map<Object, PdxInstance> map) {
     try {
       getRegion(regionNamePath).putAll(map);
     } catch (LowMemoryException lme) {
@@ -490,7 +477,7 @@ public abstract class AbstractBaseController {
     }
   }
 
-  protected void putValues(final String regionNamePath, final Map<Object, Object> values) {
+  private void putValues(final String regionNamePath, final Map<Object, Object> values) {
     getRegion(regionNamePath).putAll(values);
   }
 
@@ -510,7 +497,7 @@ public abstract class AbstractBaseController {
   }
 
   @SuppressWarnings("unchecked")
-  protected <T> T postValue(final String regionNamePath, final Object key, final Object value) {
+  <T> T postValue(final String regionNamePath, final Object key, final Object value) {
     try {
       return (T) getRegion(regionNamePath).putIfAbsent(key, value);
     } catch (UnsupportedOperationException use) {
@@ -561,11 +548,11 @@ public abstract class AbstractBaseController {
     return actualValue;
   }
 
-  protected String generateKey(final String existingKey) {
+  String generateKey(final String existingKey) {
     return generateKey(existingKey, null);
   }
 
-  protected String generateKey(final String existingKey, final Object domainObject) {
+  private String generateKey(final String existingKey, final Object domainObject) {
     Object domainObjectId = IdentifiableUtils.getId(domainObject);
     String newKey;
 
@@ -597,7 +584,7 @@ public abstract class AbstractBaseController {
     return newKey;
   }
 
-  protected String decode(final String value, final String encoding) {
+  private String decode(final String value, final String encoding) {
     try {
       return URLDecoder.decode(value, encoding);
     } catch (UnsupportedEncodingException e) {
@@ -612,19 +599,17 @@ public abstract class AbstractBaseController {
             String.format("The Region identified by name (%1$s) could not be found!", namePath)));
   }
 
-  protected void checkForKeyExist(String region, String key) {
+  private void checkForKeyExist(String region, String key) {
     if (!getRegion(region).containsKey(key)) {
       throw new ResourceNotFoundException(
           String.format("Key (%1$s) does not exist for region (%2$s) in cache!", key, region));
     }
   }
 
-  protected List<String> checkForMultipleKeysExist(String region, String... keys) {
+  List<String> checkForMultipleKeysExist(String region, String... keys) {
     List<String> unknownKeys = new ArrayList<String>();
     for (int index = 0; index < keys.length; index++) {
       if (!getRegion(region).containsKey(keys[index])) {
-        // throw new ResourceNotFoundException(String.format("Key [(%1$s)] does not exist for region
-        // [(%2$s)] in cache!", key, region));
         unknownKeys.add(keys[index]);
       }
     }
@@ -664,11 +649,11 @@ public abstract class AbstractBaseController {
     return entries.values();
   }
 
-  protected void deleteValue(final String regionNamePath, final Object key) {
+  private void deleteValue(final String regionNamePath, final Object key) {
     getRegion(regionNamePath).remove(key);
   }
 
-  protected void deleteValues(final String regionNamePath, final Object... keys) {
+  void deleteValues(final String regionNamePath, final Object... keys) {
     // Check whether all keys exist in cache or not
     for (final Object key : keys) {
       checkForKeyExist(regionNamePath, key.toString());
@@ -679,7 +664,7 @@ public abstract class AbstractBaseController {
     }
   }
 
-  protected void deleteValues(String regionNamePath) {
+  void deleteValues(String regionNamePath) {
     try {
       getRegion(regionNamePath).clear();
     } catch (UnsupportedOperationException ue) {
@@ -694,7 +679,7 @@ public abstract class AbstractBaseController {
   }
 
   @SuppressWarnings("unchecked")
-  protected <T> T introspectAndConvert(final T value) {
+  private <T> T introspectAndConvert(final T value) {
     if (value instanceof Map) {
       final Map rawDataBinding = (Map) value;
 
@@ -736,15 +721,15 @@ public abstract class AbstractBaseController {
     return value;
   }
 
-  protected String convertErrorAsJson(String errorMessage) {
+  String convertErrorAsJson(String errorMessage) {
     return ("{" + "\"message\"" + ":" + "\"" + errorMessage + "\"" + "}");
   }
 
-  protected String convertErrorAsJson(Throwable t) {
+  String convertErrorAsJson(Throwable t) {
     return String.format("{\"message\" : \"%1$s\"}", t.getMessage());
   }
 
-  protected Map<?, ?> convertJsonToMap(final String jsonString) {
+  private Map<?, ?> convertJsonToMap(final String jsonString) {
     Map<String, String> map = new HashMap<String, String>();
 
     // convert JSON string to Map
@@ -762,11 +747,11 @@ public abstract class AbstractBaseController {
     return map;
   }
 
-  protected Object jsonToObject(final String jsonString) {
+  private Object jsonToObject(final String jsonString) {
     return introspectAndConvert(convertJsonToMap(jsonString));
   }
 
-  protected Object[] jsonToObjectArray(final String arguments) {
+  Object[] jsonToObjectArray(final String arguments) {
     final JSONTypes jsonType = validateJsonAndFindType(arguments);
     if (JSONTypes.JSON_ARRAY.equals(jsonType)) {
       try {
@@ -787,8 +772,8 @@ public abstract class AbstractBaseController {
     }
   }
 
-  public ResponseEntity<String> updateSingleKey(final String region, final String key,
-      final String json, final String opValue) {
+  ResponseEntity<String> updateSingleKey(final String region, final String key, final String json,
+      final String opValue) {
 
     final JSONTypes jsonType = validateJsonAndFindType(json);
 
@@ -822,7 +807,7 @@ public abstract class AbstractBaseController {
   }
 
 
-  public ResponseEntity<String> updateMultipleKeys(final String region, final String[] keys,
+  ResponseEntity<String> updateMultipleKeys(final String region, final String[] keys,
       final String json) {
 
     JSONArray jsonArr = null;
@@ -862,7 +847,7 @@ public abstract class AbstractBaseController {
     return new ResponseEntity<String>(headers, HttpStatus.OK);
   }
 
-  public JSONTypes validateJsonAndFindType(String json) {
+  JSONTypes validateJsonAndFindType(String json) {
     try {
       Object jsonObj = new JSONTokener(json).nextValue();
 
@@ -927,17 +912,16 @@ public abstract class AbstractBaseController {
   }
 
   protected Set<DistributedMember> getMembers(final String... memberIdNames) {
-
     ValidationUtils.returnValueThrowOnNull(memberIdNames,
         new GemfireRestException("No member found to run function"));
-    final Set<DistributedMember> targetedMembers =
-        new HashSet<DistributedMember>(ArrayUtils.length(memberIdNames));
+    final Set<DistributedMember> targetedMembers = new HashSet<>(ArrayUtils.length(memberIdNames));
     final List<String> memberIdNameList = Arrays.asList(memberIdNames);
-    GemFireCacheImpl c = (GemFireCacheImpl) getCache();
-    Set<DistributedMember> distMembers = c.getDistributedSystem().getAllOtherMembers();
+
+    InternalCache cache = getCache();
+    Set<DistributedMember> distMembers = cache.getDistributedSystem().getAllOtherMembers();
 
     // Add the local node to list
-    distMembers.add(c.getDistributedSystem().getDistributedMember());
+    distMembers.add(cache.getDistributedSystem().getDistributedMember());
     for (DistributedMember member : distMembers) {
       if (memberIdNameList.contains(member.getId())
           || memberIdNameList.contains(member.getName())) {
@@ -947,10 +931,10 @@ public abstract class AbstractBaseController {
     return targetedMembers;
   }
 
-  protected Set<DistributedMember> getAllMembersInDS() {
-    GemFireCacheImpl c = (GemFireCacheImpl) getCache();
-    Set<DistributedMember> distMembers = c.getDistributedSystem().getAllOtherMembers();
-    final Set<DistributedMember> targetedMembers = new HashSet<DistributedMember>();
+  Set<DistributedMember> getAllMembersInDS() {
+    InternalCache cache = getCache();
+    Set<DistributedMember> distMembers = cache.getDistributedSystem().getAllOtherMembers();
+    final Set<DistributedMember> targetedMembers = new HashSet<>();
 
     // find valid data nodes, i.e non locator, non-admin, non-loner nodes
     for (DistributedMember member : distMembers) {
@@ -960,7 +944,7 @@ public abstract class AbstractBaseController {
       }
     }
     // Add the local node to list
-    targetedMembers.add(c.getDistributedSystem().getDistributedMember());
+    targetedMembers.add(cache.getDistributedSystem().getDistributedMember());
     return targetedMembers;
   }
 }

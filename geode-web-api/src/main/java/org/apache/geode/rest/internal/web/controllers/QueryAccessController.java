@@ -12,28 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.rest.internal.web.controllers;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.FunctionDomainException;
-import org.apache.geode.cache.query.NameResolutionException;
-import org.apache.geode.cache.query.Query;
-import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
-import org.apache.geode.cache.query.QueryExecutionTimeoutException;
-import org.apache.geode.cache.query.QueryInvalidException;
-import org.apache.geode.cache.query.QueryInvocationTargetException;
-import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.cache.query.internal.DefaultQuery;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.rest.internal.web.exception.GemfireRestException;
-import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
-import org.apache.geode.rest.internal.web.util.JSONUtils;
-import org.apache.geode.rest.internal.web.util.ValidationUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -49,17 +35,28 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import java.util.concurrent.ConcurrentHashMap;
-
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.FunctionDomainException;
+import org.apache.geode.cache.query.NameResolutionException;
+import org.apache.geode.cache.query.Query;
+import org.apache.geode.cache.query.QueryExecutionLowMemoryException;
+import org.apache.geode.cache.query.QueryExecutionTimeoutException;
+import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.cache.query.QueryInvocationTargetException;
+import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.rest.internal.web.exception.GemfireRestException;
+import org.apache.geode.rest.internal.web.exception.ResourceNotFoundException;
+import org.apache.geode.rest.internal.web.util.JSONUtils;
+import org.apache.geode.rest.internal.web.util.ValidationUtils;
 
 /**
  * The QueryingController class serves all HTTP REST requests related to the gemfire querying
- * <p/>
- * 
+ *
  * @see org.springframework.stereotype.Controller
  * @since GemFire 8.0
  */
-
 @Controller("queryController")
 @Api(value = "queries", description = "Rest api for geode query execution",
     produces = MediaType.APPLICATION_JSON_VALUE)
@@ -69,17 +66,16 @@ public class QueryAccessController extends AbstractBaseController {
 
   private static final Logger logger = LogService.getLogger();
 
-  protected static final String PARAMETERIZED_QUERIES_REGION = "__ParameterizedQueries__";
+  private static final String PARAMETERIZED_QUERIES_REGION = "__ParameterizedQueries__";
 
   private final ConcurrentHashMap<String, DefaultQuery> compiledQueries = new ConcurrentHashMap<>();
 
   // Constant String value indicating the version of the REST API.
-  protected static final String REST_API_VERSION = "/v1";
+  static final String REST_API_VERSION = "/v1";
 
   /**
    * Gets the version of the REST API implemented by this @Controller.
-   * <p/>
-   * 
+   *
    * @return a String indicating the REST API version.
    */
   @Override
@@ -324,7 +320,6 @@ public class QueryAccessController extends AbstractBaseController {
     logger.debug("Updating a named, parametrized Query ({}) with ID ({})...", oqlStatement,
         queryId);
 
-
     // update the OQL statement with 'queryId' as the Key into the hidden, Parametrized Queries
     // Region...
     checkForQueryIdExist(PARAMETERIZED_QUERIES_REGION, queryId);
@@ -334,7 +329,6 @@ public class QueryAccessController extends AbstractBaseController {
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
-  // delete named, parametrized query
   /**
    * Delete named, parametrized Query
    * 
@@ -360,4 +354,3 @@ public class QueryAccessController extends AbstractBaseController {
   }
 
 }
-
