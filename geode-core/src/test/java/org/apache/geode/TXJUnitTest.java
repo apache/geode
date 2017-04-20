@@ -3138,7 +3138,8 @@ public class TXJUnitTest {
       // assertIndexDetailsEquals(event.getTransactionId(),
       // event.getRegion().getCache().getCacheTransactionManager().getTransactionId(), );
       if (!isPR())
-        assertEquals("IsDistributed Assertion!", this.isDistributed(), event.getOperation().isDistributed());
+        assertEquals("IsDistributed Assertion!", this.isDistributed(),
+            event.getOperation().isDistributed());
       assertEquals(this.getKey(), event.getKey());
       assertSame(this.getCallBackArg(), event.getCallbackArgument());
       if (newValIdentCheck) {
