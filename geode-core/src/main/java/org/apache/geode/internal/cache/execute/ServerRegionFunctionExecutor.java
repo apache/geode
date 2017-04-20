@@ -318,7 +318,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     return new ServerRegionFunctionExecutor(this, args);
   }
 
-  public Execution withArgs(Object params) {
+  public Execution withArgs(Object args) {
     return setArguments(args);
   }
 
