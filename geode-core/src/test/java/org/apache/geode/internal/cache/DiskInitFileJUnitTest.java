@@ -117,4 +117,61 @@ public class DiskInitFileJUnitTest {
     dif.close();
   }
 
+  @Test
+  public void testKrfIds() {
+    // create a mock statistics factory for creating directory holders
+    final StatisticsFactory sf = context.mock(StatisticsFactory.class);
+    context.checking(new Expectations() {
+      {
+        ignoring(sf);
+      }
+    });
+    // Add a mock region to the init file so it doesn't
+    // delete the file when the init file is closed
+    final DiskRegionView drv = context.mock(DiskRegionView.class);
+    context.checking(new Expectations() {
+      {
+        ignoring(drv);
+      }
+    });
+    // Create a mock disk store impl. All we need to do is return
+    // this init file directory.
+    final DiskStoreImpl parent = context.mock(DiskStoreImpl.class);
+    context.checking(new Expectations() {
+      {
+        allowing(parent).getInfoFileDir();
+        will(returnValue(new DirectoryHolder(sf, testDirectory, 0, 0)));
+        ignoring(parent);
+      }
+    });
+
+    DiskInitFile dif = new DiskInitFile("testKrfIds", parent, false, Collections.<File>emptySet());
+    assertEquals(false, dif.hasKrf(1));
+    dif.cmnKrfCreate(1);
+    assertEquals(true, dif.hasKrf(1));
+    assertEquals(false, dif.hasKrf(2));
+    dif.cmnKrfCreate(2);
+    assertEquals(true, dif.hasKrf(2));
+    dif.createRegion(drv);
+    dif.forceCompaction();
+    dif.close();
+
+    dif = new DiskInitFile("testKrfIds", parent, true, Collections.<File>emptySet());
+    assertEquals(true, dif.hasKrf(1));
+    assertEquals(true, dif.hasKrf(2));
+    dif.cmnCrfDelete(1);
+    assertEquals(false, dif.hasKrf(1));
+    assertEquals(true, dif.hasKrf(2));
+    dif.cmnCrfDelete(2);
+    assertEquals(false, dif.hasKrf(2));
+    dif.createRegion(drv);
+    dif.forceCompaction();
+    dif.close();
+
+    dif = new DiskInitFile("testKrfIds", parent, true, Collections.<File>emptySet());
+    assertEquals(false, dif.hasKrf(1));
+    assertEquals(false, dif.hasKrf(2));
+    dif.destroy();
+  }
+
 }
