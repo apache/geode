@@ -2265,123 +2265,167 @@ public class DistributedRegion extends LocalRegion implements CacheDistributionA
       boolean generateCallbacks, Object localValue, boolean disableCopyOnRead, boolean preferCD,
       ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
       boolean returnTombstones) throws CacheLoaderException, TimeoutException {
-    checkForLimitedOrNoAccess();
-
-    RegionEntry re = null;
-    final Object key = keyInfo.getKey();
-    final Object aCallbackArgument = keyInfo.getCallbackArg();
-    Operation op;
-    if (isCreate) {
-      op = Operation.CREATE;
-    } else {
-      op = Operation.UPDATE;
-    }
-    long lastModified = 0L;
-    boolean fromServer = false;
     @Released
     EntryEventImpl event = null;
-    @Retained
-    Object result = null;
+    checkForLimitedOrNoAccess();
+    final Operation op = isCreate ? Operation.CREATE : Operation.UPDATE;
+    long lastModified = 0L;
+
     try {
-      {
-        if (this.srp != null) {
-          VersionTagHolder holder = new VersionTagHolder();
-          Object value = this.srp.get(key, aCallbackArgument, holder);
-          fromServer = value != null;
-          if (fromServer) {
-            event = EntryEventImpl.create(this, op, key, value, aCallbackArgument, false, getMyId(),
-                generateCallbacks);
-            event.setVersionTag(holder.getVersionTag());
-            event.setFromServer(fromServer); // fix for bug 39358
-            if (clientEvent != null && clientEvent.getVersionTag() == null) {
-              clientEvent.setVersionTag(holder.getVersionTag());
-            }
-          }
-        }
+      event = findOnServer(keyInfo, op, generateCallbacks, clientEvent);
+      if (event == null) {
+        event = createEventForLoad(keyInfo, generateCallbacks, requestingClient, op);
+        lastModified = findUsingSearchLoad(txState, localValue, clientEvent, keyInfo, event);
       }
-
-      if (!fromServer) {
-        // Do not generate Event ID
-        event = EntryEventImpl.create(this, op, key, null /* newValue */, aCallbackArgument, false,
-            getMyId(), generateCallbacks);
-        if (requestingClient != null) {
-          event.setContext(requestingClient);
-        }
-        // If this event is because of a register interest call, don't invoke the CacheLoader
-        boolean getForRegisterInterest = clientEvent != null && clientEvent.getOperation() != null
-            && clientEvent.getOperation().isGetForRegisterInterest();
-        if (!getForRegisterInterest) {
-          SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
-          try {
-            processor.initialize(this, key, aCallbackArgument);
-            // processor fills in event
-            processor.doSearchAndLoad(event, txState, localValue);
-            if (clientEvent != null && clientEvent.getVersionTag() == null) {
-              clientEvent.setVersionTag(event.getVersionTag());
-            }
-            lastModified = processor.getLastModified();
-          } finally {
-            processor.release();
-          }
-        } else {
-          if (logger.isDebugEnabled()) {
-            logger.debug("DistributedRegion.findObjectInSystem skipping loader for region="
-                + getFullPath() + "; key=" + key);
-          }
-        }
-      }
+      // Update region with new value.
       if (event.hasNewValue() && !isMemoryThresholdReachedForLoad()) {
-        try {
-          // Set eventId. Required for interested clients.
-          event.setNewEventId(cache.getDistributedSystem());
-
-          long startPut = CachePerfStats.getStatTime();
-          validateKey(key);
-          // if (event.getOperation().isLoad()) {
-          // this.performedLoad(event, lastModified, txState);
-          // }
-          // this next step also distributes the object to other processes, if necessary
-          try {
-            // set the tail key so that the event is passed to GatewaySender queues.
-            // if the tailKey is not set, the event gets filtered out in ParallelGatewaySenderQueue
-            if (this instanceof BucketRegion) {
-              if (((BucketRegion) this).getPartitionedRegion().isParallelWanEnabled())
-                ((BucketRegion) this).handleWANEvent(event);
-            }
-            re = basicPutEntry(event, lastModified);
-          } catch (ConcurrentCacheModificationException e) {
-            // the cache was modified while we were searching for this entry and
-            // the netsearch result was elided. Return the current value from the cache
-            re = getRegionEntry(key);
-            if (re != null) {
-              event.setNewValue(re.getValue(this)); // OFFHEAP: need to incrc, copy to heap to
-                                                    // setNewValue, decrc
-            }
-          }
-          if (!isTX()) {
-            getCachePerfStats().endPut(startPut, event.isOriginRemote());
-          }
-        } catch (CacheWriterException cwe) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("findObjectInSystem: writer exception putting entry {} : {}", event, cwe);
-          }
-        }
+        putNewValueInRegion(isCreate, clientEvent, lastModified, event);
+      } else if (isCreate) {
+        recordMiss(null, event.getKey());
       }
-      if (isCreate) {
-        recordMiss(re, key);
-      }
-
-      if (preferCD) {
-        result = event.getRawNewValueAsHeapObject();
-      } else {
-        result = event.getNewValue();
-      }
-      return result;
+      return determineResult(preferCD, event);
     } finally {
       if (event != null) {
         event.release();
       }
     }
+  }
+
+  private EntryEventImpl createEventForLoad(KeyInfo keyInfo, boolean generateCallbacks,
+      ClientProxyMembershipID requestingClient, Operation op) {
+    // Do not generate Event ID
+    EntryEventImpl event = EntryEventImpl.create(this, op, keyInfo.getKey(), null /* newValue */,
+        keyInfo.getCallbackArg(), false, getMyId(), generateCallbacks);
+    if (requestingClient != null) {
+      event.setContext(requestingClient);
+    }
+    return event;
+  }
+
+  private Object determineResult(boolean preferCD, EntryEventImpl event) {
+    if (preferCD) {
+      return event.getRawNewValueAsHeapObject();
+    }
+    return event.getNewValue();
+  }
+
+  private void putNewValueInRegion(boolean isCreate, EntryEventImpl clientEvent, long lastModified,
+      EntryEventImpl event) {
+    RegionEntry re = null;
+    // Set eventId. Required for interested clients.
+    event.setNewEventId(cache.getDistributedSystem());
+
+    long startPut = CachePerfStats.getStatTime();
+    validateKey(event.getKey());
+    // this next step also distributes the object to other processes, if necessary
+    try {
+      // set the tail key so that the event is passed to GatewaySender queues.
+      // if the tailKey is not set, the event gets filtered out in ParallelGatewaySenderQueue
+      if (this instanceof BucketRegion) {
+        if (((BucketRegion) this).getPartitionedRegion().isParallelWanEnabled())
+          ((BucketRegion) this).handleWANEvent(event);
+      }
+      re = basicPutEntry(event, lastModified);
+
+      // Update client event with latest version tag from re.
+      if (re != null && clientEvent != null) {
+        clientEvent.setVersionTag(event.getVersionTag());
+      }
+      if (!isTX()) {
+        getCachePerfStats().endPut(startPut, event.isOriginRemote());
+      }
+    } catch (ConcurrentCacheModificationException e) {
+      // the cache was modified while we were searching for this entry and
+      // the netsearch result was elided. Return the current value from the cache
+      updateEventWithCurrentRegionEntry(event, clientEvent);
+    } catch (CacheWriterException cwe) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("findObjectInSystem: writer exception putting entry {} : {}", event, cwe);
+      }
+    }
+    if (isCreate) {
+      recordMiss(re, event.getKey());
+    }
+  }
+
+  private void updateEventWithCurrentRegionEntry(EntryEventImpl event, EntryEventImpl clientEvent) {
+    // defer the lruUpdateCallback to prevent a deadlock (see bug 51121).
+    final boolean disabled = this.entries.disableLruUpdateCallback();
+    try {
+      RegionEntry re = getRegionEntry(event.getKey());
+      if (re != null) {
+        synchronized (re) { // bug #51059 value & version must be obtained atomically
+          // Update client event with latest version tag from re
+          if (clientEvent != null) {
+            clientEvent.setVersionTag(re.getVersionStamp().asVersionTag());
+          }
+          // OFFHEAP: need to incrc, copy to heap to setNewValue, decrc
+          event.setNewValue(re.getValue(this));
+        }
+      }
+    } finally {
+      if (disabled) {
+        this.entries.enableLruUpdateCallback();
+      }
+      try {
+        this.entries.lruUpdateCallback();
+      } catch (DiskAccessException dae) {
+        this.handleDiskAccessException(dae);
+        throw dae;
+      }
+    }
+  }
+
+  /**
+   * If its client, get the value from server.
+   */
+  private EntryEventImpl findOnServer(KeyInfo keyInfo, Operation op, boolean generateCallbacks,
+      EntryEventImpl clientEvent) {
+    if (this.srp == null) {
+      return null;
+    }
+    EntryEventImpl event = null;
+    VersionTagHolder holder = new VersionTagHolder();
+    Object aCallbackArgument = keyInfo.getCallbackArg();
+    Object value = this.srp.get(keyInfo.getKey(), aCallbackArgument, holder);
+    if (value != null) {
+      event = EntryEventImpl.create(this, op, keyInfo.getKey(), value, aCallbackArgument, false,
+          getMyId(), generateCallbacks);
+      event.setVersionTag(holder.getVersionTag());
+      event.setFromServer(true); // fix for bug 39358
+      if (clientEvent != null && clientEvent.getVersionTag() == null) {
+        clientEvent.setVersionTag(holder.getVersionTag());
+      }
+    }
+    return event;
+  }
+
+  private long findUsingSearchLoad(TXStateInterface txState, Object localValue,
+      EntryEventImpl clientEvent, final KeyInfo keyInfo, EntryEventImpl event) {
+    long lastModified = 0L;
+    // If this event is because of a register interest call, don't invoke the CacheLoader
+    boolean getForRegisterInterest = clientEvent != null && clientEvent.getOperation() != null
+        && clientEvent.getOperation().isGetForRegisterInterest();
+    if (!getForRegisterInterest) {
+      SearchLoadAndWriteProcessor processor = SearchLoadAndWriteProcessor.getProcessor();
+      try {
+        processor.initialize(this, keyInfo.getKey(), keyInfo.getCallbackArg());
+        // processor fills in event
+        processor.doSearchAndLoad(event, txState, localValue);
+        if (clientEvent != null && clientEvent.getVersionTag() == null) {
+          clientEvent.setVersionTag(event.getVersionTag());
+        }
+        lastModified = processor.getLastModified();
+      } finally {
+        processor.release();
+      }
+    } else {
+      if (logger.isDebugEnabled()) {
+        logger.debug("DistributedRegion.findObjectInSystem skipping loader for region="
+            + getFullPath() + "; key=" + keyInfo.getKey());
+      }
+    }
+    return lastModified;
   }
 
   /**

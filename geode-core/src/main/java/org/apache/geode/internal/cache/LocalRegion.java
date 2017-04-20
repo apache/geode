@@ -1393,6 +1393,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @param key the key used to fetch the region entry
    */
   final public void recordMiss(final RegionEntry re, Object key) {
+    if (!this.statisticsEnabled) {
+      return;
+    }
     final RegionEntry e;
     if (re == null && !isTX()) {
       e = basicGetEntry(key);
