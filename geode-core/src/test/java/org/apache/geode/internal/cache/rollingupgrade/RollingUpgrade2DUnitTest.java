@@ -1161,7 +1161,7 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
       DistributedMember... members) {
     Set<DistributedMember> membersSet = new HashSet<>();
     Collections.addAll(membersSet, members);
-    Execution execution = FunctionService.onMembers(membersSet).withArgs(dsClassName);
+    Execution execution = FunctionService.onMembers(membersSet).setArguments(dsClassName);
     ResultCollector rc = execution.execute(functionId);
     List result = (List) rc.getResult();
     assertEquals(membersSet.size(), result.size());
