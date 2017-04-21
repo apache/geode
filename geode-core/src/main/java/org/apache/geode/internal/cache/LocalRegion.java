@@ -11177,7 +11177,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return getRegionMap().keySet();
   }
 
-  public final InternalDataView getSharedDataView() {
+  public InternalDataView getSharedDataView() {
     return this.sharedDataView;
   }
 

@@ -200,11 +200,19 @@ public class LocalRegionDataView implements InternalDataView {
    */
   public Object getKeyForIterator(final KeyInfo keyInfo, final LocalRegion currRgn,
       boolean rememberReads, boolean allowTombstones) {
-    final AbstractRegionEntry re = (AbstractRegionEntry) keyInfo.getKey();
+    final Object key = keyInfo.getKey();
+    if (key == null) {
+      return null;
+    }
     // fix for 42182, before returning a key verify that its value
     // is not a removed token
-    if (re != null && (!re.isDestroyedOrRemoved() || (allowTombstones && re.isTombstone()))) {
-      return re.getKey();
+    if (key instanceof RegionEntry) {
+      RegionEntry re = (RegionEntry) key;
+      if (!re.isDestroyedOrRemoved() || (allowTombstones && re.isTombstone())) {
+        return re.getKey();
+      }
+    } else if (getEntry(keyInfo, currRgn, allowTombstones) != null) {
+      return key;
     }
     return null;
   }
