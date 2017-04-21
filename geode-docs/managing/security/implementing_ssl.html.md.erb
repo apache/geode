@@ -66,13 +66,13 @@ You can use Geode configuration properties to enable or disable SSL, to identify
 protocols, and to provide the location and credentials for key and trust stores.
 
 <dt>**ssl-enabled-components**</dt>
-<dd>list of components for which to enable SSL. "all" or comma-separated list of components</dd>
+<dd>List of components for which to enable SSL. Component list can be "all" or a comma-separated list of components.</dd>
 
 <dt>**ssl-require-authentication**</dt>
-<dd>Requires two-way authentication, applies to all components except web. boolean - if true (the default), two-way authentication is required.</dd>
+<dd>Requires two-way authentication, applies to all components except web. Boolean - if true (the default), two-way authentication is required.</dd>
 
 <dt>**ssl-web-require-authentication**</dt>
-<dd>Requires two-way authentication for web component. boolean - if true, two-way authentication is required. Default is false (one-way authentication only).</dd>
+<dd>Requires two-way authentication for web component. Boolean - if true, two-way authentication is required. Default is false (one-way authentication only).</dd>
 
 <dt>**ssl-default-alias**</dt>
 <dd>A server uses one key store to hold its SSL certificates. All components on that server can share a
@@ -151,9 +151,13 @@ ssl-default-alias=Locator-Cert
  
 **Client properties**
 
-The client's trust store must trust both locator and server certificates.
+On the client, the list of enabled components reflects the server's configuration so the client
+knows how it is expected to communicate with (for example) servers and locators.  Paths to keystore
+and truststore are local to the client.
 
-Since the client did not specify a certificate alias, SSL will use the default certificate in its key store.
+In this example, the client's trust store must trust both locator and server certificates.  Since
+the client does not specify a certificate alias, SSL will use the default certificate in its key
+store.
 
 ``` pre
 ssl-enabled-components=server,locator
