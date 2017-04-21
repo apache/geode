@@ -266,6 +266,9 @@ public class DeltaSession extends StandardSession
 
   public void removeAttribute(String name, boolean notify) {
     checkBackingCacheAvailable();
+    if (expired) {
+      return;
+    }
     synchronized (this.changeLock) {
       // Remove the attribute locally
       super.removeAttribute(name, true);
@@ -325,11 +328,20 @@ public class DeltaSession extends StandardSession
     setExpired(true);
 
     // Do expire processing
-    expire();
+    super.expire(true);
 
     // Update statistics
     if (manager != null) {
       manager.getStatistics().incSessionsExpired();
+    }
+  }
+
+  @Override
+  public void expire(boolean notify) {
+    if (notify) {
+      getOperatingRegion().destroy(this.getId(), this);
+    } else {
+      super.expire(false);
     }
   }
 

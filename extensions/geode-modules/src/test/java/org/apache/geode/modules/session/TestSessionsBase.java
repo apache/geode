@@ -267,6 +267,40 @@ public abstract class TestSessionsBase {
   }
 
   /**
+   * Test expiration of a session by the tomcat container, rather than gemfire expiration
+   */
+  @Test
+  public void testSessionExpirationByContainer() throws Exception {
+
+    String key = "value_testSessionExpiration1";
+    String value = "Foo";
+
+    WebConversation wc = new WebConversation();
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
+
+    // Set an attribute
+    req.setParameter("cmd", QueryCommand.SET.name());
+    req.setParameter("param", key);
+    req.setParameter("value", value);
+    WebResponse response = wc.getResponse(req);
+
+    // Set the session timeout of this one session.
+    req.setParameter("cmd", QueryCommand.SET_MAX_INACTIVE.name());
+    req.setParameter("value", "1");
+    response = wc.getResponse(req);
+
+    // Wait until the session should expire
+    Thread.sleep(2000);
+
+    // Do a request, which should cause the session to be expired
+    req.setParameter("cmd", QueryCommand.GET.name());
+    req.setParameter("param", key);
+    response = wc.getResponse(req);
+
+    assertEquals("", response.getText());
+  }
+
+  /**
    * Test that removing a session attribute also removes it from the region
    */
   @Test
