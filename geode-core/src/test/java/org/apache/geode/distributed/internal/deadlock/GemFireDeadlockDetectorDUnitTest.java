@@ -14,34 +14,14 @@
  */
 package org.apache.geode.distributed.internal.deadlock;
 
-import org.apache.geode.test.dunit.ThreadUtils;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import static org.junit.Assert.*;
-
-import org.awaitility.Awaitility;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
@@ -54,7 +34,20 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Category(DistributedTest.class)
 public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
@@ -108,7 +101,8 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
 
   private static final Lock lock = new ReentrantLock();
 
-  @Category(FlakyTest.class) // GEODE-516 & GEODE-576: async actions, thread sleeps, time sensitive
+  // @Category(FlakyTest.class) // GEODE-516 & GEODE-576: async actions, thread sleeps, time
+  // sensitive
   @Test
   public void testDistributedDeadlockWithFunction() throws Throwable {
     Host host = Host.getHost(0);
@@ -117,41 +111,62 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
     getSystem();
     InternalDistributedMember member1 = createCache(vm0);
     final InternalDistributedMember member2 = createCache(vm1);
+    getBlackboard().initBlackboard();
 
     // Have two threads lock locks on different members in different orders.
 
+    String gateOnMember1 = "gateOnMember1";
+    String gateOnMember2 = "gateOnMember2";
 
     // This thread locks the lock member1 first, then member2.
-    AsyncInvocation async1 = lockTheLocks(vm0, member2);
-    // This thread locks the lock member2 first, then member1.
-    AsyncInvocation async2 = lockTheLocks(vm1, member1);
+    AsyncInvocation async1 = lockTheLocks(vm0, member2, gateOnMember1, gateOnMember2);
 
-    Thread.sleep(5000);
-    GemFireDeadlockDetector detect = new GemFireDeadlockDetector();
-    LinkedList<Dependency> deadlock = detect.find().findCycle();
-    LogWriterUtils.getLogWriter().info("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
-    assertEquals(8, deadlock.size());
-    stopStuckThreads();
-    async1.getResult(30000);
-    async2.getResult(30000);
+    // This thread locks the lock member2 first, then member1.
+    AsyncInvocation async2 = lockTheLocks(vm1, member1, gateOnMember2, gateOnMember1);
+    try {
+      final LinkedList<Dependency> deadlockHolder[] = new LinkedList[1];
+      Awaitility.await("waiting for deadlock").atMost(20, TimeUnit.SECONDS).until(() -> {
+        GemFireDeadlockDetector detect = new GemFireDeadlockDetector();
+        LinkedList<Dependency> deadlock = detect.find().findCycle();
+        if (deadlock != null) {
+          deadlockHolder[0] = deadlock;
+        }
+        return deadlock != null;
+      });
+      LinkedList<Dependency> deadlock = deadlockHolder[0];
+      LogWriterUtils.getLogWriter().info("Deadlock=" + DeadlockDetector.prettyFormat(deadlock));
+      assertEquals(8, deadlock.size());
+      stopStuckThreads();
+    } finally {
+      try {
+        waitForAsyncInvocation(async1, 45, TimeUnit.SECONDS);
+      } finally {
+        waitForAsyncInvocation(async2, 45, TimeUnit.SECONDS);
+      }
+    }
   }
 
 
 
-  private AsyncInvocation lockTheLocks(VM vm0, final InternalDistributedMember member) {
+  private AsyncInvocation lockTheLocks(VM vm0, final InternalDistributedMember member,
+      final String gateToSignal, final String gateToWaitOn) {
     return vm0.invokeAsync(new SerializableRunnable() {
 
       public void run() {
         lock.lock();
         try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          Assert.fail("interrupted", e);
+          try {
+            getBlackboard().signalGate(gateToSignal);
+            getBlackboard().waitForGate(gateToWaitOn, 10, TimeUnit.SECONDS);
+          } catch (TimeoutException | InterruptedException e) {
+            throw new RuntimeException("failed", e);
+          }
+          ResultCollector collector = FunctionService.onMember(member).execute(new TestFunction());
+          // wait the function to lock the lock on member.
+          collector.getResult();
+        } finally {
+          lock.unlock();
         }
-        ResultCollector collector = FunctionService.onMember(member).execute(new TestFunction());
-        // wait the function to lock the lock on member.
-        collector.getResult();
-        lock.unlock();
       }
     });
   }
@@ -244,14 +259,19 @@ public class GemFireDeadlockDetectorDUnitTest extends JUnit4CacheTestCase {
 
 
     public void execute(FunctionContext context) {
+      boolean acquired = false;
       try {
         stuckThreads.add(Thread.currentThread());
-        lock.tryLock(LOCK_WAIT_TIME, TimeUnit.SECONDS);
+        acquired = lock.tryLock(LOCK_WAIT_TIME, TimeUnit.SECONDS);
       } catch (InterruptedException e) {
-        // ingore
+        // ignore
+      } finally {
+        if (acquired) {
+          lock.unlock();
+        }
+        stuckThreads.remove(Thread.currentThread());
+        context.getResultSender().lastResult(null);
       }
-      stuckThreads.remove(Thread.currentThread());
-      context.getResultSender().lastResult(null);
     }
 
     public String getId() {
