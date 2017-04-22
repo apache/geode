@@ -55,6 +55,14 @@ import org.apache.geode.cache.query.*; // for javadocs
  */
 public interface PoolFactory {
   /**
+   * The default amount of time, in milliseconds, socket timeout when the client connects to the
+   * servers/locators.
+   * <p>
+   * Current value: <code>59000</code>.
+   */
+  public static final int DEFAULT_SOCKET_CONNECT_TIMEOUT = 59000;
+
+  /**
    * The default amount of time, in milliseconds, which we will wait for a free connection if max
    * connections is set and all of the connections are in use.
    * <p>
@@ -187,6 +195,18 @@ public interface PoolFactory {
    * @since GemFire 6.5
    */
   public static final boolean DEFAULT_MULTIUSER_AUTHENTICATION = false;
+
+  /**
+   * Sets the socket connect timeout for this pool. The number of milli seconds specified as socket
+   * timeout when the client connects to the servers/locators. A timeout of zero is interpreted as
+   * an infinite timeout. The connection will then block until established or an error occurs.
+   *
+   * @param socketConnectTimeout timeout in milliseconds when the client connects to the servers
+   * @return a reference to <code>this</code>
+   * @throws IllegalArgumentException if <code>socketConnectTimeout</code> is less than or equal to
+   *         <code>-1</code>.
+   */
+  public PoolFactory setSocketConnectTimeout(int socketConnectTimeout);
 
   /**
    * Sets the free connection timeout for this pool. If the pool has a max connections setting,

@@ -351,6 +351,10 @@ public class AutoConnectionSourceImplJUnitTest {
       return false;
     }
 
+    public int getSocketConnectTimeout() {
+      return 0;
+    }
+
     public int getFreeConnectionTimeout() {
       return 0;
     }
