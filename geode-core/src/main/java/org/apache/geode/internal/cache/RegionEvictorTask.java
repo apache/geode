@@ -34,7 +34,7 @@ import java.util.concurrent.Callable;
  * @since GemFire 6.0
  * 
  */
-public class RegionEvictorTask implements Callable<Object> {
+public class RegionEvictorTask implements Runnable {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -85,7 +85,8 @@ public class RegionEvictorTask implements Callable<Object> {
     return this.evictor;
   }
 
-  public Object call() throws Exception {
+  @Override
+  public void run() {
     getGemFireCache().getCachePerfStats().incEvictorJobsStarted();
     long bytesEvicted = 0;
     long totalBytesEvicted = 0;
@@ -96,7 +97,7 @@ public class RegionEvictorTask implements Callable<Object> {
         synchronized (this.regionSet) {
           if (this.regionSet.isEmpty()) {
             lastTaskCompletionTime = System.currentTimeMillis();
-            return null;
+            return;
           }
           // TODO: Yogesh : try Fisher-Yates shuffle algorithm
           Iterator<LocalRegion> iter = regionSet.iterator();
@@ -111,7 +112,7 @@ public class RegionEvictorTask implements Callable<Object> {
               if (totalBytesEvicted >= bytesToEvictPerTask || !getHeapEvictor().mustEvict()
                   || this.regionSet.size() == 0) {
                 lastTaskCompletionTime = System.currentTimeMillis();
-                return null;
+                return;
               }
             } catch (RegionDestroyedException rd) {
               region.cache.getCancelCriterion().checkCancelInProgress(rd);

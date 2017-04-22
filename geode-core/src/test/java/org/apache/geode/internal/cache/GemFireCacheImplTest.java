@@ -28,6 +28,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.lru.HeapEvictor;
+import org.apache.geode.internal.cache.lru.OffHeapEvictor;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -59,6 +61,25 @@ public class GemFireCacheImplTest {
     } finally {
       gfc.close();
     }
+  }
+
+  @Test
+  public void checkEvictorsClosed() {
+    InternalDistributedSystem ds = Fakes.distributedSystem();
+    CacheConfig cc = new CacheConfig();
+    TypeRegistry typeRegistry = mock(TypeRegistry.class);
+    SystemTimer ccpTimer = mock(SystemTimer.class);
+    HeapEvictor he = mock(HeapEvictor.class);
+    OffHeapEvictor ohe = mock(OffHeapEvictor.class);
+    GemFireCacheImpl gfc = GemFireCacheImpl.createWithAsyncEventListeners(ds, cc, typeRegistry);
+    try {
+      gfc.setHeapEvictor(he);
+      gfc.setOffHeapEvictor(ohe);
+    } finally {
+      gfc.close();
+    }
+    verify(he, times(1)).close();
+    verify(ohe, times(1)).close();
   }
 
   @Test

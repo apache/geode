@@ -283,7 +283,7 @@ public class EvictionTestBase extends JUnit4CacheTestCase {
     }
   }
 
-  public ArrayList getTestTaskSetSizes() {
+  public ArrayList<Integer> getTestTaskSetSizes() {
     return getEvictor().testOnlyGetSizeOfTasks();
   }
 

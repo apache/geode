@@ -89,12 +89,12 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   protected final Cache cache;
 
-  private final ArrayList testTaskSetSizes = new ArrayList();
+  private final ArrayList<Integer> testTaskSetSizes = new ArrayList<>();
   public volatile int testAbortAfterLoopCount = Integer.MAX_VALUE;
 
   private BlockingQueue<Runnable> poolQueue;
 
-  private AtomicBoolean isRunning = new AtomicBoolean(true);
+  private final AtomicBoolean isRunning = new AtomicBoolean(true);
 
   public HeapEvictor(Cache gemFireCache) {
     this.cache = gemFireCache;
@@ -198,12 +198,19 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
   /**
    * The task(i.e the region on which eviction needs to be performed) is assigned to the threadpool.
    */
-  private void submitRegionEvictionTask(Callable<Object> task) {
-    evictorThreadPool.submit(task);
+  private void executeInThreadPool(Runnable task) {
+    try {
+      evictorThreadPool.execute(task);
+    } catch (RejectedExecutionException ex) {
+      // ignore rejection if evictor no longer running
+      if (isRunning()) {
+        throw ex;
+      }
+    }
   }
 
   public ThreadPoolExecutor getEvictorThreadPool() {
-    if (isRunning.get()) {
+    if (isRunning()) {
       return evictorThreadPool;
     }
     return null;
@@ -215,7 +222,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
    * @return sum of scheduled and running tasks
    */
   public int getRunningAndScheduledTasks() {
-    if (isRunning.get()) {
+    if (isRunning()) {
       return this.evictorThreadPool.getActiveCount() + this.evictorThreadPool.getQueue().size();
     }
     return -1;
@@ -243,35 +250,36 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
       long bytesToEvictPerTask = (long) (getTotalBytesToEvict() * percentage);
       regionsForSingleTask.add(lr);
       if (mustEvict()) {
-        submitRegionEvictionTask(
-            new RegionEvictorTask(regionsForSingleTask, this, bytesToEvictPerTask));
+        executeInThreadPool(new RegionEvictorTask(regionsForSingleTask, this, bytesToEvictPerTask));
       } else {
         break;
       }
     }
   }
 
-  private Set<Callable<Object>> createRegionEvictionTasks() {
-    Set<Callable<Object>> evictorTaskSet = new HashSet<Callable<Object>>();
-    int threadsAvailable = getEvictorThreadPool().getCorePoolSize();
+  private Set<RegionEvictorTask> createRegionEvictionTasks() {
+    ThreadPoolExecutor pool = getEvictorThreadPool();
+    if (pool == null) {
+      return Collections.emptySet();
+    }
+    int threadsAvailable = pool.getCorePoolSize();
     long bytesToEvictPerTask = getTotalBytesToEvict() / threadsAvailable;
     List<LocalRegion> allRegionList = getAllRegionList();
+    if (allRegionList.isEmpty()) {
+      return Collections.emptySet();
+    }
     // This shuffling is not required when eviction triggered for the first time
     Collections.shuffle(allRegionList);
     int allRegionSetSize = allRegionList.size();
-    if (allRegionList.isEmpty()) {
-      return evictorTaskSet;
-    }
+    Set<RegionEvictorTask> evictorTaskSet = new HashSet<>();
     if (allRegionSetSize <= threadsAvailable) {
       for (LocalRegion region : allRegionList) {
         List<LocalRegion> regionList = new ArrayList<LocalRegion>(1);
         regionList.add(region);
-        Callable<Object> task = new RegionEvictorTask(regionList, this, bytesToEvictPerTask);
+        RegionEvictorTask task = new RegionEvictorTask(regionList, this, bytesToEvictPerTask);
         evictorTaskSet.add(task);
       }
-      Iterator iterator = evictorTaskSet.iterator();
-      while (iterator.hasNext()) {
-        RegionEvictorTask regionEvictorTask = (RegionEvictorTask) iterator.next();
+      for (RegionEvictorTask regionEvictorTask : evictorTaskSet) {
         testTaskSetSizes.add(regionEvictorTask.getRegionList().size());
       }
       return evictorTaskSet;
@@ -295,9 +303,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
       regionsForSingleTask.add(itr.next());
     }
 
-    Iterator iterator = evictorTaskSet.iterator();
-    while (iterator.hasNext()) {
-      RegionEvictorTask regionEvictorTask = (RegionEvictorTask) iterator.next();
+    for (RegionEvictorTask regionEvictorTask : evictorTaskSet) {
       testTaskSetSizes.add(regionEvictorTask.getRegionList().size());
     }
     return evictorTaskSet;
@@ -327,7 +333,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
     // Do we care about eviction events and did the eviction event originate
     // in this VM ...
-    if (this.isRunning.get() && event.isLocal()) {
+    if (isRunning() && event.isLocal()) {
       if (event.getState().isEviction()) {
         final LogWriter logWriter = cache.getLogger();
 
@@ -378,8 +384,8 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
                 if (EVICT_HIGH_ENTRY_COUNT_BUCKETS_FIRST) {
                   createAndSubmitWeightedRegionEvictionTasks();
                 } else {
-                  for (Callable<Object> task : createRegionEvictionTasks()) {
-                    submitRegionEvictionTask(task);
+                  for (RegionEvictorTask task : createRegionEvictionTasks()) {
+                    executeInThreadPool(task);
                   }
                 }
                 RegionEvictorTask.setLastTaskCompletionTime(System.currentTimeMillis());
@@ -408,14 +414,14 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
                 if (HeapEvictor.this.mustEvict.get()) {
                   // Submit this runnable back into the thread pool and execute
                   // another pass at eviction.
-                  HeapEvictor.this.evictorThreadPool.submit(this);
+                  executeInThreadPool(this);
                 }
               } catch (RegionDestroyedException e) {
                 // A region destroyed exception might be thrown for Region.size() when a bucket
                 // moves due to rebalancing. retry submitting the eviction task without
                 // logging an error message. fixes bug 48162
                 if (HeapEvictor.this.mustEvict.get()) {
-                  HeapEvictor.this.evictorThreadPool.submit(this);
+                  executeInThreadPool(this);
                 }
               }
             }
@@ -423,7 +429,7 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
         };
 
         // Submit the first pass at eviction into the pool
-        this.evictorThreadPool.execute(evictionManagerTask);
+        executeInThreadPool(evictionManagerTask);
 
       } else {
         this.mustEvict.set(false);
@@ -447,12 +453,17 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
   }
 
   public void close() {
-    getEvictorThreadPool().shutdownNow();
-    isRunning.set(false);
+    if (isRunning.compareAndSet(true, false)) {
+      evictorThreadPool.shutdownNow();
+    }
   }
 
-  public ArrayList testOnlyGetSizeOfTasks() {
-    if (isRunning.get())
+  public boolean isRunning() {
+    return isRunning.get();
+  }
+
+  public ArrayList<Integer> testOnlyGetSizeOfTasks() {
+    if (isRunning())
       return testTaskSetSizes;
     return null;
   }
