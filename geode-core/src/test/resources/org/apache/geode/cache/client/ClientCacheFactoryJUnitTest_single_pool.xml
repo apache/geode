@@ -20,10 +20,11 @@
      Configures a region as a client region in a Security cache. The 
      region's pool connects to a server listening on port 40404.
 -->
-<!DOCTYPE client-cache PUBLIC
-  "-//GemStone Systems, Inc.//GemFire Declarative Caching 7.0//EN"
-  "http://www.gemstone.com/dtd/cache7_0.dtd">
-<client-cache>
+<client-cache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://geode.apache.org/schema/cache"
+  xsi:schemaLocation="http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd"
+  xsi:noNamespaceSchemaLocation="cache-test.xsd"
+  version="1.0">
   <pool name="my_pool_name" multiuser-authentication="true">
     <server host="localhost" port="40404"/>
   </pool>

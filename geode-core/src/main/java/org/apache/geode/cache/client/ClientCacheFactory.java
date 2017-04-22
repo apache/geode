@@ -272,6 +272,21 @@ public class ClientCacheFactory {
   }
 
   /**
+   * Sets the socket connect timeout for this pool. The number of milli seconds specified as socket
+   * timeout when the client connects to the servers/locators. A timeout of zero is interpreted as
+   * an infinite timeout. The connection will then block until established or an error occurs.
+   *
+   * @param socketConnectTimeout timeout in milliseconds when the client connects to the servers
+   * @return a reference to <code>this</code>
+   * @throws IllegalArgumentException if <code>socketConnectTimeout</code> is less than or equal to
+   *         <code>-1</code>.
+   */
+  public ClientCacheFactory setPoolSocketConnectTimeout(int socketConnectTimeout) {
+    getPoolFactory().setSocketConnectTimeout(socketConnectTimeout);
+    return this;
+  }
+
+  /**
    * Sets the free connection timeout for this pool. If the pool has a max connections setting,
    * operations will block if all of the connections are in use. The free connection timeout
    * specifies how long those operations will block waiting for a free connection before receiving

@@ -64,6 +64,14 @@ public class PoolFactoryImpl implements PoolFactory {
     this.pm = pm;
   }
 
+  public PoolFactory setSocketConnectTimeout(int socketConnectTimeout) {
+    if (socketConnectTimeout <= -1) {
+      throw new IllegalArgumentException("socketConnectTimeout must be greater than -1");
+    }
+    this.attributes.socketConnectTimeout = socketConnectTimeout;
+    return this;
+  }
+
   public PoolFactory setFreeConnectionTimeout(int connectionTimeout) {
     if (connectionTimeout <= 0) {
       throw new IllegalArgumentException("connectionTimeout must be greater than zero");
@@ -268,6 +276,7 @@ public class PoolFactoryImpl implements PoolFactory {
    * Initializes the state of this factory for the given pool's state.
    */
   public void init(Pool cp) {
+    setSocketConnectTimeout(cp.getSocketConnectTimeout());
     setFreeConnectionTimeout(cp.getFreeConnectionTimeout());
     setLoadConditioningInterval(cp.getLoadConditioningInterval());
     setSocketBufferSize(cp.getSocketBufferSize());
@@ -335,6 +344,7 @@ public class PoolFactoryImpl implements PoolFactory {
 
     private static final long serialVersionUID = 1L; // for findbugs
 
+    public int socketConnectTimeout = DEFAULT_SOCKET_CONNECT_TIMEOUT;
     public int connectionTimeout = DEFAULT_FREE_CONNECTION_TIMEOUT;
     public int connectionLifetime = DEFAULT_LOAD_CONDITIONING_INTERVAL;
     public int socketBufferSize = DEFAULT_SOCKET_BUFFER_SIZE;
@@ -362,6 +372,10 @@ public class PoolFactoryImpl implements PoolFactory {
      * True if the pool is used by a Gateway.
      */
     public boolean gateway = false;
+
+    public int getSocketConnectTimeout() {
+      return this.socketConnectTimeout;
+    }
 
     public int getFreeConnectionTimeout() {
       return this.connectionTimeout;
@@ -529,6 +543,7 @@ public class PoolFactoryImpl implements PoolFactory {
       DataSerializer.writeArrayList(this.servers, out);
       DataSerializer.writePrimitiveInt(this.statisticInterval, out);
       DataSerializer.writePrimitiveBoolean(this.multiuserSecureModeEnabled, out);
+      DataSerializer.writePrimitiveInt(this.socketConnectTimeout, out);
     }
 
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -550,6 +565,7 @@ public class PoolFactoryImpl implements PoolFactory {
       this.servers = DataSerializer.readArrayList(in);
       this.statisticInterval = DataSerializer.readPrimitiveInt(in);
       this.multiuserSecureModeEnabled = DataSerializer.readPrimitiveBoolean(in);
+      this.socketConnectTimeout = DataSerializer.readPrimitiveInt(in);
     }
   }
 }

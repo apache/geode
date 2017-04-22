@@ -605,6 +605,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
   public static final String POOL_NAME = "pool-name";
   public static final String SERVER = "server";
   public static final String LOCATOR = "locator";
+  public static final String SOCKET_CONNECT_TIMEOUT = "socket-connect-timeout";
   public static final String FREE_CONNECTION_TIMEOUT = "free-connection-timeout";
   public static final String LOAD_CONDITIONING_INTERVAL = "load-conditioning-interval";
   public static final String MIN_CONNECTIONS = "min-connections";
