@@ -263,7 +263,8 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     List<ServerLocation> locatorResponse = response.getLocators();
 
     List<InetSocketAddress> newLocators = new ArrayList<InetSocketAddress>(locatorResponse.size());
-    List<InetSocketAddress> activeLocators = new ArrayList<InetSocketAddress>(locatorResponse.size());
+    List<InetSocketAddress> activeLocators =
+        new ArrayList<InetSocketAddress>(locatorResponse.size());
 
     Set<InetSocketAddress> badLocators = new HashSet<InetSocketAddress>(initialLocators);
     for (Iterator<ServerLocation> itr = locatorResponse.iterator(); itr.hasNext();) {
