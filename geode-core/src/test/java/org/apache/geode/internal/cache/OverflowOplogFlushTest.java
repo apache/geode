@@ -16,7 +16,8 @@
 package org.apache.geode.internal.cache;
 
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.spy;
@@ -24,9 +25,9 @@ import static org.mockito.Mockito.spy;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.Arrays;
-import java.util.List;
 
+import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,28 +35,24 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TestName;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.cache.Scope;
-import org.apache.geode.internal.cache.persistence.UninterruptibleFileChannel;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * Testing recovery from failures writing Oplog entries
+ * Testing recovery from failures writing OverflowOplog entries
  */
 @Category(IntegrationTest.class)
-public class OplogFlushTest extends DiskRegionTestingBase {
+public class OverflowOplogFlushTest extends DiskRegionTestingBase {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
   // How many times to fake the write failures
   private int nFakeChannelWrites = 0;
-  private Oplog ol = null;
+  private OverflowOplog ol = null;
   private ByteBuffer bb1 = null;
   private ByteBuffer bb2 = null;
   private ByteBuffer[] bbArray = new ByteBuffer[2];
-  private UninterruptibleFileChannel ch;
-  private UninterruptibleFileChannel spyCh;
+  private FileChannel ch;
+  private FileChannel spyCh;
 
   @Rule
   public TestName name = new TestName();
@@ -68,7 +65,7 @@ public class OplogFlushTest extends DiskRegionTestingBase {
     }
   }
 
-  private int fakeWriteBB(Oplog ol, ByteBuffer bb) throws IOException {
+  private int fakeWriteBB(OverflowOplog ol, ByteBuffer bb) throws IOException {
     if (nFakeChannelWrites > 0) {
       bb.position(bb.limit());
       --nFakeChannelWrites;
@@ -111,9 +108,9 @@ public class OplogFlushTest extends DiskRegionTestingBase {
     return 0;
   }
 
-  private void doChannelFlushWithFailures(Oplog[] oplogs, int numFailures) throws IOException {
+  private void doChannelFlushWithFailures(OverflowOplog oplog, int numFailures) throws IOException {
     nFakeChannelWrites = numFailures;
-    ol = oplogs[0];
+    ol = oplog;
     ch = ol.getFileChannel();
     spyCh = spy(ch);
     ol.testSetCrfChannel(spyCh);
@@ -129,14 +126,14 @@ public class OplogFlushTest extends DiskRegionTestingBase {
       long chStartPos = ol.getFileChannel().position();
       bb1.clear();
       bb1.put(entry1);
-      ol.flushAll(true);
+      ol.flush();
 
       // Write the 2nd entry without forced channel failures
       nFakeChannelWrites = 0;
       bb1 = ol.getWriteBuf();
       bb1.clear();
       bb1.put(entry2);
-      ol.flushAll(true);
+      ol.flush();
       long chEndPos = ol.getFileChannel().position();
       assertEquals("Change in channel position does not equal the size of the data flushed",
           entry1.length + entry2.length, chEndPos - chStartPos);
@@ -151,55 +148,65 @@ public class OplogFlushTest extends DiskRegionTestingBase {
 
   @Test
   public void testAsyncChannelWriteRetriesOnFailureDuringFlush() throws Exception {
-    region = DiskRegionHelperFactory.getAsyncOverFlowAndPersistRegion(cache, null);
+    DiskRegionProperties props = new DiskRegionProperties();
+    props.setOverFlowCapacity(1);
+    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, props);
+    region.put("K1", "v1"); // add two entries to make it overflow
+    region.put("K2", "v2");
     DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    Oplog[] oplogs = dr.getDiskStore().persistentOplogs.getAllOplogs();
-    assertNotNull("Unexpected null Oplog[] for " + dr.getName(), oplogs);
-    assertNotNull("Unexpected null Oplog", oplogs[0]);
-
-    doChannelFlushWithFailures(oplogs, 1 /* write failure */);
+    OverflowOplog oplog = dr.getDiskStore().overflowOplogs.getActiveOverflowOplog();
+    assertNotNull("Unexpected null Oplog for " + dr.getName(), oplog);
+    doChannelFlushWithFailures(oplog, 1 /* write failure */);
   }
 
   @Test
   public void testChannelWriteRetriesOnFailureDuringFlush() throws Exception {
-    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, null);
+    DiskRegionProperties props = new DiskRegionProperties();
+    props.setOverFlowCapacity(1);
+    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, props);
+    region.put("K1", "v1"); // add two entries to make it overflow
+    region.put("K2", "v2");
     DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    Oplog[] oplogs = dr.getDiskStore().persistentOplogs.getAllOplogs();
-    assertNotNull("Unexpected null Oplog[] for " + dr.getName(), oplogs);
-    assertNotNull("Unexpected null Oplog", oplogs[0]);
-
-    doChannelFlushWithFailures(oplogs, 1 /* write failure */);
+    OverflowOplog oplog = dr.getDiskStore().overflowOplogs.getActiveOverflowOplog();
+    assertNotNull("Unexpected null Oplog for " + dr.getName(), oplog);
+    doChannelFlushWithFailures(oplog, 1 /* write failure */);
   }
 
   @Test
   public void testChannelRecoversFromWriteFailureRepeatedRetriesDuringFlush() throws Exception {
-    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, null);
+    DiskRegionProperties props = new DiskRegionProperties();
+    props.setOverFlowCapacity(1);
+    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, props);
+    region.put("K1", "v1"); // add two entries to make it overflow
+    region.put("K2", "v2");
     DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    Oplog[] oplogs = dr.getDiskStore().persistentOplogs.getAllOplogs();
-    assertNotNull("Unexpected null Oplog[] for " + dr.getName(), oplogs);
-    assertNotNull("Unexpected null Oplog", oplogs[0]);
+    OverflowOplog oplog = dr.getDiskStore().overflowOplogs.getActiveOverflowOplog();
+    assertNotNull("Unexpected null Oplog for " + dr.getName(), oplog);
 
-    doChannelFlushWithFailures(oplogs, 3 /* write failures */);
+    doChannelFlushWithFailures(oplog, 3 /* write failures */);
   }
 
   @Test
   public void testOplogFlushThrowsIOExceptioniWhenNumberOfChannelWriteRetriesExceedsLimit()
       throws Exception {
-    expectedException.expect(DiskAccessException.class);
-    expectedException.expectCause(instanceOf(IOException.class));
-    region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, null);
+    expectedException.expect(IOException.class);
+    DiskRegionProperties props = new DiskRegionProperties();
+    props.setOverFlowCapacity(1);
+    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, props);
+    region.put("K1", "v1"); // add two entries to make it overflow
+    region.put("K2", "v2");
     DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    Oplog[] oplogs = dr.getDiskStore().persistentOplogs.getAllOplogs();
-    assertNotNull("Unexpected null Oplog[] for " + dr.getName(), oplogs);
-    assertNotNull("Unexpected null Oplog", oplogs[0]);
+    OverflowOplog oplog = dr.getDiskStore().overflowOplogs.getActiveOverflowOplog();
+    assertNotNull("Unexpected null Oplog for " + dr.getName(), oplog);
 
-    doChannelFlushWithFailures(oplogs, 6 /* exceeds the retry limit in Oplog */);
+    doChannelFlushWithFailures(oplog, 6 /* exceeds the retry limit in Oplog */);
   }
 
-  private void doPartialChannelByteArrayFlushForOpLog(Oplog[] oplogs) throws IOException {
-    ol = oplogs[0];
-    ch = ol.getFileChannel();
-    spyCh = spy(ch);
+  private void doPartialChannelByteArrayFlushForOverflowOpLog(OverflowOplog oplog)
+      throws IOException {
+    OverflowOplog ol = oplog;
+    FileChannel ch = ol.getFileChannel();
+    FileChannel spyCh = spy(ch);
     ol.testSetCrfChannel(spyCh);
 
     byte[] entry1 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19};
@@ -223,14 +230,17 @@ public class OplogFlushTest extends DiskRegionTestingBase {
   }
 
   @Test
-  public void testOplogByteArrayFlush() throws Exception {
-    region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, null, Scope.LOCAL);
+  public void testOverflowOplogByteArrayFlush() throws Exception {
+    DiskRegionProperties props = new DiskRegionProperties();
+    props.setOverFlowCapacity(1);
+    region = DiskRegionHelperFactory.getSyncOverFlowOnlyRegion(cache, props);
+    region.put("K1", "v1");
+    region.put("K2", "v2");
+
     DiskRegion dr = ((LocalRegion) region).getDiskRegion();
-    Oplog[] oplogs = dr.getDiskStore().persistentOplogs.getAllOplogs();
-    assertNotNull("Unexpected null Oplog[] for " + dr.getName(), oplogs);
-    assertNotNull("Unexpected null Oplog", oplogs[0]);
+    OverflowOplog oplog = dr.getDiskStore().overflowOplogs.getActiveOverflowOplog();
+    assertNotNull("Unexpected null Oplog", oplog);
 
-    doPartialChannelByteArrayFlushForOpLog(oplogs);
+    doPartialChannelByteArrayFlushForOverflowOpLog(oplog);
   }
-
 }
