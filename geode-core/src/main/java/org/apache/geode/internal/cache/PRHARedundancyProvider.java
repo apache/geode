@@ -1537,7 +1537,7 @@ public class PRHARedundancyProvider {
       delay = this.prRegion.getPartitionAttributes().getRecoveryDelay();
       movePrimaries = false;
     }
-    final boolean requiresRedundancyRecovery = delay >= 0 && redundantCopies > 0;
+    final boolean requiresRedundancyRecovery = delay >= 0;
 
     if (!requiresRedundancyRecovery) {
       return;
