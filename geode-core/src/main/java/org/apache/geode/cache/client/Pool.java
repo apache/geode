@@ -193,11 +193,21 @@ public interface Pool {
   /**
    * Returns an unmodifiable list of {@link java.net.InetSocketAddress} of the locators this pool is
    * using. Each locator is either one {@link PoolFactory#addLocator added explicitly} when the pool
-   * was created or were discovered using the explicit locators.
+   * was created.
    * <p>
    * If a pool has no locators then it can not discover servers or locators at runtime.
    */
   public java.util.List<InetSocketAddress> getLocators();
+
+  /**
+   * Returns an unmodifiable list of {@link java.net.InetSocketAddress} of the locators this pool is
+   * using. The returned locator is only the currently living locator found based on the periodic
+   * locator list request.
+   * <p>
+   * The returned locator list may be slightly old information. If the locator does not exist, an
+   * empty list is returned.
+   */
+  public java.util.List<InetSocketAddress> getLiveLocators();
 
   /**
    * Returns an unmodifiable list of {@link java.net.InetSocketAddress} of the servers this pool is

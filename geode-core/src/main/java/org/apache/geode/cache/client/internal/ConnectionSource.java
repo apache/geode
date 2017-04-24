@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Set;
 
@@ -73,4 +74,11 @@ public interface ConnectionSource {
    * @return a list of all servers
    */
   List<ServerLocation> getAllServers();
+
+  /**
+   * get the list of live locators
+   *
+   * @return a list of live locators
+   */
+  List<InetSocketAddress> getLiveLocators();
 }
