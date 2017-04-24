@@ -44,7 +44,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.DistTXState;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -1383,7 +1382,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         CountDownLatch cdl = new CountDownLatch(1);
-        GemFireCacheImpl.internalBeforeApplyChanges = new WaitRelease(cdl, "TX OP");
+        DistTXState.internalBeforeApplyChanges = new WaitRelease(cdl, "TX OP");
         return null;
       }
     };
@@ -1396,7 +1395,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         CountDownLatch cdl = new CountDownLatch(1);
-        GemFireCacheImpl.internalBeforeNonTXBasicPut = new WaitRelease(cdl, "NON TX OP");
+        DistTXState.internalBeforeNonTXBasicPut = new WaitRelease(cdl, "NON TX OP");
         return null;
       }
     };
@@ -1457,7 +1456,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     execute(secondary, new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Runnable r = GemFireCacheImpl.internalBeforeNonTXBasicPut;
+        Runnable r = DistTXState.internalBeforeNonTXBasicPut;
         assert (r != null && r instanceof WaitRelease);
         WaitRelease e = (WaitRelease) r;
         e.release();
@@ -1469,7 +1468,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     execute(secondary, new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Runnable r = GemFireCacheImpl.internalBeforeApplyChanges;
+        Runnable r = DistTXState.internalBeforeApplyChanges;
         assert (r != null && r instanceof WaitRelease);
         WaitRelease e = (WaitRelease) r;
         e.release();

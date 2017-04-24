@@ -776,7 +776,7 @@ public final class CqServiceImpl implements CqService {
     if (clientProxyId == null) {
       throw new CqException(
           LocalizedStrings.CqService_UNABLE_TO_RETRIEVE_DURABLE_CQS_FOR_CLIENT_PROXY_ID
-              .toLocalizedString(null));
+              .toLocalizedString());
     }
     List<ServerCQ> cqs = getAllClientCqs(clientProxyId);
     ArrayList<String> durableClientCqs = new ArrayList<>();

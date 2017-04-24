@@ -365,10 +365,10 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
 
   /**
    * Start listening for persistent view updates and apply any updates that have already happened.
-   * 
+   *
    * This method should be called after we have decided that there is no conflicting persistent
    * exception.
-   * 
+   *
    * Fix for bug 44045.
    */
   protected void beginUpdatingPersistentView() {
@@ -776,9 +776,9 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
   /**
    * Returns the member id of the member who has the latest copy of the persistent region. This may
    * be the local member ID if this member has the latest known copy.
-   * 
+   *
    * This method will block until the latest member is online.
-   * 
+   *
    * @throws ConflictingPersistentDataException if there are active members which are not based on
    *         the state that is persisted in this member.
    */

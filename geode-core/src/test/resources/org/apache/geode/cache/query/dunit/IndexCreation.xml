@@ -19,19 +19,19 @@
 <!DOCTYPE cache PUBLIC
   "-//GemStone Systems, Inc.//GemFire Declarative Cache 7.0//EN" "http://www.gemstone.com/dtd/cache7_0.dtd">
   <cache>
-  <region name="PartionedPortfolios">
+  <region name="PartitionedPortfolios">
     <region-attributes>
       <partition-attributes redundant-copies="1" total-num-buckets="50"/>
       <subscription-attributes interest-policy="cache-content"/>
     </region-attributes>
     <index name="statusIndex">
-      <functional from-clause="/PartionedPortfolios p" expression="p.status"/>
+      <functional from-clause="/PartitionedPortfolios p" expression="p.status"/>
     </index>
     <index name="idIndex">
-      <functional from-clause="/PartionedPortfolios p" expression="p.ID"/>
+      <functional from-clause="/PartitionedPortfolios p" expression="p.ID"/>
     </index>
     <index name="secIndex">
-      <functional from-clause="/PartionedPortfolios p, p.positions.values pos" expression="pos.secId"/>
+      <functional from-clause="/PartitionedPortfolios p, p.positions.values pos" expression="pos.secId"/>
     </index>
   </region>
   <region name="Portfolios">
@@ -85,14 +85,14 @@
     <index name="idIndex" type="range" from-clause="/PersistentPrPortfoliosWithRange p" expression="p.ID"/>
     <index name="secIndex" from-clause="/PersistentPrPortfoliosWithRange p, p.positions.values pos" expression="pos.secId"/>
   </region>
-  <region name="PartionedPortfoliosWithHash">
+  <region name="PartitionedPortfoliosWithHash">
     <region-attributes>
       <partition-attributes redundant-copies="1" total-num-buckets="50"/>
       <subscription-attributes interest-policy="cache-content"/>
     </region-attributes>
-    <index name="statusIndex" type="hash" from-clause="/PartionedPortfoliosWithHash p" expression="p.status"/>
-    <index name="idIndex" type="hash" from-clause="/PartionedPortfoliosWithHash p" expression="p.ID"/>
-    <index name="secIndex" from-clause="/PartionedPortfoliosWithHash p, p.positions.values pos" expression="pos.secId"/>
+    <index name="statusIndex" type="hash" from-clause="/PartitionedPortfoliosWithHash p" expression="p.status"/>
+    <index name="idIndex" type="hash" from-clause="/PartitionedPortfoliosWithHash p" expression="p.ID"/>
+    <index name="secIndex" from-clause="/PartitionedPortfoliosWithHash p, p.positions.values pos" expression="pos.secId"/>
   </region>
   <region name="PortfoliosWithHash">
     <region-attributes scope="distributed-ack" data-policy="replicate">

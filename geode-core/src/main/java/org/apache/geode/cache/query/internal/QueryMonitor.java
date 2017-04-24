@@ -103,7 +103,7 @@ public class QueryMonitor implements Runnable {
 
     /** For dunit test purpose */
     if (GemFireCacheImpl.getInstance() != null
-        && GemFireCacheImpl.getInstance().TEST_MAX_QUERY_EXECUTION_TIME > 0) {
+        && GemFireCacheImpl.getInstance().testMaxQueryExecutionTime > 0) {
       if (this.queryMonitorTasks == null) {
         this.queryMonitorTasks = new ConcurrentHashMap();
       }
@@ -127,8 +127,8 @@ public class QueryMonitor implements Runnable {
 
       // START - DUnit Test purpose.
       if (GemFireCacheImpl.getInstance() != null
-          && GemFireCacheImpl.getInstance().TEST_MAX_QUERY_EXECUTION_TIME > 0) {
-        long maxTimeSet = GemFireCacheImpl.getInstance().TEST_MAX_QUERY_EXECUTION_TIME;
+          && GemFireCacheImpl.getInstance().testMaxQueryExecutionTime > 0) {
+        long maxTimeSet = GemFireCacheImpl.getInstance().testMaxQueryExecutionTime;
         QueryThreadTask queryTask = (QueryThreadTask) queryThreads.peek();
 
         long currentTime = System.currentTimeMillis();

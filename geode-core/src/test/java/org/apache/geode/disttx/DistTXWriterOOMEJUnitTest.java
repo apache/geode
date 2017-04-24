@@ -14,21 +14,23 @@
  */
 package org.apache.geode.disttx;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.TXWriterOOMEJUnitTest;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.DistributedTransactionsTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * Same tests as that of {@link TXWriterOOMEJUnitTest} after setting "distributed-transactions"
@@ -37,19 +39,22 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 @Category({IntegrationTest.class, DistributedTransactionsTest.class})
 public class DistTXWriterOOMEJUnitTest extends TXWriterOOMEJUnitTest {
 
-  public DistTXWriterOOMEJUnitTest() {}
-
+  @Override
   protected void createCache() throws CacheException {
-    Properties p = new Properties();
-    p.setProperty(MCAST_PORT, "0"); // loner
-    p.setProperty(ConfigurationProperties.DISTRIBUTED_TRANSACTIONS, "true");
-    this.cache = (GemFireCacheImpl) CacheFactory.create(DistributedSystem.connect(p));
-    AttributesFactory<?, ?> af = new AttributesFactory<String, String>();
-    af.setScope(Scope.DISTRIBUTED_NO_ACK);
-    af.setIndexMaintenanceSynchronous(true);
-    this.region = this.cache.createRegion("TXTest", af.create());
+    Properties properties = new Properties();
+    properties.setProperty(MCAST_PORT, "0"); // loner
+    properties.setProperty(ConfigurationProperties.DISTRIBUTED_TRANSACTIONS, "true");
+
+    this.cache = (GemFireCacheImpl) CacheFactory.create(DistributedSystem.connect(properties));
+
+    AttributesFactory<String, String> attributesFactory = new AttributesFactory<>();
+    attributesFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+    attributesFactory.setIndexMaintenanceSynchronous(true);
+
+    this.region = this.cache.createRegion("TXTest", attributesFactory.create());
     this.txMgr = this.cache.getCacheTransactionManager();
-    assert (this.txMgr.isDistributed());
+
+    assertTrue(this.txMgr.isDistributed());
   }
 
 }

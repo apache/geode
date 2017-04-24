@@ -1357,6 +1357,11 @@ public class LonerDistributionManager implements DM {
   }
 
   @Override
+  public int getDMType() {
+    return 0;
+  }
+
+  @Override
   public boolean isSharedConfigurationServiceEnabledForDS() {
     // return false for loner
     return false;

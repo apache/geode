@@ -2731,7 +2731,7 @@ public class DiskStoreImpl implements DiskStore {
     String name = getName();
 
     if (name == null) {
-      name = GemFireCacheImpl.DEFAULT_DS_NAME;
+      name = GemFireCacheImpl.getDefaultDiskStoreName();
     }
 
     return (name + "_" + getDiskStoreID().toString());

@@ -34,6 +34,12 @@ import org.apache.geode.management.internal.RestAgent;
 
 public class FindRestEnabledServersFunction extends FunctionAdapter implements InternalEntity {
 
+  /**
+   * This property defines internal function that will get executed on each node to fetch active
+   * REST service endpoints (servers).
+   */
+  public static final String FIND_REST_ENABLED_SERVERS_FUNCTION_ID =
+      FindRestEnabledServersFunction.class.getName();
   private static final long serialVersionUID = 7851518767859544678L;
 
 
@@ -61,7 +67,7 @@ public class FindRestEnabledServersFunction extends FunctionAdapter implements I
   }
 
   public String getId() {
-    return GemFireCacheImpl.FIND_REST_ENABLED_SERVERS_FUNCTION_ID;
+    return FIND_REST_ENABLED_SERVERS_FUNCTION_ID;
   }
 
   @Override

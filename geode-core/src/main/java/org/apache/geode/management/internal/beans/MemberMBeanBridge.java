@@ -1270,7 +1270,6 @@ public class MemberMBeanBridge {
 
 
   /**
-   * 
    * @return the duration for which the member is up
    */
   public long getMemberUpTime() {
@@ -1278,25 +1277,23 @@ public class MemberMBeanBridge {
   }
 
   /**
-   * 
    * @return root region names
    */
   public String[] getRootRegionNames() {
-    Set<LocalRegion> listOfRootRegions = cache.rootRegions();
+    Set<Region<?, ?>> listOfRootRegions = cache.rootRegions();
     if (listOfRootRegions != null && listOfRootRegions.size() > 0) {
-      String[] regionStr = new String[listOfRootRegions.size()];
+      String[] regionNames = new String[listOfRootRegions.size()];
       int j = 0;
-      for (LocalRegion rg : listOfRootRegions) {
-        regionStr[j] = rg.getFullPath();
+      for (Region region : listOfRootRegions) {
+        regionNames[j] = region.getFullPath();
         j++;
       }
-      return regionStr;
+      return regionNames;
     }
     return ManagementConstants.NO_DATA_STRING;
   }
 
   /**
-   * 
    * @return Current GemFire version
    */
   public String getVersion() {

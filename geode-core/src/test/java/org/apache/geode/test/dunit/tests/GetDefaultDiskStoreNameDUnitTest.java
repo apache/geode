@@ -62,6 +62,6 @@ public class GetDefaultDiskStoreNameDUnitTest extends JUnit4DistributedTestCase 
   }
 
   private String getDefaultDiskStoreName() {
-    return GemFireCacheImpl.DEFAULT_DS_NAME; // TODO: not thread safe
+    return GemFireCacheImpl.getDefaultDiskStoreName(); // TODO: not thread safe
   }
 }

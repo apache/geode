@@ -106,8 +106,8 @@ public interface InternalCache extends Cache, Extensible<Cache> {
 
   boolean requiresNotificationFromPR(PartitionedRegion r);
 
-  RegionAttributes invokeRegionBefore(LocalRegion parent, String name, RegionAttributes attrs,
-      InternalRegionArguments internalRegionArgs);
+  <K, V> RegionAttributes<K, V> invokeRegionBefore(LocalRegion parent, String name,
+      RegionAttributes<K, V> attrs, InternalRegionArguments internalRegionArgs);
 
   void invokeRegionAfter(LocalRegion region);
 

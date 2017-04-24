@@ -14,12 +14,13 @@
  */
 package org.apache.geode.test.dunit.internal;
 
+import java.io.Serializable;
 import java.util.Properties;
 
 /**
  * Defines the {@code DistributedTestCase} methods that can be overridden by its subclasses.
  */
-public interface DistributedTestFixture {
+public interface DistributedTestFixture extends Serializable {
 
   /**
    * {@code preSetUp()} is invoked before {@code DistributedTestCase#setUp()}.

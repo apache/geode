@@ -16,6 +16,9 @@ package org.apache.geode.disttx;
 
 import static org.apache.geode.test.dunit.Assert.*;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -31,8 +34,6 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitTest {
@@ -61,7 +62,7 @@ public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitTest {
     });
   }
 
-  protected void createPesistentPR(Object[] attributes) {
+  private void createPersistentPR(Object[] attributes) {
     dataStore1.invoke(DistTXPersistentDebugDUnitTest.class, "createPersistentPR", attributes);
     dataStore2.invoke(DistTXPersistentDebugDUnitTest.class, "createPersistentPR", attributes);
     // dataStore3.invoke(TxPersistentDebugDUnit.class, "createPR", attributes);
@@ -76,7 +77,7 @@ public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitTest {
         getPersistentPRAttributes(1, -1, basicGetCache(), 113, true));
   }
 
-  protected static RegionAttributes getPersistentPRAttributes(final int redundancy,
+  private static RegionAttributes getPersistentPRAttributes(final int redundancy,
       final int recoveryDelay, Cache cache, int numBuckets, boolean synchronous) {
     DiskStore ds = cache.findDiskStore("disk");
     if (ds == null) {
@@ -92,8 +93,7 @@ public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitTest {
     af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
     af.setDiskStoreName("disk");
     af.setDiskSynchronous(synchronous);
-    RegionAttributes attr = af.create();
-    return attr;
+    return af.create();
   }
 
   @Test
@@ -101,7 +101,8 @@ public class DistTXPersistentDebugDUnitTest extends DistTXDebugDUnitTest {
     createCacheInAllVms();
     final String regionName = "persistentCustomerPRRegion";
     Object[] attrs = new Object[] {regionName};
-    createPesistentPR(attrs);
+    createPersistentPR(attrs);
+
     SerializableCallable TxOps = new SerializableCallable() {
       @Override
       public Object call() throws Exception {

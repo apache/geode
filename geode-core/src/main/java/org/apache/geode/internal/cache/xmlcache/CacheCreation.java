@@ -1401,7 +1401,7 @@ public class CacheCreation implements InternalCache {
    * 
    * @see org.apache.geode.cache.Cache#getMembers(org.apache.geode.cache.Region)
    */
-  public Set<DistributedMember> getMembers(Region r) {
+  public Set<DistributedMember> getMembers(Region region) {
     return Collections.EMPTY_SET;
   }
 

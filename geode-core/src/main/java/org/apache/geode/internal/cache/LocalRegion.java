@@ -5853,8 +5853,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       tx.txPutEntry(event, ifNew, false, false, null);
       return null;
     } else {
-      if (GemFireCacheImpl.internalBeforeNonTXBasicPut != null) {
-        GemFireCacheImpl.internalBeforeNonTXBasicPut.run();
+      if (DistTXState.internalBeforeNonTXBasicPut != null) {
+        DistTXState.internalBeforeNonTXBasicPut.run();
       }
 
       RegionEntry oldEntry = this.entries.basicPut(event, lastModified, ifNew, false, // ifOld

@@ -22,20 +22,20 @@ package org.apache.geode;
  * 
  * Code inside the service can check to see if the service is cancelled by calling
  * {@link #checkCancelInProgress(Throwable)}. Generally the pattern is to check before performing an
- * operation, check if the service is canceled before propgrating an exception futher up the stack,
- * and check for cancelation inside a long loop. Eg.
+ * operation, check if the service is canceled before propagating an exception further up the stack,
+ * and check for cancellation inside a long loop. Eg.
  * 
- * <code>
- * while(true) {
+ * <pre>
+ * while (true) {
  *   c.checkCancelInProgress(null);
  *   try {
- *      dispatchEvents();
- *   } catch(IOException e) {
+ *     dispatchEvents();
+ *   } catch (IOException e) {
  *     c.checkCancelInProgress(e);
  *     throw e;
  *   }
  * }
- * </code>
+ * </pre>
  * 
  * @see CancelException
  * @since GemFire 5.1
@@ -51,10 +51,6 @@ public abstract class CancelCriterion {
    *         exception indicating the service is shut down.
    */
   public abstract String cancelInProgress();
-  // import org.apache.geode.distributed.internal.DistributionManager;
-  // * <p>
-  // * In particular, a {@link DistributionManager} returns a non-null result if
-  // * message distribution has been terminated.
 
   /**
    * Use this utility function in your implementation of cancelInProgress() and cancelled() to
@@ -95,11 +91,11 @@ public abstract class CancelCriterion {
    * This method should wrap the exception in a service specific CancelationException (eg
    * CacheClosedException). or return null if the service is not being canceled.
    * 
-   * @param e an underlying exception, if any
+   * @param throwable an underlying exception, if any
    * @return RuntimeException to be thrown by checkCancelInProgress(), null if the receiver has not
    *         been cancelled.
    */
-  abstract public RuntimeException generateCancelledException(Throwable e);
+  public abstract RuntimeException generateCancelledException(Throwable throwable);
 
   /**
    * Checks to see if a cancellation is in progress. This is equivalent to the expression
@@ -110,6 +106,5 @@ public abstract class CancelCriterion {
   public boolean isCancelInProgress() {
     return cancelInProgress() != null;
   }
-
 
 }

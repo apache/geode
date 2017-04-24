@@ -14,6 +14,15 @@
  */
 package org.apache.geode.disttx;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.TXJUnitTest;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
@@ -21,49 +30,31 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.DistributedTransactionsTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Run the basic transaction functionality tests in TXJUnitTest after setting
  * "distributed-transactions" property to true
- *
  */
 @Category({IntegrationTest.class, DistributedTransactionsTest.class})
 public class DistTXJUnitTest extends TXJUnitTest {
-
-  public DistTXJUnitTest() {}
 
   @Override
   protected void createCache() throws Exception {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0"); // loner
     p.setProperty(DISTRIBUTED_TRANSACTIONS, "true");
+
     this.cache = (GemFireCacheImpl) CacheFactory.create(DistributedSystem.connect(p));
+
     createRegion();
     this.txMgr = this.cache.getCacheTransactionManager();
-    assert (this.txMgr.isDistributed());
+
+    assertTrue(this.txMgr.isDistributed());
+
     this.listenerAfterCommit = 0;
     this.listenerAfterFailedCommit = 0;
     this.listenerAfterRollback = 0;
     this.listenerClose = 0;
-  }
-
-  @Before
-  public void setUp() throws Exception {
-    createCache();
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    closeCache();
   }
 
   @Override

@@ -46,7 +46,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -60,7 +59,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
   protected VM accessor = null;
   protected VM dataStore1 = null;
   protected VM dataStore2 = null;
-  protected VM dataStore3 = null;
+  private VM dataStore3 = null;
 
   @Override
   public final void postSetUp() throws Exception {
@@ -106,30 +105,28 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
   public static void createPR(String partitionedRegionName, Integer redundancy,
       Integer localMaxMemory, Integer totalNumBuckets, Object colocatedWith,
       Boolean isPartitionResolver, Boolean concurrencyChecks) {
-    PartitionAttributesFactory paf = new PartitionAttributesFactory();
-
-    paf.setRedundantCopies(redundancy.intValue());
+    PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory();
+    paf.setRedundantCopies(redundancy);
     if (localMaxMemory != null) {
-      paf.setLocalMaxMemory(localMaxMemory.intValue());
+      paf.setLocalMaxMemory(localMaxMemory);
     }
     if (totalNumBuckets != null) {
-      paf.setTotalNumBuckets(totalNumBuckets.intValue());
+      paf.setTotalNumBuckets(totalNumBuckets);
     }
     if (colocatedWith != null) {
       paf.setColocatedWith((String) colocatedWith);
     }
-    if (isPartitionResolver.booleanValue()) {
+    if (isPartitionResolver) {
       paf.setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
     }
-    PartitionAttributes prAttr = paf.create();
-    AttributesFactory attr = new AttributesFactory();
+    PartitionAttributes<String, String> prAttr = paf.create();
+
+    AttributesFactory<String, String> attr = new AttributesFactory();
     attr.setPartitionAttributes(prAttr);
     attr.setConcurrencyChecksEnabled(concurrencyChecks);
-    // assertNotNull(basicGetCache());
-    // Region pr = basicGetCache().createRegion(partitionedRegionName,
-    // attr.create());
+
     assertNotNull(basicGetCache());
-    Region pr = basicGetCache().createRegion(partitionedRegionName, attr.create());
+    Region<String, String> pr = basicGetCache().createRegion(partitionedRegionName, attr.create());
     assertNotNull(pr);
     LogWriterUtils.getLogWriter().info(
         "Partitioned Region " + partitionedRegionName + " created Successfully :" + pr.toString());
@@ -912,55 +909,54 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
   public void testTXRR2_dataNodeAsCoordinator() throws Exception {
     performTXRRtestOps(true);
   }
-}
 
+  private static class DummyKeyBasedRoutingResolver implements PartitionResolver, DataSerializable {
+    Integer dummyID;
 
-class DummyKeyBasedRoutingResolver implements PartitionResolver, DataSerializable {
-  Integer dummyID;
+    public DummyKeyBasedRoutingResolver() {}
 
-  public DummyKeyBasedRoutingResolver() {}
+    public DummyKeyBasedRoutingResolver(int id) {
+      this.dummyID = new Integer(id);
+    }
 
-  public DummyKeyBasedRoutingResolver(int id) {
-    this.dummyID = new Integer(id);
-  }
+    public String getName() {
+      // TODO Auto-generated method stub
+      return null;
+    }
 
-  public String getName() {
-    // TODO Auto-generated method stub
-    return null;
-  }
+    public Serializable getRoutingObject(EntryOperation opDetails) {
+      return (Serializable) opDetails.getKey();
+    }
 
-  public Serializable getRoutingObject(EntryOperation opDetails) {
-    return (Serializable) opDetails.getKey();
-  }
+    public void close() {
+      // TODO Auto-generated method stub
+    }
 
-  public void close() {
-    // TODO Auto-generated method stub
-  }
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      this.dummyID = DataSerializer.readInteger(in);
+    }
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.dummyID = DataSerializer.readInteger(in);
-  }
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeInteger(this.dummyID, out);
+    }
 
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeInteger(this.dummyID, out);
-  }
+    @Override
+    public int hashCode() {
+      int i = this.dummyID.intValue();
+      return i;
+    }
 
-  @Override
-  public int hashCode() {
-    int i = this.dummyID.intValue();
-    return i;
-  }
+    @Override
+    public boolean equals(Object o) {
+      if (this == o)
+        return true;
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o)
-      return true;
+      if (!(o instanceof DummyKeyBasedRoutingResolver))
+        return false;
 
-    if (!(o instanceof DummyKeyBasedRoutingResolver))
-      return false;
+      DummyKeyBasedRoutingResolver otherDummyID = (DummyKeyBasedRoutingResolver) o;
+      return (otherDummyID.dummyID.equals(dummyID));
 
-    DummyKeyBasedRoutingResolver otherDummyID = (DummyKeyBasedRoutingResolver) o;
-    return (otherDummyID.dummyID.equals(dummyID));
-
+    }
   }
 }

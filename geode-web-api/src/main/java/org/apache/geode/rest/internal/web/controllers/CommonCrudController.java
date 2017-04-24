@@ -38,7 +38,7 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.execute.util.FindRestEnabledServersFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.rest.internal.web.controllers.support.RestServersResultCollector;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
@@ -193,7 +193,7 @@ public abstract class CommonCrudController extends AbstractBaseController {
 
     try {
       final ResultCollector<?, ?> results = function.withCollector(new RestServersResultCollector())
-          .execute(GemFireCacheImpl.FIND_REST_ENABLED_SERVERS_FUNCTION_ID);
+          .execute(FindRestEnabledServersFunction.FIND_REST_ENABLED_SERVERS_FUNCTION_ID);
       Object functionResult = results.getResult();
 
       if (functionResult instanceof List<?>) {

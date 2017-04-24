@@ -117,6 +117,11 @@ import org.apache.geode.security.GemFireSecurityException;
 public class InternalDistributedSystem extends DistributedSystem
     implements OsStatisticsFactory, StatisticsManager {
 
+  /**
+   * True if the user is allowed lock when memory resources appear to be overcommitted.
+   */
+  private static final boolean ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Cache.ALLOW_MEMORY_OVERCOMMIT");
   private static final Logger logger = LogService.getLogger();
 
   public static final String DISABLE_MANAGEMENT_PROPERTY =
@@ -654,7 +659,7 @@ public class InternalDistributedSystem extends DistributedSystem
         long avail = LinuxProcFsStatistics.getAvailableMemory(logger);
         long size = offHeapMemorySize + Runtime.getRuntime().totalMemory();
         if (avail < size) {
-          if (GemFireCacheImpl.ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED) {
+          if (ALLOW_MEMORY_LOCK_WHEN_OVERCOMMITTED) {
             logger.warn(LocalizedMessage.create(
                 LocalizedStrings.InternalDistributedSystem_MEMORY_OVERCOMMIT_WARN, size - avail));
           } else {

@@ -33,9 +33,6 @@ import org.apache.geode.internal.Version;
 
 /**
  * This interface defines the services provided by any class that is a distribution manager.
- *
- *
- *
  */
 public interface DM extends ReplySender {
 
@@ -463,4 +460,6 @@ public interface DM extends ReplySender {
    * forceUDPMessagingForCurrentThread.
    */
   public void releaseUDPMessagingForCurrentThread();
+
+  int getDMType();
 }

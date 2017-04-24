@@ -41,10 +41,7 @@ import java.util.Properties;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.xml.sax.SAXException;
-
-import com.company.app.DBLoader;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -137,7 +134,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
@@ -587,7 +583,8 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
     assertEquals("entry", chaqf.getEvictionPolicy());
     assertEquals(501, chaqf.getCapacity());
     File curDir = new File(".").getAbsoluteFile();
-    File lockFile = new File(curDir, "DRLK_IF" + GemFireCacheImpl.DEFAULT_DS_NAME + ".lk");
+    File lockFile =
+        new File(curDir, "DRLK_IF" + GemFireCacheImpl.getDefaultDiskStoreName() + ".lk");
     assertTrue(lockFile.exists());
   }
 

@@ -14,13 +14,31 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.junit.Assert.fail;
+import static java.util.concurrent.TimeUnit.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.IgnoredException.*;
+import static org.apache.geode.test.dunit.Invoke.*;
+import static org.apache.geode.test.dunit.LogWriterUtils.*;
+import static org.assertj.core.api.Assertions.*;
+import static org.awaitility.Awaitility.*;
+
+import java.io.File;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheExistsException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.Query;
@@ -33,95 +51,78 @@ import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.util.test.TestUtil;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Properties;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(DistributedTest.class)
 public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
 
-  static private final String WAIT_PROPERTY = "QueryIndexBuckets.maxWaitTime";
+  private static final String NAME = "PartitionedPortfolios";
+  private static final String REP_REG_NAME = "Portfolios";
+  private static final String PERSISTENT_REG_NAME = "PersistentPrPortfolios";
+  private static final String NAME_WITH_RANGE = "PartitionedPortfoliosWithRange";
+  private static final String NAME_WITH_HASH = "PartitionedPortfoliosWithHash";
+  private static final String REP_REG_NAME_WITH_RANGE = "PortfoliosWithRange";
+  private static final String REP_REG_NAME_WITH_HASH = "PortfoliosWithHash";
+  private static final String PERSISTENT_REG_NAME_WITH_RANGE = "PersistentPrPortfoliosWithRange";
+  private static final String PERSISTENT_REG_NAME_WITH_HASH = "PersistentPrPortfoliosWithHash";
+  private static final String NO_INDEX_REP_REG = "PortfoliosNoIndex";
+  private static final String STATUS_INDEX = "statusIndex";
+  private static final String ID_INDEX = "idIndex";
 
-  static private final int WAIT_DEFAULT = (60 * 1000);
+  private static final String[][] QUERY_STR = new String[][] {
+      {"Select * from /" + NAME + " where ID > 10",
+          "Select * from /" + REP_REG_NAME + " where ID > 10",
+          "Select * from /" + PERSISTENT_REG_NAME + " where ID > 10",},
+      {"Select * from /" + NAME + " where ID = 5",
+          "Select * from /" + REP_REG_NAME + " where ID = 5",
+          "Select * from /" + PERSISTENT_REG_NAME + " where ID = 5",
+          "Select * from /" + NAME_WITH_HASH + " where ID = 5",
+          "Select * from /" + REP_REG_NAME_WITH_HASH + " where ID = 5",
+          "Select * from /" + PERSISTENT_REG_NAME_WITH_HASH + " where ID = 5"},
+      {"Select * from /" + NAME + " where status = 'active'",
+          "Select * from /" + REP_REG_NAME + " where status = 'active'",
+          "Select * from /" + PERSISTENT_REG_NAME + " where status = 'active'",
+          "Select * from /" + NAME_WITH_HASH + " where status = 'active'",
+          "Select * from /" + REP_REG_NAME_WITH_HASH + " where status = 'active'",
+          "Select * from /" + PERSISTENT_REG_NAME_WITH_HASH + " where status = 'active'"}};
 
-  public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT);
+  private static final String[] QUERY_STR_NO_INDEX =
+      new String[] {"Select * from /" + NO_INDEX_REP_REG + " where ID > 10",
+          "Select * from /" + NO_INDEX_REP_REG + " where ID = 5",
+          "Select * from /" + NO_INDEX_REP_REG + " where status = 'active'"};
 
-  final String name = "PartionedPortfolios";
-  final String repRegName = "Portfolios";
-  final String persistentRegName = "PersistentPrPortfolios";
-  final String nameWithRange = "PartitionedPortfoliosWithRange";
-  final String nameWithHash = "PartionedPortfoliosWithHash";
-  final String repRegNameWithRange = "PortfoliosWithRange";
-  final String repRegNameWithHash = "PortfoliosWithHash";
-  final String persistentRegNameWithRange = "PersistentPrPortfoliosWithRange";
-  final String persistentRegNameWithHash = "PersistentPrPortfoliosWithHash";
-  final String noIndexRepReg = "PortfoliosNoIndex";
-  final String statusIndex = "statusIndex";
-  final String idIndex = "idIndex";
+  private static final String PERSISTENT_OVER_FLOW_REG_NAME = "PersistentOverflowPortfolios";
 
-  String queryStr[][] = new String[][] {
-      {"Select * from /" + name + " where ID > 10",
-          "Select * from /" + repRegName + " where ID > 10",
-          "Select * from /" + persistentRegName + " where ID > 10",},
-      {"Select * from /" + name + " where ID = 5", "Select * from /" + repRegName + " where ID = 5",
-          "Select * from /" + persistentRegName + " where ID = 5",
-          "Select * from /" + nameWithHash + " where ID = 5",
-          "Select * from /" + repRegNameWithHash + " where ID = 5",
-          "Select * from /" + persistentRegNameWithHash + " where ID = 5"},
-      {"Select * from /" + name + " where status = 'active'",
-          "Select * from /" + repRegName + " where status = 'active'",
-          "Select * from /" + persistentRegName + " where status = 'active'",
-          "Select * from /" + nameWithHash + " where status = 'active'",
-          "Select * from /" + repRegNameWithHash + " where status = 'active'",
-          "Select * from /" + persistentRegNameWithHash + " where status = 'active'",},};
+  private static final String CACHE_XML_FILE_NAME = "IndexCreation.xml";
 
-  String queryStrNoIndex[] = new String[] {"Select * from /" + noIndexRepReg + " where ID > 10",
-      "Select * from /" + noIndexRepReg + " where ID = 5",
-      "Select * from /" + noIndexRepReg + " where status = 'active'",};
+  private File cacheXmlFile;
 
-  String queryStrValid = "Select * from /" + noIndexRepReg + " where ID > 10";
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
-  private String persistentOverFlowRegName = "PersistentOverflowPortfolios";
+  @Before
+  public void before() throws Exception {
+    addIgnoredException("Failed to create index");
 
-  @Override
-  public final void postSetUp() throws Exception {
-    // Workaround for #52008
-    IgnoredException.addIgnoredException("Failed to create index");
+    URL url = getClass().getResource(CACHE_XML_FILE_NAME);
+    assertThat(url).isNotNull(); // precondition
+
+    this.cacheXmlFile = this.temporaryFolder.newFile(CACHE_XML_FILE_NAME);
+    FileUtils.copyURLToFile(url, this.cacheXmlFile);
+    assertThat(this.cacheXmlFile).exists(); // precondition
   }
 
-  @Override
-  public final void postTearDownCacheTestCase() throws Exception {
-    // avoid creating a new cache just to get the diskstore name
-    Invoke.invokeInEveryVM(resetTestHook());
+  @After
+  public void after() throws Exception {
+    invokeInEveryVM(resetTestHook());
     disconnectFromDS();
-    File deleteMe = new File(GemFireCacheImpl.DEFAULT_DS_NAME).getAbsoluteFile();
-    if (deleteMe.exists())
-      FileUtils.forceDelete(deleteMe);
   }
 
   /**
@@ -129,68 +130,53 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testCreateIndexThroughXML() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String fileName = "IndexCreation.xml";
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("Creating index using an xml file name : " + fileName);
+    getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
 
-    AsyncInvocation asyInvk0 =
-        vm0.invokeAsync(createIndexThrougXML("vm0testCreateIndexThroughXML", name, fileName));
+    AsyncInvocation async0 = vm0.invokeAsync(createIndexThroughXML(NAME));
+    AsyncInvocation async1 = vm1.invokeAsync(createIndexThroughXML(NAME));
 
-    AsyncInvocation asyInvk1 =
-        vm1.invokeAsync(createIndexThrougXML("vm1testCreateIndexThroughXML", name, fileName));
-
-    ThreadUtils.join(asyInvk1, 30 * 1000);
-    if (asyInvk1.exceptionOccurred()) {
-      Assert.fail("asyInvk1 failed", asyInvk1.getException());
-    }
-    ThreadUtils.join(asyInvk0, 30 * 1000);
-    if (asyInvk0.exceptionOccurred()) {
-      Assert.fail("asyInvk0 failed", asyInvk0.getException());
-    }
+    async1.await();
+    async0.await();
 
     // Check index for PR
-    vm0.invoke(prIndexCreationCheck(name, statusIndex, -1));
-    vm1.invoke(prIndexCreationCheck(name, statusIndex, -1));
-    vm0.invoke(prIndexCreationCheck(name, idIndex, -1));
-    vm1.invoke(prIndexCreationCheck(name, idIndex, -1));
-    vm0.invoke(prIndexCreationCheck(name, "secIndex", -1));
-    vm1.invoke(prIndexCreationCheck(name, "secIndex", -1));
+    vm0.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, -1));
+    vm1.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, -1));
+    vm0.invoke(prIndexCreationCheck(NAME, ID_INDEX, -1));
+    vm1.invoke(prIndexCreationCheck(NAME, ID_INDEX, -1));
+    vm0.invoke(prIndexCreationCheck(NAME, "secIndex", -1));
+    vm1.invoke(prIndexCreationCheck(NAME, "secIndex", -1));
 
     // Check index for replicated
-    vm0.invoke(indexCreationCheck(repRegName, statusIndex));
-    vm1.invoke(indexCreationCheck(repRegName, statusIndex));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME, STATUS_INDEX));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME, STATUS_INDEX));
 
     // Check index for persistent pr region
-    vm0.invoke(prIndexCreationCheck(persistentRegName, statusIndex, -1));
-    vm1.invoke(prIndexCreationCheck(persistentRegName, statusIndex, -1));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, STATUS_INDEX, -1));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, STATUS_INDEX, -1));
 
     // check range index creation
-    vm0.invoke(prIndexCreationCheck(nameWithRange, statusIndex, -1));
-    vm1.invoke(prIndexCreationCheck(nameWithRange, statusIndex, -1));
-    vm0.invoke(prIndexCreationCheck(nameWithRange, idIndex, -1));
-    vm1.invoke(prIndexCreationCheck(nameWithRange, idIndex, -1));
-    vm0.invoke(indexCreationCheck(repRegNameWithRange, statusIndex));
-    vm1.invoke(indexCreationCheck(repRegNameWithRange, statusIndex));
-    vm0.invoke(prIndexCreationCheck(persistentRegNameWithRange, statusIndex, -1));
-    vm1.invoke(prIndexCreationCheck(persistentRegNameWithRange, statusIndex, -1));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_RANGE, STATUS_INDEX, -1));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_RANGE, STATUS_INDEX, -1));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_RANGE, ID_INDEX, -1));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_RANGE, ID_INDEX, -1));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME_WITH_RANGE, STATUS_INDEX));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME_WITH_RANGE, STATUS_INDEX));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_RANGE, STATUS_INDEX, -1));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_RANGE, STATUS_INDEX, -1));
 
     // check hash index creation
-    vm0.invoke(prIndexCreationCheck(nameWithHash, statusIndex, -1));
-    vm1.invoke(prIndexCreationCheck(nameWithHash, statusIndex, -1));
-    vm0.invoke(prIndexCreationCheck(nameWithHash, idIndex, -1));
-    vm1.invoke(prIndexCreationCheck(nameWithHash, idIndex, -1));
-    vm0.invoke(indexCreationCheck(repRegNameWithHash, statusIndex));
-    vm1.invoke(indexCreationCheck(repRegNameWithHash, statusIndex));
-    vm0.invoke(prIndexCreationCheck(persistentRegNameWithHash, statusIndex, -1));
-    vm1.invoke(prIndexCreationCheck(persistentRegNameWithHash, statusIndex, -1));
-
-    vm0.invoke(close());
-    vm1.invoke(close());
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_HASH, STATUS_INDEX, -1));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_HASH, STATUS_INDEX, -1));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_HASH, ID_INDEX, -1));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_HASH, ID_INDEX, -1));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME_WITH_HASH, STATUS_INDEX));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME_WITH_HASH, STATUS_INDEX));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_HASH, STATUS_INDEX, -1));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_HASH, STATUS_INDEX, -1));
   }
 
   /**
@@ -198,53 +184,47 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testCreateIndexWhileDoingGII() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String fileName = "IndexCreation.xml";
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("Creating index using an xml file name : " + fileName);
+    getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
 
-    vm0.invoke(createIndexThrougXML("vm0testCreateIndexWhileDoingGII", name, fileName));
+    vm0.invoke(createIndexThroughXML(NAME));
+
     // LoadRegion
-    vm0.invoke(loadRegion(name));
-    vm0.invoke(loadRegion(nameWithHash));
-    vm0.invoke(loadRegion(nameWithRange));
-    vm0.invoke(prIndexCreationCheck(name, statusIndex, -1));
-    vm0.invoke(prIndexCreationCheck(nameWithHash, statusIndex, -1));
-    vm0.invoke(prIndexCreationCheck(nameWithRange, statusIndex, -1));
+    vm0.invoke(loadRegion(NAME));
+    vm0.invoke(loadRegion(NAME_WITH_HASH));
+    vm0.invoke(loadRegion(NAME_WITH_RANGE));
+    vm0.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, -1));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_HASH, STATUS_INDEX, -1));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_RANGE, STATUS_INDEX, -1));
 
     vm1.invoke(setTestHook());
-    vm1.invoke(createIndexThrougXML("vm1testCreateIndexWhileDoingGII", name, fileName));
+    vm1.invoke(createIndexThroughXML(NAME));
 
-    vm0.invoke(prIndexCreationCheck(name, statusIndex, 50));
-    vm1.invoke(prIndexCreationCheck(name, statusIndex, 50));
-    vm0.invoke(prIndexCreationCheck(name, idIndex, 50));
-    vm1.invoke(prIndexCreationCheck(name, idIndex, 50));
-    vm0.invoke(prIndexCreationCheck(name, "secIndex", 50));
-    vm1.invoke(prIndexCreationCheck(name, "secIndex", 50));
+    vm0.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(NAME, ID_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME, ID_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(NAME, "secIndex", 50));
+    vm1.invoke(prIndexCreationCheck(NAME, "secIndex", 50));
 
     // check range index creation
-    vm0.invoke(prIndexCreationCheck(nameWithRange, statusIndex, 50));
-    vm1.invoke(prIndexCreationCheck(nameWithRange, statusIndex, 50));
-    vm0.invoke(prIndexCreationCheck(nameWithRange, idIndex, 50));
-    vm1.invoke(prIndexCreationCheck(nameWithRange, idIndex, 50));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_RANGE, STATUS_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_RANGE, STATUS_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_RANGE, ID_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_RANGE, ID_INDEX, 50));
 
     // check hash index creation
-    vm0.invoke(prIndexCreationCheck(nameWithHash, statusIndex, 50));
-    vm1.invoke(prIndexCreationCheck(nameWithHash, statusIndex, 50));
-    vm0.invoke(prIndexCreationCheck(nameWithHash, idIndex, 50));
-    vm1.invoke(prIndexCreationCheck(nameWithHash, idIndex, 50));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_HASH, STATUS_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_HASH, STATUS_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_HASH, ID_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_HASH, ID_INDEX, 50));
 
     // Execute query and verify index usage
-    vm0.invoke(executeQuery(name));
-    vm1.invoke(executeQuery(name));
-
-    vm1.invoke(resetTestHook());
-    vm0.invoke(close());
-    vm1.invoke(close());
+    vm0.invoke(executeQuery(NAME));
+    vm1.invoke(executeQuery(NAME));
   }
 
   /**
@@ -252,50 +232,42 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testReplicatedRegionCreateIndexWhileDoingGII() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String fileName = "IndexCreation.xml";
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("Creating index using an xml file name : " + fileName);
+    getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
 
-    vm0.invoke(
-        createIndexThrougXML("vm0testRRegionCreateIndexWhileDoingGII", repRegName, fileName));
+    vm0.invoke(createIndexThroughXML(REP_REG_NAME));
+
     // LoadRegion
-    vm0.invoke(loadRegion(repRegName));
-    vm0.invoke(loadRegion(repRegNameWithHash));
-    vm0.invoke(loadRegion(noIndexRepReg));
-    vm0.invoke(indexCreationCheck(repRegName, statusIndex));
-    vm0.invoke(indexCreationCheck(repRegNameWithHash, statusIndex));
+    vm0.invoke(loadRegion(REP_REG_NAME));
+    vm0.invoke(loadRegion(REP_REG_NAME_WITH_HASH));
+    vm0.invoke(loadRegion(NO_INDEX_REP_REG));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME, STATUS_INDEX));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME_WITH_HASH, STATUS_INDEX));
 
     vm1.invoke(setTestHook());
-    vm1.invoke(
-        createIndexThrougXML("vm1testRRegionCreateIndexWhileDoingGII", repRegName, fileName));
+    vm1.invoke(createIndexThroughXML(REP_REG_NAME));
 
-    vm0.invoke(indexCreationCheck(repRegName, statusIndex));
-    vm1.invoke(indexCreationCheck(repRegName, statusIndex));
-    vm0.invoke(indexCreationCheck(repRegName, idIndex));
-    vm1.invoke(indexCreationCheck(repRegName, idIndex));
-    vm0.invoke(indexCreationCheck(repRegName, "secIndex"));
-    vm1.invoke(indexCreationCheck(repRegName, "secIndex"));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME, STATUS_INDEX));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME, STATUS_INDEX));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME, ID_INDEX));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME, ID_INDEX));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME, "secIndex"));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME, "secIndex"));
 
     // check hash index creation
-    vm0.invoke(indexCreationCheck(repRegNameWithHash, statusIndex));
-    vm1.invoke(indexCreationCheck(repRegNameWithHash, statusIndex));
-    vm0.invoke(indexCreationCheck(repRegNameWithHash, idIndex));
-    vm1.invoke(indexCreationCheck(repRegNameWithHash, idIndex));
-    vm0.invoke(indexCreationCheck(repRegNameWithHash, "secIndex"));
-    vm1.invoke(indexCreationCheck(repRegNameWithHash, "secIndex"));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME_WITH_HASH, STATUS_INDEX));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME_WITH_HASH, STATUS_INDEX));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME_WITH_HASH, ID_INDEX));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME_WITH_HASH, ID_INDEX));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME_WITH_HASH, "secIndex"));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME_WITH_HASH, "secIndex"));
 
     // Execute query and verify index usage
-    vm0.invoke(executeQuery(repRegName));
-    vm1.invoke(executeQuery(repRegName));
-
-    vm1.invoke(resetTestHook());
-    vm0.invoke(close());
-    vm1.invoke(close());
+    vm0.invoke(executeQuery(REP_REG_NAME));
+    vm1.invoke(executeQuery(REP_REG_NAME));
   }
 
   /**
@@ -303,63 +275,51 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testPersistentPRRegionCreateIndexWhileDoingGII() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String fileName = "IndexCreation.xml";
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("Creating index using an xml file name : " + fileName);
+    getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
 
-    vm0.invoke(createIndexThrougXML("vm0testPersistentPRRegion", persistentRegName, fileName));
+    vm0.invoke(createIndexThroughXML(PERSISTENT_REG_NAME));
+
     // LoadRegion
-    vm0.invoke(loadRegion(this.persistentRegName));
-    vm0.invoke(loadRegion(noIndexRepReg));
-    vm0.invoke(loadRegion(persistentRegNameWithHash));
-    vm0.invoke(prIndexCreationCheck(persistentRegName, statusIndex, -1));
-    vm0.invoke(prIndexCreationCheck(persistentRegNameWithHash, statusIndex, -1));
+    vm0.invoke(loadRegion(PERSISTENT_REG_NAME));
+    vm0.invoke(loadRegion(NO_INDEX_REP_REG));
+    vm0.invoke(loadRegion(PERSISTENT_REG_NAME_WITH_HASH));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, STATUS_INDEX, -1));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_HASH, STATUS_INDEX, -1));
 
     vm1.invoke(setTestHook());
-    vm1.invoke(createIndexThrougXML("vm1testPersistentPRRegion", persistentRegName, fileName));
+    vm1.invoke(createIndexThroughXML(PERSISTENT_REG_NAME));
 
-    vm0.invoke(prIndexCreationCheck(persistentRegName, statusIndex, 50));
-    vm1.invoke(prIndexCreationCheck(persistentRegName, statusIndex, 50));
-    vm0.invoke(prIndexCreationCheck(persistentRegName, idIndex, 50));
-    vm1.invoke(prIndexCreationCheck(persistentRegName, idIndex, 50));
-    vm0.invoke(prIndexCreationCheck(persistentRegName, "secIndex", 50));
-    vm1.invoke(prIndexCreationCheck(persistentRegName, "secIndex", 50));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, STATUS_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, STATUS_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, ID_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, ID_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, "secIndex", 50));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, "secIndex", 50));
 
     // check hash index creation
-    vm0.invoke(prIndexCreationCheck(persistentRegNameWithHash, statusIndex, 50));
-    vm1.invoke(prIndexCreationCheck(persistentRegNameWithHash, statusIndex, 50));
-    vm0.invoke(prIndexCreationCheck(persistentRegNameWithHash, idIndex, 50));
-    vm1.invoke(prIndexCreationCheck(persistentRegNameWithHash, idIndex, 50));
-    vm0.invoke(prIndexCreationCheck(persistentRegNameWithHash, "secIndex", 50));
-    vm1.invoke(prIndexCreationCheck(persistentRegNameWithHash, "secIndex", 50));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_HASH, STATUS_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_HASH, STATUS_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_HASH, ID_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_HASH, ID_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_HASH, "secIndex", 50));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_HASH, "secIndex", 50));
 
     // Execute query and verify index usage
-    vm0.invoke(executeQuery(persistentRegName));
-    vm1.invoke(executeQuery(persistentRegName));
+    vm0.invoke(executeQuery(PERSISTENT_REG_NAME));
+    vm1.invoke(executeQuery(PERSISTENT_REG_NAME));
 
     // close one vm cache
     vm1.invoke(resetTestHook());
-    vm1.invoke(new SerializableRunnable() {
-
-      @Override
-      public void run() {
-        closeCache();
-      }
-    });
+    vm1.invoke(() -> closeCache());
 
     // restart
     vm1.invoke(setTestHook());
-    vm1.invoke(createIndexThrougXML("vm1testPersistentPRRegion", persistentRegName, fileName));
-    vm1.invoke(prIndexCreationCheck(persistentRegName, statusIndex, 50));
-
-    vm1.invoke(resetTestHook());
-    vm0.invoke(close());
-    vm1.invoke(close());
+    vm1.invoke(createIndexThroughXML(PERSISTENT_REG_NAME));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, STATUS_INDEX, 50));
   }
 
   /**
@@ -367,37 +327,29 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testCreateIndexWhileDoingGIIWithEmptyPRRegion() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String fileName = "IndexCreation.xml";
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("### in testCreateIndexWhileDoingGIIWithEmptyPRRegion.");
+    getLogWriter().info("### in testCreateIndexWhileDoingGIIWithEmptyPRRegion.");
 
-
-    vm0.invoke(createIndexThrougXML("vm0testGIIWithEmptyPRRegion", name, fileName));
-    vm0.invoke(prIndexCreationCheck(name, statusIndex, -1));
-    vm0.invoke(prIndexCreationCheck(nameWithHash, statusIndex, -1));
+    vm0.invoke(createIndexThroughXML(NAME));
+    vm0.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, -1));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_HASH, STATUS_INDEX, -1));
 
     vm1.invoke(setTestHook());
-    vm1.invoke(createIndexThrougXML("vm1testGIIWithEmptyPRRegion", name, fileName));
-    vm1.invoke(prIndexCreationCheck(name, statusIndex, -1));
-    vm1.invoke(prIndexCreationCheck(nameWithHash, statusIndex, -1));
+    vm1.invoke(createIndexThroughXML(NAME));
+    vm1.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, -1));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_HASH, STATUS_INDEX, -1));
 
     // LoadRegion
-    vm0.invoke(loadRegion(name));
-    vm0.invoke(loadRegion(nameWithHash));
+    vm0.invoke(loadRegion(NAME));
+    vm0.invoke(loadRegion(NAME_WITH_HASH));
 
-    vm0.invoke(prIndexCreationCheck(name, statusIndex, 50));
-    vm1.invoke(prIndexCreationCheck(name, statusIndex, 50));
-    vm0.invoke(prIndexCreationCheck(nameWithHash, statusIndex, 50));
-    vm1.invoke(prIndexCreationCheck(nameWithHash, statusIndex, 50));
-
-    vm1.invoke(resetTestHook());
-    vm0.invoke(close());
-    vm1.invoke(close());
+    vm0.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_HASH, STATUS_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_HASH, STATUS_INDEX, 50));
   }
 
   /**
@@ -405,47 +357,30 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testCreateAsyncIndexWhileDoingGII() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String fileName = "IndexCreation.xml";
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("Creating index using an xml file name : " + fileName);
+    getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
 
-    AsyncInvocation asyInvk0 =
-        vm0.invokeAsync(createIndexThrougXML("vm0testAsyncIndexWhileDoingGII", name, fileName));
+    AsyncInvocation async0 = vm0.invokeAsync(createIndexThroughXML(NAME));
 
-    ThreadUtils.join(asyInvk0, 30 * 1000);
-    if (asyInvk0.exceptionOccurred()) {
-      Assert.fail("asyInvk0 failed", asyInvk0.getException());
-    }
+    async0.await();
 
     // LoadRegion
-    asyInvk0 = vm0.invokeAsync(loadRegion(name));
+    async0 = vm0.invokeAsync(loadRegion(NAME));
 
     vm1.invoke(setTestHook());
-    AsyncInvocation asyInvk1 =
-        vm1.invokeAsync(createIndexThrougXML("vm1testAsyncIndexWhileDoingGII", name, fileName));
 
-    vm0.invoke(prIndexCreationCheck(name, statusIndex, 50));
+    AsyncInvocation async1 = vm1.invokeAsync(createIndexThroughXML(NAME));
 
-    ThreadUtils.join(asyInvk1, 30 * 1000);
-    if (asyInvk1.exceptionOccurred()) {
-      Assert.fail("asyInvk1 failed", asyInvk1.getException());
-    }
+    vm0.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, 50));
 
-    vm1.invoke(prIndexCreationCheck(name, statusIndex, 50));
+    async1.await();
 
-    ThreadUtils.join(asyInvk0, 30 * 1000);
-    if (asyInvk0.exceptionOccurred()) {
-      Assert.fail("asyInvk0 failed", asyInvk0.getException());
-    }
+    vm1.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, 50));
 
-    vm1.invoke(resetTestHook());
-    vm0.invoke(close());
-    vm1.invoke(close());
+    async0.await();
   }
 
   /**
@@ -453,60 +388,54 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testCreateIndexWhileDoingGIIAndCompareQueryResults() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String fileName = "IndexCreation.xml";
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("Creating index using an xml file name : " + fileName);
+    getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
 
-    vm0.invoke(createIndexThrougXML("vm0testIndexCompareQResults", name, fileName));
+    vm0.invoke(createIndexThroughXML(NAME));
+
     // LoadRegion
-    vm0.invoke(loadRegion(name));
-    vm0.invoke(loadRegion(repRegName));
-    vm0.invoke(loadRegion(persistentRegName));
-    vm0.invoke(loadRegion(noIndexRepReg));
-    vm0.invoke(loadRegion(nameWithHash));
-    vm0.invoke(loadRegion(repRegNameWithHash));
-    vm0.invoke(loadRegion(persistentRegNameWithHash));
-    vm0.invoke(prIndexCreationCheck(name, statusIndex, -1));
+    vm0.invoke(loadRegion(NAME));
+    vm0.invoke(loadRegion(REP_REG_NAME));
+    vm0.invoke(loadRegion(PERSISTENT_REG_NAME));
+    vm0.invoke(loadRegion(NO_INDEX_REP_REG));
+    vm0.invoke(loadRegion(NAME_WITH_HASH));
+    vm0.invoke(loadRegion(REP_REG_NAME_WITH_HASH));
+    vm0.invoke(loadRegion(PERSISTENT_REG_NAME_WITH_HASH));
+    vm0.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, -1));
 
     vm1.invoke(setTestHook());
-    vm1.invoke(createIndexThrougXML("vm1testIndexCompareQResults", name, fileName));
+    vm1.invoke(createIndexThroughXML(NAME));
 
-    vm0.invoke(prIndexCreationCheck(name, statusIndex, 50));
-    vm1.invoke(prIndexCreationCheck(name, statusIndex, 50));
-    vm0.invoke(prIndexCreationCheck(name, idIndex, 50));
-    vm1.invoke(prIndexCreationCheck(name, idIndex, 50));
-    vm0.invoke(prIndexCreationCheck(name, "secIndex", 50));
-    vm1.invoke(prIndexCreationCheck(name, "secIndex", 50));
+    vm0.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(NAME, ID_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME, ID_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(NAME, "secIndex", 50));
+    vm1.invoke(prIndexCreationCheck(NAME, "secIndex", 50));
 
-    vm0.invoke(prIndexCreationCheck(nameWithHash, statusIndex, 50));
-    vm1.invoke(prIndexCreationCheck(nameWithHash, statusIndex, 50));
-    vm0.invoke(prIndexCreationCheck(nameWithHash, idIndex, 50));
-    vm1.invoke(prIndexCreationCheck(nameWithHash, idIndex, 50));
-    vm0.invoke(prIndexCreationCheck(nameWithHash, "secIndex", 50));
-    vm1.invoke(prIndexCreationCheck(nameWithHash, "secIndex", 50));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_HASH, STATUS_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_HASH, STATUS_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_HASH, ID_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_HASH, ID_INDEX, 50));
+    vm0.invoke(prIndexCreationCheck(NAME_WITH_HASH, "secIndex", 50));
+    vm1.invoke(prIndexCreationCheck(NAME_WITH_HASH, "secIndex", 50));
 
-    vm0.invoke(prIndexCreationCheck(persistentRegName, "secIndex", 50));
-    vm0.invoke(indexCreationCheck(repRegName, "secIndex"));
-    vm0.invoke(prIndexCreationCheck(persistentRegNameWithHash, "secIndex", 50));
-    vm0.invoke(indexCreationCheck(repRegNameWithHash, "secIndex"));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, "secIndex", 50));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME, "secIndex"));
+    vm0.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_HASH, "secIndex", 50));
+    vm0.invoke(indexCreationCheck(REP_REG_NAME_WITH_HASH, "secIndex"));
 
-    vm1.invoke(prIndexCreationCheck(persistentRegName, "secIndex", 50));
-    vm1.invoke(indexCreationCheck(repRegName, "secIndex"));
-    vm1.invoke(prIndexCreationCheck(persistentRegNameWithHash, "secIndex", 50));
-    vm1.invoke(indexCreationCheck(repRegNameWithHash, "secIndex"));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, "secIndex", 50));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME, "secIndex"));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME_WITH_HASH, "secIndex", 50));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME_WITH_HASH, "secIndex"));
 
     // Execute query and verify index usage
-    vm0.invoke(executeQueryAndCompareResult(name, true));
-    vm1.invoke(executeQueryAndCompareResult(name, true));
-
-    vm1.invoke(resetTestHook());
-    vm0.invoke(close());
-    vm1.invoke(close());
+    vm0.invoke(executeQueryAndCompareResult(true));
+    vm1.invoke(executeQueryAndCompareResult(true));
   }
 
   /**
@@ -514,439 +443,303 @@ public class QueryIndexUsingXMLDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testCreateAsyncIndexWhileDoingGIIAndQuery() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String fileName = "IndexCreation.xml";
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("Creating index using an xml file name : " + fileName);
+    getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
 
-    AsyncInvocation asyInvk0 =
-        vm0.invokeAsync(createIndexThrougXML("vm0testCreateAsyncIndexGIIAndQuery", name, fileName));
-    ThreadUtils.join(asyInvk0, 30 * 1000);
-    if (asyInvk0.exceptionOccurred()) {
-      Assert.fail("asyInvk0 failed", asyInvk0.getException());
-    }
+    AsyncInvocation async0 = vm0.invokeAsync(createIndexThroughXML(NAME));
+
+    async0.await();
 
     // LoadRegion
-    asyInvk0 = vm0.invokeAsync(loadRegion(name));
+    async0 = vm0.invokeAsync(loadRegion(NAME));
 
     vm1.invoke(setTestHook());
-    AsyncInvocation asyInvk1 =
-        vm1.invokeAsync(createIndexThrougXML("vm1testCreateAsyncIndexGIIAndQuery", name, fileName));
 
+    AsyncInvocation async1 = vm1.invokeAsync(createIndexThroughXML(NAME));
 
-    ThreadUtils.join(asyInvk1, 30 * 1000);
-    if (asyInvk1.exceptionOccurred()) {
-      Assert.fail("asyInvk1 failed", asyInvk1.getException());
-    }
-    ThreadUtils.join(asyInvk0, 30 * 1000);
-    if (asyInvk0.exceptionOccurred()) {
-      Assert.fail("asyInvk0 failed", asyInvk0.getException());
-    }
+    async1.await();
+    async0.await();
 
-    vm0.invoke(prIndexCreationCheck(name, statusIndex, 50));
-    vm1.invoke(prIndexCreationCheck(name, statusIndex, 50));
+    vm0.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, 50));
+    vm1.invoke(prIndexCreationCheck(NAME, STATUS_INDEX, 50));
 
     // Execute query and verify index usage
-    vm0.invoke(executeQuery(name));
-    vm1.invoke(executeQuery(name));
-
-    vm1.invoke(resetTestHook());
-    vm0.invoke(close());
-    vm1.invoke(close());
+    vm0.invoke(executeQuery(NAME));
+    vm1.invoke(executeQuery(NAME));
   }
 
   /**
-   * Creates asynch indexes and compares the results between index and non-index results.
+   * Creates async indexes and compares the results between index and non-index results.
    * <p>
-   * DISABLED. This test is disabled due to a high rate of failure. See ticket #52167
+   * DISABLED. This test is disabled due to a high rate of throw new AssertionError. See ticket
+   * #52167
    */
   @Ignore("TODO: test is disabled because of #52167")
   @Test
   public void testCreateAsyncIndexWhileDoingGIIAndCompareQueryResults() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String fileName = "IndexCreation.xml";
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("Creating index using an xml file name : " + fileName);
+    getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
 
-    vm0.invoke(createIndexThrougXML("vm0testAsyncIndexAndCompareQResults", name, fileName));
+    vm0.invoke(createIndexThroughXML(NAME));
+
     // LoadRegion
-    vm0.invoke(loadRegion(name));
-    vm0.invoke(loadRegion(repRegName));
-    vm0.invoke(loadRegion(persistentRegName));
-    vm0.invoke(loadRegion(noIndexRepReg));
+    vm0.invoke(loadRegion(NAME));
+    vm0.invoke(loadRegion(REP_REG_NAME));
+    vm0.invoke(loadRegion(PERSISTENT_REG_NAME));
+    vm0.invoke(loadRegion(NO_INDEX_REP_REG));
 
     // Start async update
-    vm0.invokeAsync(loadRegion(name, 500));
-    vm0.invokeAsync(loadRegion(repRegName, 500));
-    AsyncInvocation asyInvk0 = vm0.invokeAsync(loadRegion(persistentRegName, 500));
-    vm0.invokeAsync(loadRegion(noIndexRepReg, 500));
+    vm0.invokeAsync(loadRegion(NAME, 500));
+    vm0.invokeAsync(loadRegion(REP_REG_NAME, 500));
+
+    AsyncInvocation async0 = vm0.invokeAsync(loadRegion(PERSISTENT_REG_NAME, 500));
+
+    vm0.invokeAsync(loadRegion(NO_INDEX_REP_REG, 500));
 
     vm1.invoke(setTestHook());
-    vm1.invoke(createIndexThrougXML("vm1testAsyncIndexAndCompareQResults", name, fileName));
+    vm1.invoke(createIndexThroughXML(NAME));
 
-    ThreadUtils.join(asyInvk0, 30 * 1000);
-    if (asyInvk0.exceptionOccurred()) {
-      Assert.fail("asyInvk0 failed", asyInvk0.getException());
-    }
+    async0.await();
 
-    vm1.invoke(prIndexCreationCheck(persistentRegName, "secIndex", 50));
-    vm1.invoke(indexCreationCheck(repRegName, "secIndex"));
+    vm1.invoke(prIndexCreationCheck(PERSISTENT_REG_NAME, "secIndex", 50));
+    vm1.invoke(indexCreationCheck(REP_REG_NAME, "secIndex"));
 
     // Execute query and verify index usage
-    vm0.invoke(executeQueryAndCompareResult(name, false));
-    vm1.invoke(executeQueryAndCompareResult(name, false));
-
-    vm1.invoke(resetTestHook());
-    vm0.invoke(close());
-    vm1.invoke(close());
+    vm0.invoke(executeQueryAndCompareResult(false));
+    vm1.invoke(executeQueryAndCompareResult(false));
   }
 
   @Test
   public void testIndexCreationForReplicatedPersistentOverFlowRegionOnRestart() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    final String fileName = "IndexCreation.xml";
 
-    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-        .info("Creating index using an xml file name : " + fileName);
+    getLogWriter().info("Creating index using an xml file name : " + CACHE_XML_FILE_NAME);
+
     // create index using xml
-    vm0.invoke(
-        createIndexThrougXML("vm0testIndexCreationForReplicatedPersistentOverFlowRegionOnRestart",
-            persistentOverFlowRegName, fileName));
+    vm0.invoke(createIndexThroughXML(PERSISTENT_OVER_FLOW_REG_NAME));
     // verify index creation
-    vm0.invoke(indexCreationCheck(persistentOverFlowRegName, statusIndex));
+    vm0.invoke(indexCreationCheck(PERSISTENT_OVER_FLOW_REG_NAME, STATUS_INDEX));
     // LoadRegion
-    vm0.invoke(loadRegion(persistentOverFlowRegName));
+    vm0.invoke(loadRegion(PERSISTENT_OVER_FLOW_REG_NAME));
     // close cache without deleting diskstore
     vm0.invoke(closeWithoutDeletingDiskStore());
     // start cache by recovering data from diskstore
-    vm0.invoke(
-        createIndexThrougXML("vm0testIndexCreationForReplicatedPersistentOverFlowRegionOnRestart",
-            persistentOverFlowRegName, fileName));
+    vm0.invoke(createIndexThroughXML(PERSISTENT_OVER_FLOW_REG_NAME));
     // verify index creation on restart
-    vm0.invoke(indexCreationCheck(persistentOverFlowRegName, statusIndex));
-    // close cache and delete diskstore
-    vm0.invoke(close());
-
+    vm0.invoke(indexCreationCheck(PERSISTENT_OVER_FLOW_REG_NAME, STATUS_INDEX));
   }
 
-  public CacheSerializableRunnable setTestHook() {
-    SerializableRunnable sr = new CacheSerializableRunnable("TestHook") {
+  private CacheSerializableRunnable setTestHook() {
+    return new CacheSerializableRunnable("TestHook") {
+      @Override
       public void run2() {
         class IndexTestHook implements IndexManager.TestHook {
-          public boolean indexCreatedAsPartOfGII;
-
-          public void hook(int spot) throws RuntimeException {
-            GemFireCacheImpl.getInstance().getLogger()
-                .fine("In IndexTestHook.hook(). hook() argument value is : " + spot);
+          @Override
+          public void hook(int spot) {
+            getLogWriter().fine("In IndexTestHook.hook(). hook() argument value is : " + spot);
             if (spot == 1) {
               throw new RuntimeException("Index is not created as part of Region GII.");
             }
           }
-        };
+        }
         IndexManager.testHook = new IndexTestHook();
       }
     };
-    return (CacheSerializableRunnable) sr;
   }
 
-
-  public CacheSerializableRunnable resetTestHook() {
-    SerializableRunnable sr = new CacheSerializableRunnable("TestHook") {
+  private CacheSerializableRunnable resetTestHook() {
+    return new CacheSerializableRunnable("TestHook") {
+      @Override
       public void run2() {
         IndexManager.testHook = null;
       }
     };
-    return (CacheSerializableRunnable) sr;
   }
 
-  public CacheSerializableRunnable createIndexThrougXML(final String vmid, final String regionName,
-      final String xmlFileName) {
-    SerializableRunnable sr = new CacheSerializableRunnable("RegionCreator") {
+  private CacheSerializableRunnable createIndexThroughXML(final String regionName) {
+    return new CacheSerializableRunnable("RegionCreator") {
+      @Override
       public void run2() {
-        try {
-          // closeCache();
-          File file = findFile(xmlFileName);
-          GemFireCacheImpl.testCacheXml = file;
-          // DistributedTestCase.diskStore = vmid;
-          getSystem();
-          Cache cache = getCache();
-          Region region = cache.getRegion(regionName);
-          if (region == null) {
-            fail("Region not found." + regionName);
-          }
-        } finally {
-          GemFireCacheImpl.testCacheXml = null;
-          // DistributedTestCase.diskStore = null;
-        }
+        Properties properties = new Properties();
+        properties.setProperty(CACHE_XML_FILE, cacheXmlFile.getAbsolutePath());
+        getSystem(properties);
+        Cache cache = getCache();
+        Region region = cache.getRegion(regionName);
+
+        assertThat(region).isNotNull();
       }
     };
-    return (CacheSerializableRunnable) sr;
   }
 
-  public CacheSerializableRunnable prIndexCreationCheck(final String regionName,
+  private CacheSerializableRunnable prIndexCreationCheck(final String regionName,
       final String indexName, final int bucketCount) {
-    CacheSerializableRunnable sr = new CacheSerializableRunnable(
-        "pr IndexCreationCheck" + regionName + " indexName :" + indexName) {
+    return new CacheSerializableRunnable(
+        "pr IndexCreationCheck " + regionName + " indexName :" + indexName) {
+      @Override
       public void run2() {
-        // closeCache();
         Cache cache = getCache();
         LogWriter logger = cache.getLogger();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
-        Map indexMap = region.getIndex();
         PartitionedIndex index = (PartitionedIndex) region.getIndex().get(indexName);
-        if (index == null) {
-          fail("Index " + indexName + " Not Found for region " + regionName);
-        }
-        logger.info("Current number of buckets indexed : " + ""
-            + ((PartitionedIndex) index).getNumberOfIndexedBuckets());
+        assertThat(index).isNotNull();
+
+        logger.info("Current number of buckets indexed: " + index.getNumberOfIndexedBuckets());
         if (bucketCount >= 0) {
-          waitForIndexedBuckets((PartitionedIndex) index, bucketCount);
+          waitForIndexedBuckets(index, bucketCount);
         }
-        if (!index.isPopulated()) {
-          fail("Index isPopulatedFlag is not set to true");
-        }
+        assertThat(index.isPopulated()).isTrue();
       }
     };
-    return sr;
   }
 
-  public CacheSerializableRunnable indexCreationCheck(final String regionName,
+  private CacheSerializableRunnable indexCreationCheck(final String regionName,
       final String indexName) {
-    CacheSerializableRunnable sr = new CacheSerializableRunnable(
-        "IndexCreationCheck region: " + regionName + " indexName :" + indexName) {
+    return new CacheSerializableRunnable(
+        "IndexCreationCheck region: " + regionName + " indexName:" + indexName) {
+      @Override
       public void run2() {
-        // closeCache();
         Cache cache = getCache();
-        LogWriter logger = cache.getLogger();
         LocalRegion region = (LocalRegion) cache.getRegion(regionName);
         Index index = region.getIndexManager().getIndex(indexName);
-        if (index == null) {
-          fail("Index " + indexName + " Not Found for region name:" + regionName);
-        }
+        assertThat(index).isNotNull();
       }
     };
-    return sr;
   }
 
-  public boolean waitForIndexedBuckets(final PartitionedIndex index, final int bucketCount) {
-
-    WaitCriterion ev = new WaitCriterion() {
-      public boolean done() {
-        return (index.getNumberOfIndexedBuckets() >= bucketCount);
-      }
-
-      public String description() {
-        return "Number of Indexed Bucket is less than the expected number. " + bucketCount + ", "
-            + index.getNumberOfIndexedBuckets();
-      }
-    };
-    Wait.waitForCriterion(ev, MAX_TIME, 200, true);
-    return true;
+  private void waitForIndexedBuckets(final PartitionedIndex index, final int bucketCount) {
+    await().atMost(2, MINUTES).until(() -> index.getNumberOfIndexedBuckets() >= bucketCount);
   }
 
-  public CacheSerializableRunnable loadRegion(final String name) {
-    CacheSerializableRunnable sr = new CacheSerializableRunnable("load region on " + name) {
+  private CacheSerializableRunnable loadRegion(final String name) {
+    return new CacheSerializableRunnable("load region on " + name) {
+      @Override
       public void run2() {
         Cache cache = getCache();
-        LogWriter logger = cache.getLogger();
         Region region = cache.getRegion(name);
         for (int i = 0; i < 100; i++) {
-          region.put("" + i, new Portfolio(i));
+          region.put(i, new Portfolio(i));
         }
       }
     };
-    return sr;
   }
 
-  public CacheSerializableRunnable loadRegion(final String name, final int size) {
-    CacheSerializableRunnable sr =
-        new CacheSerializableRunnable("LoadRegion: " + name + " size :" + size) {
-          public void run2() {
-            Cache cache = getCache();
-            LogWriter logger = cache.getLogger();
-            Region region = cache.getRegion(name);
-            for (int i = 0; i < size; i++) {
-              region.put("" + i, new Portfolio(i));
-            }
-          }
-        };
-    return sr;
+  private CacheSerializableRunnable loadRegion(final String name, final int size) {
+    return new CacheSerializableRunnable("LoadRegion: " + name + " size :" + size) {
+      @Override
+      public void run2() {
+        Cache cache = getCache();
+        Region region = cache.getRegion(name);
+        for (int i = 0; i < size; i++) {
+          region.put(i, new Portfolio(i));
+        }
+      }
+    };
   }
 
-  public CacheSerializableRunnable executeQuery(final String rname) {
-    CacheSerializableRunnable sr = new CacheSerializableRunnable("execute query on " + rname) {
+  private CacheSerializableRunnable executeQuery(final String regionName) {
+    return new CacheSerializableRunnable("execute query on " + regionName) {
+      @Override
       public void run2() {
         QueryService qs = getCache().getQueryService();
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
-        String queryStr = "Select * from /" + rname + " where ID > 10";
-        Query query = qs.newQuery(queryStr);
+        String queryString = "Select * from /" + regionName + " where ID > 10";
+        Query query = qs.newQuery(queryString);
         try {
           query.execute();
         } catch (Exception ex) {
-          fail("Failed to execute the query.");
+          throw new AssertionError("Failed to execute the query.", ex);
         }
-        if (!observer.isIndexesUsed) {
-          fail("Index not used for query. " + queryStr);
-        }
+        assertThat(observer.isIndexesUsed).isTrue().as("Index not used for query. " + queryString);
       }
     };
-    return sr;
   }
 
-  public CacheSerializableRunnable executeQueryAndCompareResult(final String rname,
-      final boolean compareHash) {
-    CacheSerializableRunnable sr =
-        new CacheSerializableRunnable("execute query and compare results.") {
-          public void run2() {
-            QueryService qs = getCache().getQueryService();
+  private CacheSerializableRunnable executeQueryAndCompareResult(final boolean compareHash) {
+    return new CacheSerializableRunnable("execute query and compare results.") {
+      @Override
+      public void run2() {
+        QueryService qs = getCache().getQueryService();
 
-            StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
-            SelectResults[][] sr = new SelectResults[1][2];
-            String s[] = new String[2];
-            for (int j = 0; j < queryStr.length; j++) {
-              String[] queryArray = queryStr[j];
-              int numQueriesToCheck = compareHash ? queryArray.length : 3;
-              for (int i = 0; i < numQueriesToCheck; i++) {
-                QueryObserverImpl observer = new QueryObserverImpl();
-                QueryObserverHolder.setInstance(observer);
-                // Query using index.
-                s[0] = queryStr[j][i];
-                // Execute query with index.
-                Query query = qs.newQuery(s[0]);
+        StructSetOrResultsSet resultsSet = new StructSetOrResultsSet();
+        SelectResults[][] selectResults = new SelectResults[1][2];
+        String[] queryStrings = new String[2];
 
-                try {
-                  sr[0][0] = (SelectResults) query.execute();
-                } catch (Exception ex) {
-                  fail("Failed to execute the query.");
-                }
-                if (!observer.isIndexesUsed) {
-                  fail("Index not used for query. " + s[0]);
-                }
+        int numQueries = QUERY_STR.length;
+        for (int j = 0; j < numQueries; j++) {
+          String[] queryArray = QUERY_STR[j];
+          int numQueriesToCheck = compareHash ? queryArray.length : 3;
+          for (int i = 0; i < numQueriesToCheck; i++) {
+            QueryObserverImpl observer = new QueryObserverImpl();
+            QueryObserverHolder.setInstance(observer);
+            // Query using index.
+            queryStrings[0] = QUERY_STR[j][i];
+            // Execute query with index.
+            Query query = qs.newQuery(queryStrings[0]);
 
-                // Query using no index.
-                s[1] = queryStrNoIndex[j];
-                try {
-                  query = qs.newQuery(s[1]);
-                  sr[0][1] = (SelectResults) query.execute();
-                } catch (Exception ex) {
-                  fail("Failed to execute the query on no index region.");
-                }
-
-                // compare.
-                org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
-                    .info("Execute query : \n queryStr with index: " + s[0]
-                        + " \n queryStr without index: " + s[1]);
-                ssORrs.CompareQueryResultsWithoutAndWithIndexes(sr, 1, s);
-              }
+            try {
+              selectResults[0][0] = (SelectResults) query.execute();
+            } catch (Exception ex) {
+              throw new AssertionError("Failed to execute the query.", ex);
             }
+            assertThat(observer.isIndexesUsed).isTrue()
+                .as("Index not used for query. " + queryStrings[0]);
+
+            // Query using no index.
+            queryStrings[1] = QUERY_STR_NO_INDEX[j];
+            try {
+              query = qs.newQuery(queryStrings[1]);
+              selectResults[0][1] = (SelectResults) query.execute();
+            } catch (Exception ex) {
+              throw new AssertionError("Failed to execute the query on no index region.", ex);
+            }
+
+            // compare.
+            getLogWriter().info("Execute query : " + System.getProperty("line.separator")
+                + " QUERY_STR with index: " + queryStrings[0] + " "
+                + System.getProperty("line.separator") + " QUERY_STR without index: "
+                + queryStrings[1]);
+            resultsSet.CompareQueryResultsWithoutAndWithIndexes(selectResults, 1, queryStrings);
           }
-        };
-    return sr;
-  }
-
-  public CacheSerializableRunnable closeWithoutDeletingDiskStore() {
-    CacheSerializableRunnable sr = new CacheSerializableRunnable("close") {
-      public void run2() {
-        IndexManager.testHook = null;
-        // close the cache.
-        closeCache();
-        disconnectFromDS();
-      }
-    };
-    return sr;
-  }
-
-  public CacheSerializableRunnable close() {
-    CacheSerializableRunnable sr = new CacheSerializableRunnable("close") {
-      public void run2() {
-        IndexManager.testHook = null;
-
-        // Get the disk store name.
-        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        String diskStoreName = cache.getDefaultDiskStoreName();
-
-        // close the cache.
-        closeCache();
-        disconnectFromDS();
-
-        // remove the disk store.
-        File diskDir = new File(diskStoreName).getAbsoluteFile();
-        try {
-          FileUtils.deleteDirectory(diskDir);
-        } catch (Exception ex) {
-          fail("Failed to delete the disDir");
         }
       }
     };
-    return sr;
   }
 
-  protected File findFile(String fileName) {
-    String path = TestUtil.getResourcePath(getClass(), fileName);
-    return new File(path);
-  }
-
-  public final InternalDistributedSystem getSystem(String diskStoreId) {
-    new Exception("TEST DEBUG###" + diskStoreId).printStackTrace();
-    if (basicGetSystem() == null || !basicGetSystem().isConnected()) {
-      // Figure out our distributed system properties
-      Properties p =
-          DistributedTestUtils.getAllDistributedSystemProperties(getDistributedSystemProperties());
-      getSystem(p);
-    }
-    return basicGetSystem();
-  }
-
-  private Cache getCache(InternalDistributedSystem system) {
-    Cache cache = basicGetCache();
-    if (cache == null) {
-      try {
-        System.setProperty(
-            DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
-        cache = CacheFactory.create(system);
-      } catch (CacheExistsException e) {
-        Assert.fail("the cache already exists", e);
-
-      } catch (RuntimeException ex) {
-        throw ex;
-
-      } catch (Exception ex) {
-        Assert.fail("Checked exception while initializing cache??", ex);
-      } finally {
-        System.clearProperty(
-            DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
+  private CacheSerializableRunnable closeWithoutDeletingDiskStore() {
+    return new CacheSerializableRunnable("close") {
+      @Override
+      public void run2() {
+        IndexManager.testHook = null;
+        // close the cache.
+        closeCache();
+        disconnectFromDS();
       }
-    }
-    return cache;
+    };
   }
 
-  public static class QueryObserverImpl extends QueryObserverAdapter {
+  private static class QueryObserverImpl extends QueryObserverAdapter {
 
-    boolean isIndexesUsed = false;
-    ArrayList indexesUsed = new ArrayList();
+    boolean isIndexesUsed;
+    List indexesUsed = new ArrayList();
 
     @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
-      indexesUsed.add(index.getName());
+      this.indexesUsed.add(index.getName());
     }
 
     @Override
     public void afterIndexLookup(Collection results) {
       if (results != null) {
-        isIndexesUsed = true;
+        this.isIndexesUsed = true;
       }
     }
   }
 }
-

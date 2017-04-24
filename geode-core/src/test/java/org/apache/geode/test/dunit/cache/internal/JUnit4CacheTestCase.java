@@ -193,9 +193,10 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
         CacheXmlGenerator.generate(cache, pw);
         pw.close();
       } catch (IOException ex) {
-        Assert.fail("IOException during cache.xml generation to " + file, ex); // TODO: remove error
-                                                                               // handling
+        // TODO: remove error handling
+        Assert.fail("IOException during cache.xml generation to " + file, ex);
       }
+      // TODO: System.setProperty(GEMFIRE_PREFIX + CACHE_XML_FILE, file.getAbsolutePath());
       cache = null;
       GemFireCacheImpl.testCacheXml = file;
       try {

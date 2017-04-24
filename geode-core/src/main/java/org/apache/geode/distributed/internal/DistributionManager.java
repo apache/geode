@@ -1756,7 +1756,7 @@ public class DistributionManager implements DM {
   }
 
   /**
-   * Add a membership listener and return other DistribtionManagerIds as an atomic operation
+   * Add a membership listener and return other DistributionManagerIds as an atomic operation
    */
   public Set addMembershipListenerAndGetDistributionManagerIds(MembershipListener l) {
     // switched sync order to fix bug 30360

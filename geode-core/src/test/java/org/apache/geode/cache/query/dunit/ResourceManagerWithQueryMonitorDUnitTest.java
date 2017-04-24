@@ -946,8 +946,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.TEST_MAX_QUERY_EXECUTION_TIME_OVERRIDE_EXCEPTION = false;
-        cache.TEST_MAX_QUERY_EXECUTION_TIME = -1;
+        cache.testMaxQueryExecutionTime = -1;
         return null;
       }
     });
@@ -972,11 +971,9 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
 
         if (queryTimeout != -1) {
-          cache.TEST_MAX_QUERY_EXECUTION_TIME_OVERRIDE_EXCEPTION = true;
-          cache.TEST_MAX_QUERY_EXECUTION_TIME = queryTimeout;
+          cache.testMaxQueryExecutionTime = queryTimeout;
         } else {
-          cache.TEST_MAX_QUERY_EXECUTION_TIME_OVERRIDE_EXCEPTION = false;
-          cache.TEST_MAX_QUERY_EXECUTION_TIME = -1;
+          cache.testMaxQueryExecutionTime = -1;
         }
 
         if (criticalThreshold != 0) {
@@ -1074,7 +1071,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   private boolean isExceptionDueToTimeout(QueryException e, long queryTimeout) {
     String message = e.getMessage();
     // -1 needs to be matched due to client/server set up, BaseCommand uses the
-    // MAX_QUERY_EXECUTION_TIME and not the TEST_MAX_QUERY_EXECUTION_TIME
+    // MAX_QUERY_EXECUTION_TIME and not the testMaxQueryExecutionTime
     return (message.contains("The QueryMonitor thread may be sleeping longer than")
         || message.contains(LocalizedStrings.QueryMonitor_LONG_RUNNING_QUERY_CANCELED
             .toLocalizedString(queryTimeout))

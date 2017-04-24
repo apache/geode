@@ -51,6 +51,8 @@ import org.apache.geode.internal.offheap.annotations.Released;
  */
 public class DistTXState extends TXState {
 
+  public static Runnable internalBeforeApplyChanges;
+  public static Runnable internalBeforeNonTXBasicPut;
   private boolean updatingTxStateDuringPreCommit = false;
 
   public DistTXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub) {
@@ -263,8 +265,8 @@ public class DistTXState extends TXState {
       try {
         attachFilterProfileInformation(entries);
 
-        if (GemFireCacheImpl.internalBeforeApplyChanges != null) {
-          GemFireCacheImpl.internalBeforeApplyChanges.run();
+        if (internalBeforeApplyChanges != null) {
+          internalBeforeApplyChanges.run();
         }
 
         // apply changes to the cache
