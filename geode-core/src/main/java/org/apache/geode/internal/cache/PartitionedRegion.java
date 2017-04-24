@@ -958,10 +958,7 @@ public class PartitionedRegion extends LocalRegion
     try {
       if (storesData) {
         this.redundancyProvider.scheduleCreateMissingBuckets();
-
-        if (this.redundantCopies > 0) {
-          this.redundancyProvider.startRedundancyRecovery();
-        }
+        this.redundancyProvider.startRedundancyRecovery();
       }
     } catch (RegionDestroyedException rde) {
       // Do nothing.
