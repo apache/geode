@@ -72,12 +72,11 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
    */
   @Override
   public Object execute(ParseResult parseResult) {
-    Object result = null;
+    Result result = null;
     Method method = parseResult.getMethod();
     try {
       // Check if it's a multi-step command
-      Method reflectmethod = parseResult.getMethod();
-      MultiStepCommand cmd = reflectmethod.getAnnotation(MultiStepCommand.class);
+      MultiStepCommand cmd = method.getAnnotation(MultiStepCommand.class);
       if (cmd != null) {
         return execCLISteps(logWrapper, shell, parseResult);
       }

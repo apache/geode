@@ -15,16 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import javax.management.ObjectName;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionService;
@@ -47,11 +37,20 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
-
 import org.springframework.shell.core.CommandMarker;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import javax.management.ObjectName;
 
 /**
  * 
@@ -65,7 +64,7 @@ public class ClientCommands implements CommandMarker {
   }
 
   @CliCommand(value = CliStrings.LIST_CLIENTS, help = CliStrings.LIST_CLIENT__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_LIST})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listClient() {
     Result result = null;
@@ -154,7 +153,7 @@ public class ClientCommands implements CommandMarker {
 
 
   @CliCommand(value = CliStrings.DESCRIBE_CLIENT, help = CliStrings.DESCRIBE_CLIENT__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_LIST})
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result describeClient(@CliOption(key = CliStrings.DESCRIBE_CLIENT__ID, mandatory = true,
       help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId) {

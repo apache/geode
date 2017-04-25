@@ -14,20 +14,21 @@
  */
 package org.apache.geode.cache.lucene;
 
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
-import org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommands;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -41,16 +42,12 @@ import org.junit.runner.RunWith;
 
 import java.io.Serializable;
 import java.util.Properties;
-
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(JUnitParamsRunner.class)
-public class LuceneCommandsSecurityDUnitTest extends JUnit4CacheTestCase {
+public class LuceneCommandsSecurityDUnitTest {
 
   @Rule
   public LocatorServerStartupRule locatorServer = new LocatorServerStartupRule();
@@ -190,7 +187,6 @@ public class LuceneCommandsSecurityDUnitTest extends JUnit4CacheTestCase {
   }
 
   private String getCreateIndexCommand() throws Exception {
-    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
@@ -207,7 +203,6 @@ public class LuceneCommandsSecurityDUnitTest extends JUnit4CacheTestCase {
   }
 
   private String getSearchIndexCommand() throws Exception {
-    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_SEARCH_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
@@ -229,7 +224,6 @@ public class LuceneCommandsSecurityDUnitTest extends JUnit4CacheTestCase {
   }
 
   private String getDestroyIndexCommand() throws Exception {
-    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESTROY_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);

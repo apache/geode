@@ -77,8 +77,7 @@ public final class DeployCommands extends AbstractCommandsSupport {
       relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   public final Result deploy(
       @CliOption(key = {CliStrings.DEPLOY__GROUP}, help = CliStrings.DEPLOY__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) @CliMetaData(
-              valueSeparator = ",") String[] groups,
+          optionContext = ConverterHint.MEMBERGROUP) String[] groups,
       @CliOption(key = {CliStrings.DEPLOY__JAR}, help = CliStrings.DEPLOY__JAR__HELP) String jar,
       @CliOption(key = {CliStrings.DEPLOY__DIR}, help = CliStrings.DEPLOY__DIR__HELP) String dir) {
     try {
@@ -156,11 +155,9 @@ public final class DeployCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public final Result undeploy(
       @CliOption(key = {CliStrings.UNDEPLOY__GROUP}, help = CliStrings.UNDEPLOY__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) @CliMetaData(
-              valueSeparator = ",") String[] groups,
+          optionContext = ConverterHint.MEMBERGROUP) String[] groups,
       @CliOption(key = {CliStrings.UNDEPLOY__JAR}, help = CliStrings.UNDEPLOY__JAR__HELP,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE) @CliMetaData(
-              valueSeparator = ",") String jars) {
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE) String jars) {
 
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
@@ -227,8 +224,7 @@ public final class DeployCommands extends AbstractCommandsSupport {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public final Result listDeployed(@CliOption(key = {CliStrings.LIST_DEPLOYED__GROUP},
-      help = CliStrings.LIST_DEPLOYED__GROUP__HELP) @CliMetaData(
-          valueSeparator = ",") String group) {
+      help = CliStrings.LIST_DEPLOYED__GROUP__HELP) String group) {
 
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();

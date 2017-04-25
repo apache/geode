@@ -134,8 +134,10 @@ public class CliStrings {
   public static final String TOPIC_SHARED_CONFIGURATION = "Cluster Configuration";
   public static final String TOPIC_SHARED_CONFIGURATION_HELP =
       "Configuration for cluster and various groups. It consists of cache.xml, geode properties and deployed jars.\nChanges due to gfshs command are persisted to the locator hosting the cluster configuration service.";
-  public static final String TOPIC_CHANGELOGLEVEL =
-      "User can change the log-level for a  member run time and generate log contents as per the need";
+  public static final String TOPIC_LOGS = "Logs";
+  public static final String TOPIC_LOGS__DESC = "Generate log contents as per the need";
+  public static final String TOPIC_CLIENT = "Client";
+  public static final String TOPIC_CLIENT__DESC = "Client status";
 
   /*-*************************************************************************
    * ********* String Constants other than command name, options & help ******
@@ -1592,7 +1594,6 @@ public class CliStrings {
   /* 'list client' command */
   public static final String LIST_CLIENTS = "list clients";
   public static final String LIST_CLIENT__HELP = "Display list of connected clients";
-  public static final String TOPIC_LIST = "Display list of connected clients";
   public static final String LIST_CLIENT_COULD_NOT_RETRIEVE_CLIENT_LIST_0 =
       "Could not retrieve list of clients. Reason : {0}";
   public static final String LIST_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST =

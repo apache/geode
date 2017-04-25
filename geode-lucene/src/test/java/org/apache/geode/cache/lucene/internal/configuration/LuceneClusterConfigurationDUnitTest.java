@@ -21,7 +21,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.geode.cache.RegionShortcut;
@@ -29,11 +28,9 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
-import org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommands;
 import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
@@ -259,7 +256,6 @@ public class LuceneClusterConfigurationDUnitTest {
 
   private void createLuceneIndexUsingGfsh(String indexName) throws Exception {
     // Execute Gfsh command to create lucene index.
-    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, indexName);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
@@ -269,7 +265,6 @@ public class LuceneClusterConfigurationDUnitTest {
 
   private void createLuceneIndexWithAnalyzerUsingGfsh(boolean addGroup) throws Exception {
     // Gfsh command to create lucene index.
-    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
@@ -285,7 +280,6 @@ public class LuceneClusterConfigurationDUnitTest {
 
   private void destroyLuceneIndexUsingGfsh(String indexName) throws Exception {
     // Execute Gfsh command to destroy lucene index.
-    CommandManager.getInstance().add(LuceneIndexCommands.class.newInstance());
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_DESTROY_INDEX);
     if (indexName != null) {
       csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, indexName);

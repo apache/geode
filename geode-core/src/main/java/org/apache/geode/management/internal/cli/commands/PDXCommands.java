@@ -50,27 +50,21 @@ public class PDXCommands extends AbstractCommandsSupport {
   @CliCommand(value = CliStrings.CONFIGURE_PDX, help = CliStrings.CONFIGURE_PDX__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
-  public Result configurePDX(@CliOption(key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
-      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-      help = CliStrings.CONFIGURE_PDX__READ__SERIALIZED__HELP) Boolean readSerialized,
-
+  public Result configurePDX(
+      @CliOption(key = CliStrings.CONFIGURE_PDX__READ__SERIALIZED,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          help = CliStrings.CONFIGURE_PDX__READ__SERIALIZED__HELP) Boolean readSerialized,
       @CliOption(key = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS__HELP) Boolean ignoreUnreadFields,
-
       @CliOption(key = CliStrings.CONFIGURE_PDX__DISKSTORE,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
           help = CliStrings.CONFIGURE_PDX__DISKSTORE__HELP) String diskStore,
-
-      @CliMetaData(valueSeparator = ",") @CliOption(
-          key = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES,
+      @CliOption(key = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           specifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES__HELP) String[] patterns,
-
-
-      @CliMetaData(valueSeparator = ",") @CliOption(
-          key = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES,
+      @CliOption(key = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           specifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.CONFIGURE_PDX__PORTABLE__AUTO__SERIALIZER__CLASSES__HELP) String[] portablePatterns) {
@@ -179,8 +173,7 @@ public class PDXCommands extends AbstractCommandsSupport {
           help = CliStrings.PDX_DISKSTORE__HELP) String diskStore,
 
       @CliOption(key = CliStrings.PDX_DISKDIR, mandatory = true,
-          help = CliStrings.PDX_DISKDIR__HELP) @CliMetaData(
-              valueSeparator = ",") String[] diskDirs) {
+          help = CliStrings.PDX_DISKDIR__HELP) String[] diskDirs) {
 
     try {
       final File[] dirs = new File[diskDirs.length];

@@ -37,7 +37,6 @@ import org.apache.geode.management.internal.SSLUtil;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
-import org.apache.geode.management.internal.cli.annotation.CliArgument;
 import org.apache.geode.management.internal.cli.converters.ConnectionEndpointConverter;
 import org.apache.geode.management.internal.cli.domain.ConnectToLocatorResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -93,6 +92,155 @@ import javax.net.ssl.TrustManagerFactory;
  */
 public class ShellCommands implements CommandMarker {
 
+  // millis that connect --locator will wait for a response from the locator.
+  private final static int CONNECT_LOCATOR_TIMEOUT_MS = 60000; // see bug 45971
+
+  public static int getConnectLocatorTimeoutInMS() {
+    return ShellCommands.CONNECT_LOCATOR_TIMEOUT_MS;
+  }
+
+  /* package-private */
+  static Map<String, String> loadPropertiesFromURL(URL gfSecurityPropertiesUrl) {
+    Map<String, String> propsMap = Collections.emptyMap();
+
+    if (gfSecurityPropertiesUrl != null) {
+      InputStream inputStream = null;
+      try {
+        Properties props = new Properties();
+        inputStream = gfSecurityPropertiesUrl.openStream();
+        props.load(inputStream);
+        if (!props.isEmpty()) {
+          Set<String> jmxSpecificProps = new HashSet<String>();
+          propsMap = new LinkedHashMap<String, String>();
+          Set<Entry<Object, Object>> entrySet = props.entrySet();
+          for (Entry<Object, Object> entry : entrySet) {
+
+            String key = (String) entry.getKey();
+            if (key.endsWith(DistributionConfig.JMX_SSL_PROPS_SUFFIX)) {
+              key =
+                  key.substring(0, key.length() - DistributionConfig.JMX_SSL_PROPS_SUFFIX.length());
+              jmxSpecificProps.add(key);
+
+              propsMap.put(key, (String) entry.getValue());
+            } else if (!jmxSpecificProps.contains(key)) {// Prefer properties ending with "-jmx"
+              // over default SSL props.
+              propsMap.put(key, (String) entry.getValue());
+            }
+          }
+          props.clear();
+          jmxSpecificProps.clear();
+        }
+      } catch (IOException io) {
+        throw new RuntimeException(
+            CliStrings.format(CliStrings.CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0,
+                CliUtil.decodeWithDefaultCharSet(gfSecurityPropertiesUrl.getPath())),
+            io);
+      } finally {
+        IOUtils.close(inputStream);
+      }
+    }
+    return propsMap;
+  }
+
+  // Copied from DistributedSystem.java
+  public static URL getFileUrl(String fileName) {
+    File file = new File(fileName);
+
+    if (file.exists()) {
+      try {
+        return IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(file).toURI().toURL();
+      } catch (MalformedURLException ignore) {
+      }
+    }
+
+    file = new File(System.getProperty("user.home"), fileName);
+
+    if (file.exists()) {
+      try {
+        return IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(file).toURI().toURL();
+      } catch (MalformedURLException ignore) {
+      }
+    }
+
+    return ClassPathLoader.getLatest().getResource(ShellCommands.class, fileName);
+  }
+
+  public static ConnectToLocatorResult connectToLocator(String host, int port, int timeout,
+      Map<String, String> props) throws IOException {
+    // register DSFID types first; invoked explicitly so that all message type
+    // initializations do not happen in first deserialization on a possibly
+    // "precious" thread
+    DSFIDFactory.registerTypes();
+
+    JmxManagerLocatorResponse locatorResponse =
+        JmxManagerLocatorRequest.send(host, port, timeout, props);
+
+    if (StringUtils.isBlank(locatorResponse.getHost()) || locatorResponse.getPort() == 0) {
+      Throwable locatorResponseException = locatorResponse.getException();
+      String exceptionMessage = CliStrings.CONNECT__MSG__LOCATOR_COULD_NOT_FIND_MANAGER;
+
+      if (locatorResponseException != null) {
+        String locatorResponseExceptionMessage = locatorResponseException.getMessage();
+        locatorResponseExceptionMessage = (!StringUtils.isBlank(locatorResponseExceptionMessage)
+            ? locatorResponseExceptionMessage : locatorResponseException.toString());
+        exceptionMessage = "Exception caused JMX Manager startup to fail because: '"
+            .concat(locatorResponseExceptionMessage).concat("'");
+      }
+
+      throw new IllegalStateException(exceptionMessage, locatorResponseException);
+    }
+
+    ConnectionEndpoint memberEndpoint =
+        new ConnectionEndpoint(locatorResponse.getHost(), locatorResponse.getPort());
+
+    String resultMessage = CliStrings.format(CliStrings.CONNECT__MSG__CONNECTING_TO_MANAGER_AT_0,
+        memberEndpoint.toString(false));
+
+    return new ConnectToLocatorResult(memberEndpoint, resultMessage,
+        locatorResponse.isJmxManagerSslEnabled());
+  }
+
+  private static InfoResultData executeCommand(Gfsh gfsh, String userCommand, boolean useConsole)
+      throws IOException {
+    InfoResultData infoResultData = ResultBuilder.createInfoResultData();
+
+    String cmdToExecute = userCommand;
+    String cmdExecutor = "/bin/sh";
+    String cmdExecutorOpt = "-c";
+    if (SystemUtils.isWindows()) {
+      cmdExecutor = "cmd";
+      cmdExecutorOpt = "/c";
+    } else if (useConsole) {
+      cmdToExecute = cmdToExecute + " </dev/tty >/dev/tty";
+    }
+    String[] commandArray = {cmdExecutor, cmdExecutorOpt, cmdToExecute};
+
+    ProcessBuilder builder = new ProcessBuilder();
+    builder.command(commandArray);
+    builder.directory();
+    builder.redirectErrorStream();
+    Process proc = builder.start();
+
+    BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+
+    String lineRead = "";
+    while ((lineRead = input.readLine()) != null) {
+      infoResultData.addLine(lineRead);
+    }
+
+    proc.getOutputStream().close();
+
+    try {
+      if (proc.waitFor() != 0) {
+        gfsh.logWarning("The command '" + userCommand + "' did not complete successfully", null);
+      }
+    } catch (final InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException(e.getMessage(), e);
+    }
+    return infoResultData;
+  }
+
   private Gfsh getGfsh() {
     return Gfsh.getCurrentInstance();
   }
@@ -111,13 +259,6 @@ public class ShellCommands implements CommandMarker {
     }
 
     return exitShellRequest;
-  }
-
-  // millis that connect --locator will wait for a response from the locator.
-  private final static int CONNECT_LOCATOR_TIMEOUT_MS = 60000; // see bug 45971
-
-  public static int getConnectLocatorTimeoutInMS() {
-    return ShellCommands.CONNECT_LOCATOR_TIMEOUT_MS;
   }
 
   @CliCommand(value = {CliStrings.CONNECT}, help = CliStrings.CONNECT__HELP)
@@ -212,7 +353,6 @@ public class ShellCommands implements CommandMarker {
 
     return result;
   }
-
 
   private Result httpConnect(Map<String, String> sslConfigProps, boolean useSsl, String url,
       String userName, String passwordToUse) {
@@ -393,7 +533,6 @@ public class ShellCommands implements CommandMarker {
     LogWrapper.getInstance().severe(errorMessage, e);
     return ResultBuilder.createConnectionErrorResult(errorMessage);
   }
-
 
   private String decrypt(String password) {
     if (password != null) {
@@ -584,112 +723,6 @@ public class ShellCommands implements CommandMarker {
     return sslConfigProps;
   }
 
-  private static String getGfshLogsCheckMessage(String logFilePath) {
-    return CliStrings.format(CliStrings.GFSH__PLEASE_CHECK_LOGS_AT_0, logFilePath);
-  }
-
-  /* package-private */
-  static Map<String, String> loadPropertiesFromURL(URL gfSecurityPropertiesUrl) {
-    Map<String, String> propsMap = Collections.emptyMap();
-
-    if (gfSecurityPropertiesUrl != null) {
-      InputStream inputStream = null;
-      try {
-        Properties props = new Properties();
-        inputStream = gfSecurityPropertiesUrl.openStream();
-        props.load(inputStream);
-        if (!props.isEmpty()) {
-          Set<String> jmxSpecificProps = new HashSet<String>();
-          propsMap = new LinkedHashMap<String, String>();
-          Set<Entry<Object, Object>> entrySet = props.entrySet();
-          for (Entry<Object, Object> entry : entrySet) {
-
-            String key = (String) entry.getKey();
-            if (key.endsWith(DistributionConfig.JMX_SSL_PROPS_SUFFIX)) {
-              key =
-                  key.substring(0, key.length() - DistributionConfig.JMX_SSL_PROPS_SUFFIX.length());
-              jmxSpecificProps.add(key);
-
-              propsMap.put(key, (String) entry.getValue());
-            } else if (!jmxSpecificProps.contains(key)) {// Prefer properties ending with "-jmx"
-                                                         // over default SSL props.
-              propsMap.put(key, (String) entry.getValue());
-            }
-          }
-          props.clear();
-          jmxSpecificProps.clear();
-        }
-      } catch (IOException io) {
-        throw new RuntimeException(
-            CliStrings.format(CliStrings.CONNECT__MSG__COULD_NOT_READ_CONFIG_FROM_0,
-                CliUtil.decodeWithDefaultCharSet(gfSecurityPropertiesUrl.getPath())),
-            io);
-      } finally {
-        IOUtils.close(inputStream);
-      }
-    }
-    return propsMap;
-  }
-
-  // Copied from DistributedSystem.java
-  public static URL getFileUrl(String fileName) {
-    File file = new File(fileName);
-
-    if (file.exists()) {
-      try {
-        return IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(file).toURI().toURL();
-      } catch (MalformedURLException ignore) {
-      }
-    }
-
-    file = new File(System.getProperty("user.home"), fileName);
-
-    if (file.exists()) {
-      try {
-        return IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(file).toURI().toURL();
-      } catch (MalformedURLException ignore) {
-      }
-    }
-
-    return ClassPathLoader.getLatest().getResource(ShellCommands.class, fileName);
-  }
-
-  public static ConnectToLocatorResult connectToLocator(String host, int port, int timeout,
-      Map<String, String> props) throws IOException {
-    // register DSFID types first; invoked explicitly so that all message type
-    // initializations do not happen in first deserialization on a possibly
-    // "precious" thread
-    DSFIDFactory.registerTypes();
-
-    JmxManagerLocatorResponse locatorResponse =
-        JmxManagerLocatorRequest.send(host, port, timeout, props);
-
-    if (StringUtils.isBlank(locatorResponse.getHost()) || locatorResponse.getPort() == 0) {
-      Throwable locatorResponseException = locatorResponse.getException();
-      String exceptionMessage = CliStrings.CONNECT__MSG__LOCATOR_COULD_NOT_FIND_MANAGER;
-
-      if (locatorResponseException != null) {
-        String locatorResponseExceptionMessage = locatorResponseException.getMessage();
-        locatorResponseExceptionMessage = (!StringUtils.isBlank(locatorResponseExceptionMessage)
-            ? locatorResponseExceptionMessage : locatorResponseException.toString());
-        exceptionMessage = "Exception caused JMX Manager startup to fail because: '"
-            .concat(locatorResponseExceptionMessage).concat("'");
-      }
-
-      throw new IllegalStateException(exceptionMessage, locatorResponseException);
-    }
-
-    ConnectionEndpoint memberEndpoint =
-        new ConnectionEndpoint(locatorResponse.getHost(), locatorResponse.getPort());
-
-    String resultMessage = CliStrings.format(CliStrings.CONNECT__MSG__CONNECTING_TO_MANAGER_AT_0,
-        memberEndpoint.toString(false));
-
-    return new ConnectToLocatorResult(memberEndpoint, resultMessage,
-        locatorResponse.isJmxManagerSslEnabled());
-  }
-
-
   @CliCommand(value = {CliStrings.DISCONNECT}, help = CliStrings.DISCONNECT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX,
       CliStrings.TOPIC_GEODE_MANAGER})
@@ -725,7 +758,6 @@ public class ShellCommands implements CommandMarker {
     return result;
   }
 
-
   @CliCommand(value = {CliStrings.DESCRIBE_CONNECTION}, help = CliStrings.DESCRIBE_CONNECTION__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH, CliStrings.TOPIC_GEODE_JMX})
   public Result describeConnection() {
@@ -749,7 +781,6 @@ public class ShellCommands implements CommandMarker {
 
     return result;
   }
-
 
   @CliCommand(value = {CliStrings.ECHO}, help = CliStrings.ECHO__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
@@ -784,7 +815,6 @@ public class ShellCommands implements CommandMarker {
     return resultData;
   }
 
-
   @CliCommand(value = {CliStrings.SET_VARIABLE}, help = CliStrings.SET_VARIABLE__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result setVariable(
@@ -805,22 +835,6 @@ public class ShellCommands implements CommandMarker {
 
     return result;
   }
-
-  // Enable when "use region" command is required. See #46110
-  // @CliCommand(value = { CliStrings.USE_REGION }, help = CliStrings.USE_REGION__HELP)
-  // @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH,
-  // CliStrings.TOPIC_GEODE_REGION})
-  // public Result useRegion(
-  // @CliArgument(name = CliStrings.USE_REGION__REGION,
-  // unspecifiedDefaultValue = "/",
-  // argumentContext = CliStrings.PARAM_CONTEXT_REGIONPATH,
-  // help = CliStrings.USE_REGION__REGION__HELP)
-  // String toRegion) {
-  // Gfsh gfsh = Gfsh.getCurrentInstance();
-  //
-  // gfsh.setPromptPath(toRegion);
-  // return ResultBuilder.createInfoResult("");
-  // }
 
   @CliCommand(value = {CliStrings.DEBUG}, help = CliStrings.DEBUG__HELP)
   @CliMetaData(shellOnly = true,
@@ -875,8 +889,7 @@ public class ShellCommands implements CommandMarker {
 
       GfshHistory gfshHistory = gfsh.getGfshHistory();
       Iterator<?> it = gfshHistory.entries();
-      boolean flagForLineNumbers =
-          (saveHistoryTo != null && saveHistoryTo.length() > 0) ? false : true;
+      boolean flagForLineNumbers = !(saveHistoryTo != null && saveHistoryTo.length() > 0);
       long lineNumber = 0;
 
       while (it.hasNext()) {
@@ -956,7 +969,6 @@ public class ShellCommands implements CommandMarker {
 
   }
 
-
   @CliCommand(value = {CliStrings.RUN}, help = CliStrings.RUN__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result executeScript(
@@ -978,7 +990,6 @@ public class ShellCommands implements CommandMarker {
 
     return result;
   }
-
 
   @CliCommand(value = CliStrings.ENCRYPT, help = CliStrings.ENCRYPT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
@@ -1011,7 +1022,7 @@ public class ShellCommands implements CommandMarker {
   @CliCommand(value = {CliStrings.SH}, help = CliStrings.SH__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GFSH})
   public Result sh(
-      @CliArgument(name = CliStrings.SH__COMMAND, mandatory = true,
+      @CliOption(key = {"", CliStrings.SH__COMMAND}, mandatory = true,
           help = CliStrings.SH__COMMAND__HELP) String command,
       @CliOption(key = CliStrings.SH__USE_CONSOLE, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
@@ -1031,47 +1042,6 @@ public class ShellCommands implements CommandMarker {
     }
     return result;
   }
-
-  private static InfoResultData executeCommand(Gfsh gfsh, String userCommand, boolean useConsole)
-      throws IOException {
-    InfoResultData infoResultData = ResultBuilder.createInfoResultData();
-
-    String cmdToExecute = userCommand;
-    String cmdExecutor = "/bin/sh";
-    String cmdExecutorOpt = "-c";
-    if (SystemUtils.isWindows()) {
-      cmdExecutor = "cmd";
-      cmdExecutorOpt = "/c";
-    } else if (useConsole) {
-      cmdToExecute = cmdToExecute + " </dev/tty >/dev/tty";
-    }
-    String[] commandArray = {cmdExecutor, cmdExecutorOpt, cmdToExecute};
-
-    ProcessBuilder builder = new ProcessBuilder();
-    builder.command(commandArray);
-    builder.directory();
-    builder.redirectErrorStream();
-    Process proc = builder.start();
-
-    BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-
-    String lineRead = "";
-    while ((lineRead = input.readLine()) != null) {
-      infoResultData.addLine(lineRead);
-    }
-
-    proc.getOutputStream().close();
-
-    try {
-      if (proc.waitFor() != 0) {
-        gfsh.logWarning("The command '" + userCommand + "' did not complete successfully", null);
-      }
-    } catch (final InterruptedException e) {
-      throw new IllegalStateException(e);
-    }
-    return infoResultData;
-  }
-
 
   @CliAvailabilityIndicator({CliStrings.CONNECT, CliStrings.DISCONNECT,
       CliStrings.DESCRIBE_CONNECTION})

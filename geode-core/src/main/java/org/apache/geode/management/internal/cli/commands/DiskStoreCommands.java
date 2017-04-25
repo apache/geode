@@ -317,13 +317,10 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           unspecifiedDefaultValue = "32768",
           help = CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE__HELP) int writeBufferSize,
       @CliOption(key = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, mandatory = true,
-          help = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE__HELP,
-          optionContext = ConverterHint.STRING_DISABLER) @CliMetaData(
-              valueSeparator = ",") String[] directoriesAndSizes,
+          help = CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE__HELP) String[] directoriesAndSizes,
       @CliOption(key = CliStrings.CREATE_DISK_STORE__GROUP,
           help = CliStrings.CREATE_DISK_STORE__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) @CliMetaData(
-              valueSeparator = ",") String[] groups,
+          optionContext = ConverterHint.MEMBERGROUP) String[] groups,
       @CliOption(key = CliStrings.CREATE_DISK_STORE__DISK_USAGE_WARNING_PCT,
           unspecifiedDefaultValue = "90",
           help = CliStrings.CREATE_DISK_STORE__DISK_USAGE_WARNING_PCT__HELP) float diskUsageWarningPercentage,
@@ -425,9 +422,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           help = CliStrings.COMPACT_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.COMPACT_DISK_STORE__GROUP,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.COMPACT_DISK_STORE__GROUP__HELP,
-          optionContext = ConverterHint.STRING_DISABLER) @CliMetaData(
-              valueSeparator = ",") String[] groups) {
+          help = CliStrings.COMPACT_DISK_STORE__GROUP__HELP) String[] groups) {
     Result result = null;
 
     try {
@@ -568,16 +563,13 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           help = CliStrings.COMPACT_OFFLINE_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.COMPACT_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.COMPACT_OFFLINE_DISK_STORE__DISKDIRS__HELP,
-          optionContext = ConverterHint.DIRS + ":" + ConverterHint.STRING_DISABLER) @CliMetaData(
-              valueSeparator = ",") String[] diskDirs,
+          help = CliStrings.COMPACT_OFFLINE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
       @CliOption(key = CliStrings.COMPACT_OFFLINE_DISK_STORE__MAXOPLOGSIZE,
           unspecifiedDefaultValue = "-1",
           help = CliStrings.COMPACT_OFFLINE_DISK_STORE__MAXOPLOGSIZE__HELP) long maxOplogSize,
       @CliOption(key = CliStrings.COMPACT_OFFLINE_DISK_STORE__J,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.COMPACT_OFFLINE_DISK_STORE__J__HELP) @CliMetaData(
-              valueSeparator = ",") String[] jvmProps) {
+          help = CliStrings.COMPACT_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps) {
     Result result = null;
     LogWrapper logWrapper = LogWrapper.getInstance();
 
@@ -712,16 +704,13 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS__HELP,
-          optionContext = ConverterHint.DIRS + ":" + ConverterHint.STRING_DISABLER) @CliMetaData(
-              valueSeparator = ",") String[] diskDirs,
+          help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE,
           unspecifiedDefaultValue = "-1",
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE__HELP) long maxOplogSize,
       @CliOption(key = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) @CliMetaData(
-              valueSeparator = ",") String[] jvmProps)
+          help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps)
       throws InterruptedException {
 
 
@@ -1155,8 +1144,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME, mandatory = true,
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKSTORENAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
-          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS__HELP) @CliMetaData(
-              valueSeparator = ",") String[] diskDirs,
+          help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
       @CliOption(key = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.DESCRIBE_OFFLINE_DISK_STORE__PDX_TYPES__HELP) Boolean listPdxTypes,
@@ -1200,8 +1188,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME, mandatory = true,
           help = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKSTORENAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKDIRS, mandatory = true,
-          help = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKDIRS__HELP) @CliMetaData(
-              valueSeparator = ",") String[] diskDirs,
+          help = CliStrings.EXPORT_OFFLINE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
       @CliOption(key = CliStrings.EXPORT_OFFLINE_DISK_STORE__DIR, mandatory = true,
           help = CliStrings.EXPORT_OFFLINE_DISK_STORE__DIR__HELP) String dir) {
 
@@ -1245,12 +1232,10 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           help = CliStrings.VALIDATE_DISK_STORE__NAME__HELP) String diskStoreName,
       @CliOption(key = CliStrings.VALIDATE_DISK_STORE__DISKDIRS, mandatory = true,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.VALIDATE_DISK_STORE__DISKDIRS__HELP) @CliMetaData(
-              valueSeparator = ",") String[] diskDirs,
+          help = CliStrings.VALIDATE_DISK_STORE__DISKDIRS__HELP) String[] diskDirs,
       @CliOption(key = CliStrings.VALIDATE_DISK_STORE__J,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.VALIDATE_DISK_STORE__J__HELP) @CliMetaData(
-              valueSeparator = ",") String[] jvmProps) {
+          help = CliStrings.VALIDATE_DISK_STORE__J__HELP) String[] jvmProps) {
     try {
       String resultString = new String();
 
@@ -1325,8 +1310,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           help = CliStrings.ALTER_DISK_STORE__REGIONNAME__HELP) String regionName,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__DISKDIRS,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.ALTER_DISK_STORE__DISKDIRS__HELP,
-          mandatory = true) @CliMetaData(valueSeparator = ",") String[] diskDirs,
+          help = CliStrings.ALTER_DISK_STORE__DISKDIRS__HELP, mandatory = true) String[] diskDirs,
       @CliOption(key = CliStrings.ALTER_DISK_STORE__COMPRESSOR,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           specifiedDefaultValue = "none",
@@ -1437,8 +1421,7 @@ public class DiskStoreCommands extends AbstractCommandsSupport {
           help = CliStrings.DESTROY_DISK_STORE__NAME__HELP) String name,
       @CliOption(key = CliStrings.DESTROY_DISK_STORE__GROUP,
           help = CliStrings.DESTROY_DISK_STORE__GROUP__HELP,
-          optionContext = ConverterHint.MEMBERGROUP) @CliMetaData(
-              valueSeparator = ",") String[] groups) {
+          optionContext = ConverterHint.MEMBERGROUP) String[] groups) {
     try {
       TabularResultData tabularData = ResultBuilder.createTabularResultData();
       boolean accumulatedData = false;

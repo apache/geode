@@ -14,22 +14,18 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import org.apache.geode.management.internal.cli.GfshParser;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.management.internal.cli.parser.SyntaxConstants;
-
-/**
- * 
- *
- */
 public class MultiCommandHelper {
 
   public static List<String> getMultipleCommands(String input) {
     Map<Integer, List<String>> listMap = new HashMap<Integer, List<String>>();
-    String as[] = input.split(SyntaxConstants.COMMAND_DELIMITER);
+    String as[] = input.split(GfshParser.COMMAND_DELIMITER);
     int splitCount = 0;
     for (String a : as) {
       if (a.endsWith("\\")) {

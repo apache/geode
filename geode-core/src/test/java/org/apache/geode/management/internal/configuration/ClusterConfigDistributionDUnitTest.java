@@ -86,7 +86,7 @@ public class ClusterConfigDistributionDUnitTest {
 
 
     String asyncEventQueueJarPath = createAsyncEventQueueJar();
-    gfshConnector.executeAndVerifyCommand("deploy jar --jar=" + asyncEventQueueJarPath);
+    gfshConnector.executeAndVerifyCommand("deploy --jar=" + asyncEventQueueJarPath);
 
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_ASYNC_EVENT_QUEUE);
@@ -166,7 +166,6 @@ public class ClusterConfigDistributionDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CONFIGURE_PDX);
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__AUTO__SERIALIZER__CLASSES, "com.foo.*");
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS, "true");
-    csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__PERSISTENT, "true");
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__READ__SERIALIZED, "true");
 
     String message = gfshConnector.execute(csb.getCommandString());

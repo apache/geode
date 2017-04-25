@@ -18,16 +18,13 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertNotNull;
 
 import org.apache.geode.internal.ClassBuilder;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.Locator;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.dunit.rules.Server;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.junit.Before;
 import org.junit.Rule;
@@ -213,7 +210,7 @@ public class DeployCommandsDUnitTest implements Serializable {
     });
 
     gfshConnector
-        .executeAndVerifyCommand("undeploy --jars=" + jar3.getName() + "," + jar4.getName());
+        .executeAndVerifyCommand("undeploy --jar=" + jar3.getName() + "," + jar4.getName());
     server1.invoke(() -> {
       assertThatCannotLoad(jarName3, class3);
       assertThatCannotLoad(jarName4, class4);
@@ -239,10 +236,10 @@ public class DeployCommandsDUnitTest implements Serializable {
   @Test
   public void testListDeployed() throws Exception {
     // Deploy a couple of JAR files which can be listed
-    gfshConnector.executeAndVerifyCommand(
-        "deploy jar --group=" + GROUP1 + " --jar=" + jar1.getCanonicalPath());
-    gfshConnector.executeAndVerifyCommand(
-        "deploy jar --group=" + GROUP2 + " --jar=" + jar2.getCanonicalPath());
+    gfshConnector
+        .executeAndVerifyCommand("deploy --group=" + GROUP1 + " --jar=" + jar1.getCanonicalPath());
+    gfshConnector
+        .executeAndVerifyCommand("deploy --group=" + GROUP2 + " --jar=" + jar2.getCanonicalPath());
 
     // List for all members
     gfshConnector.executeAndVerifyCommand("list deployed");

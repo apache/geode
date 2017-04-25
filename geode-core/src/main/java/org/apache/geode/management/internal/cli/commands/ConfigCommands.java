@@ -202,11 +202,9 @@ public class ConfigCommands extends AbstractCommandsSupport {
   public Result exportConfig(
       @CliOption(key = {CliStrings.EXPORT_CONFIG__MEMBER},
           optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-          help = CliStrings.EXPORT_CONFIG__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String member,
+          help = CliStrings.EXPORT_CONFIG__MEMBER__HELP) String member,
       @CliOption(key = {CliStrings.EXPORT_CONFIG__GROUP}, optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.EXPORT_CONFIG__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") String group,
+          help = CliStrings.EXPORT_CONFIG__GROUP__HELP) String group,
       @CliOption(key = {CliStrings.EXPORT_CONFIG__DIR},
           help = CliStrings.EXPORT_CONFIG__DIR__HELP) String dir) {
     InfoResultData infoData = ResultBuilder.createInfoResultData();
