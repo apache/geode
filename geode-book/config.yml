@@ -35,8 +35,11 @@ template_variables:
   book_title: Apache Geode Documentation
   support_link: <a href="http://geode.apache.org/community" target="_blank">Community</a>
   support_call_to_action: <a href="http://geode.apache.org/community" target="_blank">Need Help?</a>
+  changelog_href: https://cwiki.apache.org/confluence/display/GEODE/Release+Notes
   product_link: <div class="header-item"><a href="http://geode.apache.org/">Back to Geode Page</a></div>
   domain_name: apache.org
   book_title_short: Geode Docs
+  local_header_title: Apache Geode
+  local_header_img: /images/Apache_Geode_logo_symbol.png
 
 broken_link_exclusions: iefix|using_custom_classes|arrowhead|cppdocs|DotNetDocs
