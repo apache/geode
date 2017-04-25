@@ -229,7 +229,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
 
   @Test
   public void cannotCreateLuceneIndexWithExistingIndexName() {
-    expectedException.expect(IllegalArgumentException.class);
+    expectedException.expect(LuceneIndexExistsException.class);
     createIndex("field1", "field2", "field3");
     createIndex("field4", "field5", "field6");
   }

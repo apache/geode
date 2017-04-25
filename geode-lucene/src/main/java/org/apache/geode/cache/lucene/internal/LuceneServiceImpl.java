@@ -18,6 +18,7 @@ package org.apache.geode.cache.lucene.internal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.cache.lucene.LuceneIndexExistsException;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
 import org.apache.geode.cache.lucene.internal.management.LuceneServiceMBean;
 import org.apache.geode.cache.lucene.internal.management.ManagementIndexListener;
@@ -148,7 +149,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
       regionPath = "/" + regionPath;
     }
 
-    registerDefinedIndex(LuceneServiceImpl.getUniqueIndexName(indexName, regionPath),
+    registerDefinedIndex(indexName, regionPath,
         new LuceneIndexCreationProfile(indexName, regionPath, fields, analyzer, fieldAnalyzers));
 
     Region region = cache.getRegion(regionPath);
@@ -191,10 +192,12 @@ public class LuceneServiceImpl implements InternalLuceneService {
     return luceneIndexFactory.create(indexName, regionPath, cache);
   }
 
-  private void registerDefinedIndex(final String regionAndIndex,
+  private void registerDefinedIndex(final String indexName, final String regionPath,
       final LuceneIndexCreationProfile luceneIndexCreationProfile) {
-    if (definedIndexMap.containsKey(regionAndIndex) || indexMap.containsKey(regionAndIndex))
-      throw new IllegalArgumentException("Lucene index already exists in region");
+    String regionAndIndex = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
+    if (definedIndexMap.containsKey(regionAndIndex) || indexMap.containsKey(regionAndIndex)) {
+      throw new LuceneIndexExistsException(indexName, regionPath);
+    }
     definedIndexMap.put(regionAndIndex, luceneIndexCreationProfile);
   }
 

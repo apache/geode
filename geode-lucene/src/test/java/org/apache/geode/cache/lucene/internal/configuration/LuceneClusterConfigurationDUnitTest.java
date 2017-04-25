@@ -35,6 +35,8 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -50,6 +52,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -164,6 +167,47 @@ public class LuceneClusterConfigurationDUnitTest {
     locator.invoke(verifyClusterConfiguration(false));
   }
 
+  @Test
+  public void verifyMemberWithGroupStartsAfterAlterRegion() throws Exception {
+    // Start a member with no group
+    startNodeUsingClusterConfiguration(1);
+
+    // Start a member with group
+    String group = "group1";
+    Properties properties = new Properties();
+    properties.setProperty(GROUPS, group);
+    MemberVM vm2 = startNodeUsingClusterConfiguration(2, properties);
+
+    // Connect Gfsh to locator
+    gfshConnector.connectAndVerify(locator);
+
+    // Create index and region in no group
+    createLuceneIndexUsingGfsh();
+    createRegionUsingGfsh(REGION_NAME, RegionShortcut.PARTITION, null);
+
+    // Alter region in group
+    CommandResult alterRegionResult = alterRegionUsingGfsh(group);
+    TabularResultData alterRegionResultData = (TabularResultData) alterRegionResult.getResultData();
+    List<String> alterRegionResultDataStatus = alterRegionResultData.retrieveAllValues("Status");
+
+    // Verify region is altered on only one server
+    assertEquals(1, alterRegionResultDataStatus.size());
+    assertEquals("Region \"/" + REGION_NAME + "\" altered on \"" + vm2.getName() + "\"",
+        alterRegionResultDataStatus.get(0));
+
+    // Start another member with group
+    startNodeUsingClusterConfiguration(3, properties);
+
+    // Verify all members have indexes
+    CommandResult listIndexesResult = listIndexesUsingGfsh();
+    TabularResultData listIndexesResultData = (TabularResultData) listIndexesResult.getResultData();
+    List<String> listIndexesResultDataStatus = listIndexesResultData.retrieveAllValues("Status");
+    assertEquals(3, listIndexesResultDataStatus.size());
+    for (String status : listIndexesResultDataStatus) {
+      assertEquals("Initialized", status);
+    }
+  }
+
   private void createAndAddIndexes() throws Exception {
     // Create lucene index.
     createLuceneIndexUsingGfsh(INDEX_NAME + "0");
@@ -201,7 +245,11 @@ public class LuceneClusterConfigurationDUnitTest {
   }
 
   private MemberVM startNodeUsingClusterConfiguration(int vmIndex) throws Exception {
-    Properties nodeProperties = new Properties();
+    return startNodeUsingClusterConfiguration(vmIndex, new Properties());
+  }
+
+  private MemberVM startNodeUsingClusterConfiguration(int vmIndex, Properties nodeProperties)
+      throws Exception {
     return ls.startServerVM(vmIndex, nodeProperties, ls.getMember(0).getPort());
   }
 
@@ -255,6 +303,18 @@ public class LuceneClusterConfigurationDUnitTest {
     gfshConnector.executeAndVerifyCommand(csb.toString());
   }
 
+  private CommandResult alterRegionUsingGfsh(String group) throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_REGION);
+    csb.addOption(CliStrings.ALTER_REGION__REGION, REGION_NAME);
+    csb.addOption(CliStrings.ALTER_REGION__GROUP, group);
+    csb.addOption(CliStrings.ALTER_REGION__EVICTIONMAX, "5764");
+    return gfshConnector.executeAndVerifyCommand(csb.toString());
+  }
+
+  private CommandResult listIndexesUsingGfsh() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_LIST_INDEX);
+    return gfshConnector.executeAndVerifyCommand(csb.toString());
+  }
 
   private static void validateIndexFields(String[] indexFields, LuceneIndex index) {
     String[] indexFieldNames = index.getFieldNames();

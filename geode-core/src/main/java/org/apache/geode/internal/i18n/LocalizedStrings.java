@@ -7686,6 +7686,11 @@ public class LocalizedStrings {
   public static final StringId LuceneService_MUST_DEFINE_INDEX_0_ON_REGION_1_BECAUSE_IT_IS_DEFINED_IN_ANOTHER_MEMBER =
       new StringId(6656,
           "Must create Lucene index {0} on region {1} because it is defined in another member.");
+  public static final StringId LuceneIndexExistsException_INDEX_0_ON_REGION_1_ALREADY_EXISTS =
+      new StringId(6657, "Lucene index {0} on region {1} already exists.");
+  public static final StringId LuceneIndexCreation_IGNORING_DUPLICATE_INDEX_CREATION_0_ON_REGION_1 =
+      new StringId(6658, "Ignoring duplicate index creation for Lucene index {0} on region {1}");
+
   /** Testing strings, messageId 90000-99999 **/
 
   /**
