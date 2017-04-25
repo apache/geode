@@ -1868,15 +1868,6 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     region.put(new Integer(3), "create3");
   }
 
-  public static void getDataFromSinglePR() {
-    for (int i = 0; i < 10; i++) {
-      region.get(new Integer(0));
-      region.get(new Integer(1));
-      region.get(new Integer(2));
-      region.get(new Integer(3));
-    }
-  }
-
   public static void updateIntoSinglePR() {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
 
@@ -1918,26 +1909,19 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     assertTrue(cms.getClientPartitionAttributesMap().isEmpty());
   }
 
-  public static void verifyNonEmptyMetadata() {
-    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-    assertTrue(!cms.getClientPRMetadata_TEST_ONLY().isEmpty());
-    assertTrue(!cms.getClientPartitionAttributesMap().isEmpty());
-  }
-
   public static void printMetadata() {
     if (cache != null) {
       ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-      ((GemFireCacheImpl) cache).getLogger()
-          .info("Metadata is " + cms.getClientPRMetadata_TEST_ONLY());
+      cache.getLogger().info("Metadata is " + cms.getClientPRMetadata_TEST_ONLY());
     }
   }
 
   public static void printView() {
     PartitionedRegion pr = (PartitionedRegion) region;
     if (pr.cache != null) {
-      ((GemFireCacheImpl) cache).getLogger().info("Primary Bucket view of server0  "
+      cache.getLogger().info("Primary Bucket view of server  "
           + pr.getDataStore().getLocalPrimaryBucketsListTestOnly());
-      ((GemFireCacheImpl) cache).getLogger().info("Secondary Bucket view of server0  "
+      cache.getLogger().info("Secondary Bucket view of server  "
           + pr.getDataStore().getLocalNonPrimaryBucketsListTestOnly());
     }
   }
