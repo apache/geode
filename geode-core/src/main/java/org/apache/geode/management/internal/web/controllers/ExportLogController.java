@@ -94,7 +94,7 @@ public class ExportLogController extends AbstractCommandsController {
   }
 
   ResponseEntity<InputStreamResource> getResponse(String result) {
-    // the result is json string from CommandResul
+    // the result is json string from CommandResult
     Result commandResult = ResultBuilder.fromJson(result);
     if (commandResult.getStatus().equals(Result.Status.OK)) {
       return getOKResponse(commandResult);

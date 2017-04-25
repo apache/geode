@@ -124,8 +124,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           help = CliStrings.CREATE_REGION__USEATTRIBUTESFROM__HELP) String useAttributesFrom,
       @CliOption(key = CliStrings.CREATE_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.CREATE_REGION__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") String[] groups,
+          help = CliStrings.CREATE_REGION__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.CREATE_REGION__SKIPIFEXISTS, unspecifiedDefaultValue = "true",
           specifiedDefaultValue = "true",
           help = CliStrings.CREATE_REGION__SKIPIFEXISTS__HELP) boolean skipIfExists,
@@ -133,11 +132,9 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       // the following should all be in alphabetical order according to
       // their key string
       @CliOption(key = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
-          help = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID__HELP) @CliMetaData(
-              valueSeparator = ",") String[] asyncEventQueueIds,
+          help = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID__HELP) String[] asyncEventQueueIds,
       @CliOption(key = CliStrings.CREATE_REGION__CACHELISTENER,
-          help = CliStrings.CREATE_REGION__CACHELISTENER__HELP) @CliMetaData(
-              valueSeparator = ",") String[] cacheListener,
+          help = CliStrings.CREATE_REGION__CACHELISTENER__HELP) String[] cacheListener,
       @CliOption(key = CliStrings.CREATE_REGION__CACHELOADER,
           help = CliStrings.CREATE_REGION__CACHELOADER__HELP) String cacheLoader,
       @CliOption(key = CliStrings.CREATE_REGION__CACHEWRITER,
@@ -186,8 +183,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) String entryExpirationTTLAction,
       @CliOption(key = CliStrings.CREATE_REGION__GATEWAYSENDERID,
-          help = CliStrings.CREATE_REGION__GATEWAYSENDERID__HELP) @CliMetaData(
-              valueSeparator = ",") String[] gatewaySenderIds,
+          help = CliStrings.CREATE_REGION__GATEWAYSENDERID__HELP) String[] gatewaySenderIds,
       @CliOption(key = CliStrings.CREATE_REGION__KEYCONSTRAINT,
           help = CliStrings.CREATE_REGION__KEYCONSTRAINT__HELP) String keyConstraint,
       @CliOption(key = CliStrings.CREATE_REGION__LOCALMAXMEMORY,
@@ -424,8 +420,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           help = CliStrings.ALTER_REGION__REGION__HELP) String regionPath,
       @CliOption(key = CliStrings.ALTER_REGION__GROUP, optionContext = ConverterHint.MEMBERGROUP,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.ALTER_REGION__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") String[] groups,
+          help = CliStrings.ALTER_REGION__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "-1",
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONIDLETIME__HELP) Integer entryExpirationIdleTime,
@@ -456,8 +451,7 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONTTLACTION__HELP) String regionExpirationTTLAction,
       @CliOption(key = CliStrings.ALTER_REGION__CACHELISTENER,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
-          help = CliStrings.ALTER_REGION__CACHELISTENER__HELP) @CliMetaData(
-              valueSeparator = ",") String[] cacheListeners,
+          help = CliStrings.ALTER_REGION__CACHELISTENER__HELP) String[] cacheListeners,
       @CliOption(key = CliStrings.ALTER_REGION__CACHELOADER,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           specifiedDefaultValue = "null",
@@ -468,12 +462,10 @@ public class CreateAlterDestroyRegionCommands extends AbstractCommandsSupport {
           help = CliStrings.ALTER_REGION__CACHEWRITER__HELP) String cacheWriter,
       @CliOption(key = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
-          help = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID__HELP) @CliMetaData(
-              valueSeparator = ",") String[] asyncEventQueueIds,
+          help = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID__HELP) String[] asyncEventQueueIds,
       @CliOption(key = CliStrings.ALTER_REGION__GATEWAYSENDERID,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE, specifiedDefaultValue = "",
-          help = CliStrings.ALTER_REGION__GATEWAYSENDERID__HELP) @CliMetaData(
-              valueSeparator = ",") String[] gatewaySenderIds,
+          help = CliStrings.ALTER_REGION__GATEWAYSENDERID__HELP) String[] gatewaySenderIds,
       @CliOption(key = CliStrings.ALTER_REGION__CLONINGENABLED,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           specifiedDefaultValue = "false",

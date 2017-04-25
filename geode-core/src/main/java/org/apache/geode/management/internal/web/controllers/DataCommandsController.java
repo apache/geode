@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
-import java.util.concurrent.Callable;
-
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -27,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
+
+import java.util.concurrent.Callable;
 
 /**
  * The DataCommandsController class implements GemFire Management REST API web service endpoints for
@@ -115,7 +115,7 @@ public class DataCommandsController extends AbstractCommandsController {
     command.addOption(CliStrings.REMOVE__REGION, decode(regionNamePath));
     command.addOption(CliStrings.REMOVE__ALL, String.valueOf(allKeys));
 
-    if (hasValue(key)) {
+    if (key != null) {
       command.addOption(CliStrings.REMOVE__KEY, key);
     }
 

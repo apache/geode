@@ -12,37 +12,47 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.help.format;
 
+package org.apache.geode.management.internal.cli.help;
+
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- */
-public class DataNode {
-  String data;
-  List<DataNode> children;
+public class Topic implements Comparable<Topic> {
+  String topic;
+  String desc;
+  List<Command> relatedCommands = new ArrayList<>();
 
-  public DataNode(String data, List<DataNode> dataNode) {
-    this.data = data;
-    this.children = dataNode;
+  public Topic(String topic, String desc) {
+    this.topic = topic;
+    this.desc = desc;
   }
 
-  public String getData() {
-    return data;
+  public void addRelatedCommand(String command, String desc) {
+    relatedCommands.add(new Command(command, desc));
   }
 
-  public List<DataNode> getChildren() {
-    return children;
+  @Override
+  public int compareTo(Topic o) {
+    return topic.compareTo(o.topic);
   }
 
-  public boolean addChild(DataNode dataNode) {
-    if (this.children != null) {
-      this.children.add(dataNode);
-      return true;
-    } else {
-      return false;
+  public class Command implements Comparable<Command> {
+    String command;
+    String desc;
+
+    public Command(String command, String desc) {
+      this.command = command;
+      this.desc = desc;
+    }
+
+    @Override
+    public int compareTo(Command o) {
+      return this.command.compareTo(o.command);
     }
   }
 
+
 }
+
+

@@ -14,26 +14,24 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Properties;
-
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.cli.CommandStatement;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommentSkipHelper;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.NotAuthorizedException;
-
 import org.springframework.shell.core.Parser;
 import org.springframework.shell.event.ParseResult;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * 
@@ -42,8 +40,7 @@ import org.springframework.shell.event.ParseResult;
  */
 public class CommandProcessor {
   protected RemoteExecutionStrategy executionStrategy;
-  protected Parser parser;
-  private CommandManager commandManager;
+  private GfshParser gfshParser;
   private int lastExecutionStatus;
   private LogWrapper logWrapper;
 
@@ -59,9 +56,8 @@ public class CommandProcessor {
   }
 
   public CommandProcessor(Properties cacheProperties) throws ClassNotFoundException, IOException {
-    this.commandManager = CommandManager.getInstance(cacheProperties);
+    this.gfshParser = new GfshParser(cacheProperties);
     this.executionStrategy = new RemoteExecutionStrategy();
-    this.parser = new GfshParser(commandManager);
     this.logWrapper = LogWrapper.getInstance();
   }
 
@@ -73,7 +69,7 @@ public class CommandProcessor {
 
   protected Parser getParser() {
     synchronized (LOCK) {
-      return parser;
+      return gfshParser;
     }
   }
 
@@ -178,9 +174,8 @@ public class CommandProcessor {
 
   public void stop() {
     synchronized (LOCK) {
-      this.commandManager = null;
+      this.gfshParser = null;
       this.executionStrategy = null;
-      this.parser = null;
       this.isStopped = true;
     }
   }

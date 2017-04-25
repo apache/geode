@@ -14,10 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.multistep;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.management.cli.Result;
@@ -36,9 +32,12 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-
 import org.springframework.shell.event.ParseResult;
 import org.springframework.util.ReflectionUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Utility class to abstract CompositeResultData for Multi-step commands Also contain execution
@@ -57,7 +56,7 @@ public class CLIMultiStepHelper {
   public static final String STEP_ARGS = "stepArgs";
   public static final int DEFAULT_PAGE_SIZE = 20;
 
-  public static Object execCLISteps(LogWrapper logWrapper, Gfsh shell, ParseResult parseResult) {
+  public static Result execCLISteps(LogWrapper logWrapper, Gfsh shell, ParseResult parseResult) {
     CLIStep[] steps = (CLIStep[]) ReflectionUtils.invokeMethod(parseResult.getMethod(),
         parseResult.getInstance(), parseResult.getArguments());
     if (steps != null) {

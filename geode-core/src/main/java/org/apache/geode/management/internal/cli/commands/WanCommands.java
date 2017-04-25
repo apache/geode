@@ -71,14 +71,12 @@ public class WanCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result createGatewaySender(@CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.CREATE_GATEWAYSENDER__GROUP__HELP) @CliMetaData(
-          valueSeparator = ",") String[] onGroups,
+      help = CliStrings.CREATE_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember,
+          help = CliStrings.CREATE_GATEWAYSENDER__MEMBER__HELP) String onMember,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ID, mandatory = true,
           help = CliStrings.CREATE_GATEWAYSENDER__ID__HELP) String id,
@@ -129,12 +127,10 @@ public class WanCommands extends AbstractCommandsSupport {
           help = CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY__HELP) String orderPolicy,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER,
-          help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP) @CliMetaData(
-              valueSeparator = ",") String[] gatewayEventFilters,
+          help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER__HELP) String[] gatewayEventFilters,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER,
-          help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER__HELP) @CliMetaData(
-              valueSeparator = ",") String[] gatewayTransportFilter) {
+          help = CliStrings.CREATE_GATEWAYSENDER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilter) {
 
     Result result = null;
 
@@ -192,13 +188,11 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.START_GATEWAYSENDER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.START_GATEWAYSENDER__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") String onGroup,
+          help = CliStrings.START_GATEWAYSENDER__GROUP__HELP) String onGroup,
 
       @CliOption(key = CliStrings.START_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember) {
+          help = CliStrings.START_GATEWAYSENDER__MEMBER__HELP) String onMember) {
 
     Result result = null;
     final String id = senderId.trim();
@@ -316,13 +310,11 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.PAUSE_GATEWAYSENDER__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") String onGroup,
+          help = CliStrings.PAUSE_GATEWAYSENDER__GROUP__HELP) String onGroup,
 
       @CliOption(key = CliStrings.PAUSE_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.PAUSE_GATEWAYSENDER__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember) {
+          help = CliStrings.PAUSE_GATEWAYSENDER__MEMBER__HELP) String onMember) {
 
     Result result = null;
     if (senderId != null)
@@ -396,13 +388,10 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.RESUME_GATEWAYSENDER__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") String onGroup,
-
+          help = CliStrings.RESUME_GATEWAYSENDER__GROUP__HELP) String onGroup,
       @CliOption(key = CliStrings.RESUME_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.RESUME_GATEWAYSENDER__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember) {
+          help = CliStrings.RESUME_GATEWAYSENDER__MEMBER__HELP) String onMember) {
 
     Result result = null;
     if (senderId != null)
@@ -527,13 +516,11 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.STOP_GATEWAYSENDER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.STOP_GATEWAYSENDER__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") String onGroup,
+          help = CliStrings.STOP_GATEWAYSENDER__GROUP__HELP) String onGroup,
 
       @CliOption(key = CliStrings.STOP_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember) {
+          help = CliStrings.STOP_GATEWAYSENDER__MEMBER__HELP) String onMember) {
 
     Result result = null;
     if (senderId != null)
@@ -592,14 +579,12 @@ public class WanCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result createGatewayReceiver(@CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.CREATE_GATEWAYRECEIVER__GROUP__HELP) @CliMetaData(
-          valueSeparator = ",") String[] onGroups,
+      help = CliStrings.CREATE_GATEWAYRECEIVER__GROUP__HELP) String[] onGroups,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember,
+          help = CliStrings.CREATE_GATEWAYRECEIVER__MEMBER__HELP) String onMember,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART,
           help = CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART__HELP) Boolean manualStart,
@@ -620,8 +605,7 @@ public class WanCommands extends AbstractCommandsSupport {
           help = CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE__HELP) Integer socketBufferSize,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER,
-          help = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER__HELP) @CliMetaData(
-              valueSeparator = ",") String[] gatewayTransportFilters) {
+          help = CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER__HELP) String[] gatewayTransportFilters) {
 
     Result result = null;
 
@@ -735,13 +719,11 @@ public class WanCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
   public Result startGatewayReceiver(@CliOption(key = CliStrings.START_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.START_GATEWAYRECEIVER__GROUP__HELP) @CliMetaData(
-          valueSeparator = ",") String onGroup,
+      help = CliStrings.START_GATEWAYRECEIVER__GROUP__HELP) String onGroup,
 
       @CliOption(key = CliStrings.START_GATEWAYRECEIVER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.START_GATEWAYRECEIVER__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember) {
+          help = CliStrings.START_GATEWAYRECEIVER__MEMBER__HELP) String onMember) {
     Result result = null;
 
 
@@ -800,13 +782,11 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.STOP_GATEWAYRECEIVER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.STOP_GATEWAYRECEIVER__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") String onGroup,
+          help = CliStrings.STOP_GATEWAYRECEIVER__GROUP__HELP) String onGroup,
 
       @CliOption(key = CliStrings.STOP_GATEWAYRECEIVER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.STOP_GATEWAYRECEIVER__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember) {
+          help = CliStrings.STOP_GATEWAYRECEIVER__MEMBER__HELP) String onMember) {
 
     Result result = null;
 
@@ -865,11 +845,9 @@ public class WanCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result listGateway(
       @CliOption(key = CliStrings.LIST_GATEWAY__MEMBER, optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.LIST_GATEWAY__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember,
+          help = CliStrings.LIST_GATEWAY__MEMBER__HELP) String onMember,
       @CliOption(key = CliStrings.LIST_GATEWAY__GROUP, optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.LIST_GATEWAY__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") String onGroup) {
+          help = CliStrings.LIST_GATEWAY__GROUP__HELP) String onGroup) {
 
     Result result = null;
     Cache cache = CacheFactory.getAnyInstance();
@@ -957,13 +935,11 @@ public class WanCommands extends AbstractCommandsSupport {
 
       @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.STATUS_GATEWAYSENDER__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") String onGroup,
+          help = CliStrings.STATUS_GATEWAYSENDER__GROUP__HELP) String onGroup,
 
       @CliOption(key = CliStrings.STATUS_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.STATUS_GATEWAYSENDER__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember) {
+          help = CliStrings.STATUS_GATEWAYSENDER__MEMBER__HELP) String onMember) {
 
     Result result = null;
     if (senderId != null)
@@ -1016,13 +992,11 @@ public class WanCommands extends AbstractCommandsSupport {
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   public Result statusGatewayReceiver(@CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__GROUP,
       optionContext = ConverterHint.MEMBERGROUP,
-      help = CliStrings.STATUS_GATEWAYRECEIVER__GROUP__HELP) @CliMetaData(
-          valueSeparator = ",") String onGroup,
+      help = CliStrings.STATUS_GATEWAYRECEIVER__GROUP__HELP) String onGroup,
 
       @CliOption(key = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
-          help = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember) {
+          help = CliStrings.STATUS_GATEWAYRECEIVER__MEMBER__HELP) String onMember) {
 
     Result result = null;
 
@@ -1073,13 +1047,11 @@ public class WanCommands extends AbstractCommandsSupport {
   public Result destroyGatewaySender(
       @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__GROUP,
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.DESTROY_GATEWAYSENDER__GROUP__HELP) @CliMetaData(
-              valueSeparator = ",") String[] onGroups,
+          help = CliStrings.DESTROY_GATEWAYSENDER__GROUP__HELP) String[] onGroups,
       @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__MEMBER,
           optionContext = ConverterHint.MEMBERIDNAME,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.DESTROY_GATEWAYSENDER__MEMBER__HELP) @CliMetaData(
-              valueSeparator = ",") String onMember,
+          help = CliStrings.DESTROY_GATEWAYSENDER__MEMBER__HELP) String onMember,
       @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__ID, mandatory = true,
           optionContext = ConverterHint.GATEWAY_SENDER_ID,
           help = CliStrings.DESTROY_GATEWAYSENDER__ID__HELP) String id) {

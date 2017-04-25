@@ -17,12 +17,18 @@ package org.apache.geode.cache.lucene.internal.cli;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.*;
-import org.apache.geode.cache.lucene.internal.cli.functions.*;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionInvocationTargetException;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
+import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
+import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDestroyIndexFunction;
+import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
+import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.lang.StringUtils;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.IntegratedSecurityService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -170,13 +176,11 @@ public class LuceneIndexCommands extends AbstractCommandsSupport {
           help = LuceneCliStrings.LUCENE_CREATE_INDEX__REGION_HELP) final String regionPath,
 
       @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, mandatory = true,
-          help = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD_HELP) @CliMetaData(
-              valueSeparator = ",") final String[] fields,
+          help = LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD_HELP) final String[] fields,
 
       @CliOption(key = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER, mandatory = false,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER_HELP) @CliMetaData(
-              valueSeparator = ",") final String[] analyzers) {
+          help = LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER_HELP) final String[] analyzers) {
 
     Result result = null;
     XmlEntity xmlEntity = null;

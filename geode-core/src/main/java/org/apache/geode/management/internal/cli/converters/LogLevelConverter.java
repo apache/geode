@@ -41,7 +41,7 @@ public class LogLevelConverter implements Converter<String> {
 
   @Override
   public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && ConverterHint.LOG_LEVEL.equals(optionContext);
+    return String.class.equals(type) && optionContext.contains(ConverterHint.LOG_LEVEL);
   }
 
   @Override

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
@@ -24,8 +25,6 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
  * @since GemFire 7.0
  */
 public class CommandResponseBuilder {
-  // Command Response Constants
-  private static final String NO_TOKEN_ACCESSOR = "__NULL__";
 
   public static CommandResponse prepareCommandResponse(String memberName, CommandResult result) {
     GfJsonObject content = null;
@@ -42,7 +41,7 @@ public class CommandResponseBuilder {
         getType(result), // contentType
         result.getStatus().getCode(), // status code
         "1/1", // page --- TODO - Abhishek - define a scrollable ResultData
-        NO_TOKEN_ACCESSOR, // tokenAccessor for next results
+        CliMetaData.ANNOTATION_NULL_VALUE, // tokenAccessor for next results
         getDebugInfo(result), // debugData
         result.getHeader(), // header
         content, // content

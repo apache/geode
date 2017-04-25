@@ -906,11 +906,7 @@ public class CreateAlterDestroyRegionCommandsDUnitTest extends CliCommandTestBas
     CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.ALTER_REGION);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__REGION, "/" + this.alterRegionName);
     commandStringBuilder.addOption(CliStrings.ALTER_REGION__CACHELISTENER,
-        "com.cadrdunit.RegionAlterCacheListenerA");
-    commandStringBuilder.addOption(CliStrings.ALTER_REGION__CACHELISTENER,
-        "com.cadrdunit.RegionAlterCacheListenerB");
-    commandStringBuilder.addOption(CliStrings.ALTER_REGION__CACHELISTENER,
-        "com.cadrdunit.RegionAlterCacheListenerC");
+        "com.cadrdunit.RegionAlterCacheListenerA,com.cadrdunit.RegionAlterCacheListenerB,com.cadrdunit.RegionAlterCacheListenerC");
 
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());

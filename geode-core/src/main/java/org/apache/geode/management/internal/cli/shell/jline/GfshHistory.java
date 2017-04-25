@@ -14,12 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.shell.jline;
 
+import jline.console.history.MemoryHistory;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.geode.management.internal.cli.parser.preprocessor.PreprocessorUtils;
-
-import jline.console.history.MemoryHistory;
 
 /**
  * Overrides jline.History to add History without newline characters.
@@ -35,6 +33,13 @@ public class GfshHistory extends MemoryHistory {
   // let the history from history file get added initially
   private boolean autoFlush = true;
 
+  public static String redact(String buffer) {
+    String trimmed = buffer.trim();
+    Matcher matcher = passwordRe.matcher(trimmed);
+    String sanitized = matcher.replaceAll("$1*****");
+    return sanitized;
+  }
+
   public void addToHistory(String buffer) {
     if (isAutoFlush()) {
       super.add(redact(buffer));
@@ -47,13 +52,5 @@ public class GfshHistory extends MemoryHistory {
 
   public void setAutoFlush(boolean autoFlush) {
     this.autoFlush = autoFlush;
-  }
-
-  public static String redact(String buffer) {
-    String trimmed = PreprocessorUtils.trim(buffer, false).getString();
-
-    Matcher matcher = passwordRe.matcher(trimmed);
-    String sanitized = matcher.replaceAll("$1*****");
-    return sanitized;
   }
 }

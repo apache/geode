@@ -1190,9 +1190,7 @@ public class DiskStoreCommandsDUnitTest extends CliCommandTestBase {
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__TIME_INTERVAL, "2023");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__WRITE_BUFFER_SIZE, "3110");
     commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE,
-        diskStore1Dir1.getAbsolutePath() + "#1452637463");
-    commandStringBuilder.addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE,
-        diskStore1Dir2.getAbsolutePath());
+        diskStore1Dir1.getAbsolutePath() + "#1452637463," + diskStore1Dir2.getAbsolutePath());
     cmdResult = executeCommand(commandStringBuilder.toString());
     assertEquals(Result.Status.OK, cmdResult.getStatus());
     String stringResult = commandResultToString(cmdResult);

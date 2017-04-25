@@ -14,22 +14,19 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.PureJavaMode;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.cli.shell.GfshConfig;
+import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
+import org.springframework.shell.core.ExitShellRequest;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.parser.SyntaxConstants;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.cli.shell.GfshConfig;
-import org.apache.geode.management.internal.cli.shell.jline.GfshHistory;
-
-import org.springframework.shell.core.ExitShellRequest;
-
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -84,28 +81,14 @@ public final class Launcher {
   private static final String MSG_INVALID_COMMAND_OR_OPTION = "Invalid command or option : {0}."
       + GfshParser.LINE_SEPARATOR + "Use 'gfsh help' to display additional information.";
 
-  private final Set<String> allowedCommandLineCommands;
-  private final OptionParser commandLineParser;
-  private StartupTimeLogHelper startupTimeLogHelper;
-
   static {
     // See 47325
     System.setProperty(PureJavaMode.PURE_MODE_PROPERTY, "true");
   }
 
-  public static void main(final String[] args) {
-    // first check whether required dependencies exist in the classpath
-    // should we start without tomcat/servlet jars?
-    String nonExistingDependency = CliUtil.cliDependenciesExist(true);
-    if (nonExistingDependency != null) {
-      System.err.println("Required (" + nonExistingDependency
-          + ") libraries not found in the classpath. gfsh can't start.");
-      return;
-    }
-
-    Launcher launcher = new Launcher();
-    System.exit(launcher.parseCommandLine(args));
-  }
+  private final Set<String> allowedCommandLineCommands;
+  private final OptionParser commandLineParser;
+  private StartupTimeLogHelper startupTimeLogHelper;
 
   protected Launcher() {
     this.startupTimeLogHelper = new StartupTimeLogHelper();
@@ -136,6 +119,20 @@ public final class Launcher {
     this.commandLineParser.accepts(EXECUTE_OPTION).withOptionalArg().ofType(String.class);
     this.commandLineParser.accepts(HELP_OPTION).withOptionalArg().ofType(Boolean.class);
     this.commandLineParser.posixlyCorrect(false);
+  }
+
+  public static void main(final String[] args) {
+    // first check whether required dependencies exist in the classpath
+    // should we start without tomcat/servlet jars?
+    String nonExistingDependency = CliUtil.cliDependenciesExist(true);
+    if (nonExistingDependency != null) {
+      System.err.println("Required (" + nonExistingDependency
+          + ") libraries not found in the classpath. gfsh can't start.");
+      return;
+    }
+
+    Launcher launcher = new Launcher();
+    System.exit(launcher.parseCommandLine(args));
   }
 
   private int parseCommandLineCommand(final String... args) {
@@ -253,7 +250,7 @@ public final class Launcher {
   }
 
   private int parseCommandLine(final String... args) {
-    if (args.length > 0 && !args[0].startsWith(SyntaxConstants.SHORT_OPTION_SPECIFIER)) {
+    if (args.length > 0 && !args[0].startsWith(GfshParser.SHORT_OPTION_SPECIFIER)) {
       return parseCommandLineCommand(args);
     }
 
@@ -276,6 +273,7 @@ public final class Launcher {
   }
 
   private void printUsage(final Gfsh gfsh, final PrintStream stream) {
+    int terminalWidth = gfsh.getTerminalWidth();
     StringBuilder usageBuilder = new StringBuilder();
     stream.print("Pivotal GemFire(R) v");
     stream.print(GemFireVersion.getGemFireVersion());
@@ -289,23 +287,22 @@ public final class Launcher {
     stream.println(Gfsh.wrapText(
         "Commands may be any that are available from the interactive gfsh prompt.  "
             + "For commands that require a Manager to complete, the first command in the list must be \"connect\".",
-        1));
-    stream.println(GfshParser.LINE_SEPARATOR + "AVAILABLE COMMANDS");
-    stream.print(gfsh.obtainHelp("", this.allowedCommandLineCommands));
+        1, terminalWidth));
     stream.println("EXAMPLES");
     stream.println("gfsh");
-    stream.println(Gfsh.wrapText("Start GFSH in interactive mode.", 1));
+    stream.println(Gfsh.wrapText("Start GFSH in interactive mode.", 1, terminalWidth));
     stream.println("gfsh -h");
-    stream.println(
-        Gfsh.wrapText("Displays 'this' help. ('gfsh --help' or 'gfsh help' is equivalent)", 1));
+    stream.println(Gfsh.wrapText(
+        "Displays 'this' help. ('gfsh --help' or 'gfsh help' is equivalent)", 1, terminalWidth));
     stream.println("gfsh help start locator");
-    stream.println(Gfsh.wrapText("Display help for the \"start locator\" command.", 1));
+    stream.println(
+        Gfsh.wrapText("Display help for the \"start locator\" command.", 1, terminalWidth));
     stream.println("gfsh start locator --name=locator1");
-    stream.println(Gfsh.wrapText("Start a Locator with the name \"locator1\".", 1));
+    stream.println(Gfsh.wrapText("Start a Locator with the name \"locator1\".", 1, terminalWidth));
     stream.println("gfsh -e \"connect\" -e \"list members\"");
     stream.println(Gfsh.wrapText(
         "Connect to a running Locator using the default connection information and run the \"list members\" command.",
-        1));
+        1, terminalWidth));
     stream.println();
 
     printExecuteUsage(stream);

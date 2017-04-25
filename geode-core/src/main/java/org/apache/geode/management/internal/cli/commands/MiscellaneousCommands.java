@@ -396,10 +396,11 @@ public class MiscellaneousCommands implements CommandMarker {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
   // TODO : Verify the auto-completion for multiple values.
-  public Result netstat(@CliOption(key = CliStrings.NETSTAT__MEMBER, mandatory = false,
-      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-      optionContext = ConverterHint.ALL_MEMBER_IDNAME,
-      help = CliStrings.NETSTAT__MEMBER__HELP) @CliMetaData(valueSeparator = ",") String[] members,
+  public Result netstat(
+      @CliOption(key = CliStrings.NETSTAT__MEMBER, mandatory = false,
+          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+          optionContext = ConverterHint.ALL_MEMBER_IDNAME,
+          help = CliStrings.NETSTAT__MEMBER__HELP) String[] members,
       @CliOption(key = CliStrings.NETSTAT__GROUP, mandatory = false,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           optionContext = ConverterHint.MEMBERGROUP,
@@ -823,8 +824,7 @@ public class MiscellaneousCommands implements CommandMarker {
       @CliOption(key = {CliStrings.SHOW_METRICS__CACHESERVER__PORT},
           help = CliStrings.SHOW_METRICS__CACHESERVER__PORT__HELP) String cacheServerPortString,
       @CliOption(key = {CliStrings.SHOW_METRICS__CATEGORY},
-          help = CliStrings.SHOW_METRICS__CATEGORY__HELP) @CliMetaData(
-              valueSeparator = ",") String[] categories) {
+          help = CliStrings.SHOW_METRICS__CATEGORY__HELP) String[] categories) {
 
     Result result = null;
     try {
@@ -1894,11 +1894,11 @@ public class MiscellaneousCommands implements CommandMarker {
 
 
   @CliCommand(value = CliStrings.CHANGE_LOGLEVEL, help = CliStrings.CHANGE_LOGLEVEL__HELP)
-  @CliMetaData(relatedTopic = {CliStrings.TOPIC_CHANGELOGLEVEL},
+  @CliMetaData(relatedTopic = {CliStrings.TOPIC_LOGS},
       interceptor = "org.apache.geode.management.internal.cli.commands.MiscellaneousCommands$ChangeLogLevelInterceptor")
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   public Result changeLogLevel(
-      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__MEMBER, unspecifiedDefaultValue = "",
+      @CliOption(key = CliStrings.CHANGE_LOGLEVEL__MEMBER,
           help = CliStrings.CHANGE_LOGLEVEL__MEMBER__HELP) String[] memberIds,
       @CliOption(key = CliStrings.CHANGE_LOGLEVEL__GROUPS, unspecifiedDefaultValue = "",
           help = CliStrings.CHANGE_LOGLEVEL__GROUPS__HELP) String[] grps,

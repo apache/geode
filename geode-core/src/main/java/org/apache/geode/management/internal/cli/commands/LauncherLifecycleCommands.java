@@ -241,10 +241,9 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.START_LOCATOR__MAXHEAP,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.START_LOCATOR__MAXHEAP__HELP) final String maxHeap,
-      @CliOption(key = CliStrings.START_LOCATOR__J, optionContext = ConverterHint.STRING_LIST,
+      @CliOption(key = CliStrings.START_LOCATOR__J,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.START_LOCATOR__J__HELP) @CliMetaData(
-              valueSeparator = ",") final String[] jvmArgsOpts,
+          help = CliStrings.START_LOCATOR__J__HELP) final String[] jvmArgsOpts,
       @CliOption(key = CliStrings.START_LOCATOR__CONNECT, unspecifiedDefaultValue = "true",
           specifiedDefaultValue = "true",
           help = CliStrings.START_LOCATOR__CONNECT__HELP) final boolean connect,
@@ -1356,10 +1355,9 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.START_SERVER__INITIAL_HEAP,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
           help = CliStrings.START_SERVER__INITIAL_HEAP__HELP) final String initialHeap,
-      @CliOption(key = CliStrings.START_SERVER__J, optionContext = ConverterHint.STRING_LIST,
+      @CliOption(key = CliStrings.START_SERVER__J,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.START_SERVER__J__HELP) @CliMetaData(
-              valueSeparator = ",") final String[] jvmArgsOpts,
+          help = CliStrings.START_SERVER__J__HELP) final String[] jvmArgsOpts,
       @CliOption(key = CliStrings.START_SERVER__LOCATORS,
           optionContext = ConverterHint.LOCATOR_DISCOVERY_CONFIG,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
@@ -2056,10 +2054,9 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
       @CliOption(key = CliStrings.START_JCONSOLE__VERSION, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.START_JCONSOLE__VERSION__HELP) final boolean version,
-      @CliOption(key = CliStrings.START_JCONSOLE__J, optionContext = ConverterHint.STRING_LIST,
+      @CliOption(key = CliStrings.START_JCONSOLE__J,
           unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.START_JCONSOLE__J__HELP) @CliMetaData(
-              valueSeparator = ",") final List<String> jvmArgs) {
+          help = CliStrings.START_JCONSOLE__J__HELP) final List<String> jvmArgs) {
     try {
       String[] jconsoleCommandLine =
           createJConsoleCommandLine(null, interval, notile, pluginpath, version, jvmArgs);
@@ -2226,11 +2223,9 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
   @CliCommand(value = CliStrings.START_JVISUALVM, help = CliStrings.START_JVISUALVM__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_MANAGER,
       CliStrings.TOPIC_GEODE_JMX, CliStrings.TOPIC_GEODE_M_AND_M})
-  public Result startJVisualVM(
-      @CliOption(key = CliStrings.START_JCONSOLE__J, optionContext = ConverterHint.STRING_LIST,
-          unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
-          help = CliStrings.START_JCONSOLE__J__HELP) @CliMetaData(
-              valueSeparator = ",") final List<String> jvmArgs) {
+  public Result startJVisualVM(@CliOption(key = CliStrings.START_JCONSOLE__J,
+      unspecifiedDefaultValue = CliMetaData.ANNOTATION_NULL_VALUE,
+      help = CliStrings.START_JCONSOLE__J__HELP) final List<String> jvmArgs) {
     try {
       String[] jvisualvmCommandLine = createJVisualVMCommandLine(jvmArgs);
 

@@ -23,7 +23,6 @@ import org.springframework.shell.core.annotation.CliOption;
  * @since GemFire 8.0
  */
 public interface ConverterHint {
-  public static final String DIRS = "converter.hint.dirs";
   public static final String DIR_PATHSTRING = "converter.hint.dir.path.string";
   public static final String DISKSTORE_ALL = "converter.hint.cluster.diskstore";
   public static final String FILE = "converter.hint.file";
@@ -40,10 +39,7 @@ public interface ConverterHint {
   public static final String LOCATOR_DISCOVERY_CONFIG = "converter.hint.locators.discovery.config";
   public static final String REGIONPATH = "converter.hint.region.path";
   public static final String INDEX_TYPE = "converter.hint.index.type";
-  public static final String STRING_LIST = "converter.hint.list.string";
   public static final String GATEWAY_SENDER_ID = "converter.hint.gateway.senderid";
   public static final String GATEWAY_RECEIVER_ID = "converter.hint.gateway.receiverid";
-  public static final String LOG_LEVEL = "converter.hint.log.levels";
-
-  public static final String STRING_DISABLER = "converter.hint.disable-string-converter";
+  public static final String LOG_LEVEL = "converter.hint.log.levels:disable-string-converter";
 }

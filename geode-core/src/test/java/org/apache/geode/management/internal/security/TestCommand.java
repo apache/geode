@@ -14,11 +14,11 @@
  */
 package org.apache.geode.management.internal.security;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.geode.security.ResourcePermission;
 import org.apache.shiro.authz.Permission;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestCommand {
 
@@ -142,7 +142,7 @@ public class TestCommand {
 
     // FunctionCommands
     // createTestCommand("destroy function --id=InterestCalculations", dataManage);
-    createTestCommand("execute function --id=InterestCalculations --group=Group1", dataWrite);
+    createTestCommand("execute function --id=InterestCalculations --groups=Group1", dataWrite);
     createTestCommand("list functions", clusterRead);
 
     // GfshHelpCommands
@@ -178,7 +178,7 @@ public class TestCommand {
     createTestCommand("list members", clusterRead);
 
     // Misc Commands
-    createTestCommand("change loglevel --loglevel=severe --member=server1", clusterWrite);
+    createTestCommand("change loglevel --loglevel=severe --members=server1", clusterWrite);
     createTestCommand("export logs --dir=data/logs", clusterRead);
     createTestCommand("export stack-traces --file=stack.txt", clusterRead);
     createTestCommand("gc", clusterManage);

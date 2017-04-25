@@ -14,13 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.nio.file.Files;
-import java.util.List;
-
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,7 +25,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.nio.file.Files;
+import java.util.List;
 
 @Category(IntegrationTest.class)
 public class GfshHistoryJUnitTest {
@@ -65,29 +65,26 @@ public class GfshHistoryJUnitTest {
   @Test
   public void testHistoryFileIsCreated() throws Exception {
     Gfsh gfsh = Gfsh.getInstance(false, new String[] {}, gfshConfig);
-    gfsh.executeScriptLine("connect --fake-param=foo");
+    gfsh.executeScriptLine("connect");
 
     List<String> lines = Files.readAllLines(gfshHistoryFile.toPath());
     assertEquals(2, lines.size());
-    assertEquals(lines.get(1), "connect --fake-param=foo");
+    assertEquals(lines.get(1), "connect");
   }
 
   @Test
   public void testHistoryFileDoesNotContainPasswords() throws Exception {
     Gfsh gfsh = Gfsh.getInstance(false, new String[] {}, gfshConfig);
-    gfsh.executeScriptLine(
-        "connect --password=foo --password = foo --password= goo --password =goo --password-param=blah --other-password-param=    gah");
+    gfsh.executeScriptLine("connect --password=foo");
 
     List<String> lines = Files.readAllLines(gfshHistoryFile.toPath());
-    assertEquals(
-        "connect --password=***** --password = ***** --password= ***** --password =***** --password-param=***** --other-password-param= *****",
-        lines.get(1));
+    assertEquals("connect --password=*****", lines.get(1));
   }
 
   @Test
   public void testClearHistory() throws Exception {
     Gfsh gfsh = Gfsh.getInstance(false, new String[] {}, gfshConfig);
-    gfsh.executeScriptLine("connect --fake-param=foo");
+    gfsh.executeScriptLine("connect");
     List<String> lines = Files.readAllLines(gfshHistoryFile.toPath());
     assertEquals(2, lines.size());
 

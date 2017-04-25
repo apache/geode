@@ -68,29 +68,19 @@ public @interface CliMetaData {
 
   /**
    * String used as a separator when multiple values for a command are specified
+   * 
+   * @deprecated since 1.2, Command methods may override both the delimiter and the escape through
+   *             spring shell's {@code splittingRegex} option context
    */
   String valueSeparator() default org.apache.geode.management.cli.CliMetaData.ANNOTATION_NULL_VALUE;
 
-
-  // TODO - Abhishek - refactor to group this
-  // /**
-  // *
-  // * @since GemFire 8.0
-  // */
-  // @Retention(RetentionPolicy.RUNTIME)
-  // @Target({ ElementType.PARAMETER })
-  // public @interface ParameterMetadata {
-  // /**
-  // * String used as a separator when multiple values for a command are specified
-  // */
-  // String valueSeparator() default CliMetaData.ANNOTATION_NULL_VALUE;
-  // }
-
   /**
    * An annotation to define additional meta-data for availability of commands.
-   * 
+   *
    *
    * @since GemFire 8.0
+   *
+   * @deprecated since Geode1.2, not used at all
    */
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ElementType.METHOD})
