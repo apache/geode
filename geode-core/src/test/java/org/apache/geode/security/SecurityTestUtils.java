@@ -320,6 +320,14 @@ public final class SecurityTestUtils {
         setupDynamicRegionFactory, false, expectedResult);
   }
 
+  /** create a client cache using the dunit locator to find servers */
+  protected static void createCacheClientWithDynamicRegion(final String authInitModule,
+      final Properties authProps, final Properties javaProps, final int numConnections,
+      final boolean setupDynamicRegionFactory, final int expectedResult) {
+    createCacheClient(authInitModule, authProps, javaProps, new int[0], numConnections,
+        setupDynamicRegionFactory, false, expectedResult);
+  }
+
   // 4
   protected static void createCacheClient(final String authInitModule, final Properties authProps,
       final Properties javaProps, final int[] ports, final int numConnections,

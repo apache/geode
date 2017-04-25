@@ -188,12 +188,17 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
         connectionsPerServer, serverGroup, poolName, pf, -1, -1, false, -2, -1);
   }
 
+  /**
+   * this method creates a client connection pool and configures it. If the ports array is not empty
+   * it is used to configure the client pool. Otherwise the pool is configured to use the dunit
+   * locator.
+   */
   public static Pool configureConnectionPoolWithNameAndFactory(AttributesFactory factory,
       String host, int[] ports, boolean establish, int redundancy, int connectionsPerServer,
       String serverGroup, String poolName, PoolFactory pf, int pingInterval, int idleTimeout,
       boolean threadLocalCnxs, int lifetimeTimeout, int statisticInterval) {
 
-    if (AUTO_LOAD_BALANCE) {
+    if (AUTO_LOAD_BALANCE || ports.length == 0) {
       pf.addLocator(host, DistributedTestUtils.getDUnitLocatorPort());
     } else {
       for (int z = 0; z < ports.length; z++) {
@@ -202,7 +207,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
     }
 
     // TODO - probably should pass in minConnections rather than connecions per server
-    if (connectionsPerServer != -1) {
+    if (connectionsPerServer != -1 && ports != null) {
       pf.setMinConnections(connectionsPerServer * ports.length);
     }
     if (threadLocalCnxs) {
