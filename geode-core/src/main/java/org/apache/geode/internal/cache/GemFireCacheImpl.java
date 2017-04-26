@@ -3162,11 +3162,8 @@ public class GemFireCacheImpl
     }
   }
 
-  /**
-   * TODO: any changes to this method breaks ParallelQueueRemovalMessageJUnitTest
-   */
   @Override
-  public final Region getRegion(String path) {
+  public Region getRegion(String path) {
     return getRegion(path, false);
   }
 

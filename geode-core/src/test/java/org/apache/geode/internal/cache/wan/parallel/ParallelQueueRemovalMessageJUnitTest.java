@@ -121,7 +121,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
         .thenReturn(Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
     when(this.cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME, true))
         .thenReturn(this.rootRegion);
-    when(this.cache.getRegion(getRegionQueueName(), false)).thenReturn(this.queueRegion);
+    when(this.cache.getRegion(getRegionQueueName())).thenReturn(this.queueRegion);
   }
 
   private void createBucketRegionQueue() {
