@@ -158,8 +158,5 @@ public class NewDeclarativeIndexCreationJUnitTest {
     // TODO: refactoring GemFireCacheImpl.initializeDeclarativeCache requires change here
     assertThatThrownBy(() -> CacheFactory.create(ds)).isExactlyInstanceOf(CacheXmlException.class)
         .hasCauseInstanceOf(InternalGemFireException.class);
-
-    // hasCauseMessageContaining("CacheXmlParser::endIndex:Index creation attribute not correctly
-    // specified.");
   }
 }

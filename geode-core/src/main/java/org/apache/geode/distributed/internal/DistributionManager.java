@@ -263,7 +263,11 @@ public class DistributionManager implements DM {
   /** The id of this distribution manager */
   final protected InternalDistributedMember myid;
 
-  /** The distribution manager type of this dm; set in its constructor. */
+  /**
+   * The distribution manager type of this dm; set in its constructor.
+   * </p>
+   * TODO: change this to use an enum
+   */
   private final int dmType;
 
   /**

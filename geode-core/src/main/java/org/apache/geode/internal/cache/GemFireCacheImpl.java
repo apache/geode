@@ -648,6 +648,7 @@ public class GemFireCacheImpl
     sb.append("; lockLease = ").append(this.lockLease);
     sb.append("; lockTimeout = ").append(this.lockTimeout);
     if (this.creationStack != null) {
+      // TODO: eliminate anonymous inner class and maybe move this to ExceptionUtils
       sb.append(System.lineSeparator()).append("Creation context:").append(System.lineSeparator());
       OutputStream os = new OutputStream() {
         @Override
@@ -2430,10 +2431,7 @@ public class GemFireCacheImpl
   @Override
   public Cache getReconnectedCache() {
     GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    if (cache == null) {
-      return null;
-    }
-    if (cache == this || !cache.isInitialized()) {
+    if (cache == this || cache != null && !cache.isInitialized()) {
       cache = null;
     }
     return cache;
@@ -3074,8 +3072,11 @@ public class GemFireCacheImpl
         } catch (ExecutionException e) {
           throw new Error(LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString(),
               e);
-        } catch (CancellationException ignore) {
+        } catch (CancellationException e) {
           // future was cancelled
+          if (logger.isTraceEnabled()) {
+            logger.trace("future cancelled", e);
+          }
         } finally {
           if (interrupted) {
             Thread.currentThread().interrupt();
@@ -4148,17 +4149,15 @@ public class GemFireCacheImpl
 
   @Override
   public QueryService getQueryService() {
-    if (isClient()) {
-      Pool pool = getDefaultPool();
-      if (pool == null) {
-        throw new IllegalStateException(
-            "Client cache does not have a default pool. Use getQueryService(String poolName) instead.");
-      } else {
-        return pool.getQueryService();
-      }
-    } else {
+    if (!isClient()) {
       return new DefaultQueryService(this);
     }
+    Pool defaultPool = getDefaultPool();
+    if (defaultPool == null) {
+      throw new IllegalStateException(
+          "Client cache does not have a default pool. Use getQueryService(String poolName) instead.");
+    }
+    return defaultPool.getQueryService();
   }
 
   @Override

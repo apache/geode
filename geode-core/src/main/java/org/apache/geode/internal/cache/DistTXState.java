@@ -45,14 +45,15 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
- * TxState on a datanode VM
+ * TxState on a data node VM
  * 
  * 
  */
 public class DistTXState extends TXState {
 
-  public static Runnable internalBeforeApplyChanges;
-  public static Runnable internalBeforeNonTXBasicPut;
+  public static Runnable internalBeforeApplyChanges; // TODO: cleanup this test hook
+  public static Runnable internalBeforeNonTXBasicPut; // TODO: cleanup this test hook
+
   private boolean updatingTxStateDuringPreCommit = false;
 
   public DistTXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub) {
