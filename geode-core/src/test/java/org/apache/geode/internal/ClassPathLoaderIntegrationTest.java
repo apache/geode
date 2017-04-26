@@ -91,6 +91,24 @@ public class ClassPathLoaderIntegrationTest {
     ClassPathLoader.setLatestToDefault(temporaryFolder.getRoot());
   }
 
+  @Test
+  public void testClassLoaderWithNullTccl() throws IOException, ClassNotFoundException {
+    // GEODE-2796
+    Thread.currentThread().setContextClassLoader(null);
+    String jarName = "JarDeployerIntegrationTest.jar";
+
+    String classAResource = "integration/parent/ClassA.class";
+
+    String classAName = "integration.parent.ClassA";
+
+    byte[] firstJarBytes = createJarWithClass("ClassA");
+
+    // First deploy of the JAR file
+    ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, firstJarBytes).getFile();
+
+    assertThatClassCanBeLoaded(classAName);
+    assertThatResourceCanBeLoaded(classAResource);
+  }
 
   @Test
   public void testDeployFileAndChange() throws IOException, ClassNotFoundException {
@@ -258,12 +276,10 @@ public class ClassPathLoaderIntegrationTest {
     List<String> result = (List<String>) execution.execute("MyFunction").getResult();
     assertThat(result.get(0)).isEqualTo("Version1");
 
-
     ClassPathLoader.getLatest().getJarDeployer().deploy("MyJar.jar",
         FileUtils.readFileToByteArray(jarVersion2));
     result = (List<String>) execution.execute("MyFunction").getResult();
     assertThat(result.get(0)).isEqualTo("Version2");
-
 
     serverStarterRule.after();
   }
@@ -451,7 +467,7 @@ public class ClassPathLoaderIntegrationTest {
     /**
      * Currently unused but potentially useful for some future test. This causes this loader to only
      * generate a class that the parent could not find.
-     *
+     * 
      * @param parent the parent class loader to check with first
      */
     @SuppressWarnings("unused")

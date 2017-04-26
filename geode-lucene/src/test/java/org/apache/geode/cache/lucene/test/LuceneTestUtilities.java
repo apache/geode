@@ -18,8 +18,10 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +46,7 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.test.dunit.VM;
@@ -81,6 +84,19 @@ public class LuceneTestUtilities {
   public static String Quarter2 = "Q2";
   public static String Quarter3 = "Q3";
   public static String Quarter4 = "Q4";
+
+  public static void verifyResultOrder(Collection<EntryScore<String>> list,
+      EntryScore<String>... expectedEntries) {
+    Iterator<EntryScore<String>> iter = list.iterator();
+    for (EntryScore expectedEntry : expectedEntries) {
+      if (!iter.hasNext()) {
+        fail();
+      }
+      EntryScore toVerify = iter.next();
+      assertEquals(expectedEntry.getKey(), toVerify.getKey());
+      assertEquals(expectedEntry.getScore(), toVerify.getScore(), .0f);
+    }
+  }
 
   public static class IntRangeQueryProvider implements LuceneQueryProvider {
     String fieldName;

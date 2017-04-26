@@ -44,7 +44,7 @@ public class SizeExportLogsFunction extends ExportLogsFunction implements Functi
   public void execute(final FunctionContext context) {
     try {
       GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      DistributionConfig config = cache.getDistributedSystem().getConfig();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       Args args = (Args) context.getArguments();
       long diskAvailable = config.getLogFile().getUsableSpace();
       long diskSize = config.getLogFile().getTotalSpace();

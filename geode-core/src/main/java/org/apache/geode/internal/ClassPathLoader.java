@@ -32,6 +32,7 @@ import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * The delegating <tt>ClassLoader</tt> used by GemFire to load classes and other resources. This
@@ -303,10 +304,15 @@ public final class ClassPathLoader {
     ArrayList<ClassLoader> classLoaders = new ArrayList<>();
 
     if (!excludeTCCL) {
-      classLoaders.add(Thread.currentThread().getContextClassLoader());
+      ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+      if (tccl != null) {
+        classLoaders.add(tccl);
+      }
     }
 
-    classLoaders.add(classLoaderForDeployedJars);
+    if (classLoaderForDeployedJars != null) {
+      classLoaders.add(classLoaderForDeployedJars);
+    }
 
     return classLoaders;
   }

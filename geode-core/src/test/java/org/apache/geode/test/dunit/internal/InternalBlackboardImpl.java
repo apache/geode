@@ -79,6 +79,11 @@ public class InternalBlackboardImpl extends UnicastRemoteObject implements Inter
   }
 
   @Override
+  public void clearGate(final String gateName) throws RemoteException {
+    gates.remove(gateName);
+  }
+
+  @Override
   public void signalGate(final String gateName) throws RemoteException {
     gates.put(gateName, Boolean.TRUE);
   }

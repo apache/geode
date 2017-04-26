@@ -145,11 +145,11 @@ public class Bug51193DUnitTest extends JUnit4DistributedTestCase {
     FunctionService.registerFunction(function);
     Execution dataSet = null;
     if ("region".equalsIgnoreCase(mode)) {
-      dataSet = FunctionService.onRegion(cache.getRegion(REGION_NAME)).withArgs(timeout);
+      dataSet = FunctionService.onRegion(cache.getRegion(REGION_NAME)).setArguments(timeout);
     } else if ("server".equalsIgnoreCase(mode)) {
-      dataSet = FunctionService.onServer(cache.getDefaultPool()).withArgs(timeout);
+      dataSet = FunctionService.onServer(cache.getDefaultPool()).setArguments(timeout);
     } else {
-      dataSet = FunctionService.onServers(cache).withArgs(timeout);
+      dataSet = FunctionService.onServers(cache).setArguments(timeout);
     }
     ResultCollector rs = dataSet.execute(function);
     assertTrue("Server did not read client_function_timeout from client.",

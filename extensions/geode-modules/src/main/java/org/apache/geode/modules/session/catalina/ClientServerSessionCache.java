@@ -109,7 +109,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     } else {
       // Execute the member touch function on all the server(s)
       Execution execution = FunctionService.onServers(getCache())
-          .withArgs(new Object[] {this.sessionRegion.getFullPath(), sessionIds});
+          .setArguments(new Object[] {this.sessionRegion.getFullPath(), sessionIds});
       try {
         ResultCollector collector =
             execution.execute(TouchReplicatedRegionEntriesFunction.ID, true, false, false);
@@ -202,7 +202,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     RegionConfiguration configuration = createRegionConfiguration();
 
     // Send it to the server tier
-    Execution execution = FunctionService.onServer(this.cache).withArgs(configuration);
+    Execution execution = FunctionService.onServer(this.cache).setArguments(configuration);
     ResultCollector collector = execution.execute(CreateRegionFunction.ID);
 
     // Verify the region was successfully created on the servers

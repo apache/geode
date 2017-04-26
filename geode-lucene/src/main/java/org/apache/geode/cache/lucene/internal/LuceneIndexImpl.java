@@ -12,13 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.cache.lucene.internal;
 
 import java.util.Collections;
 import java.util.Map;
 
-import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -33,10 +31,11 @@ import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.xml.LuceneIndexCreation;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
@@ -45,7 +44,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
   protected final String indexName;
   protected final String regionPath;
-  protected final Cache cache;
+  protected final InternalCache cache;
   protected final LuceneIndexStats indexStats;
 
   protected boolean hasInitialized = false;
@@ -55,7 +54,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   protected Analyzer analyzer;
   protected LocalRegion dataRegion;
 
-  protected LuceneIndexImpl(String indexName, String regionPath, Cache cache) {
+  protected LuceneIndexImpl(String indexName, String regionPath, InternalCache cache) {
     this.indexName = indexName;
     this.regionPath = regionPath;
     this.cache = cache;
@@ -229,7 +228,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
 
     // Create the region
     try {
-      return ((GemFireCacheImpl) this.cache).createVMRegion(regionName, attributes, ira);
+      return this.cache.createVMRegion(regionName, attributes, ira);
     } catch (Exception e) {
       InternalGemFireError ige = new InternalGemFireError(
           LocalizedStrings.GemFireCache_UNEXPECTED_EXCEPTION.toLocalizedString());

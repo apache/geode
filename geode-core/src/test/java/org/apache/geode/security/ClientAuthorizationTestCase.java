@@ -767,12 +767,12 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
         boolean setupDynamicRegionFactory = (opFlags & OpFlags.ENABLE_DRF) > 0;
 
         if (useThisVM) {
-          SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps,
-              new int[] {port1, port2}, 0, setupDynamicRegionFactory, NO_EXCEPTION);
+          SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps, javaProps, 0,
+              setupDynamicRegionFactory, NO_EXCEPTION);
         } else {
           clientVM.invoke("SecurityTestUtils.createCacheClientWithDynamicRegion",
               () -> SecurityTestUtils.createCacheClientWithDynamicRegion(authInit, clientProps,
-                  javaProps, new int[] {port1, port2}, 0, setupDynamicRegionFactory, NO_EXCEPTION));
+                  javaProps, 0, setupDynamicRegionFactory, NO_EXCEPTION));
         }
       }
 

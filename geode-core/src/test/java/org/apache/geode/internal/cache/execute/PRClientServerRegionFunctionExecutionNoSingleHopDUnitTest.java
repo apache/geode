@@ -436,7 +436,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
       Integer val = new Integer(j++);
       region.put(i.next(), val);
     }
-    HashMap resultMap = (HashMap) FunctionService.onRegion(region).withArgs(Boolean.TRUE)
+    HashMap resultMap = (HashMap) FunctionService.onRegion(region).setArguments(Boolean.TRUE)
         .execute(new FunctionAdapter() {
           public void execute(FunctionContext context) {
             if (context.getArguments() instanceof String) {
@@ -511,7 +511,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
     Execution dataSet = FunctionService.onRegion(region);
     try {
       ResultCollector rc1 =
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
 
       HashMap resultMap = ((HashMap) rc1.getResult());
       assertEquals(3, resultMap.size());
@@ -549,7 +549,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
     ResultCollector rc1 =
-        dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+        dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
     List l = ((List) rc1.getResult());
     LogWriterUtils.getLogWriter().info("Result size : " + l.size());
     return l;
@@ -880,7 +880,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
       }
       List l = null;
       ResultCollector rc1 =
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
             public void execute(FunctionContext context) {
               if (context.getArguments() instanceof String) {
                 context.getResultSender().lastResult("Success");
@@ -929,25 +929,26 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
     }
     ResultCollector rc1 = null;
     try {
-      rc1 = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
-        public void execute(FunctionContext context) {
-          if (((RegionFunctionContext) context).isPossibleDuplicate()) {
-            context.getResultSender().lastResult(new Integer(retryCount));
-            return;
-          }
-          if (context.getArguments() instanceof Boolean) {
-            throw new FunctionInvocationTargetException("I have been thrown from TestFunction");
-          }
-        }
+      rc1 =
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
+            public void execute(FunctionContext context) {
+              if (((RegionFunctionContext) context).isPossibleDuplicate()) {
+                context.getResultSender().lastResult(new Integer(retryCount));
+                return;
+              }
+              if (context.getArguments() instanceof Boolean) {
+                throw new FunctionInvocationTargetException("I have been thrown from TestFunction");
+              }
+            }
 
-        public String getId() {
-          return getClass().getName();
-        }
+            public String getId() {
+              return getClass().getName();
+            }
 
-        public boolean hasResult() {
-          return true;
-        }
-      });
+            public boolean hasResult() {
+              return true;
+            }
+          });
 
       List list = (ArrayList) rc1.getResult();
       assertEquals(list.get(0), 0);
@@ -1078,7 +1079,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
           .info("<ExpectedException action=add>" + "No target node found for KEY = "
               + "|Server could not send the reply" + "|Unexpected exception during"
               + "</ExpectedException>");
-      dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+      dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
             context.getResultSender().lastResult("Success");
@@ -1109,7 +1110,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
     region.put(testKey, new Integer(1));
     try {
       ResultCollector rs =
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
             public void execute(FunctionContext context) {
               if (context.getArguments() instanceof String) {
                 context.getResultSender().lastResult("Success");
@@ -1129,7 +1130,7 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
       assertEquals("Failure", ((List) rs.getResult()).get(0));
 
       ResultCollector rs2 =
-          dataSet.withFilter(testKeysSet).withArgs(testKey).execute(new FunctionAdapter() {
+          dataSet.withFilter(testKeysSet).setArguments(testKey).execute(new FunctionAdapter() {
             public void execute(FunctionContext context) {
               if (context.getArguments() instanceof String) {
                 context.getResultSender().lastResult("Success");
@@ -1158,18 +1159,18 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
   private static ResultCollector execute(Execution dataSet, Set testKeysSet, Serializable args,
       Function function, Boolean isByName) throws Exception {
     if (isByName.booleanValue()) {// by name
-      return dataSet.withFilter(testKeysSet).withArgs(args).execute(function.getId());
+      return dataSet.withFilter(testKeysSet).setArguments(args).execute(function.getId());
     } else { // By Instance
-      return dataSet.withFilter(testKeysSet).withArgs(args).execute(function);
+      return dataSet.withFilter(testKeysSet).setArguments(args).execute(function);
     }
   }
 
   private static ResultCollector executeOnAll(Execution dataSet, Serializable args,
       Function function, Boolean isByName) throws Exception {
     if (isByName.booleanValue()) {// by name
-      return dataSet.withArgs(args).execute(function.getId());
+      return dataSet.setArguments(args).execute(function.getId());
     } else { // By Instance
-      return dataSet.withArgs(args).execute(function);
+      return dataSet.setArguments(args).execute(function);
     }
   }
 }

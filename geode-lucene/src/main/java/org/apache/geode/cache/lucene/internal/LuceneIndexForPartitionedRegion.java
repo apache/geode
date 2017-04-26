@@ -15,9 +15,10 @@
 
 package org.apache.geode.cache.lucene.internal;
 
+import java.util.Set;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.FixedPartitionResolver;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -25,11 +26,9 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
-import org.apache.geode.cache.lucene.internal.filesystem.File;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.partition.BucketTargetingFixedResolver;
 import org.apache.geode.cache.lucene.internal.partition.BucketTargetingResolver;
@@ -40,10 +39,8 @@ import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
-
-import java.util.Set;
 
 /* wrapper of IndexWriter */
 public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
@@ -52,7 +49,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
 
   public static final String FILES_REGION_SUFFIX = ".files";
 
-  public LuceneIndexForPartitionedRegion(String indexName, String regionPath, Cache cache) {
+  public LuceneIndexForPartitionedRegion(String indexName, String regionPath, InternalCache cache) {
     super(indexName, regionPath, cache);
 
     final String statsName = indexName + "-" + regionPath;
@@ -89,7 +86,7 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(getFieldNames());
     PartitionedRepositoryManager partitionedRepositoryManager =
         new PartitionedRepositoryManager(this, mapper);
-    DM dm = ((GemFireCacheImpl) getCache()).getDistributedSystem().getDistributionManager();
+    DM dm = this.cache.getInternalDistributedSystem().getDistributionManager();
     LuceneBucketListener lucenePrimaryBucketListener =
         new LuceneBucketListener(partitionedRepositoryManager, dm);
 
@@ -169,15 +166,12 @@ public class LuceneIndexForPartitionedRegion extends LuceneIndexImpl {
     return createRegion(regionName, attributes);
   }
 
-  public void close() {
-    // TODO Auto-generated method stub
-
-  }
+  public void close() {}
 
   @Override
   public void dumpFiles(final String directory) {
     ResultCollector results = FunctionService.onRegion(getDataRegion())
-        .withArgs(new String[] {directory, indexName}).execute(DumpDirectoryFiles.ID);
+        .setArguments(new String[] {directory, indexName}).execute(DumpDirectoryFiles.ID);
     results.getResult();
   }
 

@@ -1841,7 +1841,7 @@ public class DataSerializableJUnitTest implements Serializable {
 
     byte id = (byte) 100;
     Class c = NonDataSerializable.NonDSSerializer.class;
-    DataSerializer.register(c, id);
+    DataSerializer.register(c);
 
     Object o = new NonDataSerializable(random);
     DataSerializer.writeObject(o, getDataOutput());
@@ -1871,7 +1871,7 @@ public class DataSerializableJUnitTest implements Serializable {
 
     final byte id = (byte) 100;
     final Class c = NonDataSerializable.NonDSSerializer.class;
-    DataSerializer.register(c, id);
+    DataSerializer.register(c);
 
     Object o = new NonDataSerializable(random);
     DataSerializer.writeObject(o, getDataOutput());
@@ -1889,7 +1889,7 @@ public class DataSerializableJUnitTest implements Serializable {
       public void run() {
         try {
           Thread.sleep(300);
-          DataSerializer.register(c, id);
+          DataSerializer.register(c);
 
         } catch (Exception ex) {
           fail("Interrupted while registering", ex);
@@ -1981,7 +1981,7 @@ public class DataSerializableJUnitTest implements Serializable {
 
     Class c = NonDataSerializable.NonDSSerializer.class;
     byte id = (byte) 100;
-    DataSerializer.register(c, id);
+    DataSerializer.register(c);
 
     Object o = new NonDataSerializable(random);
     try {
@@ -2072,7 +2072,7 @@ public class DataSerializableJUnitTest implements Serializable {
     try {
       byte id = (byte) 57;
       Class_testInstantiator.supClass = DataSerializableImpl.class;
-      DataSerializer.register(Class_testInstantiator.class, id);
+      DataSerializer.register(Class_testInstantiator.class);
       try {
         Object o = new DataSerializableImpl(new Random());
         DataSerializer.writeObject(o, getDataOutput());
@@ -2099,7 +2099,7 @@ public class DataSerializableJUnitTest implements Serializable {
     try {
       byte id = (byte) 57;
       Class_testInstantiator.supClass = DataSerializableImpl.class;
-      DataSerializer.register(Class_testInstantiator.class, id);
+      DataSerializer.register(Class_testInstantiator.class);
       try {
         Object o = new DataSerializableImpl(new Random());
         DataSerializer.writeObject(o, getDataOutput());
@@ -2126,7 +2126,7 @@ public class DataSerializableJUnitTest implements Serializable {
     try {
       byte id = (byte) 57;
       Class_testInstantiator.supClass = DataSerializableImpl.class;
-      DataSerializer.register(Class_testInstantiator.class, id);
+      DataSerializer.register(Class_testInstantiator.class);
       try {
         Object o = new DataSerializableImpl(new Random());
         DataSerializer.writeObject(o, getDataOutput());
@@ -2177,7 +2177,7 @@ public class DataSerializableJUnitTest implements Serializable {
       byte id = (byte) 57;
 
       Class_testInstantiator.supClass = CanonicalDataSerializableImpl.class;
-      DataSerializer.register(Class_testInstantiator.class, id);
+      DataSerializer.register(Class_testInstantiator.class);
       try {
         Object o = CanonicalDataSerializableImpl.create();
         DataSerializer.writeObject(o, getDataOutput());

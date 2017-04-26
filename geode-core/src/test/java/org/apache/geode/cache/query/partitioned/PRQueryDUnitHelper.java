@@ -2024,8 +2024,9 @@ public class PRQueryDUnitHelper implements Serializable {
             Object funcResult = FunctionService
                 .onRegion((getCache().getRegion(name) instanceof PartitionedRegion)
                     ? getCache().getRegion(name) : getCache().getRegion(coloName))
-                .withArgs("<trace> Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
-                    + " * from /" + name + " r1, /" + coloName + " r2 where " + queries[j])
+                .setArguments(
+                    "<trace> Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
+                        + " * from /" + name + " r1, /" + coloName + " r2 where " + queries[j])
                 .execute(func).getResult();
 
             r[j][0] = ((ArrayList) funcResult).get(0);
@@ -2138,9 +2139,9 @@ public class PRQueryDUnitHelper implements Serializable {
             Object funcResult = FunctionService
                 .onRegion((getCache().getRegion(name) instanceof PartitionedRegion)
                     ? getCache().getRegion(name) : getCache().getRegion(coloName))
-                .withArgs("<trace> Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
-                    + " * from /" + name + " r1, /" + coloName
-                    + " r2, r2.positions.values pos2 where " + queries[j])
+                .setArguments("<trace> Select "
+                    + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from /" + name
+                    + " r1, /" + coloName + " r2, r2.positions.values pos2 where " + queries[j])
                 .execute(func).getResult();
 
             r[j][0] = ((ArrayList) funcResult).get(0);
@@ -2251,9 +2252,9 @@ public class PRQueryDUnitHelper implements Serializable {
             Object funcResult = FunctionService
                 .onRegion((getCache().getRegion(name) instanceof PartitionedRegion)
                     ? getCache().getRegion(name) : getCache().getRegion(coloName))
-                .withArgs("<trace> Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
-                    + " * from /" + name + " r1, /" + coloName
-                    + " r2, r2.positions.values pos2 where " + queries[j])
+                .setArguments("<trace> Select "
+                    + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from /" + name
+                    + " r1, /" + coloName + " r2, r2.positions.values pos2 where " + queries[j])
                 .execute(func).getResult();
 
             r[j][0] = ((ArrayList) funcResult).get(0);
@@ -2365,9 +2366,9 @@ public class PRQueryDUnitHelper implements Serializable {
             Object funcResult = FunctionService
                 .onRegion((getCache().getRegion(name) instanceof PartitionedRegion)
                     ? getCache().getRegion(name) : getCache().getRegion(coloName))
-                .withArgs("<trace> Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
-                    + " * from /" + name + " r1, r1.positions.values pos1, /" + coloName
-                    + " r2 where " + queries[j])
+                .setArguments("<trace> Select "
+                    + (queries[j].contains("ORDER BY") ? "DISTINCT" : "") + " * from /" + name
+                    + " r1, r1.positions.values pos1, /" + coloName + " r2 where " + queries[j])
                 .execute(func).getResult();
 
             r[j][0] = ((ArrayList) funcResult).get(0);

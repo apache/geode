@@ -980,7 +980,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             // instead of destroyLock in LocalRegion? ManagementAdapter is one
             // of the Resource Event listeners
 
-            InternalDistributedSystem system = this.cache.getDistributedSystem();
+            InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
             system.handleResourceEvent(ResourceEvent.REGION_CREATE, newRegion);
           }
         }
@@ -2683,7 +2683,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         try {
           rgn.recursiveDestroyRegion(eventSet, event, cacheWrite);
           if (!rgn.isInternalRegion()) {
-            InternalDistributedSystem system = rgn.cache.getDistributedSystem();
+            InternalDistributedSystem system = rgn.cache.getInternalDistributedSystem();
             system.handleResourceEvent(ResourceEvent.REGION_REMOVE, rgn);
           }
         } catch (CancelException e) {
@@ -6507,7 +6507,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
            * artifacts From Management Layer
            **/
           if (!isInternalRegion()) {
-            InternalDistributedSystem system = this.cache.getDistributedSystem();
+            InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
             system.handleResourceEvent(ResourceEvent.REGION_REMOVE, this);
           }
 
@@ -7577,7 +7577,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             .toLocalizedString(), e);
       } catch (TimeoutException e) {
         // not possible with local operation, no distributed locks possible
-        InternalDistributedSystem ids = (this.getCache().getDistributedSystem());
+        InternalDistributedSystem ids = (this.getCache().getInternalDistributedSystem());
         if (!ids.isDisconnecting()) {
           throw new InternalGemFireError(
               LocalizedStrings.LocalRegion_TIMEOUTEXCEPTION_SHOULD_NOT_BE_THROWN_HERE
@@ -11177,7 +11177,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return getRegionMap().keySet();
   }
 
-  public final InternalDataView getSharedDataView() {
+  public InternalDataView getSharedDataView() {
     return this.sharedDataView;
   }
 

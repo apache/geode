@@ -114,7 +114,7 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     try {
       TopEntriesFunctionCollector collector = new TopEntriesFunctionCollector(context);
       ResultCollector<TopEntriesCollector, TopEntries<K>> rc =
-          onRegion().withArgs(context).withCollector(collector).execute(LuceneQueryFunction.ID);
+          onRegion().setArguments(context).withCollector(collector).execute(LuceneQueryFunction.ID);
       entries = rc.getResult();
     } catch (FunctionException e) {
       if (e.getCause() instanceof LuceneQueryException) {

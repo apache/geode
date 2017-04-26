@@ -104,6 +104,7 @@ public class SearchLoadAndWriteProcessorTest {
     when(lr.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
     when(lr.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
     when(cache.getDistributedSystem()).thenReturn(ds);
+    when(cache.getInternalDistributedSystem()).thenReturn(ds);
     when(cache.getSearchTimeout()).thenReturn(30);
     when(attrs.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
     when(attrs.getDataPolicy()).thenReturn(DataPolicy.EMPTY);

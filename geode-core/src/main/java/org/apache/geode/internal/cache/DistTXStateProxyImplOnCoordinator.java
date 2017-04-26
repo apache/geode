@@ -134,7 +134,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   private HashMap<DistributedMember, DistTXCoordinatorInterface> getSecondariesAndReplicasForTxOps() {
     final GemFireCacheImpl cache =
         GemFireCacheImpl.getExisting("getSecondariesAndReplicasForTxOps");
-    InternalDistributedMember currentNode = cache.getDistributedSystem().getDistributedMember();
+    InternalDistributedMember currentNode =
+        cache.getInternalDistributedSystem().getDistributedMember();
 
     HashMap<DistributedMember, DistTXCoordinatorInterface> secondaryTarget2realDeals =
         new HashMap<>();

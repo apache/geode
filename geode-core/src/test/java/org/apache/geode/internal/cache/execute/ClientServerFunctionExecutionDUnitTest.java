@@ -238,7 +238,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     DistributedSystem.setThreadsSocketPolicy(false);
     Execution member = FunctionService.onServers(pool);
     try {
-      ResultCollector rs = member.withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+      ResultCollector rs = member.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
             context.getResultSender().lastResult("Success");
@@ -465,7 +465,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
 
     // remove any existing attributes
     ((AbstractExecution) member).removeFunctionAttributes(TestFunction.TEST_FUNCTION1);
-    ResultCollector rs = member.withArgs(Boolean.TRUE).execute(TestFunction.TEST_FUNCTION1);
+    ResultCollector rs = member.setArguments(Boolean.TRUE).execute(TestFunction.TEST_FUNCTION1);
     assertEquals(Boolean.TRUE, ((List) rs.getResult()).get(0));
     byte[] functionAttributes =
         ((AbstractExecution) member).getFunctionAttributes(TestFunction.TEST_FUNCTION1);
@@ -698,7 +698,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     Execution member = FunctionService.onServer(pool);
 
     try {
-      ResultCollector rs = member.withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+      ResultCollector rs = member.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
             context.getResultSender().lastResult("Success");
@@ -730,7 +730,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     Execution member = FunctionService.onServer(pool);
 
     try {
-      ResultCollector rs = member.withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+      ResultCollector rs = member.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
             context.getResultSender().lastResult("Success");
@@ -887,7 +887,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
     DistributedSystem.setThreadsSocketPolicy(false);
     Execution member = FunctionService.onServers(pool);
     try {
-      ResultCollector rs = member.withArgs(Boolean.TRUE).execute(new FunctionAdapter() {
+      ResultCollector rs = member.setArguments(Boolean.TRUE).execute(new FunctionAdapter() {
         public void execute(FunctionContext context) {
           if (context.getArguments() instanceof String) {
             context.getResultSender().lastResult("Success");
@@ -920,11 +920,11 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
       Boolean isByName) throws Exception {
     if (isByName.booleanValue()) {// by name
       LogWriterUtils.getLogWriter().info("The function name to execute : " + function.getId());
-      Execution me = member.withArgs(args);
+      Execution me = member.setArguments(args);
       LogWriterUtils.getLogWriter().info("The args passed  : " + args);
       return me.execute(function.getId());
     } else { // By Instance
-      return member.withArgs(args).execute(function);
+      return member.setArguments(args).execute(function);
     }
   }
 }

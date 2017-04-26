@@ -13,7 +13,6 @@
  * the License.
  *
  */
-
 package org.apache.geode.management.internal.cli.functions;
 
 import org.apache.commons.lang.StringUtils;
@@ -56,17 +55,18 @@ import java.util.Arrays;
  * The function only extracts .log and .gfs files under server's working directory
  */
 public class ExportLogsFunction implements Function, InternalEntity {
+
   public static final String EXPORT_LOGS_REGION = "__exportLogsRegion";
+
   private static final Logger LOGGER = LogService.getLogger();
   private static final long serialVersionUID = 1L;
   private static final int BUFFER_SIZE = 1024;
-
 
   @Override
   public void execute(final FunctionContext context) {
     try {
       GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-      DistributionConfig config = cache.getDistributedSystem().getConfig();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
 
       String memberId = cache.getDistributedSystem().getMemberId();
       LOGGER.info("ExportLogsFunction started for member {}", memberId);

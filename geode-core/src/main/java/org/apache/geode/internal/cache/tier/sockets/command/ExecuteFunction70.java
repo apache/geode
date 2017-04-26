@@ -124,7 +124,7 @@ public class ExecuteFunction70 extends ExecuteFunction66 {
     }
     Execution execution = new MemberFunctionExecutor(ds, members, resultSender);
     if (args != null) {
-      execution = execution.withArgs(args);
+      execution = execution.setArguments(args);
     }
     if (ignoreFailedMembers) {
       if (logger.isDebugEnabled()) {

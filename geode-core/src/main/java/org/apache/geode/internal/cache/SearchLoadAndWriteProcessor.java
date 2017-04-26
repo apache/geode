@@ -1184,7 +1184,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   private synchronized void waitForObject2(final int timeoutMs) throws TimeoutException {
     if (this.requestInProgress) {
       try {
-        final DM dm = this.region.getCache().getDistributedSystem().getDistributionManager();
+        final DM dm =
+            this.region.getCache().getInternalDistributedSystem().getDistributionManager();
         long waitTimeMs = timeoutMs;
         final long endTime = System.currentTimeMillis() + waitTimeMs;
         for (;;) {

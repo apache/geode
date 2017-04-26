@@ -12,19 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode;
+package org.apache.geode.rest.internal.web.controllers.support;
 
-/**
- * @deprecated this class is no longer used
- */
+import org.springframework.stereotype.Component;
 
-@Deprecated
-public final class ThreadInterruptedException extends CancelException {
-  private static final long serialVersionUID = 6169940883541267514L;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 
-  /**
-   * Do not create instances of this class
-   */
-  private ThreadInterruptedException() {}
+@Component("cacheProvider")
+public class CacheProviderImpl implements CacheProvider {
 
+  @Override
+  public InternalCache getInternalCache() {
+    return GemFireCacheImpl.getExisting();
+  }
 }

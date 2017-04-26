@@ -1768,7 +1768,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   }
 
   public final long cacheTimeMillis() {
-    return this.cache.getDistributedSystem().getClock().cacheTimeMillis();
+    return this.cache.getInternalDistributedSystem().getClock().cacheTimeMillis();
   }
 
   public final RegionService getRegionService() {
@@ -1780,7 +1780,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   }
 
   public InternalDistributedSystem getSystem() {
-    return getCache().getDistributedSystem();
+    return getCache().getInternalDistributedSystem();
   }
 
   // DataSerializableFixedID support

@@ -29,6 +29,7 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderImpl;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
@@ -39,9 +40,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
- * 
  * @since GemFire 7.0
- * 
  */
 public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
 
@@ -53,12 +52,12 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
    */
   private GatewaySenderAttributes attrs = new GatewaySenderAttributes();
 
-  private Cache cache;
+  private InternalCache cache;
 
   private static final AtomicBoolean GATEWAY_CONNECTION_READ_TIMEOUT_PROPERTY_CHECKED =
       new AtomicBoolean(false);
 
-  public GatewaySenderFactoryImpl(Cache cache) {
+  public GatewaySenderFactoryImpl(InternalCache cache) {
     this.cache = cache;
   }
 
@@ -250,13 +249,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
             LocalizedStrings.SerialGatewaySenderImpl_GATEWAY_0_CANNOT_DEFINE_A_REMOTE_SITE_BECAUSE_AT_LEAST_ONE_LISTENER_IS_ALREADY_ADDED
                 .toLocalizedString(id));
       }
-      // if (this.attrs.getOrderPolicy() != null) {
-      // if (this.attrs.getDispatcherThreads() == GatewaySender.DEFAULT_DISPATCHER_THREADS) {
-      // throw new GatewaySenderException(
-      // LocalizedStrings.SerialGatewaySender_INVALID_GATEWAY_SENDER_ORDER_POLICY_CONCURRENCY_0
-      // .toLocalizedString(id));
-      // }
-      // }
       if (this.attrs.getOrderPolicy() == null && this.attrs.getDispatcherThreads() > 1) {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }
@@ -304,13 +296,6 @@ public class GatewaySenderFactoryImpl implements InternalGatewaySenderFactory {
         ((CacheCreation) this.cache).addGatewaySender(sender);
       }
     } else {
-      // if (this.attrs.getOrderPolicy() != null) {
-      // if (this.attrs.getDispatcherThreads() == GatewaySender.DEFAULT_DISPATCHER_THREADS) {
-      // throw new AsyncEventQueueConfigurationException(
-      // LocalizedStrings.AsyncEventQueue_INVALID_ORDER_POLICY_CONCURRENCY_0
-      // .toLocalizedString(id));
-      // }
-      // }
       if (this.attrs.getOrderPolicy() == null && this.attrs.getDispatcherThreads() > 1) {
         this.attrs.policy = GatewaySender.DEFAULT_ORDER_POLICY;
       }

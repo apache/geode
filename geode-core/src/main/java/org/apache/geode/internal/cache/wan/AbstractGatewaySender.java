@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.wan;
 
 import java.io.IOException;
@@ -26,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.wan.parallel.WaitUntilParallelGatewaySenderFlushedCoordinator;
@@ -82,16 +82,14 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 /**
  * Abstract implementation of both Serial and Parallel GatewaySender. It handles common
  * functionality like initializing proxy.
- * 
- * 
+ *
  * @since GemFire 7.0
  */
-
 public abstract class AbstractGatewaySender implements GatewaySender, DistributionAdvisee {
 
   private static final Logger logger = LogService.getLogger();
 
-  protected Cache cache;
+  protected InternalCache cache;
 
   protected String id;
 
@@ -229,7 +227,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
 
   protected AbstractGatewaySender() {}
 
-  public AbstractGatewaySender(Cache cache, GatewaySenderAttributes attrs) {
+  public AbstractGatewaySender(InternalCache cache, GatewaySenderAttributes attrs) {
     this.cache = cache;
     this.id = attrs.getId();
     this.socketBufferSize = attrs.getSocketBufferSize();
@@ -258,8 +256,8 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     // if dispatcherThreads is 1 then maxMemoryPerDispatcherQueue will be same as maximumQueueMemory
     // of sender
     this.maxMemoryPerDispatcherQueue = this.queueMemory / this.dispatcherThreads;
-    this.myDSId = InternalDistributedSystem.getAnyInstance().getDistributionManager()
-        .getDistributedSystemId();
+    this.myDSId =
+        this.cache.getInternalDistributedSystem().getDistributionManager().getDistributedSystemId();
     this.serialNumber = DistributionAdvisor.createSerialNumber();
     this.isMetaQueue = attrs.isMetaQueue();
     if (!(this.cache instanceof CacheCreation)) {

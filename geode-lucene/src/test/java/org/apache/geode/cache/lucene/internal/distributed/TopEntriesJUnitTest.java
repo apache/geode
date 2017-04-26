@@ -16,9 +16,6 @@ package org.apache.geode.cache.lucene.internal.distributed;
 
 import static org.junit.Assert.*;
 
-import java.util.Collection;
-import java.util.Iterator;
-
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
 import org.jmock.lib.legacy.ClassImposteriser;
@@ -30,6 +27,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.CopyHelper;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -44,34 +42,34 @@ public class TopEntriesJUnitTest {
 
   @Test
   public void testPopulateTopEntries() {
-    TopEntries<String> hits = new TopEntries<String>();
+    TopEntries<String> hits = new TopEntries<>();
     hits.addHit(r1_1);
     hits.addHit(r2_1);
     hits.addHit(r1_2);
     hits.addHit(r2_2);
 
     assertEquals(4, hits.size());
-    verifyResultOrder(hits.getHits(), r1_1, r2_1, r1_2, r2_2);
+    LuceneTestUtilities.verifyResultOrder(hits.getHits(), r1_1, r2_1, r1_2, r2_2);
   }
 
   @Test
   public void putSameScoreEntries() {
-    TopEntries<String> hits = new TopEntries<String>();
-    EntryScore<String> r1 = new EntryScore<String>("1", .8f);
-    EntryScore<String> r2 = new EntryScore<String>("2", .8f);
+    TopEntries<String> hits = new TopEntries<>();
+    EntryScore<String> r1 = new EntryScore<>("1", .8f);
+    EntryScore<String> r2 = new EntryScore<>("2", .8f);
     hits.addHit(r1);
     hits.addHit(r2);
 
     assertEquals(2, hits.size());
-    verifyResultOrder(hits.getHits(), r1, r2);
+    LuceneTestUtilities.verifyResultOrder(hits.getHits(), r1, r2);
   }
 
   @Test
   public void testInitialization() {
-    TopEntries<String> hits = new TopEntries<String>();
+    TopEntries<String> hits = new TopEntries<>();
     assertEquals(LuceneQueryFactory.DEFAULT_LIMIT, hits.getLimit());
 
-    hits = new TopEntries<String>(123);
+    hits = new TopEntries<>(123);
     assertEquals(123, hits.getLimit());
   }
 
@@ -82,47 +80,33 @@ public class TopEntriesJUnitTest {
 
   @Test
   public void enforceLimit() throws Exception {
-    TopEntries<String> hits = new TopEntries<String>(3);
+    TopEntries<String> hits = new TopEntries<>(3);
     hits.addHit(r1_1);
     hits.addHit(r2_1);
     hits.addHit(r1_2);
     hits.addHit(r2_2);
 
     assertEquals(3, hits.size());
-    verifyResultOrder(hits.getHits(), r1_1, r2_1, r1_2);
+    LuceneTestUtilities.verifyResultOrder(hits.getHits(), r1_1, r2_1, r1_2);
   }
 
   @Test
   public void testSerialization() {
     LuceneServiceImpl.registerDataSerializables();
-    TopEntries<String> hits = new TopEntries<String>(3);
+    TopEntries<String> hits = new TopEntries<>(3);
 
     TopEntries<String> copy = CopyHelper.deepCopy(hits);
     assertEquals(3, copy.getLimit());
     assertEquals(0, copy.getHits().size());
 
-    hits = new TopEntries<String>(3);
+    hits = new TopEntries<>(3);
     hits.addHit(r1_1);
     hits.addHit(r2_1);
     hits.addHit(r1_2);
 
     copy = CopyHelper.deepCopy(hits);
     assertEquals(3, copy.size());
-    verifyResultOrder(copy.getHits(), r1_1, r2_1, r1_2);
-  }
-
-  // TODO: extract to lucene test util class
-  public static void verifyResultOrder(Collection<EntryScore<String>> list,
-      EntryScore<String>... expectedEntries) {
-    Iterator<EntryScore<String>> iter = list.iterator();
-    for (EntryScore expectedEntry : expectedEntries) {
-      if (!iter.hasNext()) {
-        fail();
-      }
-      EntryScore toVerify = iter.next();
-      assertEquals(expectedEntry.getKey(), toVerify.getKey());
-      assertEquals(expectedEntry.getScore(), toVerify.getScore(), .0f);
-    }
+    LuceneTestUtilities.verifyResultOrder(copy.getHits(), r1_1, r2_1, r1_2);
   }
 
   @Before

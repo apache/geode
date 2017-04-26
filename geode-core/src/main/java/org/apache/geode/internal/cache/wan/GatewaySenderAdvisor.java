@@ -300,7 +300,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
 
   public void initDLockService() {
     InternalDistributedSystem ds =
-        ((GemFireCacheImpl) this.sender.getCache()).getDistributedSystem();
+        ((GemFireCacheImpl) this.sender.getCache()).getInternalDistributedSystem();
     String dlsName = getDLockServiceName();
     this.lockService = DistributedLockService.getServiceNamed(dlsName);
     if (this.lockService == null) {

@@ -28,8 +28,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -140,24 +142,36 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
     List<Integer> afterSecondaryCalledForVM1 = getAfterSecondaryCallbackBucketIds(vm1, regionName);
     List<Integer> afterSecondaryCalledForVM2 = getAfterSecondaryCallbackBucketIds(vm2, regionName);
 
+    // Eliminate the duplicate, prevent afterSecondary being called multiple times on the same
+    // bucket
+    Set<Integer> afterSecondaryCalledForVM1Set = new HashSet<Integer>(afterSecondaryCalledForVM1);
+    afterSecondaryCalledForVM1.removeAll(afterSecondaryCalledForVM1Set);
+    assertTrue(
+        "afterSecondary invoked more than once for bucket "
+            + (afterSecondaryCalledForVM1.isEmpty() ? " " : afterSecondaryCalledForVM1.get(0)),
+        afterSecondaryCalledForVM1.isEmpty());
+
+    Set<Integer> afterSecondaryCalledForVM2Set = new HashSet<Integer>(afterSecondaryCalledForVM2);
+    afterSecondaryCalledForVM2.removeAll(afterSecondaryCalledForVM2Set);
+    assertTrue(
+        "afterSecondary invoked more than once for bucket "
+            + (afterSecondaryCalledForVM2.isEmpty() ? " " : afterSecondaryCalledForVM2.get(0)),
+        afterSecondaryCalledForVM2.isEmpty());
+
     List<Integer> newVm1ActualPrimaries = getPrimariesOn(vm1, regionName);
     List<Integer> newVM2ActualPrimaries = getPrimariesOn(vm2, regionName);
 
     // calculate and verify expected afterSecondary calls
-    List<Integer> bucketsThatRemainInVM1 = new ArrayList(vm1ActualPrimaries);
-    bucketsThatRemainInVM1.retainAll(newVm1ActualPrimaries);
-    // All previous primary bucket ids - all overlapping/retained current bucket ids = all the
-    // secondary buckets
-    int expectedAfterSecondaryCalls = vm1ActualPrimaries.size() - bucketsThatRemainInVM1.size();
-    assertEquals(expectedAfterSecondaryCalls, afterSecondaryCalledForVM1.size());
+    List<Integer> bucketsNoLongerPrimaryInVM1 = new ArrayList(vm1ActualPrimaries);
+    bucketsNoLongerPrimaryInVM1.removeAll(newVm1ActualPrimaries);
+    // GEODE-2785: it is possible a secondary bucket becomes primary during moving bucket stage,
+    // and it then become secondary during primary selection stage. This may cause additional
+    // afterSecondary callback being invoked.
+    assertTrue(afterSecondaryCalledForVM1Set.containsAll(bucketsNoLongerPrimaryInVM1));
 
-    List<Integer> bucketsThatRemainInVM2 = new ArrayList(vm2ActualPrimaries);
-    bucketsThatRemainInVM2.retainAll(newVM2ActualPrimaries);
-    // All previous primary bucket ids - all overlapping/retained current bucket ids = all the
-    // secondary buckets
-    expectedAfterSecondaryCalls = vm2ActualPrimaries.size() - bucketsThatRemainInVM2.size();
-    assertEquals(expectedAfterSecondaryCalls, afterSecondaryCalledForVM2.size());
-
+    List<Integer> bucketsNoLongerPrimaryInVM2 = new ArrayList(vm2ActualPrimaries);
+    bucketsNoLongerPrimaryInVM2.removeAll(newVM2ActualPrimaries);
+    assertTrue(afterSecondaryCalledForVM2Set.containsAll(bucketsNoLongerPrimaryInVM2));
   }
 
   protected DistributedMember createPR(VM vm, final String regionName, final boolean isAccessor)

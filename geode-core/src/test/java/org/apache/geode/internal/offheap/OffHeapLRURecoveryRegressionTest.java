@@ -19,7 +19,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -49,7 +51,6 @@ public class OffHeapLRURecoveryRegressionTest {
   @Test
   public void recoveringTooMuchDataDoesNotRunOutOfOffHeapMemory() {
     final int ENTRY_COUNT = 40;
-    final int expectedObjectCount;
     GemFireCacheImpl gfc = createCache();
     try {
       Region<Object, Object> r = createRegion(gfc);
@@ -57,29 +58,26 @@ public class OffHeapLRURecoveryRegressionTest {
       for (int i = 0; i < ENTRY_COUNT; i++) {
         r.put(i, v);
       }
-      // expect one more during recovery because of the way the LRU limit is
-      // enforced during recover.
-      expectedObjectCount = MemoryAllocatorImpl.getAllocator().getStats().getObjects() + 1;
     } finally {
-      gfc.close();
+      closeCache(gfc);
     }
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      return MemoryAllocatorImpl.getAllocator().getStats().getObjects() == 0;
+    });
     System.setProperty("gemfire.disk.recoverValuesSync", "true");
     System.setProperty("gemfire.disk.recoverLruValues", "true");
     try {
       gfc = createCache();
       try {
-        Region<Object, Object> r = createRegion(gfc);
+        createDiskStore(gfc);
         try {
-          assertEquals(ENTRY_COUNT, r.size());
-          assertEquals(expectedObjectCount,
-              MemoryAllocatorImpl.getAllocator().getStats().getObjects());
+          assertEquals(10, MemoryAllocatorImpl.getAllocator().getStats().getObjects());
         } finally {
-          r.destroyRegion();
           DiskStore ds = gfc.findDiskStore(DS_NAME);
           ds.destroy();
         }
       } finally {
-        gfc.close();
+        closeCache(gfc);
       }
     } finally {
       System.clearProperty("gemfire.disk.recoverValuesSync");
@@ -97,9 +95,13 @@ public class OffHeapLRURecoveryRegressionTest {
     return result;
   }
 
-  private Region<Object, Object> createRegion(GemFireCacheImpl gfc) {
+  private void createDiskStore(GemFireCacheImpl gfc) {
     DiskStoreFactory dsf = gfc.createDiskStoreFactory();
     dsf.create(DS_NAME);
+  }
+
+  private Region<Object, Object> createRegion(GemFireCacheImpl gfc) {
+    createDiskStore(gfc);
     RegionFactory<Object, Object> rf =
         gfc.createRegionFactory(RegionShortcut.LOCAL_PERSISTENT_OVERFLOW);
     rf.setOffHeap(true);
@@ -110,6 +112,5 @@ public class OffHeapLRURecoveryRegressionTest {
 
   private void closeCache(GemFireCacheImpl gfc) {
     gfc.close();
-    MemoryAllocatorImpl.freeOffHeapMemory();
   }
 }

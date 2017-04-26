@@ -12,20 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.util;
+package org.apache.geode.rest.internal.web.controllers.support;
 
-/**
- * This class provides an implementation of the ObjectSizer interface. This uses a helper class to
- * provide the size of an object. The implementation uses reflection to compute object size. This is
- * to be used for testing purposes only This implementation is slow and may cause throughput numbers
- * to drop if used on complex objects.
- *
- *
- * @deprecated use {@link ObjectSizer#DEFAULT} instead.
- */
-public class ObjectSizerImpl implements ObjectSizer {
+import org.apache.geode.internal.cache.InternalCache;
 
-  public int sizeof(Object o) {
-    return ObjectSizer.DEFAULT.sizeof(o);
-  }
+public interface CacheProvider {
+
+  InternalCache getInternalCache();
 }

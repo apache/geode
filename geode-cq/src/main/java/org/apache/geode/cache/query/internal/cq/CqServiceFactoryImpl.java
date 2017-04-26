@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.apache.geode.cache.query.internal.cq.spi.CqServiceFactory;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
@@ -36,14 +36,13 @@ import org.apache.geode.internal.cache.tier.sockets.command.StopCQ;
 
 public class CqServiceFactoryImpl implements CqServiceFactory {
 
+  @Override
   public void initialize() {
-    {
-      Map<Version, Command> versions = new HashMap<Version, Command>();
-      versions.put(Version.GFE_57, ExecuteCQ.getCommand());
-      versions.put(Version.GFE_61, ExecuteCQ61.getCommand());
-      CommandInitializer.registerCommand(MessageType.EXECUTECQ_MSG_TYPE, versions);
-      CommandInitializer.registerCommand(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE, versions);
-    }
+    Map<Version, Command> versions = new HashMap<>();
+    versions.put(Version.GFE_57, ExecuteCQ.getCommand());
+    versions.put(Version.GFE_61, ExecuteCQ61.getCommand());
+    CommandInitializer.registerCommand(MessageType.EXECUTECQ_MSG_TYPE, versions);
+    CommandInitializer.registerCommand(MessageType.EXECUTECQ_WITH_IR_MSG_TYPE, versions);
 
     CommandInitializer.registerCommand(MessageType.GETCQSTATS_MSG_TYPE,
         Collections.singletonMap(Version.GFE_57, GetCQStats.getCommand()));
@@ -58,7 +57,7 @@ public class CqServiceFactoryImpl implements CqServiceFactory {
   }
 
   @Override
-  public CqService create(GemFireCacheImpl cache) {
+  public CqService create(InternalCache cache) {
     return new CqServiceImpl(cache);
   }
 

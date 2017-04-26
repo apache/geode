@@ -201,7 +201,8 @@ public class BackupJUnitTest {
       assertNull(region.get(i));
     }
 
-    BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
+    BackupManager backup =
+        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backup.prepareBackup();
     backup.finishBackup(backupDir, null, false);
 
@@ -249,7 +250,8 @@ public class BackupJUnitTest {
   public void testBackupEmptyDiskStore() throws IOException, InterruptedException {
     DiskStoreImpl ds = createDiskStore();
 
-    BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
+    BackupManager backup =
+        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backup.prepareBackup();
     backup.finishBackup(backupDir, null, false);
     assertEquals("No backup files should have been created", Collections.emptyList(),
@@ -264,7 +266,8 @@ public class BackupJUnitTest {
     // from a backup that doesn't contain this key
     region.put("A", "A");
 
-    BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
+    BackupManager backup =
+        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backup.prepareBackup();
     backup.finishBackup(backupDir, null, false);
 
@@ -303,7 +306,8 @@ public class BackupJUnitTest {
     // from a backup that doesn't contain this key
     region.put("A", "A");
 
-    ds.finishBackup(new BackupManager(cache.getDistributedSystem().getDistributedMember(), cache));
+    ds.finishBackup(
+        new BackupManager(cache.getInternalDistributedSystem().getDistributedMember(), cache));
     script.generate(backupDir);
 
     cache.close();
@@ -322,7 +326,8 @@ public class BackupJUnitTest {
     DiskStoreImpl ds = createDiskStore();
     createRegion();
 
-    BackupManager backup = cache.startBackup(cache.getDistributedSystem().getDistributedMember());
+    BackupManager backup =
+        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backup.prepareBackup();
     backup.finishBackup(backupDir, null, false);
     Collection<File> fileCollection = FileUtils.listFiles(backupDir,

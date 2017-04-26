@@ -1113,7 +1113,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     final GemFireCacheImpl cache = ReconnectDUnitTest.savedCache;
     Wait.waitForCriterion(new WaitCriterion() {
       public boolean done() {
-        return cache.isReconnecting() || cache.getDistributedSystem().isReconnectCancelled();
+        return cache.isReconnecting()
+            || cache.getInternalDistributedSystem().isReconnectCancelled();
       }
 
       public String description() {
@@ -1125,7 +1126,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     } catch (InterruptedException e) {
       fail("interrupted");
     }
-    assertTrue(cache.getDistributedSystem().isReconnectCancelled());
+    assertTrue(cache.getInternalDistributedSystem().isReconnectCancelled());
     assertNull(cache.getReconnectedCache());
   }
 

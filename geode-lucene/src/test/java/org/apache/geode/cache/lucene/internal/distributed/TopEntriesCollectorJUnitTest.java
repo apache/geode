@@ -26,21 +26,22 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.CopyHelper;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollectorManager.ListScanner;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class TopEntriesCollectorJUnitTest {
 
-  private EntryScore<String> r1_1 = new EntryScore<String>("1-1", .9f);
-  private EntryScore<String> r1_2 = new EntryScore<String>("1-2", .7f);
-  private EntryScore<String> r1_3 = new EntryScore<String>("1-3", .5f);
+  private EntryScore<String> r1_1 = new EntryScore<>("1-1", .9f);
+  private EntryScore<String> r1_2 = new EntryScore<>("1-2", .7f);
+  private EntryScore<String> r1_3 = new EntryScore<>("1-3", .5f);
 
-  private EntryScore<String> r2_1 = new EntryScore<String>("2-1", .85f);
-  private EntryScore<String> r2_2 = new EntryScore<String>("2-2", .65f);
+  private EntryScore<String> r2_1 = new EntryScore<>("2-1", .85f);
+  private EntryScore<String> r2_2 = new EntryScore<>("2-2", .65f);
 
-  private EntryScore<String> r3_1 = new EntryScore<String>("3-1", .8f);
-  private EntryScore<String> r3_2 = new EntryScore<String>("3-2", .6f);
-  private EntryScore<String> r3_3 = new EntryScore<String>("3-3", .4f);
+  private EntryScore<String> r3_1 = new EntryScore<>("3-1", .8f);
+  private EntryScore<String> r3_2 = new EntryScore<>("3-2", .6f);
+  private EntryScore<String> r3_3 = new EntryScore<>("3-3", .4f);
 
   private TopEntriesCollectorManager manager;
 
@@ -72,7 +73,7 @@ public class TopEntriesCollectorJUnitTest {
 
     TopEntriesCollector hits = manager.reduce(collectors);
     assertEquals(8, hits.getEntries().getHits().size());
-    TopEntriesJUnitTest.verifyResultOrder(hits.getEntries().getHits(), r1_1, r2_1, r3_1, r1_2, r2_2,
+    LuceneTestUtilities.verifyResultOrder(hits.getEntries().getHits(), r1_1, r2_1, r3_1, r1_2, r2_2,
         r3_2, r1_3, r3_3);
 
     // input collector should not change
@@ -116,7 +117,7 @@ public class TopEntriesCollectorJUnitTest {
     c1.collect(r1_3.getKey(), r1_3.getScore());
 
     assertEquals(3, c1.getEntries().getHits().size());
-    TopEntriesJUnitTest.verifyResultOrder(c1.getEntries().getHits(), r1_1, r1_2, r1_3);
+    LuceneTestUtilities.verifyResultOrder(c1.getEntries().getHits(), r1_1, r1_2, r1_3);
 
     ListScanner scanner = new ListScanner(c1.getEntries().getHits());
     assertTrue(scanner.hasNext());
@@ -131,6 +132,6 @@ public class TopEntriesCollectorJUnitTest {
     assertFalse(scanner.hasNext());
 
     assertEquals(3, c1.getEntries().getHits().size());
-    TopEntriesJUnitTest.verifyResultOrder(c1.getEntries().getHits(), r1_1, r1_2, r1_3);
+    LuceneTestUtilities.verifyResultOrder(c1.getEntries().getHits(), r1_1, r1_2, r1_3);
   }
 }

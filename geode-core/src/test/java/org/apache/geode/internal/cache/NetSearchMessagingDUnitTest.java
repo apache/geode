@@ -370,7 +370,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
       public Object call() {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        return cache.getDistributedSystem().getDMStats().getReceivedMessages();
+        return cache.getInternalDistributedSystem().getDMStats().getReceivedMessages();
       }
     })).intValue();
   }

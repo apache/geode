@@ -16,6 +16,7 @@ package org.apache.geode.cache.asyncqueue.internal;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
@@ -29,12 +30,12 @@ import static org.junit.Assert.assertEquals;
 @Category(IntegrationTest.class)
 public class SerialAsyncEventQueueImplJUnitTest {
 
-  private Cache cache;
+  private InternalCache cache;
 
   @Before
   public void setUp() {
     CacheFactory cf = new CacheFactory().set(MCAST_PORT, "0");
-    cache = cf.create();
+    cache = (InternalCache) cf.create();
   }
 
   @After

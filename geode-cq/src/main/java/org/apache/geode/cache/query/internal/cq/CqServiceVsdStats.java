@@ -25,9 +25,9 @@ import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.cache.FilterProfile;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -44,35 +44,34 @@ public class CqServiceVsdStats {
   private static final StatisticsType _type;
 
   /** Name of the created CQs statistic */
-  protected static final String CQS_CREATED = "numCqsCreated";
+  private static final String CQS_CREATED = "numCqsCreated";
 
   /** Name of the active CQs statistic */
-  protected static final String CQS_ACTIVE = "numCqsActive";
+  private static final String CQS_ACTIVE = "numCqsActive";
 
   /** Name of the stopped CQs statistic */
-  protected static final String CQS_STOPPED = "numCqsStopped";
+  private static final String CQS_STOPPED = "numCqsStopped";
 
   /** Name of the closed CQs statistic */
-  protected static final String CQS_CLOSED = "numCqsClosed";
+  private static final String CQS_CLOSED = "numCqsClosed";
 
   /** Name of the client's CQs statistic */
-  protected static final String CQS_ON_CLIENT = "numCqsOnClient";
+  private static final String CQS_ON_CLIENT = "numCqsOnClient";
 
   /** Number of clients with CQs statistic */
-  protected static final String CLIENTS_WITH_CQS = "numClientsWithCqs";
-
+  private static final String CLIENTS_WITH_CQS = "numClientsWithCqs";
 
   /** CQ query execution time. */
-  protected static final String CQ_QUERY_EXECUTION_TIME = "cqQueryExecutionTime";
+  private static final String CQ_QUERY_EXECUTION_TIME = "cqQueryExecutionTime";
 
   /** CQ query execution in progress */
-  protected static final String CQ_QUERY_EXECUTION_IN_PROGRESS = "cqQueryExecutionInProgress";
+  private static final String CQ_QUERY_EXECUTION_IN_PROGRESS = "cqQueryExecutionInProgress";
 
   /** Completed CQ query executions */
-  protected static final String CQ_QUERY_EXECUTIONS_COMPLETED = "cqQueryExecutionsCompleted";
+  private static final String CQ_QUERY_EXECUTIONS_COMPLETED = "cqQueryExecutionsCompleted";
 
   /** Unique CQs, number of different CQ queries */
-  protected static final String UNIQUE_CQ_QUERY = "numUniqueCqQuery";
+  private static final String UNIQUE_CQ_QUERY = "numUniqueCqQuery";
 
   /** Id of the CQs created statistic */
   private static final int _numCqsCreatedId;
@@ -104,7 +103,7 @@ public class CqServiceVsdStats {
   /** Id for unique CQs, difference in CQ queries */
   private static final int _numUniqueCqQuery;
 
-  /**
+  /*
    * Static initializer to create and initialize the <code>StatisticsType</code>
    */
   static {
@@ -140,7 +139,6 @@ public class CqServiceVsdStats {
     _cqQueryExecutionsCompletedId = _type.nameToId(CQ_QUERY_EXECUTIONS_COMPLETED);
     _cqQueryExecutionInProgressId = _type.nameToId(CQ_QUERY_EXECUTION_IN_PROGRESS);
     _numUniqueCqQuery = _type.nameToId(UNIQUE_CQ_QUERY);
-
   }
 
   /** The <code>Statistics</code> instance to which most behavior is delegated */
@@ -152,11 +150,9 @@ public class CqServiceVsdStats {
    * @param factory The <code>StatisticsFactory</code> which creates the <code>Statistics</code>
    *        instance
    */
-  public CqServiceVsdStats(StatisticsFactory factory) {
+  CqServiceVsdStats(StatisticsFactory factory) {
     this._stats = factory.createAtomicStatistics(_type, "CqServiceStats");
   }
-
-  // /////////////////// Instance Methods /////////////////////
 
   /**
    * Closes the <code>HARegionQueueStats</code>.
@@ -170,14 +166,14 @@ public class CqServiceVsdStats {
    * 
    * @return the current value of the "numCqsCreated" stat
    */
-  public long getNumCqsCreated() {
+  long getNumCqsCreated() {
     return this._stats.getLong(_numCqsCreatedId);
   }
 
   /**
    * Increments the "numCqsCreated" stat by 1.
    */
-  public void incCqsCreated() {
+  void incCqsCreated() {
     this._stats.incLong(_numCqsCreatedId, 1);
   }
 
@@ -186,21 +182,21 @@ public class CqServiceVsdStats {
    * 
    * @return the current value of the "numCqsActive" stat
    */
-  public long getNumCqsActive() {
+  long getNumCqsActive() {
     return this._stats.getLong(_numCqsActiveId);
   }
 
   /**
    * Increments the "numCqsActive" stat by 1.
    */
-  public void incCqsActive() {
+  void incCqsActive() {
     this._stats.incLong(_numCqsActiveId, 1);
   }
 
   /**
    * Decrements the "numCqsActive" stat by 1.
    */
-  public void decCqsActive() {
+  void decCqsActive() {
     this._stats.incLong(_numCqsActiveId, -1);
   }
 
@@ -209,21 +205,21 @@ public class CqServiceVsdStats {
    * 
    * @return the current value of the "numCqsStopped" stat
    */
-  public long getNumCqsStopped() {
+  long getNumCqsStopped() {
     return this._stats.getLong(_numCqsStoppedId);
   }
 
   /**
    * Increments the "numCqsStopped" stat by 1.
    */
-  public void incCqsStopped() {
+  void incCqsStopped() {
     this._stats.incLong(_numCqsStoppedId, 1);
   }
 
   /**
    * Decrements the "numCqsStopped" stat by 1.
    */
-  public void decCqsStopped() {
+  void decCqsStopped() {
     this._stats.incLong(_numCqsStoppedId, -1);
   }
 
@@ -232,14 +228,14 @@ public class CqServiceVsdStats {
    * 
    * @return the current value of the "numCqsClosed" stat
    */
-  public long getNumCqsClosed() {
+  long getNumCqsClosed() {
     return this._stats.getLong(_numCqsClosedId);
   }
 
   /**
    * Increments the "numCqsClosed" stat by 1.
    */
-  public void incCqsClosed() {
+  void incCqsClosed() {
     this._stats.incLong(_numCqsClosedId, 1);
   }
 
@@ -248,21 +244,21 @@ public class CqServiceVsdStats {
    * 
    * @return the current value of the "numCqsOnClient" stat
    */
-  public long getNumCqsOnClient() {
+  long getNumCqsOnClient() {
     return this._stats.getLong(_numCqsOnClientId);
   }
 
   /**
    * Increments the "numCqsOnClient" stat by 1.
    */
-  public void incCqsOnClient() {
+  void incCqsOnClient() {
     this._stats.incLong(_numCqsOnClientId, 1);
   }
 
   /**
    * Decrements the "numCqsOnClient" stat by 1.
    */
-  public void decCqsOnClient() {
+  void decCqsOnClient() {
     this._stats.incLong(_numCqsOnClientId, -1);
   }
 
@@ -278,21 +274,21 @@ public class CqServiceVsdStats {
   /**
    * Increments the "numClientsWithCqs" stat by 1.
    */
-  public void incClientsWithCqs() {
+  void incClientsWithCqs() {
     this._stats.incLong(_numClientsWithCqsId, 1);
   }
 
   /**
    * Decrements the "numCqsOnClient" stat by 1.
    */
-  public void decClientsWithCqs() {
+  void decClientsWithCqs() {
     this._stats.incLong(_numClientsWithCqsId, -1);
   }
 
   /**
    * Start the CQ Query Execution time.
    */
-  public long startCqQueryExecution() {
+  long startCqQueryExecution() {
     this._stats.incInt(_cqQueryExecutionInProgressId, 1);
     return NanoTimer.getTime();
   }
@@ -302,7 +298,7 @@ public class CqServiceVsdStats {
    * 
    * @param start long time value.
    */
-  public void endCqQueryExecution(long start) {
+  void endCqQueryExecution(long start) {
     long ts = NanoTimer.getTime();
     this._stats.incLong(_cqQueryExecutionTimeId, ts - start);
     this._stats.incInt(_cqQueryExecutionInProgressId, -1);
@@ -321,14 +317,14 @@ public class CqServiceVsdStats {
   /**
    * Increments number of Unique queries.
    */
-  public void incUniqueCqQuery() {
+  void incUniqueCqQuery() {
     this._stats.incInt(_numUniqueCqQuery, 1);
   }
 
   /**
    * Decrements number of unique Queries.
    */
-  public void decUniqueCqQuery() {
+  void decUniqueCqQuery() {
     this._stats.incInt(_numUniqueCqQuery, -1);
   }
 
@@ -338,11 +334,8 @@ public class CqServiceVsdStats {
    * tests.
    * <p>
    * Returns the number of CQs (active + suspended) on the given region.
-   * 
-   * @param regionName
    */
-  public long numCqsOnRegion(String regionName) {
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
+  public long numCqsOnRegion(final InternalCache cache, String regionName) {
     if (cache == null) {
       return 0;
     }

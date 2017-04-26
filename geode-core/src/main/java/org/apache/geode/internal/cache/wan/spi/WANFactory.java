@@ -14,17 +14,17 @@
  */
 package org.apache.geode.internal.cache.wan.spi;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
+import org.apache.geode.internal.cache.InternalCache;
 
 public interface WANFactory {
 
-  GatewaySenderFactory createGatewaySenderFactory(Cache cache);
+  GatewaySenderFactory createGatewaySenderFactory(InternalCache cache);
 
-  GatewayReceiverFactory createGatewayReceiverFactory(Cache cache);
+  GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache);
 
   WanLocatorDiscoverer createLocatorDiscoverer();
 

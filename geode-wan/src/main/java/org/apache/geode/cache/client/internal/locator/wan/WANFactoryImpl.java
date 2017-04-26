@@ -14,12 +14,12 @@
  */
 package org.apache.geode.cache.client.internal.locator.wan;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.internal.WanLocatorDiscoverer;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.GatewayReceiverFactoryImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderFactoryImpl;
 import org.apache.geode.internal.cache.wan.spi.WANFactory;
@@ -45,12 +45,12 @@ public class WANFactoryImpl implements WANFactory {
   }
 
   @Override
-  public GatewaySenderFactory createGatewaySenderFactory(Cache cache) {
+  public GatewaySenderFactory createGatewaySenderFactory(InternalCache cache) {
     return new GatewaySenderFactoryImpl(cache);
   }
 
   @Override
-  public GatewayReceiverFactory createGatewayReceiverFactory(Cache cache) {
+  public GatewayReceiverFactory createGatewayReceiverFactory(InternalCache cache) {
     return new GatewayReceiverFactoryImpl(cache);
   }
 
@@ -63,6 +63,4 @@ public class WANFactoryImpl implements WANFactory {
   public LocatorMembershipListener createLocatorMembershipListener() {
     return new LocatorMembershipListenerImpl();
   }
-
-
 }

@@ -3243,7 +3243,7 @@ public class DiskStoreImpl implements DiskStore {
 
   public PersistentMemberID generatePersistentID(DiskRegionView dr) {
     File firstDir = getInfoFileDir().getDir();
-    InternalDistributedSystem ids = getCache().getDistributedSystem();
+    InternalDistributedSystem ids = getCache().getInternalDistributedSystem();
     InternalDistributedMember memberId = ids.getDistributionManager().getDistributionManagerId();
 
     // NOTE - do NOT use DM.cacheTimeMillis here. See bug #49920
@@ -3253,7 +3253,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   public PersistentID getPersistentID() {
-    InetAddress host = cache.getDistributedSystem().getDistributedMember().getInetAddress();
+    InetAddress host = cache.getInternalDistributedSystem().getDistributedMember().getInetAddress();
     String dir = getDiskDirs()[0].getAbsolutePath();
     return new PersistentMemberPattern(host, dir, this.diskStoreID.toUUID(), 0);
   }

@@ -82,8 +82,8 @@ public class PartitionedRegionEquiJoinIntegrationTest extends EquiJoinIntegratio
 
   @Override
   protected Object[] executeQueries(String[] queries) {
-    ResultCollector collector =
-        FunctionService.onRegion(region1).withArgs(queries).execute(equijoinTestFunction.getId());
+    ResultCollector collector = FunctionService.onRegion(region1).setArguments(queries)
+        .execute(equijoinTestFunction.getId());
     Object result = collector.getResult();
     return (Object[]) ((ArrayList) result).get(0);
   }

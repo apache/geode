@@ -3650,7 +3650,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
       @Override
       public void afterDestroyBeforeAddEvent(EntryEvent event) {
-        eventIsExpiration = event.isExpiration();
+        eventIsExpiration = event.getOperation().isExpiration();
       }
 
       @Override

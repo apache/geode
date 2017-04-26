@@ -40,6 +40,7 @@ import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
@@ -65,7 +66,6 @@ import org.apache.geode.internal.logging.LogService;
  * <OL>
  * <LI>{@link AutoBalancer#SCHEDULE}
  * <LI>TBD THRESHOLDS
- * 
  */
 @Experimental("The autobalancer may be removed or the API may change in future releases")
 public class AutoBalancer implements Declarable {
@@ -344,19 +344,19 @@ public class AutoBalancer implements Declarable {
   static class GeodeCacheFacade implements CacheOperationFacade {
     private final AtomicBoolean isLockAcquired = new AtomicBoolean(false);
 
-    private GemFireCacheImpl cache;
+    private InternalCache cache;
 
     public GeodeCacheFacade() {
       this(null);
     }
 
-    public GeodeCacheFacade(GemFireCacheImpl cache) {
+    public GeodeCacheFacade(InternalCache cache) {
       this.cache = cache;
     }
 
     @Override
     public Map<PartitionedRegion, InternalPRInfo> getRegionMemberDetails() {
-      GemFireCacheImpl cache = getCache();
+      InternalCache cache = getCache();
       Map<PartitionedRegion, InternalPRInfo> detailsMap = new HashMap<>();
       for (PartitionedRegion region : cache.getPartitionedRegions()) {
         LoadProbe probe = cache.getInternalResourceManager().getLoadProbe();
@@ -411,7 +411,7 @@ public class AutoBalancer implements Declarable {
 
     @Override
     public void incrementAttemptCounter() {
-      GemFireCacheImpl cache = getCache();
+      InternalCache cache = getCache();
       try {
         cache.getInternalResourceManager().getStats().incAutoRebalanceAttempts();
       } catch (Exception e) {
@@ -442,7 +442,7 @@ public class AutoBalancer implements Declarable {
       }
     }
 
-    GemFireCacheImpl getCache() {
+    InternalCache getCache() {
       if (cache == null) {
         synchronized (this) {
           if (cache == null) {
@@ -486,15 +486,15 @@ public class AutoBalancer implements Declarable {
 
     @Override
     public DistributedLockService getDLS() {
-      GemFireCacheImpl cache = getCache();
+      InternalCache cache = getCache();
       DistributedLockService dls =
           DistributedLockService.getServiceNamed(AUTO_BALANCER_LOCK_SERVICE_NAME);
       if (dls == null) {
         if (logger.isDebugEnabled()) {
           logger.debug("Creating DistributeLockService");
         }
-        dls = DLockService.create(AUTO_BALANCER_LOCK_SERVICE_NAME, cache.getDistributedSystem(),
-            true, true, true);
+        dls = DLockService.create(AUTO_BALANCER_LOCK_SERVICE_NAME,
+            cache.getInternalDistributedSystem(), true, true, true);
       }
 
       return dls;

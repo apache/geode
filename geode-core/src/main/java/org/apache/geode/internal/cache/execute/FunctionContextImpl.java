@@ -59,7 +59,7 @@ public class FunctionContextImpl implements FunctionContext {
 
   /**
    * Returns the arguments provided to this function execution. These are the arguments specified by
-   * caller using {@link Execution#withArgs(Object)}
+   * caller using {@link Execution#setArguments(Object)}
    * 
    * @return the arguments or null if there are no arguments
    */

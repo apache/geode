@@ -14,11 +14,8 @@
  */
 package org.apache.geode.cache.asyncqueue.internal;
 
-import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
-
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
@@ -26,15 +23,14 @@ import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
-import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 import org.apache.geode.internal.cache.xmlcache.AsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.ParallelAsyncEventQueueCreation;
-import org.apache.geode.internal.cache.xmlcache.ParallelGatewaySenderCreation;
 import org.apache.geode.internal.cache.xmlcache.SerialAsyncEventQueueCreation;
-import org.apache.geode.internal.cache.xmlcache.SerialGatewaySenderCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
@@ -48,15 +44,14 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
    */
   private GatewaySenderAttributes attrs = new GatewaySenderAttributes();
 
-  private Cache cache;
+  private InternalCache cache;
 
   /**
    * The default batchTimeInterval for AsyncEventQueue in milliseconds.
    */
   public static final int DEFAULT_BATCH_TIME_INTERVAL = 5;
 
-
-  public AsyncEventQueueFactoryImpl(Cache cache) {
+  public AsyncEventQueueFactoryImpl(InternalCache cache) {
     this.cache = cache;
     this.attrs = new GatewaySenderAttributes();
     // set a different default for batchTimeInterval for AsyncEventQueue

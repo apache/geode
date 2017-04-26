@@ -116,14 +116,14 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         } catch (Exception expected) {
           // No data should cause exec to throw
           assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
         }
         pr.put(testKey, new Integer(1));
         ResultCollector rs1 =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         assertEquals(Boolean.TRUE, ((List) rs1.getResult()).get(0));
         try {
           rs1.getResult();
@@ -134,7 +134,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
 
 
         ResultCollector rs2 =
-            dataSet.withFilter(testKeysSet).withArgs(testKey).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(testKey).execute(function.getId());
         assertEquals(new Integer(1), ((List) rs2.getResult()).get(0));
         try {
           rs1.getResult();
@@ -147,7 +147,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         putData.put(testKey + "1", new Integer(2));
         putData.put(testKey + "2", new Integer(3));
         ResultCollector rs3 =
-            dataSet.withFilter(testKeysSet).withArgs(putData).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(putData).execute(function.getId());
         assertEquals(Boolean.TRUE, ((List) rs3.getResult(4000, TimeUnit.MILLISECONDS)).get(0));
         try {
           rs1.getResult();
@@ -161,7 +161,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
 
 
         ResultCollector rst1 =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         try {
           rst1.getResult(1000, TimeUnit.MILLISECONDS);
           fail("Did not get the expected timeout exception.");
@@ -177,7 +177,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         }
 
         ResultCollector rst2 =
-            dataSet.withFilter(testKeysSet).withArgs(testKey).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(testKey).execute(function.getId());
         try {
           rst2.getResult(1000, TimeUnit.MILLISECONDS);
           fail("Did not get the expected timeout exception.");
@@ -196,7 +196,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         putDataTimeOut.put(testKey + "4", new Integer(4));
         putDataTimeOut.put(testKey + "5", new Integer(5));
         ResultCollector rst3 =
-            dataSet.withFilter(testKeysSet).withArgs(putDataTimeOut).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(putDataTimeOut).execute(function.getId());
         try {
           rst3.getResult(1000, TimeUnit.MILLISECONDS);
           fail("Did not get the expected timeout exception.");
@@ -273,7 +273,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         Execution dataSet = FunctionService.onRegion(pr);
 
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         } catch (Exception expected) {
           assertTrue(expected.getMessage(),
               expected.getMessage().contains("No target node found for KEY"));
@@ -287,7 +287,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
           pr.put(i.next(), val);
         }
         ResultCollector rs =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rs.getResult());
         assertEquals(3, l.size());
 
@@ -304,7 +304,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
 
         // DefaultResultCollector rc2 = new DefaultResultCollector();
         ResultCollector rc2 =
-            dataSet.withFilter(testKeysSet).withArgs(testKeysSet).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(testKeysSet).execute(function.getId());
         List l2 = ((List) rc2.getResult());
 
         assertEquals(3, l2.size());
@@ -327,7 +327,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
 
 
         ResultCollector rst =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         try {
           rst.getResult(1000, TimeUnit.MILLISECONDS);
           fail("Did not get the expected exception.");
@@ -344,7 +344,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         }
 
         ResultCollector rct2 =
-            dataSet.withFilter(testKeysSet).withArgs(testKeysSet).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(testKeysSet).execute(function.getId());
 
         try {
           rct2.getResult(1000, TimeUnit.MILLISECONDS);
@@ -428,7 +428,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
           pr.put(i.next(), val);
         }
         ResultCollector rs =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
         List l = (List) rs.getResult();
         assertEquals(3, l.size());
 
@@ -436,7 +436,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
           assertEquals(Boolean.TRUE, i.next());
         }
         ResultCollector rst =
-            dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
 
         try {
           rst.getResult(1000, TimeUnit.MILLISECONDS);
@@ -520,7 +520,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         }
         ResultCollector rs;
         try {
-          rs = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          rs = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
           rs.getResult(1000, TimeUnit.MILLISECONDS);
           fail("Did not get the expected exception.");
         } catch (Exception expected) {
@@ -595,13 +595,13 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
           origVals.add(val);
           pr.put(i.next(), val);
         }
-        ResultCollector rs =
-            dataSet.withFilter(testKeysSet).withArgs("TestingTimeOut").execute(function.getId());
+        ResultCollector rs = dataSet.withFilter(testKeysSet).setArguments("TestingTimeOut")
+            .execute(function.getId());
         List l = ((List) rs.getResult(8000, TimeUnit.MILLISECONDS));
         assertEquals(3, l.size()); // this test may fail..but rarely
 
-        ResultCollector rst =
-            dataSet.withFilter(testKeysSet).withArgs("TestingTimeOut").execute(function.getId());
+        ResultCollector rst = dataSet.withFilter(testKeysSet).setArguments("TestingTimeOut")
+            .execute(function.getId());
         rst.getResult(8000, TimeUnit.MILLISECONDS);
         assertEquals(3, l.size());
 
@@ -652,7 +652,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         final HashSet testKeysSet = new HashSet();
         testKeysSet.add(testKey);
         try {
-          dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function.getId());
+          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
           // TODO: expected exception pattern requires fail here
         } catch (Exception expected) {
           // No data should cause exec to throw
@@ -682,7 +682,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         }
 
         ResultCollector rc1 =
-            dataSet.withFilter(testKeys).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeys).setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rc1.getResult());
         assertEquals(1, l.size());
         for (Iterator i = l.iterator(); i.hasNext();) {
@@ -691,7 +691,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
 
         // DefaultResultCollector rc2 = new DefaultResultCollector();
         ResultCollector rc2 =
-            dataSet.withFilter(testKeys).withArgs(testKeys).execute(function.getId());
+            dataSet.withFilter(testKeys).setArguments(testKeys).execute(function.getId());
         List l2 = ((List) rc2.getResult());
         assertEquals(1, l2.size());
 
@@ -706,7 +706,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         assertEquals(origVals, foundVals);
 
         ResultCollector rct1 =
-            dataSet.withFilter(testKeys).withArgs(Boolean.TRUE).execute(function.getId());
+            dataSet.withFilter(testKeys).setArguments(Boolean.TRUE).execute(function.getId());
 
         try {
           rct1.getResult(1000, TimeUnit.MILLISECONDS);
@@ -734,7 +734,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         }
 
         ResultCollector rct2 =
-            dataSet.withFilter(testKeys).withArgs(testKeys).execute(function.getId());
+            dataSet.withFilter(testKeys).setArguments(testKeys).execute(function.getId());
 
         try {
           rct2.getResult(1000, TimeUnit.MILLISECONDS);
@@ -825,7 +825,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         Function function = new TestFunction(true, TEST_FUNCTION_TIMEOUT);
         FunctionService.registerFunction(function);
         Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.withArgs(Boolean.TRUE).execute(function.getId());
+        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
         List l = ((List) rc1.getResult());
         assertEquals(4, l.size());
 
@@ -834,7 +834,7 @@ public class PRFunctionExecutionTimeOutDUnitTest extends PartitionedRegionDUnitT
         }
 
 
-        ResultCollector rct1 = dataSet.withArgs(Boolean.TRUE).execute(function.getId());
+        ResultCollector rct1 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
 
         try {
           rct1.getResult(1000, TimeUnit.MILLISECONDS);

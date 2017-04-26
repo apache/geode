@@ -21,6 +21,8 @@ public enum QueryCommand {
 
   SET,
 
+  SET_MAX_INACTIVE,
+
   GET,
 
   INVALIDATE,

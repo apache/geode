@@ -706,12 +706,15 @@ class OverflowOplog implements CompactableOplog, Flushable {
   // */
   // private long lastWritePos = -1;
 
-  // /**
-  // * test hook
-  // */
-  // public final ByteBuffer getWriteBuf() {
-  // return this.crf.writeBuf;
-  // }
+  /**
+   * test hook
+   */
+  public final ByteBuffer getWriteBuf() {
+    return this.crf.writeBuf;
+  }
+
+  private static final int MAX_CHANNEL_RETRIES = 5;
+
   @Override
   public final void flush() throws IOException {
     final OplogFile olf = this.crf;
@@ -724,8 +727,31 @@ class OverflowOplog implements CompactableOplog, Flushable {
         if (bb != null && bb.position() != 0) {
           bb.flip();
           int flushed = 0;
+          int numChannelRetries = 0;
           do {
-            flushed += olf.channel.write(bb);
+            int channelBytesWritten = 0;
+            final int bbStartPos = bb.position();
+            final long channelStartPos = olf.channel.position();
+            // differentiate between bytes written on this channel.write() iteration and the
+            // total number of bytes written to the channel on this call
+            channelBytesWritten = olf.channel.write(bb);
+            // Expect channelBytesWritten and the changes in pp.position() and channel.position() to
+            // be the same. If they are not, then the channel.write() silently failed. The following
+            // retry separates spurious failures from permanent channel failures.
+            if (channelBytesWritten != bb.position() - bbStartPos) {
+              if (numChannelRetries++ < MAX_CHANNEL_RETRIES) {
+                // Reset the ByteBuffer position, but take into account anything that did get
+                // written to the channel
+                channelBytesWritten = (int) (olf.channel.position() - channelStartPos);
+                bb.position(bbStartPos + channelBytesWritten);
+              } else {
+                throw new IOException("Failed to write Oplog entry to " + olf.f.getName() + ": "
+                    + "channel.write() returned " + channelBytesWritten + ", "
+                    + "change in channel position = " + (olf.channel.position() - channelStartPos)
+                    + ", " + "change in source buffer position = " + (bb.position() - bbStartPos));
+              }
+            }
+            flushed += channelBytesWritten;
           } while (bb.hasRemaining());
           // update bytesFlushed after entire writeBuffer is flushed to fix bug 41201
           olf.bytesFlushed += flushed;

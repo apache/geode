@@ -1705,6 +1705,7 @@ public class TXState implements TXStateInterface {
    */
   public Object getKeyForIterator(KeyInfo curr, LocalRegion currRgn, boolean rememberReads,
       boolean allowTombstones) {
+    assert !(curr.getKey() instanceof RegionEntry);
     if (!readEntryAndCheckIfDestroyed(curr, currRgn, rememberReads)) {
       return curr.getKey();
     } else {

@@ -14,10 +14,9 @@
  */
 package org.apache.geode.cache.asyncqueue.internal;
 
-import org.apache.geode.CancelException;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.Cache;
+import org.apache.geode.CancelException;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedLockService;
@@ -27,6 +26,7 @@ import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
@@ -41,22 +41,13 @@ import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
 
   private static final Logger logger = LogService.getLogger();
 
-  final ThreadGroup loggerGroup =
-      LoggingThreadGroup.createThreadGroup("Remote Site Discovery Logger Group", logger);
-
-  public SerialAsyncEventQueueImpl() {
-    super();
-    this.isParallel = false;
-  }
-
-  public SerialAsyncEventQueueImpl(Cache cache, GatewaySenderAttributes attrs) {
+  public SerialAsyncEventQueueImpl(InternalCache cache, GatewaySenderAttributes attrs) {
     super(cache, attrs);
     if (!(this.cache instanceof CacheCreation)) {
       // this sender lies underneath the AsyncEventQueue. Need to have
@@ -80,8 +71,7 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
         return;
       }
       if (this.remoteDSId != DEFAULT_DISTRIBUTED_SYSTEM_ID) {
-        String locators =
-            ((GemFireCacheImpl) this.cache).getDistributedSystem().getConfig().getLocators();
+        String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
         if (locators.length() == 0) {
           throw new GatewaySenderConfigurationException(
               LocalizedStrings.AbstractGatewaySender_LOCATOR_SHOULD_BE_CONFIGURED_BEFORE_STARTING_GATEWAY_SENDER

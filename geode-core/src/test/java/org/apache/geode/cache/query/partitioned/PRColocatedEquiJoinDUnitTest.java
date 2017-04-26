@@ -343,7 +343,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
             Object funcResult = FunctionService
                 .onRegion((getCache().getRegion(name) instanceof PartitionedRegion)
                     ? getCache().getRegion(name) : getCache().getRegion(coloName))
-                .withArgs("Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
+                .setArguments("Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
                     + " * from /" + name + " r1, /" + coloName + " r2 where " + queries[j])
                 .execute(func).getResult();
 
@@ -1603,7 +1603,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
             Object funcResult = FunctionService
                 .onRegion((getCache().getRegion(name) instanceof PartitionedRegion)
                     ? getCache().getRegion(name) : getCache().getRegion(coloName))
-                .withArgs("Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
+                .setArguments("Select " + (queries[j].contains("ORDER BY") ? "DISTINCT" : "")
                     + " * from /" + name + " r1, /" + coloName + " r2 where " + queries[j])
                 .execute(func).getResult();
 

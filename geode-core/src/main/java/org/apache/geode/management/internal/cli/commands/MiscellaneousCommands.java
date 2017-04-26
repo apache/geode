@@ -1951,7 +1951,7 @@ public class MiscellaneousCommands implements CommandMarker {
       TabularResultData resultTable = section.addTable("ChangeLogLevel");
       resultTable = resultTable.setHeader("Summary");
 
-      Execution execution = FunctionService.onMembers(dsMembers).withArgs(functionArgs);
+      Execution execution = FunctionService.onMembers(dsMembers).setArguments(functionArgs);
       if (execution == null) {
         return ResultBuilder.createUserErrorResult(CliStrings.CHANGE_LOGLEVEL__MSG__CANNOT_EXECUTE);
       }

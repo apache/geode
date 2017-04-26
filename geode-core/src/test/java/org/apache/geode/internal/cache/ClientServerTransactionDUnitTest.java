@@ -3000,19 +3000,19 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         args.add(new CustId(0));
         args.add(new Customer("name0", "address0"));
         args.add(null);
-        List result = (List) FunctionService.onRegion(cust).withArgs(args).execute(new TXFunction())
-            .getResult();
+        List result = (List) FunctionService.onRegion(cust).setArguments(args)
+            .execute(new TXFunction()).getResult();
         TransactionId txId = (TransactionId) result.get(0);
         assertNotNull(txId);
         args = new ArrayList();
         args.add(new CustId(1));
         args.add(new Customer("name1", "address1"));
         args.add(txId);
-        result = (List) FunctionService.onRegion(cust).withArgs(args).execute(new TXFunction())
+        result = (List) FunctionService.onRegion(cust).setArguments(args).execute(new TXFunction())
             .getResult();
         TransactionId txId2 = (TransactionId) result.get(0);
         assertEquals(txId, txId2);
-        result = (List) FunctionService.onServer(getCache()).withArgs(txId)
+        result = (List) FunctionService.onServer(getCache()).setArguments(txId)
             .execute(new CommitFunction()).getResult();
         Boolean b = (Boolean) result.get(0);
         assertEquals(Boolean.TRUE, b);
@@ -3088,7 +3088,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           args.add(new CustId(0));
           args.add(new Customer("name0", "address0"));
           args.add(null);
-          List result = (List) FunctionService.onRegion(cust).withArgs(args)
+          List result = (List) FunctionService.onRegion(cust).setArguments(args)
               .execute(new TXFunction()).getResult();
           TransactionId txId = (TransactionId) result.get(0);
           assertNotNull(txId);
@@ -3096,17 +3096,17 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           args.add(new CustId(1));
           args.add(new Customer("name1", "address1"));
           args.add(txId);
-          result = (List) FunctionService.onRegion(cust).withArgs(args).execute(new TXFunction())
-              .getResult();
+          result = (List) FunctionService.onRegion(cust).setArguments(args)
+              .execute(new TXFunction()).getResult();
           TransactionId txId2 = (TransactionId) result.get(0);
           assertEquals(txId, txId2);
           // invoke ClientCommitFunction
           try {
             if (commit) {
-              FunctionService.onServer(getCache()).withArgs(new CustId(0))
+              FunctionService.onServer(getCache()).setArguments(new CustId(0))
                   .execute(new CommitFunction()).getResult();
             } else {
-              FunctionService.onServer(getCache()).withArgs(new CustId(0))
+              FunctionService.onServer(getCache()).setArguments(new CustId(0))
                   .execute(new RollbackFunction()).getResult();
             }
             fail("expected exception not thrown");
@@ -3115,10 +3115,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           }
           List list = null;
           if (commit) {
-            list = (List) FunctionService.onServer(getCache()).withArgs(txId)
+            list = (List) FunctionService.onServer(getCache()).setArguments(txId)
                 .execute(new CommitFunction()).getResult();
           } else {
-            list = (List) FunctionService.onServer(getCache()).withArgs(txId)
+            list = (List) FunctionService.onServer(getCache()).setArguments(txId)
                 .execute(new RollbackFunction()).getResult();
           }
           assertEquals(Boolean.TRUE, list.get(0));
@@ -3179,22 +3179,22 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         args.add(new CustId(0));
         args.add(new Customer("name0", "address0"));
         args.add(null);
-        List result = (List) FunctionService.onRegion(cust).withArgs(args).execute(new TXFunction())
-            .getResult();
+        List result = (List) FunctionService.onRegion(cust).setArguments(args)
+            .execute(new TXFunction()).getResult();
         TransactionId txId = (TransactionId) result.get(0);
         assertNotNull(txId);
         args = new ArrayList();
         args.add(new CustId(1));
         args.add(new Customer("name1", "address1"));
         args.add(txId);
-        result = (List) FunctionService.onRegion(cust).withArgs(args).execute(new TXFunction())
+        result = (List) FunctionService.onRegion(cust).setArguments(args).execute(new TXFunction())
             .getResult();
         TransactionId txId2 = (TransactionId) result.get(0);
         assertEquals(txId, txId2);
         // invoke ClientCommitFunction
         try {
-          FunctionService.onServer(getCache()).withArgs(new CustId(0)).execute(new CommitFunction())
-              .getResult();
+          FunctionService.onServer(getCache()).setArguments(new CustId(0))
+              .execute(new CommitFunction()).getResult();
           fail("expected exception not thrown");
         } catch (FunctionException e) {
           assertTrue(e.getCause() instanceof ClassCastException);
@@ -3216,10 +3216,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         try {
           List list = null;
           if (commit) {
-            list = (List) FunctionService.onServer(getCache()).withArgs(txId)
+            list = (List) FunctionService.onServer(getCache()).setArguments(txId)
                 .execute(new CommitFunction()).getResult();
           } else {
-            list = (List) FunctionService.onServer(getCache()).withArgs(txId)
+            list = (List) FunctionService.onServer(getCache()).setArguments(txId)
                 .execute(new RollbackFunction()).getResult();
           }
           fail("expected exception not thrown");
@@ -3281,7 +3281,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        Execution exe = FunctionService.onMember(((TXId) txId).getMemberId()).withArgs(txId);
+        Execution exe = FunctionService.onMember(((TXId) txId).getMemberId()).setArguments(txId);
         List list = null;
         if (commit) {
           list = (List) exe.execute(new CommitFunction()).getResult();

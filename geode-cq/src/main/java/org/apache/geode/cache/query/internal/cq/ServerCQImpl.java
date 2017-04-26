@@ -21,24 +21,18 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.client.internal.UserAttributes;
 import org.apache.geode.cache.query.CqAttributes;
 import org.apache.geode.cache.query.CqAttributesMutator;
 import org.apache.geode.cache.query.CqClosedException;
 import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.CqExistsException;
-import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqResults;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryException;
@@ -49,6 +43,7 @@ import org.apache.geode.cache.query.internal.CompiledRegion;
 import org.apache.geode.cache.query.internal.CompiledSelect;
 import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.DefaultQuery;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
@@ -58,7 +53,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.i18n.StringId;
 
 public class ServerCQImpl extends CqQueryImpl implements DataSerializable, ServerCQ {
   private static final Logger logger = LogService.getLogger();
@@ -84,14 +78,13 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   public volatile boolean cqResultKeysInitialized = false;
 
   /** Boolean flag to see if the CQ is on Partitioned Region */
-  public volatile boolean isPR = false;
+  volatile boolean isPR = false;
 
   private ClientProxyMembershipID clientProxyId = null;
 
   private CacheClientNotifier ccn = null;
 
   private String serverCqName;
-
 
   /** identifier assigned to this query for FilterRoutingInfos */
   private Long filterID;
@@ -106,21 +99,11 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     // For deserialization
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#getFilterID()
-   */
   @Override
   public Long getFilterID() {
     return this.filterID;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#setFilterID(java.lang.Long)
-   */
   @Override
   public void setFilterID(Long filterID) {
     this.filterID = filterID;
@@ -142,18 +125,11 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
     CacheClientProxy clientProxy = null;
     this.clientProxyId = p_clientProxyId;
-    // servConnection = serverSideConnection;
 
     if (p_ccn != null) {
       this.ccn = p_ccn;
       clientProxy = p_ccn.getClientProxy(p_clientProxyId, true);
     }
-
-    /*
-     * try { initCq(); } catch (CqExistsException cqe) { // Should not happen. throw new
-     * CqException(LocalizedStrings.CqQueryImpl_UNABLE_TO_CREATE_CQ_0_ERROR__1.toLocalizedString(new
-     * Object[] { cqName, cqe.getMessage()})); }
-     */
 
     validateCq();
 
@@ -228,13 +204,11 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
       throw new CqException(errMsg);
     }
 
-    // checkAndSetCqOnRegion();
-
     // Can be null by the time we are here
     if (clientProxy != null) {
       clientProxy.incCqCount();
       if (clientProxy.hasOneCq()) {
-        cqService.stats.incClientsWithCqs();
+        cqService.stats().incClientsWithCqs();
       }
       if (isDebugEnabled) {
         logger.debug("Added CQ to the base region: {} With key as: {}", cqBaseRegion.getFullPath(),
@@ -307,7 +281,6 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * query.
    * 
    * @return String modified query.
-   * @throws CqException
    */
   private Query constructServerSideQuery() throws QueryException {
     GemFireCacheImpl cache = (GemFireCacheImpl) cqService.getCache();
@@ -328,7 +301,6 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
    * Returns if the passed key is part of the CQs result set. This method needs to be called once
    * the CQ result key caching is completed (cqResultsCacheInitialized is true).
    * 
-   * @param key
    * @return true if key is in the Results Cache.
    */
   public boolean isPartOfCqResult(Object key) {
@@ -352,27 +324,18 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#addToCqResultKeys(java.lang.Object)
-   */
   @Override
   public void addToCqResultKeys(Object key) {
     if (!CqServiceProvider.MAINTAIN_KEYS) {
       return;
     }
 
-    // this.logger.fine("Adding key to Results Cache For CQ :" +
-    // this.cqName + " key :" + key);
     if (this.cqResultKeys != null) {
       synchronized (this.cqResultKeys) {
         this.cqResultKeys.put(key, TOKEN);
         if (!this.cqResultKeysInitialized) {
           // This key could be coming after add, destroy.
           // Remove this from destroy queue.
-          // this.logger.fine("Removing key from Destroy Cache For CQ :" +
-          // this.cqName + " key :" + key);
           if (this.destroysWhileCqResultsInProgress != null) {
             this.destroysWhileCqResultsInProgress.remove(key);
           }
@@ -381,21 +344,11 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     }
   }
 
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.geode.cache.query.internal.InternalCqQuery2#removeFromCqResultKeys(java.lang.Object,
-   * boolean)
-   */
   @Override
   public void removeFromCqResultKeys(Object key, boolean isTokenMode) {
     if (!CqServiceProvider.MAINTAIN_KEYS) {
       return;
     }
-    // this.logger.fine("Removing key from Results Cache For CQ :" +
-    // this.cqName + " key :" + key);
     if (this.cqResultKeys != null) {
       synchronized (this.cqResultKeys) {
         if (isTokenMode && this.cqResultKeys.get(key) != Token.DESTROYED) {
@@ -403,8 +356,6 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
         }
         this.cqResultKeys.remove(key);
         if (!this.cqResultKeysInitialized) {
-          // this.logger.fine("Adding key to Destroy Cache For CQ :" +
-          // this.cqName + " key :" + key);
           if (this.destroysWhileCqResultsInProgress != null) {
             this.destroysWhileCqResultsInProgress.add(key);
           }
@@ -415,10 +366,8 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
   /**
    * Marks the key as destroyed in the CQ Results key cache.
-   * 
-   * @param key
    */
-  public void markAsDestroyedInCqResultKeys(Object key) {
+  void markAsDestroyedInCqResultKeys(Object key) {
     if (!CqServiceProvider.MAINTAIN_KEYS) {
       return;
     }
@@ -439,12 +388,6 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     }
   }
 
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#setCqResultsCacheInitialized()
-   */
   @Override
   public void setCqResultsCacheInitialized() {
     if (CqServiceProvider.MAINTAIN_KEYS) {
@@ -466,13 +409,6 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.geode.cache.query.internal.InternalCqQuery2#isOldValueRequiredForQueryProcessing(
-   * java.lang.Object)
-   */
   @Override
   public boolean isOldValueRequiredForQueryProcessing(Object key) {
     if (this.cqResultKeysInitialized && this.isPartOfCqResult(key)) {
@@ -484,18 +420,11 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   /**
    * Closes the Query. On Client side, sends the cq close request to server. On Server side, takes
    * care of repository cleanup.
-   * 
-   * @throws CqException
    */
   public void close() throws CqClosedException, CqException {
     close(true);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#close(boolean)
-   */
   @Override
   public void close(boolean sendRequestToServer) throws CqClosedException, CqException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -523,9 +452,9 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
       // Stat update.
       if (stateBeforeClosing == CqStateImpl.RUNNING) {
-        cqService.stats.decCqsActive();
+        cqService.stats().decCqsActive();
       } else if (stateBeforeClosing == CqStateImpl.STOPPED) {
-        cqService.stats.decCqsStopped();
+        cqService.stats().decCqsStopped();
       }
 
       // Clean-up the CQ Results Cache.
@@ -537,8 +466,8 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
       // Set the state to close, and update stats
       this.cqState.setState(CqStateImpl.CLOSED);
-      cqService.stats.incCqsClosed();
-      cqService.stats.decCqsOnClient();
+      cqService.stats().incCqsClosed();
+      cqService.stats().decCqsOnClient();
       if (this.stats != null)
         this.stats.close();
     }
@@ -564,9 +493,8 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
   /**
    * Clears the resource used by CQ.
-   * 
-   * @throws CqException
    */
+  @Override
   protected void cleanup() throws CqException {
     // CqBaseRegion
     try {
@@ -575,7 +503,7 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
         CacheClientProxy clientProxy = ccn.getClientProxy(clientProxyId);
         clientProxy.decCqCount();
         if (clientProxy.hasNoCq()) {
-          cqService.stats.decClientsWithCqs();
+          cqService.stats().decClientsWithCqs();
         }
       }
     } catch (Exception ex) {
@@ -587,16 +515,9 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   }
 
   /**
-   * @param serverCqName The serverCqName to set.
-   */
-  public void setServerCqName(String serverCqName) {
-
-    this.serverCqName = serverCqName;
-  }
-
-  /**
    * Stop or pause executing the query.
    */
+  @Override
   public void stop() throws CqClosedException, CqException {
     boolean isStopped = false;
     synchronized (this.cqState) {
@@ -613,18 +534,16 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
 
       // Change state and stats on the client side
       this.cqState.setState(CqStateImpl.STOPPED);
-      this.cqService.stats.incCqsStopped();
-      this.cqService.stats.decCqsActive();
+      this.cqService.stats().incCqsStopped();
+      this.cqService.stats().decCqsActive();
       if (logger.isDebugEnabled()) {
         logger.debug("Successfully stopped the CQ. {}", cqName);
       }
     }
   }
 
-  /* DataSerializableFixedID methods ---------------------------------------- */
-
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    // this.cqName = DataSerializer.readString(in);
     synchronized (cqState) {
       this.cqState.setState(DataSerializer.readInteger(in));
     }
@@ -633,23 +552,14 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
     this.filterID = in.readLong();
   }
 
-  /*
-   * public int getDSFID() { return CQ_QUERY; }
-   */
-
+  @Override
   public void toData(DataOutput out) throws IOException {
-    // DataSerializer.writeString(this.cqName, out);
     DataSerializer.writeInteger(this.cqState.getState(), out);
     DataSerializer.writeBoolean(this.isDurable, out);
     DataSerializer.writeString(this.queryString, out);
     out.writeLong(this.filterID);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.apache.geode.cache.query.internal.InternalCqQuery2#isPR()
-   */
   @Override
   public boolean isPR() {
     return isPR;
@@ -675,6 +585,5 @@ public class ServerCQImpl extends CqQueryImpl implements DataSerializable, Serve
   public void execute() throws CqClosedException, RegionNotFoundException, CqException {
     throw new IllegalStateException("Execute cannot be called on a CQ on the server");
   }
-
 
 }

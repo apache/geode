@@ -343,7 +343,7 @@ public class SerialGatewaySenderDistributedDeadlockDUnitTest extends WANTestBase
     FunctionService.registerFunction(new TestFunction());
     Execution exe = FunctionService.onRegion(region);
     for (int x = 0; x < num; x++) {
-      exe.withArgs(useThreadOwnedSocket)
+      exe.setArguments(useThreadOwnedSocket)
           .execute("org.apache.geode.internal.cache.wan.serial.TestFunction");
     }
   }

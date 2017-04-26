@@ -331,7 +331,7 @@ public class PartitionedRegionHelper {
         return;
       }
 
-      DM dm = cache.getDistributedSystem().getDistributionManager();
+      DM dm = cache.getInternalDistributedSystem().getDistributionManager();
 
       if (logger.isDebugEnabled()) {
         logger.debug("Cleaning PartitionedRegion meta data for memberId={}", failedMemId);
@@ -859,7 +859,8 @@ public class PartitionedRegionHelper {
    * @return membership Set.
    */
   public static Set getMembershipSet(GemFireCacheImpl cache) {
-    return cache.getDistributedSystem().getDistributionManager().getDistributionManagerIds();
+    return cache.getInternalDistributedSystem().getDistributionManager()
+        .getDistributionManagerIds();
   }
 
   /**

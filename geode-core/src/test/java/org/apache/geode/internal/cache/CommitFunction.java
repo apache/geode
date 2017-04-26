@@ -79,7 +79,7 @@ public class CommitFunction implements Function {
       txId = (TXId) context.getArguments();
     } catch (ClassCastException e) {
       logger.info(
-          "CommitFunction should be invoked with a TransactionId as an argument i.e. withArgs(txId).execute(function)");
+          "CommitFunction should be invoked with a TransactionId as an argument i.e. setArguments(txId).execute(function)");
       throw e;
     }
     DistributedMember member = txId.getMemberId();
@@ -101,7 +101,8 @@ public class CommitFunction implements Function {
       ArrayList args = new ArrayList();
       args.add(txId);
       args.add(NestedTransactionFunction.COMMIT);
-      Execution ex = FunctionService.onMember(cache.getDistributedSystem(), member).withArgs(args);
+      Execution ex =
+          FunctionService.onMember(cache.getDistributedSystem(), member).setArguments(args);
       if (isDebugEnabled) {
         logger.debug(
             "CommitFunction: for transaction: {} executing NestedTransactionFunction on member: {}",

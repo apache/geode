@@ -116,7 +116,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
 
     int distributedSystemId =
-        cache.getDistributedSystem().getDistributionManager().getDistributedSystemId();
+        cache.getInternalDistributedSystem().getDistributionManager().getDistributedSystemId();
     if (distributedSystemId == -1) {
       distributedSystemId = 0;
     }
@@ -226,9 +226,9 @@ public class PeerTypeRegistration implements TypeRegistration {
     synchronized (this.dlsLock) {
       if (this.dls == null) {
         try {
-          this.dls = DLockService.create(LOCK_SERVICE_NAME, this.cache.getDistributedSystem(),
-              true /* distributed */, true /* destroyOnDisconnect */,
-              true /* automateFreeResources */);
+          this.dls = DLockService.create(LOCK_SERVICE_NAME,
+              this.cache.getInternalDistributedSystem(), true /* distributed */,
+              true /* destroyOnDisconnect */, true /* automateFreeResources */);
         } catch (IllegalArgumentException e) {
           this.dls = DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME);
           if (this.dls == null) {
@@ -334,7 +334,7 @@ public class PeerTypeRegistration implements TypeRegistration {
    */
   private boolean useUDPMessagingIfNecessary() {
     boolean result = false;
-    InternalDistributedSystem sys = cache.getDistributedSystem();
+    InternalDistributedSystem sys = cache.getInternalDistributedSystem();
     if (sys != null && !sys.threadOwnsResources()) {
       sys.getDistributionManager().forceUDPMessagingForCurrentThread();
       result = true;
@@ -344,7 +344,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   private void releaseUDPMessaging(boolean release) {
     if (release) {
-      InternalDistributedSystem sys = cache.getDistributedSystem();
+      InternalDistributedSystem sys = cache.getInternalDistributedSystem();
       if (sys != null) {
         sys.getDistributionManager().releaseUDPMessagingForCurrentThread();
       }
@@ -551,7 +551,7 @@ public class PeerTypeRegistration implements TypeRegistration {
           "The PDX metadata must be persistent in a member that has persistent data. See CacheFactory.setPdxPersistent.");
     }
     int distributedSystemId =
-        cache.getDistributedSystem().getDistributionManager().getDistributedSystemId();
+        cache.getInternalDistributedSystem().getDistributionManager().getDistributedSystemId();
     if (hasGatewaySender && distributedSystemId == -1) {
       throw new PdxInitializationException(
           "When using PDX with a WAN gateway sender, you must set the distributed-system-id gemfire property for your distributed system. See the javadocs for DistributedSystem.");

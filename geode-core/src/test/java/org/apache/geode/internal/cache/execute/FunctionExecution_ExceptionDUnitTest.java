@@ -96,12 +96,12 @@ public class FunctionExecution_ExceptionDUnitTest extends PartitionedRegionDUnit
 
         pr.put(testKey, new Integer(1));
         ResultCollector rs1 = null;
-        rs1 = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function);
+        rs1 = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
         ArrayList results = (ArrayList) rs1.getResult();
         assertTrue(results.get(0) instanceof Exception);
 
-        rs1 =
-            dataSet.withFilter(testKeysSet).withArgs((Serializable) testKeysSet).execute(function);
+        rs1 = dataSet.withFilter(testKeysSet).setArguments((Serializable) testKeysSet)
+            .execute(function);
         results = (ArrayList) rs1.getResult();
         assertEquals((testKeysSet.size() + 1), results.size());
         Iterator resultIterator = results.iterator();
@@ -155,7 +155,7 @@ public class FunctionExecution_ExceptionDUnitTest extends PartitionedRegionDUnit
 
         pr.put(testKey, new Integer(1));
         ResultCollector rs1 = null;
-        rs1 = dataSet.withFilter(testKeysSet).withArgs("Multiple").execute(function);
+        rs1 = dataSet.withFilter(testKeysSet).setArguments("Multiple").execute(function);
         ArrayList results = (ArrayList) rs1.getResult();
         assertTrue(results.get(0) instanceof Exception);
         return Boolean.TRUE;
@@ -200,7 +200,7 @@ public class FunctionExecution_ExceptionDUnitTest extends PartitionedRegionDUnit
 
         pr.put(testKey, new Integer(1));
         ResultCollector rs1 = null;
-        rs1 = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function);
+        rs1 = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
         try {
           ArrayList results = (ArrayList) rs1.getResult();
           fail("Expecting Exception");
@@ -261,13 +261,13 @@ public class FunctionExecution_ExceptionDUnitTest extends PartitionedRegionDUnit
 
         pr.put(testKey, new Integer(1));
         ResultCollector rs1 = null;
-        // rs1 = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(
+        // rs1 = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(
         // function);
         // ArrayList results = (ArrayList)rs1.getResult();
         // assertTrue(results.get(0) instanceof Exception);
         //
-        rs1 =
-            dataSet.withFilter(testKeysSet).withArgs((Serializable) testKeysSet).execute(function);
+        rs1 = dataSet.withFilter(testKeysSet).setArguments((Serializable) testKeysSet)
+            .execute(function);
         ArrayList results = (ArrayList) rs1.getResult();
         assertEquals((testKeysSet.size() + 1), results.size());
         Iterator resultIterator = results.iterator();
@@ -332,7 +332,7 @@ public class FunctionExecution_ExceptionDUnitTest extends PartitionedRegionDUnit
 
         pr.put(testKey, new Integer(1));
         ResultCollector rs1 = null;
-        rs1 = dataSet.withFilter(testKeysSet).withArgs(Boolean.TRUE).execute(function);
+        rs1 = dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function);
         try {
           ArrayList results = (ArrayList) rs1.getResult();
           fail("Expecting Exception");
@@ -396,7 +396,7 @@ public class FunctionExecution_ExceptionDUnitTest extends PartitionedRegionDUnit
           pr.put(val, "MyValue_" + i);
         }
         ResultCollector rs1 =
-            dataSet.withFilter(origVals).withArgs((Serializable) origVals).execute(function);
+            dataSet.withFilter(origVals).setArguments((Serializable) origVals).execute(function);
         List results = (ArrayList) rs1.getResult();
         assertEquals(((origVals.size() * 3) + 3), results.size());
         Iterator resultIterator = results.iterator();
@@ -458,7 +458,7 @@ public class FunctionExecution_ExceptionDUnitTest extends PartitionedRegionDUnit
         }
         ResultCollector rc2 = null;
         ResultCollector rs1 =
-            dataSet.withFilter(origVals).withArgs((Serializable) origVals).execute(function);
+            dataSet.withFilter(origVals).setArguments((Serializable) origVals).execute(function);
         List results = (ArrayList) rs1.getResult();
         assertEquals(((origVals.size() * 4) + 4), results.size());
         Iterator resultIterator = results.iterator();
@@ -527,7 +527,7 @@ public class FunctionExecution_ExceptionDUnitTest extends PartitionedRegionDUnit
           pr.put(val, "MyValue_" + i);
         }
         ResultCollector rc2 = null;
-        rc2 = dataSet.withFilter(origVals).withArgs(origVals).execute(function.getId());
+        rc2 = dataSet.withFilter(origVals).setArguments(origVals).execute(function.getId());
         try {
           ArrayList results = (ArrayList) rc2.getResult();
           fail("Expecting Exception");
@@ -585,7 +585,7 @@ public class FunctionExecution_ExceptionDUnitTest extends PartitionedRegionDUnit
           pr.put(val, "MyValue_" + i);
         }
         ResultCollector rc2 = null;
-        rc2 = dataSet.withFilter(origVals).withArgs(origVals).execute(function.getId());
+        rc2 = dataSet.withFilter(origVals).setArguments(origVals).execute(function.getId());
         try {
           ArrayList results = (ArrayList) rc2.getResult();
           fail("Expecting Exception");

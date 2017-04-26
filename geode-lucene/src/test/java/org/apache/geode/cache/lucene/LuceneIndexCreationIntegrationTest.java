@@ -16,6 +16,7 @@
 package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -164,7 +165,7 @@ public class LuceneIndexCreationIntegrationTest extends LuceneIntegrationTest {
       luceneService.createIndexFactory().setFields(analyzers).create(INDEX_NAME, REGION_NAME);
       Region region = createRegion();
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
-      assertTrue(index instanceof LuceneRawIndex);
+      assertThat(index).isInstanceOf(LuceneRawIndex.class);
       region.put("key1", new TestObject());
       verifyIndexFinishFlushing(cache, INDEX_NAME, REGION_NAME);
       assertEquals(analyzers, index.getFieldAnalyzers());

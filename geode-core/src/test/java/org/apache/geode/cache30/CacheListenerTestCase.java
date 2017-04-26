@@ -340,7 +340,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
         assertEquals(name, event.getRegion().getName());
         // this should be a distributed destroy unless the region
         // is local scope
-        assertFalse(event.isExpiration());
+        assertFalse(event.getOperation().isExpiration());
         assertFalse(event.isOriginRemote());
 
         this.destroyed = true;
@@ -395,7 +395,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
 
       public void afterRegionInvalidate2(RegionEvent event) {
         assertEquals(name, event.getRegion().getName());
-        assertFalse(event.isExpiration());
+        assertFalse(event.getOperation().isExpiration());
         assertFalse(event.isOriginRemote());
 
         this.invalidated = true;

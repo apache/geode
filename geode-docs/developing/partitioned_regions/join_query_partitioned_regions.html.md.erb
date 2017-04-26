@@ -74,7 +74,7 @@ ArrayList argList = new ArrayList();
 argList.add(queryString);
 Object result = FunctionService.onRegion(CacheFactory.getAnyInstance()
      .getRegion("QueryRegion1" ))
-     .withArgs(argList).execute(function).getResult();
+     .setArguments(argList).execute(function).getResult();
 ArrayList resultList = (ArrayList)result;
 resultList.trimToSize();
 List queryResults = null;
@@ -92,6 +92,6 @@ On the client side, note that you can specify a bucket filter while invoking Fun
 
 **Additional Notes on Using the Query.execute and RegionFunctionContext APIs**
 
-You can also pass multiple parameters (besides the query itself) to the query function by specifying the parameters in the client-side code (`FunctionService.onRegion(..).withArgs()`). Then you can handle the parameters inside the function on the server side using `context.getArguments`. Note that it does not matter which order you specify the parameters as long as you match the parameter handling order on the server with the order specified in the client.
+You can also pass multiple parameters (besides the query itself) to the query function by specifying the parameters in the client-side code (`FunctionService.onRegion(..).setArguments()`). Then you can handle the parameters inside the function on the server side using `context.getArguments`. Note that it does not matter which order you specify the parameters as long as you match the parameter handling order on the server with the order specified in the client.
 
 

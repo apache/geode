@@ -56,6 +56,7 @@ public class DUnitBlackboard {
    * signals a boolean gate
    */
   public void signalGate(String gateName) {
+    // System.out.println(Thread.currentThread().getName()+": signaling gate " + gateName);
     try {
       blackboard.signalGate(gateName);
     } catch (RemoteException e) {
@@ -68,12 +69,24 @@ public class DUnitBlackboard {
    */
   public void waitForGate(String gateName, long timeout, TimeUnit units)
       throws TimeoutException, InterruptedException {
+    // System.out.println(Thread.currentThread().getName()+": waiting for gate " + gateName);
     try {
       blackboard.waitForGate(gateName, timeout, units);
     } catch (RemoteException e) {
       throw new RuntimeException("remote call failed", e);
     }
 
+  }
+
+  /**
+   * clear a gate
+   */
+  public void clearGate(String gateName) {
+    try {
+      blackboard.clearGate(gateName);
+    } catch (RemoteException e) {
+      throw new RuntimeException("remote call failed", e);
+    }
   }
 
   /**

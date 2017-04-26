@@ -23,6 +23,7 @@ import org.apache.geode.cache.lucene.internal.management.LuceneServiceMBean;
 import org.apache.geode.cache.lucene.internal.management.ManagementIndexListener;
 import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.cache.lucene.internal.results.PageResults;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -55,7 +56,6 @@ import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.CacheService;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
@@ -72,14 +72,12 @@ public class LuceneServiceImpl implements InternalLuceneService {
   public static LuceneIndexImplFactory luceneIndexFactory = new LuceneIndexImplFactory();
   private static final Logger logger = LogService.getLogger();
 
-  private GemFireCacheImpl cache;
+  private InternalCache cache;
   private final HashMap<String, LuceneIndex> indexMap = new HashMap<String, LuceneIndex>();
   private final HashMap<String, LuceneIndexCreationProfile> definedIndexMap = new HashMap<>();
   private IndexListener managementListener;
 
-  public LuceneServiceImpl() {
-
-  }
+  public LuceneServiceImpl() {}
 
   @Override
   public org.apache.geode.cache.lucene.LuceneIndexFactory createIndexFactory() {
@@ -95,10 +93,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
     if (cache == null) {
       throw new IllegalStateException(LocalizedStrings.CqService_CACHE_IS_NULL.toLocalizedString());
     }
-    GemFireCacheImpl gfc = (GemFireCacheImpl) cache;
-    gfc.getCancelCriterion().checkCancelInProgress(null);
+    cache.getCancelCriterion().checkCancelInProgress(null);
 
-    this.cache = gfc;
+    this.cache = (InternalCache) cache;
 
     FunctionService.registerFunction(new LuceneQueryFunction());
     FunctionService.registerFunction(new LuceneGetPageFunction());
@@ -409,7 +406,7 @@ public class LuceneServiceImpl implements InternalLuceneService {
     WaitUntilFlushedFunctionContext context =
         new WaitUntilFlushedFunctionContext(indexName, timeout, unit);
     Execution execution = FunctionService.onRegion(dataRegion);
-    ResultCollector rs = execution.withArgs(context).execute(WaitUntilFlushedFunction.ID);
+    ResultCollector rs = execution.setArguments(context).execute(WaitUntilFlushedFunction.ID);
     List<Boolean> results = (List<Boolean>) rs.getResult();
     for (Boolean oneResult : results) {
       if (oneResult == false) {

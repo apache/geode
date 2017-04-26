@@ -275,7 +275,9 @@ start locator --name=value [--bind-address=value] [--force(=value)] [--group=val
  [--locators=value] [--log-level=value] [--mcast-address=value] [--mcast-port=value] [--port=value] [--dir=value]
  [--properties-file=value] [--security-properties-file=value] [--initial-heap=value] [--max-heap=value]
  [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-from-cluster-configuration-dir(=value)]
- [--cluster-config-dir=value] [--J=value(,value)*]
+ [--cluster-config-dir=value]
+ [--http-service-port=value] [--http-service-bind-address=value] 
+ [--J=value(,value)*]
 ```
 
 <a id="topic_591260CF25D64562A0EDD7260D2AC6D4__table_hly_vvg_2w"></a>
@@ -396,6 +398,17 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <td><span class="keyword parmname">\-\-cluster-config-dir</span></td>
 <td>Directory used by the cluster configuration service to store the cluster configuration on the filesystem</td>
 <td>cluster-config</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-http-service-port</span></td>
+<td>Specifies the HTTP service port.</td>
+<td>7070</td>
+</tr>
+<tr class="even">
+<td><span class="keyword parmname">\-\-http-service-bind-address</span></td>
+<td>Specifies the IP address to which the HTTP service will be bound.
+</td>
+<td>the local host machine's address</td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-J </span></td>
@@ -755,14 +768,14 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-http-service-port</span></td>
-<td>Specifies the port on which the HTTP service will listen.</td>
-<td></td>
+<td>Specifies the HTTP service port.</td>
+<td>7070</td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-http-service-bind-address</span></td>
 <td>Specifies the IP address to which the HTTP service will be bound.
 </td>
-<td>all local addresses</td>
+<td>the local host machine's address</td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-user</span></td>

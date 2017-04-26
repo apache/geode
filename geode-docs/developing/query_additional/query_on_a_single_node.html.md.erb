@@ -142,7 +142,7 @@ To direct a query to specific partitioned region node, you can execute the query
           //for ID=1 and query will execute on that bucket.
           rcollector = FunctionService
               .onRegion(region)
-              .withArgs(qStr)
+              .setArguments(qStr)
               .withFilter(filter)
               .execute(func);
 

@@ -1104,38 +1104,36 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   private void destroyEventFromQueue(PartitionedRegion prQ, int bucketId, Object key) {
     boolean isPrimary = prQ.getRegionAdvisor().getBucketAdvisor(bucketId).isPrimary();
-    if (isPrimary) {
-      BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
-      // TODO : Kishor : Make sure we dont need to initalize a bucket
-      // before destroying a key from it
-      try {
-        if (brq != null) {
-          brq.destroyKey(key);
-        }
-        stats.decQueueSize();
-      } catch (EntryNotFoundException e) {
-        if (!this.sender.isBatchConflationEnabled() && logger.isDebugEnabled()) {
-          logger.debug(
-              "ParallelGatewaySenderQueue#remove: Got EntryNotFoundException while removing key {} for {} for bucket = {} for GatewaySender {}",
-              key, this, bucketId, this.sender);
-        }
-      } catch (ForceReattemptException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Bucket :{} moved to other member", bucketId);
-        }
-      } catch (PrimaryBucketException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Primary bucket :{} moved to other member", bucketId);
-        }
-      } catch (RegionDestroyedException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "Caught RegionDestroyedException attempting to remove key {} from bucket {} in {}",
-              key, bucketId, prQ.getFullPath());
-        }
+    BucketRegionQueue brq = getBucketRegionQueueByBucketId(prQ, bucketId);
+    // TODO : Kishor : Make sure we dont need to initalize a bucket
+    // before destroying a key from it
+    try {
+      if (brq != null) {
+        brq.destroyKey(key);
       }
-      addRemovedEvent(prQ, bucketId, key);
+      stats.decQueueSize();
+    } catch (EntryNotFoundException e) {
+      if (!this.sender.isBatchConflationEnabled() && logger.isDebugEnabled()) {
+        logger.debug(
+            "ParallelGatewaySenderQueue#remove: Got EntryNotFoundException while removing key {} for {} for bucket = {} for GatewaySender {}",
+            key, this, bucketId, this.sender);
+      }
+    } catch (ForceReattemptException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Bucket :{} moved to other member", bucketId);
+      }
+    } catch (PrimaryBucketException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Primary bucket :{} moved to other member", bucketId);
+      }
+    } catch (RegionDestroyedException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Caught RegionDestroyedException attempting to remove key {} from bucket {} in {}", key,
+            bucketId, prQ.getFullPath());
+      }
     }
+    addRemovedEvent(prQ, bucketId, key);
   }
 
   public void resetLastPeeked() {
@@ -1664,7 +1662,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     @Override
     public void run() {
       try {
-        InternalDistributedSystem ids = cache.getDistributedSystem();
+        InternalDistributedSystem ids = cache.getInternalDistributedSystem();
         DM dm = ids.getDistributionManager();
         for (;;) {
           try { // be somewhat tolerant of failures

@@ -14,11 +14,9 @@
  */
 package org.apache.geode.cache.query.internal.cq;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.query.CqServiceStatistics;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 
 /**
  * Provides statistical information about CqService.
@@ -26,24 +24,22 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
  * @since GemFire 5.5
  */
 public class CqServiceStatisticsImpl implements CqServiceStatistics {
+
   private CqServiceImpl cqService;
-  // private long activeCqs;
-  // private long stoppedCqs;
-  // private long closedCqs;
-  // private long createdCqs;
 
   /**
    * Constructor for CqStatisticsImpl
    * 
    * @param cqs - CqService
    */
-  public CqServiceStatisticsImpl(CqServiceImpl cqs) {
+  CqServiceStatisticsImpl(CqServiceImpl cqs) {
     cqService = cqs;
   }
 
   /**
    * Returns the number of CQs currently executing
    */
+  @Override
   public long numCqsActive() {
     return this.cqService.getCqServiceVsdStats().getNumCqsActive();
   }
@@ -53,6 +49,7 @@ public class CqServiceStatisticsImpl implements CqServiceStatistics {
    * 
    * @return long number of cqs created.
    */
+  @Override
   public long numCqsCreated() {
     return this.cqService.getCqServiceVsdStats().getNumCqsCreated();
   }
@@ -60,6 +57,7 @@ public class CqServiceStatisticsImpl implements CqServiceStatistics {
   /**
    * Returns number of Cqs that are closed.
    */
+  @Override
   public long numCqsClosed() {
     return this.cqService.getCqServiceVsdStats().getNumCqsClosed();
   }
@@ -67,6 +65,7 @@ public class CqServiceStatisticsImpl implements CqServiceStatistics {
   /**
    * Returns number of Cqs that are stopped.
    */
+  @Override
   public long numCqsStopped() {
     return this.cqService.getCqServiceVsdStats().getNumCqsStopped();
   }
@@ -74,20 +73,18 @@ public class CqServiceStatisticsImpl implements CqServiceStatistics {
   /**
    * Returns number of CQs created from the client.
    */
+  @Override
   public long numCqsOnClient() {
     return this.cqService.getCqServiceVsdStats().getNumCqsOnClient();
   }
 
   /**
    * Returns the number of CQs (active + suspended) on the given region.
-   * 
-   * @param regionName
    */
+  @Override
   public long numCqsOnRegion(String regionName) {
-
     DefaultQueryService queryService =
-        (DefaultQueryService) ((GemFireCacheImpl) CacheFactory.getAnyInstance())
-            .getLocalQueryService();
+        (DefaultQueryService) cqService.getInternalCache().getLocalQueryService();
     try {
       CqQuery[] cqs = queryService.getCqs(regionName);
 

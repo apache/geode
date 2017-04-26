@@ -64,9 +64,8 @@ public class ClientExecuteRegionFunctionAuthDUnitTest extends JUnit4DistributedT
 
       Region region = createProxyRegion(cache, REGION_NAME);
       FunctionService.registerFunction(function);
-      assertNotAuthorized(
-          () -> FunctionService.onRegion(region).withArgs(Boolean.TRUE).execute(function.getId()),
-          "DATA:WRITE");
+      assertNotAuthorized(() -> FunctionService.onRegion(region).setArguments(Boolean.TRUE)
+          .execute(function.getId()), "DATA:WRITE");
     });
 
     client2.invoke("logging in with super-user", () -> {
@@ -75,7 +74,7 @@ public class ClientExecuteRegionFunctionAuthDUnitTest extends JUnit4DistributedT
       Region region = createProxyRegion(cache, REGION_NAME);
       FunctionService.registerFunction(function);
       ResultCollector rc =
-          FunctionService.onRegion(region).withArgs(Boolean.TRUE).execute(function.getId());
+          FunctionService.onRegion(region).setArguments(Boolean.TRUE).execute(function.getId());
       rc.getResult();
     });
   }

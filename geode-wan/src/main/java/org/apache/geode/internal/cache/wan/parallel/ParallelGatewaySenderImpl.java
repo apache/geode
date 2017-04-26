@@ -16,53 +16,36 @@ package org.apache.geode.internal.cache.wan.parallel;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueStats;
-import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
-import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.cache.wan.AbstractRemoteGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
-import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
-import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.cache.wan.AbstractRemoteGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor.GatewaySenderProfile;
 import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
-import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * @since GemFire 7.0
- *
  */
 public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
 
   private static final Logger logger = LogService.getLogger();
 
-  final ThreadGroup loggerGroup =
-      LoggingThreadGroup.createThreadGroup("Remote Site Discovery Logger Group", logger);
-
-  public ParallelGatewaySenderImpl() {
-    super();
-    this.isParallel = true;
-  }
-
-  public ParallelGatewaySenderImpl(Cache cache, GatewaySenderAttributes attrs) {
+  public ParallelGatewaySenderImpl(InternalCache cache, GatewaySenderAttributes attrs) {
     super(cache, attrs);
   }
 
@@ -77,8 +60,7 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       }
 
       if (this.remoteDSId != DEFAULT_DISTRIBUTED_SYSTEM_ID) {
-        String locators =
-            ((GemFireCacheImpl) this.cache).getDistributedSystem().getConfig().getLocators();
+        String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
         if (locators.length() == 0) {
           throw new IllegalStateException(
               LocalizedStrings.AbstractGatewaySender_LOCATOR_SHOULD_BE_CONFIGURED_BEFORE_STARTING_GATEWAY_SENDER
@@ -92,22 +74,16 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
        * of Concurrent version of processor and queue.
        */
       eventProcessor = new RemoteConcurrentParallelGatewaySenderEventProcessor(this);
-      /*
-       * if (getDispatcherThreads() > 1) { eventProcessor = new
-       * ConcurrentParallelGatewaySenderEventProcessor(this); } else { eventProcessor = new
-       * ParallelGatewaySenderEventProcessor(this); }
-       */
-
       eventProcessor.start();
       waitForRunningStatus();
+
       // Only notify the type registry if this is a WAN gateway queue
       if (!isAsyncEventQueue()) {
         ((GemFireCacheImpl) getCache()).getPdxRegistry().gatewaySenderStarted(this);
       }
       new UpdateAttributesProcessor(this).distribute(false);
 
-      InternalDistributedSystem system =
-          (InternalDistributedSystem) this.cache.getDistributedSystem();
+      InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
       system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_START, this);
 
       logger.info(
@@ -119,15 +95,6 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     }
   }
 
-  // /**
-  // * The sender is not started but only the message queue i.e. shadowPR is created on the node.
-  // * @param targetPr
-  // */
-  // private void createMessageQueueOnAccessorNode(PartitionedRegion targetPr) {
-  // eventProcessor = new ParallelGatewaySenderEventProcessor(this, targetPr);
-  // }
-
-
   @Override
   public void stop() {
     this.getLifeCycleLock().writeLock().lock();
@@ -137,7 +104,6 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       }
       // Stop the dispatcher
       AbstractGatewaySenderEventProcessor ev = this.eventProcessor;
-      // try {
       if (ev != null && !ev.isStopped()) {
         ev.stopProcessing();
       }
@@ -162,9 +128,6 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
       clearTempEventsAfterSenderStopped();
       // Keep the eventProcessor around so we can ask it for the regionQueues later.
       // Tests expect to be able to do this.
-      // } finally {
-      // this.eventProcessor = null;
-      // }
     } finally {
       this.getLifeCycleLock().writeLock().unlock();
     }
@@ -207,24 +170,11 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     pf.isDiskSynchronous = isDiskSynchronous();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.apache.geode.internal.cache.wan.AbstractGatewaySender#setModifiedEventId(org.apache.geode.
-   * internal.cache.EntryEventImpl)
-   */
   @Override
   protected void setModifiedEventId(EntryEventImpl clonedEvent) {
     int bucketId = -1;
     // merged from 42004
     if (clonedEvent.getRegion() instanceof DistributedRegion) {
-      // if (getOrderPolicy() == OrderPolicy.THREAD) {
-      // bucketId = PartitionedRegionHelper.getHashKey(
-      // ((EntryEventImpl)clonedEvent).getEventId().getThreadID(),
-      // getMaxParallelismForReplicatedRegion());
-      // }
-      // else
       bucketId = PartitionedRegionHelper.getHashKey(clonedEvent.getKey(),
           getMaxParallelismForReplicatedRegion());
     } else {
@@ -240,18 +190,6 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     // we don't need to generate different threadId for secondary buckets
     // as they will be rejected if seen at PR level itself
 
-    // boolean isPrimary = ((PartitionedRegion)getQueue().getRegion())
-    // .getRegionAdvisor().getBucketAdvisor(bucketId).isPrimary();
-    // if (isPrimary) {
-    // newThreadId = ThreadIdentifier
-    // .createFakeThreadIDForParallelGSPrimaryBucket(bucketId,
-    // originatingThreadId);
-    // } else {
-    // newThreadId = ThreadIdentifier
-    // .createFakeThreadIDForParallelGSSecondaryBucket(bucketId,
-    // originatingThreadId);
-    // }
-
     EventID newEventId = new EventID(originalEventId.getMembershipID(), newThreadId,
         originalEventId.getSequenceID(), bucketId);
     if (logger.isDebugEnabled()) {
@@ -262,5 +200,4 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
     }
     clonedEvent.setEventId(newEventId);
   }
-
 }

@@ -14,14 +14,13 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
-import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.InternalCache;
 
 public class LuceneRawIndex extends LuceneIndexImpl {
 
-  protected LuceneRawIndex(String indexName, String regionPath, Cache cache) {
+  protected LuceneRawIndex(String indexName, String regionPath, InternalCache cache) {
     super(indexName, regionPath, cache);
   }
 

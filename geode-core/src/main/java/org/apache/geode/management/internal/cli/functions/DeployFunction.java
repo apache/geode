@@ -52,8 +52,8 @@ public class DeployFunction implements Function, InternalEntity {
       final byte[][] jarBytes = (byte[][]) args[1];
       Cache cache = CacheFactory.getAnyInstance();
 
-      final JarDeployer jarDeployer = new JarDeployer(
-          ((GemFireCacheImpl) cache).getDistributedSystem().getConfig().getDeployWorkingDir());
+      final JarDeployer jarDeployer = new JarDeployer(((GemFireCacheImpl) cache)
+          .getInternalDistributedSystem().getConfig().getDeployWorkingDir());
 
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 

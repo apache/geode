@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +27,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -250,7 +253,7 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     totalBucketOnServer += server4.invoke(getBucketCount);
 
     verifyMetadata(totalBucketOnServer, 2);
-    updateIntoSinglePR();
+    updateIntoSinglePR(true /* assert no refresh */);
   }
 
   /**
@@ -258,10 +261,11 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
    * partition comes late, we should fetch that when there is a network hop because of that
    * partitioned region. This test will create 3 servers with partition. Do some operations on them.
    * Validate that the metadata are fetched and then later up one more partition and do some
-   * operations on them. It should fetch new fpa.
+   * operations on them. It should fetch new fpa. Verify that the correct servers are known to the
+   * client metadata service at the end.
    */
   @Test
-  public void test_FPAmetadataFetch() {
+  public void testMetadataInClientWithFixedPartitions() throws Exception {
 
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
@@ -331,21 +335,29 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
               && (server4.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer) == 6));
 
       getFromPartitionedRegions();
+
       server1.invoke(FixedPRSinglehopDUnitTest::printView);
       server2.invoke(FixedPRSinglehopDUnitTest::printView);
       server4.invoke(FixedPRSinglehopDUnitTest::printView);
 
-      totalBucketOnServer = 0;
-      totalBucketOnServer +=
-          (Integer) server1.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
-      totalBucketOnServer +=
-          (Integer) server2.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
-      totalBucketOnServer +=
-          (Integer) server4.invoke(FixedPRSinglehopDUnitTest::primaryBucketsOnServer);
-      updateIntoSinglePR();
+      updateIntoSinglePR(false);
+
+      ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
+      ClientPartitionAdvisor advisor = cms.getClientPartitionAdvisor("/" + PR_NAME);
+      int[] expected = new int[] {port1, port1, port1, port4, port4, port4, port2, port2, port2,
+          port4, port4, port4};
+      for (int i = 0; i < expected.length; i++) {
+        ServerLocation primary = advisor.advisePrimaryServerLocation(i);
+        assertNotNull("bucket " + i + " had no primary server", primary);
+        assertEquals("bucket " + i + " was incorrect", expected[i], primary.getPort());
+      }
     } finally {
       server3.invoke(FixedPRSinglehopDUnitTest::stopLocator);
     }
+  }
+
+  public int getServerPort() {
+    return GemFireCacheImpl.getInstance().getCacheServers().get(0).getPort();
   }
 
   public static int createServer(boolean isAccessor, List<FixedPartitionAttributes> fpaList) {
@@ -717,44 +729,69 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  public static void updateIntoSinglePR() {
+  public static void updateIntoSinglePR(boolean assertNoMetadataRefreshes) {
     ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
     cms.satisfyRefreshMetadata_TEST_ONLY(false);
+
     region.put(q1dateJan1, "update0");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
     region.put(q1dateFeb1, "update00");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
     region.put(q1dateMar1, "update000");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
     region.put(q2dateApr1, "update1");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
     region.put(q2dateMay1, "update11");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
     region.put(q2dateJun1, "update111");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
     region.put(q3dateJuly1, "update2");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
     region.put(q3dateAug1, "update22");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
     region.put(q3dateSep1, "update2222");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
     region.put(q4dateOct1, "update3");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
     region.put(q4dateNov1, "update33");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
     region.put(q4dateDec1, "update3333");
-    assertEquals(false, cms.isRefreshMetadataTestOnly());
+    if (assertNoMetadataRefreshes) {
+      assertFalse(cms.isRefreshMetadataTestOnly());
+    }
 
   }
 
@@ -817,9 +854,9 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
   public static void printView() {
     PartitionedRegion pr = (PartitionedRegion) region;
     if (pr.cache != null) {
-      ((GemFireCacheImpl) cache).getLogger().info("Primary Bucket view of server0  "
+      ((GemFireCacheImpl) cache).getLogger().info("Primary Bucket view of server  "
           + pr.getDataStore().getLocalPrimaryBucketsListTestOnly());
-      ((GemFireCacheImpl) cache).getLogger().info("Secondary Bucket view of server0  "
+      ((GemFireCacheImpl) cache).getLogger().info("Secondary Bucket view of server  "
           + pr.getDataStore().getLocalNonPrimaryBucketsListTestOnly());
     }
   }
@@ -860,10 +897,10 @@ public class FixedPRSinglehopDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  public static void clearMetadata() {
-    ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
-    cms.getClientPartitionAttributesMap().clear();
-    cms.getClientPRMetadata_TEST_ONLY().clear();
-  }
+  // public static void clearMetadata() {
+  // ClientMetadataService cms = ((GemFireCacheImpl) cache).getClientMetadataService();
+  // cms.getClientPartitionAttributesMap().clear();
+  // cms.getClientPRMetadata_TEST_ONLY().clear();
+  // }
 
 }

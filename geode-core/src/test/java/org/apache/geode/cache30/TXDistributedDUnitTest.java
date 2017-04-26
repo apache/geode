@@ -1387,7 +1387,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
                 af.setDiskStoreName(diskStoreName);
                 gfc.createVMRegion(rgnName1, af.create(), ira);
                 gfc.createVMRegion(rgnName2, af.create(), ira);
-                gfc.getDistributedSystem().addResourceListener(new ShutdownListener());
+                gfc.getInternalDistributedSystem().addResourceListener(new ShutdownListener());
               } catch (IOException ioe) {
                 fail(ioe.toString());
               } catch (TimeoutException e) {
@@ -1462,7 +1462,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
         public Object call() throws Exception {
           GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
           List<ResourceEventsListener> listeners =
-              cache.getDistributedSystem().getResourceListeners();
+              cache.getInternalDistributedSystem().getResourceListeners();
           for (ResourceEventsListener l : listeners) {
             if (l instanceof ShutdownListener) {
               ShutdownListener shutListener = (ShutdownListener) l;

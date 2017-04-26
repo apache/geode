@@ -24,14 +24,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
@@ -55,8 +47,14 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
 
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
@@ -122,7 +120,7 @@ public class Bug48571DUnitTest extends JUnit4DistributedTestCase {
     Wait.waitForCriterion(criterion, 15 * 1000, 200, true);
   }
 
-  @Category(FlakyTest.class) // GEODE-510
+  // @Category(FlakyTest.class) // GEODE-510
   @Test
   public void testStatsMatchWithSize() throws Exception {
     IgnoredException.addIgnoredException("Unexpected IOException||Connection reset");

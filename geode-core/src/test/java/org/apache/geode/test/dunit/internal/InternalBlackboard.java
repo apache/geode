@@ -50,6 +50,11 @@ public interface InternalBlackboard extends Remote, Serializable {
       throws RemoteException, TimeoutException, InterruptedException;
 
   /**
+   * clears a gate
+   */
+  void clearGate(String gateName) throws RemoteException;
+
+  /**
    * test to see if a gate has been signeled
    */
   boolean isGateSignaled(String gateName) throws RemoteException;

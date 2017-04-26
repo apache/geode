@@ -29,7 +29,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -115,6 +114,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TombstoneService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -144,7 +144,6 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  * Represents a {@link Cache} that is created declaratively. Notice that it implements the
  * {@link Cache} interface so that this class must be updated when {@link Cache} is modified. This
  * class is public for testing purposes.
- *
  *
  * @since GemFire 3.0
  */
@@ -1066,12 +1065,6 @@ public class CacheCreation implements InternalCache {
     return null;
   }
 
-  // public GatewayReceiver addGatewayReceiver(){
-  // GatewayReceiverCreation receiver = new GatewayReceiverCreation();
-  // this.gatewayReceivers.add(receiver);
-  // return receiver;
-  // }
-  //
   public Set<GatewayReceiver> getGatewayReceivers() {
     return this.gatewayReceivers;
   }
@@ -1294,6 +1287,31 @@ public class CacheCreation implements InternalCache {
   @Override
   public boolean isClient() {
     return false;
+  }
+
+  @Override
+  public InternalDistributedSystem getInternalDistributedSystem() {
+    return InternalDistributedSystem.getAnyInstance();
+  }
+
+  @Override
+  public Set<PartitionedRegion> getPartitionedRegions() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void addRegionListener(final RegionListener l) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void removeRegionListener(final RegionListener l) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public Set<RegionListener> getRegionListeners() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   public GatewaySenderFactory createGatewaySenderFactory() {

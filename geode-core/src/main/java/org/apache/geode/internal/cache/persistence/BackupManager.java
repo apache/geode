@@ -68,7 +68,7 @@ public class BackupManager implements MembershipListener {
   }
 
   public void start() {
-    final DM distributionManager = cache.getDistributedSystem().getDistributionManager();
+    final DM distributionManager = cache.getInternalDistributedSystem().getDistributionManager();
     // We need to watch for pure admin guys that depart. this allMembershipListener set
     // looks like it should receive those events.
     Set allIds = distributionManager.addAllMembershipListenerAndGetAllIds(this);
@@ -85,7 +85,7 @@ public class BackupManager implements MembershipListener {
     for (DiskStoreImpl store : diskStores) {
       store.releaseBackupLock();
     }
-    final DM distributionManager = cache.getDistributedSystem().getDistributionManager();
+    final DM distributionManager = cache.getInternalDistributedSystem().getDistributionManager();
     distributionManager.removeAllMembershipListener(this);
     cache.clearBackupManager();
   }
@@ -326,7 +326,8 @@ public class BackupManager implements MembershipListener {
   }
 
   private File getBackupDir(File targetDir) throws IOException {
-    InternalDistributedMember memberId = cache.getDistributedSystem().getDistributedMember();
+    InternalDistributedMember memberId =
+        cache.getInternalDistributedSystem().getDistributedMember();
     String vmId = memberId.toString();
     vmId = cleanSpecialCharacters(vmId);
     File backupDir = new File(targetDir, vmId);

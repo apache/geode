@@ -279,7 +279,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
       }
 
       // Stop the stats listener
-      final GemFireStatSampler sampler = this.cache.getDistributedSystem().getStatSampler();
+      final GemFireStatSampler sampler = this.cache.getInternalDistributedSystem().getStatSampler();
       if (sampler != null) {
         sampler.removeLocalStatListener(this.statListener);
       }
@@ -294,7 +294,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
    * @return True of the listener was correctly started, false otherwise.
    */
   private boolean startCacheStatListener() {
-    final GemFireStatSampler sampler = this.cache.getDistributedSystem().getStatSampler();
+    final GemFireStatSampler sampler = this.cache.getInternalDistributedSystem().getStatSampler();
     if (sampler == null) {
       return false;
     }
@@ -302,7 +302,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     try {
       sampler.waitForInitialization();
       String tenuredPoolName = getTenuredMemoryPoolMXBean().getName();
-      List list = this.cache.getDistributedSystem().getStatsList();
+      List list = this.cache.getInternalDistributedSystem().getStatsList();
       for (Object o : list) {
         if (o instanceof StatisticsImpl) {
           StatisticsImpl si = (StatisticsImpl) o;

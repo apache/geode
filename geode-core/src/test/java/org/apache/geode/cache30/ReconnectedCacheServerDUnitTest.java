@@ -14,16 +14,10 @@
  */
 package org.apache.geode.cache30;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
@@ -32,14 +26,14 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({DistributedTest.class, MembershipTest.class, ClientServerTest.class})
 public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {
-
-  public ReconnectedCacheServerDUnitTest() {
-    super();
-  }
 
   private static final long serialVersionUID = 1L;
 
@@ -72,7 +66,7 @@ public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {
     assertFalse(
         Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile"));
 
-    GemFireCacheImpl gc = (GemFireCacheImpl) this.cache;
+    InternalCache gc = (InternalCache) this.cache;
 
     // fool the system into thinking cluster-config is being used
     GMSMembershipManager mgr = (GMSMembershipManager) MembershipManagerHelper
@@ -104,7 +98,7 @@ public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {
 
     assertNotNull(gc.getCacheConfig().getCacheServerCreation());
 
-    InternalDistributedSystem system = gc.getDistributedSystem();
+    InternalDistributedSystem system = gc.getInternalDistributedSystem();
     system.createAndStartCacheServers(gc.getCacheConfig().getCacheServerCreation(), gc);
 
     assertEquals("found these cache servers:" + gc.getCacheServers(), numServers,
