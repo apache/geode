@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,7 +61,6 @@ import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-@Ignore() // minor changes to GemFireCacheImpl break this test
 public class ParallelQueueRemovalMessageJUnitTest {
 
   private static final String GATEWAY_SENDER_ID = "ny";
