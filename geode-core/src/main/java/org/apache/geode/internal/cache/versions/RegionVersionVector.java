@@ -222,7 +222,9 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     synchronized (memberToGCVersion) {
       result = new HashMap<T, Long>(this.memberToGCVersion);
     }
-    result.put(this.myId, this.localGCVersion.get());
+    if (this.localGCVersion.get() != 0) {
+      result.put(this.myId, this.localGCVersion.get());
+    }
     return result;
   }
 

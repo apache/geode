@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
@@ -209,6 +210,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
       // out.writeLong(this.regionVersion);
       out.writeInt(this.regionGCVersions.size());
       boolean persistent = false;
+      String msg = "Found mixed membership ids while serializing Tombstone GC message.";
       if (!regionGCVersions.isEmpty()) {
         VersionSource firstEntry = regionGCVersions.keySet().iterator().next();
         if (firstEntry instanceof DiskStoreID) {
@@ -219,8 +221,14 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
       for (Map.Entry<VersionSource, Long> entry : this.regionGCVersions.entrySet()) {
         VersionSource member = entry.getKey();
         if (member instanceof DiskStoreID) {
+          if (!persistent) {
+            throw new InternalGemFireException(msg);
+          }
           InternalDataSerializer.invokeToData((DiskStoreID) member, out);
         } else {
+          if (persistent) {
+            throw new InternalGemFireException(msg);
+          }
           ((InternalDistributedMember) member).writeEssentialData(out);
         }
         out.writeLong(entry.getValue());
