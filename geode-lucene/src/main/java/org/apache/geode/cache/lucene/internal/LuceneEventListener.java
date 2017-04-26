@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region.Entry;
@@ -53,6 +54,7 @@ public class LuceneEventListener implements AsyncEventListener {
   Logger logger = LogService.getLogger();
 
   private final RepositoryManager repositoryManager;
+  private CountDownLatch isFileAndChunkRegionReady = new CountDownLatch(1);
 
   public LuceneEventListener(RepositoryManager repositoryManager) {
     this.repositoryManager = repositoryManager;
@@ -64,6 +66,13 @@ public class LuceneEventListener implements AsyncEventListener {
   @Override
   public boolean processEvents(List<AsyncEvent> events) {
     try {
+      isFileAndChunkRegionReady.await();
+    } catch (InterruptedException e) {
+      logger.debug("Interrupted while waiting on the countdown latch to begin processing events: "
+          + e.getMessage(), e);
+      return false;
+    }
+    try {
       return process(events);
     } catch (RuntimeException e) {
       exceptionObserver.onException(e);
@@ -73,6 +82,10 @@ public class LuceneEventListener implements AsyncEventListener {
       throw e;
     }
 
+  }
+
+  public void allowProcessingOfEvents() {
+    isFileAndChunkRegionReady.countDown();
   }
 
   protected boolean process(final List<AsyncEvent> events) {

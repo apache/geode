@@ -113,6 +113,7 @@ public class PartitionedRepositoryManagerJUnitTest {
     when(indexForPR.getCache()).thenReturn(cache);
     when(indexForPR.getRegionPath()).thenReturn("/testRegion");
     repoManager = new PartitionedRepositoryManager(indexForPR, serializer);
+    repoManager.setUserRegionForRepositoryManager();
   }
 
   @Test
