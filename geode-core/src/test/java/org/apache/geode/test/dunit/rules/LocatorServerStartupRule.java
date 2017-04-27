@@ -162,11 +162,16 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     return members[index];
   }
 
+
   /**
    * Returns the {@link Member} running inside the VM with the specified {@code index}
    */
-  public Member getMember(int index) {
+  public MemberVM getMember(int index) {
     return members[index];
+  }
+
+  public VM getVM(int index) {
+    return getHost(0).getVM(index);
   }
 
   public TemporaryFolder getTempFolder() {
