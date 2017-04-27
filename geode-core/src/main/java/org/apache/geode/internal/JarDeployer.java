@@ -102,7 +102,6 @@ public class JarDeployer implements Serializable {
     }
   }
 
-
   /**
    * Get a list of all currently deployed jars.
    * 
