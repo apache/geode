@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.cache.Region.Entry;
+import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.junit.After;
 import org.junit.Before;
@@ -85,8 +85,8 @@ public class LuceneEventListenerJUnitTest {
       switch (i % 4) {
         case 0:
         case 1:
-          final Entry entry = mock(Entry.class);
-          when(entry.getValue()).thenReturn(i);
+          final EntrySnapshot entry = mock(EntrySnapshot.class);
+          when(entry.getRawValue(true)).thenReturn(i);
           when(region.getEntry(eq(i))).thenReturn(entry);
           break;
         case 2:

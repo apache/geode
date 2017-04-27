@@ -98,12 +98,16 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
   }
 
   public Object getRawValue() {
+    return getRawValue(false);
+  }
+
+  public Object getRawValue(boolean forceCopy) {
     Object v = this.regionEntry.getValue(null);
     if (v == null) {
       return null;
     }
     if (v instanceof CachedDeserializable) {
-      if (region.isCopyOnRead()) {
+      if (region.isCopyOnRead() || forceCopy) {
         v = ((CachedDeserializable) v).getDeserializedWritableCopy(null, null);
       } else {
         v = ((CachedDeserializable) v).getDeserializedValue(null, null);
