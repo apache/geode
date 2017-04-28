@@ -27,7 +27,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.bcel.Constants;
@@ -39,18 +38,14 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.junit.rules.RestoreTCCLRule;
 import org.apache.geode.test.dunit.rules.ServerStarterRule;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
-
-import org.apache.geode.internal.ClassPathLoaderTest.BrokenClassLoader;
-import org.apache.geode.internal.ClassPathLoaderTest.NullClassLoader;
-import org.apache.geode.internal.ClassPathLoaderTest.SimpleClassLoader;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -66,6 +61,9 @@ public class ClassPathLoaderIntegrationTest {
 
   private File tempFile;
   private File tempFile2;
+
+  @Rule
+  public RestoreTCCLRule restoreTCCLRule = new RestoreTCCLRule();
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();

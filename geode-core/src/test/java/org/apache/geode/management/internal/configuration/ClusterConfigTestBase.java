@@ -53,7 +53,7 @@ public abstract class ClusterConfigTestBase {
           .regions("regionForGroup2"));
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule(true);
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   protected Properties locatorProps;
   protected Properties serverProps;

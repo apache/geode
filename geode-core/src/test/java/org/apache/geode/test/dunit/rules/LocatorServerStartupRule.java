@@ -21,7 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.test.dunit.Host.getHost;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
@@ -31,6 +30,8 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Properties;
 
 
@@ -57,37 +58,25 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   private TemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
   private MemberVM[] members;
-  private final boolean bounceVms;
 
   public LocatorServerStartupRule() {
-    this(false);
-  }
-
-  /**
-   * If your DUnit tests fail due to insufficient cleanup, try setting bounceVms=true.
-   */
-  public LocatorServerStartupRule(boolean bounceVms) {
     DUnitLauncher.launchIfNeeded();
-    this.bounceVms = bounceVms;
   }
 
   @Override
   protected void before() throws Throwable {
     restoreSystemProperties.before();
     temporaryFolder.create();
-    Invoke.invokeInEveryVM("Stop each VM", this::cleanupVm);
-    if (bounceVms) {
-      getHost(0).getAllVMs().forEach(VM::bounce);
-    }
     members = new MemberVM[4];
   }
 
   @Override
   protected void after() {
     DUnitLauncher.closeAndCheckForSuspects();
-    Invoke.invokeInEveryVM("Stop each VM", this::cleanupVm);
     restoreSystemProperties.after();
     temporaryFolder.delete();
+    Arrays.stream(members).filter(Objects::nonNull)
+        .forEach(MemberVM::stopMemberAndCleanupVMIfNecessary);
   }
 
   public MemberVM startLocatorVM(int index) throws Exception {
@@ -97,7 +86,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   /**
    * Starts a locator instance with the given configuration properties inside
    * {@code getHost(0).getVM(index)}.
-   *
+   * 
    * @return VM locator vm
    */
   public MemberVM<Locator> startLocatorVM(int index, Properties properties) throws Exception {
@@ -150,7 +139,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   public void stopMember(int index) {
     MemberVM member = members[index];
-    member.invoke(this::cleanupVm);
+    member.stopMemberAndCleanupVMIfNecessary();
   }
 
   /**
@@ -184,7 +173,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     return temporaryFolder;
   }
 
-  private void cleanupVm() {
+  public static void stopMemberInThisVM() {
     if (serverStarter != null) {
       serverStarter.after();
       serverStarter = null;

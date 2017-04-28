@@ -20,6 +20,7 @@ import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 
 import java.io.File;
+import java.nio.file.Paths;
 
 public class MemberVM<T extends Member> implements Member {
   private T member;
@@ -73,5 +74,27 @@ public class MemberVM<T extends Member> implements Member {
   @Override
   public String getName() {
     return member.getName();
+  }
+
+  public void stopMemberAndCleanupVMIfNecessary() {
+    stopMember();
+    cleanupVMIfNecessary();
+  }
+
+  private void cleanupVMIfNecessary() {
+    /**
+     * The LocatorServerStarterRule may dynamically change the "user.dir" system property to point
+     * to a temporary folder. The Path API caches the first value of "user.dir" that it sees, and
+     * this can result in a stale cached value of "user.dir" which points to a directory that no
+     * longer exists.
+     */
+    boolean vmIsClean = this.getVM().invoke(() -> Paths.get("").toAbsolutePath().toFile().exists());
+    if (!vmIsClean) {
+      this.getVM().bounce();
+    }
+  }
+
+  public void stopMember() {
+    this.invoke(LocatorServerStartupRule::stopMemberInThisVM);
   }
 }
