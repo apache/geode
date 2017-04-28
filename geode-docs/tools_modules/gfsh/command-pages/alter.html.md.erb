@@ -445,20 +445,10 @@ alter runtime [--member=value] [--group=value] [--archive-disk-space-limit=value
 <td>0</td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">\-\-log-level </span></td>
-<td>Log level. Valid values are:
-<ul>
-<li><code class="ph codeph">none</code></li>
-<li><code class="ph codeph">error</code></li>
-<li><code class="ph codeph">info</code></li>
-<li><code class="ph codeph">config</code></li>
-<li><code class="ph codeph">warning</code></li>
-<li><code class="ph codeph">severe</code></li>
-<li><code class="ph codeph">fine</code></li>
-<li><code class="ph codeph">finer</code></li>
-<li><code class="ph codeph">finest</code></li>
-</ul></td>
-<td>config</td>
+<td><span class="keyword parmname">\-\-loglevel </span></td>
+<td>The new log level. This option is required and you must specify a value.
+Valid values are: `ALL`, `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OFF`. 
+<td>INFO</td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-statistic-archive-file </span></td>
@@ -508,13 +498,13 @@ alter runtime [--member=value] [--group=value] [--archive-disk-space-limit=value
 **Example Commands:**
 
 ``` pre
-alter runtime --member=server1 --log-level=finest --enable-statistics=true
+alter runtime --member=server1 --loglevel=WARN --enable-statistics=true
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>alter runtime --member=server1 --log-level=finest --enable-statistics=true
+gfsh>alter runtime --member=server1 --loglevel=WARN --enable-statistics=true
 Runtime configuration altered successfully for the following member(s)
 192.0.2.0(server1:240)<v1>:64871
 ```
