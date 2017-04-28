@@ -60,18 +60,8 @@ change loglevel --loglevel=value [--members=value(nullvalue)*] [--groups=value(n
 <tr class="odd">
 <td><span class="keyword parmname">\-\-loglevel</span></td>
 <td><em>Required.</em> Log level to change. Valid options are:
-<ul>
-<li><code class="ph codeph">all</code></li>
-<li><code class="ph codeph">finest</code></li>
-<li><code class="ph codeph">finer</code></li>
-<li><code class="ph codeph">fine</code></li>
-<li><code class="ph codeph">config</code></li>
-<li><code class="ph codeph">info</code></li>
-<li><code class="ph codeph">warning</code></li>
-<li><code class="ph codeph">error</code></li>
-<li><code class="ph codeph">severe</code></li>
-<li><code class="ph codeph">none</code></li>
-</ul></td>
+ `ALL`, `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OFF`. 
+</td>
 <td> </td>
 </tr>
 </tbody>
@@ -82,13 +72,13 @@ change loglevel --loglevel=value [--members=value(nullvalue)*] [--groups=value(n
 **Example Commands:**
 
 ``` pre
-gfsh>change loglevel --loglevel=severe --members=server1
+gfsh>change loglevel --loglevel=DEBUG --members=server1
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>change loglevel --loglevel=severe --members=server1
+gfsh>change loglevel --loglevel=DEBUG --members=server1
 
 Summary
 
