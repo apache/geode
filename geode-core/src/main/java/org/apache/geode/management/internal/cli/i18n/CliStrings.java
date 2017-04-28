@@ -2412,8 +2412,6 @@ public class CliStrings {
   public static final String START_LOCATOR__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE =
       "The Locator process terminated unexpectedly with exit status %1$d. Please refer to the log file in %2$s for full details.%n%n%3$s";
   public static final String START_LOCATOR__RUN_MESSAGE = "Starting a Geode Locator in %1$s...";
-  public static final String START_LOCATOR__MSG__COULD_NOT_CREATE_DIRECTORY_0_VERIFY_PERMISSIONS =
-      "Could not create directory {0}. Please verify directory path or user permissions.";
   public static final String START_LOCATOR__CONNECT = "connect";
   public static final String START_LOCATOR__CONNECT__HELP =
       "When connect is set to false , Gfsh does not automatically connect to the locator which is started using this command.";
@@ -2605,8 +2603,7 @@ public class CliStrings {
   public static final String START_SERVER__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE =
       "The Cache Server process terminated unexpectedly with exit status %1$d. Please refer to the log file in %2$s for full details.%n%n%3$s";
   public static final String START_SERVER__RUN_MESSAGE = "Starting a Geode Server in %1$s...";
-  public static final String START_SERVER__MSG__COULD_NOT_CREATE_DIRECTORY_0_VERIFY_PERMISSIONS =
-      "Could not create directory {0}. Please verify directory path or user permissions.";
+
 
   public static final String START_SERVER__CRITICAL__HEAP__PERCENTAGE = "critical-heap-percentage";
   public static final String START_SERVER__CRITICAL__HEAP__HELP =

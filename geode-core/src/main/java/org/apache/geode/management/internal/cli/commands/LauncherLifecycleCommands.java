@@ -267,18 +267,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
         memberName = nameGenerator.generate('-');
       }
 
-      if (workingDirectory == null) {
-        // attempt to use or make sub-directory using memberName...
-        File locatorWorkingDirectory = new File(memberName);
-
-        if (!(locatorWorkingDirectory.exists() || locatorWorkingDirectory.mkdir())) {
-          throw new IllegalStateException(CliStrings.format(
-              CliStrings.START_LOCATOR__MSG__COULD_NOT_CREATE_DIRECTORY_0_VERIFY_PERMISSIONS,
-              locatorWorkingDirectory.getAbsolutePath()));
-        }
-
-        workingDirectory = IOUtils.tryGetCanonicalPathElseGetAbsolutePath(locatorWorkingDirectory);
-      }
+      workingDirectory = resolveWorkingDir(workingDirectory, memberName);
 
       gemfirePropertiesPathname = CliUtil.resolvePathname(gemfirePropertiesPathname);
 
@@ -1474,18 +1463,7 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
         }
       }
 
-      if (workingDirectory == null) {
-        // attempt to use or make sub-directory using memberName...
-        File serverWorkingDirectory = new File(memberName);
-
-        if (!(serverWorkingDirectory.exists() || serverWorkingDirectory.mkdir())) {
-          throw new IllegalStateException(CliStrings.format(
-              CliStrings.START_SERVER__MSG__COULD_NOT_CREATE_DIRECTORY_0_VERIFY_PERMISSIONS,
-              serverWorkingDirectory.getAbsolutePath()));
-        }
-
-        workingDirectory = IOUtils.tryGetCanonicalPathElseGetAbsolutePath(serverWorkingDirectory);
-      }
+      workingDirectory = resolveWorkingDir(workingDirectory, memberName);
 
       cacheXmlPathname = CliUtil.resolvePathname(cacheXmlPathname);
 
@@ -2673,4 +2651,20 @@ public class LauncherLifecycleCommands extends AbstractCommandsSupport {
     }
   }
 
+  protected String resolveWorkingDir(String userSpecifiedDir, String memberName) {
+    File workingDir =
+        (userSpecifiedDir == null) ? new File(memberName) : new File(userSpecifiedDir);
+
+    String workingDirPath = IOUtils.tryGetCanonicalPathElseGetAbsolutePath(workingDir);
+
+    if (!workingDir.exists()) {
+      if (!workingDir.mkdirs()) {
+        throw new IllegalStateException(String.format(
+            "Could not create directory %s. Please verify directory path or user permissions.",
+            workingDirPath));
+      }
+    }
+
+    return workingDirPath;
+  }
 }

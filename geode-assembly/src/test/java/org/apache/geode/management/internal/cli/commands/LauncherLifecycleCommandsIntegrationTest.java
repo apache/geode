@@ -14,7 +14,11 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.junit.Assert.*;
+
+import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -28,6 +32,7 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -168,4 +173,27 @@ public class LauncherLifecycleCommandsIntegrationTest {
         missingExpectedJarDependenciesList.isEmpty());
   }
 
+  @Test
+  public void workingDirDefaultsToMemberName() {
+    LauncherLifecycleCommands launcherLifecycleCommands = new LauncherLifecycleCommands();
+
+    String workingDir = launcherLifecycleCommands.resolveWorkingDir(null, "server1");
+    assertThat(new File(workingDir)).exists();
+    assertThat(workingDir).endsWith("server1");
+  }
+
+
+  @Test
+  public void workingDirGetsCreatedIfNecessary() throws Exception {
+    File workingDir = temporaryFolder.newFolder("foo");
+    FileUtils.deleteQuietly(workingDir);
+    String workingDirString = workingDir.getAbsolutePath();
+
+    LauncherLifecycleCommands launcherLifecycleCommands = new LauncherLifecycleCommands();
+
+    String resolvedWorkingDir =
+        launcherLifecycleCommands.resolveWorkingDir(workingDirString, "server1");
+    assertThat(new File(resolvedWorkingDir)).exists();
+    assertThat(workingDirString).endsWith("foo");
+  }
 }
