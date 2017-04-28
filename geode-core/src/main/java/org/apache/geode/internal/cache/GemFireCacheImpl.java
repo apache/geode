@@ -67,6 +67,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiPredicate;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import javax.naming.Context;
@@ -5088,12 +5090,18 @@ public class GemFireCacheImpl
 
         Declarable matchingDeclarable = null;
         for (Entry<Declarable, Properties> oldEntry : this.declarablePropertiesMap.entrySet()) {
-          boolean isKeyClassSame = clazz.getName().equals(oldEntry.getKey().getClass().getName());
-          boolean isValueEqual = newEntry.getValue().equals(oldEntry.getValue());
-          boolean isKeyIdentifiableAndSameId =
-              Identifiable.class.isInstance(newEntry.getKey()) && ((Identifiable) oldEntry.getKey())
-                  .getId().equals(((Identifiable) newEntry.getKey()).getId());
-          if (isKeyClassSame && (isValueEqual || isKeyIdentifiableAndSameId)) {
+
+          BiPredicate<Declarable, Declarable> isKeyIdentifiableAndSameIdPredicate =
+              (Declarable oldKey, Declarable newKey) -> Identifiable.class.isInstance(newKey)
+                  && ((Identifiable) oldKey).getId().equals(((Identifiable) newKey).getId());
+
+          Supplier<Boolean> isKeyClassSame =
+              () -> clazz.getName().equals(oldEntry.getKey().getClass().getName());
+          Supplier<Boolean> isValueEqual = () -> newEntry.getValue().equals(oldEntry.getValue());
+          Supplier<Boolean> isKeyIdentifiableAndSameId =
+              () -> isKeyIdentifiableAndSameIdPredicate.test(oldEntry.getKey(), newEntry.getKey());
+
+          if (isKeyClassSame.get() && (isValueEqual.get() || isKeyIdentifiableAndSameId.get())) {
             matchingDeclarable = oldEntry.getKey();
             break;
           }
