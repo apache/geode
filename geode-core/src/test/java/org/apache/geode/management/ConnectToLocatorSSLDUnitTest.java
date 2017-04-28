@@ -38,6 +38,8 @@ import static org.apache.geode.util.test.TestUtil.getResourcePath;
 
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.security.SecurableCommunicationChannels;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
 import org.apache.geode.test.dunit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -48,6 +50,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.RuleChain;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
@@ -57,14 +60,13 @@ import java.util.Properties;
 
 @Category(DistributedTest.class)
 public class ConnectToLocatorSSLDUnitTest {
+  private TemporaryFolder folder = new SerializableTemporaryFolder();
+  private LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  private CleanupDUnitVMsRule cleanupDUnitVMsRule = new CleanupDUnitVMsRule();
 
   @Rule
-  public TemporaryFolder folder = new SerializableTemporaryFolder();
-  @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
-
-  @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public RuleChain ruleChain =
+      RuleChain.outerRule(cleanupDUnitVMsRule).around(folder).around(lsRule);
 
   private File jks = null;
   private File securityPropsFile = null;
@@ -89,10 +91,25 @@ public class ConnectToLocatorSSLDUnitTest {
     OutputStream out = new FileOutputStream(securityPropsFile);
     securityProps.store(out, null);
 
-    gfshConnector.connect(locator, CliStrings.CONNECT__SECURITY_PROPERTIES,
-        securityPropsFile.getCanonicalPath());
 
-    assertTrue(gfshConnector.isConnected());
+    /*
+     * When using SSL, the GfshShellConnectionRule seems to leave behind state in the JVM that
+     * causes test flakinesss. (Each test method will pass if run in isolation, but when all run
+     * together, the second and third tests will fail.) To avoid this issue, we connect to our
+     * locator from a remote VM which is cleaned up by the CleanupDUnitVMsRule in between tests.
+     */
+
+    final int locatorPort = locator.getPort();
+    final String securityPropsFilePath = securityPropsFile.getCanonicalPath();
+    Host.getHost(0).getVM(1).invoke(() -> {
+      GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+      try {
+        gfshConnector.connectAndVerify(locatorPort, GfshShellConnectionRule.PortType.locator,
+            CliStrings.CONNECT__SECURITY_PROPERTIES, securityPropsFilePath);
+      } finally {
+        gfshConnector.close();
+      }
+    });
   }
 
   @Test

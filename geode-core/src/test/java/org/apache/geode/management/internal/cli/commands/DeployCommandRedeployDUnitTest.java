@@ -58,7 +58,7 @@ public class DeployCommandRedeployDUnitTest implements Serializable {
   private MemberVM server;
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule(true);
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
   public transient GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
