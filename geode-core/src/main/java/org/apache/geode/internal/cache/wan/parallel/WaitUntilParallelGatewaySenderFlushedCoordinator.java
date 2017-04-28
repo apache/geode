@@ -58,7 +58,13 @@ public class WaitUntilParallelGatewaySenderFlushedCoordinator
       logger.debug("WaitUntilParallelGatewaySenderFlushedCoordinator: Created and being submitted "
           + callables.size() + " callables=" + callables);
     }
+    long endTime = System.nanoTime() + unit.toNanos(timeout);
     for (Callable<Boolean> callable : callables) {
+      // timeout exceeded, do not submit more callables, return localResult false
+      if (System.nanoTime() >= endTime) {
+        localResult = false;
+        break;
+      }
       callableFutures.add(service.submit(callable));
       callableCount++;
       if ((callableCount % CALLABLES_CHUNK_SIZE) == 0 || callableCount == callables.size()) {
