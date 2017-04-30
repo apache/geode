@@ -421,6 +421,40 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     Assert.assertEquals(0, serverListener.getJoins());
   }
 
+  @Test
+  public void testUpdateLocatorListInterval() throws Exception {
+    final Host host = Host.getHost(0);
+    VM vm0 = host.getVM(0);
+    VM vm1 = host.getVM(1);
+
+    int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    String hostName = NetworkUtils.getServerHostName(vm0.getHost());
+    vm0.invoke("Start Locator", () -> startLocator(hostName, locatorPort, ""));
+
+    Properties props = new Properties();
+    long updateLocatorInterval;
+
+    vm1.invoke("StartBridgeClient", () -> startBridgeClient("group1",
+        NetworkUtils.getServerHostName(vm0.getHost()), locatorPort, props));
+    checkUpdateLocatorListInterval(vm1, 200);
+    stopBridgeMemberVM(vm1);
+
+    updateLocatorInterval = 0;
+    props.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
+        String.valueOf(updateLocatorInterval));
+    vm1.invoke("StartBridgeClient", () -> startBridgeClient("group2",
+        NetworkUtils.getServerHostName(vm0.getHost()), locatorPort, props));
+    checkUpdateLocatorListInterval(vm1, updateLocatorInterval);
+    stopBridgeMemberVM(vm1);
+
+    updateLocatorInterval = 543;
+    props.setProperty(DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL",
+        String.valueOf(updateLocatorInterval));
+    vm1.invoke("StartBridgeClient", () -> startBridgeClient("group2",
+        NetworkUtils.getServerHostName(vm0.getHost()), locatorPort, props));
+    checkUpdateLocatorListInterval(vm1, updateLocatorInterval);
+  }
+
   protected Object getInVM(VM vm, final Serializable key) {
     return getInVM(vm, REGION_NAME, key);
   }
@@ -532,6 +566,15 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
           Assert.assertEquals(expectedOne, locator);
         }
       }
+    });
+  }
+
+  protected void checkUpdateLocatorListInterval(VM vm, final long expected) {
+    vm.invoke(() -> {
+      PoolImpl pool = (PoolImpl) PoolManager.find(POOL_NAME);
+      long actual = AutoConnectionSourceImpl.class.cast(pool.getConnectionSource())
+          .getLocatorUpdateInterval();
+      Assert.assertEquals(expected, actual);
     });
   }
 

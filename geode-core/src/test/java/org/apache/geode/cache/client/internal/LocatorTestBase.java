@@ -289,6 +289,13 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     }
   }
 
+  protected void startBridgeClient(final String group, final String host, final int port,
+      Properties systemProperties) throws Exception {
+    systemProperties.entrySet().forEach(
+        entry -> System.setProperty(entry.getKey().toString(), entry.getValue().toString()));
+    startBridgeClient(group, host, port, new String[] {REGION_NAME});
+  }
+
   protected void startBridgeClient(final String group, final String host, final int port)
       throws Exception {
     startBridgeClient(group, host, port, new String[] {REGION_NAME});

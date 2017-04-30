@@ -47,6 +47,7 @@ import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
 import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
 import org.apache.geode.cache.client.internal.locator.ServerLocationResponse;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -92,7 +93,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   private AtomicReference<LocatorList> onlineLocators = new AtomicReference<LocatorList>();
   protected InternalPool pool;
   private final int connectionTimeout;
-  private long pingInterval;
+  private long locatorUpdateInterval;
   private volatile LocatorDiscoveryCallback locatorCallback = new LocatorDiscoveryCallbackAdapter();
   private volatile boolean isBalanced = true;
   /**
@@ -307,10 +308,16 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   public void start(InternalPool pool) {
     this.pool = pool;
     pool.getStats().setInitialContacts(((LocatorList) locators.get()).size());
-    this.pingInterval = pool.getPingInterval();
+    this.locatorUpdateInterval = Long.getLong(
+        DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL", pool.getPingInterval());
 
-    pool.getBackgroundProcessor().scheduleWithFixedDelay(new UpdateLocatorListTask(), 0,
-        pingInterval, TimeUnit.MILLISECONDS);
+    if (locatorUpdateInterval > 0) {
+      pool.getBackgroundProcessor().scheduleWithFixedDelay(new UpdateLocatorListTask(), 0,
+          locatorUpdateInterval, TimeUnit.MILLISECONDS);
+      logger.info(LocalizedMessage.create(
+          LocalizedStrings.AutoConnectionSourceImpl_UPDATE_LOCATOR_LIST_TASK_STARTED_WITH_INTERVAL_0,
+          new Object[] {this.locatorUpdateInterval}));
+    }
   }
 
   public void stop() {
@@ -342,6 +349,10 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
             new Object[] {l, ex}), ex);
       }
     }
+  }
+
+  long getLocatorUpdateInterval() {
+    return this.locatorUpdateInterval;
   }
 
   /**
