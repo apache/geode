@@ -5813,6 +5813,9 @@ public class LocalizedStrings {
       new StringId(4480, "Communication with locator {0} failed with {1}.");
   public static final StringId AutoConnectionSourceImpl_LOCATOR_0_IS_NOT_RUNNING =
       new StringId(4481, "locator {0} is not running.");
+  public static final StringId AutoConnectionSourceImpl_UPDATE_LOCATOR_LIST_TASK_STARTED_WITH_INTERVAL_0 =
+      new StringId(4482,
+          "AutoConnectionSource UpdateLocatorListTask started with interval={0} ms.");
   public static final StringId AutoConnectionSourceImpl_COULD_NOT_CREATE_A_NEW_CONNECTION_TO_SERVER_0 =
       new StringId(4484, "Could not create a new connection to server: {0}");
   public static final StringId DistributionAdvisor_0_SEC_HAVE_ELAPSED_WHILE_WAITING_FOR_CURRENT_OPERATIONS_TO_DISTRIBUTE =
