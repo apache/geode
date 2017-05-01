@@ -429,6 +429,10 @@ public class ProcessWrapper {
     return sb.toString();
   }
 
+  public Process getProcess() {
+    return this.process;
+  }
+
   public static class Builder {
     private String[] jvmArguments = null;
     private Class<?> mainClass;
